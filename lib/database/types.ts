@@ -17,6 +17,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_calls: {
+        Row: {
+          completion_tokens: number | null
+          created_at: string
+          duration_ms: number
+          error: string | null
+          id: string
+          model: string
+          prompt_tokens: number | null
+          purpose: string
+          reasoning_effort: string | null
+          reasoning_tokens: number | null
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          completion_tokens?: number | null
+          created_at?: string
+          duration_ms: number
+          error?: string | null
+          id?: string
+          model: string
+          prompt_tokens?: number | null
+          purpose: string
+          reasoning_effort?: string | null
+          reasoning_tokens?: number | null
+          status: string
+          subject?: string | null
+        }
+        Update: {
+          completion_tokens?: number | null
+          created_at?: string
+          duration_ms?: number
+          error?: string | null
+          id?: string
+          model?: string
+          prompt_tokens?: number | null
+          purpose?: string
+          reasoning_effort?: string | null
+          reasoning_tokens?: number | null
+          status?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
       actions: {
         Row: {
           after_revision_id: string | null

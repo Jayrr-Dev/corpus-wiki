@@ -1,3 +1,4 @@
+import type { AiCallLogger } from "@/lib/ai/callLog";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
@@ -28,8 +29,8 @@ export interface SectionWriter {
 }
 
 // Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
-export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null): SectionWriter {
-  const settings = tokenFactoryFromEnv(env, chosenModel);
+export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null, logCall?: AiCallLogger): SectionWriter {
+  const settings = tokenFactoryFromEnv(env, chosenModel, logCall);
   return settings ? new TokenFactorySectionWriter(settings) : new FakeSectionWriter();
 }
 

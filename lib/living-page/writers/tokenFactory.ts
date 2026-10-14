@@ -44,6 +44,7 @@ export class TokenFactorySectionWriter {
     const refs = buildRefs(input);
     const { value, model } = await chatJson(this.settings, {
       name: "section_lines",
+      subject: `${input.pageTitle} › ${input.sectionTitle}`,
       schema: sectionAnswerSchema,
       jsonSchema: z.toJSONSchema(sectionAnswerSchema),
       messages: buildMessages(input, refs),

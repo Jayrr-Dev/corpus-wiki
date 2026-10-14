@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { z } from "zod";
+import { type AiCallLogger, type AiCallStatus, type CompletionUsage, logSafely, usageTokens } from "./callLog";
 import { DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
 
 // =====================================================================
@@ -11,7 +12,8 @@ import { DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
 // Shared by reconciliation (lib/ai) and section writing (lib/living-page).
 // =====================================================================
 
-export type TokenFactorySettings = { apiKey: string; model?: string; baseUrl?: string };
+// `logCall` records every attempt's token usage (the app's server deps set it)
+export type TokenFactorySettings = { apiKey: string; model?: string; baseUrl?: string; logCall?: AiCallLogger };
 
 export type ChatMessage = { role: "system" | "user"; content: string };
 
@@ -36,7 +38,7 @@ export const ANSWER_TOKEN_BUDGET = 32_000;
 export type CompletionResponse = {
   model?: string;
   choices?: { message?: { content?: string | null }; finish_reason?: string }[];
-  usage?: { prompt_tokens?: number; completion_tokens?: number };
+  usage?: CompletionUsage;
 };
 
 // The model AI calls use: the one picked on /settings, else AI_MODEL, else the Nemotron default
@@ -44,13 +46,25 @@ export function resolveModel(chosenModel: string | null | undefined, env: NodeJS
   return chosenModel || env.AI_MODEL || DEFAULT_AI_MODEL;
 }
 
-// Reads the Token Factory settings from server env (+ the picked model); null when there is no key
-export function tokenFactoryFromEnv(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null): TokenFactorySettings | null {
+// Reads the Token Factory settings from server env (+ the picked model and the usage logger); null when there is no key
+export function tokenFactoryFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+  chosenModel: string | null = null,
+  logCall?: AiCallLogger,
+): TokenFactorySettings | null {
   if (!env.NEBIUS_API_KEY) return null;
-  return { apiKey: env.NEBIUS_API_KEY, model: resolveModel(chosenModel, env) };
+  return { apiKey: env.NEBIUS_API_KEY, model: resolveModel(chosenModel, env), logCall };
 }
 
-type ChatJsonRequest<S extends z.ZodType> = { name: string; schema: S; jsonSchema: object; messages: ChatMessage[]; maxTokens?: number };
+// `subject` names what the call is about (a file title, a section) for the usage log
+type ChatJsonRequest<S extends z.ZodType> = {
+  name: string;
+  subject?: string;
+  schema: S;
+  jsonSchema: object;
+  messages: ChatMessage[];
+  maxTokens?: number;
+};
 
 // Sends the messages and returns the parsed, validated JSON answer. An answer cut off by
 // the token budget is asked again at the next lower reasoning effort; other errors stop at once.
@@ -67,13 +81,39 @@ export async function chatJson<S extends z.ZodType>(settings: TokenFactorySettin
   throw cutOff ?? new AnswerCutOffError("The model ran out of room.");
 }
 
-// ONE COMPLETION at one reasoning effort
+// ONE COMPLETION at one reasoning effort, logged whether it worked or not
 async function chatJsonOnce<S extends z.ZodType>(
   settings: TokenFactorySettings,
   request: ChatJsonRequest<S>,
   effort: ReasoningEffort,
 ): Promise<ChatJsonResult<z.infer<S>>> {
   const model = settings.model || DEFAULT_AI_MODEL;
+  const startedAt = Date.now();
+  let body: CompletionResponse | undefined;
+  const log = (status: AiCallStatus, error: string | null) =>
+    logSafely(settings.logCall, {
+      purpose: request.name,
+      subject: request.subject ?? null,
+      model: body?.model ?? model,
+      reasoningEffort: effort,
+      ...usageTokens(body?.usage),
+      durationMs: Date.now() - startedAt,
+      status,
+      error,
+    });
+  try {
+    body = await requestCompletion(settings, request, model, effort);
+    const value = parseContent(body, request.schema);
+    await log("ok", null);
+    return { value, model: body.model ?? model, tokensIn: body.usage?.prompt_tokens ?? null, tokensOut: body.usage?.completion_tokens ?? null };
+  } catch (error) {
+    await log(error instanceof AnswerCutOffError ? "cut_off" : "error", error instanceof Error ? error.message : String(error));
+    throw error;
+  }
+}
+
+// THE HTTP CALL: an OpenAI-compatible chat completion constrained to the JSON schema
+async function requestCompletion(settings: TokenFactorySettings, request: ChatJsonRequest<z.ZodType>, model: string, effort: ReasoningEffort): Promise<CompletionResponse> {
   const response = await fetch(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
     method: "POST",
     headers: { Authorization: `Bearer ${settings.apiKey}`, "Content-Type": "application/json" },
@@ -87,13 +127,7 @@ async function chatJsonOnce<S extends z.ZodType>(
     }),
   });
   if (!response.ok) throw new Error(`Token Factory ${response.status}: ${(await response.text()).slice(0, 300)}`);
-  const body = (await response.json()) as CompletionResponse;
-  return {
-    value: parseContent(body, request.schema),
-    model: body.model ?? model,
-    tokensIn: body.usage?.prompt_tokens ?? null,
-    tokensOut: body.usage?.completion_tokens ?? null,
-  };
+  return (await response.json()) as CompletionResponse;
 }
 
 // Pulls the message text out of the completion and validates it against the schema.
