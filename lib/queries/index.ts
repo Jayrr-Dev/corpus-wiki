@@ -54,11 +54,12 @@ export const useExceptions = (o: ListOptions<"exceptions"> = {}) =>
   useTableList("exceptions", { orderBy: "created_at", ascending: false, ...o });
 export const useException = (id?: string) => useTableRow("exceptions", id);
 
-// LIVING PAGE
-export const usePages = (o: ListOptions<"pages"> = {}) => useTableList("pages", { orderBy: "title", ...o });
+// LIVING PAGE (removed pages and sections are retired, so lists show only shown ones)
+export const usePages = (o: ListOptions<"pages"> = {}) =>
+  useTableList("pages", { orderBy: "title", ...o, filters: { retired_at: null, ...o.filters } });
 export const usePage = (id?: string) => useTableRow("pages", id);
 export const useSections = (o: ListOptions<"sections"> = {}) =>
-  useTableList("sections", { orderBy: "position", ...o });
+  useTableList("sections", { orderBy: "position", ...o, filters: { retired_at: null, ...o.filters } });
 export const useSection = (id?: string) => useTableRow("sections", id);
 export const useSectionInputs = (o: ListOptions<"section_inputs"> = {}) => useTableList("section_inputs", o);
 export const useChangeNotes = (o: ListOptions<"change_notes"> = {}) =>

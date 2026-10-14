@@ -72,7 +72,25 @@ export type ActionInputByType = {
   revise_line: { content: string; unitRevisionIds: string[]; citePositions?: number[]; expectedLineRevisionId: string };
   retire_line: { expectedLineRevisionId: string };
   move_line: { position: number; expectedLineRevisionId: string };
+  // PAGES: presentation, changed through the same ChangeSets so they are audited and undoable.
+  // target = the page or section; a create records the new row in target_id once applied.
+  create_page: { title: string; entityId: string | null; sections: SectionDraft[] };
+  rename_page: { title: string };
+  retire_page: Record<string, never>;
+  create_section: { pageId: string } & SectionDraft;
+  rename_section: { title: string };
+  retire_section: Record<string, never>;
 };
+
+// SECTION QUERY (sections.query): which claims a generated section shows; every key optional
+export type SectionQuery = {
+  entity?: { type: string; key: string };
+  domainPaths?: string[];
+  kinds?: UnitKind[];
+};
+
+// A NEW GENERATED SECTION: its title and the query that picks its claims
+export type SectionDraft = { title: string; query: SectionQuery };
 
 // One typed action; `type` decides the shape of `input` (a discriminated union)
 export type DraftAction = {

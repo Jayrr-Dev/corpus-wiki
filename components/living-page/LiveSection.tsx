@@ -1,6 +1,6 @@
 "use client";
 
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import type { Tables } from "@/lib/database/types";
 import { type ShownLine, useChangeNotes } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -13,14 +13,19 @@ type LiveSectionProps = {
   lines: ShownLine[];
   selectedLineId: string | null;
   onSelect: (line: ShownLine) => void;
+  // Shown beside the title on hover (the section's rename / remove menu)
+  menu?: ReactNode;
 };
 
 // LIVE SECTION: title, its lines (each clickable), a gold bar while stale or rebuilding, and the latest change note
-export function LiveSection({ section, lines, selectedLineId, onSelect }: LiveSectionProps) {
+export function LiveSection({ section, lines, selectedLineId, onSelect, menu }: LiveSectionProps) {
   const isStale = section.status !== "current";
   return (
     <section aria-busy={section.status === "building"} className={cn("flex flex-col gap-2 border-l-2 pl-3", isStale ? "border-stale" : "border-transparent")}>
-      <h2 className="border-b pb-1 text-body font-semibold">{section.title}</h2>
+      <header className="group flex items-center justify-between gap-2 border-b pb-1">
+        <h2 className="text-body font-semibold">{section.title}</h2>
+        {menu}
+      </header>
       {lines.length === 0 ? (
         <p className="text-body text-faint">{isStale ? "Not built yet." : "Nothing known yet."}</p>
       ) : (

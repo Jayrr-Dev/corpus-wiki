@@ -317,6 +317,7 @@ export type Database = {
           domain_id: string | null
           entity_id: string | null
           id: string
+          retired_at: string | null
           slug: string
           title: string
         }
@@ -325,6 +326,7 @@ export type Database = {
           domain_id?: string | null
           entity_id?: string | null
           id?: string
+          retired_at?: string | null
           slug: string
           title: string
         }
@@ -333,6 +335,7 @@ export type Database = {
           domain_id?: string | null
           entity_id?: string | null
           id?: string
+          retired_at?: string | null
           slug?: string
           title?: string
         }
@@ -469,6 +472,7 @@ export type Database = {
           page_id: string
           position: number
           query: Json | null
+          retired_at: string | null
           status: Database["public"]["Enums"]["section_status"]
           title: string
         }
@@ -482,6 +486,7 @@ export type Database = {
           page_id: string
           position: number
           query?: Json | null
+          retired_at?: string | null
           status?: Database["public"]["Enums"]["section_status"]
           title: string
         }
@@ -495,6 +500,7 @@ export type Database = {
           page_id?: string
           position?: number
           query?: Json | null
+          retired_at?: string | null
           status?: Database["public"]["Enums"]["section_status"]
           title?: string
         }
@@ -681,6 +687,12 @@ export type Database = {
         | "revise_line"
         | "retire_line"
         | "move_line"
+        | "create_page"
+        | "rename_page"
+        | "retire_page"
+        | "create_section"
+        | "rename_section"
+        | "retire_section"
       actor_kind: "ai" | "person"
       change_set_status:
         | "draft"
@@ -762,6 +774,12 @@ export const Constants = {
         "revise_line",
         "retire_line",
         "move_line",
+        "create_page",
+        "rename_page",
+        "retire_page",
+        "create_section",
+        "rename_section",
+        "retire_section",
       ],
       actor_kind: ["ai", "person"],
       change_set_status: ["draft", "checking", "applied", "partly_applied", "rejected", "reverted"],

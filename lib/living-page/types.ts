@@ -8,12 +8,8 @@ import type { Enums } from "@/lib/database/types";
 // No server-only imports: the wiki page reads these types too.
 // =====================================================================
 
-// SECTION QUERY (sections.query): every key optional
-export type SectionQuery = {
-  entity?: { type: string; key: string };
-  domainPaths?: string[];
-  kinds?: UnitKind[];
-};
+// SECTION QUERY (sections.query): defined with the action inputs that carry it
+export type { SectionQuery } from "@/lib/ai/types";
 
 // ONE UNIT A SECTION SHOWS, at its current revision
 export type SectionUnit = {

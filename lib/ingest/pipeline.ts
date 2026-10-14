@@ -1,7 +1,7 @@
 import type { ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
-import { rebuildAfterEvent, type SectionWriter } from "@/lib/living-page";
+import { proposePages, rebuildAfterEvent, type SectionWriter } from "@/lib/living-page";
 import type { ProcessUploadResult, StartUploadResult } from "./types";
 import type { PassageDraft } from "./passages";
 
@@ -10,7 +10,8 @@ import type { PassageDraft } from "./passages";
 // evals on a throwaway Postgres). Two steps, in order:
 //   1. recordUpload    source + passages + a 'received' event
 //   2. reconcileUpload model drafts a ChangeSet -> Change control commits
-//                      it -> the living page rebuilds what changed
+//                      it -> pages are proposed for the entities it is
+//                      about -> the living page rebuilds what changed
 // =====================================================================
 
 export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter };
@@ -45,8 +46,9 @@ export async function recordUpload(db: DbRpc, record: UploadRecord): Promise<Sta
 export async function reconcileUpload(deps: PipelineDeps, eventId: string): Promise<ProcessUploadResult> {
   try {
     const { changeSetId, eventStatus } = await draftAndCommit(deps, eventId);
+    const pageError = await proposeNewPages(deps, eventId);
     const rebuildError = await rebuildPages(deps, eventId);
-    return { status: eventStatus, changeSetId, error: rebuildError };
+    return { status: eventStatus, changeSetId, error: pageError ?? rebuildError };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await setEventStatus(deps.db, eventId, "failed", message);
@@ -61,6 +63,16 @@ async function draftAndCommit({ db, reconciler }: PipelineDeps, eventId: string)
   const draft = await reconciler.draftChangeSet(input);
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai" }, draft);
   return commitChangeSet(db, changeSetId);
+}
+
+// New pages and sections for the entities the upload is about; reported, not fatal (knowledge is saved)
+async function proposeNewPages({ db }: PipelineDeps, eventId: string): Promise<string | null> {
+  try {
+    await proposePages(db, eventId);
+    return null;
+  } catch (error) {
+    return `Knowledge saved, but new pages could not be proposed: ${error instanceof Error ? error.message : String(error)}`;
+  }
 }
 
 // The knowledge is already committed, so a page that fails to rebuild is reported, not fatal

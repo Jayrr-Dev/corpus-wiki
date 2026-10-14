@@ -1,36 +1,32 @@
 "use server";
 
+import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { requireUser } from "@/lib/auth/requireUser";
+import { type CommitResult, commitPersonEdit } from "@/lib/change-control";
 import { rebuildPage } from "@/lib/living-page";
 import { getServerDeps } from "@/lib/server/deps";
-import { type AdminSupabase, getAdminSupabase } from "@/lib/supabase/admin";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 import { type ActionResult, toActionResult } from "./result";
 
 // =====================================================================
-// PAGE ACTIONS (called by /). Pages are presentation, not knowledge, so
-// they are written directly (no Change control). Deleting a page removes
-// its sections, inputs and change notes (cascade); no unit is touched.
+// PAGE ACTIONS (sidebar menu, Pages list, the page itself). Every edit
+// is a typed action in a one-action ChangeSet, so it is listed on the
+// Changes screen and can be undone. Removing retires (never deletes).
 // =====================================================================
+
+// The fields every action a person sends here shares
+const PERSON_ACTION: Pick<DraftAction, "expectedRevisionId" | "passageIds" | "speechAct"> = { expectedRevisionId: null, passageIds: [], speechAct: null };
 
 // CREATE: a page from a title; with an entity it gets a generated "Overview" section and is built
 export async function createPage(input: { title: string; entityId: string | null }): Promise<ActionResult<{ pageId: string; slug: string }>> {
   return toActionResult(async () => {
     await requireUser();
-    const title = cleanTitle(input.title);
-    const admin = getAdminSupabase();
-    const slug = await uniqueSlug(admin, title);
-    const { data: page, error } = await admin.from("pages").insert({ title, slug, entity_id: input.entityId }).select("id").single();
-    if (error) throw new Error(error.message);
-    if (input.entityId) {
-      // No half-made page: if the section cannot be added, the page goes too
-      await addOverviewSection(admin, page.id, input.entityId).catch(async (sectionError: unknown) => {
-        await admin.from("pages").delete().eq("id", page.id);
-        throw sectionError;
-      });
-      const { db, writer } = getServerDeps();
-      await rebuildPage(db, writer, page.id);
-    }
-    return { pageId: page.id, slug };
+    const sections = input.entityId ? [await entitySection(input.entityId, "Overview", null)] : [];
+    const action: DraftAction = { ...PERSON_ACTION, type: "create_page", targetId: null, input: { title: input.title, entityId: input.entityId, sections } };
+    const pageId = await commitOne(`Created page “${input.title.trim()}”`, action);
+    const { db, writer } = getServerDeps();
+    await rebuildPage(db, writer, pageId);
+    return { pageId, slug: await pageSlug(pageId) };
   });
 }
 
@@ -38,56 +34,92 @@ export async function createPage(input: { title: string; entityId: string | null
 export async function renamePage(pageId: string, title: string): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();
-    const { error } = await getAdminSupabase().from("pages").update({ title: cleanTitle(title) }).eq("id", pageId);
-    if (error) throw new Error(error.message);
+    await commitOne(`Renamed a page to “${title.trim()}”`, { ...PERSON_ACTION, type: "rename_page", targetId: pageId, input: { title } });
     return {};
   });
 }
 
-// DELETE: removes the page; its sections go with it (on delete cascade)
+// REMOVE: the page leaves the wiki (undo brings it back); no knowledge unit is touched
 export async function deletePage(pageId: string): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();
-    const { error } = await getAdminSupabase().from("pages").delete().eq("id", pageId);
-    if (error) throw new Error(error.message);
+    await commitOne("Removed a page", { ...PERSON_ACTION, type: "retire_page", targetId: pageId, input: {} });
     return {};
   });
 }
 
-// Trimmed title; an empty one is refused
-function cleanTitle(title: string): string {
-  const trimmed = title.trim();
-  if (!trimmed) throw new Error("Give the page a title.");
-  return trimmed;
+// ADD SECTION: a generated section showing an entity's claims (optionally one kind), built right away
+export async function createSection(input: { pageId: string; title: string; entityId: string; kind: UnitKind | null }): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    const section = await entitySection(input.entityId, input.title, input.kind);
+    await commitOne(`Added section “${section.title.trim()}”`, { ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: input.pageId, ...section } });
+    const { db, writer } = getServerDeps();
+    await rebuildPage(db, writer, input.pageId);
+    return {};
+  });
 }
 
-// "Project Alpha!" -> "project-alpha"
-function slugify(title: string): string {
-  const slug = title
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return slug || "page";
+// RENAME SECTION
+export async function renameSection(sectionId: string, title: string): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    await commitOne(`Renamed a section to “${title.trim()}”`, { ...PERSON_ACTION, type: "rename_section", targetId: sectionId, input: { title } });
+    return {};
+  });
 }
 
-// The title's slug, with -2, -3… when it is taken
-async function uniqueSlug(admin: AdminSupabase, title: string): Promise<string> {
-  const base = slugify(title);
-  const { data, error } = await admin.from("pages").select("slug").like("slug", `${base}%`);
+// REMOVE SECTION: its lines leave the page with it (undo brings them back)
+export async function removeSection(sectionId: string): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    await commitOne("Removed a section", { ...PERSON_ACTION, type: "retire_section", targetId: sectionId, input: {} });
+    return {};
+  });
+}
+
+// REMOVE LINE: the line leaves its section; the claims it stated stay
+export async function removeLine(lineId: string, lineRevisionId: string): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    await commitOne("Removed a line", { ...PERSON_ACTION, type: "retire_line", targetId: lineId, input: { expectedLineRevisionId: lineRevisionId } });
+    return {};
+  });
+}
+
+// =====================================================================
+// HELPERS
+// =====================================================================
+
+// Commits one action; throws the check's reason when it was not applied; returns its target (a create's new row)
+async function commitOne(summary: string, action: DraftAction): Promise<string> {
+  const { db } = getServerDeps();
+  const result: CommitResult = await commitPersonEdit(db, summary, [action]);
+  const { data, error } = await getAdminSupabase().from("actions").select("target_id, check_results").eq("change_set_id", result.changeSetId).single();
   if (error) throw new Error(error.message);
-  const taken = new Set((data ?? []).map((row) => row.slug));
-  let slug = base;
-  for (let n = 2; taken.has(slug); n++) slug = `${base}-${n}`;
-  return slug;
+  if (result.status !== "applied") throw new Error(failedCheckDetail(data.check_results) ?? "The change was not applied.");
+  if (!data.target_id) throw new Error("The change was applied but has no target.");
+  return data.target_id;
 }
 
-// The generated "Overview" section bound to the entity (rebuildPage writes its body)
-async function addOverviewSection(admin: AdminSupabase, pageId: string, entityId: string): Promise<void> {
-  const { data: entity, error } = await admin.from("entities").select("type, key").eq("id", entityId).single();
+// The first failed check's reason, from actions.check_results ([{ name, passed, detail }])
+function failedCheckDetail(checks: unknown): string | null {
+  if (!Array.isArray(checks)) return null;
+  const failed = checks.find((check) => check && typeof check === "object" && check.passed === false);
+  return typeof failed?.detail === "string" ? failed.detail : null;
+}
+
+// A section showing the entity's claims (all kinds, or one)
+async function entitySection(entityId: string, title: string, kind: UnitKind | null): Promise<SectionDraft> {
+  const { data, error } = await getAdminSupabase().from("entities").select("type, key").eq("id", entityId).single();
   if (error) throw new Error(error.message);
-  const query = { entity: { type: entity.type, key: entity.key } };
-  const insert = await admin.from("sections").insert({ page_id: pageId, position: 0, title: "Overview", mode: "generated", query, status: "stale" });
-  if (insert.error) throw new Error(insert.error.message);
+  const entity = { type: data.type, key: data.key };
+  return { title, query: kind ? { entity, kinds: [kind] } : { entity } };
+}
+
+// The page's address (made by the database from its title)
+async function pageSlug(pageId: string): Promise<string> {
+  const { data, error } = await getAdminSupabase().from("pages").select("slug").eq("id", pageId).single();
+  if (error) throw new Error(error.message);
+  return data.slug;
 }
