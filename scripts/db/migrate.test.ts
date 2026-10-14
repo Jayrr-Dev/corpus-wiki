@@ -2,9 +2,10 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Client } from "pg";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasLocalPostgres, type LocalPostgres, startLocalPostgres } from "../../test/db/localPostgres";
-import { parseMode, readMigrationFiles, runMigrations } from "./migrate";
+import { dollarQuote, parseMode, quoteLiteral, readMigrationFiles, runMigrations } from "./migrate";
+import { type MigrationTarget, managementApiTarget, postgresTarget, projectRefFromUrl } from "./targets";
 
 // =====================================================================
 // MIGRATION RUNNER TESTS (throwaway Postgres, temp migration folders)
@@ -34,6 +35,37 @@ describe("parseMode", () => {
   });
 });
 
+describe("SQL literals", () => {
+  it("doubles single quotes and picks a dollar tag the text never contains", () => {
+    expect(quoteLiteral("it's")).toBe("'it''s'");
+    expect(dollarQuote("select 1")).toBe("$migration$select 1$migration$");
+    expect(dollarQuote("x $migration$ y")).toBe("$migration1$x $migration$ y$migration1$");
+  });
+});
+
+describe("management API target", () => {
+  it("reads the project ref from the app URL", () => {
+    expect(projectRefFromUrl("https://qeuvxnvwommyjdzxoodd.supabase.co")).toBe("qeuvxnvwommyjdzxoodd");
+  });
+
+  it("posts the script with the token and surfaces API errors", async () => {
+    const fetchStub = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify([{ version: "1" }]), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ message: "syntax error" }), { status: 400 }));
+    vi.stubGlobal("fetch", fetchStub);
+    const target = managementApiTarget("abcd", "token-123");
+
+    expect(await target.query("select 1")).toEqual([{ version: "1" }]);
+    await expect(target.query("selec")).rejects.toThrow("Supabase API 400: syntax error");
+    const [url, init] = fetchStub.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.supabase.com/v1/projects/abcd/database/query");
+    expect(init.headers).toMatchObject({ Authorization: "Bearer token-123" });
+    expect(JSON.parse(init.body as string)).toEqual({ query: "select 1" });
+    vi.unstubAllGlobals();
+  });
+});
+
 describe("readMigrationFiles", () => {
   it("lists the repo migrations in version order", () => {
     const versions = readMigrationFiles().map((file) => file.version);
@@ -45,6 +77,7 @@ describe("readMigrationFiles", () => {
 describe.skipIf(!hasLocalPostgres())("runMigrations on a throwaway Postgres", () => {
   let db: LocalPostgres;
   let client: Client;
+  let target: MigrationTarget;
   let dir: string;
 
   beforeAll(async () => {
@@ -55,6 +88,7 @@ describe.skipIf(!hasLocalPostgres())("runMigrations on a throwaway Postgres", ()
   });
   beforeEach(async () => {
     client = await db.connect();
+    target = postgresTarget(client);
     await client.query("drop schema if exists runner_test cascade; drop schema if exists supabase_migrations cascade");
   });
   afterEach(async () => {
@@ -69,8 +103,8 @@ describe.skipIf(!hasLocalPostgres())("runMigrations on a throwaway Postgres", ()
     });
     const files = readMigrationFiles(dir);
 
-    const first = await runMigrations(client, { kind: "apply" }, files);
-    const second = await runMigrations(client, { kind: "apply" }, files);
+    const first = await runMigrations(target, { kind: "apply" }, files);
+    const second = await runMigrations(target, { kind: "apply" }, files);
 
     expect(first.ran.map((file) => file.version)).toEqual(["100", "200"]);
     expect(second.ran).toEqual([]);
@@ -84,7 +118,7 @@ describe.skipIf(!hasLocalPostgres())("runMigrations on a throwaway Postgres", ()
       "200_broken.sql": "create table runner_test.half (n int); select missing_column from nowhere;",
     });
 
-    await expect(runMigrations(client, { kind: "apply" }, readMigrationFiles(dir))).rejects.toThrow(/200_broken/);
+    await expect(runMigrations(target, { kind: "apply" }, readMigrationFiles(dir))).rejects.toThrow(/200_broken/);
 
     expect(await recordedVersions(client)).toEqual(["100"]);
     const half = await client.query("select to_regclass('runner_test.half') as t");
@@ -98,8 +132,8 @@ describe.skipIf(!hasLocalPostgres())("runMigrations on a throwaway Postgres", ()
     });
     const files = readMigrationFiles(dir);
 
-    const baseline = await runMigrations(client, { kind: "baseline", upTo: "100" }, files);
-    const status = await runMigrations(client, { kind: "status" }, files);
+    const baseline = await runMigrations(target, { kind: "baseline", upTo: "100" }, files);
+    const status = await runMigrations(target, { kind: "status" }, files);
 
     expect(baseline.ran.map((file) => file.version)).toEqual(["100"]);
     expect(status.pending.map((file) => file.version)).toEqual(["200"]);
