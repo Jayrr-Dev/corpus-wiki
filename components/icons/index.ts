@@ -3,6 +3,7 @@ export { ChangeIcon } from "./Change";
 export { DomainIcon } from "./Domain";
 export { EntityIcon } from "./Entity";
 export { ExceptionIcon } from "./Exception";
+export { GraphIcon } from "./Graph";
 export { HelpIcon } from "./Help";
 export type { IconProps } from "./IconBase";
 export { LinkIcon } from "./Link";

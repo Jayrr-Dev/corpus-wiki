@@ -1,0 +1,137 @@
+"use client";
+
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { type GraphData, type GraphNode, type GraphSettings, groupColorLookup } from "@/lib/graph";
+import { type Camera, centeredCamera, fitCamera } from "@/lib/graph/camera";
+import type { SimLink, SimNode } from "@/lib/graph/physics";
+import { cn } from "@/lib/utils";
+import { drawGraph } from "./drawGraph";
+import { readCanvasPalette } from "./palette";
+import { useForceLayout } from "./useForceLayout";
+import { usePointerControls } from "./usePointerControls";
+
+// =====================================================================
+// GRAPH CANVAS: one <canvas> filling its parent. Owns the frame loop:
+// any change (a layout tick, a hover, a pan, a setting) asks for one
+// redraw, and at most one frame is drawn per animation frame.
+// =====================================================================
+
+export interface GraphCanvasProps {
+  graph: GraphData;
+  settings: Pick<GraphSettings, "display" | "forces" | "groups">;
+  onOpen: (node: GraphNode) => void;
+  className?: string;
+}
+
+// The hovered dot and every dot it shares a link with
+function focusOf(hoveredId: string | null, links: readonly SimLink[]): Set<string> {
+  if (!hoveredId) return new Set();
+  const focus = new Set([hoveredId]);
+  for (const link of links) {
+    const source = (link.source as SimNode).id;
+    const target = (link.target as SimNode).id;
+    if (source === hoveredId) focus.add(target);
+    if (target === hoveredId) focus.add(source);
+  }
+  return focus;
+}
+
+// CANVAS SIZE: keeps the backing store sharp on high-density screens
+function useCanvasSize(container: React.RefObject<HTMLDivElement | null>, canvas: React.RefObject<HTMLCanvasElement | null>, onResize: (width: number, height: number) => void) {
+  useEffect(() => {
+    const box = container.current;
+    const element = canvas.current;
+    if (!box || !element) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      const ratio = window.devicePixelRatio || 1;
+      element.width = Math.round(width * ratio);
+      element.height = Math.round(height * ratio);
+      element.style.width = `${width}px`;
+      element.style.height = `${height}px`;
+      onResize(width, height);
+    });
+    observer.observe(box);
+    return () => observer.disconnect();
+  }, [container, canvas, onResize]);
+}
+
+export function GraphCanvas({ graph, settings, onOpen, className }: GraphCanvasProps) {
+  const container = useRef<HTMLDivElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
+  const size = useRef({ width: 0, height: 0 });
+  const camera = useRef<Camera>(centeredCamera(0, 0));
+  // Keeps the whole graph in view while it settles, until the person pans, zooms or drags
+  const isAutoFit = useRef(true);
+  const hoveredId = useRef<string | null>(null);
+  const frame = useRef<number | null>(null);
+  const redrawRef = useRef<() => void>(() => {});
+  const colorOf = useMemo(() => groupColorLookup(settings.groups), [settings.groups]);
+  const latest = useRef({ display: settings.display, colorOf });
+  const layout = useForceLayout(graph, settings.forces, settings.display.nodeSize, redrawRef);
+
+  // DRAW NOW: paints the current layout with the latest settings
+  const drawNow = useCallback(() => {
+    frame.current = null;
+    const element = canvas.current;
+    const ctx = element?.getContext("2d");
+    if (!element || !ctx || size.current.width === 0) return;
+    const { nodes, links } = layout.current;
+    if (isAutoFit.current) camera.current = fitCamera(nodes, size.current.width, size.current.height);
+    drawGraph({
+      ctx,
+      ...size.current,
+      pixelRatio: window.devicePixelRatio || 1,
+      camera: camera.current,
+      nodes,
+      links,
+      display: latest.current.display,
+      palette: readCanvasPalette(element),
+      colorOf: latest.current.colorOf,
+      hoveredId: hoveredId.current,
+      focusIds: focusOf(hoveredId.current, links),
+    });
+  }, [layout]);
+
+  // REDRAW: one frame per animation frame, however many changes ask
+  const redraw = useCallback(() => {
+    if (frame.current === null) frame.current = requestAnimationFrame(drawNow);
+  }, [drawNow]);
+
+  // LATEST VALUES for the frame loop (synced after render; the loop runs outside React)
+  useLayoutEffect(() => {
+    redrawRef.current = redraw;
+    latest.current = { display: settings.display, colorOf };
+  }, [redraw, settings.display, colorOf]);
+
+  // RESIZE: the first size centers the camera; later ones keep the view (or refit, while auto-fitting)
+  const onResize = useCallback(
+    (width: number, height: number) => {
+      if (size.current.width === 0) camera.current = centeredCamera(width, height, camera.current.k);
+      size.current = { width, height };
+      redraw();
+    },
+    [redraw],
+  );
+  useCanvasSize(container, canvas, onResize);
+  usePointerControls({ canvas, layout, camera, hoveredId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, redraw });
+
+  // REDRAW when display settings or groups change (no layout change needed)
+  useEffect(redraw, [redraw, settings.display, colorOf]);
+  // CLEANUP: cancel a pending frame and clear the handle, so a remount (React dev's double
+  // mount) can schedule frames again
+  useEffect(
+    () => () => {
+      if (frame.current !== null) cancelAnimationFrame(frame.current);
+      frame.current = null;
+    },
+    [],
+  );
+
+  return (
+    <div ref={container} className={cn("relative h-full w-full overflow-hidden", className)}>
+      <canvas ref={canvas} className="absolute inset-0 touch-none" aria-label="Knowledge graph" role="img" />
+    </div>
+  );
+}
