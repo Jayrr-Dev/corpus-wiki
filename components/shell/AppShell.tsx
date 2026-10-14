@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { TutorialCard } from "@/components/tutorial";
+import { Tutorial } from "@/components/tutorial";
 import { Ribbon } from "./Ribbon";
 import { RightPanel, RightPanelProvider } from "./RightPanel";
 import { SidebarTree } from "./SidebarTree";
@@ -16,7 +16,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
         <RightPanel />
       </div>
-      <TutorialCard />
+      <Tutorial />
     </RightPanelProvider>
   );
 }

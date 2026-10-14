@@ -38,7 +38,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
     <ReadingPane title={page.title} width="prose">
       {isPending ? <p className="text-panel text-faint">Loading…</p> : null}
       {!isPending && sections.length === 0 ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6" data-tour="page-body">
         {sections.map((section) => (
           <LiveSection
             key={section.id}

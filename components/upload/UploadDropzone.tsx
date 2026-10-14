@@ -50,6 +50,7 @@ export function UploadDropzone({ onFiles }: UploadDropzoneProps) {
         }}
         onDragLeave={() => setIsOver(false)}
         onDrop={onDrop}
+        data-tour="upload-dropzone"
         className={cn("flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-10 text-center", isOver && "bg-hover")}
       >
         <UploadIcon className="text-faint" size={20} />

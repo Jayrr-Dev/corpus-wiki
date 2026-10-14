@@ -1,2 +1,3 @@
-// TUTORIAL: the floating first-run guide shown inside the app shell
-export { TutorialCard } from "./TutorialCard";
+// TUTORIAL: the first-run guide that points at the real controls
+export { Tutorial } from "./Tutorial";
+export { reportTutorialAction } from "./tutorialStore";
