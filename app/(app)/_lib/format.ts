@@ -1,0 +1,76 @@
+import type { Enums, Json } from "@/lib/database/types";
+
+// =====================================================================
+// FORMATTING SHARED BY THE SCREENS: dates, enum words, JSON reads and
+// one-line summaries of a typed action's input.
+// =====================================================================
+
+// DATES (UTC, so every screen and the database agree on the day)
+export function formatDate(iso: string | null | undefined): string {
+  return iso ? iso.slice(0, 10) : "—";
+}
+
+export function formatDateTime(iso: string | null | undefined): string {
+  return iso ? `${iso.slice(0, 10)} ${iso.slice(11, 16)}` : "—";
+}
+
+// Local calendar day of a timestamp as YYYY-MM-DD (a file's own date for the date input)
+export function toDateInputValue(epochMs: number): string {
+  const date = new Date(epochMs);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+// ENUM WORDS: "partly_applied" -> "partly applied"
+export function humanize(value: string): string {
+  return value.replaceAll("_", " ");
+}
+
+// EXCEPTION REASONS IN PLAIN WORDS
+export const EXCEPTION_REASON_TEXT: Record<Enums<"exception_reason">, string> = {
+  decision_conflict: "A new source contradicts a recorded decision",
+  source_tie: "Two sources with the same date disagree",
+  deletion: "The change would retire knowledge",
+  low_confidence: "The AI was not confident enough to apply this",
+  domain_tree_review: "The domain tree needs a one-time review",
+};
+
+// JSON READS (jsonb columns arrive as Json; these narrow without casts to any)
+export type JsonObject = { [key: string]: Json | undefined };
+
+export function asObject(value: Json | undefined): JsonObject {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+export function readString(object: JsonObject, key: string): string | null {
+  const value = object[key];
+  return typeof value === "string" ? value : null;
+}
+
+export function readStrings(object: JsonObject, key: string): string[] {
+  const value = object[key];
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+// ACTION INPUT SUMMARY: the one line a person needs to recognise an action
+export function describeActionInput(type: Enums<"action_type">, input: Json): string {
+  const object = asObject(input);
+  const text = (key: string) => readString(object, key) ?? "";
+  switch (type) {
+    case "create_domain":
+      return text("path");
+    case "create_entity":
+      return `${text("name")} (${text("type")})`;
+    case "add_claim":
+    case "revise_claim":
+      return text("content");
+    case "retire_claim":
+      return text("reason");
+    case "merge_duplicates":
+      return `${readStrings(object, "duplicateUnitIds").length} duplicate(s) merged into the target`;
+    case "link":
+      return `${humanize(text("type"))} → ${text("toUnitId").slice(0, 8)}`;
+    case "set_epistemic_status":
+      return `status → ${text("epistemicStatus")}`;
+  }
+}
