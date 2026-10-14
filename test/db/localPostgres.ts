@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { Client } from "pg";
 
@@ -19,9 +19,16 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..");
 const MIGRATIONS_DIR = join(REPO_ROOT, "supabase", "migrations");
 const SQL_FILES = {
   stubs: join(import.meta.dirname, "supabase-stubs.sql"),
-  migration: join(MIGRATIONS_DIR, "20261014000000_initial_schema.sql"),
   seed: join(REPO_ROOT, "supabase", "seed.sql"),
 };
+
+// Every migration, in file-name (timestamp) order, as Supabase applies them
+function migrationFiles(): string[] {
+  return readdirSync(MIGRATIONS_DIR)
+    .filter((name) => name.endsWith(".sql"))
+    .sort()
+    .map((name) => join(MIGRATIONS_DIR, name));
+}
 
 const isRoot = process.getuid?.() === 0;
 
@@ -50,7 +57,7 @@ function makeClusterDir(): string {
   return dir;
 }
 
-// Starts the cluster and loads stubs + migration (+ seed unless told not to)
+// Starts the cluster and loads stubs + every migration (+ seed unless told not to)
 export async function startLocalPostgres({ withSeed = true } = {}): Promise<LocalPostgres> {
   const dir = makeClusterDir();
   const dataDir = join(dir, "data");
@@ -79,7 +86,7 @@ export async function startLocalPostgres({ withSeed = true } = {}): Promise<Loca
 
 // Applies the SQL files in order on one connection
 async function loadSql(connect: () => Promise<Client>, withSeed: boolean): Promise<void> {
-  const files = [SQL_FILES.stubs, SQL_FILES.migration, ...(withSeed ? [SQL_FILES.seed] : [])];
+  const files = [SQL_FILES.stubs, ...migrationFiles(), ...(withSeed ? [SQL_FILES.seed] : [])];
   const client = await connect();
   try {
     for (const file of files) await client.query(readFileSync(file, "utf8"));
