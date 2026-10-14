@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { UNIT_ACTION_TYPES } from "@/app/(app)/_components/ActionSummary";
 import { QueryState, Section } from "@/app/(app)/_components/bits";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { EmptyState } from "@/components/EmptyState";
@@ -10,15 +11,6 @@ import { useExceptions } from "@/lib/queries";
 import { type UnitSummary, useRowsByIds, useUnitSummaries } from "@/lib/queries/screens";
 import { ExceptionCard } from "./ExceptionCard";
 
-// ACTION TYPES WHOSE TARGET IS AN EXISTING UNIT (shown next to the held change)
-const UNIT_TARGET_TYPES: ReadonlySet<Tables<"actions">["type"]> = new Set([
-  "revise_claim",
-  "retire_claim",
-  "link",
-  "set_epistemic_status",
-  "merge_duplicates",
-]);
-
 // EXCEPTIONS SCREEN: open questions first, then the answered ones
 export function ExceptionsScreen() {
   const { exceptions, actionById, unitById, state } = useExceptionData();
@@ -26,7 +18,7 @@ export function ExceptionsScreen() {
   const answered = exceptions.filter((exception) => exception.status !== "open");
   const renderCard = (exception: Tables<"exceptions">) => {
     const action = actionById.get(exception.action_id);
-    const unit = action && UNIT_TARGET_TYPES.has(action.type) ? unitById.get(action.target_id ?? "") : undefined;
+    const unit = action && UNIT_ACTION_TYPES.has(action.type) ? unitById.get(action.target_id ?? "") : undefined;
     return <ExceptionCard key={exception.id} exception={exception} action={action} unit={unit} />;
   };
   return (

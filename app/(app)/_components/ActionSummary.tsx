@@ -4,6 +4,16 @@ import { describeActionInput, humanize } from "@/app/(app)/_lib/format";
 import { ACTION_TONE } from "@/app/(app)/_lib/tone";
 import type { Enums, Tables } from "@/lib/database/types";
 
+// ACTION TYPES WHOSE TARGET IS A UNIT (creates record the new unit as target once applied)
+export const UNIT_ACTION_TYPES: ReadonlySet<Enums<"action_type">> = new Set([
+  "add_claim",
+  "revise_claim",
+  "retire_claim",
+  "link",
+  "set_epistemic_status",
+  "merge_duplicates",
+]);
+
 // Where an action's target lives: units, entities, or a domain's filtered unit list
 export function targetHref(type: Enums<"action_type">, targetId: string | null): string | null {
   if (!targetId) return null;
