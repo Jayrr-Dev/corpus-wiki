@@ -3,6 +3,7 @@
 import { type ColumnDef, flexRender, type Row } from "@tanstack/react-table";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { ErrorNote } from "@/app/(app)/_components/bits";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { DataTableHeader } from "./DataTableHeader";
@@ -26,7 +27,7 @@ export type DataTableProps<TData> = {
 export function DataTable<TData>(props: DataTableProps<TData>) {
   const { query, columns, getRowId, pageSize, filterPlaceholder = "Filter…" } = props;
   const table = useDataTable({ data: query.data ?? [], columns, getRowId, pageSize });
-  if (query.error) return <p className="text-panel text-failed">Could not load: {query.error.message}</p>;
+  if (query.error) return <ErrorNote error={`Could not load: ${query.error.message}`} />;
   if (query.isPending) return <p className="text-panel text-faint">Loading…</p>;
   if (!query.data?.length) return <>{props.emptyState}</>;
   return (

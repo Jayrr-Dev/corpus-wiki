@@ -2,6 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState, useTransition } from "react";
+import { ErrorNote } from "@/app/(app)/_components/bits";
 import { Button } from "@/components/ui/button";
 import { queryKeys, type TableName } from "@/lib/queries";
 import type { ActionResult } from "@/lib/server-actions/result";
@@ -44,7 +45,7 @@ export function TextEditor({ content, label, onSave, onDone, refreshTables = [] 
         aria-label={label}
         className="w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-panel text-foreground"
       />
-      {error ? <p className="text-panel text-failed">{error}</p> : null}
+      <ErrorNote error={error} />
       <div className="flex gap-2">
         <Button type="submit" size="sm" disabled={isSaving || isUnchanged}>
           {isSaving ? "Saving…" : "Save"}
