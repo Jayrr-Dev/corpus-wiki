@@ -1,5 +1,6 @@
 "use client";
 
+import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { Section, TextLink } from "@/app/(app)/_components/bits";
 import { dateColumn, statusColumn, textColumn } from "@/app/(app)/_components/columns";
@@ -11,11 +12,12 @@ import { UploadIcon } from "@/components/icons";
 import type { Tables } from "@/lib/database/types";
 import { useChangeSets, useShiftEvents } from "@/lib/queries";
 import { useRowsByIds } from "@/lib/queries/screens";
+import { RetryUploadButton } from "./RetryUploadButton";
 
 // ONE ROW: the upload event with its source and change set
 type UploadRow = Tables<"shift_events"> & { sourceTitle: string; changeSetId: string | null };
 
-// COLUMNS: status, file, change set, when
+// COLUMNS: status, file, change set, error, when, and Retry on a failed row
 const COLUMNS = [
   statusColumn<UploadRow, UploadRow["status"]>("Status", (row) => row.status, EVENT_TONE),
   textColumn<UploadRow>("source", "File", (row) => row.sourceTitle, (row) =>
@@ -26,7 +28,13 @@ const COLUMNS = [
   ),
   textColumn<UploadRow>("error", "Error", (row) => row.error ?? "", (row) => <span className="whitespace-normal">{row.error ?? ""}</span>),
   dateColumn<UploadRow>("created", "Uploaded", (row) => row.created_at, true),
-];
+  {
+    id: "actions",
+    header: "",
+    enableSorting: false,
+    cell: ({ row }) => (row.original.status === "failed" ? <RetryUploadButton eventId={row.original.id} /> : null),
+  },
+] satisfies ColumnDef<UploadRow, unknown>[];
 
 // RECENT UPLOADS: shift events caused by an upload, newest first
 export function RecentUploads() {
