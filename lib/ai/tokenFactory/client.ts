@@ -17,6 +17,7 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
   async draftChangeSet(input: ReconciliationInput): Promise<DraftChangeSet> {
     const answer = await chatJson(this.settings, {
       name: "reconciliation",
+      subject: input.source.title,
       schema: reconciliationAnswerSchema,
       jsonSchema: reconciliationJsonSchema,
       messages: buildReconciliationMessages(input),

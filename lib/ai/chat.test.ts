@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import type { AiCallRecord } from "./callLog";
 import { chatJson, type CompletionResponse, parseContent } from "./chat";
 
 // =====================================================================
@@ -56,5 +57,28 @@ describe("chatJson", () => {
     const efforts = stubCompletions(completion("  ", "stop"));
     await expect(chatJson({ apiKey: "k" }, request)).rejects.toThrow(/returned no answer/);
     expect(efforts).toEqual(["medium"]);
+  });
+
+  it("logs every attempt with its token usage, cut-off ones included", async () => {
+    stubCompletions(
+      { ...completion("", "length", 32_000), usage: { prompt_tokens: 18_680, completion_tokens: 32_000, completion_tokens_details: { reasoning_tokens: 32_000 } } },
+      completion('{"summary": "ok"}', "stop", 1960),
+    );
+    const calls: AiCallRecord[] = [];
+    const logCall = async (call: AiCallRecord) => void calls.push(call);
+    await chatJson({ apiKey: "k", model: "zai-org/GLM-5.3-Flash", logCall }, { ...request, subject: "safety.pdf" });
+    expect(calls).toMatchObject([
+      { purpose: "t", subject: "safety.pdf", model: "zai-org/GLM-5.3-Flash", reasoningEffort: "medium", promptTokens: 18_680, completionTokens: 32_000, reasoningTokens: 32_000, status: "cut_off" },
+      { purpose: "t", subject: "safety.pdf", model: "zai-org/GLM-5.3-Flash", reasoningEffort: "low", promptTokens: 18_680, completionTokens: 1960, reasoningTokens: null, status: "ok" },
+    ]);
+  });
+
+  it("never fails the call because logging failed", async () => {
+    stubCompletions(completion('{"summary": "ok"}', "stop"));
+    const logCall = async () => {
+      throw new Error("db down");
+    };
+    vi.spyOn(console, "error").mockImplementation(() => undefined);
+    await expect(chatJson({ apiKey: "k", logCall }, request)).resolves.toMatchObject({ value: { summary: "ok" } });
   });
 });

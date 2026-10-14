@@ -1,0 +1,40 @@
+import { describe, expect, it } from "vitest";
+import type { Tables } from "@/lib/database/types";
+import { grandTotal, totalsByDayAndModel } from "./summarizeUsage";
+
+// FIXTURE: one call with only the fields the totals read varying
+const call = (created_at: string, model: string, status: string, prompt: number | null, completion: number | null, reasoning: number | null): Tables<"ai_calls"> => ({
+  id: created_at + model,
+  created_at,
+  model,
+  status,
+  prompt_tokens: prompt,
+  completion_tokens: completion,
+  reasoning_tokens: reasoning,
+  purpose: "reconciliation",
+  subject: null,
+  reasoning_effort: "medium",
+  duration_ms: 1000,
+  error: null,
+});
+
+const CALLS = [
+  call("2026-10-14T22:00:00Z", "glm", "cut_off", 18_680, 32_000, 32_000),
+  call("2026-10-14T22:03:00Z", "glm", "ok", 18_680, 1960, null),
+  call("2026-10-14T22:05:00Z", "nemotron", "ok", 20_620, 4319, 1769),
+  call("2026-10-15T09:00:00Z", "glm", "error", null, null, null),
+];
+
+describe("usage totals", () => {
+  it("sums tokens per day and model, newest day first", () => {
+    expect(totalsByDayAndModel(CALLS)).toEqual([
+      { day: "2026-10-15", model: "glm", calls: 1, failed: 1, promptTokens: 0, completionTokens: 0, reasoningTokens: 0 },
+      { day: "2026-10-14", model: "glm", calls: 2, failed: 1, promptTokens: 37_360, completionTokens: 33_960, reasoningTokens: 32_000 },
+      { day: "2026-10-14", model: "nemotron", calls: 1, failed: 0, promptTokens: 20_620, completionTokens: 4319, reasoningTokens: 1769 },
+    ]);
+  });
+
+  it("sums every call", () => {
+    expect(grandTotal(CALLS)).toMatchObject({ calls: 4, failed: 2, promptTokens: 57_980, completionTokens: 38_279 });
+  });
+});
