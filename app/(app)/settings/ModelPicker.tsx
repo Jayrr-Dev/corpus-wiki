@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ErrorNote, Note } from "@/app/(app)/_components/bits";
+import { ErrorNote } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,6 @@ export function ModelPicker({ settings }: { settings: ModelSettings }) {
         In use: <span className="font-mono">{settings.activeModel}</span>
         {settings.chosenModel ? null : <span className="text-faint"> (default)</span>}
       </p>
-      <Note>The hackathon entry needs an NVIDIA Nemotron model.</Note>
       <ErrorNote error={settings.listError} />
       <Input placeholder={`Search ${settings.models.length} models…`} value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search models" />
       <ModelList models={matches} selected={selected} activeModel={settings.activeModel} onSelect={setSelected} />
