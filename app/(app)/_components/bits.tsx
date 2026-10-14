@@ -37,6 +37,11 @@ export function UnitLink({ unit, className }: { unit: UnitSummary; className?: s
   );
 }
 
+// QUOTE: evidence text set off by a gray 2px bar
+export function Quote({ children }: { children: ReactNode }) {
+  return <blockquote className="border-l-2 pl-3 text-panel whitespace-pre-wrap">{children}</blockquote>;
+}
+
 // QUIET NOTE: one line of faint text (loading, nothing, not found)
 export function Note({ children }: { children: ReactNode }) {
   return <p className="text-panel text-faint">{children}</p>;

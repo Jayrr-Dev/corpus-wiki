@@ -52,6 +52,17 @@ export function readStrings(object: JsonObject, key: string): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
+// PASSAGE LOCATION: "p. 3 · Heading" from passages.location ({ page?, heading?, sectionPath? })
+export function formatLocation(location: Json): string {
+  const object = asObject(location);
+  const page = object.page;
+  const parts = [
+    typeof page === "number" || typeof page === "string" ? `p. ${page}` : null,
+    readString(object, "heading") ?? readStrings(object, "sectionPath").join(" / "),
+  ];
+  return parts.filter(Boolean).join(" · ") || "—";
+}
+
 // ACTION INPUT SUMMARY: the one line a person needs to recognise an action
 export function describeActionInput(type: Enums<"action_type">, input: Json): string {
   const object = asObject(input);
