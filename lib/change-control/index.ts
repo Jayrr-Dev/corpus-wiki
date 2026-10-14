@@ -72,8 +72,16 @@ function describePersonAction(action: PersonAction): string {
   switch (action.type) {
     case "create_entity":
       return `Added entity: ${action.input.name}`;
+    case "update_entity":
+      return `Renamed an entity to ${action.input.name}`;
+    case "retire_entity":
+      return `Retired an entity: ${action.input.reason}`;
     case "create_domain":
       return `Added domain: ${action.input.path}`;
+    case "update_domain":
+      return `Renamed a domain to ${action.input.name}`;
+    case "retire_domain":
+      return `Retired a domain: ${action.input.reason}`;
     case "add_claim":
       return `Added: ${action.input.content}`;
     case "revise_claim":

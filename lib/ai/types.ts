@@ -80,6 +80,12 @@ export type ActionInputByType = {
   create_section: { pageId: string } & SectionDraft;
   rename_section: { title: string };
   retire_section: Record<string, never>;
+  // CATALOG EDITS (a person's, from the Entities and Domains screens). target = the entity or domain.
+  // Type and key never change: they are the natural key earlier actions use.
+  update_entity: { name: string; aliases: string[] };
+  retire_entity: { reason: string };
+  update_domain: { name: string }; // the path, and every path under it, follows the new name
+  retire_domain: { reason: string }; // retires its subtree too
 };
 
 // SECTION QUERY (sections.query): which claims a generated section shows; every key optional

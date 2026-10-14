@@ -6,12 +6,15 @@ import { QueryState } from "@/app/(app)/_components/bits";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { EmptyState } from "@/components/EmptyState";
 import { DomainIcon } from "@/components/icons";
+import { RetireForm } from "@/components/actions/RetireForm";
+import { buildRetireDomain } from "@/components/actions/buildCatalog";
 import { RowMenu } from "@/components/row-menu/RowMenu";
 import { buildDomainTree, type DomainNode } from "@/lib/domains/tree";
 import { useDomains, useUnitDomains, useUnits } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { subtreeCounts, unitsByDomain } from "./countUnits";
 import { NewDomainForm } from "./NewDomainForm";
+import { RenameDomainForm } from "./RenameDomainForm";
 
 // INDENT PER DEPTH (static classes; deeper levels reuse the last)
 const DEPTH_INDENT = ["pl-0", "pl-5", "pl-10", "pl-15", "pl-20"] as const;
@@ -52,7 +55,7 @@ function DomainList({ nodes, depth, counts }: DomainListProps) {
   );
 }
 
-// "…" MENU FOR ONE DOMAIN: its units, or a new domain under it
+// "…" MENU FOR ONE DOMAIN: its units, a new domain under it, rename, retire
 function DomainMenu({ node }: { node: DomainNode }) {
   return (
     <RowMenu
@@ -60,17 +63,30 @@ function DomainMenu({ node }: { node: DomainNode }) {
       items={[
         { label: "Open units", href: `/units?domain=${node.id}` },
         { label: "New subdomain", body: (close) => <NewDomainForm parentPath={node.path} onDone={close} /> },
+        { label: "Rename", body: (close) => <RenameDomainForm domain={node} onDone={close} /> },
+        {
+          label: "Retire",
+          isDestructive: true,
+          body: (close) => (
+            <RetireForm
+              title={`Retire “${node.path}”?`}
+              description="It and the domains under it are hidden and the AI stops filing knowledge there. Units keep their links. Undo it from Changes."
+              build={(reason) => buildRetireDomain(node.id, reason)}
+              onDone={close}
+            />
+          ),
+        },
       ]}
     />
   );
 }
 
-// Domain forest plus subtree counts of current units
+// Current domain forest (retired domains hidden) plus subtree counts of current units
 function useDomainCounts() {
   const domains = useDomains();
   const unitDomains = useUnitDomains();
   const units = useUnits();
-  const tree = useMemo(() => buildDomainTree(domains.data ?? []), [domains.data]);
+  const tree = useMemo(() => buildDomainTree((domains.data ?? []).filter((domain) => !domain.retired_at)), [domains.data]);
   const counts = useMemo(() => {
     const currentIds = new Set((units.data ?? []).filter((unit) => !unit.retired_at).map((unit) => unit.id));
     return subtreeCounts(tree, unitsByDomain(unitDomains.data ?? [], (id) => currentIds.has(id)));
