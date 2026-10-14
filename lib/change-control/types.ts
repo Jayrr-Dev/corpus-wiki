@@ -1,4 +1,5 @@
 import type { DraftAction } from "@/lib/ai/types";
+import type { Enums } from "@/lib/database/types";
 
 // =====================================================================
 // CHANGE CONTROL TYPES: what callers send in and get back.
@@ -15,4 +16,5 @@ export type CommitResult = {
   applied: number;
   exceptions: number;
   rejected: number;
+  eventStatus: Enums<"event_status">;
 };

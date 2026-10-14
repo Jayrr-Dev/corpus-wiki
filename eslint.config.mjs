@@ -12,7 +12,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-explicit-any": "error",
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**"]),
+  globalIgnores([".claude/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**"]),
 ]);
 
 export default eslintConfig;

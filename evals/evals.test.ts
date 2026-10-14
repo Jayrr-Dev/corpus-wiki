@@ -7,8 +7,8 @@ import { compareToExpected } from "./snapshot";
 
 // =====================================================================
 // EVALS E1–E7 against a throwaway Postgres loaded with the seed.
-// SKIPPED until agents B (commit, checks, undo) and C (upload, reconciliation)
-// implement createEvalHarness in evals/harness.ts: then change `it.skip` to `it`.
+// The harness runs the app's own upload pipeline and Change control with the
+// fake model, so every case checks the real checks, commit and undo.
 // Each case gets a fresh database so cases never see each other's changes.
 // =====================================================================
 
@@ -28,7 +28,7 @@ describe.skipIf(!hasLocalPostgres())("evals", () => {
         await db?.stop();
       });
 
-      it.skip(evalCase.expected.note, async () => {
+      it(evalCase.expected.note, async () => {
         const run = await runCase(client, createEvalHarness(client), evalCase);
         expect(compareToExpected(run.beforeLast, run.after, evalCase.expected)).toEqual([]);
       });

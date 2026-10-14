@@ -10,8 +10,9 @@ export interface SectionWriter {
   readonly name: string;
 }
 
-// Picks the writer from server env (D implements)
-export function getSectionWriter(): SectionWriter {
+// Picks the writer from server env (D implements): Token Factory when NEBIUS_API_KEY is set, else the fake
+export function getSectionWriter(env: NodeJS.ProcessEnv = process.env): SectionWriter {
+  void env;
   return { name: "stub" };
 }
 

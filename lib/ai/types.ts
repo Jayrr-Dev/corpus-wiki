@@ -33,10 +33,15 @@ export type ExistingUnit = {
   passageIds: string[];
 };
 
+// INPUT: an existing entity the model may name in a claim
+export type ExistingEntity = { type: string; key: string; name: string };
+
 export type ReconciliationInput = {
   source: { id: string; title: string; sourceDate: string };
   passages: ReconciliationPassage[];
   existingUnits: ExistingUnit[];
+  domainPaths: string[]; // the domain tree, e.g. 'Projects/Alpha/Data layer'
+  entities: ExistingEntity[];
 };
 
 // ACTION INPUTS (stored in actions.input). Entities and domains are referenced by
@@ -57,7 +62,9 @@ export type ActionInputByType = {
   revise_claim: { content: string; epistemicStatus?: EpistemicStatus; validFrom?: string };
   retire_claim: { reason: string; validTo: string | null };
   merge_duplicates: { duplicateUnitIds: string[] }; // target = the unit that is kept
-  link: { toUnitId: string; type: RelationshipType }; // target = the "from" unit
+  // target = the "from" unit. A unit an earlier action of the same set creates is
+  // named by that action's position instead (fromPosition / toPosition).
+  link: { toUnitId: string | null; type: RelationshipType; fromPosition?: number; toPosition?: number };
   set_epistemic_status: { epistemicStatus: EpistemicStatus };
 };
 

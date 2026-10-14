@@ -1,6 +1,14 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Client } from "pg";
+import { FakeReconciliationClient } from "@/lib/ai";
+import { revertChangeSet } from "@/lib/change-control";
+import { extractPlainText } from "@/lib/ingest/extract";
+import { sha256 } from "@/lib/ingest/hash";
+import { splitIntoPassages } from "@/lib/ingest/passages";
+import { type PipelineDeps, reconcileUpload, recordUpload } from "@/lib/ingest/pipeline";
+import { getSectionWriter } from "@/lib/living-page";
+import { pgRpc } from "@/test/db/pgRpc";
 import type { EvalCase, EvalStep, FixtureFile } from "./cases";
 import { type StoreSnapshot, snapshotStore } from "./snapshot";
 
@@ -19,10 +27,33 @@ export interface EvalHarness {
   undo(changeSetId: string): Promise<void>;
 }
 
-// Builds the harness on a test DB connection. Not built yet: agents B and C replace this.
+// Builds the harness on a test DB connection: the app's own pipeline and Change control,
+// with the fake model (canned ChangeSets) and the fake section writer (no network)
 export function createEvalHarness(client: Client): EvalHarness {
-  void client;
-  throw new Error("createEvalHarness is not implemented yet (needs agent B's commit and agent C's upload).");
+  const deps: PipelineDeps = { db: pgRpc(client), reconciler: new FakeReconciliationClient(), writer: getSectionWriter({ NODE_ENV: "test" }) };
+  return {
+    upload: (fixture, text) => uploadFixture(deps, fixture, text),
+    undo: async (changeSetId) => {
+      await revertChangeSet(deps.db, changeSetId);
+    },
+  };
+}
+
+// One fixture through both upload steps, as the Upload screen runs them
+async function uploadFixture(deps: PipelineDeps, fixture: FixtureFile, text: string) {
+  const hash = sha256(text);
+  const started = await recordUpload(deps.db, {
+    title: fixture.file,
+    mimeType: "text/markdown",
+    sourceDate: `${fixture.date}T00:00:00Z`,
+    hash,
+    storagePath: `evals/${fixture.file}`,
+    passages: splitIntoPassages(extractPlainText(text)),
+  });
+  if (started.kind === "skipped") return { changeSetId: null };
+  const result = await reconcileUpload(deps, started.eventId);
+  if (result.status === "failed") throw new Error(`${fixture.file}: ${result.error}`);
+  return { changeSetId: result.changeSetId };
 }
 
 // Reads a fixture's text from evals/fixtures
