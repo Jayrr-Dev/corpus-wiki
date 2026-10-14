@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { type CompletionResponse, parseContent } from "./chat";
+import { chatJson, type CompletionResponse, parseContent } from "./chat";
 
 // =====================================================================
 // PARSING THE MODEL'S ANSWER: every unusable answer gets a clear message.
@@ -29,5 +29,32 @@ describe("parseContent", () => {
 
   it("returns a valid answer", () => {
     expect(parseContent(completion('{"summary": "Read the safety program"}', "stop"), SCHEMA)).toEqual({ summary: "Read the safety program" });
+  });
+});
+
+describe("chatJson", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  // Answers each call with the next completion and records the reasoning effort it asked for
+  const stubCompletions = (...completions: CompletionResponse[]) => {
+    const efforts: string[] = [];
+    vi.stubGlobal("fetch", async (_url: URL, init: { body: string }) => {
+      efforts.push(JSON.parse(init.body).reasoning_effort);
+      return new Response(JSON.stringify(completions[efforts.length - 1]), { status: 200 });
+    });
+    return efforts;
+  };
+  const request = { name: "t", schema: SCHEMA, jsonSchema: {}, messages: [] };
+
+  it("asks again at low effort when the answer is cut off", async () => {
+    const efforts = stubCompletions(completion("", "length", 32_000), completion('{"summary": "ok"}', "stop"));
+    await expect(chatJson({ apiKey: "k" }, request)).resolves.toMatchObject({ value: { summary: "ok" } });
+    expect(efforts).toEqual(["medium", "low"]);
+  });
+
+  it("does not ask again for any other bad answer", async () => {
+    const efforts = stubCompletions(completion("  ", "stop"));
+    await expect(chatJson({ apiKey: "k" }, request)).rejects.toThrow(/returned no answer/);
+    expect(efforts).toEqual(["medium"]);
   });
 });
