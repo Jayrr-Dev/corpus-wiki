@@ -4,6 +4,7 @@ import {
   DomainIcon,
   EntityIcon,
   ExceptionIcon,
+  GraphIcon,
   type IconProps,
   PageIcon,
   SettingsIcon,
@@ -23,11 +24,12 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Exceptions", href: "/exceptions", icon: ExceptionIcon },
 ];
 
-// RIBBON, BROWSE GROUP: the other table pages
+// RIBBON, BROWSE GROUP: the other table pages and the graph view
 export const SECONDARY_NAV: readonly NavItem[] = [
   { label: "Sources", href: "/sources", icon: SourceIcon },
   { label: "Entities", href: "/entities", icon: EntityIcon },
   { label: "Domains", href: "/domains", icon: DomainIcon },
+  { label: "Graph", href: "/graph", icon: GraphIcon },
 ];
 
 // True when `pathname` is this item's page or below it ("/" matches only itself and wiki pages)
