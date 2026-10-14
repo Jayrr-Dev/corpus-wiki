@@ -1,12 +1,11 @@
-import { ChangeIcon } from "@/components/icons";
-import { EmptyState } from "@/components/EmptyState";
 import { ReadingPane } from "@/components/shell";
+import { ChangesTable } from "./ChangesTable";
 
-// CHANGES (/changes): stub from agent A; agent E builds it
+// CHANGES (/changes): every ChangeSet, newest first
 export default function ChangesPage() {
   return (
     <ReadingPane title="Changes">
-      <EmptyState icon={ChangeIcon} title="No changes yet" />
+      <ChangesTable />
     </ReadingPane>
   );
 }

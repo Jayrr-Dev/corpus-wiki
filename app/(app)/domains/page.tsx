@@ -1,12 +1,11 @@
-import { DomainIcon } from "@/components/icons";
-import { EmptyState } from "@/components/EmptyState";
 import { ReadingPane } from "@/components/shell";
+import { DomainsTree } from "./DomainsTree";
 
-// DOMAINS (/domains): stub from agent A; agent E builds it
+// DOMAINS (/domains): the domain tree with how many current units sit in each branch
 export default function DomainsPage() {
   return (
-    <ReadingPane title="Domains">
-      <EmptyState icon={DomainIcon} title="No domains yet" />
+    <ReadingPane title="Domains" width="prose">
+      <DomainsTree />
     </ReadingPane>
   );
 }

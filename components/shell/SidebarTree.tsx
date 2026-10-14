@@ -11,6 +11,9 @@ import { cn } from "@/lib/utils";
 // ROW STYLE SHARED BY PAGE AND DOMAIN ROWS
 const rowClass = "flex items-center gap-1.5 rounded-md px-1.5 py-1 text-panel hover:bg-hover";
 
+// TREE INDENT PER DEPTH (static classes so Tailwind generates them; deeper levels reuse the last)
+const DEPTH_INDENT = ["pl-1.5", "pl-4.5", "pl-7.5", "pl-10.5", "pl-13.5"] as const;
+
 // SIDEBAR: the pages list and the domain tree, each collapsible
 export function SidebarTree() {
   return (
@@ -34,7 +37,7 @@ function SidebarGroup({ title, children }: { title: string; children: ReactNode 
         type="button"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
-        className="w-full px-1.5 py-1 text-left text-[11px] font-medium tracking-wide text-faint uppercase hover:text-muted-foreground"
+        className="w-full px-1.5 py-1 text-left text-xs font-medium tracking-wide text-faint uppercase hover:text-muted-foreground"
       >
         {title}
       </button>
@@ -89,7 +92,7 @@ function DomainItem({ node, depth }: { node: DomainNode; depth: number }) {
   const hasChildren = node.children.length > 0;
   return (
     <li>
-      <div className={rowClass} style={{ paddingLeft: 6 + depth * 12 }}>
+      <div className={cn(rowClass, DEPTH_INDENT[Math.min(depth, DEPTH_INDENT.length - 1)])}>
         <button
           type="button"
           onClick={() => setIsOpen((open) => !open)}
