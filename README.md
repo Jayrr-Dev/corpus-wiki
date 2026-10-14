@@ -141,6 +141,15 @@ An older file never overwrites a newer one, and a set whose units changed while 
 
 **Living pages, lines as rows** (`lib/living-page`, `supabase/migrations/20261015000000_lines_as_rows.sql`): every line of a wiki section is a row (`lines`) with never-edited versions (`line_revisions`) that cite the exact claim revisions they state. When a claim changes, the lines citing it are flagged (`stale_lines`), and only those lines are rewritten, through Change control like any other change. Editing a line that states one claim also revises that claim in the same ChangeSet, so changes flow both ways. Open pages update live.
 
+**One call** (`app/api/capture/route.ts`): `POST /api/capture` runs the whole path above in a single request and answers with the event's status and ChangeSet, so a script, phone shortcut or another agent can feed the second brain without the UI. Send a note as JSON (`text`, optional `title` and `sourceDate`), raw text, or a file as multipart (`file`, optional `sourceDate`); the date defaults to today. Authenticate with `Authorization: Bearer $SECOND_BRAIN_API_KEY` or a signed-in session.
+
+```bash
+curl -X POST http://localhost:3000/api/capture \
+  -H "Authorization: Bearer $SECOND_BRAIN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Alpha standup","text":"Alpha moves its launch to 3 March."}'
+```
+
 **Screens:** Home, Upload, Changes (with undo), Exceptions, Units, Sources, Entities, Domains, and the wiki pages (`/p/<slug>`). Click a line to see the claims behind it, their sources and the line's history.
 
 **Tables:** `sources`, `passages`, `shift_events`, `domains`, `entities`, `units`, `revisions`, `unit_entities`, `unit_domains`, `relationships`, `change_sets`, `actions`, `exceptions`, `pages`, `sections`, `section_inputs`, `change_notes`, `lines`, `line_revisions`; views `stale_lines` and `section_lines`.

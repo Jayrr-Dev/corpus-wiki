@@ -8,7 +8,7 @@ import { splitIntoPassages } from "./passages";
 import { reconcileUpload, recordUpload } from "./pipeline";
 import { openRerunEvent, requireFailedUpload } from "./rerun";
 import { storeSourceFile } from "./storage";
-import type { ProcessUploadResult, StartUploadResult } from "./types";
+import type { CaptureResult, ProcessUploadResult, StartUploadResult } from "./types";
 
 export type * from "./types";
 
@@ -58,4 +58,11 @@ export async function retryUploadEvent(eventId: string): Promise<ProcessUploadRe
 // RERUN: a stored source gets a fresh upload event; step 2 runs on it next
 export async function startSourceRerun(sourceId: string): Promise<Extract<StartUploadResult, { kind: "started" }>> {
   return { kind: "started", sourceId, eventId: await openRerunEvent(sourceId) };
+}
+
+// ONE CALL: both steps back to back (POST /api/capture). A file seen before is skipped
+export async function captureFile(input: { file: File; sourceDate: string }): Promise<CaptureResult> {
+  const started = await startUploadFromFile(input);
+  if (started.kind === "skipped") return started;
+  return { ...started, kind: "processed", ...(await processUploadEvent(started.eventId)) };
 }
