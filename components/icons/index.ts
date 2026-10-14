@@ -1,8 +1,9 @@
-// ICON SET: 12 objects/actions + the epistemic status glyph. No icon library.
+// ICON SET: 13 objects/actions + the epistemic status glyph. No icon library.
 export { ChangeIcon } from "./Change";
 export { DomainIcon } from "./Domain";
 export { EntityIcon } from "./Entity";
 export { ExceptionIcon } from "./Exception";
+export { HelpIcon } from "./Help";
 export type { IconProps } from "./IconBase";
 export { LinkIcon } from "./Link";
 export { PageIcon } from "./Page";

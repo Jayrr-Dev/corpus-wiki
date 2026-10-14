@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useExceptions } from "@/lib/queries";
-import { SignOutIcon } from "@/components/icons";
+import { HelpIcon, SignOutIcon } from "@/components/icons";
+import { reopenTutorial } from "@/components/tutorial";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { signOut } from "@/lib/auth/actions";
 import { isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV } from "./nav";
@@ -24,10 +25,24 @@ function NeedsYouBadge({ count }: { count: number }) {
   );
 }
 
+// TUTORIAL BUTTON: "?" at the bottom of the ribbon; restarts the tutorial at step 1
+function TutorialButton() {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" aria-label="Tutorial" onClick={reopenTutorial} className={RIBBON_BUTTON_CLASS}>
+          <HelpIcon />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="right">Tutorial</TooltipContent>
+    </Tooltip>
+  );
+}
+
 // SIGN OUT BUTTON: an icon button at the bottom of the ribbon, styled like the nav links
 function SignOutButton() {
   return (
-    <form action={signOut} className="mt-auto">
+    <form action={signOut}>
       <Tooltip>
         <TooltipTrigger asChild>
           <button type="submit" aria-label="Sign out" className={RIBBON_BUTTON_CLASS}>
@@ -57,7 +72,10 @@ export function Ribbon() {
       {PRIMARY_NAV.map(renderLink)}
       <div className="my-1 h-px w-5 bg-border" />
       {SECONDARY_NAV.map(renderLink)}
-      <SignOutButton />
+      <div className="mt-auto flex flex-col items-center gap-1">
+        <TutorialButton />
+        <SignOutButton />
+      </div>
     </nav>
   );
 }

@@ -2,10 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import { type CSSProperties, useSyncExternalStore } from "react";
-import { Button } from "@/components/ui/button";
 import { placePopover } from "./placement";
 import { TUTORIAL_STEPS } from "./steps";
-import { closeTutorial, goToStep, reopenTutorial, useTutorialState } from "./tutorialStore";
+import { closeTutorial, goToStep, useTutorialState } from "./tutorialStore";
 import { type TargetRect, useTargetRect } from "./useTargetRect";
 import { TutorialPopover } from "./TutorialPopover";
 
@@ -13,14 +12,15 @@ import { TutorialPopover } from "./TutorialPopover";
 // TUTORIAL: walks a first-time user through the app by pointing at the
 // real controls. Each step outlines its target on the current screen
 // (or the nav item that leads there) and anchors a popover to it. Doing
-// the step's action moves the tour on; closing it is remembered.
+// the step's action moves the tour on; closing it is remembered. The
+// "?" button in the ribbon (components/shell/Ribbon.tsx) reopens it.
 // =====================================================================
 
 const SPOTLIGHT_PADDING = 4;
 
 export function Tutorial() {
   const { isOpen, stepIndex } = useTutorialState();
-  if (!isOpen) return <ReopenButton />;
+  if (!isOpen) return null;
   return <ActiveStep stepIndex={stepIndex} />;
 }
 
@@ -66,17 +66,6 @@ function Spotlight({ rect }: { rect: TargetRect }) {
   );
 }
 
-// REOPEN: a small button in the corner once the tutorial is closed
-function ReopenButton() {
-  const isBrowser = useSyncExternalStore(noSubscribe, () => true, () => false);
-  if (!isBrowser) return null;
-  return (
-    <Button type="button" size="sm" variant="outline" className="fixed right-4 bottom-4 z-40" onClick={reopenTutorial}>
-      Tutorial
-    </Button>
-  );
-}
-
 // =====================================================================
 // VIEWPORT SIZE (for placement), live on resize; null during server render
 // =====================================================================
@@ -98,9 +87,4 @@ function readViewport(): { width: number; height: number } {
   const { innerWidth: width, innerHeight: height } = window;
   if (viewportCache?.width !== width || viewportCache.height !== height) viewportCache = { width, height };
   return viewportCache;
-}
-
-// No updates to subscribe to (used only to tell browser from server render)
-function noSubscribe(): () => void {
-  return () => {};
 }
