@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import type { ActionResult } from "@/lib/server-actions/result";
+import { type ActionResult, describeCallError } from "@/lib/server-actions/result";
 
 export type ServerActionState<A extends unknown[], R extends object> = {
   run: (...args: A) => Promise<ActionResult<R>>;
@@ -39,6 +39,6 @@ async function callSafely<A extends unknown[], R extends object>(
   try {
     return await action(...args);
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : String(error) };
+    return { ok: false, error: describeCallError(error) };
   }
 }

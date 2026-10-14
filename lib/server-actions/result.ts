@@ -9,3 +9,12 @@ export async function toActionResult<T extends object>(run: () => Promise<T>): P
     return { ok: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
+
+// A browser-side call that never reached the server (dev server restarting, offline) rejects with a TypeError
+export const SERVER_UNREACHABLE_MESSAGE = "Can't reach the server right now. Check that it's running, then try again.";
+
+// The message to show for an error thrown while calling a server action
+export function describeCallError(error: unknown): string {
+  if (error instanceof TypeError) return SERVER_UNREACHABLE_MESSAGE;
+  return error instanceof Error ? error.message : String(error);
+}
