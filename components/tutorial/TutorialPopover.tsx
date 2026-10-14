@@ -62,7 +62,7 @@ export function TutorialPopover({ step, stepIndex, stepCount, hint, placement, o
 function placementClass(placement: Placement | null): string {
   if (!placement) return "right-4 bottom-4";
   const bySide: Record<Placement["side"], string> = {
-    right: "top-(--tour-y) left-(--tour-x) -translate-y-1/2",
+    right: "top-(--tour-y) left-(--tour-x)",
     bottom: "top-(--tour-y) left-(--tour-x)",
     top: "bottom-(--tour-y) left-(--tour-x)",
   };
@@ -72,7 +72,7 @@ function placementClass(placement: Placement | null): string {
 // ARROW: a small rotated square on the edge facing the target, bordered on its two outer sides
 function Arrow({ placement }: { placement: Placement }) {
   const bySide: Record<Placement["side"], string> = {
-    right: "top-1/2 -left-1.5 -translate-y-1/2 border-b border-l",
+    right: "top-(--tour-arrow) -left-1.5 border-b border-l",
     bottom: "-top-1.5 left-(--tour-arrow) border-t border-l",
     top: "-bottom-1.5 left-(--tour-arrow) border-r border-b",
   };

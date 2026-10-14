@@ -13,7 +13,8 @@ const ROOM_BELOW = 220;
 const LEFT_EDGE_TARGET = 120;
 
 export type Side = "right" | "bottom" | "top";
-// x = left edge; y = top edge, or for "top" the distance from the viewport bottom; arrowOffset = arrow centre from the left edge
+// x = left edge; y = top edge, or for "top" the distance from the viewport bottom;
+// arrowOffset = arrow centre from the popover's left edge ("right": from its top edge)
 export type Placement = { side: Side; x: number; y: number; arrowOffset: number };
 
 // Popover position for a target in a viewport of the given size
@@ -21,7 +22,8 @@ export function placePopover(target: TargetRect, viewport: { width: number; heig
   const centerX = target.left + target.width / 2;
   const centerY = target.top + target.height / 2;
   if (target.left + target.width < LEFT_EDGE_TARGET) {
-    return { side: "right", x: target.left + target.width + GAP, y: centerY, arrowOffset: 0 };
+    const top = Math.max(target.top - GAP, EDGE);
+    return { side: "right", x: target.left + target.width + GAP, y: top, arrowOffset: centerY - top };
   }
   const left = clamp(centerX - POPOVER_WIDTH / 2, EDGE, viewport.width - POPOVER_WIDTH - EDGE);
   const arrowOffset = clamp(centerX - left, 16, POPOVER_WIDTH - 16);
