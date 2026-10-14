@@ -2,9 +2,11 @@
 
 import { usePathname } from "next/navigation";
 import { useExceptions } from "@/lib/queries";
+import { SignOutIcon } from "@/components/icons";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { signOut } from "@/lib/auth/actions";
 import { isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV } from "./nav";
-import { RibbonLink } from "./RibbonLink";
+import { RIBBON_BUTTON_CLASS, RibbonLink } from "./RibbonLink";
 
 // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
 function useOpenExceptionCount(): number {
@@ -19,6 +21,22 @@ function NeedsYouBadge({ count }: { count: number }) {
     <span className="absolute -top-0.5 -right-0.5 min-w-3.5 rounded-full bg-needs-you px-1 text-center font-mono text-xs leading-3.5 text-background">
       {count}
     </span>
+  );
+}
+
+// SIGN OUT BUTTON: an icon button at the bottom of the ribbon, styled like the nav links
+function SignOutButton() {
+  return (
+    <form action={signOut} className="mt-auto">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="submit" aria-label="Sign out" className={RIBBON_BUTTON_CLASS}>
+            <SignOutIcon />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right">Sign out</TooltipContent>
+      </Tooltip>
+    </form>
   );
 }
 
@@ -39,11 +57,7 @@ export function Ribbon() {
       {PRIMARY_NAV.map(renderLink)}
       <div className="my-1 h-px w-5 bg-border" />
       {SECONDARY_NAV.map(renderLink)}
-      <form action={signOut} className="mt-auto">
-        <button type="submit" className="rounded-md px-1 py-1 text-xs text-faint hover:bg-hover hover:text-text">
-          Sign out
-        </button>
-      </form>
+      <SignOutButton />
     </nav>
   );
 }
