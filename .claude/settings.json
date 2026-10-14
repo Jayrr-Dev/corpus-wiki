@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run db:migrate)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(npm run -s db:migrate:*)"
+    ]
+  }
+}
