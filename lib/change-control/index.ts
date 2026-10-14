@@ -70,6 +70,10 @@ export async function resolveException(
 // ONE LINE FOR THE CHANGES SCREEN, per edit type
 function describePersonAction(action: PersonAction): string {
   switch (action.type) {
+    case "create_entity":
+      return `Added entity: ${action.input.name}`;
+    case "create_domain":
+      return `Added domain: ${action.input.path}`;
     case "add_claim":
       return `Added: ${action.input.content}`;
     case "revise_claim":

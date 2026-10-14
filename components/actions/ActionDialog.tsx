@@ -47,7 +47,7 @@ export function ActionDialog({ mode, unit }: ActionDialogProps) {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
-        {isOpen ? <ActionForm mode={mode} unit={unit} onDone={() => setIsOpen(false)} /> : null}
+        {isOpen ? <UnitActionForm mode={mode} unit={unit} onDone={() => setIsOpen(false)} /> : null}
       </DialogContent>
     </Dialog>
   );
@@ -58,8 +58,8 @@ function toTarget(unit: UnitSummary): ActionTarget {
   return { id: unit.id, currentRevisionId: unit.current_revision_id, content: unit.content, epistemicStatus: unit.epistemic_status };
 }
 
-// FORM: fields, errors, the commit outcome and the buttons
-function ActionForm({ mode, unit, onDone }: ActionDialogProps & { onDone: () => void }) {
+// FORM: fields, errors, the commit outcome and the buttons (also opened from the Units "…" menu)
+export function UnitActionForm({ mode, unit, onDone }: ActionDialogProps & { onDone: () => void }) {
   const form = useActionForm(mode, toTarget(unit), onDone);
   return (
     <form onSubmit={form.submit} className="flex flex-col gap-4">
@@ -88,9 +88,19 @@ function ActionForm({ mode, unit, onDone }: ActionDialogProps & { onDone: () => 
 const CURRENT_MODES: readonly ActionMode[] = ["revise", "retire", "link", "set_status"];
 const RETIRED_MODES: readonly ActionMode[] = ["link"];
 
+// The edits one unit allows
+export function unitModes(unit: UnitSummary): readonly ActionMode[] {
+  return unit.retired_at ? RETIRED_MODES : CURRENT_MODES;
+}
+
+// The menu label for one edit (Retire is the delete)
+export function unitModeLabel(mode: ActionMode): string {
+  return COPY[mode].button;
+}
+
 // UNIT ACTION BUTTONS: one ActionDialog per edit the unit allows
 export function UnitActionButtons({ unit }: { unit: UnitSummary }) {
-  const modes = unit.retired_at ? RETIRED_MODES : CURRENT_MODES;
+  const modes = unitModes(unit);
   return (
     <div className="flex flex-wrap gap-2">
       {modes.map((mode) => (

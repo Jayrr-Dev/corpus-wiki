@@ -6,10 +6,12 @@ import { QueryState } from "@/app/(app)/_components/bits";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { EmptyState } from "@/components/EmptyState";
 import { DomainIcon } from "@/components/icons";
+import { RowMenu } from "@/components/row-menu/RowMenu";
 import { buildDomainTree, type DomainNode } from "@/lib/domains/tree";
 import { useDomains, useUnitDomains, useUnits } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { subtreeCounts, unitsByDomain } from "./countUnits";
+import { NewDomainForm } from "./NewDomainForm";
 
 // INDENT PER DEPTH (static classes; deeper levels reuse the last)
 const DEPTH_INDENT = ["pl-0", "pl-5", "pl-10", "pl-15", "pl-20"] as const;
@@ -32,18 +34,34 @@ function DomainList({ nodes, depth, counts }: DomainListProps) {
     <ul>
       {nodes.map((node) => (
         <li key={node.id}>
-          <Link
-            href={`/units?domain=${node.id}`}
-            className={cn("flex items-center gap-2 rounded-md py-1.5 pr-2 hover:bg-hover", DEPTH_INDENT[Math.min(depth, DEPTH_INDENT.length - 1)])}
-          >
-            <DomainIcon className="shrink-0 text-muted-foreground" />
-            <span className="flex-1 truncate">{node.name}</span>
-            <span className="font-mono text-xs text-faint">{counts.get(node.id) ?? 0}</span>
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link
+              href={`/units?domain=${node.id}`}
+              className={cn("flex flex-1 items-center gap-2 rounded-md py-1.5 pr-2 hover:bg-hover", DEPTH_INDENT[Math.min(depth, DEPTH_INDENT.length - 1)])}
+            >
+              <DomainIcon className="shrink-0 text-muted-foreground" />
+              <span className="flex-1 truncate">{node.name}</span>
+              <span className="font-mono text-xs text-faint">{counts.get(node.id) ?? 0}</span>
+            </Link>
+            <DomainMenu node={node} />
+          </div>
           {node.children.length > 0 ? <DomainList nodes={node.children} depth={depth + 1} counts={counts} /> : null}
         </li>
       ))}
     </ul>
+  );
+}
+
+// "…" MENU FOR ONE DOMAIN: its units, or a new domain under it
+function DomainMenu({ node }: { node: DomainNode }) {
+  return (
+    <RowMenu
+      label={node.path}
+      items={[
+        { label: "Open units", href: `/units?domain=${node.id}` },
+        { label: "New subdomain", body: (close) => <NewDomainForm parentPath={node.path} onDone={close} /> },
+      ]}
+    />
   );
 }
 
