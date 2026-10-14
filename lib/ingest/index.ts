@@ -32,7 +32,7 @@ export async function startUploadFromFile(input: { file: File; sourceDate: strin
   if (passages.length === 0) throw new Error("No text was found in this file (is it a scan?).");
   const mimeType = format.mimeTypes[0] ?? file.type;
   const storagePath = await storeSourceFile(`${hash}${format.extensions[0] ?? ""}`, bytes, mimeType);
-  const { db } = getServerDeps();
+  const { db } = await getServerDeps();
   return recordUpload(db, { title: file.name, mimeType, sourceDate: `${sourceDate}T00:00:00Z`, hash, storagePath, passages });
 }
 
@@ -45,5 +45,5 @@ function requireFormat(file: File): UploadFormat {
 
 // STEP 2: reconciliation with Nemotron, the commit and the page rebuild
 export async function processUploadEvent(eventId: string): Promise<ProcessUploadResult> {
-  return reconcileUpload(getServerDeps(), eventId);
+  return reconcileUpload(await getServerDeps(), eventId);
 }

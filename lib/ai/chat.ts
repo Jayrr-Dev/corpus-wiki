@@ -23,10 +23,15 @@ type CompletionResponse = {
   usage?: { prompt_tokens?: number; completion_tokens?: number };
 };
 
-// Reads the Token Factory settings from server env; null when there is no key
-export function tokenFactoryFromEnv(env: NodeJS.ProcessEnv = process.env): TokenFactorySettings | null {
+// The model AI calls use: the one picked on /settings, else AI_MODEL, else the Nemotron default
+export function resolveModel(chosenModel: string | null | undefined, env: NodeJS.ProcessEnv = process.env): string {
+  return chosenModel || env.AI_MODEL || DEFAULT_AI_MODEL;
+}
+
+// Reads the Token Factory settings from server env (+ the picked model); null when there is no key
+export function tokenFactoryFromEnv(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null): TokenFactorySettings | null {
   if (!env.NEBIUS_API_KEY) return null;
-  return { apiKey: env.NEBIUS_API_KEY, model: env.AI_MODEL || DEFAULT_AI_MODEL };
+  return { apiKey: env.NEBIUS_API_KEY, model: resolveModel(chosenModel, env) };
 }
 
 // Sends the messages and returns the parsed, validated JSON answer

@@ -6,7 +6,7 @@ import { HelpIcon, SignOutIcon } from "@/components/icons";
 import { reopenTutorial } from "@/components/tutorial";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { signOut } from "@/lib/auth/actions";
-import { isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV } from "./nav";
+import { isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
 import { RIBBON_BUTTON_CLASS, RibbonLink } from "./RibbonLink";
 
 // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
@@ -73,6 +73,7 @@ export function Ribbon() {
       <div className="my-1 h-px w-5 bg-border" />
       {SECONDARY_NAV.map(renderLink)}
       <div className="mt-auto flex flex-col items-center gap-1">
+        {renderLink(SETTINGS_NAV)}
         <TutorialButton />
         <SignOutButton />
       </div>

@@ -27,7 +27,7 @@ export async function createPage(input: { title: string; entityId: string | null
         await admin.from("pages").delete().eq("id", page.id);
         throw sectionError;
       });
-      const { db, writer } = getServerDeps();
+      const { db, writer } = await getServerDeps();
       await rebuildPage(db, writer, page.id);
     }
     return { pageId: page.id, slug };
