@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
+import { PageMenu } from "@/app/(app)/_pages/PageMenu";
 import { DomainIcon, PageIcon } from "@/components/icons";
 import { buildDomainTree, type DomainNode } from "@/lib/domains/tree";
 import { useDomains, usePages } from "@/lib/queries";
@@ -46,7 +47,7 @@ function SidebarGroup({ title, children }: { title: string; children: ReactNode 
   );
 }
 
-// PAGES: every wiki page, linking to /p/[slug]
+// PAGES: every wiki page, linking to /p/[slug], with a "…" menu on hover
 function PagesList() {
   const pathname = usePathname();
   const { data: pages = [], isPending } = usePages();
@@ -55,11 +56,12 @@ function PagesList() {
   return (
     <ul>
       {pages.map((page) => (
-        <li key={page.id}>
-          <Link href={`/p/${page.slug}`} className={cn(rowClass, pathname === `/p/${page.slug}` && "bg-hover")}>
+        <li key={page.id} className={cn("group", rowClass, pathname === `/p/${page.slug}` && "bg-hover")}>
+          <Link href={`/p/${page.slug}`} className="flex min-w-0 flex-1 items-center gap-1.5">
             <PageIcon className="shrink-0 text-muted-foreground" />
             <span className="truncate">{page.title}</span>
           </Link>
+          <PageMenu page={page} className="invisible group-focus-within:visible group-hover:visible" />
         </li>
       ))}
     </ul>
