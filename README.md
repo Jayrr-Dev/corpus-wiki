@@ -108,3 +108,27 @@ Use exact hashes, vector similarity, entity matching, and graph relationships to
 ## Design discussion
 
 This architecture was developed in the [original Second Brain design conversation](https://chatgpt.com/share/6acfbc17-10bc-83e8-a984-7d6bdb7cdaed).
+
+## Development (first prototype)
+
+One Next.js App Router app (UI + server code) on Vercel; Supabase provides Postgres, Realtime, Storage and the login. Browsers only read (RLS); server code writes with the secret key.
+
+```bash
+cp .env.example .env.local   # fill in the values; never commit .env.local
+npm ci
+npm run dev        # http://localhost:3000, redirects to /login when signed out
+npm run build
+npm run typecheck
+npm run lint
+npm test           # vitest; DB tests start a throwaway Postgres 16 (see below)
+npm run db:types   # prints how to regenerate lib/database/types.ts
+```
+
+- **Schema**: `supabase/migrations/` is the source of truth. Never edit an applied migration; add a new file. `lib/database/types.ts` is generated from it.
+- **Seed**: `supabase/seed.sql` is the Project Alpha baseline every screen and eval starts from.
+- **DB tests**: `test/db/localPostgres.ts` creates a socket-only cluster in `/var/tmp` with the binaries in `/usr/lib/postgresql/16/bin` (override with `PG_BIN`), stubs Supabase's `auth`, `storage`, Realtime publication and API roles, applies the migration and seed, and deletes it afterwards. The tests skip when the binaries are missing.
+- **Evals**: `evals/cases.ts` lists E1–E7, `evals/fixtures/` holds the dated files. `evals/evals.test.ts` is skipped until `createEvalHarness` in `evals/harness.ts` is implemented.
+- **AI**: `lib/ai` holds the provider-neutral `ReconciliationClient`. Without `NEBIUS_API_KEY` the `FakeReconciliationClient` answers the eval fixtures with canned ChangeSets.
+- **Lockfile**: generated with npm 11 (`npx npm@11 install`), because npm 10.9 crashes resolving vitest 5's optional peers. `npm ci` works with npm 10 and 11.
+- **UI components**: `components/ui` holds hand-written shadcn components (the shadcn and jayrr.dev registries are blocked from the build container). `components.json` is ready, so once the network allows it, pull jayrr.dev components with `npx shadcn@latest add https://jayrr.dev/r/<item>.json` and its lint rules from `https://jayrr.dev/r/standard-lint.json` (merge into `eslint.config.mjs`), preferring them over the hand-written ones.
+- **Colors**: only from the tokens in `app/globals.css` (grayscale + five accents). Muted text is `text-muted-foreground`.

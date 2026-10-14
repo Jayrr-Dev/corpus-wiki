@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   DESIGN TOKENS: the only place a color is written.
+   Grayscale base, dark and light. Five dull accents, used only as small
+   marks (a dot, a 2px bar, an icon), never as a panel or button fill.
+   Components use the Tailwind names below (bg-background, text-muted-foreground…)
+   or shadcn's names, which point at the same tokens.
+   ===================================================================== */
+
+/* DARK OR LIGHT: follows the OS; a `.dark` or `.light` class on <html> overrides it */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* LIGHT GRAYS */
+:root,
+.light {
+  --sb-background: #ffffff;
+  --sb-sidebar: #f6f6f6;
+  --sb-hover: #ececec;
+  --sb-border: #e3e3e3;
+  --sb-text: #222222;
+  --sb-muted: #5c5c5c;
+  --sb-faint: #9a9a9a;
+  color-scheme: light;
+}
+
+/* DARK GRAYS (OS preference, unless the page forces light) */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --sb-background: #1e1e1e;
+    --sb-sidebar: #262626;
+    --sb-hover: #2f2f2f;
+    --sb-border: #363636;
+    --sb-text: #dcdcdc;
+    --sb-muted: #a3a3a3;
+    --sb-faint: #6b6b6b;
+    color-scheme: dark;
+  }
+}
+
+/* DARK GRAYS (forced) */
+.dark {
+  --sb-background: #1e1e1e;
+  --sb-sidebar: #262626;
+  --sb-hover: #2f2f2f;
+  --sb-border: #363636;
+  --sb-text: #dcdcdc;
+  --sb-muted: #a3a3a3;
+  --sb-faint: #6b6b6b;
+  color-scheme: dark;
+}
+
+/* ACCENTS: one meaning each, same hex in dark and light */
+:root {
+  --sb-applied: #74a662;
+  --sb-needs-you: #d8853a;
+  --sb-failed: #bb3f3f;
+  --sb-stale: #9d884c;
+  --sb-link: #4d6ab6;
+}
+
+/* =====================================================================
+   TAILWIND THEME: exposes the tokens as utilities.
+   `inline` keeps the var() reference so dark/light switch at runtime.
+   ===================================================================== */
+@theme inline {
+  /* GRAYSCALE */
+  --color-background: var(--sb-background);
+  --color-sidebar: var(--sb-sidebar);
+  --color-hover: var(--sb-hover);
+  --color-border: var(--sb-border);
+  --color-text: var(--sb-text);
+  --color-faint: var(--sb-faint);
+  /* muted text is `text-muted-foreground`: shadcn reserves `muted` for a soft background */
+
+  /* ACCENTS */
+  --color-applied: var(--sb-applied);
+  --color-needs-you: var(--sb-needs-you);
+  --color-failed: var(--sb-failed);
+  --color-stale: var(--sb-stale);
+  --color-link: var(--sb-link);
+
+  /* SHADCN NAMES, MAPPED ONTO THE SAME TOKENS */
+  --color-foreground: var(--sb-text);
+  --color-card: var(--sb-background);
+  --color-card-foreground: var(--sb-text);
+  --color-popover: var(--sb-sidebar);
+  --color-popover-foreground: var(--sb-text);
+  --color-primary: var(--sb-text);
+  --color-primary-foreground: var(--sb-background);
+  --color-secondary: var(--sb-hover);
+  --color-secondary-foreground: var(--sb-text);
+  --color-muted: var(--sb-hover);
+  --color-muted-foreground: var(--sb-muted);
+  --color-accent: var(--sb-hover);
+  --color-accent-foreground: var(--sb-text);
+  --color-destructive: var(--sb-failed);
+  --color-input: var(--sb-border);
+  --color-ring: var(--sb-link);
+  --color-sidebar-foreground: var(--sb-text);
+  --color-sidebar-border: var(--sb-border);
+  --color-sidebar-accent: var(--sb-hover);
+
+  /* TYPE: fonts come from next/font in app/layout.tsx */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-face), ui-monospace, monospace;
+  --text-panel: 13px;
+  --text-panel--line-height: 1.45;
+  --text-body: 15px;
+  --text-body--line-height: 1.65;
+  --text-title: 20px;
+  --text-title--line-height: 1.3;
+
+  /* SHAPE */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+}
+
+/* =====================================================================
+   BASE
+   ===================================================================== */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-panel);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* FOCUS RING: the link/focus accent, never a glow */
+  :focus-visible {
+    outline: 1.5px solid var(--color-ring);
+    outline-offset: 1px;
+  }
+}
