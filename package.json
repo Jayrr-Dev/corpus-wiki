@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "license": "Apache-2.0",
   "private": true,
+  "engines": {
+    "node": ">=22.18"
+  },
   "type": "module",
   "scripts": {
     "dev": "next dev",
@@ -11,6 +14,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/db/migrate.ts",
     "db:types": "echo 'Regenerate lib/database/types.ts with: npx supabase gen types typescript --project-id qeuvxnvwommyjdzxoodd --schema public > lib/database/types.ts (needs supabase login; keep the Constants block and helpers at the bottom)'"
   },
   "dependencies": {

@@ -161,9 +161,11 @@ npm run typecheck
 npm run lint
 npm test           # vitest; DB tests start a throwaway Postgres 16 (see below)
 npm run db:types   # prints how to regenerate lib/database/types.ts
+npm run db:migrate # applies pending supabase/migrations to SUPABASE_DB_URL (see below)
 ```
 
-- **Schema**: `supabase/migrations/` is the source of truth, applied in file-name order. Never edit an applied migration; add a new file. `lib/database/types.ts` is generated from the live schema.
+- **Schema**: `supabase/migrations/` is the source of truth, applied in file-name order. Never edit an applied migration; add a new file. Don't put `begin`/`commit` in a migration; the runner wraps each file in its own transaction. `lib/database/types.ts` is generated from the live schema.
+- **Applying migrations**: `npm run db:migrate` (`scripts/db/migrate.ts`) connects straight to Postgres with `SUPABASE_DB_URL` (dashboard > Connect > Session pooler, port 5432), takes a lock, and applies each pending file in one transaction together with its row in `supabase_migrations.schema_migrations`, so a failed file leaves nothing behind. `-- --status` lists applied and pending files; `-- --baseline <version>` records files up to that version as applied without running them (for a database whose schema was built another way). The connection is verified against Supabase's root CA in `supabase/certs/`. Schema changes go through this path, not the Supabase connector, whose confirmation prompt for `DROP`/`DELETE` can't be answered from a Claude thread.
 - **Seed**: `supabase/seed.sql` is the Project Alpha baseline the tests and evals start from.
 - **DB tests**: `test/db/localPostgres.ts` creates a socket-only cluster in `/var/tmp` with the binaries in `/usr/lib/postgresql/16/bin` (override with `PG_BIN`), stubs Supabase's `auth`, `storage`, Realtime publication and API roles, applies every migration and the seed, and deletes it afterwards. The tests skip when the binaries are missing.
 - **Evals**: `evals/cases.ts` lists E1–E7 and `evals/fixtures/` holds the dated files. `evals/evals.test.ts` runs each case through the real pipeline with the fake model. `LIVE_FILE=<path> npx vitest run evals/live.test.ts` sends one real file through Nemotron.
