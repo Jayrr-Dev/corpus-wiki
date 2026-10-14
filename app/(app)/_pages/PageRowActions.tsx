@@ -37,8 +37,8 @@ function RowDialog({ label, children }: { label: string; children: (close: () =>
   );
 }
 
-// RENAME: new title (the URL slug stays the same)
-function RenameForm({ page, onDone }: { page: Page; onDone: () => void }) {
+// RENAME: new title (the URL slug stays the same); also used by the sidebar page menu
+export function RenameForm({ page, onDone }: { page: Page; onDone: () => void }) {
   const [title, setTitle] = useState(page.title);
   const rename = useServerAction(renamePage);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -60,8 +60,8 @@ function RenameForm({ page, onDone }: { page: Page; onDone: () => void }) {
   );
 }
 
-// DELETE: confirm; knowledge units are not touched
-function DeleteForm({ page, onDone }: { page: Page; onDone: () => void }) {
+// DELETE: confirm; knowledge units are not touched; also used by the sidebar page menu
+export function DeleteForm({ page, onDone }: { page: Page; onDone: () => void }) {
   const remove = useServerAction(deletePage);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
