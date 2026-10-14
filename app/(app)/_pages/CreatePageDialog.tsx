@@ -8,6 +8,7 @@ import { OptionSelect } from "@/components/actions/OptionSelect";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { reportTutorialAction } from "@/components/tutorial";
 import { Input } from "@/components/ui/input";
 import { useEntities } from "@/lib/queries";
 import { createPage } from "@/lib/server-actions/pages";
@@ -18,7 +19,9 @@ export function CreatePageDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">New page</Button>
+        <Button size="sm" data-tour="new-page">
+          New page
+        </Button>
       </DialogTrigger>
       <DialogContent>{isOpen ? <CreatePageForm /> : null}</DialogContent>
     </Dialog>
@@ -35,7 +38,9 @@ function CreatePageForm() {
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const result = await create.run({ title, entityId: entityId || null });
-    if (result.ok) router.push(`/p/${result.slug}`);
+    if (!result.ok) return;
+    reportTutorialAction("page-created");
+    router.push(`/p/${result.slug}`);
   };
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">

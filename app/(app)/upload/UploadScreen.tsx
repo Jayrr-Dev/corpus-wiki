@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Section } from "@/app/(app)/_components/bits";
+import { reportTutorialAction } from "@/components/tutorial";
 import { UploadDropzone } from "@/components/upload/UploadDropzone";
 import { UploadItem } from "@/components/upload/UploadItem";
 import { RecentUploads } from "./RecentUploads";
@@ -14,11 +15,13 @@ function fileKey(file: File): string {
 // UPLOAD SCREEN: the dropzone, one row per chosen file, then recent uploads
 export function UploadScreen() {
   const [files, setFiles] = useState<File[]>([]);
-  const addFiles = (picked: File[]) =>
+  const addFiles = (picked: File[]) => {
+    reportTutorialAction("file-chosen");
     setFiles((current) => {
       const known = new Set(current.map(fileKey));
       return [...current, ...picked.filter((file) => !known.has(fileKey(file)))];
     });
+  };
   return (
     <div className="flex flex-col gap-6">
       <UploadDropzone onFiles={addFiles} />

@@ -19,6 +19,7 @@ export function RibbonLink({ item, isActive, badge }: RibbonLinkProps) {
         <Link
           href={item.href}
           aria-label={item.label}
+          data-tour={`nav-${item.label.toLowerCase()}`}
           aria-current={isActive ? "page" : undefined}
           className={cn(
             RIBBON_BUTTON_CLASS,
