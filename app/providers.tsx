@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { Toaster } from "@/components/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 // QUERY DEFAULTS: Realtime (agent D) pushes changes, so polling and focus refetch stay off
@@ -11,12 +12,15 @@ function makeQueryClient(): QueryClient {
   });
 }
 
-// CLIENT PROVIDERS: one QueryClient per browser tab, plus the tooltip provider
+// CLIENT PROVIDERS: one QueryClient per browser tab, the tooltip provider and the error toaster
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(makeQueryClient);
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>{children}</TooltipProvider>
+      <TooltipProvider>
+        {children}
+        <Toaster />
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }

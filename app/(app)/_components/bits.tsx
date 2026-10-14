@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { StatusGlyph } from "@/components/icons";
+import { ErrorToast } from "@/components/toast";
 import type { UnitSummary } from "@/lib/queries/screens";
 import { cn } from "@/lib/utils";
 
@@ -47,13 +48,14 @@ export function Note({ children }: { children: ReactNode }) {
   return <p className="text-panel text-faint">{children}</p>;
 }
 
-// ERROR NOTE: what went wrong, with a Dull Red dot as the only color
+// ERROR NOTE: what went wrong, with a Dull Red dot as the only color; also pops it as a toast
 export function ErrorNote({ error }: { error: string | null | undefined }) {
   if (!error) return null;
   return (
     <p role="alert" className="flex items-start gap-1.5 text-panel">
       <StatusDot tone="failed" className="mt-1.5" />
       <span>{error}</span>
+      <ErrorToast message={error} />
     </p>
   );
 }
