@@ -21,6 +21,12 @@ export function toDateInputValue(epochMs: number): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+// TOKENS IN / OUT of an AI draft ("—" for a person's edit)
+export function formatTokens(changeSet: { tokens_in: number | null; tokens_out: number | null }): string {
+  if (changeSet.tokens_in === null && changeSet.tokens_out === null) return "—";
+  return `${changeSet.tokens_in ?? 0} / ${changeSet.tokens_out ?? 0}`;
+}
+
 // ENUM WORDS: "partly_applied" -> "partly applied"
 export function humanize(value: string): string {
   return value.replaceAll("_", " ");
@@ -50,6 +56,18 @@ export function readString(object: JsonObject, key: string): string | null {
 export function readStrings(object: JsonObject, key: string): string[] {
   const value = object[key];
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+// CHECK RESULTS: actions.check_results as [{ name, passed, detail }]
+export type CheckResult = { name: string; passed: boolean; detail: string | null };
+
+export function readCheckResults(value: Json): CheckResult[] {
+  if (!Array.isArray(value)) return [];
+  return value.map(asObject).map((check) => ({
+    name: readString(check, "name") ?? "check",
+    passed: check.passed === true,
+    detail: readString(check, "detail"),
+  }));
 }
 
 // PASSAGE LOCATION: "p. 3 · Heading" from passages.location ({ page?, heading?, sectionPath? })
