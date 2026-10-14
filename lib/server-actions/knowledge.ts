@@ -15,7 +15,7 @@ import { type ActionResult, toActionResult } from "./result";
 export async function submitEdit(action: PersonAction): Promise<ActionResult<CommitResult>> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = getServerDeps();
+    const { db, writer } = await getServerDeps();
     const { eventId, ...result } = await commitPersonAction(db, action);
     await rebuildAfterEvent(db, writer, eventId);
     return result;
@@ -26,7 +26,7 @@ export async function submitEdit(action: PersonAction): Promise<ActionResult<Com
 export async function submitLineEdit(lineId: string, content: string): Promise<ActionResult<CommitResult>> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = getServerDeps();
+    const { db, writer } = await getServerDeps();
     const { eventId, ...result } = await commitLineEdit(db, lineId, content);
     await rebuildAfterEvent(db, writer, eventId);
     return result;
@@ -37,7 +37,7 @@ export async function submitLineEdit(lineId: string, content: string): Promise<A
 export async function undoChangeSet(changeSetId: string): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = getServerDeps();
+    const { db, writer } = await getServerDeps();
     const { eventId } = await revertChangeSet(db, changeSetId);
     await rebuildAfterEvent(db, writer, eventId);
     return {};
@@ -48,7 +48,7 @@ export async function undoChangeSet(changeSetId: string): Promise<ActionResult> 
 export async function answerException(exceptionId: string, accept: boolean, note: string | null): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = getServerDeps();
+    const { db, writer } = await getServerDeps();
     const { eventId } = await resolveException(db, { exceptionId, accept, note });
     if (eventId) await rebuildAfterEvent(db, writer, eventId);
     return {};

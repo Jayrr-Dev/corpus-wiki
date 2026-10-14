@@ -6,6 +6,7 @@ import { formatOf, type UploadFormat, UPLOAD_FORMAT_NAMES } from "./formats";
 import { sha256 } from "./hash";
 import { splitIntoPassages } from "./passages";
 import { reconcileUpload, recordUpload } from "./pipeline";
+import { openRerunEvent, requireFailedUpload } from "./rerun";
 import { storeSourceFile } from "./storage";
 import type { ProcessUploadResult, StartUploadResult } from "./types";
 
@@ -32,7 +33,7 @@ export async function startUploadFromFile(input: { file: File; sourceDate: strin
   if (passages.length === 0) throw new Error("No text was found in this file (is it a scan?).");
   const mimeType = format.mimeTypes[0] ?? file.type;
   const storagePath = await storeSourceFile(`${hash}${format.extensions[0] ?? ""}`, bytes, mimeType);
-  const { db } = getServerDeps();
+  const { db } = await getServerDeps();
   return recordUpload(db, { title: file.name, mimeType, sourceDate: `${sourceDate}T00:00:00Z`, hash, storagePath, passages });
 }
 
@@ -45,5 +46,16 @@ function requireFormat(file: File): UploadFormat {
 
 // STEP 2: reconciliation with Nemotron, the commit and the page rebuild
 export async function processUploadEvent(eventId: string): Promise<ProcessUploadResult> {
-  return reconcileUpload(getServerDeps(), eventId);
+  return reconcileUpload(await getServerDeps(), eventId);
+}
+
+// RETRY: step 2 again for a failed upload, with the model chosen now
+export async function retryUploadEvent(eventId: string): Promise<ProcessUploadResult> {
+  await requireFailedUpload(eventId);
+  return processUploadEvent(eventId);
+}
+
+// RERUN: a stored source gets a fresh upload event; step 2 runs on it next
+export async function startSourceRerun(sourceId: string): Promise<Extract<StartUploadResult, { kind: "started" }>> {
+  return { kind: "started", sourceId, eventId: await openRerunEvent(sourceId) };
 }

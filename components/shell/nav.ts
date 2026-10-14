@@ -6,6 +6,7 @@ import {
   ExceptionIcon,
   type IconProps,
   PageIcon,
+  SettingsIcon,
   SourceIcon,
   UnitIcon,
   UploadIcon,
@@ -34,3 +35,6 @@ export function isActivePath(href: string, pathname: string): boolean {
   if (href === "/") return pathname === "/" || pathname.startsWith("/p/");
   return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+// RIBBON, BOTTOM: settings, above the tutorial and sign-out buttons
+export const SETTINGS_NAV: NavItem = { label: "Settings", href: "/settings", icon: SettingsIcon };

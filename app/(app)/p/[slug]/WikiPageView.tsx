@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PageIcon } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorBoundary } from "@/components/error";
 import { LinePanel, LiveSection } from "@/components/living-page";
 import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import type { Tables } from "@/lib/database/types";
@@ -43,14 +44,15 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
       {!isPending && sections.length === 0 ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
       <div className="flex flex-col gap-6" data-tour="page-body">
         {sections.map((section) => (
-          <LiveSection
-            key={section.id}
-            section={section}
-            lines={linesOf(lines, section.id)}
-            selectedLineId={selectedLineId}
-            onSelect={(line) => setSelectedLineId(line.lineId)}
-            menu={<SectionMenu section={section} />}
-          />
+          <ErrorBoundary key={section.id} where={`The section "${section.title}"`}>
+            <LiveSection
+              section={section}
+              lines={linesOf(lines, section.id)}
+              selectedLineId={selectedLineId}
+              onSelect={(line) => setSelectedLineId(line.lineId)}
+              menu={<SectionMenu section={section} />}
+            />
+          </ErrorBoundary>
         ))}
       </div>
       {selected ? (

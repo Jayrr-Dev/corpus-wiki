@@ -28,8 +28,8 @@ export interface SectionWriter {
 }
 
 // Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
-export function getSectionWriter(env: NodeJS.ProcessEnv = process.env): SectionWriter {
-  const settings = tokenFactoryFromEnv(env);
+export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null): SectionWriter {
+  const settings = tokenFactoryFromEnv(env, chosenModel);
   return settings ? new TokenFactorySectionWriter(settings) : new FakeSectionWriter();
 }
 

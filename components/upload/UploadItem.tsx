@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { formatOf } from "@/lib/ingest/formats";
 import { useLiveShiftEvent } from "@/lib/queries/screens";
 import { EventProgress } from "./EventProgress";
-import { type UploadPhase, useUploadFlow } from "./useUploadFlow";
+import { retryTarget, type UploadPhase, useUploadFlow } from "./useUploadFlow";
 
 // UPLOAD ITEM: one chosen file with its own date, an Upload button and the live result
 export function UploadItem({ file }: { file: File }) {
   const [sourceDate, setSourceDate] = useState(() => toDateInputValue(file.lastModified));
-  const { phase, start } = useUploadFlow();
+  const { phase, start, retry } = useUploadFlow();
   const isBusy = phase.kind === "starting" || phase.kind === "processing";
   const inputId = `date-${file.name}-${file.lastModified}`;
   return (
@@ -30,6 +30,7 @@ export function UploadItem({ file }: { file: File }) {
         </Button>
       </div>
       <UploadStatus phase={phase} />
+      {retryTarget(phase) ? <RetryButton onRetry={retry} /> : null}
     </li>
   );
 }
@@ -63,6 +64,17 @@ function UploadResult({ phase }: { phase: Extract<UploadPhase, { kind: "done" }>
         <TextLink href={`/sources/${sourceId}`}>Open source</TextLink>
       </div>
       {result.status === "failed" ? <ErrorNote error={result.error ?? "The upload failed."} /> : null}
+    </div>
+  );
+}
+
+// RETRY: runs the failed upload again with the model chosen in Settings now
+function RetryButton({ onRetry }: { onRetry: () => Promise<void> }) {
+  return (
+    <div>
+      <Button size="sm" variant="outline" onClick={() => void onRetry()}>
+        Retry
+      </Button>
     </div>
   );
 }

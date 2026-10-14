@@ -24,7 +24,7 @@ export async function createPage(input: { title: string; entityId: string | null
     const sections = input.entityId ? [await entitySection(input.entityId, "Overview", null)] : [];
     const action: DraftAction = { ...PERSON_ACTION, type: "create_page", targetId: null, input: { title: input.title, entityId: input.entityId, sections } };
     const pageId = await commitOne(`Created page “${input.title.trim()}”`, action);
-    const { db, writer } = getServerDeps();
+    const { db, writer } = await getServerDeps();
     await rebuildPage(db, writer, pageId);
     return { pageId, slug: await pageSlug(pageId) };
   });
@@ -54,7 +54,7 @@ export async function createSection(input: { pageId: string; title: string; enti
     await requireUser();
     const section = await entitySection(input.entityId, input.title, input.kind);
     await commitOne(`Added section “${section.title.trim()}”`, { ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: input.pageId, ...section } });
-    const { db, writer } = getServerDeps();
+    const { db, writer } = await getServerDeps();
     await rebuildPage(db, writer, input.pageId);
     return {};
   });
@@ -93,7 +93,7 @@ export async function removeLine(lineId: string, lineRevisionId: string): Promis
 
 // Commits one action; throws the check's reason when it was not applied; returns its target (a create's new row)
 async function commitOne(summary: string, action: DraftAction): Promise<string> {
-  const { db } = getServerDeps();
+  const { db } = await getServerDeps();
   const result: CommitResult = await commitPersonEdit(db, summary, [action]);
   const { data, error } = await getAdminSupabase().from("actions").select("target_id, check_results").eq("change_set_id", result.changeSetId).single();
   if (error) throw new Error(error.message);
