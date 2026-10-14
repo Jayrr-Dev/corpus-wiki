@@ -4,6 +4,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { SourceIcon } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
+import { ErrorBoundary } from "@/components/error";
 
 // =====================================================================
 // RIGHT PANEL: shows the sources and units behind whatever is open.
@@ -36,9 +37,9 @@ export function RightPanel() {
   );
 }
 
-// SLOT: what a page renders to fill the right panel
+// SLOT: what a page renders to fill the right panel; a crash in it stays inside the panel
 export function RightPanelSlot({ children }: { children: ReactNode }) {
   const target = useContext(RightPanelTargetContext);
   if (!target) return null;
-  return createPortal(children, target);
+  return createPortal(<ErrorBoundary where="The side panel">{children}</ErrorBoundary>, target);
 }
