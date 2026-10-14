@@ -17,13 +17,17 @@ export type ChatMessage = { role: "system" | "user"; content: string };
 
 export type ChatJsonResult<T> = { value: T; model: string; tokensIn: number | null; tokensOut: number | null };
 
-// REASONING EFFORT: "medium". Reasoning models think before they answer, and the thinking
-// counts against max_tokens. On a 169-passage PDF, GLM-5.3-Flash at its default effort
-// thought through 8,000 tokens, then 32,000, and never wrote the JSON. Measured on that PDF:
-//   GLM-5.3-Flash  low: 19 actions in 14 s   medium: 64 actions in 134 s
+// REASONING EFFORTS, tried in order. Reasoning models think before they answer, and the
+// thinking counts against max_tokens. On a 169-passage PDF, GLM-5.3-Flash at its default
+// effort thought through 8,000, then 32,000 tokens and never wrote the JSON. Measured on that PDF:
+//   GLM-5.3-Flash  low: 19 actions in 14 s   medium: 64 actions in 134 s, or cut off after 160 s
 //   Nemotron Super low:  4 actions in 3 s    medium: 26 actions in 18 s
-// "low" skips most of the file; "medium" reads it and still finishes.
-const REASONING_EFFORT = "medium";
+// "medium" reads the whole file when it finishes; when it runs out of room, "low" still answers.
+const REASONING_EFFORTS = ["medium", "low"] as const;
+type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+
+// AN ANSWER CUT OFF BY THE TOKEN BUDGET: the one failure a lower reasoning effort can fix
+export class AnswerCutOffError extends Error {}
 
 // ANSWER TOKEN BUDGET (max_tokens): room for a long file's full answer plus any thinking.
 // It is only a ceiling; a call is billed for the tokens it uses.
@@ -46,10 +50,28 @@ export function tokenFactoryFromEnv(env: NodeJS.ProcessEnv = process.env, chosen
   return { apiKey: env.NEBIUS_API_KEY, model: resolveModel(chosenModel, env) };
 }
 
-// Sends the messages and returns the parsed, validated JSON answer
-export async function chatJson<S extends z.ZodType>(
+type ChatJsonRequest<S extends z.ZodType> = { name: string; schema: S; jsonSchema: object; messages: ChatMessage[]; maxTokens?: number };
+
+// Sends the messages and returns the parsed, validated JSON answer. An answer cut off by
+// the token budget is asked again at the next lower reasoning effort; other errors stop at once.
+export async function chatJson<S extends z.ZodType>(settings: TokenFactorySettings, request: ChatJsonRequest<S>): Promise<ChatJsonResult<z.infer<S>>> {
+  let cutOff: AnswerCutOffError | null = null;
+  for (const effort of REASONING_EFFORTS) {
+    try {
+      return await chatJsonOnce(settings, request, effort);
+    } catch (error) {
+      if (!(error instanceof AnswerCutOffError)) throw error;
+      cutOff = error;
+    }
+  }
+  throw cutOff ?? new AnswerCutOffError("The model ran out of room.");
+}
+
+// ONE COMPLETION at one reasoning effort
+async function chatJsonOnce<S extends z.ZodType>(
   settings: TokenFactorySettings,
-  request: { name: string; schema: S; jsonSchema: object; messages: ChatMessage[]; maxTokens?: number },
+  request: ChatJsonRequest<S>,
+  effort: ReasoningEffort,
 ): Promise<ChatJsonResult<z.infer<S>>> {
   const model = settings.model || DEFAULT_AI_MODEL;
   const response = await fetch(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
@@ -60,7 +82,7 @@ export async function chatJson<S extends z.ZodType>(
       messages: request.messages,
       temperature: 0,
       max_tokens: request.maxTokens ?? ANSWER_TOKEN_BUDGET,
-      reasoning_effort: REASONING_EFFORT,
+      reasoning_effort: effort,
       response_format: { type: "json_schema", json_schema: { name: request.name, schema: request.jsonSchema } },
     }),
   });
@@ -80,7 +102,7 @@ export function parseContent<S extends z.ZodType>(body: CompletionResponse, sche
   const choice = body.choices?.[0];
   const content = choice?.message?.content?.trim();
   if (choice?.finish_reason === "length") {
-    throw new Error(
+    throw new AnswerCutOffError(
       `The model ran out of room after ${body.usage?.completion_tokens ?? "its"} tokens before finishing its answer. Try again, or pick another model in Settings.`,
     );
   }
