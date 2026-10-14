@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import type { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getReconciliationClient } from "@/lib/ai/factory";
-import { extractPdfPages, PDF_MIME_TYPE } from "@/lib/ingest/extract";
+import { CONVERTERS } from "@/lib/ingest/convert";
+import { formatOf } from "@/lib/ingest/formats";
 import { sha256 } from "@/lib/ingest/hash";
 import { splitIntoPassages } from "@/lib/ingest/passages";
 import { reconcileUpload, recordUpload } from "@/lib/ingest/pipeline";
@@ -12,14 +13,14 @@ import { pgRpc } from "@/test/db/pgRpc";
 
 // =====================================================================
 // LIVE CHECK AGAINST NEMOTRON (spends tokens, so it only runs on request):
-//   LIVE_PDF=path/to/file.pdf npx vitest run evals/live.test.ts
-// Uploads one PDF through the real pipeline (pdf text -> passages ->
+//   LIVE_FILE=path/to/file.pdf (or .docx, .md, .txt) npx vitest run evals/live.test.ts
+// Uploads one file through the real pipeline (converter -> passages ->
 // Nemotron -> Change control -> page rebuild) into a throwaway Postgres.
 // =====================================================================
 
-const LIVE_PDF = process.env.LIVE_PDF;
+const LIVE_FILE = process.env.LIVE_FILE;
 
-describe.skipIf(!LIVE_PDF || !process.env.NEBIUS_API_KEY || !hasLocalPostgres())("live upload through Nemotron", () => {
+describe.skipIf(!LIVE_FILE || !process.env.NEBIUS_API_KEY || !hasLocalPostgres())("live upload through Nemotron", () => {
   let db: LocalPostgres;
   let client: Client;
 
@@ -33,16 +34,18 @@ describe.skipIf(!LIVE_PDF || !process.env.NEBIUS_API_KEY || !hasLocalPostgres())
     await db?.stop();
   });
 
-  it("turns the PDF into applied knowledge", async () => {
-    const bytes = new Uint8Array(readFileSync(LIVE_PDF ?? ""));
+  it("turns the file into applied knowledge", async () => {
+    const bytes = new Uint8Array(readFileSync(LIVE_FILE ?? ""));
+    const format = formatOf(LIVE_FILE ?? "", "");
+    if (!format) throw new Error("LIVE_FILE has no converter");
     const deps = { db: pgRpc(client), reconciler: getReconciliationClient(), writer: getSectionWriter() };
     const started = await recordUpload(deps.db, {
-      title: LIVE_PDF?.split("/").at(-1) ?? "live.pdf",
-      mimeType: PDF_MIME_TYPE,
+      title: LIVE_FILE?.split("/").at(-1) ?? "live-file",
+      mimeType: format.mimeTypes[0] ?? "",
       sourceDate: new Date().toISOString(),
       hash: sha256(bytes),
-      storagePath: "live/test.pdf",
-      passages: splitIntoPassages(await extractPdfPages(bytes.slice())),
+      storagePath: "live/test",
+      passages: splitIntoPassages(await CONVERTERS[format.id](bytes)),
     });
     if (started.kind !== "started") throw new Error("expected a new source");
     const result = await reconcileUpload(deps, started.eventId);

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import type { Client } from "pg";
 import { FakeReconciliationClient } from "@/lib/ai";
 import { revertChangeSet } from "@/lib/change-control";
-import { extractPlainText } from "@/lib/ingest/extract";
+import { extractPlainText } from "@/lib/ingest/convert";
 import { sha256 } from "@/lib/ingest/hash";
 import { splitIntoPassages } from "@/lib/ingest/passages";
 import { type PipelineDeps, reconcileUpload, recordUpload } from "@/lib/ingest/pipeline";
