@@ -1,12 +1,14 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 import { useMemo } from "react";
 import { dateColumn, linkColumn, textColumn } from "@/app/(app)/_components/columns";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { EmptyState } from "@/components/EmptyState";
 import { DataTable } from "@/components/data-table";
 import { PageIcon } from "@/components/icons";
+import { Button } from "@/components/ui/button";
 import type { Tables } from "@/lib/database/types";
 import { useEntities, usePages } from "@/lib/queries";
 import { PageRowActions } from "./PageRowActions";
@@ -29,8 +31,24 @@ export function PagesTable() {
       columns={COLUMNS}
       getRowId={(page) => page.id}
       filterPlaceholder="Search pages…"
-      emptyState={<EmptyState icon={PageIcon} title="No pages yet" hint="Create one with New page." />}
+      emptyState={
+        <EmptyState
+          icon={PageIcon}
+          title="No pages yet"
+          hint="Create one with New page, or start by uploading documents."
+          action={<UploadDocumentsLink />}
+        />
+      }
     />
+  );
+}
+
+// UPLOAD DOCUMENTS: the empty list's way to the Upload screen
+function UploadDocumentsLink() {
+  return (
+    <Button asChild size="sm" variant="outline">
+      <Link href="/upload">Upload documents</Link>
+    </Button>
   );
 }
 
