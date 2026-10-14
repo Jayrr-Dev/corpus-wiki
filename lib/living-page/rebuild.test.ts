@@ -1,12 +1,15 @@
 import type { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { commitPersonAction } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import { hasLocalPostgres, type LocalPostgres, startLocalPostgres } from "@/test/db/localPostgres";
 import { pgRpc } from "@/test/db/pgRpc";
-import { FakeSectionWriter, getSectionWriter, rebuildAfterEvent, rebuildPage, type SentenceLink } from "./index";
+import { commitLineEdit, FakeSectionWriter, getSectionWriter, rebuildAfterEvent, rebuildPage } from "./index";
 
 // SEEDED ROWS (supabase/seed.sql)
 const PAGE_ID = "00000000-0000-4000-8000-9a0000000001";
+const LINE = { overview: "00000000-0000-4000-8000-110000000001", plan: "00000000-0000-4000-8000-110000000002" };
+const PLAN_UNIT = "00000000-0000-4000-8000-010000000002";
 const SECTION = {
   overview: "00000000-0000-4000-8000-5e0000000001",
   dataLayer: "00000000-0000-4000-8000-5e0000000002",
@@ -54,7 +57,8 @@ const UNDO_DATABASE_DECISION = `
   update public.actions set outcome = 'reverted', reverted_by_event_id = '${ADDED.revertEvent}' where id = '${ADDED.action}';
   commit;`;
 
-type SectionRow = { id: string; body: string; sentence_links: SentenceLink[]; status: string; built_at: Date | null; built_with_model_version: string | null };
+type SectionRow = { id: string; body: string; status: string; built_at: Date | null; built_with_model_version: string | null };
+type LineRow = { line_id: string; content: string; unit_revision_ids: string[]; author: string; is_stale: boolean };
 
 describe.skipIf(!hasLocalPostgres())("living page rebuilds on a throwaway Postgres", () => {
   let pg: LocalPostgres;
@@ -65,6 +69,10 @@ describe.skipIf(!hasLocalPostgres())("living page rebuilds on a throwaway Postgr
   // Reads one section row
   const readSection = async (id: string): Promise<SectionRow> =>
     (await client.query<SectionRow>("select * from public.sections where id = $1", [id])).rows[0] as SectionRow;
+
+  // Reads a section's shown lines, in order
+  const readLines = async (id: string): Promise<LineRow[]> =>
+    (await client.query<LineRow>("select line_id, content, unit_revision_ids, author, is_stale from public.section_lines where section_id = $1 order by position", [id])).rows;
 
   // Reads a section's change note summaries, newest first
   const readNotes = async (id: string): Promise<string[]> =>
@@ -93,7 +101,7 @@ describe.skipIf(!hasLocalPostgres())("living page rebuilds on a throwaway Postgr
 
     const dataLayer = await readSection(SECTION.dataLayer);
     expect(dataLayer).toMatchObject({ body: CLAIM, status: "current", built_with_model_version: "fake" });
-    expect(dataLayer.sentence_links).toEqual([{ start: 0, end: CLAIM.length, unitIds: [ADDED.unit] }]);
+    expect(await readLines(SECTION.dataLayer)).toMatchObject([{ content: CLAIM, unit_revision_ids: [ADDED.revision], author: "ai", is_stale: false }]);
     const inputs = await client.query("select unit_id, revision_id from public.section_inputs where section_id = $1", [SECTION.dataLayer]);
     expect(inputs.rows).toEqual([{ unit_id: ADDED.unit, revision_id: ADDED.revision }]);
     expect(await readNotes(SECTION.dataLayer)).toEqual([`Updated: ${CLAIM} (from e1-alpha-database.md)`]);
@@ -107,20 +115,47 @@ describe.skipIf(!hasLocalPostgres())("living page rebuilds on a throwaway Postgr
     await client.query(UNDO_DATABASE_DECISION);
     await rebuildAfterEvent(db, writer, ADDED.revertEvent);
 
-    expect(await readSection(SECTION.dataLayer)).toMatchObject({ body: "", sentence_links: [], status: "current" });
+    expect(await readSection(SECTION.dataLayer)).toMatchObject({ body: "", status: "current" });
+    expect(await readLines(SECTION.dataLayer)).toEqual([]);
     const inputs = await client.query("select 1 from public.section_inputs where section_id = $1", [SECTION.dataLayer]);
     expect(inputs.rowCount).toBe(0);
     expect((await readNotes(SECTION.dataLayer))[0]).toBe("Updated: undo of an earlier change");
   });
 
-  it("builds every generated section of a page without notes", async () => {
+  it("builds a page without notes and leaves lines that are still true alone", async () => {
     const notesBefore = await client.query("select count(*)::int as n from public.change_notes");
     await rebuildPage(db, writer, PAGE_ID);
 
     const overview = await readSection(SECTION.overview);
-    expect(overview).toMatchObject({ body: "Alpha is an internal analytics service for the operations team.", status: "current" });
-    expect((await readSection(SECTION.plan)).body).toBe("Alpha's first internal release is planned for Q1 2027.");
+    expect(overview).toMatchObject({ body: "Project Alpha is an internal analytics service for the operations team.", status: "current" });
+    expect((await readSection(SECTION.plan)).body).toBe("The first internal release is planned for Q1 2027.");
     expect(await client.query("select count(*)::int as n from public.change_notes")).toMatchObject({ rows: notesBefore.rows });
+  });
+
+  it("edits a line and the one claim it states in one ChangeSet", async () => {
+    const edited = "The first internal release is planned for Q2 2027.";
+    const { eventId, status } = await commitLineEdit(db, LINE.plan, edited);
+    expect(status).toBe("applied");
+    await rebuildAfterEvent(db, writer, eventId);
+
+    const unit = await client.query<{ content: string; id: string }>(
+      "select r.content, r.id from public.units u join public.revisions r on r.id = u.current_revision_id where u.id = $1", [PLAN_UNIT]);
+    expect(unit.rows[0]?.content).toBe(edited);
+    expect(await readLines(SECTION.plan)).toMatchObject([{ content: edited, author: "person", unit_revision_ids: [unit.rows[0]?.id], is_stale: false }]);
+    expect((await readSection(SECTION.plan)).body).toBe(edited);
+  });
+
+  it("rewrites a line whose claim changed under it", async () => {
+    const current = await client.query<{ id: string }>("select current_revision_id as id from public.units where id = $1", [PLAN_UNIT]);
+    const claim = "Alpha's first internal release is planned for Q3 2027.";
+    const { eventId } = await commitPersonAction(db, {
+      type: "revise_claim", targetId: PLAN_UNIT, expectedRevisionId: current.rows[0]?.id ?? null, passageIds: [], speechAct: null, input: { content: claim },
+    });
+    expect(await readLines(SECTION.plan)).toMatchObject([{ is_stale: true }]);
+
+    await rebuildAfterEvent(db, writer, eventId);
+    expect(await readLines(SECTION.plan)).toMatchObject([{ line_id: LINE.plan, content: claim, author: "ai", is_stale: false }]);
+    expect((await readNotes(SECTION.plan))[0]).toBe(`Updated: ${claim} (edited by hand)`);
   });
 
   it("refuses the functions to signed-in browsers", async () => {

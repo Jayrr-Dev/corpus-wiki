@@ -3,44 +3,34 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { queryKeys } from "@/lib/queries";
-import { submitEdit } from "@/lib/server-actions/knowledge";
+import { queryKeys, type TableName } from "@/lib/queries";
+import type { ActionResult } from "@/lib/server-actions/result";
 
-type UnitEditorProps = {
-  unitId: string;
-  revisionId: string;
+type TextEditorProps = {
   content: string;
+  label: string;
+  // Sends the new text through a server action (Change control)
+  onSave: (text: string) => Promise<ActionResult>;
   onDone: () => void;
+  // Tables without a Realtime feed that the save changes (refetched after it)
+  refreshTables?: TableName[];
 };
 
-// UNIT EDITOR: rewrites one unit's sentence as a revise_claim through Change control
-export function UnitEditor({ unitId, revisionId, content, onDone }: UnitEditorProps) {
+// TEXT EDITOR: rewrites one line or claim; closes on success, shows the reason on failure
+export function TextEditor({ content, label, onSave, onDone, refreshTables = [] }: TextEditorProps) {
   const [draft, setDraft] = useState(content);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, startSaving] = useTransition();
   const queryClient = useQueryClient();
   const isUnchanged = draft.trim() === "" || draft.trim() === content;
 
-  // Units and revisions have no Realtime feed, so a saved edit refreshes them here
-  const refreshUnit = () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.table("units") });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.table("revisions") });
-  };
-
-  // Sends the edit; closes on success, shows the reason on failure
+  // Saves, then refreshes the tables the edit touched
   const save = (event: FormEvent) => {
     event.preventDefault();
     startSaving(async () => {
-      const result = await submitEdit({
-        type: "revise_claim",
-        targetId: unitId,
-        expectedRevisionId: revisionId,
-        input: { content: draft.trim() },
-        passageIds: [],
-        speechAct: null,
-      });
+      const result = await onSave(draft.trim());
       if (!result.ok) return setError(result.error);
-      refreshUnit();
+      for (const table of refreshTables) void queryClient.invalidateQueries({ queryKey: queryKeys.table(table) });
       onDone();
     });
   };
@@ -51,7 +41,7 @@ export function UnitEditor({ unitId, revisionId, content, onDone }: UnitEditorPr
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         rows={3}
-        aria-label="Sentence"
+        aria-label={label}
         className="w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-panel text-foreground"
       />
       {error ? <p className="text-panel text-failed">{error}</p> : null}

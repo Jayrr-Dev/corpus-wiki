@@ -1,5 +1,5 @@
-// LIVING PAGE COMPONENTS: the wiki section, its citations and the sentence panel
+// LIVING PAGE COMPONENTS: the wiki section, its lines' panel, citations and the editor
 export { CitationChip } from "./CitationChip";
-export { LiveSection, type SelectedSentence } from "./LiveSection";
-export { SentencePanel } from "./SentencePanel";
-export { UnitEditor } from "./UnitEditor";
+export { LinePanel } from "./LinePanel";
+export { LiveSection } from "./LiveSection";
+export { TextEditor } from "./TextEditor";

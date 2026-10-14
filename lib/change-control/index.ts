@@ -1,4 +1,4 @@
-import type { DraftChangeSet } from "@/lib/ai/types";
+import type { DraftAction, DraftChangeSet } from "@/lib/ai/types";
 import type { Enums } from "@/lib/database/types";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { CommitResult, PersonAction } from "./types";
@@ -13,10 +13,9 @@ export type * from "./types";
 
 type Submitted = { changeSetId: string; eventId: string };
 
-// WHO DRAFTED A CHANGESET AND WHY: an upload's AI, or a person's edit
-export type ChangeSetOrigin =
-  | { eventId: string; cause: "upload"; actor: "ai" }
-  | { eventId: null; cause: Enums<"event_cause">; actor: "person" };
+// WHO DRAFTED A CHANGESET AND WHY. eventId attaches the set to an existing event
+// (an upload, or the living page rewriting lines after one); null starts a new event.
+export type ChangeSetOrigin = { eventId: string | null; cause: Enums<"event_cause">; actor: Enums<"actor_kind"> };
 
 // Stores a drafted ChangeSet (its event is created when the origin has none)
 export async function submitChangeSet(db: DbRpc, origin: ChangeSetOrigin, draft: DraftChangeSet): Promise<Submitted> {
@@ -37,9 +36,14 @@ export async function commitChangeSet(db: DbRpc, changeSetId: string): Promise<C
 
 // Stores a person's edit as a one-action ChangeSet and commits it
 export async function commitPersonAction(db: DbRpc, action: PersonAction): Promise<CommitResult & { eventId: string }> {
+  return commitPersonEdit(db, describePersonAction(action), [action]);
+}
+
+// Stores a person's edit of several actions (e.g. a line and the claim it states) as one ChangeSet and commits it
+export async function commitPersonEdit(db: DbRpc, summary: string, actions: DraftAction[]): Promise<CommitResult & { eventId: string }> {
   const draft: DraftChangeSet = {
-    summary: describePersonAction(action),
-    actions: [action],
+    summary,
+    actions,
     trace: { modelVersion: null, promptVersion: null, tokensIn: null, tokensOut: null },
   };
   const { changeSetId, eventId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "person" }, draft);

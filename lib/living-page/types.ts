@@ -1,9 +1,11 @@
 import type { EpistemicStatus, UnitKind } from "@/lib/ai/types";
+import type { Enums } from "@/lib/database/types";
 
 // =====================================================================
 // LIVING PAGE TYPES: what the section writer is given and returns, and
 // the shapes the living-page DB functions take and return (camelCase).
-// No server-only imports: the wiki page reads SentenceLink too.
+// Lines as rows: a section is its lines; each line cites the claims it states.
+// No server-only imports: the wiki page reads these types too.
 // =====================================================================
 
 // SECTION QUERY (sections.query): every key optional
@@ -22,27 +24,39 @@ export type SectionUnit = {
   epistemicStatus: EpistemicStatus;
 };
 
-// WRITER INPUT: the section, its page and the units it may use (and nothing else)
-export type SectionWriteInput = {
+// ONE CURRENT LINE OF A SECTION, flagged when it must be rewritten
+// (a claim it cites changed, or the section no longer shows that claim)
+export type SectionLine = {
+  lineId: string;
+  lineRevisionId: string;
+  position: number;
+  content: string;
+  author: Enums<"actor_kind">;
+  unitIds: string[];
+  needsRewrite: boolean;
+};
+
+// DB: read_section_state
+export type SectionState = { sectionId: string; title: string; pageTitle: string; units: SectionUnit[]; lines: SectionLine[] };
+
+// WRITER INPUT: the section's claims and lines; only flagged lines and uncovered claims are its job
+export type SectionReviseInput = {
   pageTitle: string;
   sectionTitle: string;
   units: SectionUnit[];
+  lines: SectionLine[];
+  uncoveredUnitIds: string[];
 };
 
-// WRITER OUTPUT: sentences in reading order, each citing the units it says
-export type WrittenSentence = { text: string; unitIds: string[] };
-export type WrittenSection = { sentences: WrittenSentence[]; modelVersion: string };
-
-// SENTENCE LINK (sections.sentence_links): character offsets into the body
-export type SentenceLink = { start: number; end: number; unitIds: string[] };
+// WRITER OUTPUT: lines to rewrite, lines to remove, lines to add (each citing the units it states)
+export type LineText = { text: string; unitIds: string[] };
+export type SectionRevision = {
+  revise: (LineText & { lineId: string })[];
+  retire: string[];
+  add: LineText[];
+  modelVersion: string;
+};
 
 // DB FUNCTION SHAPES
 export type SectionRef = { sectionId: string; pageId: string };
-export type SectionUnitsRead = { sectionId: string; title: string; pageTitle: string; units: SectionUnit[] };
-export type SectionBuild = {
-  body: string;
-  sentenceLinks: SentenceLink[];
-  modelVersion: string;
-  inputs: { unitId: string; revisionId: string }[];
-};
-export type SavedSectionBuild = { sectionId: string; changeNoteId: string | null };
+export type FinishedSectionBuild = { sectionId: string; changeNoteId: string | null };

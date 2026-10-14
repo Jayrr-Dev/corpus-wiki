@@ -101,5 +101,12 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return `${humanize(text("type"))} → ${text("toUnitId").slice(0, 8)}`;
     case "set_epistemic_status":
       return `status → ${text("epistemicStatus")}`;
+    case "write_line":
+    case "revise_line":
+      return text("content");
+    case "retire_line":
+      return "line removed";
+    case "move_line":
+      return `line moved to ${String(object.position ?? "")}`;
   }
 }

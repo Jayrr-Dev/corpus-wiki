@@ -66,6 +66,12 @@ export type ActionInputByType = {
   // named by that action's position instead (fromPosition / toPosition).
   link: { toUnitId: string | null; type: RelationshipType; fromPosition?: number; toPosition?: number };
   set_epistemic_status: { epistemicStatus: EpistemicStatus };
+  // LINES AS ROWS: a wiki line cites the claim revisions it states. citePositions names
+  // claim revisions an earlier action of the same set creates (a line edit that revises its claim).
+  write_line: { sectionId: string; position: number; content: string; unitRevisionIds: string[]; citePositions?: number[] };
+  revise_line: { content: string; unitRevisionIds: string[]; citePositions?: number[]; expectedLineRevisionId: string };
+  retire_line: { expectedLineRevisionId: string };
+  move_line: { position: number; expectedLineRevisionId: string };
 };
 
 // One typed action; `type` decides the shape of `input` (a discriminated union)

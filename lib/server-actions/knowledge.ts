@@ -2,7 +2,7 @@
 
 import { requireUser } from "@/lib/auth/requireUser";
 import { commitPersonAction, type CommitResult, type PersonAction, resolveException, revertChangeSet } from "@/lib/change-control";
-import { rebuildAfterEvent } from "@/lib/living-page";
+import { commitLineEdit, rebuildAfterEvent } from "@/lib/living-page";
 import { getServerDeps } from "@/lib/server/deps";
 import { type ActionResult, toActionResult } from "./result";
 
@@ -17,6 +17,17 @@ export async function submitEdit(action: PersonAction): Promise<ActionResult<Com
     await requireUser();
     const { db, writer } = getServerDeps();
     const { eventId, ...result } = await commitPersonAction(db, action);
+    await rebuildAfterEvent(db, writer, eventId);
+    return result;
+  });
+}
+
+// LINE EDIT: new words for one wiki line (and the one claim it states), then other lines citing it rewrite
+export async function submitLineEdit(lineId: string, content: string): Promise<ActionResult<CommitResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const { db, writer } = getServerDeps();
+    const { eventId, ...result } = await commitLineEdit(db, lineId, content);
     await rebuildAfterEvent(db, writer, eventId);
     return result;
   });

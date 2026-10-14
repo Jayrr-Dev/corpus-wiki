@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { PageIcon } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
-import { LiveSection, type SelectedSentence, SentencePanel } from "@/components/living-page";
+import { LinePanel, LiveSection } from "@/components/living-page";
 import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import type { Tables } from "@/lib/database/types";
-import { usePages, useSections } from "@/lib/queries";
+import { type ShownLine, usePages, useSectionLines, useSections } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 
 // WIKI PAGE VIEW: finds the page by slug, then shows its live sections
@@ -24,26 +24,41 @@ export function WikiPageView({ slug }: { slug: string }) {
   return <WikiPageBody page={page} />;
 }
 
-// PAGE BODY: sections in order, redrawn live; a clicked sentence fills the right panel
+// PAGE BODY: sections in order with their lines, redrawn live; a clicked line fills the right panel
 function WikiPageBody({ page }: { page: Tables<"pages"> }) {
-  const [selected, setSelected] = useState<SelectedSentence | null>(null);
+  const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
   const { data: sections = [], isPending } = useSections({ filters: { page_id: page.id } });
+  const { data: lines = [] } = useSectionLines(page.id);
   useRealtimeInvalidation("sections", { filter: `page_id=eq.${page.id}` });
+  useRealtimeInvalidation("lines");
   useRealtimeInvalidation("change_notes");
+  // The selected line follows its latest text (a rewrite keeps the line id)
+  const selected = lines.find((line) => line.lineId === selectedLineId);
   return (
     <ReadingPane title={page.title} width="prose">
       {isPending ? <p className="text-panel text-faint">Loading…</p> : null}
       {!isPending && sections.length === 0 ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
       <div className="flex flex-col gap-6">
         {sections.map((section) => (
-          <LiveSection key={section.id} section={section} selected={selected} onSelect={setSelected} />
+          <LiveSection
+            key={section.id}
+            section={section}
+            lines={linesOf(lines, section.id)}
+            selectedLineId={selectedLineId}
+            onSelect={(line) => setSelectedLineId(line.lineId)}
+          />
         ))}
       </div>
       {selected ? (
         <RightPanelSlot>
-          <SentencePanel key={`${selected.sectionId}-${selected.start}`} unitIds={selected.unitIds} />
+          <LinePanel key={selected.lineRevisionId} line={selected} />
         </RightPanelSlot>
       ) : null}
     </ReadingPane>
   );
+}
+
+// One section's lines, in position order (the view is ordered by position already)
+function linesOf(lines: ShownLine[], sectionId: string): ShownLine[] {
+  return lines.filter((line) => line.sectionId === sectionId);
 }

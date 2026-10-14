@@ -2,62 +2,97 @@ import "server-only";
 
 import { z } from "zod";
 import { type ChatMessage, chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
-import type { SectionWriteInput, WrittenSection, WrittenSentence } from "../types";
+import type { SectionReviseInput, SectionRevision } from "../types";
 
 // =====================================================================
-// TOKEN FACTORY WRITER: Nemotron writes a short encyclopedia paragraph
-// from the section's claims only. Every sentence cites the unit ids it
-// says; ids that were not in the input are dropped, and a sentence left
-// citing nothing is dropped too, so the page never shows uncited text.
+// TOKEN FACTORY WRITER: Nemotron rewrites only the lines whose claims
+// changed and writes lines for claims no line states yet, in the
+// neutral style of an encyclopedia. It sees short refs (L1, C1) instead
+// of uuids, so it cannot invent ids; refs it makes up are dropped, and
+// plan.ts drops anything that touches an unflagged line or cites nothing.
 // =====================================================================
 
 // ANSWER SHAPE (validated after the call; also sent as the JSON schema)
+const lineSchema = z.object({ text: z.string(), claims: z.array(z.string()) });
 const sectionAnswerSchema = z.object({
-  sentences: z.array(z.object({ text: z.string(), unitIds: z.array(z.string()) })),
+  revise: z.array(lineSchema.extend({ line: z.string() })),
+  retire: z.array(z.string()),
+  add: z.array(lineSchema),
 });
+type SectionAnswer = z.infer<typeof sectionAnswerSchema>;
 
 // PROMPT: the writer's rules
 const SYSTEM_PROMPT = [
-  "You write one section of an internal wiki page, in the neutral, encyclopedic style of Wikipedia.",
-  "Use ONLY the claims you are given. Never add facts, dates, names, numbers or opinions that are not in them.",
-  "Write a short paragraph (one to five sentences). You may merge closely related claims into one sentence.",
-  "Every sentence must list in unitIds the ids of the claims it states. Use only ids from the input.",
-  'Answer with JSON only: {"sentences":[{"text":"...","unitIds":["..."]}]}.',
+  "You maintain one section of an internal wiki page, written in the neutral, encyclopedic style of Wikipedia.",
+  "The section is a list of lines. Each line states one or more claims and cites them by ref (C1, C2, ...).",
+  "Only lines marked rewrite:true need work: a claim they cite changed, or the section no longer shows it.",
+  "For each such line, either rewrite it from the current claims (revise) or remove it (retire) when nothing it said still holds.",
+  "Then write one new line (add) for each claim listed in uncovered, unless a revised line already states it.",
+  "Use ONLY the claims given. Never add facts, dates, names, numbers or opinions that are not in them.",
+  "Each line is one or two sentences and must list in claims the refs it states. Never touch lines with rewrite:false.",
+  'Answer with JSON only: {"revise":[{"line":"L1","text":"...","claims":["C1"]}],"retire":["L2"],"add":[{"text":"...","claims":["C3"]}]}.',
 ].join(" ");
 
-// REAL WRITER: one chat completion per section
+// REAL WRITER: one chat completion per section that needs work
 export class TokenFactorySectionWriter {
   readonly name = "token-factory";
 
   constructor(private readonly settings: TokenFactorySettings) {}
 
-  // Asks the model for cited sentences and keeps only citations of the given units
-  async writeSection(input: SectionWriteInput): Promise<WrittenSection> {
+  // Sends the section with short refs, then maps the answer's refs back to ids
+  async reviseSection(input: SectionReviseInput): Promise<SectionRevision> {
+    const refs = buildRefs(input);
     const { value, model } = await chatJson(this.settings, {
-      name: "section_sentences",
+      name: "section_lines",
       schema: sectionAnswerSchema,
       jsonSchema: z.toJSONSchema(sectionAnswerSchema),
-      messages: buildMessages(input),
+      messages: buildMessages(input, refs),
       maxTokens: 2000,
     });
-    const knownIds = new Set(input.units.map((unit) => unit.unitId));
-    return { sentences: keepCitedSentences(value.sentences, knownIds), modelVersion: model };
+    return { ...answerToRevision(value, refs), modelVersion: model };
   }
 }
 
-// Builds the system + user messages: the page, the section and its claims as JSON
-function buildMessages(input: SectionWriteInput): ChatMessage[] {
-  const claims = input.units.map((unit) => ({ unitId: unit.unitId, kind: unit.kind, status: unit.epistemicStatus, claim: unit.content }));
-  const request = { page: input.pageTitle, section: input.sectionTitle, claims };
+// =====================================================================
+// REFS: short names the model sees, mapped both ways
+// =====================================================================
+
+type Refs = { unitRef: Map<string, string>; unitId: Map<string, string>; lineRef: Map<string, string>; lineId: Map<string, string> };
+
+// C1.. for claims and L1.. for lines, in the order the section shows them
+function buildRefs(input: SectionReviseInput): Refs {
+  const unitPairs = input.units.map((unit, index) => [unit.unitId, `C${index + 1}`] as const);
+  const linePairs = input.lines.map((line, index) => [line.lineId, `L${index + 1}`] as const);
+  return {
+    unitRef: new Map(unitPairs),
+    unitId: new Map(unitPairs.map(([id, ref]) => [ref, id])),
+    lineRef: new Map(linePairs),
+    lineId: new Map(linePairs.map(([id, ref]) => [ref, id])),
+  };
+}
+
+// Builds the system + user messages: the page, the section, its claims and its lines as JSON
+function buildMessages(input: SectionReviseInput, refs: Refs): ChatMessage[] {
+  const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
+  const claims = input.units.map((unit) => ({ ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content }));
+  const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
+  const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds) };
   return [
     { role: "system", content: SYSTEM_PROMPT },
     { role: "user", content: JSON.stringify(request) },
   ];
 }
 
-// Drops unknown unit ids, then sentences that cite nothing (or say nothing)
-export function keepCitedSentences(sentences: WrittenSentence[], knownIds: ReadonlySet<string>): WrittenSentence[] {
-  return sentences
-    .map((sentence) => ({ text: sentence.text.trim(), unitIds: [...new Set(sentence.unitIds.filter((id) => knownIds.has(id)))] }))
-    .filter((sentence) => sentence.text !== "" && sentence.unitIds.length > 0);
+// Maps refs back to ids; unknown refs are dropped (plan.ts drops lines left citing nothing)
+export function answerToRevision(answer: SectionAnswer, refs: Refs): Omit<SectionRevision, "modelVersion"> {
+  const toIds = (claims: string[]) => claims.flatMap((ref) => refs.unitId.get(ref.trim()) ?? []);
+  const lineIdOf = (ref: string) => refs.lineId.get(ref.trim());
+  return {
+    revise: answer.revise.flatMap((line) => {
+      const lineId = lineIdOf(line.line);
+      return lineId ? [{ lineId, text: line.text, unitIds: toIds(line.claims) }] : [];
+    }),
+    retire: answer.retire.flatMap((ref) => lineIdOf(ref) ?? []),
+    add: answer.add.map((line) => ({ text: line.text, unitIds: toIds(line.claims) })),
+  };
 }
