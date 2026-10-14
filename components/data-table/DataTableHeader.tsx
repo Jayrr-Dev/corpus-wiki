@@ -9,7 +9,7 @@ export function DataTableHeader<TData>({ table }: { table: Table<TData> }) {
   return (
     <TableHeader>
       {table.getHeaderGroups().map((group) => (
-        <TableRow key={group.id} className="hover:bg-transparent">
+        <TableRow key={group.id}>
           {group.headers.map((header) => (
             <TableHead key={header.id}>
               <HeaderLabel header={header} />

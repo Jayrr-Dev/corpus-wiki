@@ -2,7 +2,9 @@
 
 An evolving knowledge system that turns information into traceable, reusable knowledge—and uses that knowledge to support reasoning and decisions.
 
-**Status:** Concept and architecture. This repository currently contains design documentation; the engine is not implemented yet.
+**Status:** First working prototype. Upload a PDF, Word or Markdown file; NVIDIA Nemotron drafts what it changes; Change control applies it in one transaction or asks a person; the wiki pages rewrite the lines that changed. The architecture below is the full vision; the prototype implements the capture-and-update path (see [What the prototype does](#what-the-prototype-does)).
+
+> Business documents that are never out of date.
 
 ## Vision
 
@@ -17,6 +19,8 @@ New evidence should trigger incremental reconciliation. Questions should assembl
 ## Core axioms
 
 These axioms summarize the principles developed for the project.
+
+> **Open point:** the design documents use a list of **12** fundamental axioms; this README lists **17**. Both are kept until Sam decides which list is canonical.
 
 1. **Knowledge is atomic and composable.** Each unit expresses one primary idea. Higher-level explanations, models, and procedures retain references to their underlying units.
 2. **Information is not automatically established knowledge.** Preserve raw evidence separately from interpretations and derived claims.
@@ -109,14 +113,49 @@ Use exact hashes, vector similarity, entity matching, and graph relationships to
 
 This architecture was developed in the [original Second Brain design conversation](https://chatgpt.com/share/6acfbc17-10bc-83e8-a984-7d6bdb7cdaed).
 
-## Development (first prototype)
+## What the prototype does
 
-One Next.js App Router app (UI + server code) on Vercel; Supabase provides Postgres, Realtime, Storage and the login. Browsers only read (RLS); server code writes with the secret key.
+One Next.js App Router app (UI and server code) on Vercel. Supabase provides Postgres, Realtime, Storage and the login. Browsers only read (row-level security); server code writes with the secret key, and every write is a Postgres function.
+
+**One upload pipeline, one converter per format** (`lib/ingest`):
+
+| Format | Converter |
+| --- | --- |
+| PDF | `unpdf` (text per page) |
+| Word (.docx) | `mammoth` |
+| Markdown and plain text | read as text |
+| Images, audio, video | slots only; not converted yet |
+
+The file is stored in the private `sources` bucket, split into passages, and recorded with a Knowledge Shift Event (`ingest_source`). A file with the same bytes is skipped.
+
+**Reconciliation** (`lib/ai`): Nemotron reads the passages and the current knowledge and drafts a ChangeSet of typed actions (create domain or entity, add, revise or retire a claim, merge duplicates, link, set certainty). Details in [How it uses NVIDIA Nemotron](#how-it-uses-nvidia-nemotron-on-nebius-token-factory).
+
+**Change control** (`lib/change-control`, `supabase/migrations/20261014010000_change_control.sql`): `commit_change_set` checks and applies a ChangeSet in one transaction. Everything that passes is applied without asking (approval by exception). A person is asked only when:
+
+- two sources of the same date disagree,
+- a proposal or question would overwrite a decision,
+- the AI wants to retire or merge knowledge,
+- the AI drafts domains for the first time (the tree is reviewed once).
+
+An older file never overwrites a newer one, and a set whose units changed while it was drafted is refused as a whole. Every applied ChangeSet can be undone from the Changes screen.
+
+**Living pages, lines as rows** (`lib/living-page`, `supabase/migrations/20261015000000_lines_as_rows.sql`): every line of a wiki section is a row (`lines`) with never-edited versions (`line_revisions`) that cite the exact claim revisions they state. When a claim changes, the lines citing it are flagged (`stale_lines`), and only those lines are rewritten, through Change control like any other change. Editing a line that states one claim also revises that claim in the same ChangeSet, so changes flow both ways. Open pages update live.
+
+**Screens:** Home, Upload, Changes (with undo), Exceptions, Units, Sources, Entities, Domains, and the wiki pages (`/p/<slug>`). Click a line to see the claims behind it, their sources and the line's history.
+
+**Tables:** `sources`, `passages`, `shift_events`, `domains`, `entities`, `units`, `revisions`, `unit_entities`, `unit_domains`, `relationships`, `change_sets`, `actions`, `exceptions`, `pages`, `sections`, `section_inputs`, `change_notes`, `lines`, `line_revisions`; views `stale_lines` and `section_lines`.
+
+## Run it locally
 
 ```bash
-cp .env.example .env.local   # fill in the values; never commit .env.local
+cp .env.example .env.local   # fill in the keys; never commit .env.local
 npm ci
-npm run dev        # http://localhost:3000, redirects to /login when signed out
+npm run dev                  # http://localhost:3000, redirects to /login when signed out
+```
+
+Sign in with your Supabase Auth user. Without `NEBIUS_API_KEY` the app uses fake AI clients that answer the eval fixtures, so the UI and tests run without a key.
+
+```bash
 npm run build
 npm run typecheck
 npm run lint
@@ -124,11 +163,54 @@ npm test           # vitest; DB tests start a throwaway Postgres 16 (see below)
 npm run db:types   # prints how to regenerate lib/database/types.ts
 ```
 
-- **Schema**: `supabase/migrations/` is the source of truth. Never edit an applied migration; add a new file. `lib/database/types.ts` is generated from it.
-- **Seed**: `supabase/seed.sql` is the Project Alpha baseline every screen and eval starts from.
-- **DB tests**: `test/db/localPostgres.ts` creates a socket-only cluster in `/var/tmp` with the binaries in `/usr/lib/postgresql/16/bin` (override with `PG_BIN`), stubs Supabase's `auth`, `storage`, Realtime publication and API roles, applies the migration and seed, and deletes it afterwards. The tests skip when the binaries are missing.
-- **Evals**: `evals/cases.ts` lists E1–E7, `evals/fixtures/` holds the dated files. `evals/evals.test.ts` is skipped until `createEvalHarness` in `evals/harness.ts` is implemented.
-- **AI**: `lib/ai` holds the provider-neutral `ReconciliationClient`. Without `NEBIUS_API_KEY` the `FakeReconciliationClient` answers the eval fixtures with canned ChangeSets.
+- **Schema**: `supabase/migrations/` is the source of truth, applied in file-name order. Never edit an applied migration; add a new file. `lib/database/types.ts` is generated from the live schema.
+- **Seed**: `supabase/seed.sql` is the Project Alpha baseline the tests and evals start from.
+- **DB tests**: `test/db/localPostgres.ts` creates a socket-only cluster in `/var/tmp` with the binaries in `/usr/lib/postgresql/16/bin` (override with `PG_BIN`), stubs Supabase's `auth`, `storage`, Realtime publication and API roles, applies every migration and the seed, and deletes it afterwards. The tests skip when the binaries are missing.
+- **Evals**: `evals/cases.ts` lists E1–E7 and `evals/fixtures/` holds the dated files. `evals/evals.test.ts` runs each case through the real pipeline with the fake model. `LIVE_FILE=<path> npx vitest run evals/live.test.ts` sends one real file through Nemotron.
 - **Lockfile**: generated with npm 11 (`npx npm@11 install`), because npm 10.9 crashes resolving vitest 5's optional peers. `npm ci` works with npm 10 and 11.
-- **UI components**: `components/ui` holds hand-written shadcn components (the shadcn and jayrr.dev registries are blocked from the build container). `components.json` is ready, so once the network allows it, pull jayrr.dev components with `npx shadcn@latest add https://jayrr.dev/r/<item>.json` and its lint rules from `https://jayrr.dev/r/standard-lint.json` (merge into `eslint.config.mjs`), preferring them over the hand-written ones.
-- **Colors**: only from the tokens in `app/globals.css` (grayscale + five accents). Muted text is `text-muted-foreground`.
+- **UI components**: `components/ui` holds jayrr.dev registry components; `lib/standard-lint.mjs` is jayrr.dev's standard lint (theme colors only, sizes through props), wired into `eslint.config.mjs`.
+- **Colors and type**: only the tokens in `app/globals.css` (grayscale plus five muted accents). Font sizes are `text-panel`, `text-body` and `text-title`; muted text is `text-muted-foreground` or `text-faint`.
+
+## How it uses NVIDIA Nemotron on Nebius Token Factory
+
+The AI steps run on **NVIDIA Nemotron (`nvidia/nemotron-3-super-120b-a12b`)** served by **Nebius Token Factory**, called at runtime through Token Factory's OpenAI-compatible API (`https://api.tokenfactory.nebius.com/v1/`).
+
+### What Nemotron does
+
+1. **Reconciliation.** For each uploaded file, the server sends Nemotron one request with the file's passages (each with its id and the file's source date) and the current knowledge: units, domain paths and entities, so the model can match new claims to existing ones without a vector index. Nemotron returns a **draft ChangeSet**: typed actions, each citing the passages that support it and tagging how the claim was said (stated, decided, proposed or asked).
+2. **Writing wiki lines.** After a commit, Nemotron rewrites only the lines whose claims changed and writes lines for claims no line states yet, citing claims by short refs (C1, L1) so it cannot invent ids.
+
+### What Nemotron does not do
+
+The model never writes knowledge. Its draft goes to `commit_change_set`, a Postgres function that checks every action and applies the ChangeSet in one transaction (see [What the prototype does](#what-the-prototype-does)); anything that needs judgement becomes an exception for a person. Each ChangeSet records the model id and prompt version that drafted it, so a bad batch can be traced and undone.
+
+### Where the code is
+
+| What | Where |
+| --- | --- |
+| Provider settings (base URL, default model, prompt version) | `lib/ai/config.ts` |
+| Chat call with a JSON schema, and settings from env | `lib/ai/chat.ts` |
+| Reconciliation prompt, answer schema and mapping to typed actions | `lib/ai/tokenFactory/` |
+| Picks the real client when `NEBIUS_API_KEY` is set, the fake one otherwise | `lib/ai/factory.ts` |
+| Wiki line writer | `lib/living-page/writers/tokenFactory.ts` |
+| Fake clients used by tests and offline development | `lib/ai/fake/`, `lib/living-page/writers/fake.ts` |
+| End-to-end eval cases E1–E7 | `evals/` |
+
+### Configuration
+
+Set these in `.env.local` (local) or in Vercel's environment settings (deployed). Never commit them.
+
+```bash
+NEBIUS_API_KEY=   # from Nebius Token Factory
+AI_MODEL=nvidia/nemotron-3-super-120b-a12b   # optional; this is the default
+```
+
+### How Token Factory helped
+
+- **OpenAI-compatible API:** the client is a plain chat-completions call, so the provider sits behind one small interface and the rest of the app never knows which model is used.
+- **Structured output:** `response_format: {"type": "json_schema"}` with the answer's JSON schema constrains the output on the server; the app still validates it with zod before anything is committed.
+- **Several Nemotron sizes behind one key:** switching model size is a change to `AI_MODEL`.
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

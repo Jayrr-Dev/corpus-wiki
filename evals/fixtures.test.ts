@@ -19,6 +19,8 @@ function inputFor(fixture: FixtureFile) {
     source: { id: "source-1", title: fixture.file, sourceDate: `${fixture.date}T00:00:00Z` },
     passages: paragraphs.map((text, position) => ({ id: `p${position}`, position, text, speakerLabel: null })),
     existingUnits: [],
+    domainPaths: [],
+    entities: [],
   };
 }
 

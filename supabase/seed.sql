@@ -10,7 +10,7 @@
 -- Fixed UUIDs so tests and agents can refer to rows. Prefix per table:
 --   0d domains  0e entities  05 sources  0a passages  0f events
 --   0c change sets  ac actions  01 units  0b revisions
---   9a pages  5e sections  9c change notes
+--   9a pages  5e sections  11 lines  1b line revisions  9c change notes
 -- One transaction: units and revisions point at each other. Units go in
 -- first; their FK to revisions is deferred to commit.
 -- =====================================================================
@@ -109,21 +109,35 @@ insert into public.pages (id, title, slug, entity_id, domain_id) values
   ('00000000-0000-4000-8000-9a0000000001', 'Project Alpha', 'project-alpha',
    '00000000-0000-4000-8000-0e0000000001', '00000000-0000-4000-8000-0d0000000004');
 
--- SECTIONS: two built from the units above; Data layer waits for E1
-insert into public.sections (id, page_id, position, title, mode, query, body, sentence_links, status, built_at, built_with_model_version) values
+-- SECTIONS: two built from the units above; Data layer waits for E1.
+-- body is the cache of each section's lines (below)
+insert into public.sections (id, page_id, position, title, mode, query, body, status, built_at, built_with_model_version) values
   ('00000000-0000-4000-8000-5e0000000001', '00000000-0000-4000-8000-9a0000000001', 0, 'Overview', 'generated',
    '{"entity": {"type": "project", "key": "alpha"}, "domainPaths": ["Projects/Alpha"], "kinds": ["fact", "definition"]}',
    'Project Alpha is an internal analytics service for the operations team.',
-   '[{"start": 0, "end": 71, "unitIds": ["00000000-0000-4000-8000-010000000001"]}]',
    'current', '2026-08-15T00:06:00Z', 'seed'),
   ('00000000-0000-4000-8000-5e0000000002', '00000000-0000-4000-8000-9a0000000001', 1, 'Data layer', 'generated',
    '{"entity": {"type": "project", "key": "alpha"}, "domainPaths": ["Projects/Alpha/Data layer"], "kinds": ["decision", "fact"]}',
-   '', '[]', 'stale', null, null),
+   '', 'stale', null, null),
   ('00000000-0000-4000-8000-5e0000000003', '00000000-0000-4000-8000-9a0000000001', 2, 'Plan and milestones', 'generated',
    '{"entity": {"type": "project", "key": "alpha"}, "domainPaths": ["Projects/Alpha/Planning"], "kinds": ["decision"]}',
    'The first internal release is planned for Q1 2027.',
-   '[{"start": 0, "end": 50, "unitIds": ["00000000-0000-4000-8000-010000000002"]}]',
    'current', '2026-08-15T00:06:00Z', 'seed');
+
+-- LINES (lines as rows): one line per built section, citing the claim revision it states
+insert into public.lines (id, section_id, position, current_revision_id, last_changed_at) values
+  ('00000000-0000-4000-8000-110000000001', '00000000-0000-4000-8000-5e0000000001', 0,
+   '00000000-0000-4000-8000-1b0000000001', '2026-08-15T00:06:00Z'),
+  ('00000000-0000-4000-8000-110000000002', '00000000-0000-4000-8000-5e0000000003', 0,
+   '00000000-0000-4000-8000-1b0000000002', '2026-08-15T00:06:00Z');
+
+insert into public.line_revisions (id, line_id, content, unit_revision_ids, event_id, author, model_version) values
+  ('00000000-0000-4000-8000-1b0000000001', '00000000-0000-4000-8000-110000000001',
+   'Project Alpha is an internal analytics service for the operations team.',
+   '{00000000-0000-4000-8000-0b0000000001}', '00000000-0000-4000-8000-0f0000000001', 'ai', 'seed'),
+  ('00000000-0000-4000-8000-1b0000000002', '00000000-0000-4000-8000-110000000002',
+   'The first internal release is planned for Q1 2027.',
+   '{00000000-0000-4000-8000-0b0000000002}', '00000000-0000-4000-8000-0f0000000001', 'ai', 'seed');
 
 -- SECTION INPUTS: which revisions each built section used
 insert into public.section_inputs (section_id, unit_id, revision_id) values

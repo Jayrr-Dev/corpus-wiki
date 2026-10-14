@@ -21,6 +21,8 @@ export type Database = {
         Row: {
           after_revision_id: string | null
           applied_at: string | null
+          after_line_revision_id: string | null
+          before_line_revision_id: string | null
           before_revision_id: string | null
           change_set_id: string
           check_results: Json
@@ -35,10 +37,13 @@ export type Database = {
           speech_act: Database["public"]["Enums"]["speech_act"] | null
           target_id: string | null
           type: Database["public"]["Enums"]["action_type"]
+          undo_state: Json | null
         }
         Insert: {
           after_revision_id?: string | null
           applied_at?: string | null
+          after_line_revision_id?: string | null
+          before_line_revision_id?: string | null
           before_revision_id?: string | null
           change_set_id: string
           check_results?: Json
@@ -53,10 +58,13 @@ export type Database = {
           speech_act?: Database["public"]["Enums"]["speech_act"] | null
           target_id?: string | null
           type: Database["public"]["Enums"]["action_type"]
+          undo_state?: Json | null
         }
         Update: {
           after_revision_id?: string | null
           applied_at?: string | null
+          after_line_revision_id?: string | null
+          before_line_revision_id?: string | null
           before_revision_id?: string | null
           change_set_id?: string
           check_results?: Json
@@ -71,6 +79,7 @@ export type Database = {
           speech_act?: Database["public"]["Enums"]["speech_act"] | null
           target_id?: string | null
           type?: Database["public"]["Enums"]["action_type"]
+          undo_state?: Json | null
         }
         Relationships: []
       }
@@ -236,6 +245,72 @@ export type Database = {
         }
         Relationships: []
       }
+      line_revisions: {
+        Row: {
+          author: Database["public"]["Enums"]["actor_kind"]
+          content: string
+          created_at: string
+          event_id: string
+          id: string
+          line_id: string
+          model_version: string | null
+          replaces_revision_id: string | null
+          unit_revision_ids: string[]
+        }
+        Insert: {
+          author: Database["public"]["Enums"]["actor_kind"]
+          content: string
+          created_at?: string
+          event_id: string
+          id?: string
+          line_id: string
+          model_version?: string | null
+          replaces_revision_id?: string | null
+          unit_revision_ids?: string[]
+        }
+        Update: {
+          author?: Database["public"]["Enums"]["actor_kind"]
+          content?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          line_id?: string
+          model_version?: string | null
+          replaces_revision_id?: string | null
+          unit_revision_ids?: string[]
+        }
+        Relationships: []
+      }
+      lines: {
+        Row: {
+          created_at: string
+          current_revision_id: string
+          id: string
+          last_changed_at: string
+          position: number
+          retired_at: string | null
+          section_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_revision_id: string
+          id?: string
+          last_changed_at?: string
+          position: number
+          retired_at?: string | null
+          section_id: string
+        }
+        Update: {
+          created_at?: string
+          current_revision_id?: string
+          id?: string
+          last_changed_at?: string
+          position?: number
+          retired_at?: string | null
+          section_id?: string
+        }
+        Relationships: []
+      }
       pages: {
         Row: {
           created_at: string
@@ -394,7 +469,6 @@ export type Database = {
           page_id: string
           position: number
           query: Json | null
-          sentence_links: Json
           status: Database["public"]["Enums"]["section_status"]
           title: string
         }
@@ -408,7 +482,6 @@ export type Database = {
           page_id: string
           position: number
           query?: Json | null
-          sentence_links?: Json
           status?: Database["public"]["Enums"]["section_status"]
           title: string
         }
@@ -422,7 +495,6 @@ export type Database = {
           page_id?: string
           position?: number
           query?: Json | null
-          sentence_links?: Json
           status?: Database["public"]["Enums"]["section_status"]
           title?: string
         }
@@ -565,7 +637,31 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      section_lines: {
+        Row: {
+          author: Database["public"]["Enums"]["actor_kind"] | null
+          content: string | null
+          is_stale: boolean | null
+          last_changed_at: string | null
+          line_id: string | null
+          line_revision_id: string | null
+          model_version: string | null
+          page_id: string | null
+          position: number | null
+          section_id: string | null
+          unit_revision_ids: string[] | null
+        }
+        Relationships: []
+      }
+      stale_lines: {
+        Row: {
+          author: Database["public"]["Enums"]["actor_kind"] | null
+          line_id: string | null
+          line_revision_id: string | null
+          section_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
@@ -581,6 +677,10 @@ export type Database = {
         | "merge_duplicates"
         | "link"
         | "set_epistemic_status"
+        | "write_line"
+        | "revise_line"
+        | "retire_line"
+        | "move_line"
       actor_kind: "ai" | "person"
       change_set_status:
         | "draft"
@@ -658,6 +758,10 @@ export const Constants = {
         "merge_duplicates",
         "link",
         "set_epistemic_status",
+        "write_line",
+        "revise_line",
+        "retire_line",
+        "move_line",
       ],
       actor_kind: ["ai", "person"],
       change_set_status: ["draft", "checking", "applied", "partly_applied", "rejected", "reverted"],

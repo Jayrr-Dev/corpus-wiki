@@ -16,7 +16,7 @@ function useOpenExceptionCount(): number {
 function NeedsYouBadge({ count }: { count: number }) {
   if (count === 0) return null;
   return (
-    <span className="absolute -top-0.5 -right-0.5 min-w-3.5 rounded-full bg-needs-you px-1 text-center font-mono text-[10px] leading-3.5 text-background">
+    <span className="absolute -top-0.5 -right-0.5 min-w-3.5 rounded-full bg-needs-you px-1 text-center font-mono text-xs leading-3.5 text-background">
       {count}
     </span>
   );
@@ -40,7 +40,7 @@ export function Ribbon() {
       <div className="my-1 h-px w-5 bg-border" />
       {SECONDARY_NAV.map(renderLink)}
       <form action={signOut} className="mt-auto">
-        <button type="submit" className="rounded-md px-1 py-1 text-[11px] text-faint hover:bg-hover hover:text-text">
+        <button type="submit" className="rounded-md px-1 py-1 text-xs text-faint hover:bg-hover hover:text-text">
           Sign out
         </button>
       </form>

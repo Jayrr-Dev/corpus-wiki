@@ -1,12 +1,16 @@
-import { UnitIcon } from "@/components/icons";
-import { EmptyState } from "@/components/EmptyState";
+import { Suspense } from "react";
+import { Note } from "@/app/(app)/_components/bits";
 import { ReadingPane } from "@/components/shell";
+import { UnitsScreen } from "./UnitsScreen";
 
-// KNOWLEDGE (/units): stub from agent A; agent E builds it
+// UNITS (/units): every knowledge unit, filterable by kind, status, domain, entity and state.
+// Suspense because the filters live in the URL (useSearchParams).
 export default function UnitsPage() {
   return (
-    <ReadingPane title="Knowledge">
-      <EmptyState icon={UnitIcon} title="No knowledge units yet" />
+    <ReadingPane title="Units">
+      <Suspense fallback={<Note>Loading…</Note>}>
+        <UnitsScreen />
+      </Suspense>
     </ReadingPane>
   );
 }

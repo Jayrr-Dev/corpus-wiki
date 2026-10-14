@@ -1,0 +1,62 @@
+import type { EpistemicStatus, UnitKind } from "@/lib/ai/types";
+import type { Enums } from "@/lib/database/types";
+
+// =====================================================================
+// LIVING PAGE TYPES: what the section writer is given and returns, and
+// the shapes the living-page DB functions take and return (camelCase).
+// Lines as rows: a section is its lines; each line cites the claims it states.
+// No server-only imports: the wiki page reads these types too.
+// =====================================================================
+
+// SECTION QUERY (sections.query): every key optional
+export type SectionQuery = {
+  entity?: { type: string; key: string };
+  domainPaths?: string[];
+  kinds?: UnitKind[];
+};
+
+// ONE UNIT A SECTION SHOWS, at its current revision
+export type SectionUnit = {
+  unitId: string;
+  revisionId: string;
+  content: string;
+  kind: UnitKind;
+  epistemicStatus: EpistemicStatus;
+};
+
+// ONE CURRENT LINE OF A SECTION, flagged when it must be rewritten
+// (a claim it cites changed, or the section no longer shows that claim)
+export type SectionLine = {
+  lineId: string;
+  lineRevisionId: string;
+  position: number;
+  content: string;
+  author: Enums<"actor_kind">;
+  unitIds: string[];
+  needsRewrite: boolean;
+};
+
+// DB: read_section_state
+export type SectionState = { sectionId: string; title: string; pageTitle: string; units: SectionUnit[]; lines: SectionLine[] };
+
+// WRITER INPUT: the section's claims and lines; only flagged lines and uncovered claims are its job
+export type SectionReviseInput = {
+  pageTitle: string;
+  sectionTitle: string;
+  units: SectionUnit[];
+  lines: SectionLine[];
+  uncoveredUnitIds: string[];
+};
+
+// WRITER OUTPUT: lines to rewrite, lines to remove, lines to add (each citing the units it states)
+export type LineText = { text: string; unitIds: string[] };
+export type SectionRevision = {
+  revise: (LineText & { lineId: string })[];
+  retire: string[];
+  add: LineText[];
+  modelVersion: string;
+};
+
+// DB FUNCTION SHAPES
+export type SectionRef = { sectionId: string; pageId: string };
+export type FinishedSectionBuild = { sectionId: string; changeNoteId: string | null };

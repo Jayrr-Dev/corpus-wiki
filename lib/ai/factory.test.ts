@@ -10,10 +10,4 @@ describe("getReconciliationClient", () => {
     const client = getReconciliationClient({ NODE_ENV: "test", NEBIUS_API_KEY: "test-key", AI_MODEL: "m" });
     expect(client.name).toBe("token-factory");
   });
-
-  it("does not pretend the real client works yet", async () => {
-    const client = getReconciliationClient({ NODE_ENV: "test", NEBIUS_API_KEY: "test-key" });
-    const input = { source: { id: "s", title: "t", sourceDate: "" }, passages: [], existingUnits: [] };
-    await expect(client.draftChangeSet(input)).rejects.toThrow(/not implemented/);
-  });
 });

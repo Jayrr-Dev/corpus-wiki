@@ -11,6 +11,7 @@ export { fetchRowById, fetchRows } from "./fetchers";
 export type { IdTableName, ListOptions, Row, TableName } from "./fetchers";
 export { queryKeys } from "./keys";
 export { useTableList, useTableRow } from "./useTable";
+export { fetchSectionLines, type ShownLine, useSectionLines } from "./sectionLines";
 
 // INGESTION
 export const useSources = (o: ListOptions<"sources"> = {}) =>
@@ -63,3 +64,6 @@ export const useSectionInputs = (o: ListOptions<"section_inputs"> = {}) => useTa
 export const useChangeNotes = (o: ListOptions<"change_notes"> = {}) =>
   useTableList("change_notes", { orderBy: "created_at", ascending: false, ...o });
 export const useChangeNote = (id?: string) => useTableRow("change_notes", id);
+export const useLine = (id?: string) => useTableRow("lines", id);
+export const useLineRevisions = (o: ListOptions<"line_revisions"> = {}) =>
+  useTableList("line_revisions", { orderBy: "created_at", ascending: false, ...o });

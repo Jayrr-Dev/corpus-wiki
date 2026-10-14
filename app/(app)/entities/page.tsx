@@ -1,12 +1,11 @@
-import { EntityIcon } from "@/components/icons";
-import { EmptyState } from "@/components/EmptyState";
 import { ReadingPane } from "@/components/shell";
+import { EntitiesTable } from "./EntitiesTable";
 
-// ENTITIES (/entities): stub from agent A; agent E builds it
+// ENTITIES (/entities): the real things claims are about
 export default function EntitiesPage() {
   return (
     <ReadingPane title="Entities">
-      <EmptyState icon={EntityIcon} title="No entities yet" />
+      <EntitiesTable />
     </ReadingPane>
   );
 }
