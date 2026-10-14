@@ -5,7 +5,7 @@ import type { Client } from "pg";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { hasLocalPostgres, type LocalPostgres, startLocalPostgres } from "../../test/db/localPostgres";
 import { dollarQuote, parseMode, quoteLiteral, readMigrationFiles, runMigrations } from "./migrate";
-import { type MigrationTarget, managementApiTarget, postgresTarget, projectRefFromUrl } from "./targets";
+import { type MigrationTarget, managementApiTarget, postgresTarget, projectRefFromUrl } from "./targets.ts";
 
 // =====================================================================
 // MIGRATION RUNNER TESTS (throwaway Postgres, temp migration folders)

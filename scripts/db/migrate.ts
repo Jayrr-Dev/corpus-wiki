@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { type MigrationTarget, targetFromEnvironment } from "./targets";
+import { type MigrationTarget, targetFromEnvironment } from "./targets.ts";
 
 // =====================================================================
 // DATABASE MIGRATION RUNNER
