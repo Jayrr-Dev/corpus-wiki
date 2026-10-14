@@ -47,7 +47,6 @@ export class TokenFactorySectionWriter {
       schema: sectionAnswerSchema,
       jsonSchema: z.toJSONSchema(sectionAnswerSchema),
       messages: buildMessages(input, refs),
-      maxTokens: 2000,
     });
     return { ...answerToRevision(value, refs), modelVersion: model };
   }
