@@ -35,7 +35,7 @@ describe("splitBody", () => {
 
   it("ignores links outside the body and keeps unlinked text", () => {
     const spans = splitBody("Hello world", [{ start: 6, end: 99, unitIds: ["x"] }]);
-    expect(spans).toEqual([{ text: "Hello world", link: null }]);
+    expect(spans).toEqual([{ start: 0, text: "Hello world", link: null }]);
   });
 });
 

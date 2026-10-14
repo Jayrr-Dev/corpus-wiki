@@ -9,8 +9,8 @@ import type { SentenceLink, WrittenSentence } from "./types";
 // SEPARATOR between sentences in a body
 const SENTENCE_SEPARATOR = " ";
 
-// One piece of a body for display: a linked sentence or the plain text between
-export type BodySpan = { text: string; link: SentenceLink | null };
+// One piece of a body for display: a linked sentence or the plain text between (start = offset in body)
+export type BodySpan = { start: number; text: string; link: SentenceLink | null };
 
 // Joins sentences into a body and records each sentence's [start, end) offsets
 export function composeBody(sentences: WrittenSentence[]): { body: string; sentenceLinks: SentenceLink[] } {
@@ -33,10 +33,10 @@ export function splitBody(body: string, links: SentenceLink[]): BodySpan[] {
   let cursor = 0;
   for (const link of ordered) {
     if (link.start < cursor) continue; // overlapping link: keep the first
-    if (link.start > cursor) spans.push({ text: body.slice(cursor, link.start), link: null });
-    spans.push({ text: body.slice(link.start, link.end), link });
+    if (link.start > cursor) spans.push({ start: cursor, text: body.slice(cursor, link.start), link: null });
+    spans.push({ start: link.start, text: body.slice(link.start, link.end), link });
     cursor = link.end;
   }
-  if (cursor < body.length) spans.push({ text: body.slice(cursor), link: null });
+  if (cursor < body.length) spans.push({ start: cursor, text: body.slice(cursor), link: null });
   return spans;
 }
