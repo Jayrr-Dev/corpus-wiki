@@ -9,6 +9,7 @@ import { TokenFactorySectionWriter } from "./writers/tokenFactory";
 export type * from "./types";
 export { commitLineEdit } from "./editLine";
 export { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
+export { MIN_CLAIMS_FOR_PAGE, type PageCandidate, pageProposalActions, proposePages } from "./proposePages";
 export { FakeSectionWriter } from "./writers/fake";
 export { TokenFactorySectionWriter } from "./writers/tokenFactory";
 

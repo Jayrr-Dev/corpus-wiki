@@ -108,5 +108,16 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return "line removed";
     case "move_line":
       return `line moved to ${String(object.position ?? "")}`;
+    case "create_page":
+      return `page “${text("title")}”`;
+    case "create_section":
+      return `section “${text("title")}”`;
+    case "rename_page":
+    case "rename_section":
+      return `renamed to “${text("title")}”`;
+    case "retire_page":
+      return "page removed";
+    case "retire_section":
+      return "section removed";
   }
 }

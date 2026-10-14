@@ -16,7 +16,8 @@ export const UNIT_ACTION_TYPES: ReadonlySet<Enums<"action_type">> = new Set([
 
 // Where an action's target lives: units, entities, or a domain's filtered unit list
 export function targetHref(type: Enums<"action_type">, targetId: string | null): string | null {
-  if (!targetId || type.endsWith("_line")) return null; // lines are read on their page, not alone
+  // Lines, sections and pages are read on their page, which is addressed by slug, not id
+  if (!targetId || type.endsWith("_line") || type.endsWith("_section") || type.endsWith("_page")) return null;
   if (type === "create_domain") return `/units?domain=${targetId}`;
   if (type === "create_entity") return `/entities/${targetId}`;
   return `/units/${targetId}`;

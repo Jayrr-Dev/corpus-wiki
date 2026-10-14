@@ -4,7 +4,9 @@ import { useState } from "react";
 import { StatusGlyph } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { type ShownLine, useLineRevisions, useRevision, useUnit } from "@/lib/queries";
+import { useServerAction } from "@/components/actions/useServerAction";
 import { submitEdit, submitLineEdit } from "@/lib/server-actions/knowledge";
+import { removeLine } from "@/lib/server-actions/pages";
 import { CitationChip } from "./CitationChip";
 import { TextEditor } from "./TextEditor";
 
@@ -36,7 +38,7 @@ function PanelHeading({ children }: { children: string }) {
   return <h2 className="text-panel font-medium tracking-wide text-faint uppercase">{children}</h2>;
 }
 
-// THE LINE ITSELF: its text and an inline Edit (a one-claim line also revises its claim)
+// THE LINE ITSELF: its text, an inline Edit (a one-claim line also revises its claim) and Remove
 function LineCard({ line }: { line: ShownLine }) {
   const [isEditing, setIsEditing] = useState(false);
   if (isEditing) {
@@ -53,10 +55,26 @@ function LineCard({ line }: { line: ShownLine }) {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-panel">{line.content}</p>
-      <Button type="button" size="sm" variant="ghost" className="self-start" onClick={() => setIsEditing(true)}>
-        Edit line
-      </Button>
+      <div className="flex gap-1">
+        <Button type="button" size="sm" variant="ghost" onClick={() => setIsEditing(true)}>
+          Edit line
+        </Button>
+        <RemoveLineButton line={line} />
+      </div>
     </div>
+  );
+}
+
+// REMOVE LINE: retires it (undo on the Changes screen brings it back); the claims stay
+function RemoveLineButton({ line }: { line: ShownLine }) {
+  const remove = useServerAction(removeLine);
+  return (
+    <>
+      <Button type="button" size="sm" variant="ghost" disabled={remove.isPending} onClick={() => void remove.run(line.lineId, line.lineRevisionId)}>
+        {remove.isPending ? "Removing…" : "Remove line"}
+      </Button>
+      {remove.error ? <p className="text-panel text-failed">{remove.error}</p> : null}
+    </>
   );
 }
 

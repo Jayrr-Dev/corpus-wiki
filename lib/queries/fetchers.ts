@@ -10,7 +10,7 @@ export type IdTableName = {
   [K in TableName]: Row<K> extends { id: string } ? K : never;
 }[TableName];
 
-// LIST OPTIONS: equality filters, one sort column, an optional cap
+// LIST OPTIONS: equality filters (null means "is null"), one sort column, an optional cap
 export type ListOptions<T extends TableName> = {
   filters?: Partial<Row<T>>;
   orderBy?: keyof Row<T> & string;
@@ -28,7 +28,10 @@ export async function fetchRows<T extends TableName>(
 ): Promise<Row<T>[]> {
   // The generic `from(table)` loses the row type, so the result is narrowed once here
   let query = client.from(table).select("*");
-  if (options.filters) query = query.match(options.filters as Record<string, string>);
+  const filters = Object.entries(options.filters ?? {});
+  const equal = Object.fromEntries(filters.filter(([, value]) => value !== null));
+  if (filters.length > 0) query = query.match(equal as Record<string, string>);
+  for (const [column] of filters.filter(([, value]) => value === null)) query = query.filter(column, "is", null);
   if (options.orderBy) query = query.order(options.orderBy, { ascending: options.ascending ?? true });
   if (options.limit) query = query.limit(options.limit);
   const { data, error } = await query;

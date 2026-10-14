@@ -9,6 +9,9 @@ import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import type { Tables } from "@/lib/database/types";
 import { type ShownLine, usePages, useSectionLines, useSections } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime";
+import { PageMenu } from "@/app/(app)/_pages/PageMenu";
+import { AddSectionDialog } from "./AddSectionDialog";
+import { SectionMenu } from "./SectionMenu";
 
 // WIKI PAGE VIEW: finds the page by slug, then shows its live sections
 export function WikiPageView({ slug }: { slug: string }) {
@@ -36,7 +39,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   // The selected line follows its latest text (a rewrite keeps the line id)
   const selected = lines.find((line) => line.lineId === selectedLineId);
   return (
-    <ReadingPane title={page.title} width="prose">
+    <ReadingPane title={page.title} width="prose" actions={<PageActions page={page} />}>
       {isPending ? <p className="text-panel text-faint">Loading…</p> : null}
       {!isPending && sections.length === 0 ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
       <div className="flex flex-col gap-6" data-tour="page-body">
@@ -47,6 +50,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
               lines={linesOf(lines, section.id)}
               selectedLineId={selectedLineId}
               onSelect={(line) => setSelectedLineId(line.lineId)}
+              menu={<SectionMenu section={section} />}
             />
           </ErrorBoundary>
         ))}
@@ -57,6 +61,16 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
         </RightPanelSlot>
       ) : null}
     </ReadingPane>
+  );
+}
+
+// PAGE HEADER ACTIONS: add a section, and the page's own menu (rename, remove)
+function PageActions({ page }: { page: Tables<"pages"> }) {
+  return (
+    <div className="flex items-center gap-1">
+      <AddSectionDialog page={page} />
+      <PageMenu page={page} />
+    </div>
   );
 }
 
