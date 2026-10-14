@@ -8,7 +8,7 @@ import type { Tables } from "@/lib/database/types";
 import { undoChangeSet } from "@/lib/server-actions/knowledge";
 
 // STATUSES THAT CAN BE UNDONE (something was applied)
-const UNDOABLE: ReadonlySet<Tables<"change_sets">["status"]> = new Set(["applied", "partly_applied"]);
+export const UNDOABLE: ReadonlySet<Tables<"change_sets">["status"]> = new Set(["applied", "partly_applied"]);
 
 // UNDO: reverts the whole set through Change control; errors show inline
 export function UndoButton({ changeSet }: { changeSet: Tables<"change_sets"> }) {
