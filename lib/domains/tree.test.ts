@@ -4,7 +4,7 @@ import { buildDomainTree } from "./tree";
 
 // FIXTURE BUILDER: a domain row with only the fields the tree uses varying
 function domain(id: string, name: string, parent_id: string | null): Tables<"domains"> {
-  return { id, name, parent_id, path: name, created_at: "", proposed_by: "ai" };
+  return { id, name, parent_id, path: name, created_at: "", proposed_by: "ai", retired_at: null };
 }
 
 describe("buildDomainTree", () => {

@@ -119,5 +119,12 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return "page removed";
     case "retire_section":
       return "section removed";
+    case "update_entity":
+      return `renamed to “${text("name")}”`;
+    case "update_domain":
+      return `renamed to “${text("name")}”`;
+    case "retire_entity":
+    case "retire_domain":
+      return text("reason");
   }
 }

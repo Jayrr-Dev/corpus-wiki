@@ -6,7 +6,18 @@ import type { Enums } from "@/lib/database/types";
 // =====================================================================
 
 // EDITS A PERSON MAKES FROM A SCREEN (each becomes a one-action ChangeSet)
-export type PersonActionType = "create_entity" | "create_domain" | "add_claim" | "revise_claim" | "retire_claim" | "link" | "set_epistemic_status";
+export type PersonActionType =
+  | "create_entity"
+  | "update_entity"
+  | "retire_entity"
+  | "create_domain"
+  | "update_domain"
+  | "retire_domain"
+  | "add_claim"
+  | "revise_claim"
+  | "retire_claim"
+  | "link"
+  | "set_epistemic_status";
 export type PersonAction = Extract<DraftAction, { type: PersonActionType }>;
 
 // RESULT OF ONE COMMIT (returned by commit_change_set)

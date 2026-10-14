@@ -77,9 +77,9 @@ function AboutFields({ values, set }: AboutFieldsProps) {
   const { data: entities = [] } = useEntities();
   const { data: domains = [] } = useDomains();
   const entityOptions = entities
-    .filter((entity) => !entity.merged_into_id)
+    .filter((entity) => !entity.merged_into_id && !entity.retired_at)
     .map((entity) => ({ value: `${entity.type}${ENTITY_SEPARATOR}${entity.key}`, label: `${entity.name} (${entity.type})` }));
-  const domainOptions = domains.map((domain) => ({ value: domain.path, label: domain.path }));
+  const domainOptions = domains.filter((domain) => !domain.retired_at).map((domain) => ({ value: domain.path, label: domain.path }));
   return (
     <div className="grid grid-cols-2 gap-3">
       <FormRow htmlFor="unit-entity" label="About">

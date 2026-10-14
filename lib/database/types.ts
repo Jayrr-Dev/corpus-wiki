@@ -157,6 +157,7 @@ export type Database = {
           parent_id: string | null
           path: string
           proposed_by: Database["public"]["Enums"]["actor_kind"]
+          retired_at: string | null
         }
         Insert: {
           created_at?: string
@@ -165,6 +166,7 @@ export type Database = {
           parent_id?: string | null
           path: string
           proposed_by: Database["public"]["Enums"]["actor_kind"]
+          retired_at?: string | null
         }
         Update: {
           created_at?: string
@@ -173,6 +175,7 @@ export type Database = {
           parent_id?: string | null
           path?: string
           proposed_by?: Database["public"]["Enums"]["actor_kind"]
+          retired_at?: string | null
         }
         Relationships: []
       }
@@ -185,6 +188,7 @@ export type Database = {
           merged_into_id: string | null
           name: string
           properties: Json
+          retired_at: string | null
           type: string
         }
         Insert: {
@@ -195,6 +199,7 @@ export type Database = {
           merged_into_id?: string | null
           name: string
           properties?: Json
+          retired_at?: string | null
           type: string
         }
         Update: {
@@ -205,6 +210,7 @@ export type Database = {
           merged_into_id?: string | null
           name?: string
           properties?: Json
+          retired_at?: string | null
           type?: string
         }
         Relationships: []
@@ -693,6 +699,10 @@ export type Database = {
         | "create_section"
         | "rename_section"
         | "retire_section"
+        | "update_entity"
+        | "retire_entity"
+        | "update_domain"
+        | "retire_domain"
       actor_kind: "ai" | "person"
       change_set_status:
         | "draft"
@@ -780,6 +790,10 @@ export const Constants = {
         "create_section",
         "rename_section",
         "retire_section",
+        "update_entity",
+        "retire_entity",
+        "update_domain",
+        "retire_domain",
       ],
       actor_kind: ["ai", "person"],
       change_set_status: ["draft", "checking", "applied", "partly_applied", "rejected", "reverted"],

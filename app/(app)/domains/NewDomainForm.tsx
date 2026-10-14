@@ -21,7 +21,7 @@ export function NewDomainForm({ parentPath, onDone }: { parentPath: string | nul
   const [parent, setParent] = useState(parentPath ?? "");
   const { data: domains = [] } = useDomains();
   const edit = useSubmitEdit(onDone);
-  const parentOptions = domains.map((domain) => ({ value: domain.path, label: domain.path }));
+  const parentOptions = domains.filter((domain) => !domain.retired_at).map((domain) => ({ value: domain.path, label: domain.path }));
   return (
     <DialogForm
       title="New domain"
