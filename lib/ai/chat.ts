@@ -17,7 +17,19 @@ export type ChatMessage = { role: "system" | "user"; content: string };
 
 export type ChatJsonResult<T> = { value: T; model: string; tokensIn: number | null; tokensOut: number | null };
 
-type CompletionResponse = {
+// REASONING EFFORT: "medium". Reasoning models think before they answer, and the thinking
+// counts against max_tokens. On a 169-passage PDF, GLM-5.3-Flash at its default effort
+// thought through 8,000 tokens, then 32,000, and never wrote the JSON. Measured on that PDF:
+//   GLM-5.3-Flash  low: 19 actions in 14 s   medium: 64 actions in 134 s
+//   Nemotron Super low:  4 actions in 3 s    medium: 26 actions in 18 s
+// "low" skips most of the file; "medium" reads it and still finishes.
+const REASONING_EFFORT = "medium";
+
+// ANSWER TOKEN BUDGET (max_tokens): room for a long file's full answer plus any thinking.
+// It is only a ceiling; a call is billed for the tokens it uses.
+export const ANSWER_TOKEN_BUDGET = 32_000;
+
+export type CompletionResponse = {
   model?: string;
   choices?: { message?: { content?: string | null }; finish_reason?: string }[];
   usage?: { prompt_tokens?: number; completion_tokens?: number };
@@ -47,7 +59,8 @@ export async function chatJson<S extends z.ZodType>(
       model,
       messages: request.messages,
       temperature: 0,
-      max_tokens: request.maxTokens ?? 8000,
+      max_tokens: request.maxTokens ?? ANSWER_TOKEN_BUDGET,
+      reasoning_effort: REASONING_EFFORT,
       response_format: { type: "json_schema", json_schema: { name: request.name, schema: request.jsonSchema } },
     }),
   });
@@ -61,12 +74,27 @@ export async function chatJson<S extends z.ZodType>(
   };
 }
 
-// Pulls the message text out of the completion and validates it against the schema
-function parseContent<S extends z.ZodType>(body: CompletionResponse, schema: S): z.infer<S> {
+// Pulls the message text out of the completion and validates it against the schema.
+// Each way an answer can be unusable gets its own message, so the Upload screen says what happened.
+export function parseContent<S extends z.ZodType>(body: CompletionResponse, schema: S): z.infer<S> {
   const choice = body.choices?.[0];
-  const content = choice?.message?.content;
+  const content = choice?.message?.content?.trim();
+  if (choice?.finish_reason === "length") {
+    throw new Error(
+      `The model ran out of room after ${body.usage?.completion_tokens ?? "its"} tokens before finishing its answer. Try again, or pick another model in Settings.`,
+    );
+  }
   if (!content) throw new Error(`The model returned no answer (finish reason: ${choice?.finish_reason ?? "unknown"}).`);
-  const parsed = schema.safeParse(JSON.parse(content));
+  const parsed = schema.safeParse(parseJson(content));
   if (!parsed.success) throw new Error(`The model's answer did not match the expected shape: ${parsed.error.message}`);
   return parsed.data;
+}
+
+// JSON.parse with a message a person can act on instead of "Unexpected end of JSON input"
+function parseJson(content: string): unknown {
+  try {
+    return JSON.parse(content);
+  } catch {
+    throw new Error(`The model's answer was not valid JSON (it ends with: "${content.slice(-80)}").`);
+  }
 }
