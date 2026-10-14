@@ -11,3 +11,8 @@ export type ProcessUploadResult = {
   changeSetId: string | null;
   error: string | null;
 };
+
+// RESULT OF THE ONE-CALL CAPTURE: skipped (seen before) or both steps run
+export type CaptureResult =
+  | { kind: "skipped"; sourceId: string }
+  | ({ kind: "processed"; sourceId: string; eventId: string } & ProcessUploadResult);

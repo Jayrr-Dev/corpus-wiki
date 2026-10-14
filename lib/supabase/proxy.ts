@@ -3,8 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database/types";
 import { getPublicSupabaseEnv } from "./env";
 
-// ROUTES ANYONE MAY OPEN WITHOUT SIGNING IN
-export const PUBLIC_PATHS = ["/login"] as const;
+// ROUTES THE PROXY LETS THROUGH WITHOUT A SESSION. /api/capture checks the
+// caller itself (session or API key), since scripts have no cookie to redirect;
+// every other route, future /api routes included, stays behind sign-in
+export const PUBLIC_PATHS = ["/login", "/api/capture"] as const;
 
 // True when the path is a public route (or below one)
 export function isPublicPath(pathname: string): boolean {
