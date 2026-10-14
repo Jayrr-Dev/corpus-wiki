@@ -1,7 +1,14 @@
 "use server";
 
 import { requireUser } from "@/lib/auth/requireUser";
-import { processUploadEvent, type ProcessUploadResult, startUploadFromFile, type StartUploadResult } from "@/lib/ingest";
+import {
+  processUploadEvent,
+  type ProcessUploadResult,
+  retryUploadEvent,
+  startSourceRerun,
+  startUploadFromFile,
+  type StartUploadResult,
+} from "@/lib/ingest";
 import { type ActionResult, toActionResult } from "./result";
 
 // =====================================================================
@@ -25,5 +32,21 @@ export async function processUpload(eventId: string): Promise<ActionResult<Proce
   return toActionResult(async () => {
     await requireUser();
     return processUploadEvent(eventId);
+  });
+}
+
+// RETRY: step 2 again for a failed upload (Recent uploads, the chosen file's status line)
+export async function retryUpload(eventId: string): Promise<ActionResult<ProcessUploadResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    return retryUploadEvent(eventId);
+  });
+}
+
+// RERUN STEP 1: a stored source gets a fresh upload event (Sources "…" menu); processUpload runs it
+export async function startRerun(sourceId: string): Promise<ActionResult<StartUploadResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    return startSourceRerun(sourceId);
   });
 }
