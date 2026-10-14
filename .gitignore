@@ -1,0 +1,20 @@
+# DEPENDENCIES
+node_modules/
+
+# BUILD OUTPUT
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# SECRETS (copy .env.example to .env.local; never commit it)
+.env
+.env.local
+.env.*.local
+
+# LOGS AND OS FILES
+npm-debug.log*
+.DS_Store
+
+# VERCEL
+.vercel
