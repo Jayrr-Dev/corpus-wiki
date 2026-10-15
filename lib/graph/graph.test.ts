@@ -179,3 +179,22 @@ describe("saved settings", () => {
     expect(parseSavedSettings(older).filters).toEqual({ ...DEFAULT_GRAPH_SETTINGS.filters, showEntities: true });
   });
 });
+
+describe("claims sharing a topic label", () => {
+  it("shows distinct wording instead of two identical topic labels", () => {
+    const result = buildGraph({
+      ...rows,
+      revisions: [
+        { id: "r1", content: "The company holds safety meetings every week." },
+        { id: "r2", content: "Supervisors record attendance at safety meetings." },
+        rows.revisions[2]!,
+      ],
+    });
+    const first = result.nodes.find((node) => node.id === "u1")!;
+    const second = result.nodes.find((node) => node.id === "u2")!;
+    expect(first.label).not.toBe(second.label);
+    expect(first.label).toContain("every week");
+    expect(second.label).toContain("attendance");
+    expect(result.nodes).toHaveLength(graph.nodes.length);
+  });
+});

@@ -21,7 +21,7 @@ export async function planDedupePass(): Promise<ActionResult<{ clusters: string[
   });
 }
 
-// ONE CLUSTER: the model picks the duplicates; the merges wait for a person on Exceptions
+// Clean duplicates is explicit authorization to apply the model-confirmed merges.
 export async function dedupeBatch(unitIds: string[]): Promise<ActionResult<DedupeBatchResult>> {
   return toActionResult(async () => {
     await requireUser();
@@ -29,6 +29,7 @@ export async function dedupeBatch(unitIds: string[]): Promise<ActionResult<Dedup
     const db = supabaseRpc(client);
     const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
     if (!settings) throw new Error("The cleaning cycle needs NEBIUS_API_KEY in the server env.");
-    return dedupeCluster({ db, client, settings }, unitIds);
+    return dedupeCluster({ db, client, settings }, unitIds, "apply");
   });
 }
+

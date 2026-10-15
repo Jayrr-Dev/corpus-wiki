@@ -37,7 +37,7 @@ export function UnitsScreen() {
   const { data: entities = [] } = useEntities();
   return (
     <div className="flex flex-col gap-3">
-      <UnitFilterBar {...filterState} domains={domains} entities={entities} />
+      <div className="md:hidden"><UnitFilterBar {...filterState} domains={domains} entities={entities} /></div>
       <DataTable
         query={query}
         columns={COLUMNS}
@@ -67,3 +67,4 @@ function useFilteredUnits(filters: UnitFilters) {
   );
   return { data, ...readsState(reads) };
 }
+

@@ -10,9 +10,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <RightPanelProvider>
       <div className="flex h-dvh overflow-hidden bg-background text-text">
         <Ribbon />
-        <aside aria-label="Navigation" className="hidden w-60 shrink-0 overflow-y-auto border-r bg-sidebar md:block">
-          <SidebarTree />
-        </aside>
+        <SidebarTree />
         <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
         <RightPanel />
       </div>
@@ -20,3 +18,4 @@ export function AppShell({ children }: { children: ReactNode }) {
     </RightPanelProvider>
   );
 }
+

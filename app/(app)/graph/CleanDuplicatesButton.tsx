@@ -1,17 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { ErrorNote } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Button } from "@/components/ui/button";
 import { dedupeBatch, planDedupePass } from "@/lib/server-actions/dedupe";
 
-type Progress = { done: number; total: number; proposed: number; applied: number; exceptions: number; failed: number };
+type Progress = { done: number; total: number; proposed: number; applied: number; exceptions: number; removed: number; failed: number };
 
-// CLEAN DUPLICATES (graph settings): the cleaning cycle. Finds claims that look alike, asks
-// the model which are the same claim, and proposes merging them. Merges wait for a person on
-// the Exceptions screen; a wording update that merges details may be applied straight away.
+// Explicit cleanup merges matching claims directly and refreshes cached graph data.
 export function CleanDuplicatesButton() {
   const plan = useServerAction(planDedupePass);
   const dedupe = useServerAction(dedupeBatch);
@@ -23,7 +20,7 @@ export function CleanDuplicatesButton() {
     setBatchError(null);
     const planned = await plan.run();
     if (!planned.ok) return;
-    let current: Progress = { done: 0, total: planned.clusters.length, proposed: 0, applied: 0, exceptions: 0, failed: 0 };
+    let current: Progress = { done: 0, total: planned.clusters.length, proposed: 0, applied: 0, exceptions: 0, removed: 0, failed: 0 };
     setProgress(current);
     for (const cluster of planned.clusters) {
       const result = await dedupe.run(cluster);
@@ -35,6 +32,7 @@ export function CleanDuplicatesButton() {
         proposed: current.proposed + (result.ok ? result.proposed : 0),
         applied: current.applied + (result.ok ? result.applied : 0),
         exceptions: current.exceptions + (result.ok ? result.exceptions : 0),
+        removed: current.removed + (result.ok ? result.removed : 0),
         failed: current.failed + (result.ok ? 0 : 1),
       };
       setProgress(current);
@@ -52,14 +50,14 @@ export function CleanDuplicatesButton() {
             ? "No candidate duplicates found."
             : progress.proposed === 0
               ? "No confirmed duplicates found in checked groups."
-              : `${progress.proposed} merge group${progress.proposed === 1 ? "" : "s"} proposed · ${progress.applied} actions applied · ${progress.exceptions} awaiting review.`}
+              : `${progress.removed} duplicate${progress.removed === 1 ? "" : "s"} merged.`}
             {progress.failed > 0 && ` ${progress.failed} groups failed; cleanup is incomplete.`}
           </p>
-          {progress.exceptions > 0 ? <Link href="/exceptions" className="text-link hover:underline">Review merges to remove duplicates</Link> : null}
         </div>
       )}
       <ErrorNote error={plan.error ?? batchError} />
     </div>
   );
 }
+
 

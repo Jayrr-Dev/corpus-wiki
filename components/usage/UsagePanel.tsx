@@ -3,7 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { dateColumn, statusColumn, textColumn } from "@/app/(app)/_components/columns";
-import { Facts } from "@/app/(app)/_components/bits";
+
 import type { Tone } from "@/app/(app)/_lib/tone";
 import { EmptyState } from "@/components/EmptyState";
 import { DataTable } from "@/components/data-table";
@@ -78,15 +78,24 @@ export function UsagePanel() {
   const empty = <EmptyState icon={ChangeIcon} title="No AI calls yet" hint="Every upload and page rebuild is logged here." />;
   return (
     <div className="flex flex-col gap-6">
-      <Facts
-        items={[
-          ["Calls", `${formatCount(total.calls)} (${formatCount(total.failed)} cut off or failed)`],
-          ["Tokens in", formatCount(total.promptTokens)],
-          ["Tokens out", `${formatCount(total.completionTokens)} (${formatCount(total.reasoningTokens)} reasoning)`],
-        ]}
-      />
+      <div className="grid gap-3 sm:grid-cols-3">
+        {[
+          { label: "Total calls", value: total.calls, detail: `${formatCount(total.failed)} cut off or failed` },
+          { label: "Tokens in", value: total.promptTokens, detail: "Input tokens processed" },
+          { label: "Tokens out", value: total.completionTokens, detail: `${formatCount(total.reasoningTokens)} reasoning tokens` },
+        ].map(({ label, value, detail }) => (
+          <div key={label} className="min-w-0 rounded-xl border bg-sidebar/50 p-4">
+            <p className="text-xs font-medium text-muted-foreground">{label}</p>
+            <p className="mt-2 break-all text-2xl font-semibold tracking-tight tabular-nums">{calls.isPending ? "—" : formatCount(value)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+          </div>
+        ))}
+      </div>
+      <h3 className="font-medium">Daily breakdown</h3>
       <DataTable query={{ ...calls, data: totals }} columns={TOTAL_COLUMNS} getRowId={(row) => `${row.day}|${row.model}`} pageSize={7} filterPlaceholder="Search days or models…" emptyState={empty} />
+      <h3 className="font-medium">Recent calls</h3>
       <DataTable query={calls} columns={CALL_COLUMNS} getRowId={(call) => call.id} pageSize={20} filterPlaceholder="Search calls…" emptyState={empty} />
     </div>
   );
 }
+

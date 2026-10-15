@@ -30,13 +30,13 @@ export function ModelPicker({ settings }: { settings: ModelSettings }) {
   };
 
   return (
-    <div className="flex max-w-xl flex-col gap-3">
-      <p className="text-panel">
-        In use: <span className="font-mono">{settings.activeModel}</span>
+    <div className="flex min-w-0 flex-col gap-4">
+      <p className="rounded-lg bg-sidebar px-3 py-2.5 text-panel text-muted-foreground">
+        Active model: <span className="break-all font-mono text-foreground">{settings.activeModel}</span>
         {settings.chosenModel ? null : <span className="text-faint"> (default)</span>}
       </p>
       <ErrorNote error={settings.listError} />
-      <Input placeholder={`Search ${settings.models.length} models…`} value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search models" />
+      <Input className="h-10" placeholder={`Search ${settings.models.length} models…`} value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search models" />
       <ModelList models={matches} selected={selected} activeModel={settings.activeModel} onSelect={setSelected} />
       <ErrorNote error={save.error} />
       <div className="flex gap-2">
@@ -52,3 +52,5 @@ export function ModelPicker({ settings }: { settings: ModelSettings }) {
     </div>
   );
 }
+
+

@@ -54,14 +54,15 @@ function overlap(a: ReadonlySet<string>, b: ReadonlySet<string>): number {
 // CLUSTERS: units joined (transitively) by high word overlap. With `focusIds`, only
 // clusters that contain at least one of them (e.g. the units an upload just touched).
 export function findDuplicateClusters(units: readonly DedupeUnit[], focusIds?: ReadonlySet<string>): DedupeUnit[][] {
+  const normalized = units.map((unit) => unit.content.normalize("NFKC").trim().toLowerCase().replace(/\s+/g, " ").replace(/[.!?]+$/, ""));
   const words = units.map((unit) => new Set(contentWords(unit.content)));
   const parent = units.map((_, i) => i);
   const root = (i: number): number => (parent[i] === i ? i : (parent[i] = root(parent[i]!)));
   for (let i = 0; i < units.length; i++) {
-    if (words[i]!.size < MIN_WORDS) continue;
     for (let j = i + 1; j < units.length; j++) {
-      if (words[j]!.size < MIN_WORDS) continue;
-      if (overlap(words[i]!, words[j]!) >= OVERLAP_THRESHOLD) parent[root(j)] = root(i);
+      const exact = Boolean(normalized[i]) && normalized[i] === normalized[j];
+      const similar = words[i]!.size >= MIN_WORDS && words[j]!.size >= MIN_WORDS && overlap(words[i]!, words[j]!) >= OVERLAP_THRESHOLD;
+      if (exact || similar) parent[root(j)] = root(i);
     }
   }
   const groups = new Map<number, DedupeUnit[]>();
@@ -69,9 +70,20 @@ export function findDuplicateClusters(units: readonly DedupeUnit[], focusIds?: R
   return [...groups.values()]
     .filter((group) => group.length > 1 && (!focusIds || group.some((unit) => focusIds.has(unit.unitId))))
     .flatMap((group) => {
-      const chunks: DedupeUnit[][] = [];
-      for (let start = 0; start < group.length; start += DEDUPE_CLUSTER_MAX) chunks.push(group.slice(start, start + DEDUPE_CLUSTER_MAX));
-      return chunks.filter((chunk) => chunk.length > 1);
+      if (group.length <= DEDUPE_CLUSTER_MAX) return [group];
+      // Compare every pair of blocks: slicing into isolated batches misses
+      // duplicates on opposite sides of a batch boundary (and drops singletons).
+      const blocks: DedupeUnit[][] = [];
+      const blockSize = Math.floor(DEDUPE_CLUSTER_MAX / 2);
+      for (let start = 0; start < group.length; start += blockSize) blocks.push(group.slice(start, start + blockSize));
+      const batches: DedupeUnit[][] = [];
+      for (let i = 0; i < blocks.length; i++) {
+        for (let j = i + 1; j < blocks.length; j++) {
+          const batch = [...blocks[i]!, ...blocks[j]!];
+          if (!focusIds || batch.some((unit) => focusIds.has(unit.unitId))) batches.push(batch);
+        }
+      }
+      return batches;
     });
 }
 
@@ -91,7 +103,7 @@ const SYSTEM_PROMPT = `You keep a knowledge store of atomic claims ("units") fre
 
 Answer with JSON only: { "groups": Group[] }. Each Group is { keep, duplicates, content, reason }.
 - Two units are duplicates only if they make the same claim: the same subject, the same question, and no fact that contradicts or changes the other (a different number, date, frequency, scope or party means NOT a duplicate). Wording, order and level of detail may differ.
-- A unit that combines several other units into one sentence is a duplicate of them: keep the separate, atomic units and list the combined one in duplicates.
+- A unit that combines several distinct claims is NOT a duplicate of just one of those claims. Never retire a combined unit unless the kept unit preserves all of its facts.
 - keep: the ref (e.g. "U2") of the unit to keep. Prefer the unit whose kind and epistemicStatus fit best (a policy or rule is a fact or procedure, not a definition), then the oldest.
 - duplicates: refs of the units that are the same claim as keep. Never include keep itself; never put a unit in two groups.
 - content: null when keep's wording already holds every detail. Otherwise ONE self-contained sentence (or two at most) that keeps keep's meaning and adds the details only a duplicate has. Never add anything no unit in the group says.
@@ -154,3 +166,5 @@ export function dedupeAnswerToActions(answer: DedupeAnswer, units: readonly Dedu
   }
   return [...revises, ...merges];
 }
+
+

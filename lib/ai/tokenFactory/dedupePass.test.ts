@@ -26,6 +26,25 @@ describe("findDuplicateClusters", () => {
     expect(ids(findDuplicateClusters(units))).toEqual([["u1", "u2"], ["u3", "u4"]]);
   });
 
+  it("includes exact short duplicates without merging unrelated short topics", () => {
+    const short = [
+      unit("a", "Safety meetings"),
+      unit("b", "  SAFETY   meetings. "),
+      unit("c", "Emergency response"),
+    ];
+    expect(ids(findDuplicateClusters(short))).toEqual([["a", "b"]]);
+  });
+
+  it("compares candidates across batch boundaries without dropping the last unit", () => {
+    const many = Array.from({ length: 25 }, (_, i) => unit(`u${i}`, "The company conducts documented workplace inspections every week."));
+    const batches = findDuplicateClusters(many);
+    expect(batches.every((batch) => batch.length <= 12)).toBe(true);
+    for (let i = 0; i < many.length; i++) {
+      for (let j = i + 1; j < many.length; j++) {
+        expect(batches.some((batch) => batch.includes(many[i]!) && batch.includes(many[j]!))).toBe(true);
+      }
+    }
+  });
   it("keeps only clusters holding a focus unit", () => {
     expect(ids(findDuplicateClusters(units, new Set(["u4"])))).toEqual([["u3", "u4"]]);
   });
@@ -59,3 +78,4 @@ describe("dedupeAnswerToActions", () => {
     expect(actions[0]).toMatchObject({ type: "merge_duplicates", targetId: "u3", input: { duplicateUnitIds: ["u4"] } });
   });
 });
+

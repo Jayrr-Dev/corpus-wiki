@@ -13,13 +13,13 @@ type ModelListProps = {
 export function ModelList({ models, selected, activeModel, onSelect }: ModelListProps) {
   if (models.length === 0) return <Note>No model matches.</Note>;
   return (
-    <ul role="listbox" aria-label="Models" className="max-h-80 overflow-y-auto rounded-md border p-1">
+    <ul role="listbox" aria-label="Models" className="max-h-64 overflow-y-auto rounded-xl border p-1.5">
       {models.map((model) => (
         <li key={model} role="option" aria-selected={model === selected}>
           <button
             type="button"
             onClick={() => onSelect(model)}
-            className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1 text-left font-mono text-panel hover:bg-hover", model === selected && "bg-hover")}
+            className={cn("flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left font-mono text-panel transition-colors hover:bg-hover", model === selected && "bg-hover")}
           >
             <span className="min-w-0 flex-1 truncate">{model}</span>
             {model === activeModel ? <StatusDot tone="applied" label="in use" className="font-sans text-faint" /> : null}
@@ -29,3 +29,4 @@ export function ModelList({ models, selected, activeModel, onSelect }: ModelList
     </ul>
   );
 }
+

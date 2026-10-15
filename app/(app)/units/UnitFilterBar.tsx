@@ -15,15 +15,16 @@ const STATE_OPTIONS: SelectOption[] = [
 ];
 
 type UnitFilterBarProps = UnitFilterState & {
+  vertical?: boolean;
   domains: readonly Tables<"domains">[];
   entities: readonly Tables<"entities">[];
 };
 
 // FILTER BAR: kind, status, domain, entity and current/retired, side by side
-export function UnitFilterBar({ filters, setFilter, domains, entities }: UnitFilterBarProps) {
+export function UnitFilterBar({ filters, setFilter, domains, entities, vertical = false }: UnitFilterBarProps) {
   const entityOptions = entities.map((entity) => ({ value: entity.id, label: entity.name }));
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className={vertical ? "flex flex-col gap-4 [&>*]:w-full" : "flex flex-wrap gap-2"}>
       <OptionSelect label="Kind" value={filters.kind} options={KIND_OPTIONS} emptyLabel="Any kind" onChange={(v) => setFilter("kind", v)} />
       <OptionSelect label="Status" value={filters.status} options={STATUS_OPTIONS} emptyLabel="Any status" onChange={(v) => setFilter("status", v)} />
       <DomainTreeSelect label="Domain" value={filters.domain} domains={domains} emptyLabel="Any domain" onChange={(v) => setFilter("domain", v)} />
@@ -32,3 +33,4 @@ export function UnitFilterBar({ filters, setFilter, domains, entities }: UnitFil
     </div>
   );
 }
+

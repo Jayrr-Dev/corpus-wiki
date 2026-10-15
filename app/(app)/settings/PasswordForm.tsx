@@ -27,16 +27,16 @@ export function PasswordForm() {
   };
 
   return (
-    <form onSubmit={submit} className="flex max-w-sm flex-col gap-3">
+    <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
       <FormRow htmlFor="new-password" label="New password">
-        <Input id="new-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} />
+        <Input className="h-10" placeholder="Enter a new password" id="new-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} />
       </FormRow>
-      <FormRow htmlFor="confirm-password" label="Type it again">
-        <Input id="confirm-password" type="password" autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} />
+      <FormRow htmlFor="confirm-password" label="Confirm password">
+        <Input className="h-10" placeholder="Repeat your new password" id="confirm-password" type="password" autoComplete="new-password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} />
       </FormRow>
       <ErrorNote error={change.error} />
       {isChanged ? <Note>Password changed.</Note> : null}
-      <div>
+      <div className="sm:col-span-2">
         <Button type="submit" size="sm" disabled={change.isPending || !password || !confirmation}>
           {change.isPending ? "Changing…" : "Change password"}
         </Button>
@@ -44,3 +44,5 @@ export function PasswordForm() {
     </form>
   );
 }
+
+

@@ -125,8 +125,21 @@ export function countDegrees(links: readonly GraphLink[]): Map<string, number> {
 // BUILD: rows -> the full graph (every layer; filters decide what shows)
 export function buildGraph(rows: GraphRows): GraphData {
   const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)];
+  // Topic labels are deliberately broad. When different claims share one,
+  // show their actual wording rather than making them look like duplicates.
+  const labelCounts = new Map<string, number>();
+  for (const node of nodes) {
+    const key = node.label.toLowerCase();
+    labelCounts.set(key, (labelCounts.get(key) ?? 0) + 1);
+  }
+  for (const node of nodes) {
+    if (node.kind === "unit" && (labelCounts.get(node.label.toLowerCase()) ?? 0) > 1) {
+      node.label = shortLabel(node.text, 120);
+    }
+  }
   const ids = new Set(nodes.map((node) => node.id));
   const links = allLinks(rows).filter((link) => ids.has(link.source) && ids.has(link.target));
   const degrees = countDegrees(links);
   return { nodes: nodes.map((node) => ({ ...node, degree: degrees.get(node.id) ?? 0 })), links };
 }
+

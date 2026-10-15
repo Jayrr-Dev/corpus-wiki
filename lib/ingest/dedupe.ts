@@ -23,12 +23,19 @@ import type { AdminSupabase } from "@/lib/supabase/admin";
 
 type Deps = { db: DbRpc; client: AdminSupabase; settings: TokenFactorySettings };
 
-export type DedupeBatchResult = { changeSetId: string | null; proposed: number; applied: number; exceptions: number };
+export type DedupeBatchResult = { changeSetId: string | null; proposed: number; applied: number; exceptions: number; removed: number };
 
 // Every live unit with its current wording and the passages behind it
 async function loadUnits(client: AdminSupabase): Promise<DedupeUnit[]> {
-  const units = await client.from("units").select("id, kind, epistemic_status, current_revision_id, created_at").is("retired_at", null).order("created_at");
-  if (units.error) throw units.error;
+  // Read past PostgREST's row cap so cleanup covers the whole store.
+  const units: { data: { id: string; kind: DedupeUnit["kind"]; epistemic_status: DedupeUnit["epistemicStatus"]; current_revision_id: string; created_at: string }[] } = { data: [] };
+  for (let start = 0; ; start += 1000) {
+    const page = await client.from("units").select("id, kind, epistemic_status, current_revision_id, created_at")
+      .is("retired_at", null).order("created_at").order("id").range(start, start + 999);
+    if (page.error) throw page.error;
+    units.data.push(...page.data);
+    if (page.data.length < 1000) break;
+  }
   const revisionIds = units.data.map((unit) => unit.current_revision_id);
   const revisions = new Map<string, { content: string; passage_ids: string[] }>();
   // Revisions are read in chunks so the id list stays within URL limits
@@ -57,11 +64,11 @@ export async function planDedupeClusters(client: AdminSupabase, focusIds?: Reado
   return findDuplicateClusters(await loadUnits(client), focusIds).map((cluster) => cluster.map((unit) => unit.unitId));
 }
 
-// ONE CLUSTER: the model decides what is a duplicate; Change control judges the merges
-export async function dedupeCluster(deps: Deps, unitIds: string[]): Promise<DedupeBatchResult> {
+// Explicit cleanup applies as a person-requested edit. Background ingestion still proposes AI merges for review.
+export async function dedupeCluster(deps: Deps, unitIds: string[], mode: "review" | "apply" = "review"): Promise<DedupeBatchResult> {
   const wanted = new Set(unitIds);
   const units = (await loadUnits(deps.client)).filter((unit) => wanted.has(unit.unitId));
-  const empty = { changeSetId: null, proposed: 0, applied: 0, exceptions: 0 };
+  const empty = { changeSetId: null, proposed: 0, applied: 0, exceptions: 0, removed: 0 };
   if (units.length < 2) return empty;
   const answer = await chatJson(deps.settings, {
     name: "dedupe",
@@ -72,13 +79,19 @@ export async function dedupeCluster(deps: Deps, unitIds: string[]): Promise<Dedu
   const actions = dedupeAnswerToActions(answer.value, units);
   const merges = actions.filter((action) => action.type === "merge_duplicates").length;
   if (merges === 0) return empty;
-  const { changeSetId } = await submitChangeSet(deps.db, { eventId: null, cause: "edit", actor: "ai" }, {
+  const { changeSetId } = await submitChangeSet(deps.db, { eventId: null, cause: "edit", actor: mode === "apply" ? "person" : "ai" }, {
     summary: `Cleaning cycle: ${merges} duplicate group${merges === 1 ? "" : "s"} to merge`,
     actions,
     trace: { modelVersion: answer.model, promptVersion: DEDUPE_PROMPT_VERSION, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut },
   });
   const result = await commitChangeSet(deps.db, changeSetId);
-  return { changeSetId, proposed: merges, applied: result.applied, exceptions: result.exceptions };
+  if (mode === "apply" && result.status !== "applied") {
+    throw new Error("Cleanup could not apply every change. Refresh and try again.");
+  }
+  const removed = result.status === "applied"
+    ? actions.reduce((count, action) => count + (action.type === "merge_duplicates" ? action.input.duplicateUnitIds.length : 0), 0)
+    : 0;
+  return { changeSetId, proposed: merges, applied: result.applied, exceptions: result.exceptions, removed };
 }
 
 // Units an upload's applied actions touched (its new and changed claims)
@@ -102,3 +115,5 @@ export async function dedupeAfterEvent(deps: Deps, eventId: string): Promise<voi
   if (!touched.size) return;
   for (const cluster of await planDedupeClusters(deps.client, touched)) await dedupeCluster(deps, cluster);
 }
+
+
