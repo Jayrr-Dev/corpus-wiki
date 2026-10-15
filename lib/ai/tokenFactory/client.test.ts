@@ -14,7 +14,7 @@ const response = (options: RequestInit) => new Response(JSON.stringify({
   model: "nvidia/nemotron-3-super-120b-a12b",
   usage: { prompt_tokens: 10, completion_tokens: 20 },
   choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ summary: "Read policies", claims: passagesOf(options).map((passage) => ({
-    action: "add", unit: null, content: passage.text, kind: "fact", epistemicStatus: "supported", speechAct: "stated",
+    action: "add", unit: null, content: passage.text, title: "Policy", kind: "fact", epistemicStatus: "supported", speechAct: "stated",
     passages: [passage.ref], entities: [{ type: "company", key: "acme", name: "Acme", role: "subject" }], domainPaths: ["Policies"], reason: "New policy",
   })),
   // Every batch links its second claim to its first, by this batch's own claim refs
@@ -33,7 +33,7 @@ describe("batched reconciliation", () => {
     expect(claims.map((action) => action.passageIds)).toEqual(input(17).passages.map((passage) => [passage.id]));
     expect(draft.actions.filter((action) => action.type === "create_entity")).toHaveLength(1);
     expect(draft.actions.filter((action) => action.type === "create_domain")).toHaveLength(1);
-    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v4" });
+    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v6" });
   });
 
   it("renumbers each batch's claim refs so links point at the right claims", async () => {
@@ -42,8 +42,8 @@ describe("batched reconciliation", () => {
     // create_domain and create_entity take positions 0 and 1, so claim n sits at position n + 1
     const links = draft.actions.filter((action) => action.type === "link").map((action) => action.input);
     expect(links).toEqual([
-      { toUnitId: null, type: "related_to", fromPosition: 3, toPosition: 2 },
-      { toUnitId: null, type: "related_to", fromPosition: 11, toPosition: 10 },
+      { toUnitId: null, type: "related_to", fromPosition: 3, toPosition: 2, rationale: "Same policy" },
+      { toUnitId: null, type: "related_to", fromPosition: 11, toPosition: 10, rationale: "Same policy" },
     ]);
   });
 

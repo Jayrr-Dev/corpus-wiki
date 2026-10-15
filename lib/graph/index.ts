@@ -7,9 +7,21 @@
 
 export type * from "./types";
 export { buildGraph, countDegrees, shortLabel } from "./build";
-export { circleExtents, clusterCircles, clusterKeys, trunkDepth, type ClusterCircle, type ClusterLevel } from "./clusters";
+export { circleExtents, clusterCircles, clusterTree, deepestPaths, type ClusterCircle, type ClusterGroup } from "./clusters";
 export { applyFilters, createdBy, keepNodes, type GraphFilters } from "./filters";
-export { GRAPH_COLORS, groupColorLookup, parseGroupQuery, type GraphColor, type GraphGroup } from "./groups";
+export {
+  GRAPH_COLORS,
+  GROUP_FIELDS,
+  groupColorLookup,
+  groupCounts,
+  groupSuggestions,
+  joinGroupQuery,
+  parseGroupQuery,
+  splitGroupQuery,
+  type GraphColor,
+  type GraphGroup,
+  type GroupField,
+} from "./groups";
 export { neighborhood } from "./neighborhood";
 export { relatedLinks, scoreRelatedPairs, withRelated, type RelatedOptions, type ScoredPair } from "./related";
 export {
@@ -17,9 +29,11 @@ export {
   DISPLAY_SLIDERS,
   FORCE_SLIDERS,
   parseSavedSettings,
+  TITLE_POSITIONS,
   type GraphDisplay,
   type GraphForces,
   type GraphSettings,
   type SliderRule,
+  type TitlePosition,
 } from "./settings";
 export { useGraphData } from "./useGraphData";

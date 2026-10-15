@@ -8,17 +8,27 @@ import { createArticlePlanner, type PagePlanner } from "@/lib/living-page/articl
 import { getReconciliationClient } from "@/lib/ai/factory";
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import { dedupeAfterEvent } from "@/lib/ingest/dedupe";
+import { duplicateGuardFor } from "@/lib/ingest/duplicateGuardServer";
+import { embedderFromEnv } from "@/lib/ai/embeddings";
+import { embedMissingUnits } from "@/lib/knowledge/embeddingStore";
+import type { ImageDescriber } from "@/lib/ingest/describeMedia";
+import { imageDescriberFrom } from "@/lib/ingest/describeMediaServer";
+import type { VideoReader } from "@/lib/ingest/describeVideo";
+import { videoReaderFrom } from "@/lib/ingest/describeVideoServer";
+import { describeEventEntities } from "@/lib/knowledge/entityDescriptions";
 import { readChosenModel } from "@/lib/ai/models";
 import type { ReconciliationClient } from "@/lib/ai/types";
 import { type DbRpc, supabaseRpc } from "@/lib/db/rpc";
 import { getSectionWriter, type SectionWriter } from "@/lib/living-page";
+import type { PipelineDeps } from "@/lib/ingest/pipeline";
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { broadcastSectionProgress } from "./sectionBroadcast";
 
 // SERVER DEPENDENCIES: the database port and the two AI clients, built from env
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
 // Every AI call is logged to public.ai_calls (token usage on /settings).
 // Server actions take them from here; tests build their own (pg + fakes).
-export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void> };
+export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
 
 export async function getServerDeps(): Promise<ServerDeps> {
   const admin = getAdminSupabase();
@@ -28,13 +38,21 @@ export async function getServerDeps(): Promise<ServerDeps> {
   const settings = tokenFactoryFromEnv(process.env, chosenModel, logCall);
   if (settings) settings.skills = skills;
   const writer = getSectionWriter(process.env, chosenModel, skills, logCall);
+  // Section builds tell open pages what they are doing and stream their draft
+  writer.progress = broadcastSectionProgress(admin);
+  const embedder = embedderFromEnv(process.env, logCall);
   return {
     db,
-    deduper: settings ? (eventId) => dedupeAfterEvent({ db, client: admin, settings }, eventId) : undefined,
+    claimEmbedder: embedder ? async () => void (await embedMissingUnits(db, embedder)) : undefined,
+    deduper: settings ? (eventId) => dedupeAfterEvent({ db, client: admin, settings, embedder }, eventId) : undefined,
+    duplicateGuard: settings ? duplicateGuardFor(db, settings, embedder) : undefined,
+    entityDescriber: settings ? (eventId) => describeEventEntities({ client: admin, settings }, eventId) : undefined,
     hierarchyOrganizer: (eventId) => organizeEventHierarchy(db, eventId),
+    imageDescriber: imageDescriberFrom(settings),
     knowledgeExpander: settings ? (eventId) => expandEventKnowledge({ settings, client: admin, db, writer }, eventId) : undefined,
     pagePlanner: settings ? createArticlePlanner(settings, admin) : undefined,
     reconciler: getReconciliationClient(process.env, chosenModel, skills, logCall),
+    videoReader: videoReaderFrom(settings),
     writer,
   };
 }

@@ -1,16 +1,17 @@
 "use server";
 
+import { currentActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { listTokenFactoryModels, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
+import { listTokenFactoryModels, saveAllowExternalKnowledge, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { type ActionResult, toActionResult } from "./result";
 
 // =====================================================================
-// SETTINGS ACTIONS (called by /settings): the signed-in user's password,
-// and the workspace's AI model.
+// SETTINGS ACTIONS (called by /settings): the signed-in user's name and
+// password, and the workspace's AI model.
 // =====================================================================
 
 // PASSWORD: sets a new password for the signed-in user (Supabase Auth checks its own rules)
@@ -22,6 +23,18 @@ export async function changePassword(password: string, confirmation: string): Pr
     const supabase = await getServerSupabase();
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw new Error(error.message);
+    return {};
+  });
+}
+
+// NAME: what changes show as "Proposed by"; empty goes back to the email
+export async function setMyName(name: string): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    const { personId } = await currentActor();
+    if (!personId) throw new Error("Not signed in.");
+    if (name.trim().length > 80) throw new Error("Keep the name under 80 characters.");
+    await supabaseRpc(getAdminSupabase()).call("set_profile_name", { p_person_id: personId, p_name: name });
     return {};
   });
 }
@@ -41,6 +54,15 @@ export async function setAutoUpdateStale(enabled: boolean): Promise<ActionResult
   return toActionResult(async () => {
     await requireUser();
     await saveAutoUpdateStale(supabaseRpc(getAdminSupabase()), enabled);
+    return {};
+  });
+}
+
+// EXTERNAL KNOWLEDGE: lets Force Create search the web and store what it finds as external sources
+export async function setAllowExternalKnowledge(enabled: boolean): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    await saveAllowExternalKnowledge(supabaseRpc(getAdminSupabase()), enabled);
     return {};
   });
 }

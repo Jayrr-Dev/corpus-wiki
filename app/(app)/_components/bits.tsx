@@ -4,9 +4,11 @@ import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { EVIDENCE_TONE } from "@/app/(app)/_lib/tone";
 import { StatusGlyph } from "@/components/icons";
 import { ErrorToast } from "@/components/toast";
+import { Tooltip } from "@/components/standard/tooltip";
 import type { Evidence } from "@/lib/knowledge/evidence";
 import type { UnitSummary } from "@/lib/queries/screens";
 import { cn } from "@/lib/utils";
+import { Loader } from "@/components/standard/loader";
 
 // =====================================================================
 // SMALL SHARED PIECES: section blocks, links, notes and query states.
@@ -46,9 +48,11 @@ export function EvidenceBadge({ evidence, className }: { evidence: Evidence | un
   if (evidence !== "stale" && evidence !== "lost") return null;
   const hint = evidence === "stale" ? "A file it cites is archived or replaced" : "A file it cites was deleted";
   return (
-    <span title={hint} className={cn("text-muted-foreground", className)}>
-      <StatusDot tone={EVIDENCE_TONE[evidence]} label={evidence} />
-    </span>
+    <Tooltip content={hint}>
+      <span className={cn("text-muted-foreground", className)}>
+        <StatusDot tone={EVIDENCE_TONE[evidence]} label={evidence} />
+      </span>
+    </Tooltip>
   );
 }
 
@@ -74,10 +78,10 @@ export function ErrorNote({ error }: { error: string | null | undefined }) {
   );
 }
 
-// QUERY STATE: loading and error lines for a read; renders children once data is there
-export function QueryState({ query, children }: { query: { isPending: boolean; error: Error | null }; children: ReactNode }) {
+// QUERY STATE: the loader and error line for a read; renders children once data is there (`loading` replaces the loader)
+export function QueryState({ query, loading, children }: { query: { isPending: boolean; error: Error | null }; loading?: ReactNode; children: ReactNode }) {
   if (query.error) return <ErrorNote error={`Could not load: ${query.error.message}`} />;
-  if (query.isPending) return <Note>Loading…</Note>;
+  if (query.isPending) return loading ?? <Loader />;
   return <>{children}</>;
 }
 

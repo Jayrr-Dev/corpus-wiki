@@ -35,4 +35,10 @@ describe("section plan", () => {
       { type: "write_line", targetId: null, expectedRevisionId: null, passageIds: [], speechAct: null, input: { sectionId: "s1", position: 2, content: "Claim 3.", unitRevisionIds: ["r3"] } },
     ]);
   });
+
+  it("drops a chart whose numbers the cited claims do not state", () => {
+    const chart = (a: number, b: number) => ["Totals:", "```chart bar Totals", `A: ${a}`, `B: ${b}`, "```"].join("\n");
+    const actions = revisionToActions({ revise: [], retire: [], add: [{ text: chart(1, 2), unitIds: ["u1", "u2"] }, { text: chart(1, 9), unitIds: ["u1", "u2"] }], modelVersion: "fake" }, STATE);
+    expect(actions.map((action) => (action.input as { content: string }).content)).toEqual([chart(1, 2), "Totals:"]);
+  });
 });

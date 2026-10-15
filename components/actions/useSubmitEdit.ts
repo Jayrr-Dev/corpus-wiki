@@ -16,7 +16,7 @@ function outcomeMessage(result: CommitResult): string {
 // SUBMIT ONE TYPED ACTION through Change control; closes via `onApplied` when it applied,
 // otherwise says why (the checks rejected it, or it waits in Exceptions)
 export function useSubmitEdit(onApplied: () => void): SubmitEdit {
-  const edit = useServerAction(submitEdit);
+  const edit = useServerAction(submitEdit, { progress: { title: "Saving your change", detail: "Updating affected articles…", delayMs: 800 } });
   const [outcome, setOutcome] = useState<string | null>(null);
   const submit = async (action: PersonAction) => {
     setOutcome(null);

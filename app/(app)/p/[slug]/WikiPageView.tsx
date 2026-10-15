@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { PageIcon } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorBoundary } from "@/components/error";
-import { LinePanel, LiveSection } from "@/components/living-page";
+import { type LinePreview, LinePanel, LiveSection, SectionPanel } from "@/components/living-page";
 import { ArticleSources } from "@/components/living-page/ArticleSources";
 import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import { Button } from "@/components/ui/button";
@@ -21,17 +21,24 @@ import { PageMenu } from "@/app/(app)/_pages/PageMenu";
 import { AddSectionDialog } from "./AddSectionDialog";
 import { SectionMenu } from "./SectionMenu";
 import { UpdateArticleDialog } from "./UpdateArticleDialog";
+import { Loader } from "@/components/standard/loader";
 
 export function WikiPageView({ slug }: { slug: string }) {
   const { data: pages = [], isPending, error } = usePages({ filters: { slug } });
   const page = pages[0];
-  if (isPending) return <ReadingPane title="Loading…" width="prose" />;
+  if (isPending) return <Loader className="h-full" />;
   if (error || !page) return <ReadingPane title="Page" width="prose"><EmptyState icon={PageIcon} title={error ? error.message : "No page with this address"} /></ReadingPane>;
   return <WikiPageBody key={page.id} page={page} />;
 }
 
 function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
+  // A clicked section title opens its own panel in place of a line's
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  // An older version of the selected line shown on the page from History's Preview (nothing is saved)
+  const [preview, setPreview] = useState<LinePreview | null>(null);
+  // The line being rewritten in place on the page
+  const [editingLineId, setEditingLineId] = useState<string | null>(null);
   const [showEmpty, setShowEmpty] = useState(false);
   const sectionsQuery = useSections({ filters: { page_id: page.id } });
   const sections = sectionsQuery.data ?? [];
@@ -49,6 +56,26 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   useRealtimeInvalidation("lines");
   useRealtimeInvalidation("change_notes");
   const selected = lines.find((line) => line.lineId === selectedLineId);
+  const shownPreview = preview && preview.lineId === selected?.lineId ? preview : null;
+  const selectLine = (line: ShownLine) => {
+    setSelectedLineId(line.lineId);
+    setSelectedSectionId(null);
+    if (line.lineId !== preview?.lineId) setPreview(null);
+    if (line.lineId !== editingLineId) setEditingLineId(null);
+  };
+  // Edit opens the paragraph as a text box where it sits (a preview of an older version closes first)
+  const editLine = (line: ShownLine) => {
+    selectLine(line);
+    setPreview(null);
+    setEditingLineId(line.lineId);
+  };
+  const selectSection = (section: Tables<"sections">) => {
+    setSelectedSectionId(section.id);
+    setSelectedLineId(null);
+    setPreview(null);
+    setEditingLineId(null);
+  };
+  const selectedSection = sections.find((section) => section.id === selectedSectionId);
   const introduction = sections.find((section) => section.title.toLowerCase() === "overview");
   // A finished section with no lines is hidden; one still being written keeps its placeholder.
   const isEmpty = (section: Tables<"sections">) => !linesQuery.isPending && section.status === "current" && !lines.some((line) => line.sectionId === section.id);
@@ -58,7 +85,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const error = sectionsQuery.error?.message ?? linesQuery.error?.message;
   const renderSection = (section: Tables<"sections">, hideHeading = false) => (
     <ErrorBoundary key={section.id} where={`The section "${section.title}"`}>
-      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={(line) => setSelectedLineId(line.lineId)} evidence={evidence.loading ? undefined : evidence} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} />} />
+      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={selectLine} isSectionSelected={section.id === selectedSectionId} onSelectSection={() => selectSection(section)} preview={shownPreview} onExitPreview={() => setPreview(null)} editingLineId={editingLineId} onEndEdit={() => setEditingLineId(null)} evidence={evidence.loading ? undefined : evidence} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} />} />
     </ErrorBoundary>
   );
   return (
@@ -69,16 +96,15 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           {ancestors.map((ancestor) => <span key={ancestor.id} className="inline-flex items-center gap-2"><span aria-hidden="true">/</span><Link href={`/p/${ancestor.slug}`} className="text-link hover:underline">{ancestor.title}</Link></span>)}
           <span aria-hidden="true">/</span><span aria-current="page">{page.title}</span>
         </nav>
-        <h1 className="font-serif text-3xl leading-tight">{page.title}</h1>
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-panel">
-          <span className="text-faint">{evidence.references.length} sources · {topics.length} sections</span>
-          <PageActions page={page} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-serif text-3xl leading-tight">{page.title}</h1>
+          <div className="text-panel"><PageActions page={page} /></div>
         </div>
       </header>
       {error ? <p role="alert" className="mb-4 text-panel">Could not load this article: {error}</p> : null}
       {staleRefresh.error ? <p role="alert" className="mb-4 text-panel">{staleRefresh.error}</p> : null}
       {staleRefresh.isPending ? <p className="mb-4 text-panel text-faint">Updating stale lines…</p> : null}
-      {sectionsQuery.isPending || linesQuery.isPending ? <p className="text-panel text-faint">Loading article…</p> : null}
+      {sectionsQuery.isPending || linesQuery.isPending ? <Loader label="Loading article…" /> : null}
       {!sectionsQuery.isPending && !sections.length ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
       <div className="grid min-w-0 gap-8 xl:grid-cols-[10rem_minmax(0,1fr)]">
         {sections.length > 0 ? <nav aria-label="Article contents" className="text-panel xl:sticky xl:top-6 xl:self-start">
@@ -86,7 +112,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           <ol className="space-y-2 border-l pl-3">
             {introduction ? <li><a className="text-link hover:underline" href={`#section-${introduction.id}`}>Introduction</a></li> : null}
             {topics.map((section, index) => <li key={section.id}><a className="text-link hover:underline" href={`#section-${section.id}`}>{index + 1}. {section.title}</a></li>)}
-            <li><a className="text-link hover:underline" href="#article-see-also">See also</a></li>
+            {related.length ? <li><a className="text-link hover:underline" href="#article-see-also">See also</a></li> : null}
             <li><a className="text-link hover:underline" href="#article-sources">References</a></li>
           </ol>
         </nav> : null}
@@ -95,14 +121,15 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           {introduction ? renderSection(introduction, true) : null}
           {topics.map((section) => renderSection(section))}
           {emptyCount ? <button type="button" onClick={() => setShowEmpty((shown) => !shown)} className="text-panel text-faint hover:text-link">{showEmpty ? "Hide" : "Show"} {emptyCount} empty {emptyCount === 1 ? "section" : "sections"}</button> : null}
-          <section id="article-see-also" className="scroll-mt-6 border-t pt-5">
+          {related.length ? <section id="article-see-also" className="scroll-mt-6 border-t pt-5">
             <h2 className="mb-3 font-serif text-2xl">See also</h2>
-            {related.length ? <ul className="list-disc space-y-1 pl-5 text-body">{related.map((other) => <li key={other.id}><Link href={`/p/${other.slug}`} className="text-link hover:underline">{other.title}</Link></li>)}</ul> : <p className="text-panel text-faint">Related articles will appear as the knowledge base grows.</p>}
-          </section>
+            <ul className="list-disc space-y-1 pl-5 text-body">{related.map((other) => <li key={other.id}><Link href={`/p/${other.slug}`} className="text-link hover:underline">{other.title}</Link></li>)}</ul>
+          </section> : null}
           <ArticleSources references={evidence.references} loading={evidence.loading} error={evidence.error} />
         </article>
       </div>
-      {selected ? <RightPanelSlot><LinePanel key={selected.lineRevisionId} line={selected} /></RightPanelSlot> : null}
+      {selectedSection ? <RightPanelSlot><SectionPanel key={selectedSection.id} section={selectedSection} lines={lines.filter((line) => line.sectionId === selectedSection.id)} menu={<SectionMenu section={selectedSection} className="" />} onSelectLine={selectLine} /></RightPanelSlot> : null}
+      {selected ? <RightPanelSlot><LinePanel key={selected.lineRevisionId} line={selected} preview={shownPreview} onPreview={setPreview} isEditing={editingLineId === selected.lineId} onEdit={() => editLine(selected)} /></RightPanelSlot> : null}
     </div>
   );
 }
@@ -110,7 +137,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
 // Opens an article that still cites an old claim and rewrites those sections once.
 // A failed or unchanged line is not sent again until the page is opened again.
 function useAutoRefreshStale(lines: ShownLine[], ready: boolean) {
-  const refresh = useServerAction(refreshStaleSections);
+  const refresh = useServerAction(refreshStaleSections, { progress: { title: "Updating stale lines", detail: "Rewriting sections that cite old claims…" } });
   const sent = useRef(new Set<string>());
   const refreshRef = useRef(refresh);
   const staleKey = lines.filter((line) => line.isStale).map((line) => `${line.sectionId}:${line.lineId}`).sort().join("\n");
@@ -133,8 +160,8 @@ function useAutoRefreshStale(lines: ShownLine[], ready: boolean) {
 }
 
 function PageActions({ page }: { page: Tables<"pages"> }) {
-  const improve = useServerAction(improveArticle);
-  const expand = useServerAction(expandRelatedArticles);
+  const improve = useServerAction(improveArticle, { progress: { title: `Improving “${page.title}”`, detail: "Restructuring the article with AI…" } });
+  const expand = useServerAction(expandRelatedArticles, { progress: { title: `Expanding “${page.title}”`, detail: "Writing related articles with AI…" } });
   return (
     <div>
       <div className="flex items-center gap-1">

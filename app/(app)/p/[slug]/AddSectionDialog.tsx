@@ -23,7 +23,7 @@ export function AddSectionDialog({ page }: { page: Tables<"pages"> }) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="ghost">
+        <Button size="sm" variant="outline">
           Add section
         </Button>
       </DialogTrigger>
@@ -37,7 +37,7 @@ function AddSectionForm({ page, onDone }: { page: Tables<"pages">; onDone: () =>
   const [title, setTitle] = useState("");
   const [entityId, setEntityId] = useState(page.entity_id ?? "");
   const [kind, setKind] = useState("");
-  const create = useServerAction(createSection);
+  const create = useServerAction(createSection, { progress: { title: `Adding a section to “${page.title}”`, detail: "Writing the section…" } });
   const entityOptions = (useEntities().data ?? []).map((entity) => ({ value: entity.id, label: entity.name }));
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

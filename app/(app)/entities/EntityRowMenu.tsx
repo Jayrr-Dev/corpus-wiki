@@ -3,19 +3,21 @@
 import { useState } from "react";
 import { DialogForm } from "@/components/actions/DialogForm";
 import { FormRow } from "@/components/actions/FormRow";
+import { DeleteRetiredForm } from "@/components/actions/DeleteRetiredForm";
 import { RetireForm } from "@/components/actions/RetireForm";
 import { buildRetireEntity, buildUpdateEntity } from "@/components/actions/buildCatalog";
 import { useSubmitEdit } from "@/components/actions/useSubmitEdit";
 import { RowMenu, type RowMenuItem } from "@/components/row-menu/RowMenu";
 import { Input } from "@/components/ui/input";
 import type { Tables } from "@/lib/database/types";
+import { deleteEntityAction } from "@/lib/server-actions/catalog";
 
 type Entity = Tables<"entities">;
 
-// "…" MENU FOR ONE ENTITY: open, edit or retire it (a retired one can only be opened)
+// "…" MENU FOR ONE ENTITY: open, edit or retire it (a retired one: open or delete it for good)
 export function EntityRowMenu({ entity }: { entity: Entity }) {
   const edits: RowMenuItem[] = [
-    { label: "Edit", body: (close) => <EditEntityForm entity={entity} onDone={close} /> },
+    { label: "Edit", separatorBefore: true, body: (close) => <EditEntityForm entity={entity} onDone={close} /> },
     {
       label: "Retire",
       isDestructive: true,
@@ -29,7 +31,20 @@ export function EntityRowMenu({ entity }: { entity: Entity }) {
       ),
     },
   ];
-  return <RowMenu label={entity.name} items={[{ label: "Open", href: `/entities/${entity.id}` }, ...(entity.retired_at ? [] : edits)]} />;
+  const remove: RowMenuItem = {
+    label: "Delete",
+    isDestructive: true,
+    body: (close) => (
+      <DeleteRetiredForm
+        title={`Delete “${entity.name}” for good?`}
+        description="It is removed and cannot be restored. Units about it lose the link but are kept."
+        action={deleteEntityAction}
+        id={entity.id}
+        onDone={close}
+      />
+    ),
+  };
+  return <RowMenu label={entity.name} items={[{ label: "Open", href: `/entities/${entity.id}` }, ...(entity.retired_at ? [remove] : edits)]} />;
 }
 
 // EDIT: name and aliases (type and key stay: earlier actions name the entity by them)

@@ -33,7 +33,7 @@ function CreatePageForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [entityId, setEntityId] = useState("");
-  const create = useServerAction(createPage);
+  const create = useServerAction(createPage, { progress: { title: "Creating page", detail: "Building the page from saved knowledge…" } });
   const entityOptions = (useEntities().data ?? []).map((entity) => ({ value: entity.id, label: entity.name }));
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

@@ -1,4 +1,6 @@
+import { annotateUnitReferences } from "@/lib/ai/unitReferences";
 import type { DraftAction, ExistingUnit, ReconciliationInput } from "@/lib/ai/types";
+import { sameClaimText } from "@/lib/knowledge/similarity";
 import { claimRef, passageRef, unitRef } from "./prompt";
 import type { AnswerClaim, AnswerEntityRef, AnswerLink, ReconciliationAnswer } from "./schema";
 
@@ -29,7 +31,7 @@ export function answerToActions(answer: Omit<ReconciliationAnswer, "links"> & { 
   });
   const claimActions = dedupeTargets(perClaim.flat());
   const ordered = [...domainCreates(claimActions, input.domainPaths), ...entityCreates(answer.claims, claimActions, input), ...claimActions];
-  return [...ordered, ...linkActions(answer.links ?? [], ends, refs, ordered)];
+  return [...ordered, ...linkActions(answer.links ?? [], ends, refs, ordered)].map((action) => annotateUnitReferences(action, input.existingUnits));
 }
 
 // LINK: from/to resolved to a unit id or an earlier action's position; unresolvable,
@@ -64,6 +66,7 @@ function linkActions(links: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs
         type: link.type,
         ...(from.position === undefined ? {} : { fromPosition: from.position }),
         ...(to.position === undefined ? {} : { toPosition: to.position }),
+        ...rationale(link.reason),
       },
     }];
   });
@@ -97,11 +100,13 @@ function addClaim(claim: AnswerClaim, passageIds: string[], sourceDate: string):
     speechAct: claim.speechAct,
     input: {
       content: claim.content.trim(),
+      ...title(claim.title),
       kind: claim.kind,
       epistemicStatus: claim.epistemicStatus,
       validFrom: sourceDate,
       entities: uniqueEntities(claim.entities).map(({ type, key, role }) => ({ type, key, role })),
       domainPaths: [...new Set(claim.domainPaths.map(normalizePath).filter(Boolean))],
+      ...rationale(claim.reason),
     },
   };
 }
@@ -111,14 +116,14 @@ function changeUnit(claim: AnswerClaim, unit: ExistingUnit, passageIds: string[]
   const base = { targetId: unit.unitId, expectedRevisionId: unit.revisionId, speechAct: claim.speechAct };
   if (claim.action === "retire") return { ...base, type: "retire_claim", passageIds, input: { reason: claim.reason, validTo: null } };
   if (claim.action === "set_status")
-    return { ...base, type: "set_epistemic_status", passageIds, input: { epistemicStatus: claim.epistemicStatus } };
+    return { ...base, type: "set_epistemic_status", passageIds, input: { epistemicStatus: claim.epistemicStatus, ...rationale(claim.reason) } };
   // The same sentence again is more evidence for it: keep the earlier passages too (E5)
-  const isSameClaim = sameText(unit.content, claim.content);
+  const isSameClaim = sameClaimText(unit.content, claim.content);
   return {
     ...base,
     type: "revise_claim",
     passageIds: isSameClaim ? [...new Set([...unit.passageIds, ...passageIds])] : passageIds,
-    input: { content: isSameClaim ? unit.content : claim.content.trim(), epistemicStatus: claim.epistemicStatus },
+    input: { content: isSameClaim ? unit.content : claim.content.trim(), ...title(claim.title), epistemicStatus: claim.epistemicStatus, ...rationale(claim.reason) },
   };
 }
 
@@ -177,9 +182,12 @@ function uniqueEntities(refs: AnswerEntityRef[]): AnswerEntityRef[] {
 }
 
 // SMALL TEXT HELPERS
+// The model's reason, kept on the input only when it said one
+const rationale = (reason: string) => (reason.trim() ? { rationale: reason.trim() } : {});
+// The claim's title, kept only when the model gave one (older answers have none)
+const title = (text: string | undefined) => (text?.trim() ? { title: text.trim() } : {});
 const slug = (text: string) => text.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
 const normalizePath = (path: string) => path.split("/").map((part) => part.trim()).filter(Boolean).join("/");
 const depth = (path: string) => path.split("/").length;
 const parentOf = (path: string) => (depth(path) > 1 ? path.split("/").slice(0, -1).join("/") : null);
 const withParents = (path: string) => path.split("/").map((_, i, parts) => parts.slice(0, i + 1).join("/"));
-const sameText = (a: string, b: string) => a.trim().toLowerCase().replace(/\s+/g, " ") === b.trim().toLowerCase().replace(/\s+/g, " ");

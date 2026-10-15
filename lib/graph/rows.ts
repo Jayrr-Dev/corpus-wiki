@@ -13,7 +13,7 @@ import type { RelationshipType } from "./types";
 // ROW SHAPES (only the columns the graph uses)
 export interface GraphRows {
   units: { id: string; kind: Enums<"unit_kind">; epistemic_status: Enums<"epistemic_status">; current_revision_id: string; created_at: string }[];
-  revisions: { id: string; content: string }[];
+  revisions: { id: string; content: string; title?: string | null }[];
   relationships: { id: string; from_unit_id: string; to_unit_id: string; type: RelationshipType }[];
   entities: { id: string; name: string; created_at: string }[];
   unitEntities: { unit_id: string; entity_id: string }[];
@@ -47,7 +47,7 @@ export async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows
       readAllPages((from, to) =>
         client.from("units").select("id, kind, epistemic_status, current_revision_id, created_at").is("retired_at", null).order("id").range(from, to),
       ),
-      readAllPages((from, to) => client.from("revisions").select("id, content").order("id").range(from, to)),
+      readAllPages((from, to) => client.from("revisions").select("id, content, title").order("id").range(from, to)),
       readAllPages((from, to) =>
         client.from("relationships").select("id, from_unit_id, to_unit_id, type").is("retired_at", null).order("id").range(from, to),
       ),
@@ -58,9 +58,9 @@ export async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows
       readAllPages((from, to) => client.from("domains").select("id, path").order("id").range(from, to)),
       readAllPages((from, to) => client.from("unit_domains").select("unit_id, domain_id").order("unit_id").order("domain_id").range(from, to)),
       readAllPages((from, to) =>
-        client.from("pages").select("id, title, slug, created_at, entity_id, domain_id").order("id").range(from, to),
+        client.from("pages").select("id, title, slug, created_at, entity_id, domain_id").is("retired_at", null).order("id").range(from, to),
       ),
-      readAllPages((from, to) => client.from("sections").select("id, page_id").order("id").range(from, to)),
+      readAllPages((from, to) => client.from("sections").select("id, page_id").is("retired_at", null).order("id").range(from, to)),
       readAllPages((from, to) =>
         client.from("section_inputs").select("section_id, unit_id").order("section_id").order("unit_id").range(from, to),
       ),

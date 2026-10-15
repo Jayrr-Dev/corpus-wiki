@@ -125,6 +125,9 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    /* thin, themed scrollbars everywhere instead of the chunky native ones */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-faint) transparent;
   }
 
   html,
@@ -177,8 +180,32 @@
   to { background-position: 0 calc(100% + 48px); }
 }
 
+/* PROGRESS TOAST: indeterminate bar slides across while the length of the work is unknown */
+.sb-progress-indeterminate {
+  animation: sb-progress-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes sb-progress-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+/* ATOM GRID: a dot lights up, then fades back to dim while the pattern moves on (delays set per dot) */
+.sb-atom-dot {
+  opacity: 0.15;
+  animation: sb-atom-lit var(--sb-atom-speed, 1.2s) linear infinite;
+}
+
+@keyframes sb-atom-lit {
+  0% { opacity: 1; }
+  35% { opacity: 0.15; }
+  100% { opacity: 0.15; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sb-stale-line { animation: none; }
+  .sb-progress-indeterminate { animation: none; width: 100%; opacity: 0.4; }
+  .sb-atom-dot { animation: none; opacity: 0.5; }
 }
 
 /* NO SCROLLBAR: scrolls but hides the bar (the sidebar content uses it) */

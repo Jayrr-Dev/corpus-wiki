@@ -17,6 +17,7 @@ Answer with JSON only: { "summary": string, "claims": Claim[], "links": Link[] }
 - summary: one short line saying what the file changes, e.g. "Alpha moves its database to MySQL".
 - Each Claim is one atomic piece of knowledge from the file:
   - content: ONE self-contained sentence. Name the subject explicitly (no "it", "we", "the project"). Keep the file's meaning; do not add facts.
+  - title: 2 to 6 words naming what THIS claim says, so it reads apart from other claims on the same topic, e.g. "Class A violations: termination" or "Hard hats required on site", never just the topic ("Discipline policy"). For a revise, keep the unit's title unless the claim's point changed.
   - action:
     - "add": nothing in the existing units says this yet. unit = null.
     - "revise": an existing unit is about the same thing (same subject and question) and this file restates or changes it. unit = its ref (e.g. "U3"). If the file says exactly the same thing, repeat the unit's content word for word.
@@ -28,7 +29,7 @@ Answer with JSON only: { "summary": string, "claims": Claim[], "links": Link[] }
   - passages: the refs (e.g. "P2") of the passages the claim comes from. At least one.
   - entities: the real things the claim is about, as { type, key, name, role }. type is lowercase (project, person, team, product, company, tool, ...). key is the lowercase name with spaces as hyphens. Reuse an existing entity's type and key when it is the same thing. role: subject (what the claim is about), object, or mentioned.
   - domainPaths: 1 or 2 paths representing CONTEXT / TOPIC / SUBTOPIC. Company-specific policies belong under the company's exact name, e.g. "Utilitek Solutions Inc./Health & Safety/Incident Reporting". A person, project, team or product can likewise be a context root. Reuse existing context roots and topics. Create deeper levels only when the content warrants them; do not add empty wrappers like Topics. General definitions that do not depend on a specific entity belong at the root, e.g. "Health & Safety/Protective Equipment". Never place one company's policy under another company or present it as a universal rule. A mention alone is not proof of ownership; preserve cross-context knowledge as general unless its scope is explicit.
-  - reason: a few words on why this action.
+  - reason: why this action, for a reviewer to read at a glance. One plain sentence, at most 15 words, no refs (U3, P2) or jargon. Say what the file adds or changes, e.g. "The file adds that training records must be kept."
 - Extract definitions when the source explains a term, acronym, procedure, policy, equipment category, or standard. Use kind "definition" and cite the exact explanatory passages; never invent definitions from background knowledge.
 - Identify significant concepts, named procedures, policies, organizations, equipment, and standards as separate entities, rather than attaching every claim only to the company. Reuse existing natural keys and add meaningful subject/object roles.
 - Skip titles, dates, page numbers, greetings and anything that is not knowledge.

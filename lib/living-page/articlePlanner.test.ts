@@ -3,7 +3,7 @@ import { chatJson } from "@/lib/ai/chat";
 import { planArticle } from "./articlePlanner";
 import type { ArticleKnowledge } from "./articlePlan";
 
-vi.mock("@/lib/ai/chat", () => ({ chatJson: vi.fn() }));
+vi.mock("@/lib/ai/chat", async (importOriginal) => ({ ...(await importOriginal<typeof import("@/lib/ai/chat")>()), chatJson: vi.fn() }));
 const knowledge: ArticleKnowledge = {
   entity: { id: "entity", type: "company", key: "acme", name: "Acme" },
   units: [
@@ -19,7 +19,7 @@ beforeEach(() => vi.clearAllMocks());
 describe("article planning completeness", () => {
   it("requests a correction when a claim appears only in the introduction", async () => {
     vi.mocked(chatJson).mockResolvedValueOnce(answer(incomplete)).mockResolvedValueOnce(answer(complete));
-    await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toEqual(complete);
+    await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toEqual({ plan: complete, tokensIn: 20, tokensOut: 40 });
     expect(chatJson).toHaveBeenCalledTimes(2);
     expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("C2");
   });

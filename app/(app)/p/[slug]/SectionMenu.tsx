@@ -4,19 +4,29 @@ import { ConfirmForm, TitleForm } from "@/app/(app)/_pages/PageForms";
 import { DialogMenu } from "@/app/(app)/_pages/DialogMenu";
 import type { Tables } from "@/lib/database/types";
 import { removeSection, renameSection } from "@/lib/server-actions/pages";
+import { ForceCreateForm } from "./ForceCreateDialog";
 import { UpdateArticleForm } from "./UpdateArticleDialog";
 
-// SECTION MENU: "…" beside a section title with Update, Rename, and Remove (shown on hover)
-export function SectionMenu({ section }: { section: Tables<"sections"> }) {
+// SECTION MENU: "…" beside a section title with Update, Force Create, Rename, and Remove (shown on hover unless `className` says otherwise)
+export function SectionMenu({ section, className = "invisible group-focus-within:visible group-hover:visible" }: { section: Tables<"sections">; className?: string }) {
   const items = [
     {
       label: "Update",
+      hint: "Rewrites this section from the latest saved knowledge and AI skills. You can add a note to steer it.",
       render: (close: () => void) => (
         <UpdateArticleForm id={section.id} title={section.title} scope="section" onClose={close} />
       ),
     },
     {
+      label: "Force Create",
+      hint: "Builds out this section from every saved claim that fits its heading, and from the web when Settings allows it.",
+      render: (close: () => void) => (
+        <ForceCreateForm sectionId={section.id} title={section.title} onClose={close} />
+      ),
+    },
+    {
       label: "Rename",
+      separatorBefore: true,
       render: (close: () => void) => (
         <TitleForm
           heading="Rename section"
@@ -42,5 +52,5 @@ export function SectionMenu({ section }: { section: Tables<"sections"> }) {
       ),
     },
   ];
-  return <DialogMenu label={`Actions for ${section.title}`} items={items} className="invisible group-focus-within:visible group-hover:visible" />;
+  return <DialogMenu label={`Actions for ${section.title}`} items={items} className={className} />;
 }

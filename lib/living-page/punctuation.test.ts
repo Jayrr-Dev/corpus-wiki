@@ -18,3 +18,10 @@ describe("withoutEditorialDashes", () => {
     expect(withoutEditorialDashes("Employee-owned PPE is not allowed.")).toBe("Employee-owned PPE is not allowed.");
   });
 });
+
+describe("withoutEditorialDashes on blocks", () => {
+  it("keeps the line breaks of a list and a table", () => {
+    expect(withoutEditorialDashes("Items include:\n- Hard hats—always\n- Gloves")).toBe("Items include:\n- Hard hats, always\n- Gloves");
+    expect(withoutEditorialDashes("| A | B |\n|---|---|\n| 1 | 2 |")).toBe("| A | B |\n|---|---|\n| 1 | 2 |");
+  });
+});

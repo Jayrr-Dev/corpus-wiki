@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 
 type ReadingPaneProps = {
   title: string;
-  // `prose` = the narrow wiki column; `wide` = table pages
-  width?: "prose" | "wide";
+  // `prose` = the narrow wiki column; `wide` = table pages; `full` = wide tables that should use the whole pane
+  width?: "prose" | "wide" | "full";
   actions?: ReactNode;
   children?: ReactNode;
 };
@@ -12,7 +12,7 @@ type ReadingPaneProps = {
 // READING PANE: the page title (20px) above the page body, at reading or table width
 export function ReadingPane({ title, width = "wide", actions, children }: ReadingPaneProps) {
   return (
-    <div className={cn("mx-auto flex flex-col gap-4 px-6 py-6", width === "prose" ? "max-w-2xl" : "max-w-6xl")}>
+    <div className={cn("mx-auto flex flex-col gap-4 px-6 py-6", { prose: "max-w-2xl", wide: "max-w-6xl", full: "w-full" }[width])}>
       <header className="flex items-center justify-between gap-3">
         <h1 className="text-title font-semibold">{title}</h1>
         {actions}

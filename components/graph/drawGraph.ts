@@ -27,6 +27,8 @@ export interface DrawInput {
   colorOf: (node: GraphNode) => GraphColor | null;
   hoveredId: string | null;
   focusIds: ReadonlySet<string>;
+  // While hovering, show only the hovered dot's text (no neighbor or circle names); its links and neighbors still light up
+  hoverLabelOnly: boolean;
 }
 
 // OPACITY OF EVERYTHING OUTSIDE THE HOVER FOCUS
@@ -48,7 +50,7 @@ const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "s
 const CIRCLE_FILL_ALPHA = 0.06;
 const CIRCLE_RING_ALPHA = 0.55;
 const CIRCLE_RING_PX = 1.2;
-const CIRCLE_LABEL_PX = { domain: 14, subdomain: 12 } as const;
+const CIRCLE_LABEL_PX = { branch: 14, leaf: 12 } as const;
 const CIRCLE_LABEL_HALO_PX = 3;
 
 // Default dot color for a node kind (grays only; groups add the accents)
@@ -155,6 +157,23 @@ function wrapLabel(ctx: CanvasRenderingContext2D, text: string, maxPx: number, f
   return result;
 }
 
+// TITLE ANCHOR: where a wrapped title sits beside its dot (the chosen side): the x its lines align on,
+// the top of its first line, and the alignment
+function titleAnchor(node: SimNode, lineCount: number, lineHeight: number, display: GraphDisplay, k: number): { x: number; y: number; align: CanvasTextAlign } {
+  const x = node.x ?? 0, y = node.y ?? 0;
+  const gap = nodeRadius(node, display.nodeSize) + 3 / k;
+  const height = lineCount * lineHeight;
+  switch (display.titlePosition) {
+    case "top": return { x, y: y - gap - height, align: "center" };
+    case "left": return { x: x - gap, y: y - height / 2, align: "right" };
+    case "right": return { x: x + gap, y: y - height / 2, align: "left" };
+    default: return { x, y: y + gap, align: "center" };
+  }
+}
+
+// Opacity of the backing box behind the hovered title (0 = none, 1 = solid canvas colour)
+const HOVER_LABEL_BG_ALPHA = 0.95;
+
 // HOVERED LABEL: same wrap as the resting label, on a backing box, nudged inside the canvas so it is never cut off
 function drawHoveredLabel(input: DrawInput, node: SimNode): void {
   const { ctx, palette, camera, display } = input;
@@ -164,18 +183,21 @@ function drawHoveredLabel(input: DrawInput, node: SimNode): void {
   const pad = 4 / k;
   const width = widthPx / k;
   const height = lines.length * lineHeight;
+  const anchor = titleAnchor(node, lines.length, lineHeight, display, k);
+  const boxLeft = anchor.align === "center" ? anchor.x - width / 2 : anchor.align === "right" ? anchor.x - width : anchor.x;
   // Keep the box inside the canvas (screen edges converted to world units)
   const margin = LABEL_MARGIN_PX / k;
   const left = -camera.x / k + margin, right = (input.width - camera.x) / k - margin;
-  const x = Math.min(Math.max(node.x ?? 0, left + width / 2 + pad), right - width / 2 - pad);
-  const y = (node.y ?? 0) + nodeRadius(node, display.nodeSize) + 3 / k;
-  ctx.globalAlpha = 0.9;
+  const shift = Math.min(Math.max(boxLeft, left + pad), right - width - pad) - boxLeft;
+  const x = anchor.x + shift, y = anchor.y;
+  ctx.globalAlpha = HOVER_LABEL_BG_ALPHA;
   ctx.fillStyle = palette.background;
   ctx.beginPath();
-  ctx.roundRect(x - width / 2 - pad, y - pad / 2, width + 2 * pad, height + pad, 4 / k);
+  ctx.roundRect(boxLeft + shift - pad, y - pad / 2, width + 2 * pad, height + pad, 4 / k);
   ctx.fill();
   ctx.globalAlpha = 1;
   ctx.fillStyle = palette.text;
+  ctx.textAlign = anchor.align;
   lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
 }
 
@@ -186,10 +208,15 @@ function titleOpacity({ camera, display, overviewZoom }: DrawInput): number {
     : revealOpacity(camera.k, overviewZoom, REVEAL_AT.title, display.textFadeThreshold);
 }
 
-// LABELS PASS: wrapped, faded in by zoom; the hover focus always shows its labels,
-// and the hovered label is drawn last so it sits on top
+// LABELS PASS: wrapped, faded in by zoom; the hover focus always shows its labels (or, with
+// hoverLabelOnly, only the hovered one does), and the hovered label is drawn last so it sits on top
 function drawLabels(input: DrawInput): void {
-  const { ctx, nodes, palette, camera, display, hoveredId, focusIds } = input;
+  const { ctx, nodes, palette, camera, display, hoveredId, focusIds, hoverLabelOnly } = input;
+  if (hoveredId !== null && hoverLabelOnly) {
+    const hovered = nodes.find((node) => node.id === hoveredId);
+    if (hovered) drawHoveredLabel(input, hovered);
+    return;
+  }
   const zoomOpacity = titleOpacity(input);
   const lineHeight = (LABEL_PX * LINE_HEIGHT) / camera.k;
   ctx.font = `${LABEL_PX / camera.k}px ${palette.fontFamily}`;
@@ -203,30 +230,30 @@ function drawLabels(input: DrawInput): void {
     const opacity = inFocus ? 1 : hoveredId === null ? zoomOpacity : zoomOpacity * DIMMED;
     if (opacity <= 0.01 || !isOnScreen(node, input)) continue;
     ctx.globalAlpha = opacity;
-    const x = node.x ?? 0, y = (node.y ?? 0) + nodeRadius(node, display.nodeSize) + 3 / camera.k;
-    wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily).lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
+    const { lines } = wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
+    const { x, y, align } = titleAnchor(node, lines.length, lineHeight, display, camera.k);
+    ctx.textAlign = align;
+    lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
   }
   ctx.globalAlpha = 1;
   if (hovered) drawHoveredLabel(input, hovered);
 }
 
-// CIRCLES PASS: a tinted disc and ring per domain, a dashed ring per subdomain (drawn under everything)
+// CIRCLES PASS (under everything): every domain gets a tinted disc, so the tints stack and deeper
+// domains read lighter; domains holding other domains get a solid ring, the innermost a dashed ring
 function drawCircles(input: DrawInput): void {
   const { ctx, circles, palette, camera, hoveredId } = input;
   const dim = hoveredId === null ? 1 : 0.4;
   for (const circle of circles) {
     const color = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
-    const isDomain = circle.level === "domain";
     ctx.beginPath();
     ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
-    if (isDomain) {
-      ctx.globalAlpha = CIRCLE_FILL_ALPHA * dim;
-      ctx.fillStyle = color;
-      ctx.fill();
-    }
-    ctx.setLineDash(isDomain ? [] : [4 / camera.k, 4 / camera.k]);
+    ctx.globalAlpha = CIRCLE_FILL_ALPHA * dim;
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.setLineDash(circle.isBranch ? [] : [4 / camera.k, 4 / camera.k]);
     ctx.lineWidth = CIRCLE_RING_PX / camera.k;
-    ctx.globalAlpha = (isDomain ? CIRCLE_RING_ALPHA : CIRCLE_RING_ALPHA * 0.7) * dim;
+    ctx.globalAlpha = (circle.isBranch ? CIRCLE_RING_ALPHA : CIRCLE_RING_ALPHA * 0.7) * dim;
     ctx.strokeStyle = color;
     ctx.stroke();
   }
@@ -234,29 +261,37 @@ function drawCircles(input: DrawInput): void {
   ctx.globalAlpha = 1;
 }
 
-// CIRCLE NAMES PASS (over the dots): a domain's name above its ring, a topic's name across the
-// middle of its cluster. Each has a background-colored outline so it reads over dots and lines.
-// Topic names show around the overview and fade out as note titles fade in.
+// CIRCLE NAMES PASS (over the dots): a domain holding other domains is named above its ring. An
+// innermost domain is named across the middle of its cluster around the overview, and above its ring
+// once note titles fade in (the two cross-fade, so the name never sits on the titles). Each name has
+// a background-colored outline so it reads over dots and lines.
 function drawCircleLabels(input: DrawInput): void {
-  const { ctx, circles, palette, camera, hoveredId, overviewZoom } = input;
-  if (circles.length === 0) return;
+  const { ctx, circles, palette, camera, hoveredId, overviewZoom, hoverLabelOnly } = input;
+  if (circles.length === 0 || (hoveredId !== null && hoverLabelOnly)) return;
   const dim = hoveredId === null ? 1 : 0.4;
-  const topicText = overviewZoom === null ? 1 : Math.min(revealOpacity(camera.k, overviewZoom, REVEAL_AT.subdomain), 1 - titleOpacity(input));
+  const titles = overviewZoom === null ? 1 : titleOpacity(input);
+  const shown = overviewZoom === null ? 1 : revealOpacity(camera.k, overviewZoom, REVEAL_AT.subdomain);
   ctx.textAlign = "center";
   ctx.lineJoin = "round";
   ctx.lineWidth = CIRCLE_LABEL_HALO_PX / camera.k;
   ctx.strokeStyle = palette.background;
-  for (const circle of circles) {
-    const isDomain = circle.level === "domain";
-    const alpha = isDomain ? dim : dim * topicText;
-    if (alpha <= 0.01) continue;
+  // One name at one spot; `place` is "top" (above the ring) or "middle" (across the cluster)
+  const name = (circle: ClusterCircle, place: "top" | "middle", alpha: number) => {
+    if (alpha <= 0.01) return;
     ctx.globalAlpha = alpha;
     ctx.fillStyle = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
-    ctx.font = `${isDomain ? "600 " : "500 "}${CIRCLE_LABEL_PX[circle.level] / camera.k}px ${palette.fontFamily}`;
-    ctx.textBaseline = isDomain ? "bottom" : "middle";
-    const y = isDomain ? circle.y - circle.r - 3 / camera.k : circle.y;
+    ctx.font = `${circle.isBranch ? "600 " : "500 "}${CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"] / camera.k}px ${palette.fontFamily}`;
+    ctx.textBaseline = place === "top" ? "bottom" : "middle";
+    const y = place === "top" ? circle.y - circle.r - 3 / camera.k : circle.y;
     ctx.strokeText(circle.label, circle.x, y);
     ctx.fillText(circle.label, circle.x, y);
+  };
+  for (const circle of circles) {
+    if (circle.isBranch) name(circle, "top", dim);
+    else {
+      name(circle, "middle", dim * Math.min(shown, 1 - titles));
+      name(circle, "top", dim * titles);
+    }
   }
   ctx.globalAlpha = 1;
 }

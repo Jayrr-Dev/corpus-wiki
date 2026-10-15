@@ -1,7 +1,9 @@
 "use client";
 
 import { Note, QueryState, Section } from "@/app/(app)/_components/bits";
-import { formatDate, formatDateTime } from "@/app/(app)/_lib/format";
+import { DateTime } from "@/app/(app)/_components/DateTime";
+import { formatDate } from "@/app/(app)/_lib/format";
+import { useActorLabel } from "@/app/(app)/_lib/useActorLabel";
 import { DiffView } from "@/components/diff/DiffView";
 import type { Tables } from "@/lib/database/types";
 import { useRevisions } from "@/lib/queries";
@@ -28,11 +30,12 @@ type RevisionItemProps = { revision: Tables<"revisions">; previous: Tables<"revi
 
 // ONE REVISION: when and by whom, then the change from the previous text
 function RevisionItem({ revision, previous }: RevisionItemProps) {
+  const label = useActorLabel();
   return (
     <li className="flex flex-col gap-1">
       <p className="flex gap-2 font-mono text-xs text-faint">
-        <span>{formatDateTime(revision.created_at)}</span>
-        <span>{revision.author}</span>
+        <span><DateTime iso={revision.created_at} /></span>
+        <span>{label(revision.author, revision.author_id, revision.model_version)}</span>
         <span>source date {formatDate(revision.source_date)}</span>
       </p>
       <DiffView before={previous?.content ?? null} after={revision.content} />

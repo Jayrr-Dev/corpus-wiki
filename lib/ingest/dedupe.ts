@@ -1,6 +1,7 @@
 import "server-only";
 
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import type { Embedder } from "@/lib/ai/embeddings";
 import {
   buildDedupeMessages,
   DEDUPE_PROMPT_VERSION,
@@ -9,19 +10,23 @@ import {
   dedupeAnswerToActions,
   type DedupeUnit,
   findDuplicateClusters,
+  type UnitVectors,
 } from "@/lib/ai/tokenFactory/dedupePass";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
+import { embedMissingUnits, savedVectors } from "@/lib/knowledge/embeddingStore";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 
 // =====================================================================
 // CLEANING CYCLE: finds duplicate claims and proposes merging them, one
 // AI ChangeSet per candidate cluster. Runs from the "Clean duplicates"
 // button (every cluster) and after each upload (only clusters holding a
-// unit the upload touched). AI merges wait for a person on Exceptions.
+// unit the upload touched). AI merges wait for a person on Exceptions,
+// unless the model is sure and the claims are near-identical (autoMerge).
 // =====================================================================
 
-type Deps = { db: DbRpc; client: AdminSupabase; settings: TokenFactorySettings };
+// embedder: compares by meaning when set (and embeds claims that have no vector yet)
+type Deps = { db: DbRpc; client: AdminSupabase; settings: TokenFactorySettings; embedder?: Embedder | null };
 
 export type DedupeBatchResult = { changeSetId: string | null; proposed: number; applied: number; exceptions: number; removed: number };
 
@@ -59,9 +64,24 @@ async function loadUnits(client: AdminSupabase): Promise<DedupeUnit[]> {
   });
 }
 
+// Saved vectors of these units' current wording, embedding any that are missing first.
+// Without an embedder (or when embedding fails) units are compared by words.
+async function loadVectors(deps: Pick<Deps, "db" | "embedder">, units: readonly DedupeUnit[]): Promise<UnitVectors | undefined> {
+  if (!deps.embedder) return undefined;
+  try {
+    await embedMissingUnits(deps.db, deps.embedder);
+    return await savedVectors(deps.db, deps.embedder.model, units.map((unit) => unit.revisionId));
+  } catch (error) {
+    console.error("Claims could not be compared by meaning; comparing words only:", error);
+    return undefined;
+  }
+}
+
 // PLAN: candidate clusters of unit ids, in the order the screen runs them
-export async function planDedupeClusters(client: AdminSupabase, focusIds?: ReadonlySet<string>): Promise<string[][]> {
-  return findDuplicateClusters(await loadUnits(client), focusIds).map((cluster) => cluster.map((unit) => unit.unitId));
+export async function planDedupeClusters(client: AdminSupabase, focusIds?: ReadonlySet<string>, deps?: Pick<Deps, "db" | "embedder">): Promise<string[][]> {
+  const units = await loadUnits(client);
+  const vectors = deps ? await loadVectors(deps, units) : undefined;
+  return findDuplicateClusters(units, focusIds, vectors).map((cluster) => cluster.map((unit) => unit.unitId));
 }
 
 // Explicit cleanup applies as a person-requested edit. Background ingestion still proposes AI merges for review.
@@ -76,7 +96,7 @@ export async function dedupeCluster(deps: Deps, unitIds: string[], mode: "review
     jsonSchema: dedupeAnswerJsonSchema,
     messages: buildDedupeMessages(units),
   });
-  const actions = dedupeAnswerToActions(answer.value, units);
+  const actions = dedupeAnswerToActions(answer.value, units, await loadVectors(deps, units));
   const merges = actions.filter((action) => action.type === "merge_duplicates").length;
   if (merges === 0) return empty;
   const { changeSetId } = await submitChangeSet(deps.db, { eventId: null, cause: "edit", actor: mode === "apply" ? "person" : "ai" }, {
@@ -113,7 +133,7 @@ async function eventUnitIds(client: AdminSupabase, eventId: string): Promise<Set
 export async function dedupeAfterEvent(deps: Deps, eventId: string): Promise<void> {
   const touched = await eventUnitIds(deps.client, eventId);
   if (!touched.size) return;
-  for (const cluster of await planDedupeClusters(deps.client, touched)) await dedupeCluster(deps, cluster);
+  for (const cluster of await planDedupeClusters(deps.client, touched, deps)) await dedupeCluster(deps, cluster);
 }
 
 

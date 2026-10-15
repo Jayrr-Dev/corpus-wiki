@@ -1,7 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
-import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import { skillInstructions } from "@/lib/ai/skills/prompt";
 import type { DraftAction, SectionDraft, SectionQuery } from "@/lib/ai/types";
 import type { DbRpc } from "@/lib/db/rpc";
@@ -41,7 +41,8 @@ export function discoverySections(answer: UpdateDiscovery, candidates: SectionUn
   });
 }
 
-export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, pageId: string, note: string): Promise<SectionDraft[]> {
+// Usage totals every discovery batch (zero when no candidates needed a call)
+export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, pageId: string, note: string): Promise<TokenUsage & { sections: SectionDraft[] }> {
   const { data: page, error: pageError } = await client.from("pages").select("title").eq("id", pageId).single();
   if (pageError) throw new Error(pageError.message);
   const { data: sections, error } = await client.from("sections").select("id, title, query, mode").eq("page_id", pageId).is("retired_at", null);
@@ -51,15 +52,16 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
   for (const query of queries) for (const id of await db.call<string[]>("living_page_query_units", { p_query: query })) selected.add(id);
   const candidateIds = new Set<string>();
   for (const query of discoveryQueries(queries)) for (const id of await db.call<string[]>("living_page_query_units", { p_query: query })) if (!selected.has(id)) candidateIds.add(id);
-  if (!candidateIds.size) return [];
+  if (!candidateIds.size) return { sections: [], tokensIn: 0, tokensOut: 0 };
   const { data: units, error: unitError } = await client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", [...candidateIds]).is("retired_at", null).order("id");
   if (unitError) throw new Error(unitError.message);
-  if (!units?.length) return [];
+  if (!units?.length) return { sections: [], tokensIn: 0, tokensOut: 0 };
   const { data: revisions, error: revisionError } = await client.from("revisions").select("id, content").in("id", units.map((unit) => unit.current_revision_id));
   if (revisionError) throw new Error(revisionError.message);
   const contents = new Map((revisions ?? []).map((revision) => [revision.id, revision.content]));
   const candidates: SectionUnit[] = units.map((unit) => ({ unitId: unit.id, revisionId: unit.current_revision_id, kind: unit.kind, epistemicStatus: unit.epistemic_status, content: contents.get(unit.current_revision_id) ?? "" }));
   const added: SectionDraft[] = [];
+  let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   // Bound each discovery call, including for very large contexts.
   for (let offset = 0; offset < candidates.length; offset += 40) {
     const batch = candidates.slice(offset, offset + 40);
@@ -70,9 +72,10 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
         { role: "user", content: JSON.stringify({ article: page.title, existingSections: (sections ?? []).map((section) => section.title), note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
       ],
     });
+    usage = addUsage(usage, answer);
     added.push(...discoverySections(answer.value, batch));
   }
-  return added;
+  return { sections: added, ...usage };
 }
 
 

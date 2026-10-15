@@ -5,8 +5,10 @@ import {
   processUploadEvent,
   type ProcessUploadResult,
   retryUploadEvent,
+  startDirectUpload,
   startSourceRerun,
   startUploadFromFile,
+  startUploadFromStorage,
   type StartUploadResult,
 } from "@/lib/ingest";
 import { type ActionResult, toActionResult } from "./result";
@@ -24,6 +26,22 @@ export async function startUpload(formData: FormData): Promise<ActionResult<Star
     const sourceDate = String(formData.get("sourceDate") ?? "");
     if (!(file instanceof File)) throw new Error("No file was sent.");
     return startUploadFromFile({ file, sourceDate });
+  });
+}
+
+// DIRECT STEP 0: a signed URL the browser uploads a video to (it is too big for this action's body)
+export async function prepareDirectUpload(input: { fileName: string; browserType: string; byteSize: number }): Promise<ActionResult<{ path: string; token: string }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    return startDirectUpload(input);
+  });
+}
+
+// DIRECT STEP 1: step 1 for the file the browser put at `path`
+export async function startUploadFromPath(input: { path: string; fileName: string; browserType: string; sourceDate: string }): Promise<ActionResult<StartUploadResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    return startUploadFromStorage(input);
   });
 }
 

@@ -19,7 +19,21 @@ export type TokenFactorySettings = { apiKey: string; model?: string; baseUrl?: s
 
 export type ChatMessage = { role: "system" | "user"; content: string };
 
-export type ChatJsonResult<T> = { value: T; model: string; tokensIn: number | null; tokensOut: number | null };
+// A USER MESSAGE WITH A PICTURE: text plus an image as a data URL (vision models only)
+export type ChatContentPart = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
+export type ChatMediaMessage = { role: "user"; content: ChatContentPart[] };
+
+export type TokenUsage = { tokensIn: number | null; tokensOut: number | null };
+
+export type ChatJsonResult<T> = TokenUsage & { value: T; model: string };
+
+// Totals usage across several calls; one call without usage makes the total unknown (null)
+export function addUsage(total: TokenUsage, call: TokenUsage): TokenUsage {
+  return {
+    tokensIn: total.tokensIn === null || call.tokensIn === null ? null : total.tokensIn + call.tokensIn,
+    tokensOut: total.tokensOut === null || call.tokensOut === null ? null : total.tokensOut + call.tokensOut,
+  };
+}
 
 // REASONING EFFORTS, tried in order. Reasoning models think before they answer, and the
 // thinking counts against max_tokens. On a 169-passage PDF, GLM-5.3-Flash at its default
@@ -78,9 +92,14 @@ type ChatJsonRequest<S extends z.ZodType> = {
   subject?: string;
   schema: S;
   jsonSchema: object;
-  messages: ChatMessage[];
+  messages: (ChatMessage | ChatMediaMessage)[];
   maxTokens?: number;
+  // When set, the answer is streamed and this hears the text so far (and any visible thinking)
+  // after each chunk. A retry at a lower effort starts again from empty text.
+  onStream?: (partial: StreamedSoFar) => void;
 };
+
+export type StreamedSoFar = { content: string; reasoning: string };
 
 // Nemotron 3 runs with thinking off, so a reasoning effort changes nothing for it
 const isNemotron3 = (model: string) => /^nvidia\/(?:nvidia-)?nemotron-3[\/_.-]/i.test(model);
@@ -163,10 +182,59 @@ async function requestCompletion(
       ...reasoningFields(model, effort),
       max_tokens: maxTokens,
       response_format: { type: "json_schema", json_schema: { name: request.name, schema: request.jsonSchema, strict: true } },
+      ...(request.onStream ? { stream: true, stream_options: { include_usage: true } } : {}),
     }),
   });
   if (!response.ok) throw new Error(`Token Factory ${response.status}: ${(await response.text()).slice(0, 300)}`);
-  return (await response.json()) as CompletionResponse;
+  return request.onStream ? await readCompletionStream(response, request.onStream) : ((await response.json()) as CompletionResponse);
+}
+
+type StreamChunk = {
+  model?: string;
+  choices?: { delta?: { content?: string | null; reasoning_content?: string | null; reasoning?: string | null; refusal?: string | null }; finish_reason?: string | null }[];
+  usage?: CompletionUsage | null;
+};
+
+// STREAMED ANSWER: reads the server-sent events into the same shape a plain completion has,
+// so parseContent checks a streamed answer exactly like any other
+export async function readCompletionStream(response: Response, onStream: (partial: StreamedSoFar) => void): Promise<CompletionResponse> {
+  if (!response.body) throw new Error("The AI provider sent an empty stream.");
+  const decoder = new TextDecoder();
+  const reader = response.body.getReader();
+  let buffered = "";
+  let content = "";
+  let reasoning = "";
+  let refusal = "";
+  let finishReason: string | undefined;
+  let model: string | undefined;
+  let usage: CompletionUsage | undefined;
+  const take = (line: string) => {
+    const data = line.startsWith("data:") ? line.slice(5).trim() : "";
+    if (!data || data === "[DONE]") return;
+    const chunk = JSON.parse(data) as StreamChunk;
+    model ??= chunk.model;
+    if (chunk.usage) usage = chunk.usage;
+    const choice = chunk.choices?.[0];
+    if (!choice) return;
+    if (choice.finish_reason) finishReason = choice.finish_reason;
+    const delta = choice.delta;
+    if (!delta) return;
+    refusal += delta.refusal ?? "";
+    const thought = delta.reasoning_content ?? delta.reasoning ?? "";
+    if (!delta.content && !thought) return;
+    content += delta.content ?? "";
+    reasoning += thought;
+    onStream({ content, reasoning });
+  };
+  for (;;) {
+    const { done, value } = await reader.read();
+    buffered += decoder.decode(value, { stream: !done });
+    const lines = buffered.split("\n").map((line) => line.replace(/\r$/, ""));
+    buffered = done ? "" : (lines.pop() ?? "");
+    for (const line of lines) take(line);
+    if (done) break;
+  }
+  return { model, usage, choices: [{ message: { content, refusal: refusal || null }, finish_reason: finishReason }] };
 }
 
 // Pulls the message text out of the completion and validates it against the schema.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diffWords, tokenize } from "./diffWords";
+import { diffPhrases, diffWords, tokenize, tokenizePhrases } from "./diffWords";
 
 // Rebuilds one side of a diff from its parts
 function side(parts: ReturnType<typeof diffWords>, drop: "added" | "removed"): string {
@@ -36,5 +36,21 @@ describe("diffWords", () => {
   it("handles empty sides", () => {
     expect(diffWords("", "new text")).toEqual([{ kind: "added", text: "new text" }]);
     expect(diffWords("old", "")).toEqual([{ kind: "removed", text: "old" }]);
+  });
+});
+
+describe("diffPhrases", () => {
+  it("marks the whole clause when one word in it changes", () => {
+    const parts = diffPhrases("Meetings run every week. At a site, a meeting is held.", "Meetings run every week. At a job site, a meeting is held.");
+    expect(parts).toEqual([
+      { kind: "same", text: "Meetings run every week. " },
+      { kind: "removed", text: "At a site," },
+      { kind: "added", text: "At a job site," },
+      { kind: "same", text: " a meeting is held." },
+    ]);
+  });
+
+  it("splits only at clause punctuation followed by a space or the end", () => {
+    expect(tokenizePhrases("Costs 3.5 units, then stop.")).toEqual(["Costs 3.5 units,", " ", "then stop."]);
   });
 });

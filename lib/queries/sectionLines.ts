@@ -20,6 +20,8 @@ export type ShownLine = {
   content: string;
   unitRevisionIds: string[];
   author: Enums<"actor_kind">;
+  authorId: string | null;
+  model: string | null;
   isStale: boolean;
   lastChangedAt: string;
 };
@@ -43,6 +45,8 @@ function toShownLine(row: ViewRow): ShownLine {
     content: withoutEditorialDashes(row.content ?? ""),
     unitRevisionIds: row.unit_revision_ids ?? [],
     author: row.author ?? "ai",
+    authorId: row.author_id,
+    model: row.model_version,
     isStale: row.is_stale ?? false,
     lastChangedAt: row.last_changed_at ?? "",
   };

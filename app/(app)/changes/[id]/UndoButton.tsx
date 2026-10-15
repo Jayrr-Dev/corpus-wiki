@@ -12,7 +12,7 @@ export const UNDOABLE: ReadonlySet<Tables<"change_sets">["status"]> = new Set(["
 
 // UNDO: reverts the whole set through Change control; errors show inline
 export function UndoButton({ changeSet }: { changeSet: Tables<"change_sets"> }) {
-  const undo = useServerAction(undoChangeSet);
+  const undo = useServerAction(undoChangeSet, { progress: { title: "Undoing change", detail: "Rewriting the affected sections…" } });
   const isUndoable = UNDOABLE.has(changeSet.status);
   return (
     <div className="flex flex-col items-end gap-1">

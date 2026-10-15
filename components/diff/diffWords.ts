@@ -11,6 +11,12 @@ export function tokenize(text: string): string[] {
   return text.match(/\s+|[^\s]+/g) ?? [];
 }
 
+// Splits text into phrases (runs ending at a comma, semicolon, colon or sentence end) and the
+// whitespace between them, so a changed word marks its whole clause instead of itself
+export function tokenizePhrases(text: string): string[] {
+  return text.match(/\s+|\S(?:.*?[,;:.!?](?=\s|$)|.*$)/g) ?? [];
+}
+
 // LCS lengths from the end: table[i][j] = common length of a[i..] and b[j..]
 function lcsTable(a: string[], b: string[]): number[][] {
   const table = Array.from({ length: a.length + 1 }, () => new Array<number>(b.length + 1).fill(0));
@@ -32,8 +38,15 @@ function push(parts: DiffPart[], kind: DiffPart["kind"], text: string): void {
 
 // Diffs `before` against `after`, word by word
 export function diffWords(before: string, after: string): DiffPart[] {
-  const a = tokenize(before);
-  const b = tokenize(after);
+  return diffTokens(tokenize(before), tokenize(after));
+}
+
+// Diffs `before` against `after`, phrase by phrase
+export function diffPhrases(before: string, after: string): DiffPart[] {
+  return diffTokens(tokenizePhrases(before), tokenizePhrases(after));
+}
+
+function diffTokens(a: string[], b: string[]): DiffPart[] {
   const table = lcsTable(a, b);
   const parts: DiffPart[] = [];
   let i = 0;

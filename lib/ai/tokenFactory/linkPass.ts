@@ -9,7 +9,7 @@ import { unitRef } from "./prompt";
 // =====================================================================
 // LINK PASS: claims ingested before ingest proposed links have none, so
 // this asks the model to link a batch of EXISTING units only. Same link
-// rules as the reconciliation prompt (reconcile-v4), but the answer is
+// rules as the reconciliation prompt (reconcile-v5), but the answer is
 // just { links }, and every end is a unit ref (U1). linkAnswerToActions
 // turns it into `link` DraftActions with targetId and toUnitId set.
 // =====================================================================

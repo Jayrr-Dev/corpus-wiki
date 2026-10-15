@@ -9,7 +9,7 @@ import {
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from "d3-force";
-import { clusterOf, forceClusters, keysFor } from "./clusters";
+import { deepestPaths, forceClusters } from "./clusters";
 import type { GraphForces } from "./settings";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -57,9 +57,9 @@ export function applyForces(simulation: GraphSimulation, forces: GraphForces, no
   const link = simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link");
   const strength = forces.link * LINK_SCALE;
   // Links between different domain groups slacken as the domain pull rises, so groups can sit apart
-  const keys = keysFor(simulation.nodes());
+  const paths = deepestPaths(simulation.nodes());
   const crossing = (candidate: SimLink) => {
-    const [from, to] = [candidate.source, candidate.target].map((end) => (typeof end === "object" ? clusterOf(keys.get(end)) : undefined));
+    const [from, to] = [candidate.source, candidate.target].map((end) => (typeof end === "object" ? paths.get(end) : undefined));
     return from !== undefined && to !== undefined && from !== to;
   };
   link

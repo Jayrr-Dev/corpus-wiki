@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
+import { UploaderName } from "@/app/(app)/_components/ActorName";
 import { Section, TextLink } from "@/app/(app)/_components/bits";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { dateColumn, textColumn } from "@/app/(app)/_components/columns";
@@ -20,7 +21,7 @@ import { RetryUploadButton } from "./RetryUploadButton";
 // ONE ROW: the upload event with its source and change set
 type UploadRow = Tables<"shift_events"> & { sourceTitle: string; source: Tables<"sources"> | null; changeSetId: string | null };
 
-// COLUMNS: status, file, change set, error, when, then Retry on a failed row and the source's "…" menu
+// COLUMNS: status, file, change set, error, who uploaded it and when, then Retry on a failed row and the source's "…" menu
 const COLUMNS = [
   textColumn<UploadRow>("status", "Status", (row) => row.status, (row) => (
     <StatusDot
@@ -45,6 +46,7 @@ const COLUMNS = [
     row.changeSetId ? <TextLink href={`/changes/${row.changeSetId}`}>Open</TextLink> : <span className="text-faint">—</span>,
   ),
   textColumn<UploadRow>("error", "Error", (row) => row.error ?? "", (row) => <span className="block w-64 whitespace-normal break-words">{row.error ?? ""}</span>),
+  textColumn<UploadRow>("by", "Uploaded by", (row) => row.person_id ?? row.via ?? "", (row) => <UploaderName event={row} />),
   dateColumn<UploadRow>("created", "Uploaded", (row) => row.created_at, true),
   {
     id: "actions",

@@ -52,8 +52,12 @@ export type SectionRevision = {
   retire: string[];
   add: LineText[];
   modelVersion: string;
+  // Usage of the call that wrote it (absent for the fake writer)
+  tokensIn?: number | null;
+  tokensOut?: number | null;
 };
 
 // DB FUNCTION SHAPES
 export type SectionRef = { sectionId: string; pageId: string };
-export type FinishedSectionBuild = { sectionId: string; changeNoteId: string | null };
+// rebuildRequested: another rebuild was asked for while this one ran (for rebuildEventId)
+export type FinishedSectionBuild = { sectionId: string; changeNoteId: string | null; rebuildRequested?: boolean; rebuildEventId?: string | null };

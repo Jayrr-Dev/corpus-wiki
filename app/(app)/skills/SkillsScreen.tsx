@@ -28,7 +28,7 @@ export function SkillsScreen() {
       <p className="max-w-2xl text-panel text-muted-foreground">Choose how the AI handles each part of your knowledge workflow. Create your own instructions or duplicate a default skill. Changes apply to future runs.</p>
       <Button size="sm" onClick={()=>setEditor({})}>New skill</Button>
     </div>
-    <div role="tablist" aria-label="Skills views" className="flex gap-1 border-b">
+    <div role="tablist" aria-label="Workflow views" className="flex gap-1 border-b">
       {tabs.map((item)=>{const selected=item.id===tab;return <button key={item.id} type="button" role="tab" aria-selected={selected} onClick={()=>setTab(item.id)} className={cn("-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-panel transition-colors",selected?"border-foreground font-medium text-foreground":"border-transparent text-muted-foreground hover:text-foreground")}>
         {item.label}{"count" in item&&item.count?<span className="rounded-sm bg-hover px-1.5 font-mono text-xs text-muted-foreground">{item.count}</span>:null}
       </button>;})}
@@ -59,7 +59,7 @@ function StageRow({step,stage,current,skills,onView}:{step:number;stage:(typeof 
   const selectedSkill=skills.find((skill)=>skill.id===selected);
   const dirty=selected!==(current??"");
   const apply=async(id:string|null)=>{const result=await save.run(stage.id as AiStage,id);if(result.ok)setSaved(true);};
-  return <li aria-label={stage.name} className="grid gap-x-4 gap-y-3 px-4 py-3.5 transition-colors hover:bg-hover/40 md:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] md:items-center">
+  return <li aria-label={stage.name} className="grid gap-x-4 gap-y-3 px-4 py-3.5 transition-colors hover:bg-hover/40 md:grid-cols-[minmax(0,1fr)_minmax(18rem,26rem)] md:items-center">
     <div className="flex min-w-0 gap-3">
       <span aria-hidden="true" className="mt-px w-4 shrink-0 text-right font-mono text-xs leading-5 text-faint">{step}</span>
       <div className="min-w-0">
@@ -76,7 +76,7 @@ function StageRow({step,stage,current,skills,onView}:{step:number;stage:(typeof 
           <NativeSelectOption value="">App rules only</NativeSelectOption>
           {skills.map((skill)=><NativeSelectOption key={skill.id} value={skill.id}>{skill.name}{skill.id===defaultId?" (default)":""} · v{skill.version}</NativeSelectOption>)}
         </NativeSelect>
-        <Button size="sm" variant="ghost" disabled={!selectedSkill} onClick={()=>selectedSkill&&onView(selectedSkill)}>View</Button>
+        <RowMenu label={selectedSkill?.name??"Skill"} items={[{label:"View",isDisabled:!selectedSkill,run:()=>selectedSkill&&onView(selectedSkill)}]} />
       </div>
       {dirty||saved||save.error||current!==defaultId?<div className="flex flex-wrap items-center gap-2 text-xs">
         {dirty?<>
@@ -100,15 +100,15 @@ function SkillList({library,onEdit,onDuplicate}:{library:SkillLibrary;onEdit:(sk
     <div className="grid gap-3 md:grid-cols-2">{matches.map((skill)=>{
       const used=library.assignments.filter((row)=>row.skill_id===skill.id).length;
       return <article key={skill.id} aria-label={skill.name} className="flex flex-col gap-3 rounded-lg border p-4">
-        <div><h2 className="font-semibold">{skill.name}</h2><p className="mt-1 text-xs text-faint">{skill.builtin_key?"Built in":"Custom"} · Version {skill.version}{skill.archived_at?" · Archived":used?` · Assigned to ${used} stage${used===1?"":"s"}`:" · Unassigned"}</p></div>
-        <p className="flex-1 text-panel text-muted-foreground">{skill.description||"No description"}</p>
-        <div className="flex items-center justify-between gap-2">
-          <Button size="sm" variant="outline" onClick={()=>onEdit(skill)}>{skill.builtin_key||skill.archived_at?"View":"Edit"}</Button>
+        <div className="flex items-start justify-between gap-2">
+          <div><h2 className="font-semibold">{skill.name}</h2><p className="mt-1 text-xs text-faint">{skill.builtin_key?"Built in":"Custom"} · Version {skill.version}{skill.archived_at?" · Archived":used?` · Assigned to ${used} stage${used===1?"":"s"}`:" · Unassigned"}</p></div>
           <RowMenu label={skill.name} items={[
             {label:"Duplicate",run:()=>onDuplicate(skill)},
             ...(!skill.builtin_key?[{label:skill.archived_at?"Restore":"Archive",isDisabled:archive.isPending||!!used,title:used?"Assign another skill to these stages before archiving.":undefined,run:()=>void archive.run(skill.id,skill.version,!skill.archived_at)}]:[]),
           ]} />
         </div>
+        <p className="flex-1 text-panel text-muted-foreground">{skill.description||"No description"}</p>
+        <div><Button size="sm" variant="outline" onClick={()=>onEdit(skill)}>{skill.builtin_key||skill.archived_at?"View":"Edit"}</Button></div>
       </article>;
     })}</div>
     {!matches.length?<p className="text-panel text-faint">No matching skills. Create one with New skill.</p>:null}

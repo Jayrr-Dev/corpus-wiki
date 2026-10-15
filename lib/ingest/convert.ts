@@ -1,3 +1,5 @@
+import type { ImageDescriber } from "./describeMedia";
+import { type VideoReader, videoPages } from "./describeVideo";
 import type { UploadFormatId } from "./formats";
 import type { ExtractedPage } from "./passages";
 
@@ -6,7 +8,11 @@ import type { ExtractedPage } from "./passages";
 // located text (pages). The only format-specific step in the pipeline.
 // =====================================================================
 
-export type Converter = (bytes: Uint8Array) => Promise<ExtractedPage[]>;
+// What some converters need besides the bytes: the file's name and type, and for
+// images and videos the models that read them (the server passes them; tests pass fakes)
+export type ConvertContext = { fileName: string; mimeType: string; describeImage?: ImageDescriber | null; readVideo?: VideoReader | null };
+
+export type Converter = (bytes: Uint8Array, context?: ConvertContext) => Promise<ExtractedPage[]>;
 
 // PDF: page by page (unpdf: pdf.js built for servers, no native deps)
 async function convertPdf(bytes: Uint8Array): Promise<ExtractedPage[]> {
@@ -29,6 +35,21 @@ async function convertText(bytes: Uint8Array): Promise<ExtractedPage[]> {
   return extractPlainText(new TextDecoder().decode(bytes));
 }
 
+// IMAGES: no text to extract, so a vision model writes a description, summary first; that
+// description is the image's text from here on (passages, claims, citations)
+async function convertImage(bytes: Uint8Array, context?: ConvertContext): Promise<ExtractedPage[]> {
+  if (!context?.describeImage) throw new Error("Images are read by an AI model, and none is set up (NEBIUS_API_KEY is missing).");
+  const description = await context.describeImage({ bytes, mimeType: context.mimeType, fileName: context.fileName });
+  return [{ page: null, text: description }];
+}
+
+// VIDEO: the description of its frames, summary first, then the transcript, each piece at the
+// time it starts ({ time: "mm:ss" } on its passages)
+async function convertVideo(bytes: Uint8Array, context?: ConvertContext): Promise<ExtractedPage[]> {
+  if (!context?.readVideo) throw new Error("Videos are read by an AI model, and none is set up (NEBIUS_API_KEY is missing).");
+  return videoPages(await context.readVideo({ bytes, mimeType: context.mimeType, fileName: context.fileName }));
+}
+
 // Text already in memory (the eval fixtures) as one page
 export function extractPlainText(text: string): ExtractedPage[] {
   return [{ page: null, text }];
@@ -40,4 +61,6 @@ export const CONVERTERS: Record<UploadFormatId, Converter> = {
   docx: convertDocx,
   markdown: convertText,
   text: convertText,
+  image: convertImage,
+  video: convertVideo,
 };

@@ -9,6 +9,7 @@ import { DialogForm } from "@/components/actions/DialogForm";
 import { FormRow } from "@/components/actions/FormRow";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { RowMenu } from "@/components/row-menu/RowMenu";
+import { DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { Tables } from "@/lib/database/types";
 import { UPLOAD_ACCEPT } from "@/lib/ingest/formats";
@@ -23,6 +24,7 @@ import {
   sourceImpact,
 } from "@/lib/server-actions/sources";
 import { processUpload, startRerun } from "@/lib/server-actions/upload";
+import { SourcePreview } from "./SourcePreview";
 
 type Source = Tables<"sources">;
 
@@ -43,12 +45,13 @@ export function SourceRowMenu({ source }: { source: Source }) {
       label={source.title}
       items={[
         { label: "Open", href: `/sources/${source.id}` },
+        { label: "Preview", isWide: true, body: () => <PreviewDialogBody source={source} /> },
         { label: "Re-run", separatorBefore: true, isDisabled: isArchived, body: (close) => <RerunForm source={source} onDone={close} /> },
         { label: "Replace", isAccent: true, body: (close) => <ReplaceForm source={source} onDone={close} /> },
         isArchived
           ? { label: "Restore", separatorBefore: true, body: (close) => <RestoreForm source={source} onDone={close} /> }
           : { label: "Archive", separatorBefore: true, body: (close) => <ArchiveForm source={source} onDone={close} /> },
-        { label: "Delete", separatorBefore: true, isDestructive: true, body: (close) => <DeleteForm source={source} onDone={close} /> },
+        { label: "Delete", isDestructive: true, body: (close) => <DeleteForm source={source} onDone={close} /> },
         { label: "Purge", isDestructive: true, body: (close) => <PurgeForm source={source} onDone={close} /> },
       ]}
     />
@@ -57,12 +60,22 @@ export function SourceRowMenu({ source }: { source: Source }) {
 
 type FormProps = { source: Source; onDone: () => void };
 
+// PREVIEW: the original file in a wide dialog, drawn by its type
+function PreviewDialogBody({ source }: { source: Source }) {
+  return (
+    <>
+      <DialogTitle className="sr-only">Preview of {source.title}</DialogTitle>
+      <SourcePreview source={source} height="min(75vh, 48rem)" className="mt-6" />
+    </>
+  );
+}
+
 // RE-RUN: a fresh upload event for the stored file, processed with the model chosen in Settings now.
 // When it finishes, the Upload screen's Recent uploads shows the result (and Retry if it failed).
 function RerunForm({ source, onDone }: FormProps) {
   const router = useRouter();
-  const start = useServerAction(startRerun);
-  const process = useServerAction(processUpload);
+  const start = useServerAction(startRerun, { progress: false });
+  const process = useServerAction(processUpload, { progress: { title: `Re-running “${source.title}”`, detail: "Reading the stored file with AI…" } });
   const submit = async () => {
     const started = await start.run(source.id);
     if (!started.ok || started.kind !== "started") return;
@@ -90,8 +103,8 @@ function ReplaceForm({ source, onDone }: FormProps) {
   const dateId = useId();
   const [file, setFile] = useState<File | null>(null);
   const [sourceDate, setSourceDate] = useState(() => toDateInputValue(Date.now()));
-  const replace = useServerAction(replaceSource);
-  const process = useServerAction(processUpload);
+  const replace = useServerAction(replaceSource, { progress: { title: `Uploading new version of “${source.title}”`, delayMs: 800 } });
+  const process = useServerAction(processUpload, { progress: { title: `Replacing “${source.title}”`, detail: "Reading the new file with AI…" } });
   const submit = async () => {
     if (!file) return;
     const formData = new FormData();

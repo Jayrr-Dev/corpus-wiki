@@ -1,7 +1,7 @@
 "use client";
 
 import { EvidenceBadge, Note, QueryState } from "@/app/(app)/_components/bits";
-import { formatDate, humanize } from "@/app/(app)/_lib/format";
+import { formatDate, statusLabel } from "@/app/(app)/_lib/format";
 import { UnitActionButtons } from "@/components/actions/ActionDialog";
 import { ReadingPane } from "@/components/shell";
 import { StatusGlyph } from "@/components/icons";
@@ -40,7 +40,7 @@ function UnitHeader({ unit }: { unit: UnitSummary }) {
     <div className="flex flex-col gap-3">
       <p className="flex flex-wrap items-center gap-2 text-panel text-muted-foreground">
         <StatusGlyph status={unit.epistemic_status} />
-        <span>{humanize(unit.epistemic_status)}</span>
+        <span>{statusLabel(unit.epistemic_status)}</span>
         <span className="text-faint">·</span>
         <span>{unit.kind}</span>
         <span className="text-faint">·</span>

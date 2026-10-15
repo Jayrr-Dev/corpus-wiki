@@ -1,4 +1,7 @@
+"use client";
+
 import type { ReactNode } from "react";
+import { Tooltip } from "@/components/standard/tooltip";
 import type { Enums } from "@/lib/database/types";
 import { cn } from "@/lib/utils";
 import { IconBase, type IconProps } from "./IconBase";
@@ -41,8 +44,8 @@ const ACCENTED: ReadonlySet<EpistemicStatus> = new Set(["hypothesis", "disputed"
 
 export type StatusGlyphProps = IconProps & { status: EpistemicStatus };
 
-// STATUS GLYPH: one unit's epistemic status as a 16px mark, labelled for screen readers
-export function StatusGlyph({ status, className, ...props }: StatusGlyphProps) {
+// STATUS MARK: the bare glyph, labelled for screen readers (no tooltip)
+export function StatusMark({ status, className, ...props }: StatusGlyphProps) {
   const Glyph = GLYPHS[status];
   return (
     <IconBase
@@ -51,8 +54,16 @@ export function StatusGlyph({ status, className, ...props }: StatusGlyphProps) {
       className={cn(ACCENTED.has(status) && "text-stale", className)}
       {...props}
     >
-      <title>{status}</title>
       <Glyph />
     </IconBase>
+  );
+}
+
+// STATUS GLYPH: one unit's epistemic status as a 16px mark, named in a tooltip
+export function StatusGlyph(props: StatusGlyphProps) {
+  return (
+    <Tooltip content={<span className="capitalize">{props.status}</span>}>
+      <StatusMark {...props} />
+    </Tooltip>
   );
 }

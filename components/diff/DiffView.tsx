@@ -27,7 +27,55 @@ export function DiffView({ before, after, className }: DiffViewProps) {
   );
 }
 
-type DiffLineProps = { label: string; parts: DiffPart[]; hide: DiffPart["kind"] };
+// INLINE DIFF: one running text, removed words struck and added words underlined in place
+export function InlineDiff({ before, after, className }: { before: string; after: string; className?: string }) {
+  const parts = useMemo(() => diffWords(before, after), [before, after]);
+  return (
+    <span className={className}>
+      {parts.map((part, index) => (
+        <span key={index} className={cn(PART_CLASS[part.kind], touchesReplacement(parts, index) && "mr-1")}>
+          {part.text}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// SPLIT DIFF: before and after side by side, removed words struck on the left
+// and added words underlined on the right
+export function SplitDiff({ before, after, className }: { before: string; after: string; className?: string }) {
+  const parts = useMemo(() => diffWords(before, after), [before, after]);
+  return (
+    <div className={cn("grid grid-cols-2 gap-x-4", className)}>
+      <DiffSide parts={parts} hide="added" empty={before === ""} />
+      <DiffSide parts={parts} hide="removed" empty={after === ""} />
+    </div>
+  );
+}
+
+// One column of a split diff; a side with no text shows a dash
+function DiffSide({ parts, hide, empty }: { parts: DiffPart[]; hide: DiffPart["kind"]; empty: boolean }) {
+  if (empty) return <span className="opacity-60">—</span>;
+  return (
+    <span>
+      {parts
+        .filter((part) => part.kind !== hide)
+        .map((part, index) => (
+          <span key={index} className={PART_CLASS[part.kind]}>
+            {part.text}
+          </span>
+        ))}
+    </span>
+  );
+}
+
+// A struck word runs straight into the word that replaces it, so it needs a visual gap
+function touchesReplacement(parts: DiffPart[], index: number): boolean {
+  const part = parts[index] as DiffPart;
+  return part.kind === "removed" && parts[index + 1]?.kind === "added" && !/\s$/.test(part.text);
+}
+
+type DiffLineProps ={ label: string; parts: DiffPart[]; hide: DiffPart["kind"] };
 
 // ONE SIDE: every part except the other side's changes
 function DiffLine({ label, parts, hide }: DiffLineProps) {

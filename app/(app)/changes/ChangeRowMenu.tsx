@@ -29,7 +29,7 @@ export function ChangeRowMenu({ changeSet }: { changeSet: ChangeSet }) {
 
 // CONFIRM UNDO: reverts every applied action of the set through Change control
 function UndoForm({ changeSet, onDone }: { changeSet: ChangeSet; onDone: () => void }) {
-  const undo = useServerAction(undoChangeSet);
+  const undo = useServerAction(undoChangeSet, { progress: { title: "Undoing change", detail: "Rewriting the affected sections…" } });
   const submit = async () => {
     if ((await undo.run(changeSet.id)).ok) onDone();
   };

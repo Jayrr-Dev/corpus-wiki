@@ -54,24 +54,24 @@ describe("dedupeAnswerToActions", () => {
   const batch = [units[2]!, units[3]!, units[0]!];
 
   it("merges into the kept unit, revising it first when the wording gains a detail", () => {
-    const actions = dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: units[3]!.content, reason: "" }] }, batch);
+    const actions = dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: units[3]!.content, confidence: "medium", reason: "" }] }, batch);
     expect(actions.map((a) => a.type)).toEqual(["revise_claim", "merge_duplicates"]);
     expect(actions[0]).toMatchObject({ targetId: "u3", expectedRevisionId: "r-u3", passageIds: ["p-u3", "p-u4"] });
     expect(actions[1]).toMatchObject({ targetId: "u3", input: { duplicateUnitIds: ["u4"] } });
   });
 
   it("skips the revise when the wording does not change", () => {
-    const actions = dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: ` ${units[2]!.content.toUpperCase()} `, reason: "" }] }, batch);
+    const actions = dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: ` ${units[2]!.content.toUpperCase()} `, confidence: "medium", reason: "" }] }, batch);
     expect(actions.map((a) => a.type)).toEqual(["merge_duplicates"]);
   });
 
   it("drops unknown refs, self merges, empty groups and units already used", () => {
     const actions = dedupeAnswerToActions({
       groups: [
-        { keep: "U9", duplicates: ["U1"], content: null, reason: "" },
-        { keep: "U1", duplicates: ["U1", "U7"], content: null, reason: "" },
-        { keep: "u1", duplicates: ["U2"], content: null, reason: "" },
-        { keep: "U3", duplicates: ["U2"], content: null, reason: "" },
+        { keep: "U9", duplicates: ["U1"], content: null, confidence: "medium", reason: "" },
+        { keep: "U1", duplicates: ["U1", "U7"], content: null, confidence: "medium", reason: "" },
+        { keep: "u1", duplicates: ["U2"], content: null, confidence: "medium", reason: "" },
+        { keep: "U3", duplicates: ["U2"], content: null, confidence: "medium", reason: "" },
       ],
     }, batch);
     expect(actions).toHaveLength(1);
@@ -79,3 +79,37 @@ describe("dedupeAnswerToActions", () => {
   });
 });
 
+
+describe("findDuplicateClusters with vectors", () => {
+  // u1/u2 at cosine 0.97; u3 and u4 at right angles to everything
+  const vectors = new Map([["r-u1", [1, 0, 0]], ["r-u2", [0.97, 0.243, 0]], ["r-u3", [0, 0, 1]], ["r-u4", [0, -1, 0]]]);
+
+  it("groups by meaning when both units are embedded, and by words otherwise", () => {
+    // u1/u2 are close in meaning; u3/u4 are far apart by vector though they share words
+    expect(ids(findDuplicateClusters(units.slice(0, 4), undefined, vectors))).toEqual([["u1", "u2"]]);
+  });
+});
+
+describe("auto merge", () => {
+  const batch = [units[2]!, units[3]!];
+  const near = new Map([["r-u3", [1, 0]], ["r-u4", [0.96, 0.28]]]);
+  const far = new Map([["r-u3", [1, 0]], ["r-u4", [0.9, 0.436]]]);
+  const merge = (confidence: "high" | "medium", vectors?: Map<string, number[]>) =>
+    dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: null, confidence, reason: "" }] }, batch, vectors)[0]!;
+
+  it("marks a sure merge of near-identical claims to apply without review", () => {
+    expect(merge("high", near).input).toMatchObject({ autoMerge: true });
+  });
+
+  it("leaves unsure, less similar or word-only merges for a person", () => {
+    expect(merge("medium", near).input).not.toHaveProperty("autoMerge");
+    expect(merge("high", far).input).not.toHaveProperty("autoMerge");
+    expect(merge("high").input).not.toHaveProperty("autoMerge");
+  });
+
+  it("auto merges the same text even without vectors", () => {
+    const same = [units[2]!, unit("u9", ` ${units[2]!.content.toUpperCase()} `)];
+    const [action] = dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: null, confidence: "high", reason: "" }] }, same);
+    expect(action!.input).toMatchObject({ autoMerge: true });
+  });
+});

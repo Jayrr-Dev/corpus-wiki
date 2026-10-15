@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import { chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { DraftAction, SectionDraft } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
@@ -45,10 +45,10 @@ async function loadContext(client: AdminSupabase, entityId: string): Promise<Exp
   return { knowledge, passages: (passages ?? []).map((passage) => ({ id: passage.id, text: passage.text, sourceDate: dateBySource.get(passage.source_id)! })), domainPaths: (domains ?? []).map((domain) => domain.path), existingEntities: entities ?? [], definedEntityKeys: (entities ?? []).filter((entity) => definedIds.has(entity.id)).map(naturalKey) };
 }
 
-async function commitExpansion(deps: Dependencies, eventId: string | null, actions: DraftAction[], summary: string) {
+async function commitExpansion(deps: Dependencies, eventId: string | null, actions: DraftAction[], summary: string, usage: TokenUsage) {
   if (!actions.length) return null;
   const { changeSetId } = await submitChangeSet(deps.db, { eventId, cause: eventId ? "upload" : "edit", actor: "ai" }, {
-    summary, actions, trace: { modelVersion: deps.settings.model ?? null, promptVersion: skillTrace("wiki-expansion-v3",["define_concepts","identify_entities","organize_topics","plan_articles"],deps.settings.skills), tokensIn: null, tokensOut: null },
+    summary, actions, trace: { modelVersion: deps.settings.model ?? null, promptVersion: skillTrace("wiki-expansion-v3",["define_concepts","identify_entities","organize_topics","plan_articles"],deps.settings.skills), tokensIn: usage.tokensIn, tokensOut: usage.tokensOut },
   });
   const result = await commitChangeSet(deps.db, changeSetId);
   if (result.status !== "applied") throw new Error(`Knowledge expansion was not fully applied. Review change set ${changeSetId} in Changes.`);
@@ -65,7 +65,7 @@ export async function expandEntityKnowledge(deps: Dependencies, entityId: string
   });
   validateExpansion(result.value, context);
   const actions = expansionActions(result.value, context);
-  await commitExpansion(deps, eventId, actions, "Identified subjects and extracted source-backed definitions");
+  await commitExpansion(deps, eventId, actions, "Identified subjects and extracted source-backed definitions", result);
 
   const { data: pages, error: pageError } = await deps.client.from("pages").select("id, title, slug, domain_id, context_entity_id").is("retired_at", null);
   if (pageError) throw new Error(pageError.message);
@@ -74,6 +74,8 @@ export async function expandEntityKnowledge(deps: Dependencies, entityId: string
   const { data: domains, error: domainError } = await deps.client.from("domains").select("id, name, path, context_entity_id, parent_id").order("path");
   if (domainError) throw new Error(domainError.message);
   const pageActions: DraftAction[] = [];
+  // Domain articles reuse the answer above; only the profile outline costs another call
+  let pageUsage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   for (const domain of domains ?? []) {
     if (["topics", "general", "knowledge"].includes(domain.name.toLowerCase())) continue;
     if (domain.context_entity_id && domain.context_entity_id !== entityId) continue;
@@ -94,11 +96,12 @@ export async function expandEntityKnowledge(deps: Dependencies, entityId: string
   }
   // An entity profile is separate from a thematic page about its safety program.
   if (!(pages ?? []).some((page) => page.title.toLowerCase() === context.knowledge.entity.name.toLowerCase())) {
-    const profile = await planArticle(deps.settings, context.knowledge);
+    const { plan: profile, ...profileUsage } = await planArticle(deps.settings, context.knowledge);
+    pageUsage = profileUsage;
     const profileSections = articleSections(profile, context.knowledge).map((section) => ({ ...section, query: { ...section.query, articleAliases: [context.knowledge.entity.name] } }));
     pageActions.push({ ...base, type: "create_page", input: { title: context.knowledge.entity.name, entityId: null, sections: profileSections } });
   }
-  const pageChange = await commitExpansion(deps, eventId, pageActions, "Created domain articles and an overview of the organization");
+  const pageChange = await commitExpansion(deps, eventId, pageActions, "Created domain articles and an overview of the organization", pageUsage);
   if (pageChange) {
     const { data: created, error: createdError } = await deps.client.from("actions").select("target_id").eq("change_set_id", pageChange).eq("type", "create_page").eq("outcome", "applied");
     if (createdError) throw new Error(createdError.message);

@@ -56,3 +56,38 @@ describe("compact bibliography", () => {
     expect(formatReferencePages([9, 5, 8, 1, 5])).toBe("1, 5, 8–9");
   });
 });
+
+describe("article figures", () => {
+  const mediaLines = [
+    { lineId: "l1", unitRevisionIds: ["r-text"] },
+    { lineId: "l2", unitRevisionIds: ["r-image"] },
+    { lineId: "l3", unitRevisionIds: ["r-image", "r-video"] },
+  ] as ShownLine[];
+  const mediaRevisions = [
+    { id: "r-text", passage_ids: ["p-text"] },
+    { id: "r-image", passage_ids: ["p-image"] },
+    { id: "r-video", passage_ids: ["p-video"] },
+  ] as Tables<"revisions">[];
+  const mediaPassages = [
+    { id: "p-text", source_id: "doc", text: "Handbook text", location: {} },
+    { id: "p-image", source_id: "img", text: "Q4 revenue was 5.0 million USD.", location: {} },
+    { id: "p-video", source_id: "vid", text: "The demo shows the arm picking a box.", location: {} },
+  ] as Tables<"passages">[];
+  const mediaSources = [
+    { id: "doc", title: "Handbook.pdf", source_date: "2025-01-01", mime_type: "application/pdf" },
+    { id: "img", title: "revenue.png", source_date: "2025-02-01", mime_type: "image/png" },
+    { id: "vid", title: "demo.mp4", source_date: "2025-03-01", mime_type: "video/mp4" },
+  ] as Tables<"sources">[];
+
+  it("shows each image or video once, beside the first line citing it, captioned by its summary", () => {
+    const evidence = buildArticleEvidence(mediaLines, mediaRevisions, mediaPassages, mediaSources, new Map([["img", "Bar chart of Acme revenue."]]));
+    expect(evidence.figuresByLine.get("l1")).toBeUndefined();
+    expect(evidence.figuresByLine.get("l2")).toEqual([
+      { sourceId: "img", kind: "image", title: "revenue.png", caption: "Bar chart of Acme revenue.", src: "/api/sources/img/file", referenceNumber: 2 },
+    ]);
+    // The image already stands beside l2; the video is new on l3 and, without a summary, uses the cited passage
+    expect(evidence.figuresByLine.get("l3")).toEqual([
+      { sourceId: "vid", kind: "video", title: "demo.mp4", caption: "The demo shows the arm picking a box.", src: "/api/sources/vid/file", referenceNumber: 3 },
+    ]);
+  });
+});

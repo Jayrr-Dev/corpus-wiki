@@ -155,6 +155,7 @@ export type Database = {
       change_sets: {
         Row: {
           applied_at: string | null
+          author_id: string | null
           created_at: string
           event_id: string
           id: string
@@ -168,6 +169,7 @@ export type Database = {
         }
         Insert: {
           applied_at?: string | null
+          author_id?: string | null
           created_at?: string
           event_id: string
           id?: string
@@ -181,6 +183,7 @@ export type Database = {
         }
         Update: {
           applied_at?: string | null
+          author_id?: string | null
           created_at?: string
           event_id?: string
           id?: string
@@ -231,6 +234,9 @@ export type Database = {
         Row: {
           aliases: string[]
           created_at: string
+          description: string | null
+          description_model: string | null
+          description_updated_at: string | null
           id: string
           key: string
           merged_into_id: string | null
@@ -242,6 +248,9 @@ export type Database = {
         Insert: {
           aliases?: string[]
           created_at?: string
+          description?: string | null
+          description_model?: string | null
+          description_updated_at?: string | null
           id?: string
           key: string
           merged_into_id?: string | null
@@ -253,6 +262,9 @@ export type Database = {
         Update: {
           aliases?: string[]
           created_at?: string
+          description?: string | null
+          description_model?: string | null
+          description_updated_at?: string | null
           id?: string
           key?: string
           merged_into_id?: string | null
@@ -273,6 +285,7 @@ export type Database = {
           note: string | null
           reason: Database["public"]["Enums"]["exception_reason"]
           resolved_at: string | null
+          resolved_by_id: string | null
           status: Database["public"]["Enums"]["exception_status"]
         }
         Insert: {
@@ -284,6 +297,7 @@ export type Database = {
           note?: string | null
           reason: Database["public"]["Enums"]["exception_reason"]
           resolved_at?: string | null
+          resolved_by_id?: string | null
           status?: Database["public"]["Enums"]["exception_status"]
         }
         Update: {
@@ -295,6 +309,7 @@ export type Database = {
           note?: string | null
           reason?: Database["public"]["Enums"]["exception_reason"]
           resolved_at?: string | null
+          resolved_by_id?: string | null
           status?: Database["public"]["Enums"]["exception_status"]
         }
         Relationships: []
@@ -302,6 +317,7 @@ export type Database = {
       line_revisions: {
         Row: {
           author: Database["public"]["Enums"]["actor_kind"]
+          author_id: string | null
           content: string
           created_at: string
           event_id: string
@@ -313,6 +329,7 @@ export type Database = {
         }
         Insert: {
           author: Database["public"]["Enums"]["actor_kind"]
+          author_id?: string | null
           content: string
           created_at?: string
           event_id: string
@@ -324,6 +341,7 @@ export type Database = {
         }
         Update: {
           author?: Database["public"]["Enums"]["actor_kind"]
+          author_id?: string | null
           content?: string
           created_at?: string
           event_id?: string
@@ -437,6 +455,30 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       relationships: {
         Row: {
           created_at: string
@@ -470,35 +512,44 @@ export type Database = {
       revisions: {
         Row: {
           author: Database["public"]["Enums"]["actor_kind"]
+          author_id: string | null
           content: string
           created_at: string
           event_id: string
           id: string
+          model_version: string | null
           passage_ids: string[]
           replaces_revision_id: string | null
           source_date: string
+          title: string | null
           unit_id: string
         }
         Insert: {
           author: Database["public"]["Enums"]["actor_kind"]
+          author_id?: string | null
           content: string
           created_at?: string
           event_id: string
           id?: string
+          model_version?: string | null
           passage_ids?: string[]
           replaces_revision_id?: string | null
           source_date: string
+          title?: string | null
           unit_id: string
         }
         Update: {
           author?: Database["public"]["Enums"]["actor_kind"]
+          author_id?: string | null
           content?: string
           created_at?: string
           event_id?: string
           id?: string
+          model_version?: string | null
           passage_ids?: string[]
           replaces_revision_id?: string | null
           source_date?: string
+          title?: string | null
           unit_id?: string
         }
         Relationships: []
@@ -574,8 +625,10 @@ export type Database = {
           error: string | null
           finished_at: string | null
           id: string
+          person_id: string | null
           source_id: string | null
           status: Database["public"]["Enums"]["event_status"]
+          via: string | null
         }
         Insert: {
           actor: Database["public"]["Enums"]["actor_kind"]
@@ -584,8 +637,10 @@ export type Database = {
           error?: string | null
           finished_at?: string | null
           id?: string
+          person_id?: string | null
           source_id?: string | null
           status?: Database["public"]["Enums"]["event_status"]
+          via?: string | null
         }
         Update: {
           actor?: Database["public"]["Enums"]["actor_kind"]
@@ -594,8 +649,10 @@ export type Database = {
           error?: string | null
           finished_at?: string | null
           id?: string
+          person_id?: string | null
           source_id?: string | null
           status?: Database["public"]["Enums"]["event_status"]
+          via?: string | null
         }
         Relationships: []
       }
@@ -607,11 +664,13 @@ export type Database = {
           hash: string
           id: string
           mime_type: string
+          origin: string
           page_count: number | null
           replaced_by_id: string | null
           source_date: string
           storage_path: string
           title: string
+          url: string | null
         }
         Insert: {
           archived_at?: string | null
@@ -620,11 +679,13 @@ export type Database = {
           hash: string
           id?: string
           mime_type: string
+          origin?: string
           page_count?: number | null
           replaced_by_id?: string | null
           source_date: string
           storage_path: string
           title: string
+          url?: string | null
         }
         Update: {
           archived_at?: string | null
@@ -633,11 +694,13 @@ export type Database = {
           hash?: string
           id?: string
           mime_type?: string
+          origin?: string
           page_count?: number | null
           replaced_by_id?: string | null
           source_date?: string
           storage_path?: string
           title?: string
+          url?: string | null
         }
         Relationships: [
           {
@@ -660,6 +723,30 @@ export type Database = {
         }
         Update: {
           domain_id?: string
+          unit_id?: string
+        }
+        Relationships: []
+      }
+      unit_embeddings: {
+        Row: {
+          created_at: string
+          embedding: string
+          model: string
+          revision_id: string
+          unit_id: string
+        }
+        Insert: {
+          created_at?: string
+          embedding: string
+          model: string
+          revision_id: string
+          unit_id: string
+        }
+        Update: {
+          created_at?: string
+          embedding?: string
+          model?: string
+          revision_id?: string
           unit_id?: string
         }
         Relationships: []
@@ -726,6 +813,7 @@ export type Database = {
       section_lines: {
         Row: {
           author: Database["public"]["Enums"]["actor_kind"] | null
+          author_id: string | null
           content: string | null
           is_stale: boolean | null
           last_changed_at: string | null
@@ -743,6 +831,15 @@ export type Database = {
         Row: {
           source_id: string | null
           unit_id: string | null
+        }
+        Relationships: []
+      }
+      source_usage: {
+        Row: {
+          article_count: number | null
+          line_count: number | null
+          source_id: string | null
+          unit_count: number | null
         }
         Relationships: []
       }
@@ -823,6 +920,7 @@ export type Database = {
         | "deletion"
         | "low_confidence"
         | "domain_tree_review"
+        | "update_request"
       exception_status: "open" | "accepted" | "rejected"
       relationship_type:
         | "supports"
@@ -904,6 +1002,7 @@ export const Constants = {
         "deletion",
         "low_confidence",
         "domain_tree_review",
+        "update_request",
       ],
       exception_status: ["open", "accepted", "rejected"],
       relationship_type: [

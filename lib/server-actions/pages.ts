@@ -4,7 +4,9 @@ import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { loadStageSkills } from "@/lib/ai/skills/server";
 import { skillTrace } from "@/lib/ai/skills/prompt";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { readAllowExternalKnowledge, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { webSearchKey } from "@/lib/knowledge/webSearch";
+import { type ForceCreateResult, fillThinSectionsFromWeb, forceCreateSection as runForceCreate } from "@/lib/living-page/forceCreateSection";
 import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
 import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { requireUser } from "@/lib/auth/requireUser";
@@ -37,6 +39,7 @@ export async function createPage(input: { title: string; entityId: string | null
     const pageId = await commitOne(`Created page “${input.title.trim()}”`, action);
     const { db, writer } = await getServerDeps();
     await rebuildPage(db, writer, pageId);
+    if (input.entityId) await fillFromWebIfAllowed(await pageSectionIds(pageId), "");
     return { pageId, slug: await pageSlug(pageId) };
   });
 }
@@ -64,9 +67,10 @@ export async function createSection(input: { pageId: string; title: string; enti
   return toActionResult(async () => {
     await requireUser();
     const section = await entitySection(input.entityId, input.title, input.kind);
-    await commitOne(`Added section “${section.title.trim()}”`, { ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: input.pageId, ...section } });
+    const sectionId = await commitOne(`Added section “${section.title.trim()}”`, { ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: input.pageId, ...section } });
     const { db, writer } = await getServerDeps();
     await rebuildPage(db, writer, input.pageId);
+    await fillFromWebIfAllowed([sectionId], "");
     return {};
   });
 }
@@ -113,6 +117,27 @@ async function commitOne(summary: string, action: DraftAction): Promise<string> 
   return data.target_id;
 }
 
+// Web searches one article build may run, so a large update cannot run up the search bill
+const MAX_WEB_FILLS = 5;
+
+// EXTERNAL KNOWLEDGE: when Settings allows it and a search key is set, thin sections among
+// sectionIds are also filled from the web (see fillThinSectionsFromWeb). Returns the sections it rebuilt.
+async function fillFromWebIfAllowed(sectionIds: string[], note: string, maxSearches = MAX_WEB_FILLS): Promise<Set<string>> {
+  const key = webSearchKey();
+  if (!key || !sectionIds.length || maxSearches < 1) return new Set();
+  const { db, writer } = await getServerDeps();
+  if (writer.name === "fake" || !(await readAllowExternalKnowledge(db))) return new Set();
+  const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+  if (!settings) return new Set();
+  settings.skills = await loadStageSkills(db);
+  return new Set(await fillThinSectionsFromWeb({ db, client: getAdminSupabase(), settings, writer, webSearchKey: key }, sectionIds, note, maxSearches));
+}
+
+async function pageSectionIds(pageId: string): Promise<string[]> {
+  const { db } = await getServerDeps();
+  return (await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId })).map((section) => section.sectionId);
+}
+
 // The first failed check's reason, from actions.check_results ([{ name, passed, detail }])
 function failedCheckDetail(checks: unknown): string | null {
   if (!Array.isArray(checks)) return null;
@@ -149,10 +174,11 @@ export async function improveArticle(pageId: string): Promise<ActionResult> {
     const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
     if (settings) settings.skills = await loadStageSkills(db);
     if (!settings) throw new Error("Configure an AI provider to structure this article.");
-    const actions = await createArticlePlanner(settings, admin, true)([{ entityId: entity.id, type: entity.type, key: entity.key, name: entity.name, claimCount: 2, kinds: [], page: { pageId, coveredKinds: [], coversAll: true } }]);
+    const { actions } = await createArticlePlanner(settings, admin, true)([{ entityId: entity.id, type: entity.type, key: entity.key, name: entity.name, claimCount: 2, kinds: [], page: { pageId, coveredKinds: [], coversAll: true } }]);
     const result = await commitPersonEdit(db, "Organized article by subject with a content-based title", actions);
     if (result.status !== "applied") throw new Error("The article structure was not fully applied. Review the change set in Changes.");
     await rebuildPage(db, writer, pageId);
+    await fillFromWebIfAllowed(await pageSectionIds(pageId), "");
     return {};
   });
 }
@@ -186,7 +212,7 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
     if (request.scope === "section") {
       const { error } = await admin.from("sections").select("id").eq("id", request.id).is("retired_at", null).single();
       if (error) throw new Error("This article or section is no longer available. Reload the page and try again.");
-      await refreshSectionStyle(db, writer, request.id, request.note);
+      if (!(await fillFromWebIfAllowed([request.id], request.note, 1)).size) await refreshSectionStyle(db, writer, request.id, request.note);
       return { sections: 1 };
     }
     const { data: pages, error } = await admin.from("pages").select("id, parent_page_id").is("retired_at", null);
@@ -197,23 +223,27 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
     if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
     settings.skills = await loadStageSkills(db);
     let completed = 0;
+    let webFills = 0;
     try {
       for (const pageId of pageIds) {
         const repairs = await repairEmptyIntroductions(db, admin, pageId);
-        const additions = await discoverArticleUpdates(db, admin, settings, pageId, request.note);
+        const { sections: additions, tokensIn, tokensOut } = await discoverArticleUpdates(db, admin, settings, pageId, request.note);
         if (additions.length || repairs.length) {
           const actions: DraftAction[] = [...repairs, ...additions.map((section): DraftAction => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId, ...section } }))];
           const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
             summary: "Updated article knowledge selections and introduction", actions,
-            trace: { modelVersion: settings.model ?? null, promptVersion: skillTrace("article-update-discovery-v1", ["plan_articles"], settings.skills), tokensIn: null, tokensOut: null },
+            trace: { modelVersion: settings.model ?? null, promptVersion: skillTrace("article-update-discovery-v1", ["plan_articles"], settings.skills), tokensIn, tokensOut },
           });
           const result = await commitChangeSet(db, changeSetId);
           if (result.status !== "applied") throw new Error("New sections were not fully applied. Review Changes before retrying.");
         }
+        const filled = await fillFromWebIfAllowed(await pageSectionIds(pageId), request.note, MAX_WEB_FILLS - webFills);
+        webFills += filled.size;
         const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
         if (!sections.length && pageIds.length === 1) throw new Error("Add a generated section before updating this article.");
         for (const section of sections) {
-          await refreshSectionStyle(db, writer, section.sectionId, request.note);
+          // A section filled from the web was just rebuilt
+          if (!filled.has(section.sectionId)) await refreshSectionStyle(db, writer, section.sectionId, request.note);
           completed++;
         }
       }
@@ -223,6 +253,31 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
     }
     if (!completed) throw new Error("Add a generated section before updating this article.");
     return { sections: completed };
+  });
+}
+
+// FORCE CREATE OPTIONS: whether the dialog may offer a web search (allowed on /settings, and a search key is set)
+export async function forceCreateOptions(): Promise<ActionResult<{ webAllowed: boolean; webReady: boolean }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const { db } = await getServerDeps();
+    return { webAllowed: await readAllowExternalKnowledge(db), webReady: webSearchKey() !== null };
+  });
+}
+
+// FORCE CREATE: fills one section from the saved claims that fit its heading and, when asked
+// and allowed, from web pages stored as external sources (see lib/living-page/forceCreateSection)
+export async function forceCreateSection(input: { sectionId: string; note: string; useWeb: boolean }): Promise<ActionResult<ForceCreateResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const request = z.object({ sectionId: z.uuid(), note: z.string().max(2000), useWeb: z.boolean() }).parse(input);
+    const { db, writer } = await getServerDeps();
+    if (writer.name === "fake") throw new Error("Configure an AI provider in Settings before using Force Create.");
+    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+    if (!settings) throw new Error("Configure an AI provider in Settings before using Force Create.");
+    settings.skills = await loadStageSkills(db);
+    if (request.useWeb && !(await readAllowExternalKnowledge(db))) throw new Error("External knowledge is turned off in Settings.");
+    return runForceCreate({ db, client: getAdminSupabase(), settings, writer, webSearchKey: webSearchKey() }, request.sectionId, request.note.trim(), request.useWeb);
   });
 }
 

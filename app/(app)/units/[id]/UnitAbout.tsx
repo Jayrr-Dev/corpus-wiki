@@ -1,6 +1,7 @@
 "use client";
 
-import { Facts, Note, QueryState, Section, TextLink } from "@/app/(app)/_components/bits";
+import Link from "next/link";
+import { Facts, Note, QueryState, Section } from "@/app/(app)/_components/bits";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { useUnitDomains, useUnitEntities } from "@/lib/queries";
 import { useRowsByIds } from "@/lib/queries/screens";
@@ -36,15 +37,17 @@ export function UnitAbout({ unitId }: { unitId: string }) {
 
 type LinkItem = { id: string; href: string; text: string; note?: string };
 
-// COMMA-FREE LIST OF LINKS, each with an optional faint note (e.g. the entity role)
+// CHIPS: one per link, with its optional note (e.g. the entity role) as a small header above the name
 function LinkList({ items }: { items: LinkItem[] }) {
   if (items.length === 0) return <Note>None</Note>;
   return (
-    <ul className="flex flex-wrap gap-x-3 gap-y-1">
+    <ul className="flex flex-wrap gap-1.5">
       {items.map((item) => (
         <li key={item.id}>
-          <TextLink href={item.href}>{item.text}</TextLink>
-          {item.note ? <span className="ml-1 text-faint">{item.note}</span> : null}
+          <Link href={item.href} className="flex flex-col rounded-md border px-2 py-1 transition-colors hover:bg-hover">
+            {item.note ? <span className="text-xs leading-tight text-faint">{item.note}</span> : null}
+            <span className="leading-tight text-link">{item.text}</span>
+          </Link>
         </li>
       ))}
     </ul>

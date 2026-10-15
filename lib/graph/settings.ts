@@ -8,10 +8,15 @@ import { GRAPH_COLORS, type GraphGroup } from "./groups";
 // per entry instead of hand-writing each slider.
 // =====================================================================
 
+// Where a note's title sits relative to its dot
+export const TITLE_POSITIONS = ["top", "bottom", "left", "right"] as const;
+export type TitlePosition = (typeof TITLE_POSITIONS)[number];
+
 export interface GraphDisplay {
   arrows: boolean;
   // Circles around each domain and subdomain
   domainCircles: boolean;
+  titlePosition: TitlePosition;
   textFadeThreshold: number;
   nodeSize: number;
   linkThickness: number;
@@ -37,7 +42,7 @@ export interface GraphSettings {
 export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
   filters: { search: "", showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
   groups: [],
-  display: { arrows: false, domainCircles: true, textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
+  display: { arrows: false, domainCircles: true, titlePosition: "bottom", textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
   forces: { center: 0.5, repel: 10, link: 1, linkDistance: 60, cluster: 0.5 },
 };
 
@@ -50,7 +55,7 @@ export interface SliderRule<K extends string> {
   step: number;
 }
 
-export const DISPLAY_SLIDERS: readonly SliderRule<Exclude<keyof GraphDisplay, "arrows" | "domainCircles">>[] = [
+export const DISPLAY_SLIDERS: readonly SliderRule<Exclude<keyof GraphDisplay, "arrows" | "domainCircles" | "titlePosition">>[] = [
   { key: "textFadeThreshold", label: "Text fade threshold", min: -3, max: 3, step: 0.1 },
   { key: "nodeSize", label: "Node size", min: 0.1, max: 5, step: 0.1 },
   { key: "linkThickness", label: "Link thickness", min: 0.1, max: 5, step: 0.1 },
@@ -80,7 +85,7 @@ const settingsSchema = z.object({
     relatedness: z.number().default(DEFAULT_RELATED.relatedness),
   }),
   groups: z.array(z.object({ id: z.string(), query: z.string(), color: z.enum(colorTokens) })),
-  display: z.object({ arrows: z.boolean(), domainCircles: z.boolean().default(DEFAULT_DISPLAY.domainCircles), textFadeThreshold: z.number(), nodeSize: z.number(), linkThickness: z.number() }),
+  display: z.object({ arrows: z.boolean(), domainCircles: z.boolean().default(DEFAULT_DISPLAY.domainCircles), titlePosition: z.enum(TITLE_POSITIONS).default(DEFAULT_DISPLAY.titlePosition), textFadeThreshold: z.number(), nodeSize: z.number(), linkThickness: z.number() }),
   forces: z.object({ center: z.number(), repel: z.number(), link: z.number(), linkDistance: z.number(), cluster: z.number().default(DEFAULT_FORCES.cluster) }),
 });
 

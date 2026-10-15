@@ -73,6 +73,34 @@ describe.skipIf(!hasLocalPostgres())("change control", () => {
     expect(retired?.retired_at).not.toBeNull();
   });
 
+  it("applies an AI merge marked autoMerge without asking, and still asks for any other AI merge", async () => {
+    const OTHER_UNIT = "00000000-0000-4000-8000-010000000001";
+    const merge = (autoMerge: boolean): DraftAction => ({
+      type: "merge_duplicates", targetId: OTHER_UNIT, expectedRevisionId: null, passageIds: [], speechAct: null,
+      input: { duplicateUnitIds: [RELEASE_UNIT], ...(autoMerge ? { autoMerge: true } : {}) },
+    });
+    const commit = async (action: DraftAction) => {
+      const submitted = await submitChangeSet(rpc(), { eventId: null, cause: "edit", actor: "ai" }, { summary: "Merge", actions: [action], trace: NO_TRACE });
+      return commitChangeSet(rpc(), submitted.changeSetId);
+    };
+    expect(await commit(merge(false))).toMatchObject({ exceptions: 1 });
+    expect((await client.query("select retired_at from public.units where id = $1", [RELEASE_UNIT])).rows[0]?.retired_at).toBeNull();
+    expect(await commit(merge(true))).toMatchObject({ status: "applied", applied: 1 });
+    expect((await client.query("select retired_at from public.units where id = $1", [RELEASE_UNIT])).rows[0]?.retired_at).not.toBeNull();
+  });
+
+  it("gives a revision the title of the action that made it, else the one it replaces", async () => {
+    const titled = await commitPersonAction(rpc(), { ...reviseRelease("Q2 2027."), input: { content: "Q2 2027.", title: "Release in Q2 2027" } });
+    expect(titled.status).toBe("applied");
+    const title = async () => (await client.query<{ title: string | null }>(
+      "select r.title from public.units u join public.revisions r on r.id = u.current_revision_id where u.id = $1", [RELEASE_UNIT],
+    )).rows[0]?.title;
+    expect(await title()).toBe("Release in Q2 2027");
+    const revision = (await client.query<{ id: string }>("select current_revision_id as id from public.units where id = $1", [RELEASE_UNIT])).rows[0]!;
+    await commitPersonAction(rpc(), reviseRelease("Q2 2027, confirmed.", revision.id));
+    expect(await title()).toBe("Release in Q2 2027");
+  });
+
   it("refuses to undo a change a later change built on", async () => {
     const first = await commitPersonAction(rpc(), reviseRelease("Q2 2027."));
     const revision = (await client.query<{ id: string }>("select current_revision_id as id from public.units where id = $1", [RELEASE_UNIT])).rows[0]!;

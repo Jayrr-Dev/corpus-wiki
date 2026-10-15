@@ -8,22 +8,20 @@ import { readsState } from "@/app/(app)/_lib/reads";
 import { DiffView } from "@/components/diff/DiffView";
 import type { Tables } from "@/lib/database/types";
 import { useActions } from "@/lib/queries";
-import { useRowsByIds } from "@/lib/queries/screens";
+import { useActionTexts } from "../useActionTexts";
 
 // ACTIONS: every action of the set in position order, with checks and the text it changed
 export function ChangeActions({ changeSetId }: { changeSetId: string }) {
   const actions = useActions({ filters: { change_set_id: changeSetId } });
   const list = actions.data ?? [];
-  const revisions = useRowsByIds("revisions", list.flatMap((action) => [action.before_revision_id, action.after_revision_id]));
-  const contentById = new Map((revisions.data ?? []).map((revision) => [revision.id, revision.content]));
-  const contentOf = (id: string | null) => (id ? (contentById.get(id) ?? null) : null);
+  const { queries, textsOf } = useActionTexts(list);
   return (
     <Section title={`Actions (${list.length})`}>
-      <QueryState query={readsState([actions, revisions])}>
+      <QueryState query={readsState([actions, ...queries])}>
         {list.length === 0 ? <Note>No actions.</Note> : null}
         <ol className="flex flex-col divide-y">
           {list.map((action) => (
-            <ActionItem key={action.id} action={action} before={contentOf(action.before_revision_id)} after={contentOf(action.after_revision_id)} />
+            <ActionItem key={action.id} action={action} {...textsOf(action)} />
           ))}
         </ol>
       </QueryState>

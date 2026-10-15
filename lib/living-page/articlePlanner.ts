@@ -1,13 +1,13 @@
 import "server-only";
 import { z } from "zod";
-import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { DraftAction } from "@/lib/ai/types";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { articleActions, articleSections, articlePlanSchema, type ArticleKnowledge } from "./articlePlan";
 import type { PageCandidate } from "./proposePages";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 
-export type PagePlanner = ((candidates: PageCandidate[]) => Promise<DraftAction[]>) & { promptVersion?: string };
+export type PagePlanner = ((candidates: PageCandidate[]) => Promise<TokenUsage & { actions: DraftAction[] }>) & { promptVersion?: string; model?: string };
 
 const PROMPT = `Plan an encyclopedia article from the supplied verified claims.
 Choose the title from what the claims are ABOUT, not merely the entity name or file name.
@@ -36,19 +36,22 @@ export async function loadArticleKnowledge(client: AdminSupabase, entityId: stri
   return { entity, units: (units ?? []).map((unit) => ({ unitId: unit.id, revisionId: unit.current_revision_id, content: byId.get(unit.current_revision_id) ?? "", kind: unit.kind, epistemicStatus: unit.epistemic_status })) };
 }
 
+// Usage covers the correction attempt too
 export async function planArticle(settings: TokenFactorySettings, knowledge: ArticleKnowledge) {
   if (!knowledge.units.length) throw new Error("This page has no current claims to organize.");
   const messages: { role: "system" | "user"; content: string }[] = [
     { role: "system", content: `${skillInstructions(["plan_articles"],settings.skills)}\n${PROMPT}` },
     { role: "user", content: JSON.stringify({ entity: knowledge.entity.name, claims: knowledge.units.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
   ];
+  let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   for (let attempt = 0; ; attempt++) {
     const answer = await chatJson(settings, {
       name: "article_outline", schema: articlePlanSchema, jsonSchema: z.toJSONSchema(articlePlanSchema), maxTokens: 8000, messages,
     });
+    usage = addUsage(usage, answer);
     try {
       articleSections(answer.value, knowledge);
-      return answer.value;
+      return { plan: answer.value, ...usage };
     } catch (error) {
       if (attempt >= 1) throw error;
       messages.push({ role: "user", content: `Your previous outline was ${JSON.stringify(answer.value)}. Validation failed: ${error instanceof Error ? error.message : String(error)}. Return the complete corrected outline, covering every supplied claim in the topic sections. Claims listed only in the introduction must ALSO be assigned to a topic section.` });
@@ -60,6 +63,7 @@ export async function planArticle(settings: TokenFactorySettings, knowledge: Art
 export function createArticlePlanner(settings: TokenFactorySettings, client: AdminSupabase, force = false): PagePlanner {
   const planner: PagePlanner = async (candidates) => {
     const actions: DraftAction[] = [];
+    let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
     for (const candidate of candidates) {
       if (candidate.claimCount < 2) continue;
       const pageId = candidate.page?.pageId ?? null;
@@ -83,11 +87,13 @@ export function createArticlePlanner(settings: TokenFactorySettings, client: Adm
         }
       }
       const knowledge = await loadArticleKnowledge(client, candidate.entityId);
-      const plan = await planArticle(settings, knowledge);
+      const { plan, ...planUsage } = await planArticle(settings, knowledge);
+      usage = addUsage(usage, planUsage);
       actions.push(...articleActions(plan, knowledge, pageId, replaceIds));
     }
-    return actions;
+    return { actions, ...usage };
   };
   planner.promptVersion = skillTrace("article-outline-v2",["plan_articles"],settings.skills);
+  planner.model = settings.model;
   return planner;
 }

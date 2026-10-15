@@ -11,14 +11,15 @@ const MAX_PASSAGE_CHARS = 700;
 const PARAGRAPH_BREAK = /\n\s*\n/;
 const SENTENCE_END = /(?<=[.!?])\s+/;
 
-// ONE PAGE OF EXTRACTED TEXT (page is null for formats without pages)
-export type ExtractedPage = { page: number | null; text: string };
+// ONE PAGE OF EXTRACTED TEXT (page is null for formats without pages; time is where a
+// video's transcript piece starts, "mm:ss")
+export type ExtractedPage = { page: number | null; text: string; time?: string };
 
 // WHAT ingest_source STORES PER PASSAGE
 export type PassageDraft = {
   position: number;
   text: string;
-  location: { page?: number; heading?: string };
+  location: { page?: number; heading?: string; time?: string };
   hash: string;
   speakerLabel: string | null;
 };
@@ -27,12 +28,12 @@ export type PassageDraft = {
 export function splitIntoPassages(pages: readonly ExtractedPage[]): PassageDraft[] {
   const drafts: Omit<PassageDraft, "position">[] = [];
   let heading: string | undefined;
-  for (const { page, text } of pages) {
+  for (const { page, text, time } of pages) {
     for (const paragraph of text.split(PARAGRAPH_BREAK)) {
       const clean = paragraph.replace(/\s*\n\s*/g, " ").trim();
       if (!clean) continue;
       if (clean.startsWith("#")) heading = clean.replace(/^#+\s*/, "");
-      const location = { ...(page !== null && { page }), ...(heading && { heading }) };
+      const location = { ...(page !== null && { page }), ...(heading && { heading }), ...(time && { time }) };
       drafts.push(...packSentences(clean).map((piece) => passageOf(piece, location)));
     }
   }

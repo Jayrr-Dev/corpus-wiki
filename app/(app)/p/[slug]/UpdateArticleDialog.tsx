@@ -25,7 +25,7 @@ export function UpdateArticleForm({ id, title, scope, onClose, onBusy }: { id: s
   const [note, setNote] = useState("");
   const [addNote, setAddNote] = useState(false);
   const [completed, setCompleted] = useState<number | null>(null);
-  const update = useServerAction(updateArticle);
+  const update = useServerAction(updateArticle, { progress: { title: `Updating “${title}”`, detail: scope === "tree" ? "Refreshing the article and its child pages…" : "Refreshing with the latest knowledge…" } });
   const noteId = useId();
   const toggleId = useId();
   const submit = async (event: FormEvent<HTMLFormElement>) => {

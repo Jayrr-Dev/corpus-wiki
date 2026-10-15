@@ -44,6 +44,9 @@ export const useRelationships = (o: ListOptions<"relationships"> = {}) =>
   useTableList("relationships", { orderBy: "created_at", ascending: false, ...o });
 export const useRelationship = (id?: string) => useTableRow("relationships", id);
 
+// PEOPLE: one profile per account (names on changes)
+export const useProfiles = () => useTableList("profiles", { orderBy: "created_at", ascending: true });
+
 // CHANGE CONTROL
 export const useChangeSets = (o: ListOptions<"change_sets"> = {}) =>
   useTableList("change_sets", { orderBy: "created_at", ascending: false, ...o });

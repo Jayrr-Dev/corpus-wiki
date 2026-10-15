@@ -2,7 +2,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { TextLink } from "@/app/(app)/_components/bits";
-import { formatDate, formatDateTime } from "@/app/(app)/_lib/format";
+import { DateTime } from "@/app/(app)/_components/DateTime";
+import { formatCount, formatDate } from "@/app/(app)/_lib/format";
 import type { Tone } from "@/app/(app)/_lib/tone";
 
 // =====================================================================
@@ -34,7 +35,7 @@ export function dateColumn<T>(id: string, header: string, value: (row: T) => str
     accessorFn: (row) => value(row) ?? "",
     cell: ({ row }) => {
       const iso = value(row.original);
-      return <span className="font-mono text-muted-foreground">{withTime ? formatDateTime(iso) : formatDate(iso)}</span>;
+      return <span className="font-mono text-muted-foreground">{withTime ? <DateTime iso={iso} /> : formatDate(iso)}</span>;
     },
   };
 }
@@ -57,4 +58,9 @@ export function textColumn<T>(id: string, header: string, value: (row: T) => str
     accessorFn: value,
     cell: ({ row }) => (render ? render(row.original) : value(row.original)),
   };
+}
+
+// COUNT COLUMN: a number in mono, sorted by its number
+export function countColumn<T>(id: string, header: string, value: (row: T) => number | null): Column<T> {
+  return textColumn<T>(id, header, (row) => String(value(row) ?? 0).padStart(12, "0"), (row) => <span className="font-mono">{formatCount(value(row))}</span>);
 }

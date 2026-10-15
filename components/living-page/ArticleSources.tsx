@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatReferencePages, type ArticleReference } from "@/lib/living-page/articleEvidence";
+import { Loader } from "@/components/standard/loader";
 
 function backlinkLabel(index: number): string {
   let label = "";
@@ -12,7 +13,7 @@ export function ArticleSources({ references, loading, error }: { references: Art
     <section id="article-sources" className="scroll-mt-6 border-t pt-5">
       <h2 className="mb-3 font-serif text-2xl">References</h2>
       {error ? <p role="alert" className="text-panel">References could not be loaded: {error}</p> : null}
-      {loading ? <p className="text-panel text-faint">Loading references…</p> : null}
+      {loading ? <Loader inline label="Loading references…" /> : null}
       {!loading && !error && !references.length ? <p className="text-panel text-faint">No source passages are attached to these paragraphs yet.</p> : null}
       <ol className="list-decimal space-y-3 pl-5 text-panel marker:text-faint">
         {references.map((reference) => {

@@ -38,12 +38,12 @@ export type PageCandidate = {
 // Proposes and commits the pages and sections an event calls for; returns how many actions applied
 export async function proposePages(db: DbRpc, eventId: string, planner?: PagePlanner): Promise<number> {
   const candidates = await db.call<PageCandidate[]>("page_candidates", { p_event_id: eventId });
-  const actions = planner ? await planner(candidates) : pageProposalActions(candidates);
+  const { actions, tokensIn, tokensOut } = planner ? await planner(candidates) : { actions: pageProposalActions(candidates), tokensIn: null, tokensOut: null };
   if (actions.length === 0) return 0;
   const draft = {
     summary: describeProposals(actions),
     actions,
-    trace: { modelVersion: null, promptVersion: planner?.promptVersion ?? null, tokensIn: null, tokensOut: null },
+    trace: { modelVersion: planner?.model ?? null, promptVersion: planner?.promptVersion ?? null, tokensIn, tokensOut },
   };
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai" }, draft);
   return (await commitChangeSet(db, changeSetId)).applied;

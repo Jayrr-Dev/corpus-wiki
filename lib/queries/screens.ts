@@ -3,6 +3,7 @@ import { getBrowserSupabase, type BrowserSupabase } from "@/lib/supabase/client"
 import { fetchRowById, type Row } from "./fetchers";
 import { type Evidence, toEvidence } from "@/lib/knowledge/evidence";
 import { knowledgeLabel } from "@/lib/knowledge/label";
+import { fetchDescribableEntityIds } from "@/lib/knowledge/describableEntities";
 import { queryKeys } from "./keys";
 
 // =====================================================================
@@ -12,10 +13,11 @@ import { queryKeys } from "./keys";
 // =====================================================================
 
 // SHARED SHAPES
-export type UnitSummary = Row<"units"> & { content: string; label?: string; evidence?: Evidence };
+// changedBy: who wrote the current revision (a person's profile id, or the AI's model)
+export type UnitSummary = Row<"units"> & { content: string; label?: string; evidence?: Evidence; changedBy?: Pick<Row<"revisions">, "author" | "author_id" | "model_version"> };
 
 // TABLES THAT HAVE A UUID `id` AND ARE READ BY ID LISTS HERE
-type ByIdTable = "units" | "revisions" | "passages" | "sources" | "entities" | "domains" | "actions";
+type ByIdTable = "units" | "revisions" | "line_revisions" | "passages" | "sources" | "entities" | "domains" | "actions" | "change_sets";
 
 // Reads rows by id; an empty list reads nothing
 async function fetchByIds<T extends ByIdTable>(client: BrowserSupabase, table: T, ids: readonly string[]): Promise<Row<T>[]> {
@@ -65,7 +67,9 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
     topic: (memberships.data ?? []).filter((link)=>link.unit_id===id).map((link)=>topicById.get(link.domain_id)).filter((topic)=>!!topic).sort((a,b)=>b.path.length-a.path.length)[0]?.name,
   });
   const contentById = new Map(revisions.map((revision) => [revision.id, revision.content]));
-  return units.map((unit) => ({ ...unit, content: contentById.get(unit.current_revision_id) ?? "", label: knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)), evidence: evidenceById.get(unit.id) }));
+  const titleById = new Map(revisions.map((revision) => [revision.id, revision.title?.trim() || null]));
+  const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
+  return units.map((unit) => ({ ...unit, content: contentById.get(unit.current_revision_id) ?? "", label: titleById.get(unit.current_revision_id) ?? knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)), evidence: evidenceById.get(unit.id), changedBy: revisionById.get(unit.current_revision_id) }));
 }
 
 // UNITS WITH CONTENT: every unit when `ids` is omitted, else just those
@@ -113,6 +117,23 @@ export function useActionsForPassages(passageIds: readonly string[]): UseQueryRe
   });
 }
 
+// Reads the domain links of a list of units
+async function fetchUnitDomainsFor(client: BrowserSupabase, unitIds: string[]): Promise<Row<"unit_domains">[]> {
+  if (unitIds.length === 0) return [];
+  const { data, error } = await client.from("unit_domains").select("*").in("unit_id", unitIds);
+  if (error) throw error;
+  return data ?? [];
+}
+
+// DOMAIN LINKS OF MANY UNITS (Entity detail: the domains its units sit in)
+export function useUnitDomainsFor(unitIds: readonly string[]): UseQueryResult<Row<"unit_domains">[]> {
+  const list = uniqueIds(unitIds);
+  return useQuery({
+    queryKey: [...queryKeys.table("unit_domains"), "units", list],
+    queryFn: () => fetchUnitDomainsFor(getBrowserSupabase(), list),
+  });
+}
+
 // ONE SHIFT EVENT, POLLED EVERY SECOND WHILE `isLive` (Upload: watch the pipeline move)
 export function useLiveShiftEvent(eventId: string | undefined, isLive: boolean): UseQueryResult<Row<"shift_events"> | null> {
   return useQuery({
@@ -130,10 +151,44 @@ async function fetchSourceUnitIds(client: BrowserSupabase, sourceId: string): Pr
   return (data ?? []).flatMap((row) => (row.unit_id ? [row.unit_id] : []));
 }
 
+export type SourceUsage = { units: number; articles: number; lines: number };
+
+// Reads every file's knowledge, article and line counts (source_usage view), by source id
+async function fetchSourceUsage(client: BrowserSupabase): Promise<Map<string, SourceUsage>> {
+  const { data, error } = await client.from("source_usage").select("source_id, unit_count, article_count, line_count");
+  if (error) throw error;
+  return new Map(
+    (data ?? []).flatMap((row) =>
+      row.source_id ? [[row.source_id, { units: row.unit_count ?? 0, articles: row.article_count ?? 0, lines: row.line_count ?? 0 }] as const] : [],
+    ),
+  );
+}
+
+// KNOWLEDGE AND ARTICLE COUNTS PER FILE (Sources list). Keyed under units so knowledge edits refresh it
+export function useSourceUsage(): UseQueryResult<Map<string, SourceUsage>> {
+  return useQuery({
+    queryKey: [...queryKeys.table("units"), "source-usage"],
+    queryFn: () => fetchSourceUsage(getBrowserSupabase()),
+  });
+}
+
 // KNOWLEDGE LINKED TO A FILE (Source detail). Keyed under units so knowledge edits refresh it
 export function useSourceUnitIds(sourceId: string): UseQueryResult<string[]> {
   return useQuery({
     queryKey: [...queryKeys.table("units"), "source", sourceId],
     queryFn: () => fetchSourceUnitIds(getBrowserSupabase(), sourceId),
+  });
+}
+
+// Counts the entities a describe pass would plan (same read as planDescribeBatches)
+async function fetchUndescribedEntityCount(client: BrowserSupabase): Promise<number> {
+  return (await fetchDescribableEntityIds(client)).length;
+}
+
+// ENTITIES A DESCRIBE PASS CAN STILL DESCRIBE (Graph actions). Keyed under entities so describing refreshes it
+export function useUndescribedEntityCount(): UseQueryResult<number> {
+  return useQuery({
+    queryKey: [...queryKeys.table("entities"), "undescribed-count"],
+    queryFn: () => fetchUndescribedEntityCount(getBrowserSupabase()),
   });
 }

@@ -28,6 +28,7 @@ const claimSchema = z.object({
   action: z.enum(CLAIM_ACTIONS),
   unit: z.string().nullable(),
   content: z.string(),
+  title: z.string(),
   kind: z.enum(ENUMS.unit_kind),
   epistemicStatus: z.enum(ENUMS.epistemic_status),
   speechAct: z.enum(ENUMS.speech_act),

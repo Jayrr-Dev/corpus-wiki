@@ -1,4 +1,4 @@
-import { humanize } from "@/app/(app)/_lib/format";
+import { statusLabel } from "@/app/(app)/_lib/format";
 import type { Tone } from "@/app/(app)/_lib/tone";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ export function StatusDot({ tone, label, className, busy = false }: StatusDotPro
       ) : (
         <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", DOT_CLASS[tone])} />
       )}
-      {label ? <span className={tone === "faint" ? "text-faint" : undefined}>{humanize(label)}</span> : null}
+      {label ? <span className={tone === "faint" ? "text-faint" : undefined}>{statusLabel(label)}</span> : null}
     </span>
   );
 }

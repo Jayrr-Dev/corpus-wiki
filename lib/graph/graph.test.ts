@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, shortLabel } from "./build";
 import { labelOpacity, REVEAL_AT, revealOpacity, toWorld, zoomAt } from "./camera";
-import { clusterKeys, trunkDepth } from "./clusters";
+import { clusterCircles, clusterTree } from "./clusters";
+import type { SimNode } from "./physics";
 import { applyFilters, createdBy } from "./filters";
-import { groupColorLookup, parseGroupQuery } from "./groups";
+import { groupColorLookup, groupCounts, groupSuggestions, joinGroupQuery, parseGroupQuery, splitGroupQuery } from "./groups";
 import { neighborhood } from "./neighborhood";
 import type { GraphRows } from "./rows";
 import { DEFAULT_GRAPH_SETTINGS, parseSavedSettings } from "./settings";
@@ -142,6 +143,37 @@ describe("group queries", () => {
     expect(colorOf(nodeById("u1"))).toBe("link");
     expect(colorOf(nodeById("u3"))).toBeNull();
   });
+
+  it("matches nothing when a prefix has no value", () => {
+    expect(parseGroupQuery("entity:")(nodeById("u1"))).toBe(false);
+    expect(parseGroupQuery("domain:  ")(nodeById("u1"))).toBe(false);
+  });
+
+  it("splits and joins a query as field + value", () => {
+    expect(splitGroupQuery("Domain:Projects/Alpha")).toEqual({ field: "domain", value: "Projects/Alpha" });
+    expect(splitGroupQuery("path:Projects")).toEqual({ field: "domain", value: "Projects" });
+    expect(splitGroupQuery("Lunch")).toEqual({ field: "text", value: "Lunch" });
+    expect(splitGroupQuery("note: lunch")).toEqual({ field: "text", value: "note: lunch" });
+    expect(joinGroupQuery("status", "disputed")).toBe("status:disputed");
+    expect(joinGroupQuery("text", "Lunch")).toBe("Lunch");
+  });
+
+  it("suggests the values present and counts what each group colors", () => {
+    const suggestions = groupSuggestions(graph.nodes);
+    expect(suggestions.entity).toEqual(["Project Alpha"]);
+    expect(suggestions.status).toContain("disputed");
+    expect(suggestions.kind).toEqual(expect.arrayContaining(["decision", "fact", "entity", "page"]));
+    const counts = groupCounts(
+      [
+        { id: "g1", query: "status:disputed", color: "failed" },
+        { id: "g2", query: "domain:Projects/Alpha", color: "link" },
+      ],
+      graph.nodes,
+    );
+    expect(counts.get("g1")).toBe(1);
+    // u1 and the page; u2 is disputed, so the first group took it
+    expect(counts.get("g2")).toBe(2);
+  });
 });
 
 describe("neighborhood", () => {
@@ -201,19 +233,22 @@ describe("claims sharing a topic label", () => {
 });
 
 describe("domain clusters", () => {
-  const split = (path: string) => path.split("/");
+  const dot = (id: string, domainPaths: string[], x = 0, y = 0): SimNode => ({ ...({} as GraphNode), id, domainPaths, degree: 0, x, y });
 
-  it("skips levels every path shares, but keeps one level below", () => {
-    expect(trunkDepth(["Co/Safety/PPE", "Co/Safety/WHMIS/Labels"].map(split))).toBe(2);
-    expect(trunkDepth(["Co/Safety/PPE", "Co/Safety"].map(split))).toBe(1);
-    expect(trunkDepth(["Co/Safety", "Other/Safety"].map(split))).toBe(0);
-    expect(trunkDepth([])).toBe(0);
+  it("nests a group for every level of each dot's first domain path", () => {
+    const tree = clusterTree([dot("a", ["Co/Safety/PPE"]), dot("b", ["Co/Safety/WHMIS"]), dot("c", ["Co/Safety"]), dot("d", [])]);
+    expect(tree.map((group) => group.path)).toEqual(["Co"]);
+    const [safety] = tree[0]!.children;
+    expect(safety?.size).toBe(3);
+    expect(safety?.members.map((node) => node.id)).toEqual(["c"]);
+    expect(safety?.children.map((group) => group.label)).toEqual(["PPE", "WHMIS"]);
   });
 
-  it("keys a node by the two levels below the trunk, from its first path", () => {
-    expect(clusterKeys({ domainPaths: ["Co/Safety/WHMIS/Labels"] }, 2)).toEqual({ domain: "WHMIS", subdomain: "WHMIS/Labels" });
-    expect(clusterKeys({ domainPaths: ["Co/Safety/PPE"] }, 2)).toEqual({ domain: "PPE", subdomain: null });
-    expect(clusterKeys({ domainPaths: [] })).toBeNull();
+  it("draws each outer ring around the rings inside it", () => {
+    const circles = clusterCircles([dot("a", ["Co/Safety/PPE"], -50, 0), dot("b", ["Co/Safety/WHMIS"], 50, 0)], 1);
+    expect(circles.map((circle) => [circle.key, circle.isBranch])).toEqual([["Co", true], ["Co/Safety", true], ["Co/Safety/PPE", false], ["Co/Safety/WHMIS", false]]);
+    const [co, safety] = circles;
+    expect(co!.r).toBeGreaterThan(safety!.r);
   });
 });
 

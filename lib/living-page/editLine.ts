@@ -1,13 +1,15 @@
 import type { DraftAction } from "@/lib/ai/types";
 import { type CommitResult, commitPersonEdit } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
+import { isBlock } from "./blocks";
 
 // =====================================================================
 // A PERSON EDITS A LINE (changes flow both ways). When the line states
 // exactly one claim, the edit also revises that claim in the same
 // ChangeSet, so every other line citing it turns stale and the living
 // page rewrites them. A line stating several claims (or none) changes
-// only itself: which claim the new words belong to would be a guess.
+// only itself: which claim the new words belong to would be a guess. So
+// does a list, table or chart: its layout is not the claim's wording.
 // =====================================================================
 
 // DB: read_line
@@ -33,7 +35,7 @@ function lineEditActions(line: LineRead, text: string): DraftAction[] {
   const [claim, ...others] = line.claims;
   const reviseLine = (input: Extract<DraftAction, { type: "revise_line" }>["input"]): DraftAction =>
     ({ type: "revise_line", targetId: line.lineId, expectedRevisionId: null, passageIds: [], speechAct: null, input }) as DraftAction;
-  if (!claim || others.length > 0) {
+  if (!claim || others.length > 0 || isBlock(text) || isBlock(line.content)) {
     const unitRevisionIds = line.claims.map((cited) => cited.citedRevisionId);
     return [reviseLine({ content: text, unitRevisionIds, expectedLineRevisionId: line.lineRevisionId })];
   }

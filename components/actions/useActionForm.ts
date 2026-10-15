@@ -21,7 +21,7 @@ export function useActionForm(mode: ActionMode, target: ActionTarget, onApplied:
   const [values, setValues] = useState(() => initialValues(target));
   const [problem, setProblem] = useState<string | null>(null);
   const [outcome, setOutcome] = useState<CommitResult | null>(null);
-  const edit = useServerAction(submitEdit);
+  const edit = useServerAction(submitEdit, { progress: { title: "Saving your change", detail: "Updating affected articles…", delayMs: 800 } });
 
   const set: ActionForm["set"] = (key, value) => setValues((current) => ({ ...current, [key]: value }));
 

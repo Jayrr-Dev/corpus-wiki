@@ -1,4 +1,5 @@
 import type { Tables } from "@/lib/database/types";
+import { type MediaKind, mediaKindOf } from "@/lib/ingest/formats";
 import type { ShownLine } from "@/lib/queries/sectionLines";
 
 export type ReferencePassage = { id: string; quote: string; page: number | null };
@@ -7,11 +8,15 @@ export type ArticleReference = {
   quote: string; page: number | null; passages: ReferencePassage[]; backlinks: { lineId: string; anchorId: string }[];
 };
 export type ArticleCitation = ArticleReference & { anchorId: string; citedPages: number[] };
-export type ArticleEvidence = { references: ArticleReference[]; byLine: Map<string, ArticleCitation[]> };
+// A PICTURE OR FILM SOURCE, drawn once beside the first line that cites it, its description as caption
+export type ArticleFigure = { sourceId: string; kind: MediaKind; title: string; caption: string; src: string; referenceNumber: number };
+export type ArticleEvidence = { references: ArticleReference[]; byLine: Map<string, ArticleCitation[]>; figuresByLine: Map<string, ArticleFigure[]> };
 
 // One bibliography entry per document; exact passage/page evidence stays attached
 // to each occurrence, following the revision actually cited by the paragraph.
-export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revisions">[], passages: Tables<"passages">[], sources: Tables<"sources">[]): ArticleEvidence {
+// `captions` holds each image or video source's summary (its first passage); without one the
+// figure is captioned with the first passage the article cites from it.
+export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revisions">[], passages: Tables<"passages">[], sources: Tables<"sources">[], captions: ReadonlyMap<string, string> = new Map()): ArticleEvidence {
   const revisionById = new Map(revisions.map((row) => [row.id, row]));
   const passageById = new Map(passages.map((row) => [row.id, row]));
   const sourceById = new Map(sources.map((row) => [row.id, row]));
@@ -43,7 +48,22 @@ export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revi
       return { ...reference, anchorId, citedPages: [...pages].sort((a, b) => a - b) };
     }));
   }
-  return { references, byLine };
+  return { references, byLine, figuresByLine: buildArticleFigures(references, sourceById, captions) };
+}
+
+// The stored file, through the route that signs a short-lived URL for it
+const sourceFileSrc = (sourceId: string) => `/api/sources/${sourceId}/file`;
+
+// One figure per image or video source, beside the first line citing it (in article order)
+function buildArticleFigures(references: ArticleReference[], sourceById: ReadonlyMap<string, Tables<"sources">>, captions: ReadonlyMap<string, string>): Map<string, ArticleFigure[]> {
+  const figuresByLine = new Map<string, ArticleFigure[]>();
+  for (const reference of references) {
+    const kind = mediaKindOf(sourceById.get(reference.sourceId)?.mime_type);
+    if (!kind) continue;
+    const figure: ArticleFigure = { sourceId: reference.sourceId, kind, title: reference.title, caption: captions.get(reference.sourceId) ?? reference.quote, src: sourceFileSrc(reference.sourceId), referenceNumber: reference.number };
+    figuresByLine.set(reference.firstLineId, [...(figuresByLine.get(reference.firstLineId) ?? []), figure]);
+  }
+  return figuresByLine;
 }
 
 export function formatReferencePages(pages: number[]): string {

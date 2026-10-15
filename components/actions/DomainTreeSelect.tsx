@@ -16,6 +16,8 @@ type DomainTreeSelectProps = {
   onChange: (value: string) => void;
   // shown as the first item with value "" (e.g. "Any domain")
   emptyLabel?: string;
+  // trigger text when nothing is picked and there is no empty item (defaults to the label)
+  placeholder?: string;
   className?: string;
 };
 
@@ -51,7 +53,7 @@ function ancestorIds(roots: DomainNode[], id: string): string[] {
 }
 
 // DOMAIN TREE SELECT: a dropdown of domains nested by path, each level collapsible, showing names not full paths
-export function DomainTreeSelect({ label, value, domains, onChange, emptyLabel, className }: DomainTreeSelectProps) {
+export function DomainTreeSelect({ label, value, domains, onChange, emptyLabel, placeholder, className }: DomainTreeSelectProps) {
   const roots = useMemo(() => buildDomainTree(domains), [domains]);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const selected = domains.find((domain) => domain.id === value);
@@ -88,7 +90,6 @@ export function DomainTreeSelect({ label, value, domains, onChange, emptyLabel, 
         <DropdownMenuItem
           onSelect={() => onChange(node.id)}
           onKeyDown={onKeyDown}
-          title={node.path}
         >
           <span className="w-[calc(var(--depth)*1rem)] shrink-0" style={{ "--depth": node.depth } as CSSProperties} aria-hidden="true" />
           {hasChildren ? (
@@ -109,22 +110,25 @@ export function DomainTreeSelect({ label, value, domains, onChange, emptyLabel, 
     );
   };
 
+  const trigger = (
+    <DropdownMenuTrigger asChild>
+      <button
+        type="button"
+        aria-label={label}
+        className={cn(
+          "relative flex h-8 w-fit max-w-64 min-w-0 items-center rounded-lg border border-input bg-transparent py-1 pr-8 pl-2.5 text-left text-panel transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50",
+          className,
+        )}
+      >
+        <span className="truncate">{selected ? (selected.path.split(SEPARATOR).at(-1) ?? selected.path) : (emptyLabel ?? placeholder ?? label)}</span>
+        <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+      </button>
+    </DropdownMenuTrigger>
+  );
+
   return (
     <DropdownMenu onOpenChange={onOpenChange}>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          aria-label={label}
-          title={selected?.path}
-          className={cn(
-            "relative flex h-8 w-fit max-w-64 min-w-0 items-center rounded-lg border border-input bg-transparent py-1 pr-8 pl-2.5 text-left text-panel transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50",
-            className,
-          )}
-        >
-          <span className="truncate">{selected ? (selected.path.split(SEPARATOR).at(-1) ?? selected.path) : (emptyLabel ?? label)}</span>
-          <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-        </button>
-      </DropdownMenuTrigger>
+      {trigger}
       <DropdownMenuContent className="max-h-96 min-w-56">
         {emptyLabel !== undefined ? (
           <DropdownMenuItem onSelect={() => onChange("")}>

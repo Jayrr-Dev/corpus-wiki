@@ -1,14 +1,17 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { Fragment, type ReactNode, useState } from "react";
+import { ActionHint } from "@/components/actions/ActionHint";
 import { MoreIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { orderMenuItems } from "@/components/row-menu/menuOrder";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-// ONE MENU ENTRY: its label and the dialog body it opens (given a close callback)
-export type DialogMenuItem = { label: string; isDestructive?: boolean; render: (close: () => void) => ReactNode };
+// ONE MENU ENTRY: its label and the dialog body it opens (given a close callback).
+// `separatorBefore` starts a new group; destructive items are moved last (see menuOrder); `hint` adds an "i" that explains it
+export type DialogMenuItem = { label: string; hint?: string; isDestructive?: boolean; separatorBefore?: boolean; render: (close: () => void) => ReactNode };
 
 type DialogMenuProps = { label: string; items: DialogMenuItem[]; className?: string };
 
@@ -16,9 +19,8 @@ type DialogMenuProps = { label: string; items: DialogMenuItem[]; className?: str
 // outside the menu so it stays open after the menu closes. `className` lets a
 // row hide the button until hover (it stays visible while the menu is open).
 export function DialogMenu({ label, items, className }: DialogMenuProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const close = () => setOpenIndex(null);
-  const openItem = openIndex === null ? null : items[openIndex];
+  const [openItem, setOpenItem] = useState<DialogMenuItem | null>(null);
+  const close = () => setOpenItem(null);
   return (
     <>
       <DropdownMenu>
@@ -28,10 +30,14 @@ export function DialogMenu({ label, items, className }: DialogMenuProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {items.map((item, index) => (
-            <DropdownMenuItem key={item.label} variant={item.isDestructive ? "destructive" : "default"} onSelect={() => setOpenIndex(index)}>
-              {item.label}
-            </DropdownMenuItem>
+          {orderMenuItems(items).map(({ item, hasSeparator }) => (
+            <Fragment key={item.label}>
+              {hasSeparator && <DropdownMenuSeparator />}
+              <DropdownMenuItem variant={item.isDestructive ? "destructive" : "default"} onSelect={() => setOpenItem(item)}>
+                {item.label}
+                {item.hint && <ActionHint>{item.hint}</ActionHint>}
+              </DropdownMenuItem>
+            </Fragment>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>

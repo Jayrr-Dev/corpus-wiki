@@ -1,7 +1,9 @@
 import "server-only";
 
 import { resolveModel, tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { listTokenFactoryModels, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { listTokenFactoryModels, readAllowExternalKnowledge, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { webSearchKey } from "@/lib/knowledge/webSearch";
+import { currentActor } from "@/lib/auth/currentPerson";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 
@@ -13,8 +15,21 @@ export type ModelSettings = {
   listError: string | null;
 };
 
+// The signed-in person's profile (name shown on their changes), or nulls when there is none yet
+export async function loadMyProfile(): Promise<{ name: string | null; email: string | null }> {
+  const { personId } = await currentActor();
+  if (!personId) return { name: null, email: null };
+  const { data } = await getAdminSupabase().from("profiles").select("display_name, email").eq("id", personId).maybeSingle();
+  return { name: data?.display_name ?? null, email: data?.email ?? null };
+}
+
 export async function loadAutoUpdateStale(): Promise<boolean> {
   return readAutoUpdateStale(supabaseRpc(getAdminSupabase()));
+}
+
+// The external-knowledge switch, and whether a web search key is set so it can work
+export async function loadExternalKnowledge(): Promise<{ enabled: boolean; ready: boolean }> {
+  return { enabled: await readAllowExternalKnowledge(supabaseRpc(getAdminSupabase())), ready: webSearchKey() !== null };
 }
 
 // Reads the pick from the database and the list from Token Factory

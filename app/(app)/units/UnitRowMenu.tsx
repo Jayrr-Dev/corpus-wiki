@@ -6,8 +6,9 @@ import type { UnitSummary } from "@/lib/queries/screens";
 
 // "…" MENU FOR ONE UNIT: open it, or any edit it allows (Retire is the delete; undo it from Changes)
 export function UnitRowMenu({ unit }: { unit: UnitSummary }) {
-  const edits: RowMenuItem[] = unitModes(unit).map((mode) => ({
+  const edits: RowMenuItem[] = unitModes(unit).map((mode, index) => ({
     label: unitModeLabel(mode),
+    separatorBefore: index === 0,
     isDestructive: mode === "retire",
     body: (close) => <UnitActionForm mode={mode} unit={unit} onDone={close} />,
   }));

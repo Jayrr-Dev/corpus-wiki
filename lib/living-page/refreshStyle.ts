@@ -27,13 +27,15 @@ export function assertStyleCoverage(input: SectionReviseInput, revision: Section
 
 export async function refreshSectionStyle(db: DbRpc, writer: SectionWriter, sectionId: string, updateNote?: string): Promise<void> {
   const refreshWriter: SectionWriter = {
-    name: writer.name, promptVersion: writer.promptVersion,
+    name: writer.name, promptVersion: writer.promptVersion, progress: writer.progress,
     prepareSection: async (state) => styleRefreshState(state),
-    reviseSection: async (input) => {
-      const revision = await writer.reviseSection({ ...input, ...(updateNote ? { updateNote } : {}) });
+    reviseSection: async (input, ...progress) => {
+      const revision = await writer.reviseSection({ ...input, ...(updateNote ? { updateNote } : {}) }, ...progress);
       assertStyleCoverage(input, revision);
       return revision;
     },
   };
-  await rebuildSection(db, refreshWriter, sectionId, null);
+  // A build already running ignores this note, so say so instead of reporting an update
+  const finished = await rebuildSection(db, refreshWriter, sectionId, null);
+  if (!finished) throw new Error("This section is being rewritten right now. Try the update again when it finishes.");
 }

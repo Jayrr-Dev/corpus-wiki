@@ -33,6 +33,7 @@ function present<T>(values: readonly (T | undefined)[]): T[] {
 // UNIT NODES: claim text, domains and entity names for group queries
 function unitNodes(rows: GraphRows): GraphNode[] {
   const contentByRevision = new Map(rows.revisions.map((revision) => [revision.id, revision.content]));
+  const titleByRevision = new Map(rows.revisions.map((revision) => [revision.id, revision.title?.trim() || null]));
   const pathByDomain = new Map(rows.domains.map((domain) => [domain.id, domain.path]));
   const nameByEntity = new Map(rows.entities.map((entity) => [entity.id, entity.name]));
   const domainsByUnit = groupBy(rows.unitDomains.map((row) => [row.unit_id, row.domain_id] as const));
@@ -42,7 +43,7 @@ function unitNodes(rows: GraphRows): GraphNode[] {
     return {
       id: unit.id,
       kind: "unit",
-      label: knowledgeLabel(content),
+      label: titleByRevision.get(unit.current_revision_id) ?? knowledgeLabel(content),
       text: content,
       href: `/units/${unit.id}`,
       createdAt: unit.created_at,
@@ -92,7 +93,9 @@ function pageNodes(rows: GraphRows): GraphNode[] {
 
 // LINKS: typed relationships, "about" (unit or page -> entity), "cites" (page -> unit, once per pair)
 function allLinks(rows: GraphRows): GraphLink[] {
-  const pageBySection = new Map(rows.sections.map((section) => [section.id, section.page_id]));
+  // Retiring a page leaves its sections behind, so only live pages can cite
+  const livePages = new Set(rows.pages.map((page) => page.id));
+  const pageBySection = new Map(rows.sections.filter((section) => livePages.has(section.page_id)).map((section) => [section.id, section.page_id]));
   const citePairs = new Set(
     present(rows.sectionInputs.map((input) => {
       const pageId = pageBySection.get(input.section_id);
@@ -125,6 +128,9 @@ export function countDegrees(links: readonly GraphLink[]): Map<string, number> {
 // BUILD: rows -> the full graph (every layer; filters decide what shows)
 export function buildGraph(rows: GraphRows): GraphData {
   const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)];
+  // A stored title already tells its claim apart; only derived labels are made specific
+  const titledRevisions = new Set(rows.revisions.filter((revision) => revision.title?.trim()).map((revision) => revision.id));
+  const titled = new Set(rows.units.filter((unit) => titledRevisions.has(unit.current_revision_id)).map((unit) => unit.id));
   // Topic labels are deliberately broad. When different claims share one,
   // show a short phrase from their own wording so they do not look like duplicates.
   const labelCounts = new Map<string, number>();
@@ -133,7 +139,7 @@ export function buildGraph(rows: GraphRows): GraphData {
     labelCounts.set(key, (labelCounts.get(key) ?? 0) + 1);
   }
   for (const node of nodes) {
-    if (node.kind === "unit" && (labelCounts.get(node.label.toLowerCase()) ?? 0) > 1) {
+    if (node.kind === "unit" && !titled.has(node.id) && (labelCounts.get(node.label.toLowerCase()) ?? 0) > 1) {
       node.label = phraseLabel(node.text);
     }
   }

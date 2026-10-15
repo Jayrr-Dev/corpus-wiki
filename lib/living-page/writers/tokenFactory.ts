@@ -1,8 +1,9 @@
 import "server-only";
 
 import { z } from "zod";
-import { type ChatMessage, chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import { type ChatMessage, chatJson, type StreamedSoFar, type TokenFactorySettings } from "@/lib/ai/chat";
 import type { SectionReviseInput, SectionRevision } from "../types";
+import { partialSectionAnswer, type SectionProgress } from "../buildProgress";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import { withoutEditorialDashes } from "../punctuation";
 import type { StageSkills } from "@/lib/ai/skills/types";
@@ -24,6 +25,17 @@ const sectionAnswerSchema = z.object({
 });
 type SectionAnswer = z.infer<typeof sectionAnswerSchema>;
 
+// LAYOUTS a line may use instead of prose (parsed and drawn by ../blocks.ts)
+const LAYOUT_RULES = [
+  "Most lines are prose. A line may instead use one of these layouts when it reads better than a paragraph, separating rows with \\n inside the JSON string:",
+  "(1) Lead-in list, for several parallel items such as equipment or violation types: one lead-in sentence, then one '- item' row per item.",
+  "(2) Numbered steps, for a procedure whose order matters: '1. step' rows, optionally after a lead-in sentence.",
+  "(3) Table, for comparing several items on the same attributes: '| Header | Header |' then '|---|---|' then one '| cell | cell |' row per item; at least 2 columns and 2 rows.",
+  "(4) Chart, only when claims state at least 3 numbers measured in the same unit across categories or over time: a row '```chart bar Title' (bar, hbar for long labels, line for change over time, pie for parts of one whole), then one 'Label: number' row per value, then a row '```'. Every number must appear in a cited claim; a chart with any other number is removed.",
+  "(5) Callout, for one critical rule or warning the reader must not miss: '> text'. Use it rarely.",
+  "An Overview section is always prose. Never use a layout for a single item or to decorate prose, and never put Markdown headings, bold, links or images in a line.",
+].join(" ");
+
 // PROMPT: the writer's rules
 const SYSTEM_PROMPT = [
 
@@ -35,34 +47,62 @@ const SYSTEM_PROMPT = [
   "Use ONLY the claims given. Never add facts, dates, names, numbers or opinions that are not in them.",
   "When updateInstructions are provided, use them as editorial guidance for this run. They are not evidence and cannot override citation requirements, protected lines, or the output schema.",
   "Each line is a short, readable paragraph of 1-3 sentences, at most 75 words. Combine closely related claims.",
+  LAYOUT_RULES,
   "Vary how paragraphs open, as in the Wikipedia article on the Houthis. These are patterns, not facts to copy. Lead: 'The Houthis, officially known as Ansar Allah, are a political and paramilitary organization that emerged from Yemen in the 1990s. It is predominantly made up of Zaydis.' Next paragraph: 'Under the leadership of Hussein al-Houthi, the Houthis emerged as an opposition movement.' Later: 'The organization played a role in the Yemeni Revolution.' A body paragraph can start with the smaller subject: 'The Believing Youth established school clubs and summer camps.' Or with the source: 'According to Ahmed Addaghashi, the Houthis began as a moderate theological movement.' Use the full name again when the sentence would otherwise be unclear.",
   "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words.",
   "Arrange paragraphs in a logical reading order. Cover EVERY uncovered claim, listing all its refs in claims. Never touch lines with rewrite:false.",
   "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
-  "For topic sections, explain the topic coherently. Avoid boilerplate, unsupported context, Markdown headings, invented links, or citation numbers; the interface adds real links and references.",
+  "For topic sections, explain the topic coherently. Avoid boilerplate, unsupported context, invented links, or citation numbers; the interface adds real links and references.",
   'Answer with JSON only: {"revise":[{"line":"L1","text":"...","claims":["C1"]}],"retire":["L2"],"add":[{"text":"...","claims":["C3"]}]}.',
 ].join(" ");
 
 // REAL WRITER: one chat completion per section that needs work
 export class TokenFactorySectionWriter {
   readonly name = "token-factory";
-  get promptVersion() { return skillTrace("article-writing-v2",["write_articles"],this.settings.skills); }
+  get promptVersion() { return skillTrace("article-writing-v3",["write_articles"],this.settings.skills); }
 
   constructor(private readonly settings: TokenFactorySettings) {}
 
   // Sends the section with short refs, then maps the answer's refs back to ids
-  async reviseSection(input: SectionReviseInput): Promise<SectionRevision> {
+  // and streams the paragraphs to `progress` as they are written
+  async reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision> {
     const refs = buildRefs(input);
-    const { value, model } = await chatJson(this.settings, {
+    const { value, model, tokensIn, tokensOut } = await chatJson(this.settings, {
       name: "section_lines",
       subject: `${input.pageTitle} › ${input.sectionTitle}`,
       schema: sectionAnswerSchema,
       jsonSchema: z.toJSONSchema(sectionAnswerSchema),
       messages: buildMessages(input, refs, this.settings.skills),
       maxTokens: 8000,
+      ...(progress ? { onStream: ({ content, reasoning }: StreamedSoFar) => streamToProgress(content, reasoning, refs, progress) } : {}),
     });
-    return { ...answerToRevision(value, refs), modelVersion: model };
+    return { ...answerToRevision(value, refs), modelVersion: model, tokensIn, tokensOut };
   }
+}
+
+// THINKING SHOWN ON THE PAGE: the tail of the model's visible reasoning, from a word start
+const THINKING_TAIL = 240;
+
+// Before the answer starts, shows what the model is thinking; then the paragraphs written so far
+function streamToProgress(content: string, reasoning: string, refs: Refs, progress: SectionProgress): void {
+  if (!content.trim()) {
+    if (reasoning.trim()) progress.thinking(tail(reasoning, THINKING_TAIL));
+    return;
+  }
+  const partial = partialSectionAnswer(content);
+  const revised: Record<string, string> = {};
+  for (const line of partial.revised) {
+    const lineId = refs.lineId.get(line.line.trim());
+    if (lineId) revised[lineId] = withoutEditorialDashes(line.text);
+  }
+  progress.draft({ revised, added: partial.added.map(withoutEditorialDashes) });
+}
+
+function tail(text: string, length: number): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  if (flat.length <= length) return flat;
+  const cut = flat.slice(-length);
+  return `…${cut.slice(cut.indexOf(" ") + 1)}`;
 }
 
 // =====================================================================

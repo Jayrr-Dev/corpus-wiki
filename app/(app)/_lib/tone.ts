@@ -54,6 +54,12 @@ export const EVIDENCE_TONE: Record<Evidence, Tone> = {
   lost: "failed",
 };
 
+// ENTITIES: a retired entity is no longer linked to new knowledge
+export const ENTITY_STATE_TONE: Record<"current" | "retired", Tone> = {
+  current: "applied",
+  retired: "faint",
+};
+
 // SOURCE FILES: an archived or replaced file no longer counts as evidence
 export const SOURCE_STATE_TONE: Record<SourceState, Tone> = {
   active: "applied",

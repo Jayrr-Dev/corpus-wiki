@@ -36,10 +36,11 @@ it("discovers relevant new claims using current planning skills and the one-run 
     return chain;
   } } as unknown as import("@/lib/supabase/admin").AdminSupabase;
   const db: import("@/lib/db/rpc").DbRpc = { call: async <T>(_name: string, args?: Record<string, unknown>) => ((args?.p_query as { unitIds?: string[] }).unitIds ? ["old"] : ["old", "new"]) as T };
-  const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(JSON.stringify({ model: "test", choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [{ title: "New requirement", claims: ["C1"] }] }) } }] })));
+  const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(JSON.stringify({ model: "test", usage: { prompt_tokens: 120, completion_tokens: 30 }, choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [{ title: "New requirement", claims: ["C1"] }] }) } }] })));
   vi.stubGlobal("fetch", fetch);
   const result = await discoverArticleUpdates(db, client, { apiKey: "test", skills: { plan_articles: { id: "custom", name: "Planning", version: 4, instructions: "CUSTOM_PLAN_INSTRUCTIONS" } } }, "page", "Explain new requirements clearly.");
-  expect(result[0]?.query.unitIds).toEqual(["new"]);
+  expect(result.sections[0]?.query.unitIds).toEqual(["new"]);
+  expect(result).toMatchObject({ tokensIn: 120, tokensOut: 30 });
   const request = JSON.parse(String(fetch.mock.calls[0]?.[1]?.body));
   expect(request.messages.filter((message: { role: string }) => message.role === "system").map((message: { content: string }) => message.content).join(" ")).toContain("CUSTOM_PLAN_INSTRUCTIONS");
   const user = JSON.parse(request.messages.find((message: { role: string }) => message.role === "user").content);

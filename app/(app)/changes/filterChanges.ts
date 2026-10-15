@@ -41,6 +41,15 @@ export function changeKind(summary: string): ChangeKind {
   return "knowledge";
 }
 
+// PROPOSED BY: "ai" / "person" for either kind, "person:<profile id>" for one person,
+// "model:<model id>" for one AI model
+export function matchesProposer(changeSet: Tables<"change_sets">, by: string): boolean {
+  if (!by) return true;
+  if (by.startsWith("person:")) return changeSet.proposed_by === "person" && changeSet.author_id === by.slice("person:".length);
+  if (by.startsWith("model:")) return changeSet.proposed_by === "ai" && changeSet.model_version === by.slice("model:".length);
+  return changeSet.proposed_by === by;
+}
+
 // Earliest created_at a "when" filter keeps (start of today, or 7/30 days back)
 function sinceFor(when: ChangeWhen, now: Date): number | null {
   if (!when) return null;
@@ -54,7 +63,7 @@ export function filterChanges(changeSets: readonly Tables<"change_sets">[], filt
   return changeSets.filter(
     (changeSet) =>
       (!filters.status || changeSet.status === filters.status) &&
-      (!filters.by || changeSet.proposed_by === filters.by) &&
+      matchesProposer(changeSet, filters.by) &&
       (!filters.kind || changeKind(changeSet.summary) === filters.kind) &&
       (since === null || new Date(changeSet.created_at).getTime() >= since),
   );

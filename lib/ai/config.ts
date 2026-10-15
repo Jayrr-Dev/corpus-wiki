@@ -6,4 +6,4 @@ export const TOKEN_FACTORY_BASE_URL = "https://api.tokenfactory.nebius.com/v1/";
 export const DEFAULT_AI_MODEL = "nvidia/nemotron-3-super-120b-a12b";
 
 // PROMPT VERSION: bump when the prompt changes, so each ChangeSet records which prompt drafted it
-export const PROMPT_VERSION = "reconcile-v4";
+export const PROMPT_VERSION = "reconcile-v6";

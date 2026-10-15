@@ -46,6 +46,7 @@ export type ReconciliationInput = {
 
 // ACTION INPUTS (stored in actions.input). Entities and domains are referenced by
 // natural key / path so an action can use what an earlier action in the set creates.
+// rationale: the model's own words on why it proposed the action, shown when a person reviews it.
 export type EntityRef = { type: string; key: string; role: EntityRole };
 
 export type ActionInputByType = {
@@ -53,19 +54,22 @@ export type ActionInputByType = {
   create_entity: { type: string; key: string; name: string; aliases: string[] };
   add_claim: {
     content: string;
+    title?: string; // short name that tells it apart on its topic (revisions.title)
     kind: UnitKind;
     epistemicStatus: EpistemicStatus;
     validFrom: string;
     entities: EntityRef[];
     domainPaths: string[];
+    rationale?: string;
   };
-  revise_claim: { content: string; epistemicStatus?: EpistemicStatus; validFrom?: string };
+  revise_claim: { content: string; title?: string; epistemicStatus?: EpistemicStatus; validFrom?: string; rationale?: string };
   retire_claim: { reason: string; validTo: string | null };
-  merge_duplicates: { duplicateUnitIds: string[] }; // target = the unit that is kept
+  // target = the unit that is kept; autoMerge: an AI merge sure enough to skip review (check_deletion)
+  merge_duplicates: { duplicateUnitIds: string[]; autoMerge?: boolean; rationale?: string };
   // target = the "from" unit. A unit an earlier action of the same set creates is
   // named by that action's position instead (fromPosition / toPosition).
-  link: { toUnitId: string | null; type: RelationshipType; fromPosition?: number; toPosition?: number };
-  set_epistemic_status: { epistemicStatus: EpistemicStatus };
+  link: { toUnitId: string | null; type: RelationshipType; fromPosition?: number; toPosition?: number; rationale?: string };
+  set_epistemic_status: { epistemicStatus: EpistemicStatus; rationale?: string };
   // LINES AS ROWS: a wiki line cites the claim revisions it states. citePositions names
   // claim revisions an earlier action of the same set creates (a line edit that revises its claim).
   write_line: { sectionId: string; position: number; content: string; unitRevisionIds: string[]; citePositions?: number[] };
@@ -77,7 +81,7 @@ export type ActionInputByType = {
   create_page: { title: string; entityId: string | null; sections: SectionDraft[] };
   rename_page: { title: string };
   retire_page: Record<string, never>;
-  create_section: { pageId: string } & SectionDraft;
+  create_section: { pageId: string; position?: number } & SectionDraft; // position: where it goes (default: last)
   rename_section: { title: string };
   retire_section: Record<string, never>;
   // CATALOG EDITS (a person's, from the Entities and Domains screens). target = the entity or domain.
@@ -105,7 +109,7 @@ export type SectionDraft = { title: string; query: SectionQuery };
 export type DraftAction = {
   [K in ActionType]: {
     type: K;
-    input: ActionInputByType[K];
+    input: ActionInputByType[K] & { rationaleReferences?: import("./unitReferences").UnitReference[] };
     targetId: string | null; // unit, entity or domain it changes; null for creates
     expectedRevisionId: string | null; // the unit's revision the model saw
     passageIds: string[];

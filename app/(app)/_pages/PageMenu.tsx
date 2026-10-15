@@ -13,7 +13,7 @@ export function PageMenu({ page, className, showUpdate = false, hasChildren = fa
   const leaveIfOpen = useLeaveRemovedPage(page.slug);
   const items: DialogMenuItem[] = [
     ...(showUpdate ? updateItems(page, hasChildren) : []),
-    { label: "Rename", render: (close: () => void) => <RenameForm page={page} onDone={close} /> },
+    { label: "Rename", separatorBefore: showUpdate, render: (close: () => void) => <RenameForm page={page} onDone={close} /> },
     {
       label: "Remove",
       isDestructive: true,

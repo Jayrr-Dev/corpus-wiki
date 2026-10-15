@@ -1,8 +1,9 @@
-import type { ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
+import type { DraftAction, DraftChangeSet, ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { PagePlanner } from "@/lib/living-page/articlePlanner";
 import type { DbRpc } from "@/lib/db/rpc";
 import { proposePages, rebuildAfterEvent, type SectionWriter } from "@/lib/living-page";
+import type { GuardOptions } from "./duplicateGuard";
 import type { ProcessUploadResult, StartUploadResult } from "./types";
 import type { PassageDraft } from "./passages";
 
@@ -11,11 +12,14 @@ import type { PassageDraft } from "./passages";
 // evals on a throwaway Postgres). Two steps, in order:
 //   1. recordUpload    source + passages + a 'received' event
 //   2. reconcileUpload model drafts a ChangeSet -> Change control commits
-//                      it -> pages are proposed for the entities it is
+//                      it -> new entities get a short description ->
+//                      pages are proposed for the entities it is
 //                      about -> the living page rebuilds what changed
 // =====================================================================
 
-export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void> };
+// duplicateGuard: turns repeats of stored claims into revisions before the draft is submitted
+// (lib/ingest/duplicateGuard.ts); claimEmbedder: saves vectors of the claims a commit wrote
+export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
 export type UploadRecord = {
@@ -51,6 +55,10 @@ export async function recordUpload(db: DbRpc, record: UploadRecord): Promise<Sta
 export async function reconcileUpload(deps: PipelineDeps, eventId: string): Promise<ProcessUploadResult> {
   try {
     const { changeSetId, eventStatus } = await draftAndCommit(deps, eventId);
+    // Short descriptions for the entities this upload created; reported, not fatal
+    let describeError: string | null = null;
+    try { await deps.entityDescriber?.(eventId); }
+    catch (error) { describeError = `Knowledge saved, but new entities could not be described: ${error instanceof Error ? error.message : String(error)}`; }
     const pageError = await proposeNewPages(deps, eventId);
     const rebuildError = await rebuildPages(deps, eventId);
     let hierarchyError: string | null = null;
@@ -60,7 +68,7 @@ export async function reconcileUpload(deps: PipelineDeps, eventId: string): Prom
     let dedupeError: string | null = null;
     try { await deps.deduper?.(eventId); }
     catch (error) { dedupeError = `Knowledge saved, but the duplicate check failed: ${error instanceof Error ? error.message : String(error)}`; }
-    return { status: eventStatus, changeSetId, error: pageError ?? rebuildError ?? hierarchyError ?? dedupeError };
+    return { status: eventStatus, changeSetId, error: pageError ?? rebuildError ?? hierarchyError ?? dedupeError ?? describeError };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await setEventStatus(deps.db, eventId, "failed", message);
@@ -68,13 +76,35 @@ export async function reconcileUpload(deps: PipelineDeps, eventId: string): Prom
   }
 }
 
-// The model reads the file against the current store; Change control judges what it drafted
-async function draftAndCommit({ db, reconciler }: PipelineDeps, eventId: string) {
+// EXTERNAL STEP 2: a web page only ADDS knowledge. Its draft keeps new domains, entities and
+// claims and drops every revise, retire, merge, status change and link, so the web never
+// overrides what the person's own files say. No pages are proposed from it.
+const EXTERNAL_ACTION_TYPES = new Set<DraftAction["type"]>(["create_domain", "create_entity", "add_claim"]);
+
+export async function reconcileExternalUpload(deps: PipelineDeps, eventId: string): Promise<{ status: ProcessUploadResult["status"]; added: number }> {
+  try {
+    const { eventStatus, applied } = await draftAndCommit(deps, eventId, (draft) => ({ ...draft, actions: draft.actions.filter((action) => EXTERNAL_ACTION_TYPES.has(action.type)) }), { reviseStored: false });
+    try { await deps.entityDescriber?.(eventId); } catch { /* descriptions are a nicety; the claims are saved */ }
+    return { status: eventStatus, added: applied };
+  } catch (error) {
+    await setEventStatus(deps.db, eventId, "failed", error instanceof Error ? error.message : String(error));
+    throw error;
+  }
+}
+
+// The model reads the file against the current store, the duplicate guard folds repeats of
+// stored claims into them, and Change control judges what is left. New claims are then
+// embedded so the next upload and the cleaning cycle can find them by meaning (not fatal).
+async function draftAndCommit({ db, reconciler, duplicateGuard, claimEmbedder }: PipelineDeps, eventId: string, shape: (draft: DraftChangeSet) => DraftChangeSet = (draft) => draft, guardOptions?: GuardOptions) {
   await setEventStatus(db, eventId, "reconciling", null);
   const input = await db.call<ReconciliationInput>("reconciliation_input", { p_event_id: eventId });
-  const draft = await reconciler.draftChangeSet(input);
+  const drafted = shape(await reconciler.draftChangeSet(input));
+  const draft = duplicateGuard ? await duplicateGuard(input, drafted, guardOptions) : drafted;
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai" }, draft);
-  return commitChangeSet(db, changeSetId);
+  const result = await commitChangeSet(db, changeSetId);
+  try { await claimEmbedder?.(); }
+  catch (error) { console.error("New claims could not be embedded:", error); }
+  return result;
 }
 
 // New pages and sections for the entities the upload is about; reported, not fatal (knowledge is saved)

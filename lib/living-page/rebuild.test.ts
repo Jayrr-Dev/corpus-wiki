@@ -1,6 +1,6 @@
 import type { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { commitPersonAction } from "@/lib/change-control";
+import { commitPersonAction, resolveException } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import { hasLocalPostgres, type LocalPostgres, startLocalPostgres } from "@/test/db/localPostgres";
 import { pgRpc } from "@/test/db/pgRpc";
@@ -145,7 +145,8 @@ describe.skipIf(!hasLocalPostgres())("living page rebuilds on a throwaway Postgr
     expect((await readSection(SECTION.plan)).body).toBe(edited);
   });
 
-  it("rewrites a line whose claim changed under it", async () => {
+  it("asks before rewriting a person's line whose claim changed, and rewrites it once accepted", async () => {
+    const edited = "The first internal release is planned for Q2 2027.";
     const current = await client.query<{ id: string }>("select current_revision_id as id from public.units where id = $1", [PLAN_UNIT]);
     const claim = "Alpha's first internal release is planned for Q3 2027.";
     const { eventId } = await commitPersonAction(db, {
@@ -153,9 +154,21 @@ describe.skipIf(!hasLocalPostgres())("living page rebuilds on a throwaway Postgr
     });
     expect(await readLines(SECTION.plan)).toMatchObject([{ is_stale: true }]);
 
+    // The AI's rewrite is held as an update request; the person's text stays
     await rebuildAfterEvent(db, writer, eventId);
+    expect(await readLines(SECTION.plan)).toMatchObject([{ line_id: LINE.plan, content: edited, author: "person" }]);
+    const requests = () => client.query<{ id: string; evidence: { lineText: string } }>(
+      "select e.id, e.evidence from public.exceptions e join public.actions a on a.id = e.action_id where e.reason = 'update_request' and a.target_id = $1", [LINE.plan]);
+    const asked = await requests();
+    expect(asked.rows).toHaveLength(1);
+    expect(asked.rows[0]?.evidence.lineText).toBe(edited);
+
+    // Rebuilding again does not ask a second time about the same version
+    await rebuildAfterEvent(db, writer, eventId);
+    expect((await requests()).rows).toHaveLength(1);
+
+    await resolveException(db, { exceptionId: asked.rows[0]?.id ?? "", accept: true, note: null });
     expect(await readLines(SECTION.plan)).toMatchObject([{ line_id: LINE.plan, content: claim, author: "ai", is_stale: false }]);
-    expect((await readNotes(SECTION.plan))[0]).toBe(`Updated: ${claim} (edited by hand)`);
   });
 
   it("refuses the functions to signed-in browsers", async () => {

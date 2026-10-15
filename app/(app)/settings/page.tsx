@@ -1,27 +1,39 @@
-import Link from "next/link";
-import { ArrowUpRight, BrainCircuit, ChartNoAxesCombined, LockKeyhole, SlidersHorizontal, Sparkles, type LucideIcon } from "lucide-react";
+import { BrainCircuit, ChartNoAxesCombined, CircleDollarSign, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { ReadingPane } from "@/components/shell";
+import { CostTable } from "@/components/usage/CostTable";
 import { UsagePanel } from "@/components/usage/UsagePanel";
 import { AutoUpdateStale } from "./AutoUpdateStale";
-import { loadAutoUpdateStale, loadModelSettings } from "./loadModelSettings";
+import { ExternalKnowledge } from "./ExternalKnowledge";
+import { loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile } from "./loadModelSettings";
 import { ModelPicker } from "./ModelPicker";
+import { NameForm } from "./NameForm";
 import { PasswordForm } from "./PasswordForm";
+import { SettingHint } from "./SettingHint";
+import { SettingsTabs } from "./SettingsTabs";
+import { TimeZonePicker } from "./TimeZonePicker";
 
 export const dynamic = "force-dynamic";
 
 const sections = [
   { id: "preferences", label: "Preferences", icon: SlidersHorizontal },
   { id: "intelligence", label: "Intelligence", icon: BrainCircuit },
+  { id: "features", label: "Features", icon: ToggleRight },
   { id: "security", label: "Security", icon: LockKeyhole },
   { id: "usage", label: "Usage & activity", icon: ChartNoAxesCombined },
+  { id: "costs", label: "AI costs", icon: CircleDollarSign },
 ];
+
+// Every IANA zone the runtime knows, UTC first (listed on the server so both renders match)
+function timeZones(): string[] {
+  return ["UTC", ...Intl.supportedValuesOf("timeZone").filter((zone) => zone !== "UTC")];
+}
 
 function SettingsCard({ id, title, description, icon: Icon, children }: {
   id: string; title: string; description: string; icon: LucideIcon; children: ReactNode;
 }) {
   return (
-    <section id={id} aria-labelledby={`${id}-title`} className="min-w-0 scroll-mt-6 rounded-2xl border bg-background shadow-sm">
+    <section id={id} aria-labelledby={`${id}-title`} className="min-w-0 rounded-2xl border bg-background shadow-sm">
       <header className="flex items-start gap-3 border-b px-5 py-5 sm:px-6">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border bg-sidebar text-muted-foreground"><Icon size={17} aria-hidden="true" /></span>
         <div><h2 id={`${id}-title`} className="text-sm font-semibold">{title}</h2><p className="mt-1 text-panel text-muted-foreground">{description}</p></div>
@@ -32,33 +44,35 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
 }
 
 export default async function SettingsPage() {
-  const [modelSettings, autoUpdateStale] = await Promise.all([loadModelSettings(), loadAutoUpdateStale()]);
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge()]);
+  const panels: Record<string, ReactNode> = {
+    preferences: (
+      <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
+        <div className="mb-6 border-b pb-6"><NameForm name={profile.name} email={profile.email} /></div>
+        <TimeZonePicker zones={timeZones()} />
+      </SettingsCard>
+    ),
+    intelligence: (
+      <SettingsCard id="intelligence" title="Intelligence" description="Fine-tune the AI behind your second brain." icon={BrainCircuit}>
+        <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">AI model</h3><SettingHint>Used for uploads, line edits, and page builds.</SettingHint></div>
+        <ModelPicker settings={modelSettings} />
+      </SettingsCard>
+    ),
+    features: (
+      <SettingsCard id="features" title="Features" description="Choose what your second brain does on its own." icon={ToggleRight}>
+        <AutoUpdateStale enabled={autoUpdateStale} />
+        <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
+      </SettingsCard>
+    ),
+    security: <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>,
+    usage: <SettingsCard id="usage" title="Usage & activity" description="A closer look at your AI calls and token consumption." icon={ChartNoAxesCombined}><UsagePanel /></SettingsCard>,
+    costs: <SettingsCard id="costs" title="AI costs" description="What each model costs per million tokens, and what you've spent." icon={CircleDollarSign}><CostTable activeModel={modelSettings.activeModel} /></SettingsCard>,
+  };
   return (
     <ReadingPane title="Settings">
       <p className="-mt-2 text-panel text-muted-foreground">Make this workspace work the way you think.</p>
-      <div className="mt-4 grid items-start gap-6">
-        <nav aria-label="Settings sections" className="flex gap-1 overflow-x-auto pb-1">
-          {sections.map(({ id, label, icon: Icon }) => (
-            <a key={id} href={`#${id}`} className="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2.5 text-panel text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"><Icon size={16} aria-hidden="true" />{label}</a>
-          ))}
-          <p className="mt-6 hidden border-t px-3 pt-4 text-xs leading-relaxed text-faint lg:block">Your preferences apply across this workspace.</p>
-        </nav>
-        <div className="flex min-w-0 flex-col gap-6">
-          <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
-            <AutoUpdateStale enabled={autoUpdateStale} />
-          </SettingsCard>
-          <SettingsCard id="intelligence" title="Intelligence" description="Fine-tune the AI behind your second brain." icon={BrainCircuit}>
-            <div className="mb-5"><h3 className="font-medium">AI model</h3><p className="mt-1 text-panel text-muted-foreground">Used for uploads, line edits, and page builds.</p></div>
-            <ModelPicker settings={modelSettings} />
-            <Link href="/skills" className="mt-6 flex items-center gap-3 rounded-xl border bg-sidebar/50 p-4 transition-colors hover:bg-hover">
-              <Sparkles size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-              <div className="min-w-0 flex-1"><span className="font-medium">AI skills</span><p className="mt-1 text-panel text-muted-foreground">Customize the instructions for each AI stage.</p></div>
-              <ArrowUpRight size={17} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-            </Link>
-          </SettingsCard>
-          <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>
-          <SettingsCard id="usage" title="Usage & activity" description="A closer look at your AI calls and token consumption." icon={ChartNoAxesCombined}><UsagePanel /></SettingsCard>
-        </div>
+      <div className="mt-4">
+        <SettingsTabs tabs={sections.map(({ id, label, icon: Icon }) => ({ id, label, icon: <Icon size={16} aria-hidden="true" />, panel: panels[id] }))} />
       </div>
     </ReadingPane>
   );

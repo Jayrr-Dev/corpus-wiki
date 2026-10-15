@@ -6,6 +6,7 @@ import { Suspense, useState, type ReactNode } from "react";
 import { Minus, Square } from "lucide-react";
 import { PageMenu } from "@/app/(app)/_pages/PageMenu";
 import { PageIcon } from "@/components/icons";
+import { Tooltip } from "@/components/standard/tooltip";
 import { buildPageTree, type PageNode } from "@/lib/living-page/pageHierarchy";
 import type { Tables } from "@/lib/database/types";
 import { useDomains, useEntities, usePages } from "@/lib/queries";
@@ -14,6 +15,7 @@ import { useUnitFilters } from "@/app/(app)/units/useUnitFilters";
 import { ChangeFilterBar } from "@/app/(app)/changes/ChangeFilterBar";
 import { useChangeFilters } from "@/app/(app)/changes/useChangeFilters";
 import { cn } from "@/lib/utils";
+import { Loader } from "@/components/standard/loader";
 
 // ROW STYLE SHARED BY PAGE AND DOMAIN ROWS
 const rowClass = "flex items-center gap-1.5 rounded-md px-1.5 py-1 text-panel hover:bg-hover";
@@ -27,27 +29,44 @@ export function SidebarTree() {
   const isPages = pathname === "/" || pathname.startsWith("/p/");
   const isKnowledge = pathname === "/units";
   const isChanges = pathname === "/changes";
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [minimized, setMinimized] = useState(false);
   if (!isPages && !isKnowledge && !isChanges) return null;
-  const minimized = isPages && isMinimized;
+  const title = isPages ? "Pages" : isChanges ? "Filter changes" : "Filter knowledge";
+  const minimize = () => setMinimized(true);
   return (
     // floating card: inset from the edges so it reads as separate from the app sidebar;
-    // minimizing slides it shut and leaves a bare outlined square to reopen it
-    <aside aria-label={isPages ? "Pages" : isChanges ? "Change filters" : "Knowledge filters"} className={cn("relative hidden shrink-0 overflow-hidden p-2 pr-0 transition-all duration-300 ease-in-out md:block", minimized ? "w-10" : "w-64")}>
-      <button type="button" onClick={() => setIsMinimized(false)} aria-label="Expand pages" title="Expand pages" tabIndex={minimized ? 0 : -1} aria-hidden={!minimized} className={cn("absolute top-3 left-3 text-faint transition-opacity duration-300 hover:text-foreground", minimized ? "opacity-100 delay-150" : "pointer-events-none opacity-0")}>
-        <Square className="size-4" />
-      </button>
-      <div inert={minimized} className={cn("w-62 overflow-y-auto", isPages ? "h-full" : "max-h-full", " rounded-lg border bg-sidebar shadow-md transition-opacity duration-200", minimized && "pointer-events-none opacity-0")}>
+    // it sizes to its content (capped by the viewport), and minimizing slides it shut
+    // leaving a bare outlined square to reopen it
+    <aside aria-label={isPages ? "Pages" : isChanges ? "Change filters" : "Knowledge filters"} className={cn("relative hidden shrink-0 overflow-hidden p-2 pr-0 transition-all duration-300 ease-in-out md:block", minimized ? "w-10" : "w-auto")}>
+      <Tooltip content={`Expand ${title.toLowerCase()}`} side="right">
+        <button type="button" onClick={() => setMinimized(false)} aria-label={`Expand ${title.toLowerCase()}`} tabIndex={minimized ? 0 : -1} aria-hidden={!minimized} className={cn("absolute top-3 left-3 text-faint transition-opacity duration-300 hover:text-foreground", minimized ? "opacity-100 delay-150" : "pointer-events-none opacity-0")}>
+          <Square className="size-4" />
+        </button>
+      </Tooltip>
+      <div inert={minimized} className={cn("max-h-full w-max max-w-80 min-w-56 overflow-y-auto rounded-lg border bg-sidebar shadow-md transition-opacity duration-200", minimized && "pointer-events-none opacity-0")}>
         {isPages ? (
-          <div className="p-2"><SidebarGroup title="Pages" onMinimize={() => setIsMinimized(true)}><PagesList /></SidebarGroup></div>
+          <div className="p-2"><SidebarGroup title="Pages" onMinimize={minimize}><PagesList /></SidebarGroup></div>
         ) : (
           <div className="p-4">
-            <h2 className="mb-4 text-sm font-semibold">{isChanges ? "Filter changes" : "Filter knowledge"}</h2>
-            <Suspense fallback={<SidebarNote text="Loading filters…" />}>{isChanges ? <ChangeFilters /> : <KnowledgeFilters />}</Suspense>
+            <div className="mb-4 flex items-center gap-2">
+              <h2 className="flex-1 text-sm font-semibold">{title}</h2>
+              <MinimizeButton label={title} onClick={minimize} />
+            </div>
+            <Suspense fallback={<Loader inline className="px-1.5 py-1" />}>{isChanges ? <ChangeFilters /> : <KnowledgeFilters />}</Suspense>
           </div>
         )}
       </div>
     </aside>
+  );
+}
+
+function MinimizeButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <Tooltip content="Minimize">
+      <button type="button" onClick={onClick} aria-label={`Minimize ${label.toLowerCase()}`} className="flex size-6 shrink-0 items-center justify-center text-faint hover:text-foreground">
+        <Minus className="size-3.5" />
+      </button>
+    </Tooltip>
   );
 }
 
@@ -86,11 +105,7 @@ function SidebarGroup({ title, onMinimize, children }: { title: string; onMinimi
         >
           {title}
         </button>
-        {onMinimize ? (
-          <button type="button" onClick={onMinimize} aria-label={`Minimize ${title.toLowerCase()}`} title="Minimize" className="flex size-6 items-center justify-center text-faint hover:text-foreground">
-            <Minus className="size-3.5" />
-          </button>
-        ) : null}
+        {onMinimize ? <MinimizeButton label={title} onClick={onMinimize} /> : null}
       </div>
       {isOpen ? children : null}
     </section>
@@ -101,7 +116,7 @@ function SidebarGroup({ title, onMinimize, children }: { title: string; onMinimi
 function PagesList() {
   const pathname = usePathname();
   const { data: pages = [], isPending } = usePages();
-  if (isPending) return <SidebarNote text="Loading…" />;
+  if (isPending) return <Loader inline className="px-1.5 py-1" />;
   if (pages.length === 0) return <SidebarNote text="No pages yet" />;
   return <PageBranch nodes={buildPageTree(pages)} pathname={pathname} depth={0} />;
 }

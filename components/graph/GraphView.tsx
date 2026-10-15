@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, type ReactNode } from "react";
-import { applyFilters, createdBy, withRelated, type GraphData } from "@/lib/graph";
+import { useMemo, useState, type ReactNode } from "react";
+import { applyFilters, createdBy, withRelated, type GraphData, type GraphNode } from "@/lib/graph";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphPanel } from "./panel/GraphPanel";
+import { UnitPreviewDialog } from "./UnitPreviewDialog";
 import { GLOBAL_GRAPH_SETTINGS_KEY, useGraphSettings } from "./useGraphSettings";
 import { useReplay } from "./useReplay";
 
@@ -18,6 +19,8 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
   const router = useRouter();
   const { settings, update, reset } = useGraphSettings(GLOBAL_GRAPH_SETTINGS_KEY);
   const replay = useReplay(data.nodes);
+  // A clicked unit previews in a dialog; entities and pages open directly
+  const [preview, setPreview] = useState<GraphNode | null>(null);
   const { showRelated, relatedness } = settings.filters;
 
   // Related links come from the full graph, so the replay grows them with their units
@@ -30,9 +33,10 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
 
   return (
     <div className="relative h-full">
-      <GraphCanvas graph={visible} settings={settings} onOpen={(node) => router.push(node.href)} />
+      <GraphCanvas graph={visible} settings={settings} onOpen={(node) => (node.kind === "unit" ? setPreview(node) : router.push(node.href))} />
       <GraphPanel
         settings={settings}
+        nodes={data.nodes}
         update={update}
         reset={reset}
         isReplaying={replay.isPlaying}
@@ -42,6 +46,7 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
       <p className="pointer-events-none absolute right-3 bottom-2 font-mono text-xs text-faint">
         {visible.nodes.length} nodes · {visible.links.length} links
       </p>
+      <UnitPreviewDialog node={preview} onClose={() => setPreview(null)} />
     </div>
   );
 }

@@ -22,7 +22,7 @@ const INPUT: ReconciliationInput = {
 
 // A claim with every field filled; tests override what they need
 const claim = (overrides: Partial<AnswerClaim>): AnswerClaim => ({
-  action: "add", unit: null, content: "x", kind: "fact", epistemicStatus: "supported", speechAct: "stated",
+  action: "add", unit: null, content: "x", title: "", kind: "fact", epistemicStatus: "supported", speechAct: "stated",
   passages: ["P1"], entities: [], domainPaths: [], reason: "", ...overrides,
 });
 
@@ -30,6 +30,13 @@ describe("answerToActions", () => {
   it("turns a changed decision into a revise pinned to the revision the model saw", () => {
     const [action] = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL." })] }, INPUT);
     expect(action).toMatchObject({ type: "revise_claim", targetId: "u1", expectedRevisionId: "r1", passageIds: ["p-a"] });
+  });
+
+  it("carries the claim's title on adds and revises, and leaves it out when there is none", () => {
+    const [add] = answerToActions({ summary: "", claims: [claim({ title: " Billing owner ", content: "Billing belongs to finance." })] }, INPUT);
+    expect(add).toMatchObject({ type: "add_claim", input: { title: "Billing owner" } });
+    const [revise] = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL." })] }, INPUT);
+    expect(revise!.input).not.toHaveProperty("title");
   });
 
   it("keeps the earlier evidence when the file repeats a unit word for word", () => {

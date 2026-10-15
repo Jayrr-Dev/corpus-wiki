@@ -22,6 +22,8 @@ export interface GraphCanvasProps {
   onOpen: (node: GraphNode) => void;
   // Reveal text in layers as you zoom in from the whole-graph view (off for small local graphs, where titles always fit)
   progressiveZoom?: boolean;
+  // While hovering, show only the hovered dot's text (small panels, where neighbor titles pile up)
+  hoverLabelOnly?: boolean;
   className?: string;
 }
 
@@ -62,7 +64,7 @@ function useCanvasSize(container: React.RefObject<HTMLDivElement | null>, canvas
   }, [container, canvas, onResize]);
 }
 
-export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, className }: GraphCanvasProps) {
+export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, hoverLabelOnly = false, className }: GraphCanvasProps) {
   const container = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const size = useRef({ width: 0, height: 0 });
@@ -73,7 +75,7 @@ export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, c
   const frame = useRef<number | null>(null);
   const redrawRef = useRef<() => void>(() => {});
   const colorOf = useMemo(() => groupColorLookup(settings.groups), [settings.groups]);
-  const latest = useRef({ display: settings.display, colorOf, progressiveZoom });
+  const latest = useRef({ display: settings.display, colorOf, progressiveZoom, hoverLabelOnly });
   // The domain circles toggle also turns off the pull that gathers dots by domain
   const forces = useMemo(
     () => (settings.display.domainCircles ? settings.forces : { ...settings.forces, cluster: 0 }),
@@ -106,6 +108,7 @@ export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, c
       colorOf: latest.current.colorOf,
       hoveredId: hoveredId.current,
       focusIds: focusOf(hoveredId.current, links),
+      hoverLabelOnly: latest.current.hoverLabelOnly,
     });
   }, [layout]);
 
@@ -117,8 +120,8 @@ export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, c
   // LATEST VALUES for the frame loop (synced after render; the loop runs outside React)
   useLayoutEffect(() => {
     redrawRef.current = redraw;
-    latest.current = { display: settings.display, colorOf, progressiveZoom };
-  }, [redraw, settings.display, colorOf, progressiveZoom]);
+    latest.current = { display: settings.display, colorOf, progressiveZoom, hoverLabelOnly };
+  }, [redraw, settings.display, colorOf, progressiveZoom, hoverLabelOnly]);
 
   // RESIZE: the first size centers the camera; later ones keep the view (or refit, while auto-fitting)
   const onResize = useCallback(
