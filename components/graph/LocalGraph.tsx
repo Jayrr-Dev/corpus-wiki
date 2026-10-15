@@ -32,6 +32,7 @@ export function LocalGraph({ centerId }: { centerId: string }) {
     const layers = applyFilters(related, {
       ...settings.filters,
       search: "",
+      domain: "",
       showOrphans: true,
       showEntities: settings.filters.showEntities || centerKind === "entity",
       showPages: settings.filters.showPages || centerKind === "page",

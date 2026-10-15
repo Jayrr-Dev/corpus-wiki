@@ -2,12 +2,14 @@ import type { GraphData, GraphNodeKind } from "./types";
 
 // =====================================================================
 // FILTERS (Obsidian's Filters section): which nodes show. Order:
-// layer toggles, then search, then orphans, so a node left without
-// visible links by the first two counts as an orphan.
+// domain, then layer toggles, then search, then orphans, so a node
+// left without visible links by the first three counts as an orphan.
 // =====================================================================
 
 export interface GraphFilters {
   search: string;
+  // one domain path to focus on, with every subdomain below it ("" = all domains)
+  domain: string;
   showEntities: boolean;
   showPages: boolean;
   showOrphans: boolean;
@@ -33,6 +35,20 @@ function linkedIds(data: GraphData): Set<string> {
   return new Set(data.links.flatMap((link) => [link.source, link.target]));
 }
 
+// DOMAIN FOCUS: units and pages in `domain` or a subdomain below it. Entities have no
+// domain, so one stays when it links to something kept.
+export function inDomain(data: GraphData, domain: string): GraphData {
+  const focus = domain.trim().replace(/\/+$/, "").toLowerCase();
+  if (!focus) return data;
+  const matches = (path: string) => {
+    const lower = path.toLowerCase();
+    return lower === focus || lower.startsWith(`${focus}/`);
+  };
+  const matched = new Set(data.nodes.filter((node) => node.domainPaths.some(matches)).map((node) => node.id));
+  const linked = new Set(data.links.flatMap((link) => (matched.has(link.source) ? [link.target] : matched.has(link.target) ? [link.source] : [])));
+  return keepNodes(data, (node) => matched.has(node.id) || (node.kind === "entity" && linked.has(node.id)));
+}
+
 // APPLY: the visible graph for these filters
 export function applyFilters(data: GraphData, filters: GraphFilters): GraphData {
   const shownKinds = new Set<GraphNodeKind>(["unit"]);
@@ -40,7 +56,7 @@ export function applyFilters(data: GraphData, filters: GraphFilters): GraphData 
   if (filters.showPages) shownKinds.add("page");
   const search = filters.search.trim().toLowerCase();
 
-  const byLayer = keepNodes(data, (node) => shownKinds.has(node.kind));
+  const byLayer = keepNodes(inDomain(data, filters.domain), (node) => shownKinds.has(node.kind));
   const bySearch = search ? keepNodes(byLayer, (node) => node.label.toLowerCase().includes(search)) : byLayer;
   if (filters.showOrphans) return bySearch;
   const linked = linkedIds(bySearch);

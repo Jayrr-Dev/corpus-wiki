@@ -58,7 +58,7 @@ const rows: GraphRows = {
 const graph = buildGraph(rows);
 const nodeById = (id: string) => graph.nodes.find((node) => node.id === id) as GraphNode;
 const ids = (data: { nodes: GraphNode[] }) => data.nodes.map((node) => node.id).sort();
-const ALL_LAYERS = { search: "", showEntities: true, showPages: true, showOrphans: true, showRelated: false, relatedness: 0.3 };
+const ALL_LAYERS = { search: "", domain: "", showEntities: true, showPages: true, showOrphans: true, showRelated: false, relatedness: 0.3 };
 
 describe("buildGraph", () => {
   it("makes a node per live unit, entity and page", () => {
@@ -109,6 +109,11 @@ describe("applyFilters", () => {
 
   it("searches labels ignoring case", () => {
     expect(ids(applyFilters(graph, { ...ALL_LAYERS, search: "ALPHA" }))).toEqual(["e1", "p1", "u1", "u2"]);
+  });
+
+  it("focuses on one domain with its subdomains, keeping entities linked to them", () => {
+    expect(ids(applyFilters(graph, { ...ALL_LAYERS, domain: "projects/alpha/" }))).toEqual(["e1", "p1", "u1", "u2"]);
+    expect(ids(applyFilters(graph, { ...ALL_LAYERS, domain: "Projects/Alpha/Data layer" }))).toEqual(["e1", "u1"]);
   });
 
   it("cuts the graph at a replay time", () => {

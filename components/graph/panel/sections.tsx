@@ -33,12 +33,14 @@ import { SelectRow, SliderRow, SwitchRow } from "./rows";
 // slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
 
-// FILTERS: search, the extra layers, orphans, and derived related links with their minimum score
-export function FiltersSection({ value, onChange }: { value: GraphFilters; onChange: (next: GraphFilters) => void }) {
+// FILTERS: search, one domain to focus on (with its subdomains), the extra layers, orphans, and derived related links with their minimum score
+export function FiltersSection({ value, nodes, onChange }: { value: GraphFilters; nodes: readonly GraphNode[]; onChange: (next: GraphFilters) => void }) {
   const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) => onChange({ ...value, [key]: next });
+  const domains = useMemo(() => groupSuggestions(nodes).domain.map((path) => ({ id: path, path })), [nodes]);
   return (
     <PanelSection title="Filters">
       <Input placeholder="Search…" value={value.search} onChange={(event) => set("search", event.target.value)} aria-label="Search the graph" />
+      <DomainTreeSelect label="Show domain" emptyLabel="All domains" value={value.domain} domains={domains} onChange={(next) => set("domain", next)} className="h-7 w-full max-w-none" />
       <SwitchRow label="Entities" checked={value.showEntities} onChange={(next) => set("showEntities", next)} />
       <SwitchRow label="Pages" checked={value.showPages} onChange={(next) => set("showPages", next)} />
       <SwitchRow label="Orphans" checked={value.showOrphans} onChange={(next) => set("showOrphans", next)} />

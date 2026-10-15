@@ -40,7 +40,7 @@ export interface GraphSettings {
 
 // DEFAULTS: units and orphans shown, extra layers off, no groups until the person adds one
 export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
-  filters: { search: "", showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
+  filters: { search: "", domain: "", showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
   groups: [],
   display: { arrows: false, domainCircles: true, titlePosition: "bottom", textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
   forces: { center: 0.5, repel: 10, link: 1, linkDistance: 60, cluster: 0.5 },
@@ -78,6 +78,7 @@ const settingsSchema = z.object({
   // Fields added later default, so older saved settings keep everything else
   filters: z.object({
     search: z.string(),
+    domain: z.string().default(""),
     showEntities: z.boolean(),
     showPages: z.boolean(),
     showOrphans: z.boolean(),
