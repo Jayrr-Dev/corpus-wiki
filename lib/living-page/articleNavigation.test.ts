@@ -35,6 +35,17 @@ describe("article navigation", () => {
     expect(navigation.related.map((page) => page.id).sort()).toEqual(["ppe", "profile"]);
   });
 
+  it("lists sibling topics on a nested page instead of the organization already in the breadcrumb", () => {
+    const nested = [
+      { id: "company", title: "Utilitek", slug: "utilitek", entity_id: "company", domain_id: null, parent_page_id: null },
+      { id: "safety", title: "Health and Safety", slug: "safety", entity_id: null, domain_id: null, parent_page_id: "company" },
+      { id: "communication", title: "Communication", slug: "communication", entity_id: null, domain_id: null, parent_page_id: "safety" },
+      { id: "inspections", title: "Inspections", slug: "inspections", entity_id: null, domain_id: null, parent_page_id: "safety" },
+    ];
+    const navigation = articleNavigation(nested, [{ id: "company", name: "Utilitek", aliases: [] }], [], "communication", "Communication practices at Utilitek center on scheduled safety meetings.");
+    expect(navigation.related.map((page) => page.id)).toEqual(["inspections"]);
+  });
+
   it("finds a domain's article from its section scope without changing the hierarchy", () => {
     expect(domainArticle(pages, sections, { id: "domain", path: "Safety/PPE" })?.slug).toBe("ppe");
   });

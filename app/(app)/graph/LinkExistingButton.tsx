@@ -9,7 +9,7 @@ import { linkBatch, planLinkPass } from "@/lib/server-actions/links";
 
 type Progress = { done: number; total: number; applied: number; failed: number };
 
-// LINK EXISTING CLAIMS (graph, top-right): asks the model to link the claims already in
+// LINK EXISTING CLAIMS (graph settings): asks the model to link the claims already in
 // the store, a batch at a time. Each batch is one AI ChangeSet (undo it on Changes);
 // the graph refreshes after every batch, so new links appear as it goes.
 export function LinkExistingButton() {
@@ -40,7 +40,7 @@ export function LinkExistingButton() {
   };
 
   return (
-    <div className="flex max-w-64 flex-col items-end gap-1 text-right">
+    <div className="flex flex-col items-stretch gap-1">
       <Button size="sm" variant="outline" disabled={plan.isPending || isRunning} onClick={() => void run()}>
         <LinkIcon size={14} />
         {plan.isPending ? "Planning…" : isRunning ? `Linking ${progress.done + 1} of ${progress.total}…` : "Link existing claims"}

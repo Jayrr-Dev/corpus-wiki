@@ -1,7 +1,7 @@
 import "server-only";
 
 import { resolveModel, tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { listTokenFactoryModels, readChosenModel } from "@/lib/ai/models";
+import { listTokenFactoryModels, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 
@@ -12,6 +12,10 @@ export type ModelSettings = {
   models: string[];
   listError: string | null;
 };
+
+export async function loadAutoUpdateStale(): Promise<boolean> {
+  return readAutoUpdateStale(supabaseRpc(getAdminSupabase()));
+}
 
 // Reads the pick from the database and the list from Token Factory
 export async function loadModelSettings(): Promise<ModelSettings> {

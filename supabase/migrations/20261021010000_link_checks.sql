@@ -9,7 +9,7 @@
 -- =====================================================================
 
 -- LINK: both ends resolve to live, different units, and the link is new
-create function change_control.check_link(p_action public.actions)
+create or replace function change_control.check_link(p_action public.actions)
 returns jsonb
 language plpgsql stable
 set search_path = ''

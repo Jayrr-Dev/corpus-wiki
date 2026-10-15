@@ -29,9 +29,9 @@ export interface DrawInput {
 const DIMMED = 0.15;
 // LABEL SIZE IN SCREEN PIXELS (labels stay readable at any zoom)
 const LABEL_PX = 12;
-// WRAPPED LABELS: max line width (and wider for the hovered label), line height and canvas margin, in screen pixels
+// WRAPPED LABELS: max line width, line height and canvas margin, in screen pixels.
+// Hover uses the same width so a label does not reflow when the pointer arrives.
 const LABEL_WRAP_PX = 130;
-const HOVER_WRAP_PX = 200;
 const LINE_HEIGHT = 1.3;
 const LABEL_MARGIN_PX = 6;
 // DERIVED "SIMILAR" LINKS: dash length in screen pixels, and opacity next to stored links
@@ -144,12 +144,11 @@ function wrapLabel(ctx: CanvasRenderingContext2D, text: string, maxPx: number, f
   return result;
 }
 
-// HOVERED LABEL: wider wrap, on a backing box, nudged inside the canvas so it is never cut off
+// HOVERED LABEL: same wrap as the resting label, on a backing box, nudged inside the canvas so it is never cut off
 function drawHoveredLabel(input: DrawInput, node: SimNode): void {
   const { ctx, palette, camera, display } = input;
   const k = camera.k;
-  const maxPx = Math.max(80, Math.min(HOVER_WRAP_PX, input.width - 2 * LABEL_MARGIN_PX));
-  const { lines, widthPx } = wrapLabel(ctx, node.label, maxPx, palette.fontFamily);
+  const { lines, widthPx } = wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
   const lineHeight = (LABEL_PX * LINE_HEIGHT) / k;
   const pad = 4 / k;
   const width = widthPx / k;

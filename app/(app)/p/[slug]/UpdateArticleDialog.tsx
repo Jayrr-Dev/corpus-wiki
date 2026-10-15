@@ -1,7 +1,7 @@
 "use client";
 
 import { type FormEvent, useId, useState } from "react";
-import Link from "next/link";
+import { Switch } from "@/components/ui/switch";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { FormRow } from "@/components/actions/FormRow";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { updateArticle } from "@/lib/server-actions/pages";
+
+type UpdateScope = "page" | "section" | "tree";
 
 export function UpdateArticleDialog({ id, title, scope, disabled = false }: { id: string; title: string; scope: "page" | "section"; disabled?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -19,37 +21,43 @@ export function UpdateArticleDialog({ id, title, scope, disabled = false }: { id
   </Dialog>;
 }
 
-function UpdateArticleForm({ id, title, scope, onClose, onBusy }: { id: string; title: string; scope: "page" | "section"; onClose: () => void; onBusy: (busy: boolean) => void }) {
+export function UpdateArticleForm({ id, title, scope, onClose, onBusy }: { id: string; title: string; scope: UpdateScope; onClose: () => void; onBusy?: (busy: boolean) => void }) {
   const [note, setNote] = useState("");
+  const [addNote, setAddNote] = useState(false);
   const [completed, setCompleted] = useState<number | null>(null);
   const update = useServerAction(updateArticle);
   const noteId = useId();
+  const toggleId = useId();
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (update.isPending || completed !== null) return;
-    onBusy(true);
+    onBusy?.(true);
     try {
-      const result = await update.run({ scope, id, note });
+      const result = await update.run({ scope, id, note: addNote ? note : "" });
       if (result.ok) setCompleted(result.sections);
-    } finally { onBusy(false); }
+    } finally { onBusy?.(false); }
   };
   return <form onSubmit={submit} className="flex flex-col gap-4">
       <DialogHeader>
-        <DialogTitle>Update {scope === "page" ? "article" : "section"}</DialogTitle>
-        <DialogDescription>Refresh “{title}” using the latest saved knowledge, sources, and assigned writing skill.</DialogDescription>
+        <DialogTitle>{scope === "tree" ? "Update article & child pages" : `Update ${scope === "page" ? "article" : "section"}`}</DialogTitle>
+        <DialogDescription>Refresh “{title}”{scope === "tree" ? " and its child pages" : ""} with the latest saved knowledge and AI skills.</DialogDescription>
       </DialogHeader>
       {completed === null ? <>
-        <p className="text-panel text-muted-foreground">The AI checks the {scope === "page" ? "article for relevant new knowledge and adds topic sections when needed" : "section’s current knowledge selection for changes"}, then refreshes generated text even if only the skill changed. Your handwritten text and citations are preserved.</p>
-        <FormRow htmlFor={noteId} label="Note for the AI (optional)">
-          <Textarea id={noteId} value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} disabled={update.isPending} placeholder="For example: explain the two violation classes more clearly and keep the introduction short." className="h-28 resize-y" />
-        </FormRow>
-        <p className="text-panel text-muted-foreground">Your note applies to this update only. Uses data already in your knowledge base. Manage reusable instructions in <Link href="/skills" className="text-link hover:underline">Skills</Link>.</p>
-      </> : <p role="status">Updated {completed} {completed === 1 ? "section" : "sections"} using the current knowledge and skills. Changes are saved.</p>}
+        <p className="text-xs text-muted-foreground">Your handwritten text and citations stay intact.</p>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor={toggleId} className="text-panel font-medium">Add a note</label>
+          <Switch id={toggleId} checked={addNote} onCheckedChange={setAddNote} disabled={update.isPending} aria-controls={addNote ? noteId : undefined} />
+        </div>
+        {addNote ? <FormRow htmlFor={noteId} label="Note for this update">
+          <Textarea id={noteId} value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} disabled={update.isPending} placeholder="e.g. Keep the introduction short." rows={3} className="min-h-20 resize-y" />
+        </FormRow> : null}
+      </> : <p role="status">Updated {completed} {completed === 1 ? "section" : "sections"}. Changes saved.</p>}
       {update.error ? <p role="alert">{update.error}</p> : null}
-      {update.isPending ? <p role="status" className="flex items-center gap-2"><LoaderCircle className="size-4 animate-spin" aria-hidden="true" />Checking knowledge and updating…</p> : null}
+      {update.isPending ? <p role="status" className="flex items-center gap-2"><LoaderCircle className="size-4 animate-spin" aria-hidden="true" />Updating content…</p> : null}
       <DialogFooter>
         <Button type="button" variant="ghost" disabled={update.isPending} onClick={onClose}>{completed === null ? "Cancel" : "Done"}</Button>
         {completed === null ? <Button type="submit" disabled={update.isPending}>{update.isPending ? "Updating…" : "Update now"}</Button> : null}
       </DialogFooter>
   </form>;
 }
+

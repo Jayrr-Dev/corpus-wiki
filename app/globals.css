@@ -150,3 +150,31 @@
   :root:not(.light) { --sb-link: #8ab4f8; }
 }
 .dark { --sb-link: #8ab4f8; }
+
+/* Gold section mark: a highlight travels down the bar while the section is not current. */
+.sb-stale-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background-color: var(--sb-stale);
+  background-image: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, white 75%, var(--sb-stale)),
+    transparent
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 48px;
+  animation: sb-stale-shine 1.6s ease-in-out infinite;
+}
+
+@keyframes sb-stale-shine {
+  from { background-position: 0 -48px; }
+  to { background-position: 0 calc(100% + 48px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb-stale-line { animation: none; }
+}

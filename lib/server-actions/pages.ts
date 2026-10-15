@@ -4,15 +4,17 @@ import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { loadStageSkills } from "@/lib/ai/skills/server";
 import { skillTrace } from "@/lib/ai/skills/prompt";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
 import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
 import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { requireUser } from "@/lib/auth/requireUser";
 import { type CommitResult, commitPersonEdit, submitChangeSet, commitChangeSet } from "@/lib/change-control";
-import { rebuildPage, type SectionRef } from "@/lib/living-page";
+import { rebuildPage, rebuildSection, type SectionRef, type SectionState } from "@/lib/living-page";
 import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
 import { discoverArticleUpdates, repairEmptyIntroductions } from "@/lib/living-page/discoverArticleUpdates";
+import { pageAndDescendants } from "@/lib/living-page/pageHierarchy";
 import { articleUpdateSchema, type ArticleUpdateRequest } from "@/lib/living-page/updateRequest";
+import { z } from "zod";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { type ActionResult, toActionResult } from "./result";
@@ -173,46 +175,99 @@ export async function expandRelatedArticles(pageId: string): Promise<ActionResul
 }
 
 // Explicit refresh reads current query results and current skill assignments on every run.
+// scope "tree" refreshes the page and every page nested under it.
 export async function updateArticle(input: ArticleUpdateRequest): Promise<ActionResult<{ sections: number }>> {
   return toActionResult(async () => {
     await requireUser();
     const request = articleUpdateSchema.parse(input);
     const admin = getAdminSupabase();
-    const table = request.scope === "page" ? "pages" : "sections";
-    const { error } = await admin.from(table).select("id").eq("id", request.id).is("retired_at", null).single();
-    if (error) throw new Error("This article or section is no longer available. Reload the page and try again.");
     const { db, writer } = await getServerDeps();
     if (writer.name === "fake") throw new Error("Configure an AI provider in Settings before updating an article.");
-    if (request.scope === "page") {
-      const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
-      if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
-      settings.skills = await loadStageSkills(db);
-      const repairs = await repairEmptyIntroductions(db, admin, request.id);
-      const additions = await discoverArticleUpdates(db, admin, settings, request.id, request.note);
-      if (additions.length || repairs.length) {
-        const actions: DraftAction[] = [...repairs, ...additions.map((section): DraftAction => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: request.id, ...section } }))];
-        const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
-          summary: "Updated article knowledge selections and introduction", actions,
-          trace: { modelVersion: settings.model ?? null, promptVersion: skillTrace("article-update-discovery-v1", ["plan_articles"], settings.skills), tokensIn: null, tokensOut: null },
-        });
-        const result = await commitChangeSet(db, changeSetId);
-        if (result.status !== "applied") throw new Error("New sections were not fully applied. Review Changes before retrying.");
-      }
+    if (request.scope === "section") {
+      const { error } = await admin.from("sections").select("id").eq("id", request.id).is("retired_at", null).single();
+      if (error) throw new Error("This article or section is no longer available. Reload the page and try again.");
+      await refreshSectionStyle(db, writer, request.id, request.note);
+      return { sections: 1 };
     }
-    const sections = request.scope === "page"
-      ? await db.call<SectionRef[]>("list_page_sections", { p_page_id: request.id })
-      : [{ sectionId: request.id }];
-    if (!sections.length) throw new Error("Add a generated section before updating this article.");
+    const { data: pages, error } = await admin.from("pages").select("id, parent_page_id").is("retired_at", null);
+    if (error) throw new Error(error.message);
+    if (!(pages ?? []).some((page) => page.id === request.id)) throw new Error("This article or section is no longer available. Reload the page and try again.");
+    const pageIds = request.scope === "tree" ? pageAndDescendants(pages ?? [], request.id) : [request.id];
+    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+    if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
+    settings.skills = await loadStageSkills(db);
     let completed = 0;
     try {
-      for (const section of sections) {
-        await refreshSectionStyle(db, writer, section.sectionId, request.note);
-        completed++;
+      for (const pageId of pageIds) {
+        const repairs = await repairEmptyIntroductions(db, admin, pageId);
+        const additions = await discoverArticleUpdates(db, admin, settings, pageId, request.note);
+        if (additions.length || repairs.length) {
+          const actions: DraftAction[] = [...repairs, ...additions.map((section): DraftAction => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId, ...section } }))];
+          const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
+            summary: "Updated article knowledge selections and introduction", actions,
+            trace: { modelVersion: settings.model ?? null, promptVersion: skillTrace("article-update-discovery-v1", ["plan_articles"], settings.skills), tokensIn: null, tokensOut: null },
+          });
+          const result = await commitChangeSet(db, changeSetId);
+          if (result.status !== "applied") throw new Error("New sections were not fully applied. Review Changes before retrying.");
+        }
+        const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
+        if (!sections.length && pageIds.length === 1) throw new Error("Add a generated section before updating this article.");
+        for (const section of sections) {
+          await refreshSectionStyle(db, writer, section.sectionId, request.note);
+          completed++;
+        }
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : "The AI update failed.";
       throw new Error(`${completed ? `${completed} section(s) updated before the update stopped. ` : ""}${detail}`);
     }
+    if (!completed) throw new Error("Add a generated section before updating this article.");
     return { sections: completed };
+  });
+}
+
+// One section is rewritten at a time per server process, so the article page and the
+// background sweep do not both ask the model to rewrite it.
+const rebuildingSections = new Set<string>();
+
+async function rewriteStaleSections(sectionIds: string[]): Promise<number> {
+  const { db, writer } = await getServerDeps();
+  const enabled = await readAutoUpdateStale(db);
+  if (!enabled) return 0;
+  let completed = 0;
+  for (const sectionId of sectionIds) {
+    if (rebuildingSections.has(sectionId)) continue;
+    rebuildingSections.add(sectionId);
+    try {
+      const state = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
+      const stale = state.lines.some((line) => line.needsRewrite);
+      if (!stale) continue;
+      await rebuildSection(db, writer, sectionId, null);
+      completed += 1;
+    } finally {
+      rebuildingSections.delete(sectionId);
+    }
+  }
+  return completed;
+}
+
+// AUTO-UPDATE: rewrites sections that still cite an old claim.
+// Off in Settings, this returns without writing. Update still works.
+export async function refreshStaleSections(sectionIds: string[]): Promise<ActionResult<{ sections: number }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const ids = z.array(z.uuid()).max(30).parse(sectionIds);
+    return { sections: await rewriteStaleSections(ids) };
+  });
+}
+
+// BACKGROUND: any signed-in page can start the pending rewrites. The article does not have to be open.
+export async function refreshPendingStaleSections(): Promise<ActionResult<{ sections: number }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const { data, error } = await getAdminSupabase().from("stale_lines").select("section_id");
+    if (error) throw new Error(error.message);
+    const ids = [...new Set((data ?? []).flatMap((row) => row.section_id ? [row.section_id] : []))].slice(0, 30);
+    return { sections: await rewriteStaleSections(ids) };
   });
 }

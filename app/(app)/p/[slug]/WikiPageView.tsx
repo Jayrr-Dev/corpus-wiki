@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { pageAncestors } from "@/lib/living-page/pageHierarchy";
 import { articleNavigation } from "@/lib/living-page/articleNavigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageIcon } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorBoundary } from "@/components/error";
@@ -13,10 +13,10 @@ import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import { Button } from "@/components/ui/button";
 import { useServerAction } from "@/components/actions/useServerAction";
 import type { Tables } from "@/lib/database/types";
-import { useEntities, usePages, useSectionLines, useSections } from "@/lib/queries";
+import { useEntities, usePages, useSectionLines, useSections, type ShownLine } from "@/lib/queries";
 import { useArticleEvidence } from "@/lib/queries/articleEvidence";
 import { useRealtimeInvalidation } from "@/lib/realtime";
-import { expandRelatedArticles, improveArticle } from "@/lib/server-actions/pages";
+import { expandRelatedArticles, improveArticle, refreshStaleSections } from "@/lib/server-actions/pages";
 import { PageMenu } from "@/app/(app)/_pages/PageMenu";
 import { AddSectionDialog } from "./AddSectionDialog";
 import { SectionMenu } from "./SectionMenu";
@@ -36,6 +36,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const sections = sectionsQuery.data ?? [];
   const linesQuery = useSectionLines(page.id);
   const lines = sections.flatMap((section) => (linesQuery.data ?? []).filter((line) => line.sectionId === section.id));
+  const staleRefresh = useAutoRefreshStale(lines, !linesQuery.isPending);
   const evidence = useArticleEvidence(lines);
   const allPages = usePages();
   const ancestors = pageAncestors(allPages.data ?? [], page);
@@ -52,7 +53,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const error = sectionsQuery.error?.message ?? linesQuery.error?.message;
   const renderSection = (section: Tables<"sections">, hideHeading = false) => (
     <ErrorBoundary key={section.id} where={`The section "${section.title}"`}>
-      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={(line) => setSelectedLineId(line.lineId)} evidence={evidence.loading ? undefined : evidence} links={links} hideHeading={hideHeading} menu={<div className="flex items-center gap-1"><UpdateArticleDialog id={section.id} title={section.title} scope="section" /><SectionMenu section={section} /></div>} />
+      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={(line) => setSelectedLineId(line.lineId)} evidence={evidence.loading ? undefined : evidence} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} />} />
     </ErrorBoundary>
   );
   return (
@@ -70,6 +71,8 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
         </div>
       </header>
       {error ? <p role="alert" className="mb-4 text-panel">Could not load this article: {error}</p> : null}
+      {staleRefresh.error ? <p role="alert" className="mb-4 text-panel">{staleRefresh.error}</p> : null}
+      {staleRefresh.isPending ? <p className="mb-4 text-panel text-faint">Updating stale lines…</p> : null}
       {sectionsQuery.isPending || linesQuery.isPending ? <p className="text-panel text-faint">Loading article…</p> : null}
       {!sectionsQuery.isPending && !sections.length ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
       <div className="grid min-w-0 gap-8 xl:grid-cols-[10rem_minmax(0,1fr)]">
@@ -96,6 +99,31 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
       {selected ? <RightPanelSlot><LinePanel key={selected.lineRevisionId} line={selected} /></RightPanelSlot> : null}
     </div>
   );
+}
+
+// Opens an article that still cites an old claim and rewrites those sections once.
+// A failed or unchanged line is not sent again until the page is opened again.
+function useAutoRefreshStale(lines: ShownLine[], ready: boolean) {
+  const refresh = useServerAction(refreshStaleSections);
+  const sent = useRef(new Set<string>());
+  const refreshRef = useRef(refresh);
+  const staleKey = lines.filter((line) => line.isStale).map((line) => `${line.sectionId}:${line.lineId}`).sort().join("\n");
+  useEffect(() => {
+    refreshRef.current = refresh;
+  });
+  useEffect(() => {
+    if (!ready) return;
+    if (!staleKey) return;
+    const pending = staleKey.split("\n").filter((key) => !sent.current.has(key));
+    if (!pending.length) return;
+    const sectionIds = [...new Set(pending.map((key) => key.slice(0, key.indexOf(":"))))];
+    const timer = window.setTimeout(() => {
+      for (const key of pending) sent.current.add(key);
+      void refreshRef.current.run(sectionIds);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [ready, staleKey]);
+  return refresh;
 }
 
 function PageActions({ page }: { page: Tables<"pages"> }) {

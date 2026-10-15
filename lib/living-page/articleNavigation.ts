@@ -1,5 +1,6 @@
 import type { Tables } from "@/lib/database/types";
 import type { ArticleLink } from "./articleEvidence";
+import { pageAncestors } from "./pageHierarchy";
 
 type Page = Pick<Tables<"pages">, "id" | "title" | "slug" | "entity_id" | "domain_id"> & { context_entity_id?: string | null; parent_page_id?: string | null };
 type Entity = Pick<Tables<"entities">, "id" | "name" | "aliases">;
@@ -25,14 +26,15 @@ export function articleNavigation(pages: Page[], entities: Entity[], sections: S
       ?? eligible.find((candidate) => candidate.entity_id === entity.id);
     if (page && page.id !== currentId) links.push(...names.map((label) => ({ label, href: `/p/${page.slug}` })));
   }
-  const related = eligible.filter((page) => page.id !== currentId).map((page) => {
+  const ancestorIds = new Set(current ? pageAncestors(pages, current).map((page) => page.id) : []);
+  const related = eligible.filter((page) => page.id !== currentId && !ancestorIds.has(page.id) && page.parent_page_id !== currentId).map((page) => {
     const otherScopes = scopes(page.id);
     const shared = otherScopes.flatMap((scope) => scope.unitIds ?? []).filter((id) => currentUnits.has(id)).length;
     const domains = otherScopes.flatMap((scope) => scope.domainPaths ?? []);
-    const relatedDomain = domains.some((path) => currentDomains.some((current) => path === current || path.startsWith(`${current}/`) || current.startsWith(`${path}/`)));
+    const relatedDomain = domains.some((path) => currentDomains.some((currentPath) => path === currentPath || path.startsWith(`${currentPath}/`) || currentPath.startsWith(`${path}/`)));
     const mentioned = aliases(page).some((alias) => alias.length > 3 && text.toLowerCase().includes(alias.toLowerCase()));
-    const family = page.id === current?.parent_page_id || page.parent_page_id === currentId;
-    return { ...page, score: (family ? 5 : 0) + shared * 2 + (relatedDomain ? 2 : 0) + (mentioned ? 3 : 0) };
+    const sibling = !!current?.parent_page_id && page.parent_page_id === current.parent_page_id;
+    return { ...page, score: (sibling ? 5 : 0) + shared * 2 + (relatedDomain ? 2 : 0) + (mentioned ? 3 : 0) };
   }).filter((page) => page.score > 0).sort((a, b) => b.score - a.score || a.title.localeCompare(b.title)).slice(0, 12);
   return { links, related };
 }

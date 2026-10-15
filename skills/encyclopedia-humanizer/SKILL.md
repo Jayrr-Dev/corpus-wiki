@@ -22,9 +22,11 @@ skill when changing the rules.
 
 Identify the subject, context, and supplied evidence before choosing a title.
 A company's safety manual supports a safety-program article; it does not establish
-the company's history, services, or performance. Use Navi Pillay as a reading
-structure example, without copying its prose or requiring biographical sections
-for unrelated subjects.
+the company's history, services, or performance. Read the [Houthis](https://en.wikipedia.org/wiki/Houthis)
+article for paragraph rhythm: the lead names the subject and says what it is, the
+next sentence can use "it" or "the group," and a later paragraph can open with a
+person, a date, or a smaller organization. Do not copy that article's facts, and
+do not add a history section unless the evidence has one.
 
 Keep entity context separate from general knowledge. Utilitek's policies belong
 under Utilitek. A general concept can have a root article when its evidence
@@ -66,7 +68,7 @@ editing a file.
 
 ## Attribution and adaptations
 
-- [Humanizer by Siqi Chen](https://github.com/blader/humanizer/blob/main/SKILL.md), inspected 14 October 2026; MIT notice in [LICENSE](LICENSE). Adapted for neutral reference prose. General voice matching and draft reports are replaced by the contracts above. Punctuation follows meaning rather than a blanket dash prohibition.
+- [Humanizer by Siqi Chen](https://github.com/blader/humanizer/blob/main/SKILL.md), inspected 14 October 2026; MIT notice in [LICENSE](LICENSE). Adapted for neutral reference prose. General voice matching and draft reports are replaced by the contracts above. Article prose does not use em dashes or en dashes.
 - [Wikipedia Manual of Style](https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style) and its [lead guidance](https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Lead_section) inform independently worded article rules.
 - [Navi Pillay](https://en.wikipedia.org/wiki/Navi_Pillay) is the user's structural example: a lead, topic sections, linked subjects, and references.
 

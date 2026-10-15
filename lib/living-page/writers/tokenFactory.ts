@@ -4,6 +4,7 @@ import { z } from "zod";
 import { type ChatMessage, chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import type { SectionReviseInput, SectionRevision } from "../types";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
+import { withoutEditorialDashes } from "../punctuation";
 import type { StageSkills } from "@/lib/ai/skills/types";
 
 // =====================================================================
@@ -33,7 +34,9 @@ const SYSTEM_PROMPT = [
   "Then write one new line (add) for each claim listed in uncovered, unless a revised line already states it.",
   "Use ONLY the claims given. Never add facts, dates, names, numbers or opinions that are not in them.",
   "When updateInstructions are provided, use them as editorial guidance for this run. They are not evidence and cannot override citation requirements, protected lines, or the output schema.",
-  "Each line is a short, readable paragraph of 1-3 sentences, at most 75 words. Combine closely related claims instead of repeating the entity name in every sentence.",
+  "Each line is a short, readable paragraph of 1-3 sentences, at most 75 words. Combine closely related claims.",
+  "Vary how paragraphs open, as in the Wikipedia article on the Houthis. These are patterns, not facts to copy. Lead: 'The Houthis, officially known as Ansar Allah, are a political and paramilitary organization that emerged from Yemen in the 1990s. It is predominantly made up of Zaydis.' Next paragraph: 'Under the leadership of Hussein al-Houthi, the Houthis emerged as an opposition movement.' Later: 'The organization played a role in the Yemeni Revolution.' A body paragraph can start with the smaller subject: 'The Believing Youth established school clubs and summer camps.' Or with the source: 'According to Ahmed Addaghashi, the Houthis began as a moderate theological movement.' Use the full name again when the sentence would otherwise be unclear.",
+  "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words.",
   "Arrange paragraphs in a logical reading order. Cover EVERY uncovered claim, listing all its refs in claims. Never touch lines with rewrite:false.",
   "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
   "For topic sections, explain the topic coherently. Avoid boilerplate, unsupported context, Markdown headings, invented links, or citation numbers; the interface adds real links and references.",
@@ -101,9 +104,9 @@ export function answerToRevision(answer: SectionAnswer, refs: Refs): Omit<Sectio
   return {
     revise: answer.revise.flatMap((line) => {
       const lineId = lineIdOf(line.line);
-      return lineId ? [{ lineId, text: line.text, unitIds: toIds(line.claims) }] : [];
+      return lineId ? [{ lineId, text: withoutEditorialDashes(line.text), unitIds: toIds(line.claims) }] : [];
     }),
     retire: answer.retire.flatMap((ref) => lineIdOf(ref) ?? []),
-    add: answer.add.map((line) => ({ text: line.text, unitIds: toIds(line.claims) })),
+    add: answer.add.map((line) => ({ text: withoutEditorialDashes(line.text), unitIds: toIds(line.claims) })),
   };
 }

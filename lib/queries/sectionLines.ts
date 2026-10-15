@@ -2,6 +2,7 @@ import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Enums } from "@/lib/database/types";
 import { getBrowserSupabase } from "@/lib/supabase/client";
+import { withoutEditorialDashes } from "@/lib/living-page/punctuation";
 import { queryKeys } from "./keys";
 
 // =====================================================================
@@ -38,7 +39,7 @@ function toShownLine(row: ViewRow): ShownLine {
     sectionId: row.section_id ?? "",
     position: row.position ?? 0,
     lineRevisionId: row.line_revision_id ?? "",
-    content: row.content ?? "",
+    content: withoutEditorialDashes(row.content ?? ""),
     unitRevisionIds: row.unit_revision_ids ?? [],
     author: row.author ?? "ai",
     isStale: row.is_stale ?? false,

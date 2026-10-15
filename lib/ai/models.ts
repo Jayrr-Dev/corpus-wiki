@@ -11,10 +11,23 @@ import { TOKEN_FACTORY_BASE_URL } from "./config";
 
 type ModelsResponse = { data?: { id?: string }[] };
 
+type WorkspaceSettings = { aiModel: string | null; autoUpdateStale?: boolean };
+
 // The model picked on /settings, or null when none is picked
 export async function readChosenModel(db: DbRpc): Promise<string | null> {
-  const settings = await db.call<{ aiModel: string | null }>("get_workspace_settings");
+  const settings = await db.call<WorkspaceSettings>("get_workspace_settings");
   return settings.aiModel;
+}
+
+// True unless /settings has turned off rewriting lines whose claims changed
+export async function readAutoUpdateStale(db: DbRpc): Promise<boolean> {
+  const settings = await db.call<WorkspaceSettings>("get_workspace_settings");
+  return settings.autoUpdateStale !== false;
+}
+
+// Saves the stale-line switch for the whole workspace
+export async function saveAutoUpdateStale(db: DbRpc, enabled: boolean): Promise<void> {
+  await db.call("set_auto_update_stale", { p_enabled: enabled });
 }
 
 // Saves the pick (null clears it, so AI_MODEL or the default applies again)

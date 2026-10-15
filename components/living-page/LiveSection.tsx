@@ -24,7 +24,8 @@ type LiveSectionProps = {
 export function LiveSection({ section, lines, selectedLineId, onSelect, menu, evidence, links = [], hideHeading = false }: LiveSectionProps) {
   const isStale = section.status !== "current";
   return (
-    <section id={`section-${section.id}`} aria-label={section.title} aria-busy={section.status === "building"} className={cn("scroll-mt-6", isStale && "border-l-2 border-stale pl-3")}>
+    <section id={`section-${section.id}`} aria-label={section.title} aria-busy={section.status === "building"} className={cn("scroll-mt-6", isStale && "relative pl-3")}>
+      {isStale ? <span aria-hidden="true" className="sb-stale-line" /> : null}
       {!hideHeading ? (
         <header className="group mb-4 flex items-center justify-between gap-2 border-b pb-2">
           <h2 className="font-serif text-2xl">{section.title}</h2>

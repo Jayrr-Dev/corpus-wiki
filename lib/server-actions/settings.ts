@@ -2,7 +2,7 @@
 
 import { requireUser } from "@/lib/auth/requireUser";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { listTokenFactoryModels, saveChosenModel } from "@/lib/ai/models";
+import { listTokenFactoryModels, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getServerSupabase } from "@/lib/supabase/server";
@@ -32,6 +32,15 @@ export async function chooseModel(model: string | null): Promise<ActionResult> {
     await requireUser();
     if (model) await requireOfferedModel(model);
     await saveChosenModel(supabaseRpc(getAdminSupabase()), model);
+    return {};
+  });
+}
+
+// STALE LINES: on rewrites them when an article opens; off waits for Update
+export async function setAutoUpdateStale(enabled: boolean): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    await saveAutoUpdateStale(supabaseRpc(getAdminSupabase()), enabled);
     return {};
   });
 }
