@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { EvidenceBadge } from "@/app/(app)/_components/bits";
 import { dateColumn, textColumn } from "@/app/(app)/_components/columns";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
@@ -21,6 +22,7 @@ const COLUMNS = [
   textColumn<UnitSummary>("content", "Knowledge", (unit) => `${unit.label ?? ""} ${unit.content}`, (unit) => (
     <div className="max-w-xl whitespace-normal">
       <Link href={`/units/${unit.id}`} className="font-medium text-link hover:underline">{unit.label ?? unit.content}</Link>
+      <EvidenceBadge evidence={unit.evidence} className="ml-2 text-xs" />
       <p className="mt-1 line-clamp-2 text-panel text-muted-foreground">{unit.content}</p>
     </div>
   )),

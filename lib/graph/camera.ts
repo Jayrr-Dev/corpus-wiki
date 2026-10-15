@@ -47,6 +47,15 @@ export function labelOpacity(zoom: number, threshold: number): number {
   return Math.min(1, Math.max(0, (zoom - start) / (start * 0.5)));
 }
 
+// PROGRESSIVE ZOOM: how many times the overview zoom (the one that fits the whole graph) each layer
+// of text needs before it fades in. Domain names always show; topics come next, then note titles.
+export const REVEAL_AT = { subdomain: 0.6, title: 1.4 } as const;
+
+// Opacity for a layer that fades in at `reveal` times the overview zoom (the text fade threshold shifts it)
+export function revealOpacity(zoom: number, overviewZoom: number, reveal: number, threshold = 0): number {
+  return labelOpacity(zoom / (overviewZoom * reveal), threshold);
+}
+
 // FIT: the most a fitted view zooms in (a two-dot graph should not fill the screen)
 const MAX_FIT_ZOOM = 2;
 

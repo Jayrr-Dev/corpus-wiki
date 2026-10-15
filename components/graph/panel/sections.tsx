@@ -129,6 +129,7 @@ export function DisplaySection({
   return (
     <PanelSection title="Display">
       <SwitchRow label="Arrows" checked={value.arrows} onChange={(arrows) => onChange({ ...value, arrows })} />
+      <SwitchRow label="Domain circles" checked={value.domainCircles} onChange={(domainCircles) => onChange({ ...value, domainCircles })} />
       {DISPLAY_SLIDERS.map((rule) => (
         <SliderRow key={rule.key} label={rule.label} min={rule.min} max={rule.max} step={rule.step} value={value[rule.key]} onChange={(next) => onChange({ ...value, [rule.key]: next })} />
       ))}

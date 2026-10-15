@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { type GraphData, type GraphNode, type GraphSettings, groupColorLookup } from "@/lib/graph";
+import { circleExtents, clusterCircles, type GraphData, type GraphNode, type GraphSettings, groupColorLookup } from "@/lib/graph";
 import { type Camera, centeredCamera, fitCamera } from "@/lib/graph/camera";
 import type { SimLink, SimNode } from "@/lib/graph/physics";
 import { cn } from "@/lib/utils";
@@ -20,8 +20,13 @@ export interface GraphCanvasProps {
   graph: GraphData;
   settings: Pick<GraphSettings, "display" | "forces" | "groups">;
   onOpen: (node: GraphNode) => void;
+  // Reveal text in layers as you zoom in from the whole-graph view (off for small local graphs, where titles always fit)
+  progressiveZoom?: boolean;
   className?: string;
 }
+
+// Room above a ring for its label, in world units at the fitted zoom (roughly)
+const CIRCLE_LABEL_ROOM = 20;
 
 // The hovered dot and every dot it shares a link with
 function focusOf(hoveredId: string | null, links: readonly SimLink[]): Set<string> {
@@ -57,7 +62,7 @@ function useCanvasSize(container: React.RefObject<HTMLDivElement | null>, canvas
   }, [container, canvas, onResize]);
 }
 
-export function GraphCanvas({ graph, settings, onOpen, className }: GraphCanvasProps) {
+export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, className }: GraphCanvasProps) {
   const container = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const size = useRef({ width: 0, height: 0 });
@@ -68,8 +73,13 @@ export function GraphCanvas({ graph, settings, onOpen, className }: GraphCanvasP
   const frame = useRef<number | null>(null);
   const redrawRef = useRef<() => void>(() => {});
   const colorOf = useMemo(() => groupColorLookup(settings.groups), [settings.groups]);
-  const latest = useRef({ display: settings.display, colorOf });
-  const layout = useForceLayout(graph, settings.forces, settings.display.nodeSize, redrawRef);
+  const latest = useRef({ display: settings.display, colorOf, progressiveZoom });
+  // The domain circles toggle also turns off the pull that gathers dots by domain
+  const forces = useMemo(
+    () => (settings.display.domainCircles ? settings.forces : { ...settings.forces, cluster: 0 }),
+    [settings.forces, settings.display.domainCircles],
+  );
+  const layout = useForceLayout(graph, forces, settings.display.nodeSize, redrawRef);
 
   // DRAW NOW: paints the current layout with the latest settings
   const drawNow = useCallback(() => {
@@ -78,15 +88,20 @@ export function GraphCanvas({ graph, settings, onOpen, className }: GraphCanvasP
     const ctx = element?.getContext("2d");
     if (!element || !ctx || size.current.width === 0) return;
     const { nodes, links } = layout.current;
-    if (isAutoFit.current) camera.current = fitCamera(nodes, size.current.width, size.current.height);
+    const { display } = latest.current;
+    const circles = display.domainCircles ? clusterCircles(nodes, display.nodeSize) : [];
+    const overview = fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height);
+    if (isAutoFit.current) camera.current = overview;
     drawGraph({
       ctx,
       ...size.current,
       pixelRatio: window.devicePixelRatio || 1,
       camera: camera.current,
+      overviewZoom: latest.current.progressiveZoom ? overview.k : null,
       nodes,
       links,
-      display: latest.current.display,
+      circles,
+      display,
       palette: readCanvasPalette(element),
       colorOf: latest.current.colorOf,
       hoveredId: hoveredId.current,
@@ -102,8 +117,8 @@ export function GraphCanvas({ graph, settings, onOpen, className }: GraphCanvasP
   // LATEST VALUES for the frame loop (synced after render; the loop runs outside React)
   useLayoutEffect(() => {
     redrawRef.current = redraw;
-    latest.current = { display: settings.display, colorOf };
-  }, [redraw, settings.display, colorOf]);
+    latest.current = { display: settings.display, colorOf, progressiveZoom };
+  }, [redraw, settings.display, colorOf, progressiveZoom]);
 
   // RESIZE: the first size centers the camera; later ones keep the view (or refit, while auto-fitting)
   const onResize = useCallback(

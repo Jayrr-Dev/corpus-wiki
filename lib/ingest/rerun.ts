@@ -20,6 +20,11 @@ export async function requireFailedUpload(eventId: string): Promise<void> {
 
 // RERUN: opens a new 'received' upload event for a stored source; returns its id
 export async function openRerunEvent(sourceId: string): Promise<string> {
+  const { data: source, error: sourceError } = await getAdminSupabase().from("sources").select("archived_at").eq("id", sourceId).maybeSingle();
+  if (sourceError) throw new Error(sourceError.message);
+  if (!source) throw new Error("That source no longer exists.");
+  // An archived file is not evidence: what a re-run cites would be stale at once
+  if (source.archived_at) throw new Error("This source is archived. Restore it before re-running it.");
   const { data: event, error } = await getAdminSupabase()
     .from("shift_events")
     .insert({ cause: "upload", source_id: sourceId, actor: "ai", status: "received" })

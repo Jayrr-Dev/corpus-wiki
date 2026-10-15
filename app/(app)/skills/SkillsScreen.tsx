@@ -4,8 +4,12 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { QueryState } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
+import { RowMenu } from "@/components/row-menu/RowMenu";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { cn } from "@/lib/utils";
 import { AI_STAGES, type AiSkill, type AiStage, type SkillLibrary } from "@/lib/ai/skills/types";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { archiveAiSkill, assignAiSkill, readAiSkills } from "@/lib/server-actions/skills";
@@ -18,14 +22,16 @@ export function SkillsScreen() {
   }});
   const [tab,setTab]=useState<"assignments"|"library">("assignments");
   const [editor,setEditor]=useState<Editor|null>(null);
+  const tabs=[{id:"assignments",label:"Stage assignments"},{id:"library",label:"Skill library",count:library.data?.skills.filter((skill)=>!skill.archived_at).length}] as const;
   return <div className="space-y-5">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <p className="max-w-2xl text-panel text-muted-foreground">Choose how the AI handles each part of your knowledge workflow. Create your own instructions or duplicate a default skill. Changes apply to future runs.</p>
       <Button size="sm" onClick={()=>setEditor({})}>New skill</Button>
     </div>
-    <div className="flex gap-2" role="group" aria-label="Skills views">
-      <Button size="sm" variant={tab==="assignments"?"secondary":"ghost"} aria-pressed={tab==="assignments"} onClick={()=>setTab("assignments")}>Stage assignments</Button>
-      <Button size="sm" variant={tab==="library"?"secondary":"ghost"} aria-pressed={tab==="library"} onClick={()=>setTab("library")}>Skill library</Button>
+    <div role="tablist" aria-label="Skills views" className="flex gap-1 border-b">
+      {tabs.map((item)=>{const selected=item.id===tab;return <button key={item.id} type="button" role="tab" aria-selected={selected} onClick={()=>setTab(item.id)} className={cn("-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-panel transition-colors",selected?"border-foreground font-medium text-foreground":"border-transparent text-muted-foreground hover:text-foreground")}>
+        {item.label}{"count" in item&&item.count?<span className="rounded-sm bg-hover px-1.5 font-mono text-xs text-muted-foreground">{item.count}</span>:null}
+      </button>;})}
     </div>
     <QueryState query={library}>
       {library.data ? tab==="assignments" ? <Assignments library={library.data} onView={(skill)=>setEditor({skill})} /> : <SkillList library={library.data} onEdit={(skill)=>setEditor({skill})} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
@@ -35,36 +41,53 @@ export function SkillsScreen() {
 }
 
 function Assignments({library,onView}:{library:SkillLibrary;onView:(skill:AiSkill)=>void}) {
-  return <section aria-label="AI stage assignments" className="space-y-3">{AI_STAGES.map((stage)=>{
-    const assignment=library.assignments.find((row)=>row.stage===stage.id);
-    const current=assignment ? assignment.skill_id : defaultSkill(stage.id).id;
-    return <StageRow key={`${stage.id}:${current}`} stage={stage} current={current} skills={library.skills.filter((skill)=>!skill.archived_at)} onView={onView} />;
-  })}<p className="text-xs text-faint">Source citations, data validation, and revision checks remain part of the workflow for every skill.</p></section>;
+  const skills=library.skills.filter((skill)=>!skill.archived_at);
+  return <section aria-label="AI stage assignments" className="space-y-2">
+    <ol className="divide-y overflow-hidden rounded-lg border">{AI_STAGES.map((stage,index)=>{
+      const assignment=library.assignments.find((row)=>row.stage===stage.id);
+      const current=assignment ? assignment.skill_id : defaultSkill(stage.id).id;
+      return <StageRow key={`${stage.id}:${current}`} step={index+1} stage={stage} current={current} skills={skills} onView={onView} />;
+    })}</ol>
+    <p className="text-xs text-faint">Source citations, data validation, and revision checks remain part of the workflow for every skill.</p>
+  </section>;
 }
-function StageRow({stage,current,skills,onView}:{stage:(typeof AI_STAGES)[number];current:string|null;skills:AiSkill[];onView:(skill:AiSkill)=>void}) {
+function StageRow({step,stage,current,skills,onView}:{step:number;stage:(typeof AI_STAGES)[number];current:string|null;skills:AiSkill[];onView:(skill:AiSkill)=>void}) {
   const [selected,setSelected]=useState(current??"");
   const [saved,setSaved]=useState(false);
   const save=useServerAction(assignAiSkill);
+  const defaultId=defaultSkill(stage.id).id;
   const selectedSkill=skills.find((skill)=>skill.id===selected);
+  const dirty=selected!==(current??"");
   const apply=async(id:string|null)=>{const result=await save.run(stage.id as AiStage,id);if(result.ok)setSaved(true);};
-  return <section aria-label={stage.name} className="rounded-lg border p-4">
-    <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)]">
-      <div><h2 className="font-semibold">{stage.name}</h2><p className="mt-1 text-panel text-muted-foreground">{stage.description}</p></div>
-      <div className="space-y-2">
-        <select aria-label={`Skill for ${stage.name}`} className="h-9 w-full rounded-md border bg-background px-2 text-panel" value={selected} disabled={save.isPending} onChange={(event)=>{setSelected(event.target.value);setSaved(false);}}>
-          <option value="">App rules only</option>
-          {skills.map((skill)=><option key={skill.id} value={skill.id}>{skill.name}{skill.id===defaultSkill(stage.id).id?" (default)":""} · v{skill.version}</option>)}
-        </select>
+  return <li aria-label={stage.name} className="grid gap-x-4 gap-y-3 px-4 py-3.5 transition-colors hover:bg-hover/40 md:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] md:items-center">
+    <div className="flex min-w-0 gap-3">
+      <span aria-hidden="true" className="mt-px w-4 shrink-0 text-right font-mono text-xs leading-5 text-faint">{step}</span>
+      <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" disabled={save.isPending||selected===(current??"")} onClick={()=>void apply(selected||null)}>{save.isPending?"Saving…":"Save assignment"}</Button>
-          <Button size="sm" variant="ghost" disabled={!selectedSkill||save.isPending} onClick={()=>selectedSkill&&onView(selectedSkill)}>View skill</Button>
-          <Button size="sm" variant="ghost" disabled={save.isPending||current===defaultSkill(stage.id).id} onClick={()=>void apply(defaultSkill(stage.id).id)}>Reset</Button>
-          {saved?<span role="status" className="text-xs text-faint">Saved</span>:null}
+          <h2 className="text-panel font-medium">{stage.name}</h2>
+          {current===null?<Badge variant="outline">App rules only</Badge>:current!==defaultId?<Badge variant="secondary">Custom</Badge>:null}
         </div>
-        {save.error?<p role="alert" className="text-panel text-failed">{save.error}</p>:null}
+        <p className="mt-0.5 text-panel text-muted-foreground">{stage.description}</p>
       </div>
     </div>
-  </section>;
+    <div className="space-y-1.5 pl-7 md:pl-0">
+      <div className="flex items-center gap-1">
+        <NativeSelect aria-label={`Skill for ${stage.name}`} className="min-w-0 flex-1" value={selected} disabled={save.isPending} onChange={(event)=>{setSelected(event.target.value);setSaved(false);}}>
+          <NativeSelectOption value="">App rules only</NativeSelectOption>
+          {skills.map((skill)=><NativeSelectOption key={skill.id} value={skill.id}>{skill.name}{skill.id===defaultId?" (default)":""} · v{skill.version}</NativeSelectOption>)}
+        </NativeSelect>
+        <Button size="sm" variant="ghost" disabled={!selectedSkill} onClick={()=>selectedSkill&&onView(selectedSkill)}>View</Button>
+      </div>
+      {dirty||saved||save.error||current!==defaultId?<div className="flex flex-wrap items-center gap-2 text-xs">
+        {dirty?<>
+          <Button size="sm" disabled={save.isPending} onClick={()=>void apply(selected||null)}>{save.isPending?"Saving…":"Save"}</Button>
+          <Button size="sm" variant="ghost" disabled={save.isPending} onClick={()=>setSelected(current??"")}>Cancel</Button>
+        </>:current!==defaultId?<button type="button" className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50" disabled={save.isPending} onClick={()=>void apply(defaultId)}>Reset to default</button>:null}
+        {saved&&!dirty?<span role="status" className="text-faint">Saved</span>:null}
+        {save.error?<p role="alert" className="text-failed">{save.error}</p>:null}
+      </div>:null}
+    </div>
+  </li>;
 }
 function SkillList({library,onEdit,onDuplicate}:{library:SkillLibrary;onEdit:(skill:AiSkill)=>void;onDuplicate:(skill:AiSkill)=>void}) {
   const [search,setSearch]=useState("");
@@ -79,10 +102,12 @@ function SkillList({library,onEdit,onDuplicate}:{library:SkillLibrary;onEdit:(sk
       return <article key={skill.id} aria-label={skill.name} className="flex flex-col gap-3 rounded-lg border p-4">
         <div><h2 className="font-semibold">{skill.name}</h2><p className="mt-1 text-xs text-faint">{skill.builtin_key?"Built in":"Custom"} · Version {skill.version}{skill.archived_at?" · Archived":used?` · Assigned to ${used} stage${used===1?"":"s"}`:" · Unassigned"}</p></div>
         <p className="flex-1 text-panel text-muted-foreground">{skill.description||"No description"}</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center justify-between gap-2">
           <Button size="sm" variant="outline" onClick={()=>onEdit(skill)}>{skill.builtin_key||skill.archived_at?"View":"Edit"}</Button>
-          <Button size="sm" variant="outline" onClick={()=>onDuplicate(skill)}>Duplicate</Button>
-          {!skill.builtin_key?<Button size="sm" variant="ghost" disabled={archive.isPending||!!used} title={used?"Assign another skill to these stages before archiving.":undefined} onClick={()=>void archive.run(skill.id,skill.version,!skill.archived_at)}>{skill.archived_at?"Restore":"Archive"}</Button>:null}
+          <RowMenu label={skill.name} items={[
+            {label:"Duplicate",run:()=>onDuplicate(skill)},
+            ...(!skill.builtin_key?[{label:skill.archived_at?"Restore":"Archive",isDisabled:archive.isPending||!!used,title:used?"Assign another skill to these stages before archiving.":undefined,run:()=>void archive.run(skill.id,skill.version,!skill.archived_at)}]:[]),
+          ]} />
         </div>
       </article>;
     })}</div>

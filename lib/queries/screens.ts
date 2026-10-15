@@ -1,6 +1,7 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { getBrowserSupabase, type BrowserSupabase } from "@/lib/supabase/client";
 import { fetchRowById, type Row } from "./fetchers";
+import { type Evidence, toEvidence } from "@/lib/knowledge/evidence";
 import { knowledgeLabel } from "@/lib/knowledge/label";
 import { queryKeys } from "./keys";
 
@@ -11,7 +12,7 @@ import { queryKeys } from "./keys";
 // =====================================================================
 
 // SHARED SHAPES
-export type UnitSummary = Row<"units"> & { content: string; label?: string };
+export type UnitSummary = Row<"units"> & { content: string; label?: string; evidence?: Evidence };
 
 // TABLES THAT HAVE A UUID `id` AND ARE READ BY ID LISTS HERE
 type ByIdTable = "units" | "revisions" | "passages" | "sources" | "entities" | "domains" | "actions";
@@ -48,13 +49,15 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
   const units = (data ?? []) as Row<"units">[];
   if (!units.length) return [];
   const revisions = await fetchByIds(client, "revisions", units.map((unit) => unit.current_revision_id));
-  const [links, memberships, subjects, topics] = await Promise.all([
+  const [links, memberships, subjects, topics, evidence] = await Promise.all([
     client.from("unit_entities").select("unit_id, entity_id, role").in("unit_id", units.map((unit)=>unit.id)),
     client.from("unit_domains").select("unit_id, domain_id").in("unit_id", units.map((unit)=>unit.id)),
     client.from("entities").select("id, name, type").is("merged_into_id", null),
     client.from("domains").select("id, name, path"),
+    ids ? client.from("unit_evidence").select("unit_id, evidence").in("unit_id", ids) : client.from("unit_evidence").select("unit_id, evidence"),
   ]);
-  for (const result of [links,memberships,subjects,topics]) if (result.error) throw result.error;
+  for (const result of [links,memberships,subjects,topics,evidence]) if (result.error) throw result.error;
+  const evidenceById = new Map((evidence.data ?? []).map((row) => [row.unit_id, toEvidence(row.evidence)]));
   const subjectById = new Map((subjects.data ?? []).filter((entity)=>!["company","organization","person","project","team","product"].includes(entity.type)).map((entity)=>[entity.id, entity.name]));
   const topicById = new Map((topics.data ?? []).map((topic)=>[topic.id, topic]));
   const hints = (id: string) => ({
@@ -62,7 +65,7 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
     topic: (memberships.data ?? []).filter((link)=>link.unit_id===id).map((link)=>topicById.get(link.domain_id)).filter((topic)=>!!topic).sort((a,b)=>b.path.length-a.path.length)[0]?.name,
   });
   const contentById = new Map(revisions.map((revision) => [revision.id, revision.content]));
-  return units.map((unit) => ({ ...unit, content: contentById.get(unit.current_revision_id) ?? "", label: knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)) }));
+  return units.map((unit) => ({ ...unit, content: contentById.get(unit.current_revision_id) ?? "", label: knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)), evidence: evidenceById.get(unit.id) }));
 }
 
 // UNITS WITH CONTENT: every unit when `ids` is omitted, else just those
@@ -117,5 +120,20 @@ export function useLiveShiftEvent(eventId: string | undefined, isLive: boolean):
     queryFn: () => fetchRowById(getBrowserSupabase(), "shift_events", eventId ?? ""),
     enabled: Boolean(eventId),
     refetchInterval: isLive ? 1000 : false,
+  });
+}
+
+// Reads the ids of units whose current revision cites the file (source_units view)
+async function fetchSourceUnitIds(client: BrowserSupabase, sourceId: string): Promise<string[]> {
+  const { data, error } = await client.from("source_units").select("unit_id").eq("source_id", sourceId);
+  if (error) throw error;
+  return (data ?? []).flatMap((row) => (row.unit_id ? [row.unit_id] : []));
+}
+
+// KNOWLEDGE LINKED TO A FILE (Source detail). Keyed under units so knowledge edits refresh it
+export function useSourceUnitIds(sourceId: string): UseQueryResult<string[]> {
+  return useQuery({
+    queryKey: [...queryKeys.table("units"), "source", sourceId],
+    queryFn: () => fetchSourceUnitIds(getBrowserSupabase(), sourceId),
   });
 }

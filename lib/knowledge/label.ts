@@ -3,11 +3,6 @@
 export function knowledgeLabel(content: string, hints: { subject?: string; topic?: string } = {}): string {
   const text = content.replace(/\s+/g, " ").trim();
   if (!text) return "Untitled knowledge";
-  const compact = (value: string) => {
-    const words = value.trim().split(/\s+/).slice(0, 5).join(" ").replace(/\s+(?:and|or|of|to|for|in|at|the|a)$/i, "");
-    const short = words.length <= 48 ? words : words.slice(0,48).replace(/\s+\S*$/, "");
-    return short.charAt(0).toUpperCase() + short.slice(1).replace(/[,:;.]+$/, "");
-  };
   if (hints.subject) return compact(hints.subject.split(/\s+\/\s+/)[0]!);
   const topics: [RegExp, string][] = [
     [/job hazard analysis/i, "Job Hazard Analysis"],
@@ -34,6 +29,21 @@ export function knowledgeLabel(content: string, hints: { subject?: string; topic
       && /\b(?:Analysis|Assessment|Policy|Program|Plan|Training|Equipment|Protection|Procedure|System|Management)\b/.test(phrase));
   if (named) return compact(named);
   if (hints.topic) return compact(hints.topic);
+  return phraseLabel(text);
+}
+
+// Trims a phrase to a few title-cased words
+function compact(value: string): string {
+  const words = value.trim().split(/\s+/).slice(0, 5).join(" ").replace(/\s+(?:and|or|of|to|for|in|at|the|a)$/i, "");
+  const short = words.length <= 48 ? words : words.slice(0,48).replace(/\s+\S*$/, "");
+  return short.charAt(0).toUpperCase() + short.slice(1).replace(/[,:;.]+$/, "");
+}
+
+// A short phrase from the claim's own wording (subject and filler verbs dropped),
+// used when a broad topic label would not tell claims apart
+export function phraseLabel(content: string): string {
+  const text = content.replace(/\s+/g, " ").trim();
+  if (!text) return "Untitled knowledge";
   const label = text.replace(/^.*?\b(?:Inc\.|Ltd\.|LLC)\s*(?:'s)?\s*/i, "")
     .replace(/^(?:The company|The organization|The program|All employees|Employees|Supervisors|Workers)\s+/i, "")
     .replace(/^(?:is |are )?(?:required to |requires |provides |maintains |holds |uses |adopts |states that |must |shall )/i, "")

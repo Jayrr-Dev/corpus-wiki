@@ -1,8 +1,10 @@
 import Link from "next/link";
 import type { ComponentProps, ReactNode } from "react";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
+import { EVIDENCE_TONE } from "@/app/(app)/_lib/tone";
 import { StatusGlyph } from "@/components/icons";
 import { ErrorToast } from "@/components/toast";
+import type { Evidence } from "@/lib/knowledge/evidence";
 import type { UnitSummary } from "@/lib/queries/screens";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +36,18 @@ export function UnitLink({ unit, className }: { unit: UnitSummary; className?: s
     <span className={cn("inline-flex min-w-0 items-start gap-1.5", unit.retired_at && "text-faint", className)}>
       <StatusGlyph status={unit.epistemic_status} className="mt-0.5 shrink-0" />
       <TextLink href={`/units/${unit.id}`}>{unit.label || unit.content || unit.id}</TextLink>
+      <EvidenceBadge evidence={unit.evidence} className="ml-1 shrink-0 text-xs" />
+    </span>
+  );
+}
+
+// EVIDENCE BADGE: shown only when the sources behind a unit are archived (stale) or deleted (lost)
+export function EvidenceBadge({ evidence, className }: { evidence: Evidence | undefined; className?: string }) {
+  if (evidence !== "stale" && evidence !== "lost") return null;
+  const hint = evidence === "stale" ? "A file it cites is archived or replaced" : "A file it cites was deleted";
+  return (
+    <span title={hint} className={cn("text-muted-foreground", className)}>
+      <StatusDot tone={EVIDENCE_TONE[evidence]} label={evidence} />
     </span>
   );
 }

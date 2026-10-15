@@ -16,7 +16,7 @@ import {
 
 export type NavItem = { label: string; href: string; icon: ComponentType<IconProps> };
 
-// RIBBON, MAIN GROUP: the five places named on the Frontend tab
+// SIDEBAR, MAIN GROUP: the five places named on the Frontend tab
 export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Pages", href: "/", icon: PageIcon },
   { label: "Upload", href: "/upload", icon: UploadIcon },
@@ -25,7 +25,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Exceptions", href: "/exceptions", icon: ExceptionIcon },
 ];
 
-// RIBBON, BROWSE GROUP: the other table pages and the graph view
+// SIDEBAR, BROWSE GROUP: the other table pages and the graph view
 export const SECONDARY_NAV: readonly NavItem[] = [
   { label: "Sources", href: "/sources", icon: SourceIcon },
   { label: "Entities", href: "/entities", icon: EntityIcon },
@@ -40,5 +40,5 @@ export function isActivePath(href: string, pathname: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-// RIBBON, BOTTOM: settings, above the tutorial and sign-out buttons
+// SIDEBAR, FOOTER: settings, above the tutorial and sign-out buttons
 export const SETTINGS_NAV: NavItem = { label: "Settings", href: "/settings", icon: SettingsIcon };

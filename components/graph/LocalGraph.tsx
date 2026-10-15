@@ -43,7 +43,7 @@ export function LocalGraph({ centerId }: { centerId: string }) {
     <section aria-label="Local graph" className="flex flex-col gap-2">
       <h2 className="text-xs font-medium tracking-wide text-faint uppercase">Local graph</h2>
       <div className="h-64 overflow-hidden rounded-md border">
-        {local ? <GraphCanvas graph={local} settings={settings} onOpen={(node) => router.push(node.href)} /> : null}
+        {local ? <GraphCanvas graph={local} settings={settings} progressiveZoom={false} onOpen={(node) => router.push(node.href)} /> : null}
       </div>
       <SliderRow label={`Depth ${depth}`} value={depth} min={MIN_DEPTH} max={MAX_DEPTH} step={1} onChange={setDepth} />
     </section>

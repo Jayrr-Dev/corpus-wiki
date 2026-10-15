@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Tables } from "@/lib/database/types";
-import { type ShownLine, useChangeNotes } from "@/lib/queries";
+import type { ShownLine } from "@/lib/queries";
 import { formatReferencePages, linkArticleText, type ArticleEvidence, type ArticleLink } from "@/lib/living-page/articleEvidence";
 import { cn } from "@/lib/utils";
 
@@ -53,14 +53,6 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, menu, ev
           })}
         </div>
       )}
-      <LatestChangeNote sectionId={section.id} />
     </section>
   );
-}
-
-function LatestChangeNote({ sectionId }: { sectionId: string }) {
-  const { data: notes = [] } = useChangeNotes({ filters: { section_id: sectionId }, limit: 1 });
-  const note = notes[0];
-  if (!note) return null;
-  return <p className="mt-3 text-xs text-faint">{note.summary} · {noteDate.format(new Date(note.created_at))}</p>;
 }

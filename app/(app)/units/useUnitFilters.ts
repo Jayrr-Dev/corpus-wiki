@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMemo } from "react";
-import { readUnitFilters, type UnitFilters } from "./filterUnits";
+import { FILTER_KEYS, readUnitFilters, type UnitFilters } from "./filterUnits";
 
 export type UnitFilterState = { filters: UnitFilters; setFilter: (key: keyof UnitFilters, value: string) => void; resetFilters: () => void };
 
@@ -21,7 +21,7 @@ export function useUnitFilters(): UnitFilterState {
   const filters = useMemo(() => readUnitFilters(params), [params]);
   const resetFilters = () => {
     const next = new URLSearchParams(params.toString());
-    for (const key of ["kind", "status", "domain", "entity", "state"]) next.delete(key);
+    for (const key of FILTER_KEYS) next.delete(key);
     router.replace(next.size ? `${pathname}?${next}` : pathname, { scroll: false });
   };
   return { filters, setFilter, resetFilters };

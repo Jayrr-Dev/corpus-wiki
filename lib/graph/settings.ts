@@ -10,6 +10,8 @@ import { GRAPH_COLORS, type GraphGroup } from "./groups";
 
 export interface GraphDisplay {
   arrows: boolean;
+  // Circles around each domain and subdomain
+  domainCircles: boolean;
   textFadeThreshold: number;
   nodeSize: number;
   linkThickness: number;
@@ -20,6 +22,8 @@ export interface GraphForces {
   repel: number;
   link: number;
   linkDistance: number;
+  // How strongly dots gather by domain
+  cluster: number;
 }
 
 export interface GraphSettings {
@@ -33,8 +37,8 @@ export interface GraphSettings {
 export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
   filters: { search: "", showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
   groups: [],
-  display: { arrows: false, textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
-  forces: { center: 0.5, repel: 10, link: 1, linkDistance: 60 },
+  display: { arrows: false, domainCircles: true, textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
+  forces: { center: 0.5, repel: 10, link: 1, linkDistance: 60, cluster: 0.5 },
 };
 
 // SLIDER RULES: label, range and step for each numeric setting
@@ -46,7 +50,7 @@ export interface SliderRule<K extends string> {
   step: number;
 }
 
-export const DISPLAY_SLIDERS: readonly SliderRule<Exclude<keyof GraphDisplay, "arrows">>[] = [
+export const DISPLAY_SLIDERS: readonly SliderRule<Exclude<keyof GraphDisplay, "arrows" | "domainCircles">>[] = [
   { key: "textFadeThreshold", label: "Text fade threshold", min: -3, max: 3, step: 0.1 },
   { key: "nodeSize", label: "Node size", min: 0.1, max: 5, step: 0.1 },
   { key: "linkThickness", label: "Link thickness", min: 0.1, max: 5, step: 0.1 },
@@ -57,9 +61,11 @@ export const FORCE_SLIDERS: readonly SliderRule<keyof GraphForces>[] = [
   { key: "repel", label: "Repel force", min: 0, max: 20, step: 0.1 },
   { key: "link", label: "Link force", min: 0, max: 1, step: 0.01 },
   { key: "linkDistance", label: "Link distance", min: 10, max: 300, step: 1 },
+  { key: "cluster", label: "Domain pull", min: 0, max: 1, step: 0.01 },
 ];
 
 const DEFAULT_RELATED = { showRelated: DEFAULT_GRAPH_SETTINGS.filters.showRelated, relatedness: DEFAULT_GRAPH_SETTINGS.filters.relatedness };
+const { display: DEFAULT_DISPLAY, forces: DEFAULT_FORCES } = DEFAULT_GRAPH_SETTINGS;
 
 // SAVED SETTINGS SCHEMA: anything stored that no longer fits falls back to the default
 const colorTokens = GRAPH_COLORS.map((color) => color.token) as [GraphGroup["color"], ...GraphGroup["color"][]];
@@ -74,8 +80,8 @@ const settingsSchema = z.object({
     relatedness: z.number().default(DEFAULT_RELATED.relatedness),
   }),
   groups: z.array(z.object({ id: z.string(), query: z.string(), color: z.enum(colorTokens) })),
-  display: z.object({ arrows: z.boolean(), textFadeThreshold: z.number(), nodeSize: z.number(), linkThickness: z.number() }),
-  forces: z.object({ center: z.number(), repel: z.number(), link: z.number(), linkDistance: z.number() }),
+  display: z.object({ arrows: z.boolean(), domainCircles: z.boolean().default(DEFAULT_DISPLAY.domainCircles), textFadeThreshold: z.number(), nodeSize: z.number(), linkThickness: z.number() }),
+  forces: z.object({ center: z.number(), repel: z.number(), link: z.number(), linkDistance: z.number(), cluster: z.number().default(DEFAULT_FORCES.cluster) }),
 });
 
 // Reads saved settings; the defaults when nothing valid was saved

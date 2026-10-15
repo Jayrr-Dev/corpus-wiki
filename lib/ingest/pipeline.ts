@@ -25,6 +25,8 @@ export type UploadRecord = {
   hash: string;
   storagePath: string;
   passages: PassageDraft[];
+  byteSize?: number;
+  pageCount?: number | null; // null for formats without pages
 };
 
 type IngestResult = { skipped: true; sourceId: string } | { skipped: false; sourceId: string; eventId: string };
@@ -38,6 +40,8 @@ export async function recordUpload(db: DbRpc, record: UploadRecord): Promise<Sta
     p_hash: record.hash,
     p_storage_path: record.storagePath,
     p_passages: record.passages,
+    p_byte_size: record.byteSize ?? null,
+    p_page_count: record.pageCount ?? null,
   });
   if (result.skipped) return { kind: "skipped", sourceId: result.sourceId };
   return { kind: "started", sourceId: result.sourceId, eventId: result.eventId };

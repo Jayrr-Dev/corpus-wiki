@@ -1,4 +1,5 @@
 import type { Enums } from "@/lib/database/types";
+import type { Evidence, SourceState } from "@/lib/knowledge/evidence";
 
 // =====================================================================
 // STATUS TONES: which accent (if any) a status earns. One table per enum,
@@ -43,4 +44,19 @@ export const EXCEPTION_TONE: Record<Enums<"exception_status">, Tone> = {
   open: "needs-you",
   accepted: "applied",
   rejected: "faint",
+};
+
+// UNIT EVIDENCE: stale and lost knowledge stand out; sourced is quiet
+export const EVIDENCE_TONE: Record<Evidence, Tone> = {
+  sourced: "faint",
+  unsourced: "faint",
+  stale: "stale",
+  lost: "failed",
+};
+
+// SOURCE FILES: an archived or replaced file no longer counts as evidence
+export const SOURCE_STATE_TONE: Record<SourceState, Tone> = {
+  active: "applied",
+  archived: "stale",
+  replaced: "faint",
 };

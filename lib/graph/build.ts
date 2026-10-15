@@ -1,4 +1,4 @@
-import { knowledgeLabel } from "@/lib/knowledge/label";
+import { knowledgeLabel, phraseLabel } from "@/lib/knowledge/label";
 import type { GraphRows } from "./rows";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -126,7 +126,7 @@ export function countDegrees(links: readonly GraphLink[]): Map<string, number> {
 export function buildGraph(rows: GraphRows): GraphData {
   const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)];
   // Topic labels are deliberately broad. When different claims share one,
-  // show their actual wording rather than making them look like duplicates.
+  // show a short phrase from their own wording so they do not look like duplicates.
   const labelCounts = new Map<string, number>();
   for (const node of nodes) {
     const key = node.label.toLowerCase();
@@ -134,7 +134,7 @@ export function buildGraph(rows: GraphRows): GraphData {
   }
   for (const node of nodes) {
     if (node.kind === "unit" && (labelCounts.get(node.label.toLowerCase()) ?? 0) > 1) {
-      node.label = shortLabel(node.text, 120);
+      node.label = phraseLabel(node.text);
     }
   }
   const ids = new Set(nodes.map((node) => node.id));

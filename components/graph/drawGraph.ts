@@ -1,11 +1,11 @@
-import type { GraphColor, GraphDisplay, GraphNode } from "@/lib/graph";
-import { type Camera, labelOpacity } from "@/lib/graph/camera";
+import type { ClusterCircle, GraphColor, GraphDisplay, GraphNode } from "@/lib/graph";
+import { type Camera, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import type { CanvasPalette } from "./palette";
 
 // =====================================================================
-// DRAW GRAPH: paints one frame on a 2D canvas, in three passes: links,
-// dots, labels. Links share one path per style so 5,000 lines are a few
+// DRAW GRAPH: paints one frame on a 2D canvas, back to front: domain
+// circles, links, dots, circle names, note labels. Links share one path per style so 5,000 lines are a few
 // draw calls. While a dot is hovered, it and its neighbors stay bright
 // and the rest dims (Obsidian's hover focus).
 // =====================================================================
@@ -16,8 +16,12 @@ export interface DrawInput {
   height: number;
   pixelRatio: number;
   camera: Camera;
+  // Zoom that fits the whole graph; text appears in layers as the camera zooms past it (null: titles fade by plain zoom)
+  overviewZoom: number | null;
   nodes: readonly SimNode[];
   links: readonly SimLink[];
+  // Domain and subdomain rings (empty when the circles are off)
+  circles: readonly ClusterCircle[];
   display: GraphDisplay;
   palette: CanvasPalette;
   colorOf: (node: GraphNode) => GraphColor | null;
@@ -39,6 +43,13 @@ const SIMILAR_DASH_PX = 3;
 const SIMILAR_ALPHA = 0.7;
 // LINK WIDTH IN SCREEN PIXELS AT THICKNESS 1
 const LINK_PX = 0.8;
+// DOMAIN CIRCLES: accent per domain (cycled), fill and ring opacity, ring width and label size in screen pixels
+const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "stale", "failed"];
+const CIRCLE_FILL_ALPHA = 0.06;
+const CIRCLE_RING_ALPHA = 0.55;
+const CIRCLE_RING_PX = 1.2;
+const CIRCLE_LABEL_PX = { domain: 14, subdomain: 12 } as const;
+const CIRCLE_LABEL_HALO_PX = 3;
 
 // Default dot color for a node kind (grays only; groups add the accents)
 function baseColor(node: GraphNode, palette: CanvasPalette): string {
@@ -168,11 +179,18 @@ function drawHoveredLabel(input: DrawInput, node: SimNode): void {
   lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
 }
 
+// Opacity of note titles at this zoom (in layers from the overview, or by plain zoom when there is none)
+function titleOpacity({ camera, display, overviewZoom }: DrawInput): number {
+  return overviewZoom === null
+    ? labelOpacity(camera.k, display.textFadeThreshold)
+    : revealOpacity(camera.k, overviewZoom, REVEAL_AT.title, display.textFadeThreshold);
+}
+
 // LABELS PASS: wrapped, faded in by zoom; the hover focus always shows its labels,
 // and the hovered label is drawn last so it sits on top
 function drawLabels(input: DrawInput): void {
   const { ctx, nodes, palette, camera, display, hoveredId, focusIds } = input;
-  const zoomOpacity = labelOpacity(camera.k, display.textFadeThreshold);
+  const zoomOpacity = titleOpacity(input);
   const lineHeight = (LABEL_PX * LINE_HEIGHT) / camera.k;
   ctx.font = `${LABEL_PX / camera.k}px ${palette.fontFamily}`;
   ctx.textAlign = "center";
@@ -192,14 +210,67 @@ function drawLabels(input: DrawInput): void {
   if (hovered) drawHoveredLabel(input, hovered);
 }
 
-// FRAME: clear, move into world space, then the three passes
+// CIRCLES PASS: a tinted disc and ring per domain, a dashed ring per subdomain (drawn under everything)
+function drawCircles(input: DrawInput): void {
+  const { ctx, circles, palette, camera, hoveredId } = input;
+  const dim = hoveredId === null ? 1 : 0.4;
+  for (const circle of circles) {
+    const color = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
+    const isDomain = circle.level === "domain";
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
+    if (isDomain) {
+      ctx.globalAlpha = CIRCLE_FILL_ALPHA * dim;
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+    ctx.setLineDash(isDomain ? [] : [4 / camera.k, 4 / camera.k]);
+    ctx.lineWidth = CIRCLE_RING_PX / camera.k;
+    ctx.globalAlpha = (isDomain ? CIRCLE_RING_ALPHA : CIRCLE_RING_ALPHA * 0.7) * dim;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+}
+
+// CIRCLE NAMES PASS (over the dots): a domain's name above its ring, a topic's name across the
+// middle of its cluster. Each has a background-colored outline so it reads over dots and lines.
+// Topic names show around the overview and fade out as note titles fade in.
+function drawCircleLabels(input: DrawInput): void {
+  const { ctx, circles, palette, camera, hoveredId, overviewZoom } = input;
+  if (circles.length === 0) return;
+  const dim = hoveredId === null ? 1 : 0.4;
+  const topicText = overviewZoom === null ? 1 : Math.min(revealOpacity(camera.k, overviewZoom, REVEAL_AT.subdomain), 1 - titleOpacity(input));
+  ctx.textAlign = "center";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = CIRCLE_LABEL_HALO_PX / camera.k;
+  ctx.strokeStyle = palette.background;
+  for (const circle of circles) {
+    const isDomain = circle.level === "domain";
+    const alpha = isDomain ? dim : dim * topicText;
+    if (alpha <= 0.01) continue;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
+    ctx.font = `${isDomain ? "600 " : "500 "}${CIRCLE_LABEL_PX[circle.level] / camera.k}px ${palette.fontFamily}`;
+    ctx.textBaseline = isDomain ? "bottom" : "middle";
+    const y = isDomain ? circle.y - circle.r - 3 / camera.k : circle.y;
+    ctx.strokeText(circle.label, circle.x, y);
+    ctx.fillText(circle.label, circle.x, y);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// FRAME: clear, move into world space, then the passes from back to front
 export function drawGraph(input: DrawInput): void {
   const { ctx, width, height, pixelRatio, camera, palette } = input;
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   ctx.fillStyle = palette.background;
   ctx.fillRect(0, 0, width, height);
   ctx.setTransform(pixelRatio * camera.k, 0, 0, pixelRatio * camera.k, pixelRatio * camera.x, pixelRatio * camera.y);
+  drawCircles(input);
   drawLinks(input);
   drawNodes(input);
+  drawCircleLabels(input);
   drawLabels(input);
 }

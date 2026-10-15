@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, shortLabel } from "./build";
-import { labelOpacity, toWorld, zoomAt } from "./camera";
+import { labelOpacity, REVEAL_AT, revealOpacity, toWorld, zoomAt } from "./camera";
+import { clusterKeys, trunkDepth } from "./clusters";
 import { applyFilters, createdBy } from "./filters";
 import { groupColorLookup, parseGroupQuery } from "./groups";
 import { neighborhood } from "./neighborhood";
@@ -196,5 +197,33 @@ describe("claims sharing a topic label", () => {
     expect(first.label).toContain("every week");
     expect(second.label).toContain("attendance");
     expect(result.nodes).toHaveLength(graph.nodes.length);
+  });
+});
+
+describe("domain clusters", () => {
+  const split = (path: string) => path.split("/");
+
+  it("skips levels every path shares, but keeps one level below", () => {
+    expect(trunkDepth(["Co/Safety/PPE", "Co/Safety/WHMIS/Labels"].map(split))).toBe(2);
+    expect(trunkDepth(["Co/Safety/PPE", "Co/Safety"].map(split))).toBe(1);
+    expect(trunkDepth(["Co/Safety", "Other/Safety"].map(split))).toBe(0);
+    expect(trunkDepth([])).toBe(0);
+  });
+
+  it("keys a node by the two levels below the trunk, from its first path", () => {
+    expect(clusterKeys({ domainPaths: ["Co/Safety/WHMIS/Labels"] }, 2)).toEqual({ domain: "WHMIS", subdomain: "WHMIS/Labels" });
+    expect(clusterKeys({ domainPaths: ["Co/Safety/PPE"] }, 2)).toEqual({ domain: "PPE", subdomain: null });
+    expect(clusterKeys({ domainPaths: [] })).toBeNull();
+  });
+});
+
+describe("progressive zoom", () => {
+  it("hides note titles at the overview and shows them once zoomed in past the reveal", () => {
+    expect(revealOpacity(2, 2, REVEAL_AT.title)).toBe(0);
+    expect(revealOpacity(2 * REVEAL_AT.title * 1.5, 2, REVEAL_AT.title)).toBeCloseTo(1);
+  });
+
+  it("shows topic names at the overview", () => {
+    expect(revealOpacity(1, 1, REVEAL_AT.subdomain)).toBe(1);
   });
 });

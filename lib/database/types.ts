@@ -601,33 +601,53 @@ export type Database = {
       }
       sources: {
         Row: {
+          archived_at: string | null
+          byte_size: number | null
           created_at: string
           hash: string
           id: string
           mime_type: string
+          page_count: number | null
+          replaced_by_id: string | null
           source_date: string
           storage_path: string
           title: string
         }
         Insert: {
+          archived_at?: string | null
+          byte_size?: number | null
           created_at?: string
           hash: string
           id?: string
           mime_type: string
+          page_count?: number | null
+          replaced_by_id?: string | null
           source_date: string
           storage_path: string
           title: string
         }
         Update: {
+          archived_at?: string | null
+          byte_size?: number | null
           created_at?: string
           hash?: string
           id?: string
           mime_type?: string
+          page_count?: number | null
+          replaced_by_id?: string | null
           source_date?: string
           storage_path?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sources_replaced_by_id_fkey"
+            columns: ["replaced_by_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       unit_domains: {
         Row: {
@@ -719,12 +739,26 @@ export type Database = {
         }
         Relationships: []
       }
+      source_units: {
+        Row: {
+          source_id: string | null
+          unit_id: string | null
+        }
+        Relationships: []
+      }
       stale_lines: {
         Row: {
           author: Database["public"]["Enums"]["actor_kind"] | null
           line_id: string | null
           line_revision_id: string | null
           section_id: string | null
+        }
+        Relationships: []
+      }
+      unit_evidence: {
+        Row: {
+          evidence: string | null
+          unit_id: string | null
         }
         Relationships: []
       }

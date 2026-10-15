@@ -1,36 +1,22 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { RowMenu } from "@/components/row-menu/RowMenu";
 import type { Tables } from "@/lib/database/types";
 import { deletePage, renamePage } from "@/lib/server-actions/pages";
 import { ConfirmForm, TitleForm } from "./PageForms";
 
 type Page = Tables<"pages">;
 
-// ROW ACTIONS: rename and remove for one page
+// ROW ACTIONS: "…" with Rename and Remove for one page
 export function PageRowActions({ page }: { page: Page }) {
   return (
-    <div className="flex justify-end gap-1">
-      <RowDialog label="Rename">{(close) => <RenameForm page={page} onDone={close} />}</RowDialog>
-      <RowDialog label="Remove">{(close) => <DeleteForm page={page} onDone={close} />}</RowDialog>
-    </div>
-  );
-}
-
-// SMALL GHOST BUTTON THAT OPENS A DIALOG; the body gets a close callback
-function RowDialog({ label, children }: { label: string; children: (close: () => void) => ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          {label}
-        </Button>
-      </DialogTrigger>
-      <DialogContent>{isOpen ? children(() => setIsOpen(false)) : null}</DialogContent>
-    </Dialog>
+    <RowMenu
+      label={page.title}
+      items={[
+        { label: "Rename", body: (close) => <RenameForm page={page} onDone={close} /> },
+        { label: "Remove", isDestructive: true, body: (close) => <DeleteForm page={page} onDone={close} /> },
+      ]}
+    />
   );
 }
 

@@ -12,6 +12,7 @@ export type { IdTableName, ListOptions, Row, TableName } from "./fetchers";
 export { queryKeys } from "./keys";
 export { useTableList, useTableRow } from "./useTable";
 export { fetchSectionLines, type ShownLine, useSectionLines } from "./sectionLines";
+export { type ChangeContext, useChangeContexts } from "./changeContexts";
 
 // INGESTION
 export const useSources = (o: ListOptions<"sources"> = {}) =>

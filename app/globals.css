@@ -100,6 +100,8 @@
   --color-sidebar-foreground: var(--sb-text);
   --color-sidebar-border: var(--sb-border);
   --color-sidebar-accent: var(--sb-hover);
+  --color-sidebar-accent-foreground: var(--sb-text);
+  --color-sidebar-ring: var(--sb-link);
 
   /* TYPE: fonts come from next/font in app/layout.tsx */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -177,4 +179,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sb-stale-line { animation: none; }
+}
+
+/* NO SCROLLBAR: scrolls but hides the bar (the sidebar content uses it) */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }

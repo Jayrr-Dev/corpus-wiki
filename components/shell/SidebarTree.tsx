@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, useState, type ReactNode } from "react";
+import { Minus, Square } from "lucide-react";
 import { PageMenu } from "@/app/(app)/_pages/PageMenu";
 import { PageIcon } from "@/components/icons";
 import { buildPageTree, type PageNode } from "@/lib/living-page/pageHierarchy";
@@ -26,17 +27,26 @@ export function SidebarTree() {
   const isPages = pathname === "/" || pathname.startsWith("/p/");
   const isKnowledge = pathname === "/units";
   const isChanges = pathname === "/changes";
+  const [isMinimized, setIsMinimized] = useState(false);
   if (!isPages && !isKnowledge && !isChanges) return null;
+  const minimized = isPages && isMinimized;
   return (
-    <aside aria-label={isPages ? "Pages" : isChanges ? "Change filters" : "Knowledge filters"} className="hidden w-60 shrink-0 overflow-y-auto border-r bg-sidebar md:block">
-      {isPages ? (
-        <div className="p-2"><SidebarGroup title="Pages"><PagesList /></SidebarGroup></div>
-      ) : (
-        <div className="p-4">
-          <h2 className="mb-4 text-sm font-semibold">{isChanges ? "Filter changes" : "Filter knowledge"}</h2>
-          <Suspense fallback={<SidebarNote text="Loading filters…" />}>{isChanges ? <ChangeFilters /> : <KnowledgeFilters />}</Suspense>
-        </div>
-      )}
+    // floating card: inset from the edges so it reads as separate from the app sidebar;
+    // minimizing slides it shut and leaves a bare outlined square to reopen it
+    <aside aria-label={isPages ? "Pages" : isChanges ? "Change filters" : "Knowledge filters"} className={cn("relative hidden shrink-0 overflow-hidden p-2 pr-0 transition-all duration-300 ease-in-out md:block", minimized ? "w-10" : "w-64")}>
+      <button type="button" onClick={() => setIsMinimized(false)} aria-label="Expand pages" title="Expand pages" tabIndex={minimized ? 0 : -1} aria-hidden={!minimized} className={cn("absolute top-3 left-3 text-faint transition-opacity duration-300 hover:text-foreground", minimized ? "opacity-100 delay-150" : "pointer-events-none opacity-0")}>
+        <Square className="size-4" />
+      </button>
+      <div inert={minimized} className={cn("w-62 overflow-y-auto", isPages ? "h-full" : "max-h-full", " rounded-lg border bg-sidebar shadow-md transition-opacity duration-200", minimized && "pointer-events-none opacity-0")}>
+        {isPages ? (
+          <div className="p-2"><SidebarGroup title="Pages" onMinimize={() => setIsMinimized(true)}><PagesList /></SidebarGroup></div>
+        ) : (
+          <div className="p-4">
+            <h2 className="mb-4 text-sm font-semibold">{isChanges ? "Filter changes" : "Filter knowledge"}</h2>
+            <Suspense fallback={<SidebarNote text="Loading filters…" />}>{isChanges ? <ChangeFilters /> : <KnowledgeFilters />}</Suspense>
+          </div>
+        )}
+      </div>
     </aside>
   );
 }
@@ -63,18 +73,25 @@ function KnowledgeFilters() {
   );
 }
 // COLLAPSIBLE GROUP WITH A SMALL CAPS HEADER
-function SidebarGroup({ title, children }: { title: string; children: ReactNode }) {
+function SidebarGroup({ title, onMinimize, children }: { title: string; onMinimize?: () => void; children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <section>
-      <button
-        type="button"
-        onClick={() => setIsOpen((open) => !open)}
-        aria-expanded={isOpen}
-        className="w-full px-1.5 py-1 text-left text-xs font-medium tracking-wide text-faint uppercase hover:text-muted-foreground"
-      >
-        {title}
-      </button>
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => setIsOpen((open) => !open)}
+          aria-expanded={isOpen}
+          className="flex-1 px-1.5 py-1 text-left text-xs font-medium tracking-wide text-faint uppercase hover:text-muted-foreground"
+        >
+          {title}
+        </button>
+        {onMinimize ? (
+          <button type="button" onClick={onMinimize} aria-label={`Minimize ${title.toLowerCase()}`} title="Minimize" className="flex size-6 items-center justify-center text-faint hover:text-foreground">
+            <Minus className="size-3.5" />
+          </button>
+        ) : null}
+      </div>
       {isOpen ? children : null}
     </section>
   );

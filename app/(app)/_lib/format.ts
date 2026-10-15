@@ -21,6 +21,19 @@ export function toDateInputValue(epochMs: number): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+// FILE SIZE in the largest unit that keeps it at or above 1 ("2.4 MB", "830 KB")
+export function formatBytes(bytes: number | null | undefined): string {
+  if (bytes === null || bytes === undefined) return "—";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${unit === 0 || value >= 10 ? Math.round(value) : value.toFixed(1)} ${units[unit]}`;
+}
+
 // TOKENS IN / OUT of an AI draft ("—" for a person's edit)
 export function formatTokens(changeSet: { tokens_in: number | null; tokens_out: number | null }): string {
   if (changeSet.tokens_in === null && changeSet.tokens_out === null) return "—";

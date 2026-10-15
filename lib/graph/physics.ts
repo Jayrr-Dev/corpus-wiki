@@ -9,6 +9,7 @@ import {
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from "d3-force";
+import { clusterOf, forceClusters, keysFor } from "./clusters";
 import type { GraphForces } from "./settings";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -18,6 +19,7 @@ import type { GraphData, GraphLink, GraphNode } from "./types";
 //   Repel force   -> forceManyBody (negative charge)
 //   Link force    -> forceLink strength
 //   Link distance -> forceLink distance
+//   Domain pull   -> forceClusters (dots gather by domain and subdomain)
 // A collide force keeps dots from overlapping. The simulation stops by
 // itself once the layout settles (d3's alpha decay), so an idle graph
 // uses no CPU.
@@ -33,6 +35,9 @@ const CENTER_SCALE = 0.1;
 const REPEL_SCALE = 15;
 const LINK_SCALE = 0.5;
 const REPEL_REACH = 800;
+const CLUSTER_SCALE = 1;
+// At full domain pull, links between groups keep this little of their strength (1 - CROSS_SLACK)
+const CROSS_SLACK = 0.9;
 // Derived "similar" links pull this much as hard as stored ones, so real relationships shape the layout
 const SIMILAR_PULL = 0.5;
 
@@ -47,10 +52,22 @@ export function applyForces(simulation: GraphSimulation, forces: GraphForces, no
     .force("x", forceX<SimNode>(0).strength(forces.center * CENTER_SCALE))
     .force("y", forceY<SimNode>(0).strength(forces.center * CENTER_SCALE))
     .force("charge", forceManyBody<SimNode>().strength(-forces.repel * REPEL_SCALE).distanceMax(REPEL_REACH))
-    .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2));
+    .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2))
+    .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE));
   const link = simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link");
   const strength = forces.link * LINK_SCALE;
-  link?.strength((candidate) => (candidate.kind === "similar" ? strength * SIMILAR_PULL : strength)).distance(forces.linkDistance);
+  // Links between different domain groups slacken as the domain pull rises, so groups can sit apart
+  const keys = keysFor(simulation.nodes());
+  const crossing = (candidate: SimLink) => {
+    const [from, to] = [candidate.source, candidate.target].map((end) => (typeof end === "object" ? clusterOf(keys.get(end)) : undefined));
+    return from !== undefined && to !== undefined && from !== to;
+  };
+  link
+    ?.strength((candidate) => {
+      const base = candidate.kind === "similar" ? strength * SIMILAR_PULL : strength;
+      return crossing(candidate) ? base * (1 - Math.min(1, forces.cluster) * CROSS_SLACK) : base;
+    })
+    .distance(forces.linkDistance);
 }
 
 // How far from a placed neighbor a new dot starts

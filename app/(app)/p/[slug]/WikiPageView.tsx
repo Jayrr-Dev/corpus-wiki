@@ -32,6 +32,7 @@ export function WikiPageView({ slug }: { slug: string }) {
 
 function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
+  const [showEmpty, setShowEmpty] = useState(false);
   const sectionsQuery = useSections({ filters: { page_id: page.id } });
   const sections = sectionsQuery.data ?? [];
   const linesQuery = useSectionLines(page.id);
@@ -49,7 +50,11 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   useRealtimeInvalidation("change_notes");
   const selected = lines.find((line) => line.lineId === selectedLineId);
   const introduction = sections.find((section) => section.title.toLowerCase() === "overview");
-  const topics = sections.filter((section) => section.id !== introduction?.id);
+  // A finished section with no lines is hidden; one still being written keeps its placeholder.
+  const isEmpty = (section: Tables<"sections">) => !linesQuery.isPending && section.status === "current" && !lines.some((line) => line.sectionId === section.id);
+  const allTopics = sections.filter((section) => section.id !== introduction?.id);
+  const emptyCount = allTopics.filter(isEmpty).length;
+  const topics = showEmpty ? allTopics : allTopics.filter((section) => !isEmpty(section));
   const error = sectionsQuery.error?.message ?? linesQuery.error?.message;
   const renderSection = (section: Tables<"sections">, hideHeading = false) => (
     <ErrorBoundary key={section.id} where={`The section "${section.title}"`}>
@@ -89,6 +94,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           {children.length ? <section aria-label="Subpages" className="rounded-md border p-4"><h2 className="mb-2 font-semibold">Explore this topic</h2><ul className="grid gap-2 sm:grid-cols-2">{children.map((child) => <li key={child.id}><Link href={`/p/${child.slug}`} className="text-link hover:underline">{child.title}</Link></li>)}</ul></section> : null}
           {introduction ? renderSection(introduction, true) : null}
           {topics.map((section) => renderSection(section))}
+          {emptyCount ? <button type="button" onClick={() => setShowEmpty((shown) => !shown)} className="text-panel text-faint hover:text-link">{showEmpty ? "Hide" : "Show"} {emptyCount} empty {emptyCount === 1 ? "section" : "sections"}</button> : null}
           <section id="article-see-also" className="scroll-mt-6 border-t pt-5">
             <h2 className="mb-3 font-serif text-2xl">See also</h2>
             {related.length ? <ul className="list-disc space-y-1 pl-5 text-body">{related.map((other) => <li key={other.id}><Link href={`/p/${other.slug}`} className="text-link hover:underline">{other.title}</Link></li>)}</ul> : <p className="text-panel text-faint">Related articles will appear as the knowledge base grows.</p>}

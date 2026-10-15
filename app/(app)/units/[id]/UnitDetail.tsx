@@ -1,6 +1,6 @@
 "use client";
 
-import { Note, QueryState } from "@/app/(app)/_components/bits";
+import { EvidenceBadge, Note, QueryState } from "@/app/(app)/_components/bits";
 import { formatDate, humanize } from "@/app/(app)/_lib/format";
 import { UnitActionButtons } from "@/components/actions/ActionDialog";
 import { ReadingPane } from "@/components/shell";
@@ -46,6 +46,7 @@ function UnitHeader({ unit }: { unit: UnitSummary }) {
         <span className="text-faint">·</span>
         <span className="font-mono">valid from {formatDate(unit.valid_from)}</span>
         {unit.retired_at ? <span className="font-mono text-faint">retired {formatDate(unit.retired_at)}</span> : null}
+        <EvidenceBadge evidence={unit.evidence} />
       </p>
       <p className="text-body">{unit.content}</p>
       <UnitActionButtons unit={unit} />

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { StatusGlyph } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { type ShownLine, useLineRevisions, useRevision, useUnit } from "@/lib/queries";
+import { type ShownLine, useChangeNotes, useLineRevisions, useRevision, useUnit } from "@/lib/queries";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { submitEdit, submitLineEdit } from "@/lib/server-actions/knowledge";
 import { removeLine } from "@/lib/server-actions/pages";
@@ -29,6 +29,7 @@ export function LinePanel({ line }: { line: ShownLine }) {
       ))}
       <PanelHeading>History</PanelHeading>
       <LineHistory lineId={line.lineId} />
+      <SectionChanges sectionId={line.sectionId} />
     </div>
   );
 }
@@ -127,5 +128,24 @@ function LineHistory({ lineId }: { lineId: string }) {
         </li>
       ))}
     </ol>
+  );
+}
+
+// RECENT CHANGES TO THE SECTION this line sits in, newest first
+function SectionChanges({ sectionId }: { sectionId: string }) {
+  const { data: notes = [] } = useChangeNotes({ filters: { section_id: sectionId }, limit: 3 });
+  if (!notes.length) return null;
+  return (
+    <>
+      <PanelHeading>Section changes</PanelHeading>
+      <ol className="flex flex-col gap-2">
+        {notes.map((note) => (
+          <li key={note.id} className="flex flex-col text-panel">
+            <span>{note.summary}</span>
+            <span className="text-faint">{historyDate.format(new Date(note.created_at))}</span>
+          </li>
+        ))}
+      </ol>
+    </>
   );
 }
