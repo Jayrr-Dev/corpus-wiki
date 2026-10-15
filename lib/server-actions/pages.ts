@@ -11,7 +11,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { type CommitResult, commitPersonEdit, submitChangeSet, commitChangeSet } from "@/lib/change-control";
 import { rebuildPage, type SectionRef } from "@/lib/living-page";
 import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
-import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
+import { discoverArticleUpdates, repairEmptyIntroductions } from "@/lib/living-page/discoverArticleUpdates";
 import { articleUpdateSchema, type ArticleUpdateRequest } from "@/lib/living-page/updateRequest";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -187,11 +187,12 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
       const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
       if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
       settings.skills = await loadStageSkills(db);
+      const repairs = await repairEmptyIntroductions(db, admin, request.id);
       const additions = await discoverArticleUpdates(db, admin, settings, request.id, request.note);
-      if (additions.length) {
-        const actions: DraftAction[] = additions.map((section) => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: request.id, ...section } }));
+      if (additions.length || repairs.length) {
+        const actions: DraftAction[] = [...repairs, ...additions.map((section): DraftAction => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: request.id, ...section } }))];
         const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
-          summary: "Added newly available knowledge to article", actions,
+          summary: "Updated article knowledge selections and introduction", actions,
           trace: { modelVersion: settings.model ?? null, promptVersion: skillTrace("article-update-discovery-v1", ["plan_articles"], settings.skills), tokensIn: null, tokensOut: null },
         });
         const result = await commitChangeSet(db, changeSetId);

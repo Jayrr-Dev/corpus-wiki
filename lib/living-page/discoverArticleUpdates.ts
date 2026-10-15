@@ -3,7 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import { skillInstructions } from "@/lib/ai/skills/prompt";
-import type { SectionDraft, SectionQuery } from "@/lib/ai/types";
+import type { DraftAction, SectionDraft, SectionQuery } from "@/lib/ai/types";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import type { SectionUnit } from "./types";
@@ -73,4 +73,30 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
     added.push(...discoverySections(answer.value, batch));
   }
   return added;
+}
+
+
+// A definition can disappear while facts about the topic remain. Repair an empty
+// generated lead through reversible section actions, never by editing a query row.
+export async function repairEmptyIntroductions(db: DbRpc, client: AdminSupabase, pageId: string): Promise<DraftAction[]> {
+  const { data: sections, error } = await client.from("sections").select("id, title, query, mode").eq("page_id", pageId).is("retired_at", null);
+  if (error) throw new Error(error.message);
+  const actions: DraftAction[] = [];
+  const base = { targetId: null, expectedRevisionId: null, passageIds: [], speechAct: null };
+  for (const section of sections ?? []) {
+    if (section.mode !== "generated" || section.title.toLowerCase() !== "overview") continue;
+    const state = await db.call<import("./types").SectionState>("read_section_state", { p_section_id: section.id });
+    if (state.units.length || state.lines.some((line) => line.author === "person")) continue;
+    const query = { ...((section.query ?? {}) as SectionQuery) };
+    if (!query.entity && !query.domainPaths?.length) continue;
+    delete query.unitIds;
+    delete query.kinds;
+    const ids = await db.call<string[]>("living_page_query_units", { p_query: query });
+    if (!ids.length) continue;
+    actions.push(
+      { ...base, type: "retire_section", targetId: section.id, input: {} },
+      { ...base, type: "create_section", input: { pageId, title: "Overview", query: { ...query, unitIds: ids.slice(0, 3) } } },
+    );
+  }
+  return actions;
 }

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { discoverArticleUpdates, discoveryQueries, discoverySections } from "./discoverArticleUpdates";
+import { discoverArticleUpdates, discoveryQueries, discoverySections, repairEmptyIntroductions } from "./discoverArticleUpdates";
 import { articleUpdateSchema } from "./updateRequest";
 
 const entity = { type: "company", key: "example" };
@@ -45,4 +45,18 @@ it("discovers relevant new claims using current planning skills and the one-run 
   const user = JSON.parse(request.messages.find((message: { role: string }) => message.role === "user").content);
   expect(user.note).toBe("Explain new requirements clearly.");
   expect(user.claims).toEqual([{ ref: "C1", content: candidate.content, status: "established" }]);
+});
+
+it("repairs an empty definition-only lead from scoped current facts, preserving manual leads", async () => {
+  const chain = { select: () => chain, eq: () => chain, is: async () => ({ error: null, data: [{ id: "overview", title: "Overview", mode: "generated", query: { entity, kinds: ["definition"], article: true } }] }) };
+  const client = { from: () => chain } as unknown as import("@/lib/supabase/admin").AdminSupabase;
+  let manual = false;
+  const call = vi.fn(async (name: string) => name === "read_section_state" ? { units: [], lines: manual ? [{ author: "person" }] : [] } : ["current-fact"]);
+  const db = { call: call as import("@/lib/db/rpc").DbRpc["call"] };
+  const actions = await repairEmptyIntroductions(db, client, "page");
+  expect(actions.map((action) => action.type)).toEqual(["retire_section", "create_section"]);
+  expect(actions[1]?.input).toMatchObject({ title: "Overview", query: { entity, unitIds: ["current-fact"] } });
+  expect((actions[1]?.input as { query: object }).query).not.toHaveProperty("kinds");
+  manual = true;
+  expect(await repairEmptyIntroductions(db, client, "page")).toEqual([]);
 });
