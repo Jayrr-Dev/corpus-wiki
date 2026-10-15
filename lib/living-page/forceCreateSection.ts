@@ -48,7 +48,6 @@ export async function forceCreateSection(deps: ForceCreateDeps, sectionId: strin
   const sources: ForceCreateResult["sources"] = [];
   const external: Candidate[] = [];
   if (useWeb) {
-    if (!deps.webSearchKey) throw new Error("Web search is not set up. Add TAVILY_API_KEY to the server's environment, or turn off Search the web.");
     const query = await searchQuery(deps.settings, page.title, section.title, note);
     for (const result of await searchWeb(deps.webSearchKey, query)) {
       const started = await startExternalSource({ title: result.title, url: result.url, text: result.text, sourceDate: (result.publishedDate ?? new Date().toISOString()).slice(0, 10) });

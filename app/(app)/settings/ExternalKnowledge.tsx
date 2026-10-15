@@ -26,7 +26,7 @@ export function ExternalKnowledge({ enabled, ready }: { enabled: boolean; ready:
         </div>
         <Switch id="external-knowledge" checked={enabled} disabled={save.isPending} onCheckedChange={(next) => void apply(next)} />
       </div>
-      {enabled && !ready ? <p className="text-panel text-muted-foreground">Web search isn&apos;t set up yet. Add TAVILY_API_KEY to the server&apos;s environment.</p> : null}
+      {enabled && !ready ? <p className="text-panel text-muted-foreground">Searching Wikipedia only. Add TAVILY_API_KEY to the server&apos;s environment to search the whole web.</p> : null}
       <ErrorNote error={save.error} />
     </div>
   );

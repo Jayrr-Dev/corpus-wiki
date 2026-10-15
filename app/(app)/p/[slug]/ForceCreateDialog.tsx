@@ -86,7 +86,7 @@ function WebSearchChoice({ id, options, checked, disabled, onChange }: { id: str
       <label htmlFor={id} className="text-panel font-medium">Search the web</label>
       <Switch id={id} checked={checked} onCheckedChange={onChange} disabled={disabled || !options.webReady} />
     </div>
-    <p className="text-xs text-muted-foreground">{options.webReady ? "Pages it uses are saved as external sources. Their knowledge only adds to yours." : "Web search isn't set up yet. Add TAVILY_API_KEY to the server's environment."}</p>
+    <p className="text-xs text-muted-foreground">{options.webReady ? "Pages it uses are saved as external sources. Their knowledge only adds to yours." : "Searches Wikipedia. Pages it uses are saved as external sources."}</p>
   </div>;
 }
 

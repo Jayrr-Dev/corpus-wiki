@@ -16,6 +16,7 @@ import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
 import { discoverArticleUpdates, repairEmptyIntroductions } from "@/lib/living-page/discoverArticleUpdates";
 import { pageAndDescendants } from "@/lib/living-page/pageHierarchy";
 import { articleUpdateSchema, type ArticleUpdateRequest } from "@/lib/living-page/updateRequest";
+import { after } from "next/server";
 import { z } from "zod";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -39,7 +40,7 @@ export async function createPage(input: { title: string; entityId: string | null
     const pageId = await commitOne(`Created page “${input.title.trim()}”`, action);
     const { db, writer } = await getServerDeps();
     await rebuildPage(db, writer, pageId);
-    if (input.entityId) await fillFromWebIfAllowed(await pageSectionIds(pageId), "");
+    if (input.entityId) fillFromWebLater(await pageSectionIds(pageId), "");
     return { pageId, slug: await pageSlug(pageId) };
   });
 }
@@ -70,7 +71,7 @@ export async function createSection(input: { pageId: string; title: string; enti
     const sectionId = await commitOne(`Added section “${section.title.trim()}”`, { ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: input.pageId, ...section } });
     const { db, writer } = await getServerDeps();
     await rebuildPage(db, writer, input.pageId);
-    await fillFromWebIfAllowed([sectionId], "");
+    fillFromWebLater([sectionId], "");
     return {};
   });
 }
@@ -119,18 +120,30 @@ async function commitOne(summary: string, action: DraftAction): Promise<string> 
 
 // Web searches one article build may run, so a large update cannot run up the search bill
 const MAX_WEB_FILLS = 5;
+// Sections a background web fill is working on, so a second build does not search them again meanwhile
+const webFilling = new Set<string>();
 
-// EXTERNAL KNOWLEDGE: when Settings allows it and a search key is set, thin sections among
-// sectionIds are also filled from the web (see fillThinSectionsFromWeb). Returns the sections it rebuilt.
-async function fillFromWebIfAllowed(sectionIds: string[], note: string, maxSearches = MAX_WEB_FILLS): Promise<Set<string>> {
-  const key = webSearchKey();
-  if (!key || !sectionIds.length || maxSearches < 1) return new Set();
-  const { db, writer } = await getServerDeps();
-  if (writer.name === "fake" || !(await readAllowExternalKnowledge(db))) return new Set();
-  const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
-  if (!settings) return new Set();
-  settings.skills = await loadStageSkills(db);
-  return new Set(await fillThinSectionsFromWeb({ db, client: getAdminSupabase(), settings, writer, webSearchKey: key }, sectionIds, note, maxSearches));
+// EXTERNAL KNOWLEDGE: when Settings allows it, thin sections among sectionIds are also filled from the
+// web (see fillThinSectionsFromWeb). It runs after the response, so the build that asked for it returns
+// at once and the page shows the new claims when the fill lands; a failure is only logged.
+function fillFromWebLater(sectionIds: string[], note: string): void {
+  const ids = sectionIds.filter((id) => !webFilling.has(id));
+  if (!ids.length) return;
+  for (const id of ids) webFilling.add(id);
+  after(async () => {
+    try {
+      const { db, writer } = await getServerDeps();
+      if (writer.name === "fake" || !(await readAllowExternalKnowledge(db))) return;
+      const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+      if (!settings) return;
+      settings.skills = await loadStageSkills(db);
+      await fillThinSectionsFromWeb({ db, client: getAdminSupabase(), settings, writer, webSearchKey: webSearchKey() }, ids, note, MAX_WEB_FILLS);
+    } catch (error) {
+      console.warn("Web fill failed:", error instanceof Error ? error.message : error);
+    } finally {
+      for (const id of ids) webFilling.delete(id);
+    }
+  });
 }
 
 async function pageSectionIds(pageId: string): Promise<string[]> {
@@ -178,7 +191,7 @@ export async function improveArticle(pageId: string): Promise<ActionResult> {
     const result = await commitPersonEdit(db, "Organized article by subject with a content-based title", actions);
     if (result.status !== "applied") throw new Error("The article structure was not fully applied. Review the change set in Changes.");
     await rebuildPage(db, writer, pageId);
-    await fillFromWebIfAllowed(await pageSectionIds(pageId), "");
+    fillFromWebLater(await pageSectionIds(pageId), "");
     return {};
   });
 }
@@ -212,7 +225,8 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
     if (request.scope === "section") {
       const { error } = await admin.from("sections").select("id").eq("id", request.id).is("retired_at", null).single();
       if (error) throw new Error("This article or section is no longer available. Reload the page and try again.");
-      if (!(await fillFromWebIfAllowed([request.id], request.note, 1)).size) await refreshSectionStyle(db, writer, request.id, request.note);
+      await refreshSectionStyle(db, writer, request.id, request.note);
+      fillFromWebLater([request.id], request.note);
       return { sections: 1 };
     }
     const { data: pages, error } = await admin.from("pages").select("id, parent_page_id").is("retired_at", null);
@@ -223,7 +237,7 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
     if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
     settings.skills = await loadStageSkills(db);
     let completed = 0;
-    let webFills = 0;
+    const webFillIds: string[] = [];
     try {
       for (const pageId of pageIds) {
         const repairs = await repairEmptyIntroductions(db, admin, pageId);
@@ -237,31 +251,31 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
           const result = await commitChangeSet(db, changeSetId);
           if (result.status !== "applied") throw new Error("New sections were not fully applied. Review Changes before retrying.");
         }
-        const filled = await fillFromWebIfAllowed(await pageSectionIds(pageId), request.note, MAX_WEB_FILLS - webFills);
-        webFills += filled.size;
         const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
         if (!sections.length && pageIds.length === 1) throw new Error("Add a generated section before updating this article.");
         for (const section of sections) {
-          // A section filled from the web was just rebuilt
-          if (!filled.has(section.sectionId)) await refreshSectionStyle(db, writer, section.sectionId, request.note);
+          await refreshSectionStyle(db, writer, section.sectionId, request.note);
           completed++;
         }
+        webFillIds.push(...sections.map((section) => section.sectionId));
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : "The AI update failed.";
       throw new Error(`${completed ? `${completed} section(s) updated before the update stopped. ` : ""}${detail}`);
     }
     if (!completed) throw new Error("Add a generated section before updating this article.");
+    fillFromWebLater(webFillIds, request.note);
     return { sections: completed };
   });
 }
 
-// FORCE CREATE OPTIONS: whether the dialog may offer a web search (allowed on /settings, and a search key is set)
+// FORCE CREATE OPTIONS: whether the dialog may offer a web search (allowed on /settings)
 export async function forceCreateOptions(): Promise<ActionResult<{ webAllowed: boolean; webReady: boolean }>> {
   return toActionResult(async () => {
     await requireUser();
     const { db } = await getServerDeps();
-    return { webAllowed: await readAllowExternalKnowledge(db), webReady: webSearchKey() !== null };
+    // Wikipedia needs no key, so the web is always reachable
+    return { webAllowed: await readAllowExternalKnowledge(db), webReady: true };
   });
 }
 

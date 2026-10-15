@@ -76,11 +76,12 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
     setEditingLineId(null);
   };
   const selectedSection = sections.find((section) => section.id === selectedSectionId);
-  const introduction = sections.find((section) => section.title.toLowerCase() === "overview");
+  const overview = sections.find((section) => section.title.toLowerCase() === "overview");
   // A finished section with no lines is hidden; one still being written keeps its placeholder.
   const isEmpty = (section: Tables<"sections">) => !linesQuery.isPending && section.status === "current" && !lines.some((line) => line.sectionId === section.id);
-  const allTopics = sections.filter((section) => section.id !== introduction?.id);
-  const emptyCount = allTopics.filter(isEmpty).length;
+  const introduction = overview && (showEmpty || !isEmpty(overview)) ? overview : undefined;
+  const allTopics = sections.filter((section) => section.id !== overview?.id);
+  const emptyCount = allTopics.filter(isEmpty).length + (overview && isEmpty(overview) ? 1 : 0);
   const topics = showEmpty ? allTopics : allTopics.filter((section) => !isEmpty(section));
   const error = sectionsQuery.error?.message ?? linesQuery.error?.message;
   const renderSection = (section: Tables<"sections">, hideHeading = false) => (
