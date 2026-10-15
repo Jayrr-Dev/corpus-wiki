@@ -21,6 +21,7 @@ export type ShownLine = {
   unitRevisionIds: string[];
   author: Enums<"actor_kind">;
   isStale: boolean;
+  lastChangedAt: string;
 };
 
 type ViewRow = Database["public"]["Views"]["section_lines"]["Row"];
@@ -43,6 +44,7 @@ function toShownLine(row: ViewRow): ShownLine {
     unitRevisionIds: row.unit_revision_ids ?? [],
     author: row.author ?? "ai",
     isStale: row.is_stale ?? false,
+    lastChangedAt: row.last_changed_at ?? "",
   };
 }
 

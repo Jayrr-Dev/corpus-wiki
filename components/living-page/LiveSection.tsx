@@ -47,7 +47,7 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, menu, ev
                   return <sup key={reference.number} className="ml-0.5 text-xs"><a id={reference.anchorId} href={`#reference-${reference.number}`} title={`${reference.title}${reference.citedPages.length ? `, pages ${formatReferencePages(reference.citedPages)}` : ""}`} aria-label={`Source ${reference.number}: ${reference.title}`} className="text-link hover:underline">[{reference.number}]</a></sup>;
                 })}
                 {!references.length && evidence ? <span className="ml-1 text-xs text-faint">[source needed]</span> : null}
-                <button type="button" onClick={() => onSelect(line)} aria-label="View evidence and edit this paragraph" className="ml-2 text-xs text-faint opacity-0 transition-opacity group-hover/paragraph:opacity-100 focus-visible:opacity-100 hover:text-link">details</button>
+                <button type="button" onClick={() => onSelect(line)} aria-label="View evidence and edit this paragraph" className="ml-2 text-xs text-faint opacity-0 transition-opacity group-hover/paragraph:opacity-100 focus-visible:opacity-100 hover:text-link">{line.lastChangedAt ? `Updated ${noteDate.format(new Date(line.lastChangedAt))}` : "details"}</button>
               </p>
             );
           })}

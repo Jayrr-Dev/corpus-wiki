@@ -10,6 +10,8 @@ import type { Tables } from "@/lib/database/types";
 import { useDomains, useEntities, usePages } from "@/lib/queries";
 import { UnitFilterBar } from "@/app/(app)/units/UnitFilterBar";
 import { useUnitFilters } from "@/app/(app)/units/useUnitFilters";
+import { ChangeFilterBar } from "@/app/(app)/changes/ChangeFilterBar";
+import { useChangeFilters } from "@/app/(app)/changes/useChangeFilters";
 import { cn } from "@/lib/utils";
 
 // ROW STYLE SHARED BY PAGE AND DOMAIN ROWS
@@ -23,18 +25,29 @@ export function SidebarTree() {
   const pathname = usePathname();
   const isPages = pathname === "/" || pathname.startsWith("/p/");
   const isKnowledge = pathname === "/units";
-  if (!isPages && !isKnowledge) return null;
+  const isChanges = pathname === "/changes";
+  if (!isPages && !isKnowledge && !isChanges) return null;
   return (
-    <aside aria-label={isPages ? "Pages" : "Knowledge filters"} className="hidden w-60 shrink-0 overflow-y-auto border-r bg-sidebar md:block">
+    <aside aria-label={isPages ? "Pages" : isChanges ? "Change filters" : "Knowledge filters"} className="hidden w-60 shrink-0 overflow-y-auto border-r bg-sidebar md:block">
       {isPages ? (
         <div className="p-2"><SidebarGroup title="Pages"><PagesList /></SidebarGroup></div>
       ) : (
         <div className="p-4">
-          <h2 className="mb-4 text-sm font-semibold">Filter knowledge</h2>
-          <Suspense fallback={<SidebarNote text="Loading filters…" />}><KnowledgeFilters /></Suspense>
+          <h2 className="mb-4 text-sm font-semibold">{isChanges ? "Filter changes" : "Filter knowledge"}</h2>
+          <Suspense fallback={<SidebarNote text="Loading filters…" />}>{isChanges ? <ChangeFilters /> : <KnowledgeFilters />}</Suspense>
         </div>
       )}
     </aside>
+  );
+}
+
+function ChangeFilters() {
+  const filterState = useChangeFilters();
+  return (
+    <div className="flex flex-col gap-4">
+      <ChangeFilterBar {...filterState} vertical />
+      <button type="button" onClick={() => filterState.resetFilters()} className="self-start text-xs text-muted-foreground hover:text-foreground">Reset filters</button>
+    </div>
   );
 }
 

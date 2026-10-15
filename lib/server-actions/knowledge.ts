@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { requireUser } from "@/lib/auth/requireUser";
 import { commitPersonAction, type CommitResult, type PersonAction, resolveException, revertChangeSet } from "@/lib/change-control";
 import { commitLineEdit, rebuildAfterEvent } from "@/lib/living-page";
@@ -50,7 +51,9 @@ export async function answerException(exceptionId: string, accept: boolean, note
     await requireUser();
     const { db, writer } = await getServerDeps();
     const { eventId } = await resolveException(db, { exceptionId, accept, note });
-    if (eventId) await rebuildAfterEvent(db, writer, eventId);
+    // The answer is saved; page rewrites are AI calls, so they run after the response.
+    // A failed rewrite puts its section back to stale rather than leaving it building.
+    if (eventId) after(() => rebuildAfterEvent(db, writer, eventId).catch((error) => console.error("rebuild after exception answer failed", error)));
     return {};
   });
 }
