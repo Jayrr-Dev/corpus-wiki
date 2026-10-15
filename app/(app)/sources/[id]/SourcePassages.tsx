@@ -36,7 +36,7 @@ type PassageItemProps = { passage: Tables<"passages">; actions: Tables<"actions"
 // ONE PASSAGE: position and location, the text, then what it produced
 function PassageItem({ passage, actions, unitById }: PassageItemProps) {
   return (
-    <li className="flex flex-col gap-1.5">
+    <li id={`passage-${passage.id}`} className="flex scroll-mt-6 flex-col gap-1.5 target:bg-hover">
       <p className="flex gap-2 text-xs text-faint">
         <span className="font-mono">#{passage.position}</span>
         <span>{formatLocation(passage.location)}</span>

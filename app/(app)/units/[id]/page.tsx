@@ -1,5 +1,5 @@
 import { LocalGraph } from "@/components/graph";
-import { ReadingPane, RightPanelSlot } from "@/components/shell";
+import { RightPanelSlot } from "@/components/shell";
 import { UnitDetail } from "./UnitDetail";
 
 type UnitDetailPageProps = { params: Promise<{ id: string }> };
@@ -8,11 +8,11 @@ type UnitDetailPageProps = { params: Promise<{ id: string }> };
 export default async function UnitDetailPage({ params }: UnitDetailPageProps) {
   const { id } = await params;
   return (
-    <ReadingPane title="Unit" width="prose">
+    <>
       <UnitDetail unitId={id} />
       <RightPanelSlot>
         <LocalGraph centerId={id} />
       </RightPanelSlot>
-    </ReadingPane>
+    </>
   );
 }

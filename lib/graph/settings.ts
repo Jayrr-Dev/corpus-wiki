@@ -31,7 +31,7 @@ export interface GraphSettings {
 
 // DEFAULTS: units and orphans shown, extra layers off, no groups until the person adds one
 export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
-  filters: { search: "", showEntities: false, showPages: false, showOrphans: true },
+  filters: { search: "", showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
   groups: [],
   display: { arrows: false, textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
   forces: { center: 0.5, repel: 10, link: 1, linkDistance: 60 },
@@ -59,10 +59,20 @@ export const FORCE_SLIDERS: readonly SliderRule<keyof GraphForces>[] = [
   { key: "linkDistance", label: "Link distance", min: 10, max: 300, step: 1 },
 ];
 
+const DEFAULT_RELATED = { showRelated: DEFAULT_GRAPH_SETTINGS.filters.showRelated, relatedness: DEFAULT_GRAPH_SETTINGS.filters.relatedness };
+
 // SAVED SETTINGS SCHEMA: anything stored that no longer fits falls back to the default
 const colorTokens = GRAPH_COLORS.map((color) => color.token) as [GraphGroup["color"], ...GraphGroup["color"][]];
 const settingsSchema = z.object({
-  filters: z.object({ search: z.string(), showEntities: z.boolean(), showPages: z.boolean(), showOrphans: z.boolean() }),
+  // Fields added later default, so older saved settings keep everything else
+  filters: z.object({
+    search: z.string(),
+    showEntities: z.boolean(),
+    showPages: z.boolean(),
+    showOrphans: z.boolean(),
+    showRelated: z.boolean().default(DEFAULT_RELATED.showRelated),
+    relatedness: z.number().default(DEFAULT_RELATED.relatedness),
+  }),
   groups: z.array(z.object({ id: z.string(), query: z.string(), color: z.enum(colorTokens) })),
   display: z.object({ arrows: z.boolean(), textFadeThreshold: z.number(), nodeSize: z.number(), linkThickness: z.number() }),
   forces: z.object({ center: z.number(), repel: z.number(), link: z.number(), linkDistance: z.number() }),

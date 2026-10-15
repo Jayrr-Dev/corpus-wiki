@@ -3,6 +3,7 @@
 import { Note, QueryState } from "@/app/(app)/_components/bits";
 import { formatDate, humanize } from "@/app/(app)/_lib/format";
 import { UnitActionButtons } from "@/components/actions/ActionDialog";
+import { ReadingPane } from "@/components/shell";
 import { StatusGlyph } from "@/components/icons";
 import { type UnitSummary, useUnitSummaries } from "@/lib/queries/screens";
 import { UnitAbout } from "./UnitAbout";
@@ -15,6 +16,7 @@ export function UnitDetail({ unitId }: { unitId: string }) {
   const query = useUnitSummaries([unitId]);
   const unit = query.data?.[0];
   return (
+    <ReadingPane title={unit?.label ?? "Knowledge"} width="prose">
     <QueryState query={query}>
       {unit ? (
         <div className="flex flex-col gap-6">
@@ -28,6 +30,7 @@ export function UnitDetail({ unitId }: { unitId: string }) {
         <Note>No unit with this id.</Note>
       )}
     </QueryState>
+    </ReadingPane>
   );
 }
 

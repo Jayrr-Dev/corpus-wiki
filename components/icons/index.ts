@@ -1,4 +1,4 @@
-// ICON SET: 14 objects/actions + the epistemic status glyph. No icon library.
+// ICON SET: object/action icons + the epistemic status glyph. No icon library.
 export { ChangeIcon } from "./Change";
 export { DomainIcon } from "./Domain";
 export { EntityIcon } from "./Entity";
@@ -7,6 +7,7 @@ export { GraphIcon } from "./Graph";
 export { HelpIcon } from "./Help";
 export type { IconProps } from "./IconBase";
 export { LinkIcon } from "./Link";
+export { MoreIcon } from "./More";
 export { PageIcon } from "./Page";
 export { PassageIcon } from "./Passage";
 export { SettingsIcon } from "./Settings";
@@ -16,3 +17,5 @@ export { StatusGlyph, type StatusGlyphProps } from "./StatusGlyph";
 export { UndoIcon } from "./Undo";
 export { UnitIcon } from "./Unit";
 export { UploadIcon } from "./Upload";
+
+export { SkillIcon } from "./Skill";

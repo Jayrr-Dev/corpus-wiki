@@ -51,3 +51,50 @@ describe("answerToActions", () => {
     expect(answerToActions({ summary: "", claims: [claim({ passages: ["P9"] })] }, INPUT)).toEqual([]);
   });
 });
+
+describe("answerToActions links", () => {
+  const link = (from: string, to: string, type: "related_to" | "supports" = "related_to") => ({ from, to, type, reason: "" });
+
+  it("puts links last, naming a new claim by its add_claim's position and an existing unit by id", () => {
+    const actions = answerToActions(
+      { summary: "", claims: [claim({ content: "Billing is owned by finance." })], links: [link("C1", "U1", "supports")] },
+      INPUT,
+    );
+    expect(actions.map((a) => a.type)).toEqual(["add_claim", "link"]);
+    expect(actions[1]).toMatchObject({ targetId: null, input: { toUnitId: "u1", type: "supports", fromPosition: 0 } });
+  });
+
+  it("links two new claims by position, after the domain and entity creates", () => {
+    const actions = answerToActions(
+      { summary: "", claims: [claim({ domainPaths: ["Teams"] }), claim({ passages: ["P2"] })], links: [link("C2", "C1")] },
+      INPUT,
+    );
+    expect(actions.map((a) => a.type)).toEqual(["create_domain", "add_claim", "add_claim", "link"]);
+    expect(actions[3]).toMatchObject({ targetId: null, input: { toUnitId: null, fromPosition: 2, toPosition: 1 } });
+  });
+
+  it("links a revised claim through its existing unit", () => {
+    const actions = answerToActions(
+      { summary: "", claims: [claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL." }), claim({ passages: ["P2"] })], links: [link("C2", "C1")] },
+      INPUT,
+    );
+    expect(actions.at(-1)).toMatchObject({ type: "link", targetId: null, input: { toUnitId: "u1", fromPosition: 1 } });
+  });
+
+  it("drops self links, unknown refs, links to dropped or retired claims, and repeats", () => {
+    const actions = answerToActions(
+      {
+        summary: "",
+        claims: [claim({}), claim({ passages: ["P9"] }), claim({ action: "retire", unit: "U1" })],
+        links: [link("C1", "C1"), link("C1", "U9"), link("C1", "C2"), link("C1", "C3"), link("C1", "U1"), link("U1", "C1")],
+      },
+      INPUT,
+    );
+    // related_to counts both ways, so U1 -> C1 repeats C1 -> U1
+    expect(actions.filter((a) => a.type === "link")).toHaveLength(1);
+  });
+
+  it("parses older answers without links as having none", () => {
+    expect(answerToActions({ summary: "", claims: [claim({})] }, INPUT).map((a) => a.type)).toEqual(["add_claim"]);
+  });
+});

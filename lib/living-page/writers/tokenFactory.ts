@@ -3,6 +3,8 @@ import "server-only";
 import { z } from "zod";
 import { type ChatMessage, chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import type { SectionReviseInput, SectionRevision } from "../types";
+import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
+import type { StageSkills } from "@/lib/ai/skills/types";
 
 // =====================================================================
 // TOKEN FACTORY WRITER: Nemotron rewrites only the lines whose claims
@@ -23,19 +25,24 @@ type SectionAnswer = z.infer<typeof sectionAnswerSchema>;
 
 // PROMPT: the writer's rules
 const SYSTEM_PROMPT = [
+
   "You maintain one section of an internal wiki page, written in the neutral, encyclopedic style of Wikipedia.",
   "The section is a list of lines. Each line states one or more claims and cites them by ref (C1, C2, ...).",
   "Only lines marked rewrite:true need work: a claim they cite changed, or the section no longer shows it.",
   "For each such line, either rewrite it from the current claims (revise) or remove it (retire) when nothing it said still holds.",
   "Then write one new line (add) for each claim listed in uncovered, unless a revised line already states it.",
   "Use ONLY the claims given. Never add facts, dates, names, numbers or opinions that are not in them.",
-  "Each line is one or two sentences and must list in claims the refs it states. Never touch lines with rewrite:false.",
+  "Each line is a short, readable paragraph of 1-3 sentences, at most 75 words. Combine closely related claims instead of repeating the entity name in every sentence.",
+  "Arrange paragraphs in a logical reading order. Cover EVERY uncovered claim, listing all its refs in claims. Never touch lines with rewrite:false.",
+  "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
+  "For topic sections, explain the topic coherently. Avoid boilerplate, unsupported context, Markdown headings, invented links, or citation numbers; the interface adds real links and references.",
   'Answer with JSON only: {"revise":[{"line":"L1","text":"...","claims":["C1"]}],"retire":["L2"],"add":[{"text":"...","claims":["C3"]}]}.',
 ].join(" ");
 
 // REAL WRITER: one chat completion per section that needs work
 export class TokenFactorySectionWriter {
   readonly name = "token-factory";
+  get promptVersion() { return skillTrace("article-writing-v2",["write_articles"],this.settings.skills); }
 
   constructor(private readonly settings: TokenFactorySettings) {}
 
@@ -46,8 +53,8 @@ export class TokenFactorySectionWriter {
       name: "section_lines",
       schema: sectionAnswerSchema,
       jsonSchema: z.toJSONSchema(sectionAnswerSchema),
-      messages: buildMessages(input, refs),
-      maxTokens: 2000,
+      messages: buildMessages(input, refs, this.settings.skills),
+      maxTokens: 8000,
     });
     return { ...answerToRevision(value, refs), modelVersion: model };
   }
@@ -72,13 +79,15 @@ function buildRefs(input: SectionReviseInput): Refs {
 }
 
 // Builds the system + user messages: the page, the section, its claims and its lines as JSON
-function buildMessages(input: SectionReviseInput, refs: Refs): ChatMessage[] {
+function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
   const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
   const claims = input.units.map((unit) => ({ ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content }));
   const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
   const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds) };
   return [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: `${SYSTEM_PROMPT}
+
+${skillInstructions(["write_articles"],skills)}` },
     { role: "user", content: JSON.stringify(request) },
   ];
 }

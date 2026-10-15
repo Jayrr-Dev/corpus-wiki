@@ -1,3 +1,4 @@
+import type { StageSkills } from "@/lib/ai/skills/types";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
@@ -24,13 +25,15 @@ export { TokenFactorySectionWriter } from "./writers/tokenFactory";
 // SECTION WRITER: rewrites flagged lines and writes lines for uncovered claims (fake or Nemotron)
 export interface SectionWriter {
   readonly name: string;
+  readonly promptVersion?: string;
   reviseSection(input: SectionReviseInput): Promise<SectionRevision>;
+  prepareSection?(state: SectionState): Promise<SectionState>;
 }
 
 // Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
-export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null): SectionWriter {
+export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null, skills?: StageSkills): SectionWriter {
   const settings = tokenFactoryFromEnv(env, chosenModel);
-  return settings ? new TokenFactorySectionWriter(settings) : new FakeSectionWriter();
+  return settings ? new TokenFactorySectionWriter({ ...settings, skills }) : new FakeSectionWriter();
 }
 
 // =====================================================================
@@ -59,7 +62,8 @@ export async function rebuildSection(
 ): Promise<FinishedSectionBuild> {
   await db.call("mark_section_building", { p_section_id: sectionId });
   try {
-    const state = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
+    const loaded = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
+    const state = writer.prepareSection ? await writer.prepareSection(loaded) : loaded;
     const written = needsRewrite(state) ? await rewriteLines(db, writer, state, eventId) : null;
     return await db.call<FinishedSectionBuild>("finish_section_build", {
       p_section_id: sectionId,
@@ -88,7 +92,7 @@ async function rewriteLines(
   const draft = {
     summary: `Rewrote ${actions.length} line${actions.length === 1 ? "" : "s"} of "${state.title}"`,
     actions,
-    trace: { modelVersion: revision.modelVersion, promptVersion: null, tokensIn: null, tokensOut: null },
+    trace: { modelVersion: revision.modelVersion, promptVersion: writer.promptVersion ?? null, tokensIn: null, tokensOut: null },
   };
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai" }, draft);
   const { applied } = await commitChangeSet(db, changeSetId);

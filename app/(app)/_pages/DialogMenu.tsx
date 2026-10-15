@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
+import { MoreIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -23,7 +24,7 @@ export function DialogMenu({ label, items, className }: DialogMenuProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type="button" variant="ghost" size="icon-xs" aria-label={label} className={cn("-my-1 data-[state=open]:visible", className)}>
-            …
+            <MoreIcon className="size-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

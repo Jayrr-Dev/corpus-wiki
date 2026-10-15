@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Section } from "@/app/(app)/_components/bits";
 import { ReadingPane } from "@/components/shell";
 import { loadModelSettings } from "./loadModelSettings";
@@ -16,6 +17,7 @@ export default async function SettingsPage() {
         <Section title="Password">
           <PasswordForm />
         </Section>
+        <Section title="AI skills"><p className="text-panel">Choose instructions for each AI stage in the <Link href="/skills" className="text-link hover:underline">Skills workspace</Link>.</p></Section>
         <Section title="AI model">
           <ModelPicker settings={modelSettings} />
         </Section>

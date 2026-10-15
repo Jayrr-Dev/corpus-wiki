@@ -84,6 +84,9 @@ export type ActionInputByType = {
 
 // SECTION QUERY (sections.query): which claims a generated section shows; every key optional
 export type SectionQuery = {
+  unitIds?: string[];
+  article?: boolean;
+  articleAliases?: string[];
   entity?: { type: string; key: string };
   domainPaths?: string[];
   kinds?: UnitKind[];

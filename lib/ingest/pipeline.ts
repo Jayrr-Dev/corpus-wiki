@@ -1,5 +1,6 @@
 import type { ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
+import type { PagePlanner } from "@/lib/living-page/articlePlanner";
 import type { DbRpc } from "@/lib/db/rpc";
 import { proposePages, rebuildAfterEvent, type SectionWriter } from "@/lib/living-page";
 import type { ProcessUploadResult, StartUploadResult } from "./types";
@@ -14,7 +15,7 @@ import type { PassageDraft } from "./passages";
 //                      about -> the living page rebuilds what changed
 // =====================================================================
 
-export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter };
+export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
 export type UploadRecord = {
@@ -48,7 +49,14 @@ export async function reconcileUpload(deps: PipelineDeps, eventId: string): Prom
     const { changeSetId, eventStatus } = await draftAndCommit(deps, eventId);
     const pageError = await proposeNewPages(deps, eventId);
     const rebuildError = await rebuildPages(deps, eventId);
-    return { status: eventStatus, changeSetId, error: pageError ?? rebuildError };
+    let hierarchyError: string | null = null;
+    try { await deps.hierarchyOrganizer?.(eventId); }
+    catch (error) { hierarchyError = `Knowledge saved, but its hierarchy could not be organized: ${error instanceof Error ? error.message : String(error)}`; }
+    // Cleaning cycle: merges of claims this upload duplicated wait for a person on Exceptions
+    let dedupeError: string | null = null;
+    try { await deps.deduper?.(eventId); }
+    catch (error) { dedupeError = `Knowledge saved, but the duplicate check failed: ${error instanceof Error ? error.message : String(error)}`; }
+    return { status: eventStatus, changeSetId, error: pageError ?? rebuildError ?? hierarchyError ?? dedupeError };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     await setEventStatus(deps.db, eventId, "failed", message);
@@ -66,9 +74,10 @@ async function draftAndCommit({ db, reconciler }: PipelineDeps, eventId: string)
 }
 
 // New pages and sections for the entities the upload is about; reported, not fatal (knowledge is saved)
-async function proposeNewPages({ db }: PipelineDeps, eventId: string): Promise<string | null> {
+async function proposeNewPages({ db, pagePlanner, knowledgeExpander }: PipelineDeps, eventId: string): Promise<string | null> {
   try {
-    await proposePages(db, eventId);
+    await knowledgeExpander?.(eventId);
+    await proposePages(db, eventId, pagePlanner);
     return null;
   } catch (error) {
     return `Knowledge saved, but new pages could not be proposed: ${error instanceof Error ? error.message : String(error)}`;

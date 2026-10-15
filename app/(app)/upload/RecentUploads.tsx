@@ -3,7 +3,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { Section, TextLink } from "@/app/(app)/_components/bits";
-import { dateColumn, statusColumn, textColumn } from "@/app/(app)/_components/columns";
+import { StatusDot } from "@/app/(app)/_components/StatusDot";
+import { dateColumn, textColumn } from "@/app/(app)/_components/columns";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { EVENT_TONE } from "@/app/(app)/_lib/tone";
 import { EmptyState } from "@/components/EmptyState";
@@ -19,14 +20,20 @@ type UploadRow = Tables<"shift_events"> & { sourceTitle: string; changeSetId: st
 
 // COLUMNS: status, file, change set, error, when, and Retry on a failed row
 const COLUMNS = [
-  statusColumn<UploadRow, UploadRow["status"]>("Status", (row) => row.status, EVENT_TONE),
+  textColumn<UploadRow>("status", "Status", (row) => row.status, (row) => (
+    <StatusDot
+      tone={EVENT_TONE[row.status]}
+      label={row.status === "reconciling" ? "Processing" : row.status}
+      busy={row.status === "received" || row.status === "extracting" || row.status === "reconciling" || row.status === "checking"}
+    />
+  )),
   textColumn<UploadRow>("source", "File", (row) => row.sourceTitle, (row) =>
-    row.source_id ? <TextLink href={`/sources/${row.source_id}`}>{row.sourceTitle}</TextLink> : row.sourceTitle,
+    row.source_id ? <TextLink href={`/sources/${row.source_id}`} className="block w-56 whitespace-normal break-words">{row.sourceTitle}</TextLink> : row.sourceTitle,
   ),
   textColumn<UploadRow>("change", "Change set", (row) => row.changeSetId ?? "", (row) =>
     row.changeSetId ? <TextLink href={`/changes/${row.changeSetId}`}>Open</TextLink> : <span className="text-faint">—</span>,
   ),
-  textColumn<UploadRow>("error", "Error", (row) => row.error ?? "", (row) => <span className="whitespace-normal">{row.error ?? ""}</span>),
+  textColumn<UploadRow>("error", "Error", (row) => row.error ?? "", (row) => <span className="block w-64 whitespace-normal break-words">{row.error ?? ""}</span>),
   dateColumn<UploadRow>("created", "Uploaded", (row) => row.created_at, true),
   {
     id: "actions",

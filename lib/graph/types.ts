@@ -9,15 +9,18 @@ import type { Enums } from "@/lib/database/types";
 // NODE KINDS
 export type GraphNodeKind = "unit" | "entity" | "page";
 
-// LINK KINDS: the seven relationship types, plus "about" (unit or page -> entity) and "cites" (page -> unit)
+// LINK KINDS: the seven relationship types, plus "about" (unit or page -> entity), "cites" (page -> unit)
+// and "similar" (derived relatedness between units, never stored; see related.ts)
 export type RelationshipType = Enums<"relationship_type">;
-export type GraphLinkKind = RelationshipType | "about" | "cites";
+export type GraphLinkKind = RelationshipType | "about" | "cites" | "similar";
 
 // NODE: one dot. `degree` counts every link in the full graph and sizes the dot.
 export interface GraphNode {
   id: string;
   kind: GraphNodeKind;
   label: string;
+  // Full text relatedness is scored on (a unit's claim; the label for other kinds)
+  text: string;
   href: string;
   createdAt: string;
   degree: number;

@@ -1,21 +1,72 @@
 import type { DraftAction, ExistingUnit, ReconciliationInput } from "@/lib/ai/types";
-import { passageRef, unitRef } from "./prompt";
-import type { AnswerClaim, AnswerEntityRef, ReconciliationAnswer } from "./schema";
+import { claimRef, passageRef, unitRef } from "./prompt";
+import type { AnswerClaim, AnswerEntityRef, AnswerLink, ReconciliationAnswer } from "./schema";
 
 // =====================================================================
 // MODEL ANSWER -> DRAFT ACTIONS. Resolves the short refs to ids, drops
 // claims that cite nothing real, and puts the create_domain and
 // create_entity actions a claim needs BEFORE it (Change control applies
 // in position order, so the add_claim finds them by path and key).
+// Links go LAST, naming a new claim by its add_claim's position.
 // =====================================================================
 
 type Refs = { passages: Map<string, string>; units: Map<string, ExistingUnit> };
 
-// The whole conversion: creates first, then one action per usable claim
-export function answerToActions(answer: ReconciliationAnswer, input: ReconciliationInput): DraftAction[] {
+// What a claim ref (C1) or unit ref (U1) points at: an existing unit, or the add_claim that creates one
+type LinkEnd = { unitId: string } | { action: DraftAction };
+
+// The whole conversion: creates first, then one action per usable claim, then the links between them
+export function answerToActions(answer: Omit<ReconciliationAnswer, "links"> & { links?: AnswerLink[] }, input: ReconciliationInput): DraftAction[] {
   const refs = buildRefs(input);
-  const claimActions = dedupeTargets(answer.claims.flatMap((claim) => claimToAction(claim, refs, input)));
-  return [...domainCreates(claimActions, input.domainPaths), ...entityCreates(answer.claims, claimActions, input), ...claimActions];
+  const ends = new Map<string, LinkEnd>();
+  const perClaim = answer.claims.map((claim, index) => {
+    const actions = claimToAction(claim, refs, input);
+    const [action] = actions;
+    // A retired claim is not linked; a revised or re-stated one links to its existing unit
+    if (action?.type === "add_claim") ends.set(claimRef(index), { action });
+    else if (action && action.type !== "retire_claim" && action.targetId) ends.set(claimRef(index), { unitId: action.targetId });
+    return actions;
+  });
+  const claimActions = dedupeTargets(perClaim.flat());
+  const ordered = [...domainCreates(claimActions, input.domainPaths), ...entityCreates(answer.claims, claimActions, input), ...claimActions];
+  return [...ordered, ...linkActions(answer.links ?? [], ends, refs, ordered)];
+}
+
+// LINK: from/to resolved to a unit id or an earlier action's position; unresolvable,
+// self and repeated links are dropped (related_to and contradicts count both ways)
+function linkActions(links: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs, ordered: DraftAction[]): DraftAction[] {
+  const resolve = (ref: string): { unitId: string | null; position?: number; key: string } | null => {
+    const clean = ref.trim().toUpperCase();
+    const unit = refs.units.get(clean);
+    if (unit) return { unitId: unit.unitId, key: unit.unitId };
+    const end = ends.get(clean);
+    if (!end) return null;
+    if ("unitId" in end) return { unitId: end.unitId, key: end.unitId };
+    const position = ordered.indexOf(end.action);
+    return position < 0 ? null : { unitId: null, position, key: `#${position}` };
+  };
+  const seen = new Set<string>();
+  return links.flatMap((link): DraftAction[] => {
+    const from = resolve(link.from), to = resolve(link.to);
+    if (!from || !to || from.key === to.key) return [];
+    const symmetric = link.type === "related_to" || link.type === "contradicts";
+    const pair = symmetric && to.key < from.key ? `${to.key}|${from.key}` : `${from.key}|${to.key}`;
+    if (seen.has(`${link.type}:${pair}`)) return [];
+    seen.add(`${link.type}:${pair}`);
+    return [{
+      type: "link",
+      targetId: from.unitId,
+      expectedRevisionId: null,
+      passageIds: [],
+      speechAct: null,
+      input: {
+        toUnitId: to.unitId,
+        type: link.type,
+        ...(from.position === undefined ? {} : { fromPosition: from.position }),
+        ...(to.position === undefined ? {} : { toPosition: to.position }),
+      },
+    }];
+  });
 }
 
 // Ref -> id maps for passages and units

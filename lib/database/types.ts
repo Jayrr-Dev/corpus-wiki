@@ -151,6 +151,7 @@ export type Database = {
       }
       domains: {
         Row: {
+          context_entity_id?: string | null
           created_at: string
           id: string
           name: string
@@ -159,6 +160,7 @@ export type Database = {
           proposed_by: Database["public"]["Enums"]["actor_kind"]
         }
         Insert: {
+          context_entity_id?: string | null
           created_at?: string
           id?: string
           name: string
@@ -167,6 +169,7 @@ export type Database = {
           proposed_by: Database["public"]["Enums"]["actor_kind"]
         }
         Update: {
+          context_entity_id?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -313,6 +316,8 @@ export type Database = {
       }
       pages: {
         Row: {
+          parent_page_id?: string | null
+          context_entity_id?: string | null
           created_at: string
           domain_id: string | null
           entity_id: string | null
@@ -322,6 +327,8 @@ export type Database = {
           title: string
         }
         Insert: {
+          parent_page_id?: string | null
+          context_entity_id?: string | null
           created_at?: string
           domain_id?: string | null
           entity_id?: string | null
@@ -331,6 +338,8 @@ export type Database = {
           title: string
         }
         Update: {
+          parent_page_id?: string | null
+          context_entity_id?: string | null
           created_at?: string
           domain_id?: string | null
           entity_id?: string | null

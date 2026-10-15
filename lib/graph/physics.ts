@@ -33,6 +33,8 @@ const CENTER_SCALE = 0.1;
 const REPEL_SCALE = 15;
 const LINK_SCALE = 0.5;
 const REPEL_REACH = 800;
+// Derived "similar" links pull this much as hard as stored ones, so real relationships shape the layout
+const SIMILAR_PULL = 0.5;
 
 // Dot radius in world units: grows with the square root of link count, like Obsidian
 export function nodeRadius(node: Pick<GraphNode, "degree">, nodeSize: number): number {
@@ -47,7 +49,8 @@ export function applyForces(simulation: GraphSimulation, forces: GraphForces, no
     .force("charge", forceManyBody<SimNode>().strength(-forces.repel * REPEL_SCALE).distanceMax(REPEL_REACH))
     .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2));
   const link = simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link");
-  link?.strength(forces.link * LINK_SCALE).distance(forces.linkDistance);
+  const strength = forces.link * LINK_SCALE;
+  link?.strength((candidate) => (candidate.kind === "similar" ? strength * SIMILAR_PULL : strength)).distance(forces.linkDistance);
 }
 
 // How far from a placed neighbor a new dot starts

@@ -2,8 +2,9 @@ import { z } from "zod";
 import { Constants } from "@/lib/database/types";
 
 // =====================================================================
-// WHAT NEMOTRON MUST ANSWER: claims, each one typed action on the store.
-// Passages and units are named by short refs (P1, U1) instead of UUIDs,
+// WHAT NEMOTRON MUST ANSWER: claims, each one typed action on the store,
+// and typed links between claims. Passages, units and this answer's own
+// claims are named by short refs (P1, U1, C1) instead of UUIDs,
 // so the model never has to copy an id. lib/ai/tokenFactory/toDraft.ts
 // turns the answer into a DraftChangeSet.
 // =====================================================================
@@ -36,14 +37,25 @@ const claimSchema = z.object({
   reason: z.string(),
 });
 
+// ONE LINK BETWEEN TWO CLAIMS: from and to are claim refs (C1 = this answer's first claim)
+// or existing unit refs (U1). Older answers without links parse as having none.
+const linkSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  type: z.enum(ENUMS.relationship_type),
+  reason: z.string(),
+});
+
 export const reconciliationAnswerSchema = z.object({
   summary: z.string(),
   claims: z.array(claimSchema),
+  links: z.array(linkSchema).default([]),
 });
 
 export type ReconciliationAnswer = z.infer<typeof reconciliationAnswerSchema>;
 export type AnswerClaim = z.infer<typeof claimSchema>;
 export type AnswerEntityRef = z.infer<typeof entityRefSchema>;
+export type AnswerLink = z.infer<typeof linkSchema>;
 
 // THE SAME SHAPE AS JSON SCHEMA, for Token Factory's guided decoding
 export const reconciliationJsonSchema = z.toJSONSchema(reconciliationAnswerSchema);

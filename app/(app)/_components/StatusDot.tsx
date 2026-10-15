@@ -12,13 +12,17 @@ const DOT_CLASS: Record<Tone, string> = {
   muted: "bg-muted-foreground",
 };
 
-type StatusDotProps = { tone: Tone; label?: string; className?: string };
+type StatusDotProps = { tone: Tone; label?: string; className?: string; busy?: boolean };
 
 // STATUS DOT: a small colored dot, with the status in words beside it when `label` is given
-export function StatusDot({ tone, label, className }: StatusDotProps) {
+export function StatusDot({ tone, label, className, busy = false }: StatusDotProps) {
   return (
     <span className={cn("inline-flex items-center gap-1.5", className)}>
-      <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", DOT_CLASS[tone])} />
+      {busy ? (
+        <span aria-hidden className="size-3 shrink-0 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none" />
+      ) : (
+        <span aria-hidden className={cn("size-1.5 shrink-0 rounded-full", DOT_CLASS[tone])} />
+      )}
       {label ? <span className={tone === "faint" ? "text-faint" : undefined}>{humanize(label)}</span> : null}
     </span>
   );

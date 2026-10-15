@@ -1,6 +1,7 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { getBrowserSupabase, type BrowserSupabase } from "@/lib/supabase/client";
 import { fetchRowById, type Row } from "./fetchers";
+import { knowledgeLabel } from "@/lib/knowledge/label";
 import { queryKeys } from "./keys";
 
 // =====================================================================
@@ -10,7 +11,7 @@ import { queryKeys } from "./keys";
 // =====================================================================
 
 // SHARED SHAPES
-export type UnitSummary = Row<"units"> & { content: string };
+export type UnitSummary = Row<"units"> & { content: string; label?: string };
 
 // TABLES THAT HAVE A UUID `id` AND ARE READ BY ID LISTS HERE
 type ByIdTable = "units" | "revisions" | "passages" | "sources" | "entities" | "domains" | "actions";
@@ -45,9 +46,23 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
   const { data, error } = await query;
   if (error) throw error;
   const units = (data ?? []) as Row<"units">[];
+  if (!units.length) return [];
   const revisions = await fetchByIds(client, "revisions", units.map((unit) => unit.current_revision_id));
+  const [links, memberships, subjects, topics] = await Promise.all([
+    client.from("unit_entities").select("unit_id, entity_id, role").in("unit_id", units.map((unit)=>unit.id)),
+    client.from("unit_domains").select("unit_id, domain_id").in("unit_id", units.map((unit)=>unit.id)),
+    client.from("entities").select("id, name, type").is("merged_into_id", null),
+    client.from("domains").select("id, name, path"),
+  ]);
+  for (const result of [links,memberships,subjects,topics]) if (result.error) throw result.error;
+  const subjectById = new Map((subjects.data ?? []).filter((entity)=>!["company","organization","person","project","team","product"].includes(entity.type)).map((entity)=>[entity.id, entity.name]));
+  const topicById = new Map((topics.data ?? []).map((topic)=>[topic.id, topic]));
+  const hints = (id: string) => ({
+    subject: (links.data ?? []).filter((link)=>link.unit_id===id && link.role==="subject").map((link)=>subjectById.get(link.entity_id)).find(Boolean),
+    topic: (memberships.data ?? []).filter((link)=>link.unit_id===id).map((link)=>topicById.get(link.domain_id)).filter((topic)=>!!topic).sort((a,b)=>b.path.length-a.path.length)[0]?.name,
+  });
   const contentById = new Map(revisions.map((revision) => [revision.id, revision.content]));
-  return units.map((unit) => ({ ...unit, content: contentById.get(unit.current_revision_id) ?? "" }));
+  return units.map((unit) => ({ ...unit, content: contentById.get(unit.current_revision_id) ?? "", label: knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)) }));
 }
 
 // UNITS WITH CONTENT: every unit when `ids` is omitted, else just those

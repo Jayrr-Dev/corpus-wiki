@@ -1,0 +1,140 @@
+"use client";
+
+import { useMemo, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
+import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+
+type DomainLike = { id: string; path: string };
+
+type DomainNode = { id: string; path: string; name: string; depth: number; children: DomainNode[] };
+
+type DomainTreeSelectProps = {
+  label: string;
+  value: string;
+  domains: readonly DomainLike[];
+  onChange: (value: string) => void;
+  // shown as the first item with value "" (e.g. "Any domain")
+  emptyLabel?: string;
+  className?: string;
+};
+
+const SEPARATOR = "/";
+
+// Builds a tree from slash paths. A path whose parent is missing hangs off the nearest existing ancestor (or the root).
+export function buildDomainTree(domains: readonly DomainLike[]): DomainNode[] {
+  const byPath = new Map<string, DomainNode>();
+  const sorted = [...domains].sort((a, b) => a.path.localeCompare(b.path));
+  const roots: DomainNode[] = [];
+  for (const domain of sorted) {
+    const segments = domain.path.split(SEPARATOR);
+    let parent: DomainNode | undefined;
+    for (let i = segments.length - 1; i > 0 && !parent; i--) parent = byPath.get(segments.slice(0, i).join(SEPARATOR));
+    const node: DomainNode = { id: domain.id, path: domain.path, name: segments.at(-1) ?? domain.path, depth: parent ? parent.depth + 1 : 0, children: [] };
+    byPath.set(domain.path, node);
+    (parent ? parent.children : roots).push(node);
+  }
+  return roots;
+}
+
+// Ids of every ancestor of the selected domain, so the selection is visible when the menu opens
+function ancestorIds(roots: DomainNode[], id: string): string[] {
+  const walk = (nodes: DomainNode[], trail: string[]): string[] | null => {
+    for (const node of nodes) {
+      if (node.id === id) return trail;
+      const found = walk(node.children, [...trail, node.id]);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(roots, []) ?? [];
+}
+
+// DOMAIN TREE SELECT: a dropdown of domains nested by path, each level collapsible, showing names not full paths
+export function DomainTreeSelect({ label, value, domains, onChange, emptyLabel, className }: DomainTreeSelectProps) {
+  const roots = useMemo(() => buildDomainTree(domains), [domains]);
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const selected = domains.find((domain) => domain.id === value);
+
+  // Opening shows the roots' children and the path down to the current selection
+  const onOpenChange = (open: boolean) => {
+    if (open) setExpanded(new Set([...roots.map((root) => root.id), ...ancestorIds(roots, value)]));
+  };
+
+  const setOpen = (id: string, open: boolean) =>
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (open) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+
+  const renderNode = (node: DomainNode) => {
+    const hasChildren = node.children.length > 0;
+    const isOpen = expanded.has(node.id);
+    const toggle = (event: MouseEvent) => {
+      // keep the click on the chevron from selecting the row
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(node.id, !isOpen);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!hasChildren) return;
+      if (event.key === "ArrowRight" && !isOpen) { event.preventDefault(); setOpen(node.id, true); }
+      if (event.key === "ArrowLeft" && isOpen) { event.preventDefault(); setOpen(node.id, false); }
+    };
+    return (
+      <div key={node.id}>
+        <DropdownMenuItem
+          onSelect={() => onChange(node.id)}
+          onKeyDown={onKeyDown}
+          title={node.path}
+        >
+          <span className="w-[calc(var(--depth)*1rem)] shrink-0" style={{ "--depth": node.depth } as CSSProperties} aria-hidden="true" />
+          {hasChildren ? (
+            <span role="button" aria-label={isOpen ? `Collapse ${node.name}` : `Expand ${node.name}`} onClick={toggle} className="-my-1 flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-foreground/10">
+              {isOpen ? <ChevronDownIcon className="size-3.5" /> : <ChevronRightIcon className="size-3.5" />}
+            </span>
+          ) : (
+            <span className="size-5 shrink-0" aria-hidden="true" />
+          )}
+          <span className="truncate">{node.name}</span>
+          <span className="ml-auto flex items-center gap-1.5 pl-3 text-xs text-muted-foreground">
+            {hasChildren ? node.children.length : null}
+            <CheckIcon className={cn("size-3.5", node.id !== value && "invisible")} aria-hidden="true" />
+          </span>
+        </DropdownMenuItem>
+        {hasChildren && isOpen ? node.children.map(renderNode) : null}
+      </div>
+    );
+  };
+
+  return (
+    <DropdownMenu onOpenChange={onOpenChange}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          aria-label={label}
+          title={selected?.path}
+          className={cn(
+            "relative flex h-8 w-fit max-w-64 min-w-0 items-center rounded-lg border border-input bg-transparent py-1 pr-8 pl-2.5 text-left text-panel transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50",
+            className,
+          )}
+        >
+          <span className="truncate">{selected ? (selected.path.split(SEPARATOR).at(-1) ?? selected.path) : (emptyLabel ?? label)}</span>
+          <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="max-h-96 min-w-56">
+        {emptyLabel !== undefined ? (
+          <DropdownMenuItem onSelect={() => onChange("")}>
+            <span className="size-5 shrink-0" aria-hidden="true" />
+            {emptyLabel}
+            <CheckIcon className={cn("ml-auto size-3.5 text-muted-foreground", value !== "" && "invisible")} aria-hidden="true" />
+          </DropdownMenuItem>
+        ) : null}
+        {roots.map(renderNode)}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

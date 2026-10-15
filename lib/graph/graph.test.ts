@@ -56,7 +56,7 @@ const rows: GraphRows = {
 const graph = buildGraph(rows);
 const nodeById = (id: string) => graph.nodes.find((node) => node.id === id) as GraphNode;
 const ids = (data: { nodes: GraphNode[] }) => data.nodes.map((node) => node.id).sort();
-const ALL_LAYERS = { search: "", showEntities: true, showPages: true, showOrphans: true };
+const ALL_LAYERS = { search: "", showEntities: true, showPages: true, showOrphans: true, showRelated: false, relatedness: 0.3 };
 
 describe("buildGraph", () => {
   it("makes a node per live unit, entity and page", () => {
@@ -171,5 +171,11 @@ describe("saved settings", () => {
   it("falls back to the defaults when the stored shape is wrong", () => {
     expect(parseSavedSettings({ filters: "nope" })).toBe(DEFAULT_GRAPH_SETTINGS);
     expect(parseSavedSettings(DEFAULT_GRAPH_SETTINGS)).toEqual(DEFAULT_GRAPH_SETTINGS);
+  });
+
+  it("keeps older saved settings, defaulting the fields added since", () => {
+    const { search, showPages, showOrphans } = DEFAULT_GRAPH_SETTINGS.filters;
+    const older = { ...DEFAULT_GRAPH_SETTINGS, filters: { search, showEntities: true, showPages, showOrphans } };
+    expect(parseSavedSettings(older).filters).toEqual({ ...DEFAULT_GRAPH_SETTINGS.filters, showEntities: true });
   });
 });

@@ -10,6 +10,7 @@ export { buildGraph, countDegrees, shortLabel } from "./build";
 export { applyFilters, createdBy, keepNodes, type GraphFilters } from "./filters";
 export { GRAPH_COLORS, groupColorLookup, parseGroupQuery, type GraphColor, type GraphGroup } from "./groups";
 export { neighborhood } from "./neighborhood";
+export { relatedLinks, scoreRelatedPairs, withRelated, type RelatedOptions, type ScoredPair } from "./related";
 export {
   DEFAULT_GRAPH_SETTINGS,
   DISPLAY_SLIDERS,

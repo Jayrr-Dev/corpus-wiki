@@ -1,6 +1,7 @@
 import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
+import type { PagePlanner } from "./articlePlanner";
 
 // =====================================================================
 // PAGES FROM THE KNOWLEDGE: after an upload is committed, every entity
@@ -35,14 +36,14 @@ export type PageCandidate = {
 };
 
 // Proposes and commits the pages and sections an event calls for; returns how many actions applied
-export async function proposePages(db: DbRpc, eventId: string): Promise<number> {
+export async function proposePages(db: DbRpc, eventId: string, planner?: PagePlanner): Promise<number> {
   const candidates = await db.call<PageCandidate[]>("page_candidates", { p_event_id: eventId });
-  const actions = pageProposalActions(candidates);
+  const actions = planner ? await planner(candidates) : pageProposalActions(candidates);
   if (actions.length === 0) return 0;
   const draft = {
     summary: describeProposals(actions),
     actions,
-    trace: { modelVersion: null, promptVersion: null, tokensIn: null, tokensOut: null },
+    trace: { modelVersion: null, promptVersion: planner?.promptVersion ?? null, tokensIn: null, tokensOut: null },
   };
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai" }, draft);
   return (await commitChangeSet(db, changeSetId)).applied;

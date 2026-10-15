@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { dateColumn, linkColumn, textColumn } from "@/app/(app)/_components/columns";
+import { dateColumn, textColumn } from "@/app/(app)/_components/columns";
+import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { DataTable } from "@/components/data-table";
 import { StatusGlyph, UnitIcon } from "@/components/icons";
@@ -17,7 +18,12 @@ import { useUnitFilters } from "./useUnitFilters";
 // COLUMNS: status glyph, content, kind, last changed, and the "…" menu
 const COLUMNS = [
   textColumn<UnitSummary>("status", "", (unit) => unit.epistemic_status, (unit) => <StatusGlyph status={unit.epistemic_status} />),
-  linkColumn<UnitSummary>("content", "Content", (unit) => unit.content, (unit) => `/units/${unit.id}`),
+  textColumn<UnitSummary>("content", "Knowledge", (unit) => `${unit.label ?? ""} ${unit.content}`, (unit) => (
+    <div className="max-w-xl whitespace-normal">
+      <Link href={`/units/${unit.id}`} className="font-medium text-link hover:underline">{unit.label ?? unit.content}</Link>
+      <p className="mt-1 line-clamp-2 text-panel text-muted-foreground">{unit.content}</p>
+    </div>
+  )),
   textColumn<UnitSummary>("kind", "Kind", (unit) => unit.kind),
   dateColumn<UnitSummary>("changed", "Last changed", (unit) => unit.last_changed_at, true),
   menuColumn<UnitSummary>((unit) => <UnitRowMenu unit={unit} />),

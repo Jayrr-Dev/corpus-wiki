@@ -11,6 +11,9 @@ export interface GraphFilters {
   showEntities: boolean;
   showPages: boolean;
   showOrphans: boolean;
+  // derived "similar" links between related units, and the minimum score (0..1) they need
+  showRelated: boolean;
+  relatedness: number;
 }
 
 // Keeps the links whose two ends are both in `ids`

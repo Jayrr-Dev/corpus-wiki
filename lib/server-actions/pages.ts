@@ -1,6 +1,11 @@
 "use server";
 
 import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
+import { loadStageSkills } from "@/lib/ai/skills/server";
+import { tokenFactoryFromEnv } from "@/lib/ai/chat";
+import { readChosenModel } from "@/lib/ai/models";
+import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
+import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { requireUser } from "@/lib/auth/requireUser";
 import { type CommitResult, commitPersonEdit } from "@/lib/change-control";
 import { rebuildPage } from "@/lib/living-page";
@@ -122,4 +127,43 @@ async function pageSlug(pageId: string): Promise<string> {
   const { data, error } = await getAdminSupabase().from("pages").select("slug").eq("id", pageId).single();
   if (error) throw new Error(error.message);
   return data.slug;
+}
+
+// Reorganize an existing entity article through audited page/section actions.
+export async function improveArticle(pageId: string): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    const admin = getAdminSupabase();
+    const { data: page, error } = await admin.from("pages").select("entity_id").eq("id", pageId).is("retired_at", null).single();
+    if (error) throw new Error(error.message);
+    if (!page.entity_id) throw new Error("Link this page to an entity before generating an article.");
+    const { data: entity, error: entityError } = await admin.from("entities").select("id, type, key, name").eq("id", page.entity_id).single();
+    if (entityError) throw new Error(entityError.message);
+    const { db, writer } = await getServerDeps();
+    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
+    if (settings) settings.skills = await loadStageSkills(db);
+    if (!settings) throw new Error("Configure an AI provider to structure this article.");
+    const actions = await createArticlePlanner(settings, admin, true)([{ entityId: entity.id, type: entity.type, key: entity.key, name: entity.name, claimCount: 2, kinds: [], page: { pageId, coveredKinds: [], coversAll: true } }]);
+    const result = await commitPersonEdit(db, "Organized article by subject with a content-based title", actions);
+    if (result.status !== "applied") throw new Error("The article structure was not fully applied. Review the change set in Changes.");
+    await rebuildPage(db, writer, pageId);
+    return {};
+  });
+}
+
+// Discover cited definitions, domain articles, and an organization overview.
+export async function expandRelatedArticles(pageId: string): Promise<ActionResult<{ entities: number; definitions: number; articles: number }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const client = getAdminSupabase();
+    const { data: page, error } = await client.from("pages").select("entity_id, context_entity_id").eq("id", pageId).is("retired_at", null).single();
+    if (error) throw new Error(error.message);
+    const entityId = page.context_entity_id ?? page.entity_id;
+    if (!entityId) throw new Error("Choose the organization's main article to expand its knowledge.");
+    const { db, writer } = await getServerDeps();
+    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
+    if (settings) settings.skills = await loadStageSkills(db);
+    if (!settings) throw new Error("Configure an AI provider before expanding knowledge.");
+    return expandEntityKnowledge({ settings, client, db, writer }, entityId);
+  });
 }

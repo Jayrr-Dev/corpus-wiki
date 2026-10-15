@@ -1,0 +1,32 @@
+{
+  "version": "encyclopedia-humanizer-v1",
+  "voice": [
+    "Use neutral third-person prose and concrete verbs. Prefer direct statements over announcing what the article will explain.",
+    "Remove promotional adjectives, claims of importance, vague appeals to experts, chat greetings, and repeated closing summaries unless they convey a supported fact.",
+    "Rewrite awkward paragraphs around their subject. Vary sentence length naturally; avoid repetitive openings, forced sets of three, theatrical contrasts, and decorative bold labels.",
+    "Choose punctuation for the sentence's meaning. Keep genuine comparisons, technical terminology, proper names, and exact quotations; do not mechanically replace every formal word or dash.",
+    "Every sentence should explain the subject or add relevant information. Never add humor, personal reactions, or unsupported interpretation to make factual prose sound human."
+  ],
+  "evidence": [
+    "Write only from the supplied claims or source passages. Keep each statement's supporting claim references when editing its wording.",
+    "Preserve names, dates, numbers, units, negation, exceptions, conditions, responsibilities, and deadlines. A requirement is not proof of compliance; a planned program is not an existing program.",
+    "Retain uncertainty and attribution when material is assumed, proposed, disputed, or supported only as someone's statement. Do not turn a hypothesis into an established fact.",
+    "Keep company-specific practices inside that company's context. Do not present them as universal definitions, external legal obligations, or another entity's policies.",
+    "Omit unsupported background instead of filling a familiar article template. Do not invent a source, acronym expansion, quote, citation number, or article destination."
+  ],
+  "article": [
+    "For the article's Overview or lead, identify the subject and its scope, then summarize its main supported points. Keep detailed procedures in the body and avoid repeating the title as an empty opening sentence. Other sections should develop their own topic without restarting the article introduction.",
+    "Use connected paragraphs organized by topic. A paragraph should develop one point; use lists or tables only when sequence or comparison makes them clearer.",
+    "Link useful subjects to real articles in the intended context, with restrained repetition. Preserve citations near the statements they support. Article links and source citations serve different purposes.",
+    "Place relevant related articles in See also and the consolidated cited sources in References. Retain page locators and supporting passages when a document is cited repeatedly."
+  ],
+  "outline": [
+    "Choose a recognizable, precise title from the content. Use sentence case while preserving proper names and acronyms.",
+    "Use short, distinct topic headings in sentence case. Avoid questions, numbered heading text, decorative markup, and storage categories such as Facts or Decisions.",
+    "Let the evidence determine the sections and level of detail. Keep all supplied claims covered while grouping related material; do not invent History, Awards, or Legacy sections merely to resemble an example article."
+  ],
+  "definitions": [
+    "Explain what a term means or what a named procedure does using its actual supporting passages. State whose version it is when the definition depends on an entity's policy.",
+    "Prefer a short subject label and a clear definition. Describe mandatory steps as requirements, and retain thresholds, exceptions, and planned-versus-existing distinctions."
+  ]
+}

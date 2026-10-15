@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { applyFilters, neighborhood, useGraphData } from "@/lib/graph";
+import { applyFilters, neighborhood, useGraphData, withRelated } from "@/lib/graph";
 import { GraphCanvas } from "./GraphCanvas";
 import { SliderRow } from "./panel/rows";
 import { GLOBAL_GRAPH_SETTINGS_KEY, useGraphSettings } from "./useGraphSettings";
@@ -28,7 +28,8 @@ export function LocalGraph({ centerId }: { centerId: string }) {
     if (!query.data) return null;
     // The center's own layer is always on (an entity's local graph shows the entity)
     const centerKind = query.data.nodes.find((node) => node.id === centerId)?.kind;
-    const layers = applyFilters(query.data, {
+    const related = withRelated(query.data, { show: settings.filters.showRelated, threshold: settings.filters.relatedness });
+    const layers = applyFilters(related, {
       ...settings.filters,
       search: "",
       showOrphans: true,

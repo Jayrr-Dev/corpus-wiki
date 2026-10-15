@@ -8,6 +8,7 @@ import {
   type IconProps,
   PageIcon,
   SettingsIcon,
+  SkillIcon,
   SourceIcon,
   UnitIcon,
   UploadIcon,
@@ -30,6 +31,7 @@ export const SECONDARY_NAV: readonly NavItem[] = [
   { label: "Entities", href: "/entities", icon: EntityIcon },
   { label: "Domains", href: "/domains", icon: DomainIcon },
   { label: "Graph", href: "/graph", icon: GraphIcon },
+  { label: "Skills", href: "/skills", icon: SkillIcon },
 ];
 
 // True when `pathname` is this item's page or below it ("/" matches only itself and wiki pages)

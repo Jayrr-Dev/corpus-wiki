@@ -33,7 +33,7 @@ export function UnitLink({ unit, className }: { unit: UnitSummary; className?: s
   return (
     <span className={cn("inline-flex min-w-0 items-start gap-1.5", unit.retired_at && "text-faint", className)}>
       <StatusGlyph status={unit.epistemic_status} className="mt-0.5 shrink-0" />
-      <TextLink href={`/units/${unit.id}`}>{unit.content || unit.id}</TextLink>
+      <TextLink href={`/units/${unit.id}`}>{unit.label || unit.content || unit.id}</TextLink>
     </span>
   );
 }

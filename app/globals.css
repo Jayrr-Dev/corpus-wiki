@@ -144,3 +144,9 @@
     outline-offset: 1px;
   }
 }
+
+/* Keep article links and citation numbers readable on dark surfaces. */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) { --sb-link: #8ab4f8; }
+}
+.dark { --sb-link: #8ab4f8; }

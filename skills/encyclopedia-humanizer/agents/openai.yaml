@@ -1,0 +1,4 @@
+interface:
+  display_name: "Encyclopedia Humanizer"
+  short_description: "Plain, sourced writing for knowledge articles"
+  default_prompt: "Use $encyclopedia-humanizer to write or revise this knowledge article while preserving its claims, context, and citations."

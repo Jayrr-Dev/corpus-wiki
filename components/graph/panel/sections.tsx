@@ -22,7 +22,7 @@ import { SliderRow, SwitchRow } from "./rows";
 // slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
 
-// FILTERS: search, the extra layers, orphans
+// FILTERS: search, the extra layers, orphans, and derived related links with their minimum score
 export function FiltersSection({ value, onChange }: { value: GraphFilters; onChange: (next: GraphFilters) => void }) {
   const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) => onChange({ ...value, [key]: next });
   return (
@@ -31,6 +31,10 @@ export function FiltersSection({ value, onChange }: { value: GraphFilters; onCha
       <SwitchRow label="Entities" checked={value.showEntities} onChange={(next) => set("showEntities", next)} />
       <SwitchRow label="Pages" checked={value.showPages} onChange={(next) => set("showPages", next)} />
       <SwitchRow label="Orphans" checked={value.showOrphans} onChange={(next) => set("showOrphans", next)} />
+      <SwitchRow label="Related links" checked={value.showRelated} onChange={(next) => set("showRelated", next)} />
+      {value.showRelated ? (
+        <SliderRow label="Min relatedness" value={value.relatedness} min={0.05} max={0.9} step={0.01} onChange={(next) => set("relatedness", next)} />
+      ) : null}
     </PanelSection>
   );
 }

@@ -1,3 +1,4 @@
+import { knowledgeLabel } from "@/lib/knowledge/label";
 import type { GraphRows } from "./rows";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -36,18 +37,22 @@ function unitNodes(rows: GraphRows): GraphNode[] {
   const nameByEntity = new Map(rows.entities.map((entity) => [entity.id, entity.name]));
   const domainsByUnit = groupBy(rows.unitDomains.map((row) => [row.unit_id, row.domain_id] as const));
   const entitiesByUnit = groupBy(rows.unitEntities.map((row) => [row.unit_id, row.entity_id] as const));
-  return rows.units.map((unit) => ({
-    id: unit.id,
-    kind: "unit",
-    label: shortLabel(contentByRevision.get(unit.current_revision_id) ?? unit.id),
-    href: `/units/${unit.id}`,
-    createdAt: unit.created_at,
-    degree: 0,
-    domainPaths: present((domainsByUnit.get(unit.id) ?? []).map((id) => pathByDomain.get(id))),
-    entityNames: present((entitiesByUnit.get(unit.id) ?? []).map((id) => nameByEntity.get(id))),
-    unitKind: unit.kind,
-    status: unit.epistemic_status,
-  }));
+  return rows.units.map((unit) => {
+    const content = contentByRevision.get(unit.current_revision_id) ?? unit.id;
+    return {
+      id: unit.id,
+      kind: "unit",
+      label: knowledgeLabel(content),
+      text: content,
+      href: `/units/${unit.id}`,
+      createdAt: unit.created_at,
+      degree: 0,
+      domainPaths: present((domainsByUnit.get(unit.id) ?? []).map((id) => pathByDomain.get(id))),
+      entityNames: present((entitiesByUnit.get(unit.id) ?? []).map((id) => nameByEntity.get(id))),
+      unitKind: unit.kind,
+      status: unit.epistemic_status,
+    };
+  });
 }
 
 // ENTITY NODES: an entity matches `entity:` queries on its own name
@@ -56,6 +61,7 @@ function entityNodes(rows: GraphRows): GraphNode[] {
     id: entity.id,
     kind: "entity",
     label: entity.name,
+    text: entity.name,
     href: `/entities/${entity.id}`,
     createdAt: entity.created_at,
     degree: 0,
@@ -73,6 +79,7 @@ function pageNodes(rows: GraphRows): GraphNode[] {
     id: page.id,
     kind: "page",
     label: page.title,
+    text: page.title,
     href: `/p/${page.slug}`,
     createdAt: page.created_at,
     degree: 0,

@@ -14,7 +14,7 @@ export function RetryUploadButton({ eventId }: { eventId: string }) {
       <Button size="sm" variant="outline" disabled={retry.isPending} onClick={() => void retry.run(eventId)}>
         {retry.isPending ? "Retrying…" : "Retry"}
       </Button>
-      <ErrorNote error={retry.error} />
+      <div className="max-w-48 whitespace-normal break-words"><ErrorNote error={retry.error} /></div>
     </div>
   );
 }
