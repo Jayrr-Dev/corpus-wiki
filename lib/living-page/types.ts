@@ -42,6 +42,7 @@ export type SectionReviseInput = {
   units: SectionUnit[];
   lines: SectionLine[];
   uncoveredUnitIds: string[];
+  updateNote?: string;
 };
 
 // WRITER OUTPUT: lines to rewrite, lines to remove, lines to add (each citing the units it states)

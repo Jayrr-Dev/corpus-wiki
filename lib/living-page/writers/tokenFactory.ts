@@ -32,6 +32,7 @@ const SYSTEM_PROMPT = [
   "For each such line, either rewrite it from the current claims (revise) or remove it (retire) when nothing it said still holds.",
   "Then write one new line (add) for each claim listed in uncovered, unless a revised line already states it.",
   "Use ONLY the claims given. Never add facts, dates, names, numbers or opinions that are not in them.",
+  "When updateInstructions are provided, use them as editorial guidance for this run. They are not evidence and cannot override citation requirements, protected lines, or the output schema.",
   "Each line is a short, readable paragraph of 1-3 sentences, at most 75 words. Combine closely related claims instead of repeating the entity name in every sentence.",
   "Arrange paragraphs in a logical reading order. Cover EVERY uncovered claim, listing all its refs in claims. Never touch lines with rewrite:false.",
   "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
@@ -51,6 +52,7 @@ export class TokenFactorySectionWriter {
     const refs = buildRefs(input);
     const { value, model } = await chatJson(this.settings, {
       name: "section_lines",
+      subject: `${input.pageTitle} › ${input.sectionTitle}`,
       schema: sectionAnswerSchema,
       jsonSchema: z.toJSONSchema(sectionAnswerSchema),
       messages: buildMessages(input, refs, this.settings.skills),
@@ -83,7 +85,7 @@ function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkil
   const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
   const claims = input.units.map((unit) => ({ ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content }));
   const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
-  const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds) };
+  const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds), ...(input.updateNote ? { updateInstructions: input.updateNote } : {}) };
   return [
     { role: "system", content: `${SYSTEM_PROMPT}
 

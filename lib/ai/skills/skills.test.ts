@@ -43,9 +43,10 @@ describe("assigned skills reach actual AI requests",()=>{
   it("uses the selected writing skill and retains claim-reference mapping",async()=>{
     const request=intercept({revise:[],retire:[],add:[{text:"Hearing protection is required at 85 dB.",claims:["C1"]}]});
     const writer=new TokenFactorySectionWriter({apiKey:"test",skills:{write_articles:custom,plan_articles:{...custom,instructions:"OTHER_STAGE_ONLY"}}});
-    const result=await writer.reviseSection({pageTitle:"ExampleCo",sectionTitle:"Overview",units:[unit],lines:[],uncoveredUnitIds:["unit"]});
+    const result=await writer.reviseSection({pageTitle:"ExampleCo",sectionTitle:"Overview",units:[unit],lines:[],uncoveredUnitIds:["unit"],updateNote:"Use shorter sentences for this update."});
     expect(request().messages.filter((message: {role:string})=>message.role==="system").map((message: {content:string})=>message.content).join(" ")).toContain(custom.instructions);
     expect(request().messages.filter((message: {role:string})=>message.role==="system").map((message: {content:string})=>message.content).join(" ")).not.toContain("OTHER_STAGE_ONLY");
+    expect(JSON.parse(request().messages.find((message: {role:string})=>message.role==="user").content).updateInstructions).toBe("Use shorter sentences for this update.");
     expect(result.add[0]?.unitIds).toEqual(["unit"]);
     expect(writer.promptVersion).toContain(`${custom.id}@3`);
   });

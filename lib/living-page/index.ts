@@ -1,3 +1,4 @@
+import type { AiCallLogger } from "@/lib/ai/callLog";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
@@ -31,8 +32,8 @@ export interface SectionWriter {
 }
 
 // Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
-export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null, skills?: StageSkills): SectionWriter {
-  const settings = tokenFactoryFromEnv(env, chosenModel);
+export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null, skills?: StageSkills, logCall?: AiCallLogger): SectionWriter {
+  const settings = tokenFactoryFromEnv(env, chosenModel, logCall);
   return settings ? new TokenFactorySectionWriter({ ...settings, skills }) : new FakeSectionWriter();
 }
 
@@ -95,6 +96,7 @@ async function rewriteLines(
     trace: { modelVersion: revision.modelVersion, promptVersion: writer.promptVersion ?? null, tokensIn: null, tokensOut: null },
   };
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai" }, draft);
-  const { applied } = await commitChangeSet(db, changeSetId);
-  return { applied, modelVersion: revision.modelVersion };
+  const result = await commitChangeSet(db, changeSetId);
+  if (result.status !== "applied") throw new Error("The section update was not fully applied. Review its change set in Changes before retrying.");
+  return { applied: result.applied, modelVersion: revision.modelVersion };
 }

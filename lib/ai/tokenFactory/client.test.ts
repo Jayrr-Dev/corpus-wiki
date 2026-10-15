@@ -69,7 +69,7 @@ describe("batched reconciliation", () => {
   it("stops at one passage rather than retrying forever or silently saving an incomplete document", async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ choices: [{ finish_reason: "length", message: { content: null } }] })));
     vi.stubGlobal("fetch", fetchMock);
-    await expect(client().draftChangeSet(input(2))).rejects.toThrow("output limit");
+    await expect(client().draftChangeSet(input(2))).rejects.toThrow("ran out of room");
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 

@@ -36,6 +36,7 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       try {
         answer = await chatJson(this.settings, {
           name: "reconciliation",
+          subject: input.source.title,
           schema: reconciliationAnswerSchema,
           jsonSchema: reconciliationJsonSchema,
           messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills),

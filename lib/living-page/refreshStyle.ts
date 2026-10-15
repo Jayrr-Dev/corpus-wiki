@@ -25,12 +25,12 @@ export function assertStyleCoverage(input: SectionReviseInput, revision: Section
   if (missing.length) throw new Error(`Style rewrite omitted ${missing.length} claims; this section was not changed.`);
 }
 
-export async function refreshSectionStyle(db: DbRpc, writer: SectionWriter, sectionId: string): Promise<void> {
+export async function refreshSectionStyle(db: DbRpc, writer: SectionWriter, sectionId: string, updateNote?: string): Promise<void> {
   const refreshWriter: SectionWriter = {
     name: writer.name, promptVersion: writer.promptVersion,
     prepareSection: async (state) => styleRefreshState(state),
     reviseSection: async (input) => {
-      const revision = await writer.reviseSection(input);
+      const revision = await writer.reviseSection({ ...input, ...(updateNote ? { updateNote } : {}) });
       assertStyleCoverage(input, revision);
       return revision;
     },

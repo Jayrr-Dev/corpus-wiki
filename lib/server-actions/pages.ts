@@ -2,13 +2,17 @@
 
 import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { loadStageSkills } from "@/lib/ai/skills/server";
+import { skillTrace } from "@/lib/ai/skills/prompt";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readChosenModel } from "@/lib/ai/models";
 import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
 import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { requireUser } from "@/lib/auth/requireUser";
-import { type CommitResult, commitPersonEdit } from "@/lib/change-control";
-import { rebuildPage } from "@/lib/living-page";
+import { type CommitResult, commitPersonEdit, submitChangeSet, commitChangeSet } from "@/lib/change-control";
+import { rebuildPage, type SectionRef } from "@/lib/living-page";
+import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
+import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
+import { articleUpdateSchema, type ArticleUpdateRequest } from "@/lib/living-page/updateRequest";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { type ActionResult, toActionResult } from "./result";
@@ -165,5 +169,49 @@ export async function expandRelatedArticles(pageId: string): Promise<ActionResul
     if (settings) settings.skills = await loadStageSkills(db);
     if (!settings) throw new Error("Configure an AI provider before expanding knowledge.");
     return expandEntityKnowledge({ settings, client, db, writer }, entityId);
+  });
+}
+
+// Explicit refresh reads current query results and current skill assignments on every run.
+export async function updateArticle(input: ArticleUpdateRequest): Promise<ActionResult<{ sections: number }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const request = articleUpdateSchema.parse(input);
+    const admin = getAdminSupabase();
+    const table = request.scope === "page" ? "pages" : "sections";
+    const { error } = await admin.from(table).select("id").eq("id", request.id).is("retired_at", null).single();
+    if (error) throw new Error("This article or section is no longer available. Reload the page and try again.");
+    const { db, writer } = await getServerDeps();
+    if (writer.name === "fake") throw new Error("Configure an AI provider in Settings before updating an article.");
+    if (request.scope === "page") {
+      const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+      if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
+      settings.skills = await loadStageSkills(db);
+      const additions = await discoverArticleUpdates(db, admin, settings, request.id, request.note);
+      if (additions.length) {
+        const actions: DraftAction[] = additions.map((section) => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId: request.id, ...section } }));
+        const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
+          summary: "Added newly available knowledge to article", actions,
+          trace: { modelVersion: settings.model ?? null, promptVersion: skillTrace("article-update-discovery-v1", ["plan_articles"], settings.skills), tokensIn: null, tokensOut: null },
+        });
+        const result = await commitChangeSet(db, changeSetId);
+        if (result.status !== "applied") throw new Error("New sections were not fully applied. Review Changes before retrying.");
+      }
+    }
+    const sections = request.scope === "page"
+      ? await db.call<SectionRef[]>("list_page_sections", { p_page_id: request.id })
+      : [{ sectionId: request.id }];
+    if (!sections.length) throw new Error("Add a generated section before updating this article.");
+    let completed = 0;
+    try {
+      for (const section of sections) {
+        await refreshSectionStyle(db, writer, section.sectionId, request.note);
+        completed++;
+      }
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "The AI update failed.";
+      throw new Error(`${completed ? `${completed} section(s) updated before the update stopped. ` : ""}${detail}`);
+    }
+    return { sections: completed };
   });
 }

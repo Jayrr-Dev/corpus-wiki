@@ -20,6 +20,7 @@ import { expandRelatedArticles, improveArticle } from "@/lib/server-actions/page
 import { PageMenu } from "@/app/(app)/_pages/PageMenu";
 import { AddSectionDialog } from "./AddSectionDialog";
 import { SectionMenu } from "./SectionMenu";
+import { UpdateArticleDialog } from "./UpdateArticleDialog";
 
 export function WikiPageView({ slug }: { slug: string }) {
   const { data: pages = [], isPending, error } = usePages({ filters: { slug } });
@@ -51,7 +52,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const error = sectionsQuery.error?.message ?? linesQuery.error?.message;
   const renderSection = (section: Tables<"sections">, hideHeading = false) => (
     <ErrorBoundary key={section.id} where={`The section "${section.title}"`}>
-      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={(line) => setSelectedLineId(line.lineId)} evidence={evidence.loading ? undefined : evidence} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} />} />
+      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={(line) => setSelectedLineId(line.lineId)} evidence={evidence.loading ? undefined : evidence} links={links} hideHeading={hideHeading} menu={<div className="flex items-center gap-1"><UpdateArticleDialog id={section.id} title={section.title} scope="section" /><SectionMenu section={section} /></div>} />
     </ErrorBoundary>
   );
   return (
@@ -105,6 +106,7 @@ function PageActions({ page }: { page: Tables<"pages"> }) {
       <div className="flex items-center gap-1">
         {page.entity_id ? <Button type="button" size="sm" variant="outline" disabled={improve.isPending || expand.isPending} onClick={() => void improve.run(page.id)}>{improve.isPending ? "Structuring article…" : "Improve article"}</Button> : null}
         {(page.context_entity_id ?? page.entity_id) ? <Button type="button" size="sm" variant="outline" disabled={expand.isPending || improve.isPending} onClick={() => void expand.run(page.id)}>{expand.isPending ? "Expanding knowledge…" : "Expand knowledge"}</Button> : null}
+        <UpdateArticleDialog id={page.id} title={page.title} scope="page" disabled={improve.isPending || expand.isPending} />
         <AddSectionDialog page={page} /><PageMenu page={page} />
       </div>
       {expand.error ? <p role="alert" className="mt-2 max-w-sm text-panel">{expand.error}</p> : null}

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { assertStyleCoverage, styleRefreshState } from "./refreshStyle";
+import { describe, expect, it, vi } from "vitest";
+import { assertStyleCoverage, refreshSectionStyle, styleRefreshState } from "./refreshStyle";
 import type { SectionState } from "./types";
 
 const state: SectionState = {
@@ -26,5 +26,33 @@ describe("explicit article style refresh", () => {
   });
   it("does not count invented citations or attempted edits to a protected line", () => {
     expect(() => assertStyleCoverage(input(), { modelVersion:"test", revise:[{lineId:"manual",text:"Replacement",unitIds:["a","b"]}], retire:["generated"],add:[] })).toThrow("omitted 1 claims");
+  });
+});
+
+
+describe("user-triggered section update", () => {
+  it("reloads current claims, forwards the note, rewrites AI text and includes new claims", async () => {
+    const latest = { ...state, units: [...state.units, { ...state.units[0]!, unitId: "new", revisionId: "rnew", content: "Newly saved knowledge." }] };
+    const call = vi.fn(async (fn: string) => {
+      if (fn === "read_section_state") return latest;
+      if (fn === "submit_change_set") return { changeSetId: "change", eventId: "event" };
+      if (fn === "commit_change_set") return { status: "applied", applied: 2 };
+      return {};
+    });
+    const reviseSection = vi.fn(async () => ({ modelVersion: "current-model", revise: [{ lineId: "generated", text: "Updated wording", unitIds: ["a"] }], retire: [], add: [{ text: "Newly saved knowledge.", unitIds: ["new"] }] }));
+    await refreshSectionStyle({ call: call as import("@/lib/db/rpc").DbRpc["call"] }, { name: "test", promptVersion: "skill-v3", reviseSection }, "s", "Keep it concise.");
+    expect(reviseSection).toHaveBeenCalledWith(expect.objectContaining({ updateNote: "Keep it concise.", uncoveredUnitIds: ["new"], units: latest.units, lines: expect.arrayContaining([expect.objectContaining({ lineId: "manual", needsRewrite: false }), expect.objectContaining({ lineId: "generated", needsRewrite: true })]) }));
+    expect(call.mock.calls.map(([name]) => name)).toEqual(["mark_section_building", "read_section_state", "submit_change_set", "commit_change_set", "finish_section_build"]);
+  });
+  it("reports a rejected commit and leaves the section stale instead of reporting success", async () => {
+    const call = vi.fn(async (fn: string) => {
+      if (fn === "read_section_state") return state;
+      if (fn === "submit_change_set") return { changeSetId: "change", eventId: "event" };
+      if (fn === "commit_change_set") return { status: "rejected", applied: 0 };
+      return {};
+    });
+    await expect(refreshSectionStyle({ call: call as import("@/lib/db/rpc").DbRpc["call"] }, { name: "test", reviseSection: async () => ({ modelVersion: "test", revise: [{ lineId: "generated", text: "Updated", unitIds: ["a"] }], retire: [], add: [] }) }, "s")).rejects.toThrow("not fully applied");
+    expect(call.mock.calls.map(([name]) => name)).toContain("mark_section_stale");
+    expect(call.mock.calls.map(([name]) => name)).not.toContain("finish_section_build");
   });
 });
