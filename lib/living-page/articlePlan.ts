@@ -44,3 +44,69 @@ export function articleActions(plan: ArticlePlan, knowledge: ArticleKnowledge, p
     ...sections.map((section): DraftAction => ({ ...base, type: "create_section", targetId: null, input: { pageId, ...section } })),
   ];
 }
+
+// =====================================================================
+// OUTLINE QUALITY: problems worth one correction round, and sentence-case
+// headings. Unlike articleSections these never block a page: a second
+// outline that still has them is used as it is.
+// =====================================================================
+
+const REPEAT_HEADING = /^(overview|introduction|summary|background)\b/i;
+
+// A topic section that repeats the introduction: one named like it, or one made (almost) wholly of its claims.
+// A section of a single claim, or an article with only one topic section, has nowhere else to put them.
+export function outlineProblems(plan: ArticlePlan): string[] {
+  const intro = new Set(plan.introduction.map((ref) => ref.trim()));
+  return plan.sections.flatMap((section) => {
+    if (REPEAT_HEADING.test(section.title.trim())) return [`"${section.title}" restates the introduction; the introduction is already the overview, so give its claims to the topic sections they belong to.`];
+    const refs = [...new Set(section.claims.map((ref) => ref.trim()))];
+    const repeated = refs.filter((ref) => intro.has(ref)).length;
+    if (plan.sections.length < 2 || refs.length < 2 || repeated < Math.max(2, Math.ceil(refs.length * 0.75))) return [];
+    return [`"${section.title}" repeats the introduction (${repeated} of its ${refs.length} claims are introduction claims); spread those claims over the topics they belong to and build each section around claims the introduction does not state.`];
+  });
+}
+
+// The title and headings in sentence case: the first word capitalized, and a later word kept only when it is an
+// acronym, has an inner capital, or the claims or subject name treat it as a proper name
+export function sentenceCasePlan(plan: ArticlePlan, knowledge: ArticleKnowledge): ArticlePlan {
+  const names = properNames([knowledge.entity.name, ...knowledge.units.map((unit) => unit.content)]);
+  const fix = (text: string) => sentenceCase(text, names);
+  return { ...plan, title: fix(plan.title), sections: plan.sections.map((section) => ({ ...section, title: fix(section.title) })) };
+}
+
+const WORD = /\p{L}[\p{L}\p{N}'’-]*/gu;
+const wordBase = (word: string) => word.replace(/['’]s$/u, "");
+
+// Proper names: words capitalized inside a sentence, or capitalized and never written in lower case.
+// Every word of the subject name counts. Possessives count as their base word.
+export function properNames(sources: string[]): Set<string> {
+  const midSentence = new Set<string>(sources[0]?.match(WORD)?.map(wordBase) ?? []);
+  const capitalized = new Set<string>();
+  const lower = new Set<string>();
+  for (const text of sources) {
+    for (const match of text.matchAll(WORD)) {
+      const word = wordBase(match[0]);
+      if (!/^\p{Lu}/u.test(word)) {
+        lower.add(word.toLowerCase());
+        continue;
+      }
+      capitalized.add(word);
+      const before = text.slice(0, match.index).trimEnd();
+      if (before !== "" && !/[.!?:;"“(]$/.test(before)) midSentence.add(word);
+    }
+  }
+  return new Set([...midSentence, ...[...capitalized].filter((word) => !lower.has(word.toLowerCase()))]);
+}
+
+export function sentenceCase(text: string, names: ReadonlySet<string>): string {
+  let first = true;
+  return text.trim().replace(WORD, (word) => {
+    if (first) {
+      first = false;
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+    const acronym = word.length > 1 && word === word.toUpperCase();
+    const innerCapital = /\p{Ll}\p{Lu}/u.test(word);
+    return acronym || innerCapital || names.has(wordBase(word)) ? word : word.toLowerCase();
+  });
+}

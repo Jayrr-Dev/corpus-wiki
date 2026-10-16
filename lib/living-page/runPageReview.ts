@@ -13,6 +13,7 @@ import { reviewStreamDetail } from "./reviewProgress";
 import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "@/lib/ai/outputStyle";
 import { reviewFragments } from "./fragmentReview";
+import { checkReviewEdits } from "./reviewEditCheck";
 
 export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null };
 export type PageReviewStatus = { latest: { summary: string; edits: number; exceptions: number; change_set_id: string | null; created_at: string } | null; openExceptions: number };
@@ -122,13 +123,19 @@ The Curator asked for this review with a focus (guidance on where to look, not e
     const section = snapshot.sections?.find((section) => section.id === (line?.section_id ?? edit.targetId));
     return !removed.has(section?.id ?? "") && !(repairs.length && section?.title.toLowerCase() === "overview");
   });
-  const edits = eligibleEdits.slice(0, Math.max(0, 24 - repairs.length));
+  // Each line rewrite is fact-checked against the page's claims and carries the citations of what it now says
+  progress?.("Checking each rewrite against its claims…");
+  const allowed = eligibleEdits.slice(0, Math.max(0, 24 - repairs.length));
+  const checked = await measure("factCheck", () => checkReviewEdits(settings, snapshot, allowed));
+  const edits = checked.edits;
+  if (answer.tokensIn != null) answer.tokensIn += checked.tokensIn ?? 0;
+  if (answer.tokensOut != null) answer.tokensOut += checked.tokensOut ?? 0;
   const decisions = answer.value.findings.filter(needsPageReviewDecision).filter((finding, index, all) => all.findIndex((other) => other.operation === finding.operation && other.quote === finding.quote && other.destinationId === finding.destinationId) === index);
   const findings = decisions.slice(0, 6);
   const routine = answer.value.findings.filter((finding) => !needsPageReviewDecision(finding));
   const notes = routine.length ? ` Review notes (no approval needed): ${routine.map((finding) => finding.recommendation).join(" ")}` : "";
-  const partial = batches.length > 1 || fragmentGroups.size > 0 || limitedRelated || !!vectorWarning || eligibleEdits.length > edits.length || decisions.length > findings.length;
-  const scopeNote = [batches.length > 1 ? `Reviewed all paragraphs in ${batches.length} parts; cross-section structure was not assessed.` : "", fragmentGroups.size ? "Oversized paragraphs used verified excerpts linked to their citations. This is a partial review; full-paragraph rewrites remain disabled." : "", limitedRelated ? "Some related-page comparisons were omitted to fit the review budget." : "", eligibleEdits.length > edits.length || decisions.length > findings.length ? "Additional suggestions exceeded this run's save limit; run another review to address them." : ""].filter(Boolean).join(" ");
+  const partial = batches.length > 1 || fragmentGroups.size > 0 || limitedRelated || !!vectorWarning || eligibleEdits.length > allowed.length || decisions.length > findings.length;
+  const scopeNote = [batches.length > 1 ? `Reviewed all paragraphs in ${batches.length} parts; cross-section structure was not assessed.` : "", fragmentGroups.size ? "Oversized paragraphs used verified excerpts linked to their citations. This is a partial review; full-paragraph rewrites remain disabled." : "", limitedRelated ? "Some related-page comparisons were omitted to fit the review budget." : "", eligibleEdits.length > allowed.length || decisions.length > findings.length ? "Additional suggestions exceeded this run's save limit; run another review to address them." : ""].filter(Boolean).join(" ");
   const summary = [repairs.length ? `Consolidated ${repairs.length} duplicate section${repairs.length === 1 ? "" : "s"} into the introduction.` : "", answer.value.summary, scopeNote].filter(Boolean).join(" ") + vectorWarning + notes;
   progress?.(`Saving ${repairs.length + edits.length} fixes and ${findings.length} unresolved decisions…`);
   const saved = await measure("save", () => workflowWrite<PageReviewResult>(db, `review:${pageId}:${createHash("sha256").update(JSON.stringify(snapshot)).digest("hex")}`, "complete_page_review", { p_page_id: pageId, p_snapshot: snapshot, p_review: { ...answer.value, summary: partial ? `Partial review. ${summary}` : summary, findings, coverageComplete: !partial }, p_edits: [...repairs, ...edits],

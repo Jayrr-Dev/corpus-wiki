@@ -43,4 +43,27 @@ describe("article planning completeness", () => {
     await expect(planArticle({ apiKey: "test" }, knowledge)).rejects.toThrow("omitted 1 claims (C2)");
     expect(chatJson).toHaveBeenCalledTimes(2);
   });
+
+  it("asks once to restructure a section that repeats the introduction, then uses the outline in sentence case", async () => {
+    const four: ArticleKnowledge = { ...knowledge, units: [...knowledge.units,
+      { unitId: "u3", revisionId: "r3", content: "Acme trains staff.", kind: "procedure", epistemicStatus: "established" },
+      { unitId: "u4", revisionId: "r4", content: "Acme audits sites.", kind: "procedure", epistemicStatus: "established" },
+    ] };
+    const repeating = { title: "Safety at Acme", introduction: ["C1", "C2"], sections: [{ title: "Key Rules", claims: ["C1", "C2"] }, { title: "Training and Audits", claims: ["C3", "C4"] }] };
+    const spread = { ...repeating, sections: [{ title: "Equipment and Training", claims: ["C1", "C3"] }, { title: "Reporting and audits", claims: ["C2", "C4"] }] };
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(repeating)).mockResolvedValueOnce(answer(spread));
+    const { plan } = await planArticle({ apiKey: "test" }, four);
+    expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("repeats the introduction");
+    expect(plan.sections.map((section) => section.title)).toEqual(["Equipment and training", "Reporting and audits"]);
+  });
+
+  it("uses a second outline that still repeats the introduction rather than failing the page", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const repeating = { title: "Safety at Acme", introduction: ["C1"], sections: [{ title: "Overview of rules", claims: ["C1"] }, { title: "Reporting", claims: ["C2"] }] };
+    vi.mocked(chatJson).mockResolvedValue(answer(repeating));
+    await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toMatchObject({ plan: repeating });
+    expect(chatJson).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledWith("Article outline still repeats its introduction", expect.anything());
+    warn.mockRestore();
+  });
 });

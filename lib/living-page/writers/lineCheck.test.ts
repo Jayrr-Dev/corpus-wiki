@@ -30,7 +30,7 @@ const FIXED = { text: "ExampleCo plans to introduce a Hearing Conservation Progr
 const writerAnswer = (...add: unknown[]) => ({ revise: [], retire: [], add });
 const UPHELD = { lineHasFault: true, reason: "The claim says the program is only planned." };
 const REJECTED = { lineHasFault: false, reason: "The claim states this." };
-const verdicts = (...lines: [string, boolean, string?, string[]?][]) => ({ lines: lines.map(([ref, supported, problem, missingCitations]) => ({ ref, supported, problem: problem ?? "", missingCitations: missingCitations ?? [] })) });
+const verdicts = (...lines: [string, boolean, string?, string[]?][]) => ({ lines: lines.map(([ref, supported, problem, missingCitations]) => ({ ref, supported, problem: problem ?? "", missingCitations: missingCitations ?? [], unstatedCitations: [] })) });
 
 describe("line fact-check", () => {
   afterEach(() => vi.unstubAllGlobals());

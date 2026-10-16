@@ -3,7 +3,7 @@ import { z } from "zod";
 import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { DraftAction } from "@/lib/ai/types";
 import type { AdminSupabase } from "@/lib/supabase/admin";
-import { articleActions, articleSections, articlePlanSchema, type ArticleKnowledge } from "./articlePlan";
+import { articleActions, articleSections, articlePlanSchema, outlineProblems, sentenceCasePlan, type ArticleKnowledge } from "./articlePlan";
 import type { PageCandidate } from "./proposePages";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
@@ -18,9 +18,14 @@ const PROMPT = `Plan an encyclopedia article from the supplied verified claims.
 Choose the title from what the claims are ABOUT, not merely the entity name or file name.
 For a company's safety manual, use a title such as "Health and safety program at ExampleCo", not just "ExampleCo".
 For a broad company profile, the company name is appropriate. Never invent a broader subject than the evidence supports.
-Select 2-6 representative claim refs for a short opening introduction explaining the subject and scope.
+Select 2-6 claim refs for a short opening introduction that defines the subject: what it is, how it is classified or labeled
+(keep critical labels such as "pseudoscientific" or "disputed"), its central idea or purpose, and its most notable facts.
+A reader of only the introduction should know what the subject is and why it matters.
 Group ALL claims into 2-8 coherent topic sections (fewer for a short article), in a useful reading order.
+The introduction is the overview: never add a topic section that restates it (such as "Overview", "Introduction", "Background" or "Overview and origins").
+Introduction claims still need a topic section: put each with the topic it adds detail to, and build each section around claims the introduction does not state.
 Use meaningful subject headings such as "Responsibilities", "Protective equipment" and "Incident reporting" when supported.
+Write the title and headings in sentence case: capitalize only the first word and proper names ("Public appearances", not "Public Appearances").
 Do not use storage categories like Facts, Decisions, Definitions, or Preferences as headings.
 Each claim must appear in at least one topic section. Refs may also appear in the introduction.
 Use only C1, C2, ... from the supplied claims. Return a concise title, introduction refs, and sections with titles and refs.
@@ -72,13 +77,22 @@ export async function planArticle(settings: TokenFactorySettings, knowledge: Art
       name: "article_outline", schema: articlePlanSchema, jsonSchema: z.toJSONSchema(articlePlanSchema), maxTokens: 8000, messages,
     });
     usage = addUsage(usage, answer);
+    let problems: string[];
     try {
       articleSections(answer.value, knowledge);
-      return { plan: answer.value, ...usage };
+      problems = outlineProblems(answer.value);
     } catch (error) {
       if (attempt >= 1) throw error;
       messages.push({ role: "user", content: `Your previous outline was ${JSON.stringify(answer.value)}. Validation failed: ${error instanceof Error ? error.message : String(error)}. Return the complete corrected outline, covering every supplied claim in the topic sections. Claims listed only in the introduction must ALSO be assigned to a topic section.` });
+      continue;
     }
+    // A section that repeats the introduction gets one correction; a second outline with it is still used
+    if (problems.length && attempt < 1) {
+      messages.push({ role: "user", content: `Your previous outline was ${JSON.stringify(answer.value)}. It needs restructuring: ${problems.join(" ")} Return the complete corrected outline, still covering every supplied claim in the topic sections.` });
+      continue;
+    }
+    if (problems.length) console.warn("Article outline still repeats its introduction", { entity: knowledge.entity.name, problems });
+    return { plan: sentenceCasePlan(answer.value, knowledge), ...usage };
   }
 }
 
@@ -135,7 +149,7 @@ export function createArticlePlanner(settings: TokenFactorySettings, client: Adm
     }
     return { actions, ...usage };
   };
-  planner.promptVersion = skillTrace("article-outline-v2",["plan_articles"],settings.skills);
+  planner.promptVersion = skillTrace("article-outline-v3",["plan_articles"],settings.skills);
   planner.model = settings.model;
   return planner;
 }
