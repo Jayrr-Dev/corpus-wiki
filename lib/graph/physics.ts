@@ -15,8 +15,8 @@ import type { GraphData, GraphLink, GraphNode } from "./types";
 
 // =====================================================================
 // PHYSICS: Obsidian's four force sliders mapped onto d3-force.
-//   Center force  -> forceX/forceY pull toward (0, 0)
-//   Repel force   -> forceManyBody (negative charge)
+//   Center force  -> forceX/forceY pull toward (0, 0), weighted by link count
+//   Repel force   -> forceManyBody (negative charge), stronger for hubs
 //   Link force    -> forceLink strength
 //   Link distance -> forceLink distance
 //   Domain pull   -> forceClusters (dots gather by domain and subdomain)
@@ -41,17 +41,29 @@ const CROSS_SLACK = 0.9;
 // Derived "similar" links pull this much as hard as stored ones, so real relationships shape the layout
 const SIMILAR_PULL = 0.5;
 
+// Orphans keep this much of the center and domain pull, so they drift out without flying off
+const ORPHAN_PULL = 0.15;
+// Link count at which a dot gets half of the pull it can gain from links
+const HALF_PULL_DEGREE = 3;
+// Each sqrt(link) adds this much repulsion, so hubs clear room around their neighbors
+const HUB_REPEL = 0.5;
+
 // Dot radius in world units: grows with the square root of link count, like Obsidian
 export function nodeRadius(node: Pick<GraphNode, "degree">, nodeSize: number): number {
   return nodeSize * (3 + 1.5 * Math.sqrt(node.degree));
 }
 
+// Share of the center and domain pull a dot feels: weak for orphans, near full for hubs
+export function pullWeight(node: Pick<GraphNode, "degree">): number {
+  return ORPHAN_PULL + (1 - ORPHAN_PULL) * (node.degree / (node.degree + HALF_PULL_DEGREE));
+}
+
 // Applies slider values to a simulation's forces (no restart; the caller decides)
 export function applyForces(simulation: GraphSimulation, forces: GraphForces, nodeSize: number): void {
   simulation
-    .force("x", forceX<SimNode>(0).strength(forces.center * CENTER_SCALE))
-    .force("y", forceY<SimNode>(0).strength(forces.center * CENTER_SCALE))
-    .force("charge", forceManyBody<SimNode>().strength(-forces.repel * REPEL_SCALE).distanceMax(REPEL_REACH))
+    .force("x", forceX<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
+    .force("y", forceY<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
+    .force("charge", forceManyBody<SimNode>().strength((node) => -forces.repel * REPEL_SCALE * (1 + HUB_REPEL * Math.sqrt(node.degree))).distanceMax(REPEL_REACH))
     .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2))
     .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE))
     .force("root-separation", forces.cluster > 0 ? forceRootSeparation(nodeSize, simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")?.links() ?? []) : null);

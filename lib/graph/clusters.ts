@@ -1,5 +1,5 @@
 import type { Force } from "d3-force";
-import { nodeRadius, type SimLink, type SimNode } from "./physics";
+import { nodeRadius, pullWeight, type SimLink, type SimNode } from "./physics";
 import type { GraphNode } from "./types";
 
 // =====================================================================
@@ -127,8 +127,10 @@ export function forceClusters(strength: number): Force<SimNode, undefined> {
     if (strength <= 0) return;
     const pull = strength * alpha * 0.6;
     for (const [node, spot] of targets) {
-      node.vx = (node.vx ?? 0) + (spot.x - (node.x ?? 0)) * pull;
-      node.vy = (node.vy ?? 0) + (spot.y - (node.y ?? 0)) * pull;
+      // Linked dots gather at the spot; orphans hang back toward the domain's edge
+      const weighted = pull * pullWeight(node);
+      node.vx = (node.vx ?? 0) + (spot.x - (node.x ?? 0)) * weighted;
+      node.vy = (node.vy ?? 0) + (spot.y - (node.y ?? 0)) * weighted;
     }
   };
 
