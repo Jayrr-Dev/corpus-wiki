@@ -5,6 +5,7 @@ import {
   DecisionIcon,
   DomainIcon,
   EntityIcon,
+  ErrorLogIcon,
   ExceptionIcon,
   GraphIcon,
   type IconProps,
@@ -45,5 +46,6 @@ export function isActivePath(href: string, pathname: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-// SIDEBAR, FOOTER: settings, above the tutorial and sign-out buttons
+// SIDEBAR, FOOTER: the error log and settings, above the tutorial and sign-out buttons
+export const ERROR_LOG_NAV: NavItem = { label: "Error log", href: "/errors", icon: ErrorLogIcon };
 export const SETTINGS_NAV: NavItem = { label: "Settings", href: "/settings", icon: SettingsIcon };

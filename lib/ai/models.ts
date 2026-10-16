@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { DbRpc } from "@/lib/db/rpc";
-import { TOKEN_FACTORY_BASE_URL } from "./config";
+import { CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN_FACTORY_BASE_URL } from "./config";
 
 // =====================================================================
 // MODEL CHOICE: which Token Factory model the AI calls use. The list
@@ -48,12 +48,27 @@ export async function saveChosenModel(db: DbRpc, model: string | null): Promise<
 
 // Every model id Token Factory offers this key, sorted by name
 export async function listTokenFactoryModels(apiKey: string): Promise<string[]> {
-  const response = await fetch(new URL("models", TOKEN_FACTORY_BASE_URL), {
+  return sortIds(await listModelIds("Token Factory", TOKEN_FACTORY_BASE_URL, apiKey));
+}
+
+// Every model the picker offers: Token Factory's, plus Cerebras's as "cerebras/<id>" when CEREBRAS_API_KEY is set
+export async function listAvailableModels(nebiusKey: string, env: NodeJS.ProcessEnv = process.env): Promise<string[]> {
+  const cerebrasKey = env.CEREBRAS_API_KEY;
+  const [tokenFactory, cerebras] = await Promise.all([
+    listModelIds("Token Factory", TOKEN_FACTORY_BASE_URL, nebiusKey),
+    cerebrasKey ? listModelIds("Cerebras", CEREBRAS_BASE_URL, cerebrasKey) : Promise.resolve([]),
+  ]);
+  return sortIds([...tokenFactory, ...cerebras.map((id) => CEREBRAS_MODEL_PREFIX + id)]);
+}
+
+async function listModelIds(provider: string, baseUrl: string, apiKey: string): Promise<string[]> {
+  const response = await fetch(new URL("models", baseUrl), {
     headers: { Authorization: `Bearer ${apiKey}` },
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`Token Factory ${response.status}: ${(await response.text()).slice(0, 300)}`);
+  if (!response.ok) throw new Error(`${provider} ${response.status}: ${(await response.text()).slice(0, 300)}`);
   const body = (await response.json()) as ModelsResponse;
-  const ids = (body.data ?? []).flatMap((model) => (model.id ? [model.id] : []));
-  return ids.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  return (body.data ?? []).flatMap((model) => (model.id ? [model.id] : []));
 }
+
+const sortIds = (ids: string[]) => ids.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));

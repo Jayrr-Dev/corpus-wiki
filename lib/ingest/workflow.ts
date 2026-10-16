@@ -51,7 +51,9 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
       }
       const run: Record<(typeof KNOWLEDGE_STAGES)[number] | (typeof ARTICLE_STAGES)[number], () => Promise<unknown>> = {
         embeddings: async () => deps.claimEmbedder?.(),
+        tidy: async () => deps.entityTidier?.(eventId),
         describe: async () => deps.entityDescriber?.(eventId),
+        profiles: async () => deps.profileWriter?.(eventId),
         duplicates: async () => deps.deduper?.(eventId),
         place: async () => deps.topicPlacer?.(eventId),
         hierarchy: async () => deps.hierarchyOrganizer?.(eventId),

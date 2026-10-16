@@ -2,8 +2,7 @@
 
 import { currentActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
-import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { listTokenFactoryModels, saveAllowExternalKnowledge, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
+import { listAvailableModels,saveAllowExternalKnowledge, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getServerSupabase } from "@/lib/supabase/server";
@@ -69,8 +68,8 @@ export async function setAllowExternalKnowledge(enabled: boolean): Promise<Actio
 
 // Refuses a model id the live list does not have (a typo would fail every upload)
 async function requireOfferedModel(model: string): Promise<void> {
-  const settings = tokenFactoryFromEnv();
-  if (!settings) throw new Error("NEBIUS_API_KEY is not set, so there is no model list to pick from.");
-  const models = await listTokenFactoryModels(settings.apiKey);
-  if (!models.includes(model)) throw new Error(`Token Factory does not offer "${model}".`);
+  const nebiusKey = process.env.NEBIUS_API_KEY;
+  if (!nebiusKey) throw new Error("NEBIUS_API_KEY is not set, so there is no model list to pick from.");
+  const models = await listAvailableModels(nebiusKey);
+  if (!models.includes(model)) throw new Error(`No connected AI provider offers "${model}".`);
 }

@@ -9,6 +9,7 @@ import { formatLocation, humanize, readablePassage } from "@/app/(app)/_lib/form
 import { readsState } from "@/app/(app)/_lib/reads";
 import type { Enums, Tables } from "@/lib/database/types";
 import { usePassages } from "@/lib/queries";
+import { FigureThumbnail, type SourceFigure, sourceFigures } from "./SourceFigures";
 import { type UnitSummary, useActionsForPassages, useUnitSummaries } from "@/lib/queries/screens";
 
 // PASSAGES: in order, each with the units its actions produced or changed
@@ -20,13 +21,14 @@ export function SourcePassages({ sourceId }: { sourceId: string }) {
   const units = useUnitSummaries(unitActions.map((action) => action.target_id));
   const unitById = useMemo(() => new Map((units.data ?? []).map((unit) => [unit.id, unit])), [units.data]);
   const targetId = usePassageTarget();
+  const figureByPassage = useMemo(() => new Map(sourceFigures(passages.data ?? []).flatMap((figure) => figure.passages.map((passage) => [passage.id, figure] as const))), [passages.data]);
   return (
     <Section title={`Passages (${list.length})`}>
       <QueryState query={readsState([passages, actions, units])}>
         {list.length === 0 ? <Note>No passages were extracted.</Note> : null}
         <ol className="flex flex-col gap-4">
           {list.map((passage) => (
-            <PassageItem key={passage.id} passage={passage} isTarget={passage.id === targetId} actions={unitActions.filter((a) => a.passage_ids.includes(passage.id))} unitById={unitById} />
+            <PassageItem key={passage.id} passage={passage} figure={figureByPassage.get(passage.id) ?? null} isTarget={passage.id === targetId} actions={unitActions.filter((a) => a.passage_ids.includes(passage.id))} unitById={unitById} />
           ))}
         </ol>
       </QueryState>
@@ -56,15 +58,19 @@ function usePassageTarget(): string | null {
 
 type PassageItemProps = { passage: Tables<"passages">; actions: Tables<"actions">[]; unitById: Map<string, UnitSummary> };
 
-// ONE PASSAGE: position and location, the text, then what it produced
-function PassageItem({ passage, actions, unitById, isTarget }: PassageItemProps & { isTarget: boolean }) {
+// ONE PASSAGE: position and location, the text, then what it produced. A passage describing a
+// picture says which figure; the figure's first passage shows its thumbnail.
+function PassageItem({ passage, figure, actions, unitById, isTarget }: PassageItemProps & { figure: SourceFigure | null; isTarget: boolean }) {
+  const startsFigure = figure?.passages[0]?.id === passage.id;
   return (
     <li id={`passage-${passage.id}`} className={cn("flex scroll-mt-6 flex-col gap-1.5", isTarget && "-mx-2 rounded-md bg-hover px-2 py-1.5 ring-1 ring-link/40")}>
       <p className="flex gap-2 text-xs text-faint">
         <span className="font-mono">#{passage.position}</span>
         <span>{formatLocation(passage.location)}</span>
         {passage.speaker_label ? <span>{passage.speaker_label}</span> : null}
+        {figure && !startsFigure ? <span>Describes figure {figure.number}</span> : null}
       </p>
+      {figure && startsFigure ? <FigureThumbnail sourceId={passage.source_id} figure={figure} size="sm" /> : null}
       <Quote>{readablePassage(passage.text)}</Quote>
       <ProducedUnits actions={actions} unitById={unitById} />
     </li>

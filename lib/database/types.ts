@@ -329,6 +329,45 @@ export type Database = {
         }
         Relationships: []
       }
+      error_log: {
+        Row: {
+          created_at: string
+          digest: string | null
+          id: string
+          level: string
+          location: string | null
+          message: string
+          path: string | null
+          person_id: string | null
+          source: string
+          stack: string | null
+        }
+        Insert: {
+          created_at?: string
+          digest?: string | null
+          id?: string
+          level?: string
+          location?: string | null
+          message: string
+          path?: string | null
+          person_id?: string | null
+          source: string
+          stack?: string | null
+        }
+        Update: {
+          created_at?: string
+          digest?: string | null
+          id?: string
+          level?: string
+          location?: string | null
+          message?: string
+          path?: string | null
+          person_id?: string | null
+          source?: string
+          stack?: string | null
+        }
+        Relationships: []
+      }
       entities: {
         Row: {
           aliases: string[]
@@ -373,6 +412,62 @@ export type Database = {
           type?: string
         }
         Relationships: []
+      }
+      entity_profiles: {
+        Row: {
+          entity_id: string
+          is_stakeholder: boolean
+          kind: string | null
+          relation: string | null
+          key_facts: Json
+          functions: Json
+          contacts: Json
+          person_contacts: Json
+          hidden: boolean
+          input_hash: string | null
+          generated_at: string | null
+          model: string | null
+          updated_at: string
+        }
+        Insert: {
+          entity_id: string
+          is_stakeholder?: boolean
+          kind?: string | null
+          relation?: string | null
+          key_facts?: Json
+          functions?: Json
+          contacts?: Json
+          person_contacts?: Json
+          hidden?: boolean
+          input_hash?: string | null
+          generated_at?: string | null
+          model?: string | null
+          updated_at?: string
+        }
+        Update: {
+          entity_id?: string
+          is_stakeholder?: boolean
+          kind?: string | null
+          relation?: string | null
+          key_facts?: Json
+          functions?: Json
+          contacts?: Json
+          person_contacts?: Json
+          hidden?: boolean
+          input_hash?: string | null
+          generated_at?: string | null
+          model?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_profiles_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: true
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       exceptions: {
         Row: {
@@ -992,6 +1087,7 @@ export type Database = {
         | "retire_section"
         | "update_entity"
         | "retire_entity"
+        | "merge_entity"
         | "update_domain"
         | "retire_domain"
         | "source_lifecycle"
@@ -1090,6 +1186,7 @@ export const Constants = {
         "retire_section",
         "update_entity",
         "retire_entity",
+        "merge_entity",
         "update_domain",
         "retire_domain",
         "source_lifecycle",

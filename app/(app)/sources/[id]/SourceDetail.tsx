@@ -14,10 +14,11 @@ import { useShiftEvents, useSource, useSources } from "@/lib/queries";
 import { useSourceUnitIds, useSourceUsage, useUnitSummaries } from "@/lib/queries/screens";
 import { SourcePreview } from "../SourcePreview";
 import { SourceRowMenu } from "../SourceRowMenu";
+import { SourceFigures } from "./SourceFigures";
 import { SourcePassages } from "./SourcePassages";
 import { UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
 
-// SOURCE DETAIL: what the file is, a preview of it, the knowledge that cites it, then its passages
+// SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the knowledge that cites it, then its passages
 export function SourceDetail({ sourceId }: { sourceId: string }) {
   const query = useSource(sourceId);
   const source = query.data;
@@ -30,6 +31,7 @@ export function SourceDetail({ sourceId }: { sourceId: string }) {
           <Section title="Preview">
             <SourcePreview source={source} />
           </Section>
+          <SourceFigures sourceId={source.id} />
           <SourceKnowledge sourceId={source.id} />
           <SourcePassages sourceId={source.id} />
         </div>

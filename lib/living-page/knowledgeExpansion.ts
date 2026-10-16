@@ -43,7 +43,7 @@ async function loadContext(client: AdminSupabase, entityId: string): Promise<Exp
   if (domainError) throw new Error(domainError.message);
   const { data: entities, error: entityError } = await client.from("entities").select("id, type, key, name").is("merged_into_id", null).is("retired_at", null);
   if (entityError) throw new Error(entityError.message);
-  const { data: definitionUnits, error: definitionError } = await client.from("units").select("id, current_revision_id").eq("kind", "definition").is("retired_at", null).is("merged_into_id", null);
+  const { data: definitionUnits, error: definitionError } = await client.from("units").select("id, current_revision_id").eq("kind", "definition").is("retired_at", null);
   if (definitionError) throw new Error(definitionError.message);
   const definitionIds = (definitionUnits ?? []).map((unit) => unit.id);
   const { data: definitionRevisions, error: definitionRevisionError } = definitionIds.length ? await client.from("revisions").select("id, knowledge_context").in("id", (definitionUnits ?? []).map((unit) => unit.current_revision_id)) : { data: [], error: null };

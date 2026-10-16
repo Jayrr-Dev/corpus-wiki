@@ -61,7 +61,7 @@ type EmbeddedFigure = { path: string; lineId: string; reference: ArticleReferenc
 
 // The stored file, through the route that signs a short-lived URL for it
 const sourceFileSrc = (sourceId: string) => `/api/sources/${sourceId}/file`;
-const embeddedFigureSrc = (sourceId: string, path: string) => `/api/sources/${sourceId}/figure?path=${encodeURIComponent(path)}`;
+export const embeddedFigureSrc = (sourceId: string, path: string) => `/api/sources/${sourceId}/figure?path=${encodeURIComponent(path)}`;
 
 // One figure per image or video source, and one per picture embedded in a cited document,
 // beside the first line citing it (in article order)

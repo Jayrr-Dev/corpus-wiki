@@ -101,7 +101,9 @@ export type ActionInputByType = {
   // CATALOG EDITS (a person's, from the Entities and Domains screens). target = the entity or domain.
   // Type and key never change: they are the natural key earlier actions use.
   update_entity: { name: string; aliases: string[] };
-  retire_entity: { reason: string };
+  retire_entity: { reason: string; housekeeping?: boolean }; // housekeeping: the AI retires an entity nothing uses
+  // ENTITY MERGE (the AI's cleanup after an upload). target = the duplicate; it folds into intoEntityId
+  merge_entity: { intoEntityId: string; reason: string; autoMerge?: boolean };
   update_domain: { name: string }; // the path, and every path under it, follows the new name
   retire_domain: { reason: string }; // retires its subtree too
 };

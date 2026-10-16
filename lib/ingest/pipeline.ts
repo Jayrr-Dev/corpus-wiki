@@ -26,7 +26,7 @@ import { uploadExecution, workflowStep } from "./workflowContext";
 // duplicateGuard: turns repeats of stored claims into revisions before a web page's draft is
 // submitted (lib/ingest/duplicateGuard.ts); uploads save first and leave repeats to `deduper`,
 // which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote
-export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
+export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
 export type UploadRecord = {
@@ -74,6 +74,7 @@ export async function reconcileExternalUpload(deps: PipelineDeps, eventId: strin
   try {
     const { eventStatus, applied } = await draftAndCommit(deps, eventId, (draft, input) => scopeExternalDraft(draft, input.domainPaths), { reviseStored: false }, scope);
     try { await deps.entityDescriber?.(eventId); } catch { /* descriptions are a nicety; the claims are saved */ }
+    try { await deps.profileWriter?.(eventId); } catch { /* so are stakeholder cards */ }
     return { status: eventStatus, added: applied };
   } catch (error) {
     await setEventStatus(deps.db, eventId, "failed", error instanceof Error ? error.message : String(error));

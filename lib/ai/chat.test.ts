@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import type { AiCallRecord } from "./callLog";
-import { chatJson, CompletionLengthError, type CompletionResponse, parseContent } from "./chat";
+import { chatJson, CompletionLengthError, type CompletionResponse, oneLeadingSystemMessage, parseContent } from "./chat";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
 
 // =====================================================================
@@ -238,5 +238,17 @@ describe("Nebius response handling", () => {
     vi.stubGlobal("fetch", fetchMock);
     await expect(chatJson({ apiKey: "test" }, okRequest)).rejects.toThrow("within three minutes");
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+// CEREBRAS MESSAGES: Qwen accepts only one system message, and only at the start
+describe("oneLeadingSystemMessage", () => {
+  it("joins every system message into one at the start and keeps the rest in order", () => {
+    expect(oneLeadingSystemMessage([
+      { role: "system", content: "a" },
+      { role: "user", content: "u1" },
+      { role: "system", content: "b" },
+      { role: "user", content: "u2" },
+    ])).toEqual([{ role: "system", content: "a\n\nb" }, { role: "user", content: "u1" }, { role: "user", content: "u2" }]);
   });
 });

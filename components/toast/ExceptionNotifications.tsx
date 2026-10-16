@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+import { ChevronRight, X } from "lucide-react";
 import { exceptionTitle } from "@/app/(app)/exceptions/ExceptionCard";
 import { ExceptionDialog } from "@/app/(app)/exceptions/ExceptionDialog";
 import { useExceptionData } from "@/app/(app)/exceptions/ExceptionsScreen";
@@ -9,6 +9,7 @@ import { UNIT_ACTION_TYPES } from "@/app/(app)/_components/ActionSummary";
 import { asObject, describeActionInput, readString } from "@/app/(app)/_lib/format";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Tooltip } from "@/components/standard/tooltip";
 import { useExceptions } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime/useRealtimeInvalidation";
@@ -55,12 +56,13 @@ export function ExceptionNotifications() {
 function ExceptionToast({ exception, remaining, title, proposal, onView, onClose }: { exception: Tables<"exceptions">; remaining: number; title: string; proposal: string | null; onView: () => void; onClose: () => void }) {
   const answer = useServerAction(answerException, { progress: false });
   const sending = useRef(false);
+  const [note, setNote] = useState("");
   const detail = readString(asObject(exception.evidence), "detail");
   const decide = async (accept: boolean) => {
     if (sending.current) return;
     sending.current = true;
     try {
-      const result = await answer.run(exception.id, accept, null);
+      const result = await answer.run(exception.id, accept, note.trim() || null);
       if (result.ok) onClose();
     } finally { sending.current = false; }
   };
@@ -73,6 +75,13 @@ function ExceptionToast({ exception, remaining, title, proposal, onView, onClose
       <h2 className="font-semibold">{title}</h2>
       {detail && !detail.startsWith("# ") && <p className="break-words text-muted-foreground">{detail}</p>}
       {proposal && proposal !== detail && <div className="space-y-1 rounded-lg bg-muted/50 p-3"><p className="text-xs font-medium text-muted-foreground">Proposed change</p><p className="break-words">{proposal}</p></div>}
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center gap-1.5 text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
+          <ChevronRight className="size-3.5 transition-transform group-open:rotate-90" />Add details (optional)
+        </summary>
+        <Textarea className="mt-2" aria-label="Details to steer this decision (optional)" placeholder="e.g. Keep the citation in both places" maxLength={2000}
+          value={note} disabled={answer.isPending} onChange={(event) => setNote(event.target.value)} />
+      </details>
       {answer.error && <p className="text-failed" role="alert">{answer.error}</p>}
     </div>
     <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">

@@ -28,17 +28,22 @@ export function canCancelUpload(workflow: UploadWorkflow): boolean {
 export type UploadJob = "knowledge" | "articles";
 
 // After the save: index the new claims, merge their repeats of stored claims (by meaning,
-// so it needs the vectors), file what is left into topics in one view of the whole file
-// ("place"; a new root waits for approval here), then describe and organize. All of it
+// so it needs the vectors), merge duplicate entities and retire unused ones ("tidy"), file
+// what is left into topics in one view of the whole file ("place"; a new root waits for
+// approval here), then describe, write stakeholder cards ("profiles") and organize. All of it
 // finishes before any page is written, so pages are built once from cleaned, filed knowledge.
-export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "place", "describe", "hierarchy", "glossary"] as const;
+export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "tidy", "place", "describe", "profiles", "hierarchy", "glossary"] as const;
 export const ARTICLE_STAGES = ["expand", "plan", "pages"] as const;
+
+// Every knowledge stage is saved and the articles are still unfinished (never run, or failed)
+export function knowledgeSaved(workflow: UploadWorkflow): boolean {
+  const succeeded = new Set(workflow.steps.filter((step) => step.state === "succeeded").map((step) => step.key));
+  return workflow.state === "incomplete" && !workflow.waiting && ["reconcile", ...KNOWLEDGE_STAGES].every((key) => succeeded.has(key));
+}
 
 // The knowledge job finished cleanly and the articles have not been written yet
 export function articlesPending(workflow: UploadWorkflow): boolean {
-  const succeeded = new Set(workflow.steps.filter((step) => step.state === "succeeded").map((step) => step.key));
-  return workflow.state === "incomplete" && !workflow.error && !workflow.waiting &&
-    ["reconcile", ...KNOWLEDGE_STAGES].every((key) => succeeded.has(key)) &&
+  return knowledgeSaved(workflow) && !workflow.error &&
     !workflow.steps.some((step) => step.state === "failed" && (ARTICLE_STAGES as readonly string[]).includes(step.key));
 }
 

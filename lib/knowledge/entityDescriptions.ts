@@ -9,6 +9,7 @@ import {
   describeAnswerToRows,
   type EntityEvidence,
 } from "@/lib/ai/tokenFactory/describeEntities";
+import { supabaseRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { fetchDescribableEntityIds } from "./describableEntities";
 
@@ -39,14 +40,10 @@ export async function planDescribeBatches(client: AdminSupabase): Promise<string
   return batches;
 }
 
-// AFTER AN UPLOAD: describe the entities its change sets created
+// AFTER AN UPLOAD: describe the entities it created, and again those whose claims it changed
+// (a description written from the first file would otherwise never learn from the next)
 export async function describeEventEntities(deps: Deps, eventId: string): Promise<void> {
-  const sets = await deps.client.from("change_sets").select("id").eq("event_id", eventId);
-  if (sets.error) throw sets.error;
-  if (!sets.data.length) return;
-  const actions = await deps.client.from("actions").select("target_id").in("change_set_id", sets.data.map((set) => set.id)).eq("type", "create_entity").eq("outcome", "applied");
-  if (actions.error) throw actions.error;
-  const ids = [...new Set(actions.data.flatMap((action) => (action.target_id ? [action.target_id] : [])))];
+  const ids = [...await supabaseRpc(deps.client).call<string[]>("event_touched_entities", { p_event_id: eventId })];
   ids.sort();
   for (let index = 0; index < ids.length; index += DESCRIBE_BATCH_SIZE) {
     const batch = ids.slice(index, index + DESCRIBE_BATCH_SIZE);

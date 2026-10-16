@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
-import { isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
+import { ERROR_LOG_NAV, isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
 
 // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
 function useOpenExceptionCount(): number {
@@ -64,7 +64,7 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
   );
 }
 
-// APP SIDEBAR: brand and search, the two nav groups, then settings / tutorial / sign out
+// APP SIDEBAR: brand and search, the two nav groups, then error log / settings / tutorial / sign out
 // On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links
 export function AppSidebar() {
   const openCount = useOpenExceptionCount();
@@ -91,6 +91,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter separator>
         <SidebarMenu>
+          <NavLink item={ERROR_LOG_NAV} />
           <NavLink item={SETTINGS_NAV} />
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Tutorial" onClick={reopenTutorial}>

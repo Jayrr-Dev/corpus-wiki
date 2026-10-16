@@ -135,6 +135,7 @@ function DomainList({ nodes, nested = false }: { nodes: DomainNode[]; nested?: b
 const RETIRES: Partial<Record<Tables<"actions">["type"], string>> = {
   retire_claim: "The AI wants to retire a claim",
   retire_entity: "The AI wants to retire an entity",
+  merge_entity: "The AI wants to merge two entities",
   retire_domain: "The AI wants to retire a domain",
   merge_duplicates: "The AI wants to merge and retire duplicate claims",
 };

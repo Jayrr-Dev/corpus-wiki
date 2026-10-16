@@ -19,6 +19,8 @@ import { imageDescriberFrom } from "@/lib/ingest/describeMediaServer";
 import type { VideoReader } from "@/lib/ingest/describeVideo";
 import { videoReaderFrom } from "@/lib/ingest/describeVideoServer";
 import { describeEventEntities } from "@/lib/knowledge/entityDescriptions";
+import { cleanUpEntities } from "@/lib/knowledge/entityCleanup";
+import { profileEventEntities } from "@/lib/knowledge/entityProfiles";
 import { readChosenModel } from "@/lib/ai/models";
 import type { ReconciliationClient } from "@/lib/ai/types";
 import { type DbRpc, supabaseRpc } from "@/lib/db/rpc";
@@ -33,7 +35,7 @@ import { requireContextStorage } from "./contextReadiness";
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
 // Every AI call is logged to public.ai_calls (token usage on /settings).
 // Server actions take them from here; tests build their own (pg + fakes).
-export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
+export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
 
 export async function getServerDeps(): Promise<ServerDeps> {
   const admin = getAdminSupabase();
@@ -59,6 +61,8 @@ export async function getServerDeps(): Promise<ServerDeps> {
     topicPlacer: settings ? topicPlacerFor(db, settings) : undefined,
     duplicateGuard: settings ? duplicateGuardFor(db, settings, embedder) : undefined,
     entityDescriber: settings ? (eventId) => describeEventEntities({ client: admin, settings }, eventId) : undefined,
+    entityTidier: settings ? async (eventId) => void (await cleanUpEntities(db, settings, eventId)) : undefined,
+    profileWriter: settings ? (eventId) => profileEventEntities({ client: admin, settings }, eventId) : undefined,
     hierarchyOrganizer: (eventId) => organizeEventHierarchy(db, admin, eventId),
     imageDescriber: imageDescriberFrom(settings),
     knowledgeExpander: settings ? (eventId) => expandEventKnowledge({ settings, client: admin, db, writer }, eventId) : undefined,

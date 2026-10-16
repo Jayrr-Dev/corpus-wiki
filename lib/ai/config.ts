@@ -2,6 +2,12 @@
 // The key is NEBIUS_API_KEY and the model is AI_MODEL, both server env only.
 export const TOKEN_FACTORY_BASE_URL = "https://api.tokenfactory.nebius.com/v1/";
 
+// CEREBRAS (optional second provider, OpenAI-compatible). Its models show in the Settings
+// picker as "cerebras/<id>"; picking one sends chat calls there with CEREBRAS_API_KEY.
+// Embeddings and image reading stay on Token Factory (Cerebras offers neither).
+export const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1/";
+export const CEREBRAS_MODEL_PREFIX = "cerebras/";
+
 // DEFAULT MODEL: the Settings pick takes precedence over AI_MODEL and this fallback.
 export const DEFAULT_AI_MODEL = "nvidia/nemotron-3-super-120b-a12b";
 

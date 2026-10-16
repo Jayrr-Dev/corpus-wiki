@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { PendingStaleRefresh } from "@/components/living-page/PendingStaleRefresh";
+import { BrowserErrorReporter } from "@/components/error/BrowserErrorReporter";
 import { ExceptionNotifications } from "@/components/toast/ExceptionNotifications";
 import { AppShell } from "@/components/shell";
 import { TimeZoneProvider } from "@/app/(app)/_components/DateTime";
@@ -19,6 +20,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <AppShell defaultOpen={sidebarOpen}>
         <PendingStaleRefresh />
         <ExceptionNotifications />
+        <BrowserErrorReporter />
         {children}
       </AppShell>
     </TimeZoneProvider>

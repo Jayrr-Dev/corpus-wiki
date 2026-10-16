@@ -25,7 +25,7 @@ type ErrorFallbackProps = {
 
 export function ErrorFallback({ error, where, onRetry, isCompact = false }: ErrorFallbackProps) {
   useEffect(() => {
-    void reportClientError({ where, message: error.message, digest: error.digest, path: window.location.pathname }).catch(() => {});
+    void reportClientError({ where, message: error.message, digest: error.digest, path: window.location.pathname, stack: error.stack }).catch(() => {});
   }, [error, where]);
 
   return (

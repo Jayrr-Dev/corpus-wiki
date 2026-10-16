@@ -162,6 +162,14 @@ const MODULES: Record<string, ModuleTutorial> = {
       step("Create and reuse skills", "New skill creates custom instructions. Duplicate a built-in skill to adapt it; changes apply to future runs. Assigned skills must be unassigned before archiving.", "Use New skill or open Skill library to inspect existing instructions."),
     ],
   },
+  errors: {
+    id: "errors", label: "Error log",
+    steps: [
+      step("See everything that went wrong", "The error log lists every error in the app: crashes on a page, failed actions, background jobs such as uploads, failed AI calls and errors in the browser.", "Scan the newest errors at the top."),
+      step("Read the details", "Filter by where an error came from, search its message, and open a row to read the full message and stack trace.", "Select a row to see its details."),
+      step("Clear the log", "Clear log removes every entry. New errors keep arriving as they happen.", "Clear the log once you have dealt with what is in it."),
+    ],
+  },
   settings: {
     id: "settings", label: "Settings",
     steps: [

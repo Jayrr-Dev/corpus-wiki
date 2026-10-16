@@ -3,7 +3,7 @@ import "server-only";
 import type { z } from "zod";
 import { type AiCallLogger, type AiCallStatus, type CompletionUsage, logSafely, usageTokens } from "./callLog";
 import type { RoleInstruction, StageSkills } from "./skills/types";
-import { DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
+import { CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
 
@@ -86,14 +86,21 @@ export function resolveModel(chosenModel: string | null | undefined, env: NodeJS
   return chosenModel || env.AI_MODEL || DEFAULT_AI_MODEL;
 }
 
-// Reads the Token Factory settings from server env (+ the picked model and the usage logger); null when there is no key
+// True for a "cerebras/<id>" pick, which runs on Cerebras instead of Token Factory
+export const isCerebrasModel = (model: string) => model.startsWith(CEREBRAS_MODEL_PREFIX);
+
+// Reads the AI settings from server env (+ the picked model and the usage logger); null when there is
+// no NEBIUS_API_KEY. A Cerebras pick swaps in CEREBRAS_API_KEY and the Cerebras endpoint.
 export function tokenFactoryFromEnv(
   env: NodeJS.ProcessEnv = process.env,
   chosenModel: string | null = null,
   logCall?: AiCallLogger,
 ): TokenFactorySettings | null {
   if (!env.NEBIUS_API_KEY) return null;
-  return { apiKey: env.NEBIUS_API_KEY, model: resolveModel(chosenModel, env), logCall };
+  const model = resolveModel(chosenModel, env);
+  if (!isCerebrasModel(model)) return { apiKey: env.NEBIUS_API_KEY, model, logCall };
+  if (!env.CEREBRAS_API_KEY) throw new Error(`${model} is picked in Settings, but CEREBRAS_API_KEY is not set in the server env.`);
+  return { apiKey: env.CEREBRAS_API_KEY, model, baseUrl: CEREBRAS_BASE_URL, logCall };
 }
 
 // `subject` names what the call is about (a file title, a section) for the usage log
@@ -185,27 +192,41 @@ async function requestCompletion(
   maxTokens: number,
   effort: ReasoningEffort,
 ): Promise<CompletionResponse> {
+  const cerebras = isCerebrasModel(model);
+  const messages: (ChatMessage | ChatMediaMessage)[] = [
+    { role: "system", content: `Return only JSON matching this schema: ${JSON.stringify(request.jsonSchema)}` },
+    ...(request.outputStyle === "wiki_article" || request.outputStyle === "chat" ? [] : [{ role: "system" as const, content: CONCISE_OUTPUT_INSTRUCTIONS }]),
+    ...request.messages,
+  ];
   const response = await postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
     method: "POST",
     // Inside an upload run, a cancel or lost lease aborts the call
     signal: request.signal ?? uploadExecution.getStore()?.signal,
     headers: { Authorization: `Bearer ${settings.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: `Return only JSON matching this schema: ${JSON.stringify(request.jsonSchema)}` },
-        ...(request.outputStyle === "wiki_article" || request.outputStyle === "chat" ? [] : [{ role: "system", content: CONCISE_OUTPUT_INSTRUCTIONS }]),
-        ...request.messages,
-      ],
+      // Cerebras knows its models without the "cerebras/" prefix the picker adds
+      model: cerebras ? model.slice(CEREBRAS_MODEL_PREFIX.length) : model,
+      messages: cerebras ? oneLeadingSystemMessage(messages) : messages,
       temperature: 0,
       ...reasoningFields(model, effort),
       max_tokens: maxTokens,
       response_format: { type: "json_schema", json_schema: { name: request.name, schema: request.jsonSchema, strict: true } },
-      ...(request.onStream ? { stream: true, stream_options: { include_usage: true } } : {}),
+      // Cerebras sends usage in its last chunk unasked and does not document stream_options
+      ...(request.onStream ? { stream: true, ...(cerebras ? {} : { stream_options: { include_usage: true } }) } : {}),
     }),
   });
-  if (!response.ok) throw new Error(`Token Factory ${response.status}: ${(await response.text()).slice(0, 300)}`);
-  return request.onStream ? await readCompletionStream(response, request.onStream) : ((await response.json()) as CompletionResponse);
+  if (!response.ok) throw new Error(`${cerebras ? "Cerebras" : "Token Factory"} ${response.status}: ${(await response.text()).slice(0, 300)}`);
+  const body = request.onStream ? await readCompletionStream(response, request.onStream) : ((await response.json()) as CompletionResponse);
+  // Logs and traces keep the prefixed id, so a Cerebras call never reads as the Token Factory model of the same name
+  return cerebras ? { ...body, model } : body;
+}
+
+// Qwen on Cerebras refuses a second system message ("System message must be at the beginning"),
+// so every system message joins one at the start, in order; the rest keep their order
+export function oneLeadingSystemMessage(messages: (ChatMessage | ChatMediaMessage)[]): (ChatMessage | ChatMediaMessage)[] {
+  const system = messages.flatMap((message) => (message.role === "system" ? [message.content] : []));
+  const rest = messages.filter((message) => message.role !== "system");
+  return system.length ? [{ role: "system", content: system.join("\n\n") }, ...rest] : rest;
 }
 
 type StreamChunk = {

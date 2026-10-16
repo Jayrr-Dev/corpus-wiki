@@ -234,6 +234,8 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return `renamed to “${text("name")}”`;
     case "update_domain":
       return `renamed to “${text("name")}”`;
+    case "merge_entity":
+      return `merged into another entity: ${text("reason")}`;
     case "retire_entity":
     case "retire_domain":
       return text("reason");

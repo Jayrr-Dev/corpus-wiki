@@ -78,3 +78,5 @@ export const useLineRevisions = (o: ListOptions<"line_revisions"> = {}) =>
 // AI USAGE: one row per AI call (token log on /settings), newest first
 export const useAiCalls = (o: ListOptions<"ai_calls"> = {}) =>
   useTableList("ai_calls", { orderBy: "created_at", ascending: false, limit: 1000, ...o });
+export const useErrorLog = (o: ListOptions<"error_log"> = {}) =>
+  useTableList("error_log", { orderBy: "created_at", ascending: false, limit: 1000, ...o });

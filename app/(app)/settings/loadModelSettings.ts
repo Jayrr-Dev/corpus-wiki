@@ -1,7 +1,7 @@
 import "server-only";
 
-import { resolveModel, tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { listTokenFactoryModels, readAllowExternalKnowledge, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { resolveModel } from "@/lib/ai/chat";
+import { listAvailableModels,readAllowExternalKnowledge, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
 import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { currentActor } from "@/lib/auth/currentPerson";
 import { supabaseRpc } from "@/lib/db/rpc";
@@ -32,14 +32,14 @@ export async function loadExternalKnowledge(): Promise<{ enabled: boolean; ready
   return { enabled: await readAllowExternalKnowledge(supabaseRpc(getAdminSupabase())), ready: webSearchKey() !== null };
 }
 
-// Reads the pick from the database and the list from Token Factory
+// Reads the pick from the database and the list from Token Factory (plus Cerebras when its key is set)
 export async function loadModelSettings(): Promise<ModelSettings> {
   const chosenModel = await readChosenModel(supabaseRpc(getAdminSupabase()));
   const activeModel = resolveModel(chosenModel);
-  const settings = tokenFactoryFromEnv();
-  if (!settings) return { chosenModel, activeModel, models: [], listError: "NEBIUS_API_KEY is not set, so uploads use the offline fake model." };
+  const nebiusKey = process.env.NEBIUS_API_KEY;
+  if (!nebiusKey) return { chosenModel, activeModel, models: [], listError: "NEBIUS_API_KEY is not set, so uploads use the offline fake model." };
   try {
-    return { chosenModel, activeModel, models: await listTokenFactoryModels(settings.apiKey), listError: null };
+    return { chosenModel, activeModel, models: await listAvailableModels(nebiusKey), listError: null };
   } catch (error) {
     return { chosenModel, activeModel, models: [], listError: `Could not load the model list: ${error instanceof Error ? error.message : String(error)}` };
   }

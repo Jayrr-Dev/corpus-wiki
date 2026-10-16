@@ -12,7 +12,7 @@ import {
   type StartUploadResult,
 } from "@/lib/ingest";
 import { after } from "next/server";
-import { articlesPending } from "@/lib/ingest/workflowTypes";
+import { articlesPending, knowledgeSaved } from "@/lib/ingest/workflowTypes";
 import { type ActionResult, toActionResult } from "./result";
 import { readLink } from "@/lib/ingest/readLink";
 
@@ -72,13 +72,14 @@ export async function processUpload(eventId: string): Promise<ActionResult<Proce
 export async function retryUpload(eventId: string): Promise<ActionResult<ProcessUploadResult>> {
   return toActionResult(async () => {
     await requireUser();
-    return writeArticlesAfter(eventId, await retryUploadEvent(eventId, "knowledge"));
+    return writeArticlesAfter(eventId, await retryUploadEvent(eventId, "knowledge"), true);
   });
 }
 
-// A failed articles job is saved on the workflow, where the screen shows it with Resume
-function writeArticlesAfter(eventId: string, knowledge: ProcessUploadResult): ProcessUploadResult {
-  if (knowledge.workflow && articlesPending(knowledge.workflow)) {
+// A failed articles job is saved on the workflow, where the screen shows it with Resume;
+// Resume (`retry`) runs it again once the knowledge is saved.
+function writeArticlesAfter(eventId: string, knowledge: ProcessUploadResult, retry = false): ProcessUploadResult {
+  if (knowledge.workflow && (retry ? knowledgeSaved(knowledge.workflow) : articlesPending(knowledge.workflow))) {
     after(() => processUploadEvent(eventId, "articles", true).then(() => undefined, (error) => console.error("upload articles failed", error)));
   }
   return knowledge;
