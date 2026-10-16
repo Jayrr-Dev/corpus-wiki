@@ -206,7 +206,7 @@ function tail(text: string, length: number): string {
 type Refs = { unitRef: Map<string, string>; unitId: Map<string, string>; lineRef: Map<string, string>; lineId: Map<string, string> };
 
 // C1.. for claims and L1.. for lines, in the order the section shows them
-function buildRefs(input: SectionReviseInput): Refs {
+export function buildRefs(input: SectionReviseInput): Refs {
   const unitPairs = input.units.map((unit, index) => [unit.unitId, `C${index + 1}`] as const);
   const linePairs = input.lines.map((line, index) => [line.lineId, `L${index + 1}`] as const);
   return {
@@ -226,8 +226,15 @@ function refClaims(input: SectionReviseInput, refs: Refs) {
   }));
 }
 
+// WHOLE-SECTION REWRITE (Update flags every line): without this the model edits line by line and keeps
+// one claim per paragraph, so it is told to regroup the claims and retire the lines it empties
+export const REGROUP_RULE = "Every line is marked rewrite:true, so you are rewriting the whole section, not editing it line by line. Regroup the claims into well-formed paragraphs: revise one line to state several related claims and cite them all, and retire each line whose claims you moved into another. Do not start consecutive paragraphs with the same subject.";
+export function rewritesWholeSection(input: SectionReviseInput): boolean {
+  return input.lines.length > 1 && input.lines.every((line) => line.needsRewrite);
+}
+
 // Builds the system + user messages: the page, the section, its claims and its lines as JSON
-function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
+export function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
   const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
   const claims = refClaims(input, refs);
   const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
@@ -237,7 +244,7 @@ function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkil
     ...(input.updateNote ? { updateInstructions: input.updateNote } : {}),
   };
   return [
-    { role: "system", content: `${SYSTEM_PROMPT}
+    { role: "system", content: `${SYSTEM_PROMPT}${rewritesWholeSection(input) ? ` ${REGROUP_RULE}` : ""}
 
 Preserve each claim's explicit context and conditions. General reference knowledge does not establish an organization's policy or a person's preferences. Unspecified applicability means unknown. Mentioned entities do not own the claim.
 ${skillInstructions(["write_articles"],skills)}` },
