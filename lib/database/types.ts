@@ -977,6 +977,7 @@ export type Database = {
         | "revise_claim"
         | "retire_claim"
         | "merge_duplicates"
+        | "place_claim"
         | "link"
         | "set_epistemic_status"
         | "write_line"
@@ -1074,6 +1075,7 @@ export const Constants = {
         "revise_claim",
         "retire_claim",
         "merge_duplicates",
+        "place_claim",
         "link",
         "set_epistemic_status",
         "write_line",

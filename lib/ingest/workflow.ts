@@ -1,3 +1,4 @@
+import { withSettledActor } from "@/lib/auth/currentPerson";
 import type { CommitResult } from "@/lib/change-control";
 import { commitChangeSet } from "@/lib/change-control";
 import { proposePages, rebuildAfterEvent } from "@/lib/living-page";
@@ -13,6 +14,11 @@ const HEARTBEAT_MS = 5_000;
 
 // `continuation`: started automatically after the knowledge job, so it never overrides a cancel.
 export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
+  // Who is acting is read once: re-reading the request minutes later can hang (lib/auth/currentPerson.ts)
+  return withSettledActor(() => runUploadWorkflowAs(deps, eventId, reconcile, job, continuation));
+}
+
+async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>, job: UploadJob, continuation: boolean): Promise<ProcessUploadResult> {
   const { db } = deps;
   const claim = await db.call<{ claimed: boolean; token?: string; changeSetId?: string | null }>("claim_upload_workflow", { p_event_id: eventId, p_continue: continuation });
   if (!claim.claimed || !claim.token) return readResult();
@@ -47,6 +53,7 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
         embeddings: async () => deps.claimEmbedder?.(),
         describe: async () => deps.entityDescriber?.(eventId),
         duplicates: async () => deps.deduper?.(eventId),
+        place: async () => deps.topicPlacer?.(eventId),
         hierarchy: async () => deps.hierarchyOrganizer?.(eventId),
         glossary: async () => deps.glossaryGenerator?.(),
         expand: async () => deps.knowledgeExpander?.(eventId),
@@ -62,6 +69,11 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
         // Later roles depend on earlier outputs. Do not checkpoint pages against
         // incomplete expansion, then incorrectly skip them when expansion resumes.
         catch { failed = true; break; }
+        // Filing may propose a new root: the rest waits for that approval, as after the save
+        if (key === "place" && await db.call<boolean>("upload_workflow_waiting", { p_event_id: eventId })) {
+          await release("waiting");
+          return;
+        }
       }
       // A finished knowledge job leaves the upload incomplete without an error: articles are next
       await release(failed || job === "knowledge" ? "incomplete" : "complete");
@@ -72,7 +84,7 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
   } finally {
     if (heartbeat) clearInterval(heartbeat);
   }
-  if (resumeAfterRelease) return runUploadWorkflow(deps, eventId, reconcile, job, continuation);
+  if (resumeAfterRelease) return runUploadWorkflowAs(deps, eventId, reconcile, job, continuation);
   return readResult(fatal);
 
   async function release(state: "waiting" | "complete" | "incomplete") {

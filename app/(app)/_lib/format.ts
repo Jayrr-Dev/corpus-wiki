@@ -206,6 +206,8 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return text("reason");
     case "merge_duplicates":
       return `${readStrings(object, "duplicateUnitIds").length} duplicate(s) merged into the target`;
+    case "place_claim":
+      return `filed under ${readStrings(object, "domainPaths").join(", ")}`;
     case "link":
       return `${humanize(text("type"))} → ${text("toUnitId").slice(0, 8)}`;
     case "set_epistemic_status":

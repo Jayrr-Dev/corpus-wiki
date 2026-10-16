@@ -1,4 +1,5 @@
 import "server-only";
+import { topicPlacerFor } from "@/lib/ingest/placeTopicsServer";
 import { generateGlossary } from "@/lib/glossary/generate";
 import { embedMissingGlossary } from "@/lib/glossary/embeddingStore";
 
@@ -32,7 +33,7 @@ import { requireContextStorage } from "./contextReadiness";
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
 // Every AI call is logged to public.ai_calls (token usage on /settings).
 // Server actions take them from here; tests build their own (pg + fakes).
-export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
+export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
 
 export async function getServerDeps(): Promise<ServerDeps> {
   const admin = getAdminSupabase();
@@ -55,6 +56,7 @@ export async function getServerDeps(): Promise<ServerDeps> {
     } : undefined,
     claimEmbedder: embedder ? async () => void (await embedMissingUnits(db, embedder)) : undefined,
     deduper: settings ? (eventId) => dedupeAfterEvent({ db, client: admin, settings, embedder }, eventId) : undefined,
+    topicPlacer: settings ? topicPlacerFor(db, settings) : undefined,
     duplicateGuard: settings ? duplicateGuardFor(db, settings, embedder) : undefined,
     entityDescriber: settings ? (eventId) => describeEventEntities({ client: admin, settings }, eventId) : undefined,
     hierarchyOrganizer: (eventId) => organizeEventHierarchy(db, admin, eventId),

@@ -28,9 +28,10 @@ export function canCancelUpload(workflow: UploadWorkflow): boolean {
 export type UploadJob = "knowledge" | "articles";
 
 // After the save: index the new claims, merge their repeats of stored claims (by meaning,
-// so it needs the vectors), then describe and organize what is left. All of it finishes
-// before any page is written, so pages are built once from cleaned knowledge.
-export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "describe", "hierarchy", "glossary"] as const;
+// so it needs the vectors), file what is left into topics in one view of the whole file
+// ("place"; a new root waits for approval here), then describe and organize. All of it
+// finishes before any page is written, so pages are built once from cleaned, filed knowledge.
+export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "place", "describe", "hierarchy", "glossary"] as const;
 export const ARTICLE_STAGES = ["expand", "plan", "pages"] as const;
 
 // The knowledge job finished cleanly and the articles have not been written yet
@@ -48,7 +49,8 @@ export function canResumeUpload(workflow: UploadWorkflow): boolean {
 
 export function workflowLabel(workflow: UploadWorkflow): string {
   if (workflow.waiting) return "Awaiting approval";
-  if (workflow.state === "complete") return "Processing complete";
+  // Complete with an error: processing was closed early (its file was removed)
+  if (workflow.state === "complete") return workflow.error ? "Processing stopped" : "Processing complete";
   if (isRunning(workflow)) return workflow.cancel_requested ? "Cancelling" : "Processing";
   if (articlesPending(workflow)) return "Knowledge saved; articles not written yet";
   return workflow.change_set_id ? "Knowledge checked; work unfinished" : "Processing unfinished";

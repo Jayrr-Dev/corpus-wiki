@@ -34,5 +34,13 @@ async function fetchAsPerson(input: RequestInfo | URL, init?: RequestInit): Prom
   const headers = new Headers(init?.headers);
   if (personId) headers.set("x-person-id", personId);
   headers.set("x-via", via);
-  return fetch(input, { ...init, headers });
+  // A database call never waits forever: a hung connection becomes an error the upload
+  // workflow records, so its run can be resumed. File transfers keep their own pace.
+  const url = String(input instanceof Request ? input.url : input);
+  const timeout = url.includes("/storage/v1/") ? null : AbortSignal.timeout(DATABASE_CALL_TIMEOUT_MS);
+  const signal = timeout && init?.signal ? AbortSignal.any([init.signal, timeout]) : (timeout ?? init?.signal);
+  return fetch(input, { ...init, headers, ...(signal ? { signal } : {}) });
 }
+
+// HOW LONG ONE DATABASE CALL MAY TAKE (the slowest functions, a commit or a hierarchy pass, take seconds)
+const DATABASE_CALL_TIMEOUT_MS = 60_000;

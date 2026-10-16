@@ -13,6 +13,7 @@ export const UNIT_ACTION_TYPES: ReadonlySet<Enums<"action_type">> = new Set([
   "link",
   "set_epistemic_status",
   "merge_duplicates",
+  "place_claim",
 ]);
 
 // Where an action's target lives: units, entities, or a domain's filtered unit list

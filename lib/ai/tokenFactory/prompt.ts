@@ -67,8 +67,8 @@ export function buildReconciliationMessages(input: ReconciliationInput, skills?:
       context: u.context,
     })),
     externalScope: input.externalScope,
-    existingDomainPaths: input.domainPaths,
-    domainTabs: input.domainTabs,
+    existingDomainPaths: input.fileTopicsLater ? undefined : input.domainPaths,
+    domainTabs: input.fileTopicsLater ? undefined : input.domainTabs,
     existingEntities: input.entities,
   };
   return [
@@ -81,7 +81,8 @@ ${skillInstructions(["extract_knowledge","identify_entities","link_knowledge","o
 ${GLOSSARY_POLICY}
 
 DOMAIN POLICY: Follow the supplied domain tabs and established roots for people, organizations, projects, teams, products, or other subjects. Within an organization root, its departments, programs, policies and topics belong underneath. Reuse the exact existing root across source files. Domain placement is navigation, not evidence of claim ownership or applicability. New roots require approval. A vendor mention or web search result is not a reason to propose another organization root. Keep external reference knowledge separate from company-owned policies. Reuse exact topic spellings, and merge conceptual synonyms instead of multiplying branches.
-EXTERNAL SCOPE: When externalScope is present, extract ONLY claims directly relevant to that article and section. The note is guidance, not evidence. Ignore vendor promotion, unrelated courses, organizational history, navigation, and adjacent topics. Never infer the original organization's practices from another organization's website. External claims may use ONLY supplied existingDomainPaths; return no claims if none are relevant. These policies take precedence over the earlier hierarchy guidance.` },
+EXTERNAL SCOPE: When externalScope is present, extract ONLY claims directly relevant to that article and section. The note is guidance, not evidence. Ignore vendor promotion, unrelated courses, organizational history, navigation, and adjacent topics. Never infer the original organization's practices from another organization's website. External claims may use ONLY supplied existingDomainPaths; return no claims if none are relevant. These policies take precedence over the earlier hierarchy guidance.${input.fileTopicsLater ? `
+TOPICS LATER: Return "domainPaths": [] on every claim. This file's claims are filed into topics in a separate step after they are saved, with the whole file in view; the domain instructions above do not apply here.` : ""}` },
     { role: "user", content: JSON.stringify(payload) },
   ];
 }

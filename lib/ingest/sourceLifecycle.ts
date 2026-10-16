@@ -74,14 +74,22 @@ export async function deleteSource(sourceId: string): Promise<DeleteSourceResult
 export async function purgeSource(sourceId: string): Promise<PurgeSourceResult> {
   const source = await requireSource(sourceId);
   const { only, shared, filePassages } = await splitUnits(sourceId);
-  if (only.length + shared.length > 0) await commitPurge(source.title, only, unitsPartlyFrom(filePassages, shared));
+  const { db } = await getServerDeps();
+  // The article pages, topics and entities the file's uploads created that nothing uses once its claims go
+  const leftovers = await db.call<Leftovers>("purge_leftovers", { p_source_id: sourceId, p_retiring: only.map((unit) => unit.id) });
+  if (only.length + shared.length + leftovers.pageIds.length + leftovers.domainIds.length + leftovers.entityIds.length > 0) {
+    await commitPurge(source.title, only, unitsPartlyFrom(filePassages, shared), leftovers);
+  }
   await removeSourceAndFile(source);
   return { retiredUnits: only.length, updatedUnits: shared.length };
 }
 
+type Leftovers = { pageIds: string[]; domainIds: string[]; entityIds: string[] };
+
 // PURGE STEP 1: retire_claim per unit left without evidence, revise_claim per shared unit
-// (same content, fewer citations); pages rebuild after
-async function commitPurge(title: string, only: CitedUnit[], shared: SharedUnit<ContentUnit>[]): Promise<void> {
+// (same content, fewer citations), and the file's leftover pages, topics and entities retired, all
+// in one ChangeSet (one undo brings everything back); pages rebuild after
+async function commitPurge(title: string, only: CitedUnit[], shared: SharedUnit<ContentUnit>[], leftovers: Leftovers): Promise<void> {
   const reason = `Its only source, "${title}", was purged.`;
   // expectedRevisionId: a unit edited meanwhile makes the whole set fail, so nothing is deleted
   const actions: DraftAction[] = [
@@ -101,9 +109,21 @@ async function commitPurge(title: string, only: CitedUnit[], shared: SharedUnit<
       passageIds: unit.remainingPassageIds,
       speechAct: null,
     })),
+    ...leftovers.pageIds.map((id): DraftAction => ({
+      type: "retire_page", targetId: id, expectedRevisionId: null, passageIds: [], speechAct: null, input: {},
+    })),
+    ...leftovers.domainIds.map((id): DraftAction => ({
+      type: "retire_domain", targetId: id, expectedRevisionId: null, passageIds: [], speechAct: null,
+      input: { reason: `Created for "${title}", which was purged; nothing else is filed here.` },
+    })),
+    ...leftovers.entityIds.map((id): DraftAction => ({
+      type: "retire_entity", targetId: id, expectedRevisionId: null, passageIds: [], speechAct: null,
+      input: { reason: `Introduced by "${title}", which was purged; nothing else mentions it.` },
+    })),
   ];
   const { db, writer } = await getServerDeps();
-  const summary = `Purged file ${title}: retired ${only.length}, updated ${shared.length} unit(s)`;
+  const extra = [leftovers.pageIds.length ? `${leftovers.pageIds.length} article(s)` : "", leftovers.domainIds.length ? `${leftovers.domainIds.length} topic branch(es)` : "", leftovers.entityIds.length ? `${leftovers.entityIds.length} entit${leftovers.entityIds.length === 1 ? "y" : "ies"}` : ""].filter(Boolean);
+  const summary = `Purged file ${title}: retired ${only.length}, updated ${shared.length} unit(s)${extra.length ? `; retired ${extra.join(" and ")} it left unused` : ""}`;
   const result = await commitPersonEdit(db, summary, actions);
   if (result.status !== "applied") throw new Error("Could not update the knowledge that cites this file, so nothing was purged.");
   await rebuildAfterEvent(db, writer, result.eventId);
@@ -131,8 +151,11 @@ async function setArchive(sourceId: string, archive: boolean, reviewId?: string)
   await db.call("set_source_archive", { p_source_id: sourceId, p_archive: archive, p_review_id: reviewId ?? null });
 }
 
-// The row goes (passages cascade, upload events keep their history with no source), then the stored file
+// The row goes (passages cascade, upload events keep their history with no source), then the stored
+// file. Its uploads' processing is closed first: it cannot be resumed without the file.
 async function removeSourceAndFile(source: Source): Promise<void> {
+  const { db } = await getServerDeps();
+  await db.call("close_source_uploads", { p_source_id: source.id });
   const { error } = await getAdminSupabase().from("sources").delete().eq("id", source.id);
   if (error) throw new Error(`Could not delete the source: ${error.message}`);
   await removeSourceFile(source.storage_path);

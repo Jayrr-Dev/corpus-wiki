@@ -1,5 +1,6 @@
 import "server-only";
 
+import { AsyncLocalStorage } from "node:async_hooks";
 import { cookies } from "next/headers";
 import { getServerSupabase } from "@/lib/supabase/server";
 
@@ -19,7 +20,18 @@ export type Actor = { personId: string | null; via: Via };
 // One lookup per request: keyed by the request's cookie store
 const byRequest = new WeakMap<object, Promise<Actor>>();
 
+// A LONG RUN (an upload's workflow) settles its actor once, at its start. In `next dev`
+// the request's cookies() promise belongs to a render stage: read again minutes later,
+// after the stage has moved on, it can never resolve, and every database call behind it
+// (they all name their actor) would hang with it.
+const settledActor = new AsyncLocalStorage<Actor>();
+export async function withSettledActor<T>(run: () => Promise<T>): Promise<T> {
+  return settledActor.run(await currentActor(), run);
+}
+
 export async function currentActor(): Promise<Actor> {
+  const settled = settledActor.getStore();
+  if (settled) return settled;
   let store: object;
   try {
     store = await cookies();

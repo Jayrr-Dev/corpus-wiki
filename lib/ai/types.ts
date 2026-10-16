@@ -40,6 +40,9 @@ export type ExistingEntity = { type: string; key: string; name: string };
 
 export type ReconciliationInput = {
   domainTabs?: { name: string; description: string; rootPaths: string[] }[];
+  // An upload's claims are filed into topics after they are saved (lib/ai/tokenFactory/placeTopics.ts):
+  // extraction leaves domainPaths empty and is not shown the topic tree
+  fileTopicsLater?: boolean;
   externalScope?: { article: string; section: string; note: string; referenceDomainPaths: string[] };
   source: { id: string; title: string; sourceDate: string };
   passages: ReconciliationPassage[];
@@ -74,6 +77,8 @@ export type ActionInputByType = {
   retire_claim: { reason: string; validTo: string | null };
   // target = the unit that is kept; autoMerge: an AI merge sure enough to skip review (check_deletion)
   merge_duplicates: { duplicateUnitIds: string[]; autoMerge?: boolean; rationale?: string };
+  // target = the unit; its topics become these paths (an upload files its claims after cleaning them)
+  place_claim: { domainPaths: string[]; rationale?: string };
   // target = the "from" unit. A unit an earlier action of the same set creates is
   // named by that action's position instead (fromPosition / toPosition).
   link: { toUnitId: string | null; type: RelationshipType; fromPosition?: number; toPosition?: number; rationale?: string };

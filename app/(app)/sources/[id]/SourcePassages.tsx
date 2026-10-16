@@ -79,6 +79,7 @@ const ACTION_VERBS: Partial<Record<Enums<"action_type">, [verb: string, hint: st
   link: ["Linked", "This passage linked two claims"],
   set_epistemic_status: ["Status", "This passage changed how certain a claim is"],
   merge_duplicates: ["Merged", "Duplicate claims were merged"],
+  place_claim: ["Filed", "A claim from this passage was filed into a topic"],
 };
 
 // PRODUCED UNITS: one row per live claim, with everything this passage did to it ("New · revised"),

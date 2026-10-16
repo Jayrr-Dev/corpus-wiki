@@ -26,7 +26,7 @@ import { uploadExecution, workflowStep } from "./workflowContext";
 // duplicateGuard: turns repeats of stored claims into revisions before a web page's draft is
 // submitted (lib/ingest/duplicateGuard.ts); uploads save first and leave repeats to `deduper`,
 // which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote
-export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
+export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
 export type UploadRecord = {
@@ -101,13 +101,30 @@ async function draftAndCommit({ db, reconciler, duplicateGuard, claimEmbedder }:
     input.externalScope = externalScope;
     input.domainPaths = input.domainPaths.filter((path) => externalScope.referenceDomainPaths.includes(path));
   }
-  const drafted = await workflowStep("extraction", async () => shape(await reconciler.draftChangeSet(input), input));
+  // An upload's claims are saved without topics: the "place" role files them all at once
+  // after cleaning. A web page keeps its topics (it may only add to existing reference branches).
+  const drafted = await workflowStep("extraction", async () => {
+    const draft = shape(await reconciler.draftChangeSet(externalScope ? input : { ...input, fileTopicsLater: true }), input);
+    return externalScope ? draft : withoutTopics(draft);
+  });
   const draft = externalScope && duplicateGuard ? await duplicateGuard(input, drafted, guardOptions) : drafted;
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai", operationKey: "reconcile:submit" }, draft);
   const result = await commitChangeSet(db, changeSetId);
   try { if (externalScope) await claimEmbedder?.(); }
   catch (error) { console.error("New claims could not be embedded:", error); }
   return result;
+}
+
+// The draft with its claims' topics left for later: no paths on its adds, no domains created
+function withoutTopics(draft: DraftChangeSet): DraftChangeSet {
+  const actions = draft.actions.filter((action) => action.type !== "create_domain").map((action) =>
+    action.type === "add_claim" ? { ...action, input: { ...action.input, domainPaths: [] } } : action);
+  // Links name new claims by position: shift them past the dropped creates
+  const dropped = draft.actions.map((action, position) => (action.type === "create_domain" ? position : -1)).filter((position) => position >= 0);
+  const moved = (position: number | undefined) => position === undefined ? undefined : position - dropped.filter((at) => at < position).length;
+  return { ...draft, actions: actions.map((action) => action.type === "link"
+    ? { ...action, input: { ...action.input, ...(action.input.fromPosition === undefined ? {} : { fromPosition: moved(action.input.fromPosition) }), ...(action.input.toPosition === undefined ? {} : { toPosition: moved(action.input.toPosition) }) } }
+    : action) };
 }
 
 // Moves the event along (the Upload screen watches it)

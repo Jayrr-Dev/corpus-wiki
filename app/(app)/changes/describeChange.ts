@@ -22,6 +22,7 @@ export type ChangeType =
   | "article_new"
   | "article_update"
   | "merge"
+  | "topics"
   | "links"
   | "claim_new"
   | "claim_edit"
@@ -42,6 +43,7 @@ export const CHANGE_TYPE_LABEL: Record<ChangeType, string> = {
   article_new: "New article",
   article_update: "Article update",
   merge: "Merge",
+  topics: "Topic filing",
   links: "Links",
   claim_new: "New claim",
   claim_edit: "Claim edit",
@@ -74,6 +76,8 @@ export function classifyChange(types: readonly ActionType[]): ChangeType {
   if (set.has("create_page")) return "article_new";
   if (types.some((type) => ARTICLE_TYPES.includes(type))) return "article_update";
   if (set.has("merge_duplicates")) return "merge";
+  // An upload filing its claims into topics (with the topics it creates for them)
+  if (set.has("place_claim") && only(["place_claim", "create_domain"])) return "topics";
   const lineTypes = new Set(types.filter((type) => LINE_TYPES.includes(type)));
   if (lineTypes.size === 1) return LINE_TYPE[[...lineTypes][0]!]!;
   if (lineTypes.size > 1) return "line_edit";

@@ -41,7 +41,7 @@ const COLUMNS = [
         ) : null}
       </div>
     ) : (
-      <span className="text-faint">{row.source_id ? row.sourceTitle : "Deleted file"}</span>
+      <span className="text-faint">{row.sourceTitle}</span>
     ),
   ),
   textColumn<UploadRow>("change", "Change set", (row) => row.changeSetId ?? "", (row) =>
@@ -62,7 +62,7 @@ const COLUMNS = [
   },
 ] satisfies ColumnDef<UploadRow, unknown>[];
 
-// RECENT UPLOADS: shift events caused by an upload, newest first
+// RECENT UPLOADS: shift events caused by an upload whose file still exists, newest first
 export function RecentUploads() {
   const [origin, setOrigin] = useState("internal");
   const query = useUploadRows();
@@ -101,7 +101,8 @@ function useUploadRows() {
   const data = useMemo(() => {
     const sourceById = new Map((sources.data ?? []).map((source) => [source.id, source]));
     const changeByEvent = new Map((changeSets.data ?? []).map((changeSet) => [changeSet.event_id, changeSet.id]));
-    return (events.data ?? []).map((event) => ({
+    // An upload whose file was deleted or purged is history, not an upload: Changes keeps it
+    return (events.data ?? []).filter((event) => event.source_id).map((event) => ({
       ...event,
       sourceTitle: sourceById.get(event.source_id ?? "")?.title ?? "—",
       source: sourceById.get(event.source_id ?? "") ?? null,

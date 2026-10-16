@@ -37,7 +37,7 @@ const LABELS: Record<string, string> = {
   reconcile: "Saving knowledge", "reconciliation-input": "Reading evidence", extraction: "Extracting knowledge",
   "duplicate-guard": "Comparing existing claims", embeddings: "Indexing knowledge", describe: "Describing subjects",
   expand: "Expanding definitions", plan: "Planning pages", pages: "Updating and reviewing pages",
-  hierarchy: "Organizing topics", duplicates: "Merging repeated claims", "settle-pages": "Checking final page updates", glossary: "Writing dictionary entries",
+  hierarchy: "Organizing topics", place: "Filing into topics", duplicates: "Merging repeated claims", "settle-pages": "Checking final page updates", glossary: "Writing dictionary entries",
 };
 
 // What the live counts are counting, per role that reports them

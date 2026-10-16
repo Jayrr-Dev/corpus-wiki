@@ -16,15 +16,23 @@ export interface DbRpc {
   call<T>(fn: string, args?: RpcArgs): Promise<T>;
 }
 
+// PostgREST answers these before the call reaches Postgres (schema cache reloading after a
+// migration, or no database connection), so retrying can never run a write twice.
+const NOT_EXECUTED = new Set(["PGRST000", "PGRST001", "PGRST002"]);
+const RETRY_DELAYS_MS = [250, 500, 1000, 2000, 4000, 8000, 15000];
+
 // SUPABASE ADAPTER: the admin client's `rpc` (secret key, server only)
 export function supabaseRpc(client: SupabaseClient<Database>): DbRpc {
   return {
     async call<T>(fn: string, args: RpcArgs = {}): Promise<T> {
       // The generated types list each function; this port is generic, so the name is widened once here
-      const rpc = client.rpc as unknown as (f: string, a: RpcArgs) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
-      const { data, error } = await rpc.call(client, fn, args);
-      if (error) throw new Error(`${fn}: ${error.message}`);
-      return data as T;
+      const rpc = client.rpc as unknown as (f: string, a: RpcArgs) => PromiseLike<{ data: unknown; error: { message: string; code?: string } | null }>;
+      for (let attempt = 0; ; attempt++) {
+        const { data, error } = await rpc.call(client, fn, args);
+        if (!error) return data as T;
+        if (!NOT_EXECUTED.has(error.code ?? "") || attempt >= RETRY_DELAYS_MS.length) throw new Error(`${fn}: ${error.message}`);
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt]));
+      }
     },
   };
 }
