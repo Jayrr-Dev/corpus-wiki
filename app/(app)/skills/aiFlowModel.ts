@@ -17,7 +17,7 @@ export type AiFlowNode = {
 export type AiFlowLane = { id: string; title: string; trigger: string; toChangeControl: boolean; nodes: AiFlowNode[] };
 export type PersonStep = { id: string; name: string; does: string; chips?: string[]; tone?: "undo"; facts: AiFlowFact[] };
 
-const APP_MANAGED = "This role uses instructions managed by the app; they cannot be edited on the Roles tab.";
+const APP_MANAGED = "This role uses instructions managed by the app; they cannot be edited in Agent Roles.";
 const NO_ROLE = "This AI call is not attributed to a named role, so it has no role instructions. It follows the app’s built-in prompt.";
 
 export const AI_FLOW_LANES: AiFlowLane[] = [
@@ -220,7 +220,7 @@ export const PERSON_STEPS: PersonStep[] = [
     ] },
   { id: "start", name: "You start runs", tone: "undo", does: "Upload files, build or improve sections, run a domain review, refresh stakeholders.",
     facts: [
-      { label: "What you start", text: "Uploads (lanes 1–3), section work that may call Outside research (lane 4), and the on-request roles (lane 5). You also edit role instructions on the Roles tab." },
+      { label: "What you start", text: "Uploads (lanes 1–3), section work that may call Outside research (lane 4), and the on-request roles (lane 5). You also edit role instructions in Agent Roles." },
     ] },
 ];
 

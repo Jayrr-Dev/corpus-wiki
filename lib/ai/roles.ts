@@ -18,7 +18,7 @@ export const FIXED_ROLES = [
 // Keep in step with set_ai_role_model in the database.
 export const MODEL_ROLES = ["media_analyst", "reconciler", "deduplicator", "identify_entities", "link_knowledge", "dictionary_editor", "define_concepts", "plan_articles", "article_reviewer", "write_articles", "reviewer", "researcher", "domain_steward", "curator"] as const;
 export type ModelRole = (typeof MODEL_ROLES)[number];
-// ROLES THAT CAN HOLD CHANGES IN EXCEPTIONS, so they can run in full auto (Roles tab): what they hold is
+// ROLES THAT CAN HOLD CHANGES IN EXCEPTIONS, so they can run in full auto (Agent Roles): what they hold is
 // accepted at once. Keep in step with set_ai_role_auto in the database.
 export const AUTO_ROLES = ["reconciler", "deduplicator", "write_articles", "reviewer", "domain_steward", "curator"] as const;
 export type AutoRole = (typeof AUTO_ROLES)[number];

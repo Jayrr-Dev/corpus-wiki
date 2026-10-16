@@ -190,7 +190,7 @@ function Comparison({ action, unit, before, lineText }: ComparisonProps) {
   const isRevision = unit ? action.type === "revise_claim" || action.type === "add_claim" : action.type === "revise_line";
   const diff = (unit || lineText !== null) && current !== undefined && isRevision ? wordDiff(current, proposed) : null;
   const proposedPane = (
-    <Pane label={action.type === "review_page" ? "Suggested action" : `Proposed · ${humanize(action.type)}`} emphasis>
+    <Pane label={action.type === "review_page" ? "Suggested action" : `Proposed · ${humanize(curatorOperation(action) ?? action.type)}`} emphasis>
       {diff ? <DiffText parts={diff} show="added" /> : proposed || <span className="text-faint">No details</span>}
     </Pane>
   );
@@ -203,6 +203,12 @@ function Comparison({ action, unit, before, lineText }: ComparisonProps) {
       {proposedPane}
     </div>
   );
+}
+
+// A Curator change is one update_page action; its operation (merge, move, group…) is what it does
+function curatorOperation(action: Tables<"actions">): string | null {
+  const input = asObject(action.input);
+  return action.type === "update_page" && input.curator === true ? readString(input, "operation") : null;
 }
 
 // PANE: a labelled box of text; the proposed side sits on the raised gray

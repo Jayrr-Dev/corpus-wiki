@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { QueryState } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
@@ -14,20 +15,22 @@ import { cn } from "@/lib/utils";
 import { AI_STAGES, type AiSkill, type AiStage, type SkillLibrary } from "@/lib/ai/skills/types";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { archiveAiSkill, assignAiSkill, readAiSkills } from "@/lib/server-actions/skills";
-import type { ModelSettings } from "../settings/loadModelSettings";
-import { RolesTab } from "./RolesTab";
 import { FlowsTab } from "./FlowsTab";
 import { AiFlowTab } from "./AiFlowTab";
 import { SkillEditor } from "./SkillEditor";
+import type { CanvasTab } from "./FlowCanvas";
 
 type Editor={skill?:AiSkill;duplicate?:boolean};
-export function SkillsScreen({modelSettings}:{modelSettings:ModelSettings}) {
+export function SkillsScreen() {
   const library=useQuery({queryKey:["table","ai_skills","library"],queryFn:async()=>{
     const result=await readAiSkills(); if (!result.ok) throw new Error(result.error); return result;
   }});
-  const [tab,setTab]=useState<"assignments"|"library"|"flows"|"ai-flow"|"roles">("assignments");
+  const router=useRouter();
+  const [tab,setTab]=useState<"assignments"|"library"|"flows"|"ai-flow">("assignments");
   const [editor,setEditor]=useState<Editor|null>(null);
-  const tabs=[{id:"assignments",label:"Stage assignments"},{id:"library",label:"Skill library",count:library.data?.skills.filter((skill)=>!skill.archived_at).length},{id:"flows",label:"Flows"},{id:"ai-flow",label:"AI flow"},{id:"roles",label:"Roles"}] as const;
+  const tabs=[{id:"assignments",label:"Stage assignments"},{id:"library",label:"Skill library",count:library.data?.skills.filter((skill)=>!skill.archived_at).length},{id:"flows",label:"Flows"},{id:"ai-flow",label:"AI flow"}] as const;
+  // The canvases link to a role's card, which lives on Agent Roles
+  const navigate=(target:CanvasTab)=>target==="roles"?router.push("/roles"):setTab(target);
   return <div className="space-y-5">
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b">
       <div data-tour="workflow-tabs" role="tablist" aria-label="Workflow views" className="flex flex-wrap gap-1">
@@ -43,7 +46,7 @@ export function SkillsScreen({modelSettings}:{modelSettings:ModelSettings}) {
       </div>
     </div>
     <QueryState query={library}>
-      {library.data ? tab==="flows" ? <FlowsTab library={library.data} onNavigate={setTab} /> : tab==="ai-flow" ? <AiFlowTab library={library.data} onNavigate={setTab} /> : tab==="roles" ? <RolesTab library={library.data} modelSettings={modelSettings} /> : tab==="assignments" ? <Assignments library={library.data} onView={(skill)=>setEditor({skill})} /> : <SkillList library={library.data} onEdit={(skill)=>setEditor({skill})} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
+      {library.data ? tab==="flows" ? <FlowsTab library={library.data} onNavigate={navigate} /> : tab==="ai-flow" ? <AiFlowTab library={library.data} onNavigate={navigate} /> : tab==="assignments" ? <Assignments library={library.data} onView={(skill)=>setEditor({skill})} /> : <SkillList library={library.data} onEdit={(skill)=>setEditor({skill})} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
     </QueryState>
     {editor ? <SkillEditor key={`${editor.skill?.id??"new"}:${!!editor.duplicate}`} skill={editor.skill} duplicate={editor.duplicate} onClose={()=>setEditor(null)} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
   </div>;

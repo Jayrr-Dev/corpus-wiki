@@ -1,7 +1,8 @@
 import { reportUploadProgress, workflowStep } from "@/lib/ingest/workflowContext";
 import "server-only";
 
-import { chatJson, CompletionLengthError, ProviderTimeoutError, type TokenFactorySettings } from "@/lib/ai/chat";
+import { chatJson, CompletionLengthError, type TokenFactorySettings } from "@/lib/ai/chat";
+import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
 import { skillTrace } from "@/lib/ai/skills/prompt";
 import { PROMPT_VERSION } from "@/lib/ai/config";
 import type { DraftChangeSet, ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
@@ -37,27 +38,15 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
     };
 
     const extract = async (passages: ReconciliationInput["passages"]): Promise<void> => {
-      let answer;
-      try {
-        answer = await workflowStep(`extract:${passages.map((p) => p.id).join(":")}`, () => chatJson(this.settings, {
-          name: "reconciliation",
-          subject: input.source.title,
-          schema: reconciliationAnswerSchema,
-          jsonSchema: reconciliationJsonSchema,
-          messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills, earlierComposites(claims, links)),
-          // Extraction is careful reading, not puzzle solving: higher efforts only add minutes of hidden thinking
-          reasoningEffort: "low",
-        }));
-      } catch (error) {
-        if (!(error instanceof CompletionLengthError) && !(error instanceof ProviderTimeoutError)) throw error;
-        if (error instanceof CompletionLengthError) countUsage(error.tokensIn, error.tokensOut);
-        // Retry only truncation and timeouts, using smaller batches; one passage is the hard stop.
-        if (passages.length <= 1) throw error;
-        const middle = Math.ceil(passages.length / 2);
-        await extract(passages.slice(0, middle));
-        await extract(passages.slice(middle));
-        return;
-      }
+      const answer = await workflowStep(`extract:${passages.map((p) => p.id).join(":")}`, () => chatJson(this.settings, {
+        name: "reconciliation",
+        subject: input.source.title,
+        schema: reconciliationAnswerSchema,
+        jsonSchema: reconciliationJsonSchema,
+        messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills, earlierComposites(claims, links)),
+        // Extraction is careful reading, not puzzle solving: higher efforts only add minutes of hidden thinking
+        reasoningEffort: "low",
+      }));
       countUsage(answer.tokensIn, answer.tokensOut);
       modelVersion = answer.model;
       const summary = answer.value.summary.trim();
@@ -80,7 +69,8 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
     const batches = passageBatches(input.passages);
     for (const [index, passages] of batches.entries()) {
       await reportUploadProgress({ step: "extraction", done: index, total: batches.length });
-      await extract(passages);
+      // Truncation and timeouts retry in smaller batches; one passage is the hard stop.
+      await splitOnCutOff(passages, extract, (error) => { if (error instanceof CompletionLengthError) countUsage(error.tokensIn, error.tokensOut); });
     }
     return {
       summary: [...new Set(summaries)].join(" ") || `Read ${input.source.title}`,

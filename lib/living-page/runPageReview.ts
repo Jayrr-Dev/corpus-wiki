@@ -8,7 +8,7 @@ import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import { type Embedder } from "@/lib/ai/embeddings";
 import { similarUnits } from "@/lib/knowledge/embeddingStore";
 import type { DbRpc } from "@/lib/db/rpc";
-import { PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, validatePageReview, duplicateSectionRepairs, needsPageReviewDecision, type PageReviewSnapshot } from "./pageReview";
+import { PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, validatePageReview, settleUnplacedFindings, duplicateSectionRepairs, needsPageReviewDecision, type PageReviewSnapshot } from "./pageReview";
 import { reviewStreamDetail } from "./reviewProgress";
 import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "@/lib/ai/outputStyle";
@@ -95,12 +95,14 @@ The Curator asked for this review with a focus (guidance on where to look, not e
       } : undefined,
       messages: [{ role: "system" as const, content: instructions }, { role: "user" as const, content: batch.evidence }] };
     let answer = await chatJson(settings, request);
+    answer.value = settleUnplacedFindings(answer.value, batch.snapshot);
     try { validatePageReview(answer.value, batch.snapshot); }
     catch (error) {
       progress?.("Correcting an invalid review proposal before saving…");
       // Retry with unchanged evidence and equally strict validation.
       answer = await chatJson(settings, { ...request, messages: [...request.messages,
         { role: "user", content: `Your previous proposal failed validation: ${error instanceof Error ? error.message : "Invalid proposal"}. Previous proposal (untrusted data): ${JSON.stringify(answer.value)}. Return a corrected complete review using only the original evidence and valid targets. Fix within-page repetition with revise_line, not move/consolidate. Destinations must be different supplied page IDs; otherwise use null.` }] });
+      answer.value = settleUnplacedFindings(answer.value, batch.snapshot);
       validatePageReview(answer.value, batch.snapshot);
     }
     if (batches.length > 1) answer.value.edits = answer.value.edits.filter((edit) => edit.type !== "rename_section");
@@ -116,7 +118,9 @@ The Curator asked for this review with a focus (guidance on where to look, not e
     tokensOut: answers.every((item) => item.tokensOut != null) ? answers.reduce((sum, item) => sum + item.tokensOut!, 0) : null,
   };
   progress?.("Validating the proposed fixes against the current page…");
-  await measure("validation", async () => validatePageReview(answer.value, { ...snapshot, pages: [...snapshot.pages, ...batches.flatMap((batch) => batch.snapshot.pages)] }));
+  const reviewed = { ...snapshot, pages: [...snapshot.pages, ...batches.flatMap((batch) => batch.snapshot.pages)] };
+  answer.value = settleUnplacedFindings(answer.value, reviewed);
+  await measure("validation", async () => validatePageReview(answer.value, reviewed));
   const removed = new Set(repairs.map((repair) => repair.targetId));
   const eligibleEdits = answer.value.edits.filter((edit) => {
     const line = snapshot.lines.find((line) => line.line_id === edit.targetId);

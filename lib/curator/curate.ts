@@ -3,7 +3,7 @@ import { z } from "zod";
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import { CURATOR_INSTRUCTIONS } from "@/lib/ai/rolePolicies";
 import { applyChanges, checkAnswer, checkDispatches, type Dispatch, curatorAnswerSchema, curatorEvidence, type CuratorAnswer, type CuratorChange, type Skipped } from "./plan";
-import { findCandidates, scorePairs, treeHealth, type Candidate, type ClaimVectors, type CuratorPage, type TreeHealth } from "./score";
+import { findCandidates, missingClaims, scorePairs, titleProblems, treeHealth, type Candidate, type ClaimVectors, type CuratorPage, type TreeHealth, type UnplacedClaim } from "./score";
 
 // =====================================================================
 // ONE CURATOR PASS: score the tree, ask the model about what the scores
@@ -11,12 +11,14 @@ import { findCandidates, scorePairs, treeHealth, type Candidate, type ClaimVecto
 // nothing: a run (runCurator.ts) or the benchmark decides what happens next.
 // =====================================================================
 
-export const CURATOR_PROMPT_VERSION = "curator-v1";
+export const CURATOR_PROMPT_VERSION = "curator-v2";
 
 // What the snapshot RPC returns
 export type CuratorSnapshot = {
   pages: CuratorPage[];
   claims: { id: string; title: string }[];
+  // Live claims no page cites (older fixtures have none)
+  unplaced?: UnplacedClaim[];
   vectors: { id: string; vector: string | number[] }[];
 };
 
@@ -50,13 +52,14 @@ export async function curate(settings: TokenFactorySettings, snapshot: CuratorSn
   const vectors = readVectors(snapshot);
   const pairs = scorePairs(snapshot.pages, vectors);
   const before = treeHealth(snapshot.pages, vectors, pairs);
-  const candidates = findCandidates(snapshot.pages, vectors, pairs);
+  const claimTitles = new Map(snapshot.claims.map((claim) => [claim.id, claim.title]));
+  const candidates = [...findCandidates(snapshot.pages, vectors, pairs), ...titleProblems(snapshot.pages, claimTitles), ...missingClaims(snapshot.pages, snapshot.unplaced ?? [], vectors)];
   const empty = { before, after: before, candidates, answer: null, changes: [], skipped: [], dispatches: [], dispatchSkipped: [], pagesAfter: snapshot.pages, model: null, tokensIn: 0, tokensOut: 0 };
   // Nothing flagged, nothing to ask: no AI call
   if (!candidates.length) return empty;
 
   progress(`Judging ${candidates.length} flagged item(s) across ${snapshot.pages.length} pages…`);
-  const evidence = curatorEvidence({ charter: options.charter ?? null, pages: snapshot.pages, claimTitles: new Map(snapshot.claims.map((claim) => [claim.id, claim.title])), candidates });
+  const evidence = curatorEvidence({ charter: options.charter ?? null, pages: snapshot.pages, claimTitles, candidates });
   const answer = await chatJson(independent(settings), {
     name: "page_structure_review", subject: "Page tree", schema: curatorAnswerSchema, jsonSchema: z.toJSONSchema(curatorAnswerSchema), maxTokens: 12000,
     messages: [{ role: "system", content: options.instructions ?? CURATOR_INSTRUCTIONS }, { role: "user", content: evidence }],
@@ -64,7 +67,7 @@ export async function curate(settings: TokenFactorySettings, snapshot: CuratorSn
   progress("Checking the proposed changes against the tree…");
   const { changes, skipped } = checkAnswer(answer.value, snapshot.pages);
   const pagesAfter = applyChanges(snapshot.pages, changes);
-  const { dispatches, skipped: dispatchSkipped } = checkDispatches(answer.value, snapshot.pages, changes);
+  const { dispatches, skipped: dispatchSkipped } = checkDispatches(answer.value, snapshot.pages, changes, candidates);
   return { before, after: treeHealth(pagesAfter, vectors), candidates, answer: answer.value, changes, skipped, dispatches, dispatchSkipped, pagesAfter,
     model: answer.model, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut };
 }

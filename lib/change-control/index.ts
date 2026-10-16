@@ -69,7 +69,7 @@ export async function resolveException(
   });
 }
 
-// FULL AUTO: accepts what a role in full auto just held in Exceptions (Roles tab), so it never waits
+// FULL AUTO: accepts what a role in full auto just held in Exceptions (Agent Roles), so it never waits
 // for a person. Nothing happens when the role is not in full auto or nothing was held. A null
 // ChangeSet accepts every open one on the role's attributed ChangeSets (the Reviewer's page review).
 export type AutoAccepted = { exceptionId: string; reason: string; actionId: string; eventId: string | null };

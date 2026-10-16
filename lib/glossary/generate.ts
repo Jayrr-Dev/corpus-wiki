@@ -1,12 +1,13 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { chatJson, settingsForCall, type TokenFactorySettings } from "@/lib/ai/chat";
+import { ANSWER_TOKEN_BUDGET, chatJson, settingsForCall, type TokenFactorySettings } from "@/lib/ai/chat";
+import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
 import type { Json, Tables } from "@/lib/database/types";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
-import { dictionaryAnswerSchema, DICTIONARY_PROMPT, GLOSSARY_VERSION, mergeGlossaryEntries, type GlossaryEntry } from "./entries";
+import { dictionaryAnswerSchema, DICTIONARY_PROMPT, GLOSSARY_MERGE_VERSION, GLOSSARY_VERSION, glossaryScopeKey, mergeGlossaryEntries, type GlossaryEntry } from "./entries";
 import { glossaryClient, type GlossaryState, type GlossaryUpdate } from "./storage";
 
 type InputClaim = {
@@ -85,7 +86,7 @@ export async function generateGlossary(client: AdminSupabase, settings: TokenFac
 async function generateOnce(client: AdminSupabase, settings: TokenFactorySettings, force: boolean): Promise<boolean> {
   const storage = glossaryClient(client);
   const claims = await currentClaims(client);
-  const inputHash = hash([GLOSSARY_VERSION, settingsForCall(settings, "glossary_dictionary").model, claims]);
+  const inputHash = hash([GLOSSARY_VERSION, GLOSSARY_MERGE_VERSION, settingsForCall(settings, "glossary_dictionary").model, claims]);
   const token = await supabaseRpc(client).call<string | null>("claim_glossary_generation", { p_hash: inputHash, p_force: force });
   if (!token) return false;
   const save = async (values: GlossaryUpdate) => {
@@ -104,46 +105,59 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
       const batchHash = hash([GLOSSARY_VERSION, settingsForCall(settings, "glossary_dictionary").model, batch]);
       if (!force && cached[batchHash]) completed[batchHash] = cached[batchHash];
       else {
-        const refs = new Map(batch.map((claim, i) => [`K${i + 1}`, claim]));
-        const result = await chatJson(settings, {
-          name: "glossary_dictionary", subject: `Dictionary batch ${index + 1}/${batches.length}`,
-          schema: dictionaryAnswerSchema, jsonSchema: z.toJSONSchema(dictionaryAnswerSchema), maxTokens: 10000,
-          messages: [{ role: "system", content: DICTIONARY_PROMPT }, { role: "user", content: JSON.stringify({ knowledge: [...refs].map(([ref, claim]) => ({ ref, text: claim.text, context: claim.context, sourceEvidence: claim.sourceEvidence })) }) }],
-        });
-        completed[batchHash] = result.value.entries.map((entry) => {
-          const cited = entry.citations.map((ref) => {
-            const claim = refs.get(ref);
-            if (!claim) throw new Error(`The dictionary returned an unknown citation: ${ref}`);
-            return claim;
-          });
-          const scopes = [...new Map(cited.map((claim) => {
-            const scope = claim.context?.applicability;
-            return [JSON.stringify(scope ?? null), scope];
-          })).values()];
-          const scoped = scopes.filter((scope) => scope?.status === "scoped");
-          return {
-            ...entry,
-            scopeKey: JSON.stringify(scopes.map((scope) => scope ?? null).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))),
-            context: scoped.length ? scoped.map((scope) => [...scope!.entities.map((entity) => entity.key.replaceAll("-", " ")), scope!.conditions].filter(Boolean).join(" · ")).join("; ") : null,
-            citations: [...new Map(cited.flatMap((claim) => claim.sourceEvidence.map((source) => ({ unitId: claim.id, revisionId: claim.revisionId, sourceId: source.sourceId, sourceTitle: source.sourceTitle }))).map((cite) => [`${cite.revisionId}:${cite.sourceId}`, cite])).values()],
-          };
-        });
+        const entries: GlossaryEntry[] = [];
+        await splitOnCutOff(batch, async (part) => { entries.push(...await dictionaryEntries(settings, part, `Dictionary batch ${index + 1}/${batches.length}`)); });
+        completed[batchHash] = entries;
       }
       await save({ batches: { ...cached, ...completed } as unknown as Json, completed_batches: index + 1, lease_until: new Date(Date.now() + 600_000).toISOString() });
     }
     // Never publish against superseded knowledge. A retry reuses every unchanged batch.
     const current = await currentClaims(client);
-    if (hash([GLOSSARY_VERSION, settingsForCall(settings, "glossary_dictionary").model, current]) !== inputHash) {
+    if (hash([GLOSSARY_VERSION, GLOSSARY_MERGE_VERSION, settingsForCall(settings, "glossary_dictionary").model, current]) !== inputHash) {
       await save({ status: "idle", lease_token: null, lease_until: null });
       return true;
     }
-    await save({ entries: mergeGlossaryEntries(Object.values(completed).flat()) as unknown as Json, batches: completed as unknown as Json,
+    // Scope keys come from the current claims, so cached batches (and edits saved in them) follow the merge rules
+    const claimById = new Map(claims.map((claim) => [claim.id, claim]));
+    const rescoped = Object.values(completed).flat().map((entry) => ({ ...entry,
+      scopeKey: glossaryScopeKey([...new Set(entry.citations.map((cite) => cite.unitId))].map((id) => claimById.get(id)?.context?.applicability)) }));
+    await save({ entries: mergeGlossaryEntries(rescoped) as unknown as Json, batches: completed as unknown as Json,
       input_hash: inputHash, generated_at: new Date().toISOString(), status: "ready", error: null, lease_token: null, lease_until: null });
     return false;
   } catch (error) {
     await save({ status: "error", error: error instanceof Error ? error.message : String(error), lease_token: null, lease_until: null });
     throw error;
   }
+}
+
+// ONE BATCH'S ENTRIES, citing its claims by K1, K2... refs
+async function dictionaryEntries(settings: TokenFactorySettings, batch: InputClaim[], subject: string): Promise<GlossaryEntry[]> {
+  const refs = new Map(batch.map((claim, i) => [`K${i + 1}`, claim]));
+  const result = await chatJson(settings, {
+    name: "glossary_dictionary", subject,
+    schema: dictionaryAnswerSchema, jsonSchema: z.toJSONSchema(dictionaryAnswerSchema), maxTokens: ANSWER_TOKEN_BUDGET,
+    // Listing terms is careful reading, not puzzle solving: thinking only eats the answer's room
+    reasoningEffort: "low",
+    messages: [{ role: "system", content: DICTIONARY_PROMPT }, { role: "user", content: JSON.stringify({ knowledge: [...refs].map(([ref, claim]) => ({ ref, text: claim.text, context: claim.context, sourceEvidence: claim.sourceEvidence })) }) }],
+  });
+  return result.value.entries.map((entry) => {
+    const cited = entry.citations.map((ref) => {
+      const claim = refs.get(ref);
+      if (!claim) throw new Error(`The dictionary returned an unknown citation: ${ref}`);
+      return claim;
+    });
+    const scopes = [...new Map(cited.map((claim) => {
+      const scope = claim.context?.applicability;
+      return [JSON.stringify(scope ?? null), scope];
+    })).values()];
+    const scoped = scopes.filter((scope) => scope?.status === "scoped");
+    return {
+      ...entry,
+      scopeKey: glossaryScopeKey(scopes),
+      context: scoped.length ? scoped.map((scope) => [...scope!.entities.map((entity) => entity.key.replaceAll("-", " ")), scope!.conditions].filter(Boolean).join(" · ")).join("; ") : null,
+      citations: [...new Map(cited.flatMap((claim) => claim.sourceEvidence.map((source) => ({ unitId: claim.id, revisionId: claim.revisionId, sourceId: source.sourceId, sourceTitle: source.sourceTitle }))).map((cite) => [`${cite.revisionId}:${cite.sourceId}`, cite])).values()],
+    };
+  });
 }
 
 const definitionAnswerSchema = z.object({ definition: z.string().trim().min(10).max(1000) });

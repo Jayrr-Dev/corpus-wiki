@@ -13,7 +13,7 @@ import { sha256 } from "./hash";
 import { splitIntoPassages } from "./passages";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { reconcileExternalUpload, reconcileUpload, recordUpload } from "./pipeline";
-import { openRerunEvent } from "./rerun";
+import { externalApproval, openRerunEvent } from "./rerun";
 import { markSourceReplaced } from "./sourceLifecycle";
 import { createDirectUploadUrl, readDirectUpload, removeDirectUpload, storeSourceFile } from "./storage";
 import type { CaptureResult, ProcessUploadResult, StartUploadResult } from "./types";
@@ -162,8 +162,9 @@ function requireFormat(fileName: string, browserType: string): UploadFormat {
 // STEP 2: reconciliation with Nemotron, the commit and the page rebuild. `job` "knowledge"
 // stops once the claims are saved and cleaned; "articles" also writes the pages.
 export async function processUploadEvent(eventId: string, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
-  // Old external pages may contain broad, unfiltered text. Never rerun them as
-  // uploads without their original article scope; refresh from that article instead.
+  // An external page runs only inside the article section it was approved for, adding claims
+  // there. Old pages saved without that approval may hold broad, unfiltered text, so they are
+  // never run as plain uploads; they are refreshed from their article instead.
   const client = getAdminSupabase();
   const { data: event, error: eventError } = await client.from("shift_events").select("source_id").eq("id", eventId).single();
   if (eventError) throw new Error(eventError.message);
@@ -171,6 +172,14 @@ export async function processUploadEvent(eventId: string, job: UploadJob = "arti
     const { data: source, error } = await client.from("sources").select("origin").eq("id", event.source_id).single();
     if (error) throw new Error(error.message);
     if (source.origin === "external") {
+      // The page's claims are all saved in the knowledge job; it has no articles job of its own
+      if (job === "articles") return { status: "applied", changeSetId: null, error: null };
+      const approval = await externalApproval(event.source_id);
+      if (approval) {
+        const scope = { article: approval.article, section: approval.section, note: await externalNote(approval.article, approval.section) };
+        const { status } = await processExternalEvent(eventId, scope, approval.reviewId);
+        return { status, changeSetId: null, error: null };
+      }
       const error = "Refresh external knowledge from its article section using Update or Force Create, so the search stays in scope.";
       const { db } = await getServerDeps();
       await db.call("set_event_status", { p_event_id: eventId, p_status: "failed", p_error: error });
@@ -178,6 +187,18 @@ export async function processUploadEvent(eventId: string, job: UploadJob = "arti
     }
   }
   return reconcileUpload(await getServerDeps(), eventId, job, continuation);
+}
+
+// The extraction note for an external page run again: a stakeholder card's own note, else one that
+// keeps the claims to the article section the page was approved for
+async function externalNote(article: string, section: string): Promise<string> {
+  const stakeholder = /^Stakeholder: (.+)$/.exec(article);
+  if (stakeholder?.[1]) {
+    // Loaded here: stakeholderExternal imports this module
+    const { stakeholderScope } = await import("@/lib/knowledge/stakeholderExternal");
+    return stakeholderScope(stakeholder[1]).note;
+  }
+  return `Add only claims that belong in the "${section}" section of the "${article}" article.`;
 }
 
 // CANCEL: the running role stops at its next check and its AI call is aborted. What is

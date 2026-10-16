@@ -63,7 +63,7 @@ export function CuratePagesButton() {
           <p className="text-muted-foreground">
             {result.proposed} change(s) proposed: {result.applied} applied, {result.exceptions} waiting for you.
             {" "}Pages {result.before.pages} → {result.after.pages}, duplicates {result.before.duplicatePairs} → {result.after.duplicatePairs}, stubs {result.before.stubs} → {result.after.stubs}.
-            {result.dispatches.length ? ` ${result.dispatches.length} page(s) handed to other roles; they work in the background.` : ""}
+            {result.dispatches.length ? ` ${result.dispatches.length} job(s) handed to other roles; they work in the background.` : ""}
           </p>
           <Link className="text-link hover:underline" href={result.exceptions ? "/exceptions" : "/changes"}>{result.exceptions ? "Review in Exceptions" : "View in Changes"}</Link>
         </div>}

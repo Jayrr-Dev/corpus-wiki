@@ -125,7 +125,7 @@ export async function saveRoleMemory(memory: RoleMemory, remember: RememberItem[
   }
 }
 
-// A person cleared memory on /skills: the in-process copies must not bring it back
+// A person cleared memory on /roles: the in-process copies must not bring it back
 export function forgetCachedMemory(role: ModelRole): void {
   savedCache.delete(role);
   for (const scope of runStore.keys()) if (scope.endsWith(`:${role}`)) runStore.delete(scope);

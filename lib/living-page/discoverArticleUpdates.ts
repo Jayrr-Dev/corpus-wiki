@@ -1,7 +1,8 @@
 import "server-only";
 
 import { z } from "zod";
-import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
+import { addUsage, ANSWER_TOKEN_BUDGET, chatJson, CompletionLengthError, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
+import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
 import { skillInstructions } from "@/lib/ai/skills/prompt";
 import type { DraftAction, SectionDraft, SectionQuery } from "@/lib/ai/types";
 import type { DbRpc } from "@/lib/db/rpc";
@@ -41,8 +42,10 @@ export function discoverySections(answer: UpdateDiscovery, candidates: SectionUn
   });
 }
 
-// Usage totals every discovery batch (zero when no candidates needed a call)
-export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, pageId: string, note: string): Promise<TokenUsage & { sections: SectionDraft[] }> {
+// Usage totals every discovery batch (zero when no candidates needed a call).
+// extraUnitIds: claims outside the page's scope worth offering too (the Curator's
+// pick of stored claims no page cites); they are judged like the rest.
+export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, pageId: string, note: string, extraUnitIds: readonly string[] = []): Promise<TokenUsage & { sections: SectionDraft[] }> {
   const { data: page, error: pageError } = await client.from("pages").select("title").eq("id", pageId).single();
   if (pageError) throw new Error(pageError.message);
   const { data: sections, error } = await client.from("sections").select("id, title, query, mode").eq("page_id", pageId).is("retired_at", null);
@@ -52,6 +55,7 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
   for (const query of queries) for (const id of await db.call<string[]>("living_page_query_units", { p_query: query })) selected.add(id);
   const candidateIds = new Set<string>();
   for (const query of discoveryQueries(queries)) for (const id of await db.call<string[]>("living_page_query_units", { p_query: query })) if (!selected.has(id)) candidateIds.add(id);
+  for (const id of extraUnitIds) if (!selected.has(id)) candidateIds.add(id);
   if (!candidateIds.size) return { sections: [], tokensIn: 0, tokensOut: 0 };
   const { data: units, error: unitError } = await client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", [...candidateIds]).is("retired_at", null).order("id");
   if (unitError) throw new Error(unitError.message);
@@ -63,19 +67,19 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
   return groupClaimsForArticle(settings, page.title, (sections ?? []).map((section) => section.title), candidates, note);
 }
 
-// GROUPS CLAIMS INTO NEW SECTIONS of an existing article, 40 at a time; claims that do not
-// belong are left out. Also used when the Article Reviewer sends new claims to an existing article.
+// GROUPS CLAIMS INTO NEW SECTIONS of an existing article, 40 at a time (a batch whose answer is
+// cut off runs again as two halves); claims that do not belong are left out.
+// Also used when the Article Reviewer sends new claims to an existing article.
 export async function groupClaimsForArticle(settings: TokenFactorySettings, article: string, existingSections: string[], candidates: SectionUnit[], note: string): Promise<TokenUsage & { sections: SectionDraft[] }> {
   const added: SectionDraft[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   // Bound each discovery call, including for very large contexts.
-  for (let offset = 0; offset < candidates.length; offset += 40) {
-    const batch = candidates.slice(offset, offset + 40);
+  const groupBatch = async (batch: SectionUnit[]): Promise<void> => {
     const request = {
-      name: "article_update_discovery", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: 4000,
+      name: "article_update_discovery", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: ANSWER_TOKEN_BUDGET,
       messages: [
         { role: "system" as const, content: `${skillInstructions(["plan_articles"], settings.skills)}
-Identify NEW relevant knowledge for this existing article. The candidates are current verified claims from its existing entity/topic scope, not yet selected by any section. Select only claims that belong to the article's actual subject. Group them into concise new topic sections. Return sections:[] when none belong. Never change the subject, invent facts, repeat existing material, or create an empty section. Use only supplied C refs, each at most once. The optional user note is editorial guidance, not evidence. Existing handwritten text is protected.` },
+Identify NEW relevant knowledge for this existing article. The candidates are current verified claims from its existing entity/topic scope, or stored claims no article cites yet that sit close to it, not yet selected by any section. Select only claims that belong to the article's actual subject. Group them into concise new topic sections. Return sections:[] when none belong. Never change the subject, invent facts, repeat existing material, or create an empty section. Use only supplied C refs, each at most once. The optional user note is editorial guidance, not evidence. Existing handwritten text is protected.` },
         { role: "user" as const, content: JSON.stringify({ article, existingSections: [...existingSections, ...added.map((section) => section.title)], note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
       ],
     };
@@ -88,7 +92,9 @@ Identify NEW relevant knowledge for this existing article. The candidates are cu
       usage = addUsage(usage, answer);
       added.push(...discoverySections(answer.value, batch));
     }
-  }
+  };
+  const countCutOff = (error: Error) => { if (error instanceof CompletionLengthError) usage = addUsage(usage, error); };
+  for (let offset = 0; offset < candidates.length; offset += 40) await splitOnCutOff(candidates.slice(offset, offset + 40), groupBatch, countCutOff);
   return { sections: added, ...usage };
 }
 

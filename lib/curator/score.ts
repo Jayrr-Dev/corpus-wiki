@@ -22,6 +22,12 @@ export const STUB_CLAIMS = 2;
 const SIMILAR_TITLE_OVERLAP = 0.75;
 // Claims an organization page may repeat from the pages under it (its overview's opening)
 export const ORGANIZATION_REPEAT_ALLOWANCE = 3;
+// A claim no page cites belongs to the page whose mean claim vector is at least this close
+export const FITS_PAGE_SIMILARITY = 0.5;
+// Claim titles shown in one missing_claims candidate (the dispatch carries all of them)
+const MISSING_TITLES_SHOWN = 8;
+// Claim titles shown for the claims that fit no page, so the Curator can tell what subjects they hold
+const UNCOVERED_TITLES_SHOWN = 40;
 
 // TYPES
 export type CuratorPage = {
@@ -40,8 +46,11 @@ export type CuratorPage = {
 };
 export type ClaimVectors = ReadonlyMap<string, readonly number[]>;
 export type PairScore = { a: string; b: string; aInB: number; bInA: number; shared: number; similarity: number | null };
-export type CandidateKind = "duplicate" | "contained" | "same_subject" | "stub" | "misplaced" | "similar_titles" | "untyped" | "top_level";
-export type Candidate = { kind: CandidateKind; pageIds: string[]; detail: string };
+export type CandidateKind = "duplicate" | "contained" | "same_subject" | "stub" | "misplaced" | "similar_titles" | "untyped" | "top_level" | "missing_claims" | "uncovered" | "poor_title";
+// claimIds: the stored claims no page cites, that fit the page (missing_claims) or fit none (uncovered)
+export type Candidate = { kind: CandidateKind; pageIds: string[]; detail: string; claimIds?: string[] };
+// A live claim no page cites; turnedDown: the Article Reviewer already turned it down as a new article
+export type UnplacedClaim = { id: string; title: string; turnedDown?: boolean };
 export type TreeHealth = {
   pages: number;
   roots: number;
@@ -241,6 +250,88 @@ export function findCandidates(pages: readonly CuratorPage[], vectors: ClaimVect
   }
   for (const { page, nearest, similarity } of misplacedPages(pages, pairs)) {
     candidates.push({ kind: "misplaced", pageIds: [page.id, nearest], detail: `${title(page.id)} is closest to ${title(nearest)} (similarity ${similarity.toFixed(2)}), which is not its parent, child or sibling.` });
+  }
+  return candidates;
+}
+
+// =====================================================================
+// MISSING KNOWLEDGE: stored claims no page cites, each filed under the
+// page it is closest to by vector. Organization pages are left out (their
+// overviews are short on purpose). Claims that fit no page form one
+// uncovered candidate: knowledge the wiki has no article for.
+// =====================================================================
+
+export function missingClaims(pages: readonly CuratorPage[], unplaced: readonly UnplacedClaim[], vectors: ClaimVectors): Candidate[] {
+  const targets = pages.filter((page) => !page.organization).flatMap((page) => {
+    const vector = pageVector(page.claimIds, vectors);
+    return vector ? [{ page, vector }] : [];
+  });
+  const fits = new Map<string, UnplacedClaim[]>();
+  const uncovered: UnplacedClaim[] = [];
+  for (const claim of unplaced) {
+    const vector = vectors.get(claim.id);
+    if (!vector) continue;
+    let best: { id: string; similarity: number } | null = null;
+    for (const target of targets) {
+      const similarity = cosine(vector, target.vector);
+      if (!best || similarity > best.similarity) best = { id: target.page.id, similarity };
+    }
+    if (best && best.similarity >= FITS_PAGE_SIMILARITY) fits.set(best.id, [...(fits.get(best.id) ?? []), claim]);
+    else if (!claim.turnedDown) uncovered.push(claim);
+  }
+  const byId = new Map(pages.map((page) => [page.id, page]));
+  const list = (claims: readonly UnplacedClaim[], shown: number) =>
+    claims.slice(0, shown).map((claim) => `“${claim.title}”`).join(", ") + (claims.length > shown ? ` and ${claims.length - shown} more` : "");
+  const candidates: Candidate[] = [...fits].map(([pageId, claims]) => ({ kind: "missing_claims", pageIds: [pageId], claimIds: claims.map((claim) => claim.id),
+    detail: `${claims.length} stored claim(s) no page cites fit “${byId.get(pageId)!.title}” best: ${list(claims, MISSING_TITLES_SHOWN)}.` }));
+  if (uncovered.length) candidates.push({ kind: "uncovered", pageIds: [], claimIds: uncovered.map((claim) => claim.id),
+    detail: `${uncovered.length} stored claim(s) no page cites fit no page: ${list(uncovered, UNCOVERED_TITLES_SHOWN)}.` });
+  return candidates;
+}
+
+// =====================================================================
+// TITLES THAT NEED A LOOK: a title that breaks the naming rules (an
+// acronym never spelled out, "&", Title Case, the parent's name repeated)
+// or that no longer matches what the page says. Organization pages keep
+// the organization's name, so they are never flagged.
+// =====================================================================
+
+// Words of four letters or more, all capitalized: Title Case ("Direct Applications To Pipeline Companies")
+function isTitleCase(title: string): boolean {
+  const long = title.replace(/\([^)]*\)/g, " ").split(/\s+/).slice(1).filter((word) => /^[A-Za-z]{4,}$/.test(word));
+  return long.length >= 3 && long.every((word) => /^[A-Z][a-z]/.test(word));
+}
+
+// An acronym ("WHMIS", "DM&E") with no spelled-out form in brackets beside it
+function bareAcronym(title: string): string | null {
+  if (/\([^)]*\)/.test(title)) return null;
+  return title.split(/\s+/).find((word) => /^[A-Z][A-Z&]{1,}[A-Z]$/.test(word)) ?? null;
+}
+
+// "inspections" and "inspection" are the same word for the fit check
+const singular = (word: string) => (word.length > 3 && word.endsWith("s") && !word.endsWith("ss") ? word.slice(0, -1) : word);
+
+export function titleProblems(pages: readonly CuratorPage[], claimTitles: ReadonlyMap<string, string>): Candidate[] {
+  const byId = new Map(pages.map((page) => [page.id, page]));
+  const candidates: Candidate[] = [];
+  for (const page of pages) {
+    if (page.organization) continue;
+    const problems: string[] = [];
+    const acronym = bareAcronym(page.title);
+    if (acronym) problems.push(`the acronym ${acronym} is never spelled out`);
+    if (page.title.includes("&")) problems.push(`it uses "&"`);
+    if (isTitleCase(page.title)) problems.push("it is in Title Case, not sentence case");
+    const parent = page.parentId ? byId.get(page.parentId) : undefined;
+    if (parent && page.title.toLowerCase().includes(parent.title.toLowerCase())) problems.push(`it repeats its parent's name, “${parent.title}”`);
+    // Does the page still say what its title says? Only judged once it holds a few claims
+    const words = [...titleWords(page.title)];
+    if (words.length && page.claimIds.length > STUB_CLAIMS) {
+      const said = [...page.claimIds.map((id) => claimTitles.get(id) ?? ""), ...page.sections].join(" ");
+      const used = new Set([...titleWords(said)].map(singular));
+      // None of its words, not a share: claims are short and say "clearances" where the title says "minimum clearances between…"
+      if (!words.some((word) => used.has(singular(word)))) problems.push("none of its words appear in its claims or section headings, so it may no longer match the page");
+    }
+    if (problems.length) candidates.push({ kind: "poor_title", pageIds: [page.id], detail: `The title “${page.title}” may need a rename: ${problems.join("; ")}.` });
   }
   return candidates;
 }

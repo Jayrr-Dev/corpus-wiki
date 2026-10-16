@@ -46,7 +46,7 @@ export async function saveRoleModel(db: DbRpc, role: ModelRole, model: string | 
   await db.call("set_ai_role_model", { p_role: role, p_model: model });
 }
 
-// The roles in full auto (Roles tab): what they would hold in Exceptions is accepted at once
+// The roles in full auto (Agent Roles): what they would hold in Exceptions is accepted at once
 export async function readRoleAuto(db: DbRpc): Promise<string[]> {
   const settings = await db.call<WorkspaceSettings>("get_workspace_settings");
   return settings.aiRoleAuto ?? [];

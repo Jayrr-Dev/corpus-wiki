@@ -157,9 +157,16 @@ const MODULES: Record<string, ModuleTutorial> = {
   skills: {
     id: "skills", label: "Workflow",
     steps: [
-      step("Understand the workflow views", "Stage assignments chooses instructions for each AI stage. Skill library holds reusable instructions; Flows and Roles explain how the work is organized.", "Switch among the Workflow tabs.", "workflow-tabs"),
+      step("Understand the workflow views", "Stage assignments chooses instructions for each AI stage. Skill library holds reusable instructions; Flows and AI flow show how the work is organized.", "Switch among the Workflow tabs.", "workflow-tabs"),
       step("Assign instructions to a stage", "Choose a skill for a stage and save the change. App rules only removes the added skill instructions; Reset to default restores the default assignment.", "Review a stage’s description before changing its assigned skill."),
       step("Create and reuse skills", "New skill creates custom instructions. Duplicate a built-in skill to adapt it; changes apply to future runs. Assigned skills must be unassigned before archiving.", "Use New skill or open Skill library to inspect existing instructions."),
+    ],
+  },
+  roles: {
+    id: "roles", label: "Agent Roles",
+    steps: [
+      step("Meet the roster", "Each card is one AI role: what it is responsible for, the instructions it follows and the model it runs on.", "Scan the cards to see who does what."),
+      step("Tune a role", "Open a card’s instructions to read or edit them, and choose its model and effort. Roles that can hold changes in Exceptions can run in full auto.", "Open a card’s instructions before changing them."),
     ],
   },
   errors: {

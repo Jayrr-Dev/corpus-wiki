@@ -59,7 +59,7 @@ export async function runCuratorPass(db: DbRpc, progress: (detail: string) => vo
   const autoAccepted: AutoAccepted[] = [];
   for (const [index, change] of pass.changes.entries()) {
     // The one model call's usage is recorded once, on the first change
-    const draft = { summary: describeChange(change, title), actions: [changeToAction(change)],
+    const draft = { summary: describeChange(change, title), actions: [changeToAction(change, title)],
       trace: { modelVersion: pass.model, promptVersion: CURATOR_PROMPT_VERSION, tokensIn: index ? 0 : pass.tokensIn, tokensOut: index ? 0 : pass.tokensOut } };
     const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai", operationKey: `curator:${crypto.randomUUID()}` }, draft);
     const result = await commitAsRole(db, "curator", changeSetId);

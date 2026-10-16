@@ -213,7 +213,7 @@ function Details({ node, library, onClose, onNavigate }: { node: CanvasNode; lib
         </details>;
       })}
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={() => onNavigate("roles")}>Edit on the Roles tab<ArrowRight /></Button>
+        <Button variant="outline" size="sm" onClick={() => onNavigate("roles")}>Edit in Agent Roles<ArrowRight /></Button>
         {hasStage ? <Button variant="ghost" size="sm" onClick={() => onNavigate("assignments")}>Manage stage skills<ArrowRight /></Button> : null}
       </div>
     </div> : node.instructionsNote ? <p className={styles.note}>{node.instructionsNote}</p> : null}

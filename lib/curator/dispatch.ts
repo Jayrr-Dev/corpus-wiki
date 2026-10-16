@@ -5,20 +5,24 @@ import type { DraftAction } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { rebuildPage } from "@/lib/living-page";
+import { orchestrateClaims } from "@/lib/living-page/articleOrchestrator";
 import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
 import { forceCreateSection } from "@/lib/living-page/forceCreateSection";
 import { refreshOrganizationOverviews, type OverviewDeps } from "@/lib/living-page/refreshOrganizationOverviews";
 import { runPageReview } from "@/lib/living-page/runPageReview";
-import type { Dispatch } from "./plan";
+import type { Dispatch, PageDispatch } from "./plan";
 
 // =====================================================================
 // CURATOR DISPATCH: the Curator hands one page to another role, which does
 // the work through its own entry point and its own ChangeSets (so the work
 // is audited and undoable as if a person had asked for it).
 //   reviewer   — page review: polishes wording, takes out repeated or unsupported lines
-//   planner    — adds stored claims the page is missing (or re-plans an overview)
+//   planner    — adds stored claims the page is missing, including the claims no page
+//                cites that the scores filed under it (or re-plans an overview)
 //   researcher — builds out one missing section from stored knowledge, and the
 //                web when Settings allow it
+//   proposer   — the Article Proposer and Reviewer (as after an upload) on the
+//                stored claims that fit no page: new articles, or sections of old ones
 // One failure never stops the others; each outcome is reported.
 // =====================================================================
 
@@ -37,21 +41,21 @@ async function commitAi(deps: DispatchDeps, summary: string, actions: DraftActio
 }
 
 // REVIEWER: the page review a person starts with "Review page"
-async function review(deps: DispatchDeps, dispatch: Dispatch): Promise<string> {
+async function review(deps: DispatchDeps, dispatch: PageDispatch): Promise<string> {
   await runPageReview(deps.db, deps.settings, dispatch.pageId, deps.embedder ?? null, undefined, dispatch.note);
   return "Reviewed the page with the Curator's focus.";
 }
 
 // PLANNER: an organization or placeholder page gets its overview re-planned; any other page
 // gains sections for stored claims that belong on it ("Update" on the page)
-async function plan(deps: DispatchDeps, dispatch: Dispatch): Promise<string | null> {
+async function plan(deps: DispatchDeps, dispatch: PageDispatch): Promise<string | null> {
   const overview = await refreshOrganizationOverviews(deps, null, { pageIds: [dispatch.pageId] });
   if (overview.length) {
     const outcome = overview[0]!;
     if (outcome.status === "failed") throw new Error(outcome.detail ?? "The overview failed.");
     return outcome.status === "applied" ? "Re-planned the overview." : outcome.detail;
   }
-  const { sections } = await discoverArticleUpdates(deps.db, deps.client, deps.settings, dispatch.pageId, dispatch.note);
+  const { sections } = await discoverArticleUpdates(deps.db, deps.client, deps.settings, dispatch.pageId, dispatch.note, dispatch.claimIds);
   if (!sections.length) return null;
   await commitAi(deps, `Planner (for the Curator): added ${sections.length} section(s) of stored knowledge`,
     sections.map((section): DraftAction => ({ ...NO_PERSON, type: "create_section", targetId: null, input: { pageId: dispatch.pageId, ...section } })), "curator-dispatch-planner-v1");
@@ -60,7 +64,7 @@ async function plan(deps: DispatchDeps, dispatch: Dispatch): Promise<string | nu
 }
 
 // RESEARCHER: a new section under the heading, filled by Force Create; removed again when nothing fits
-async function research(deps: DispatchDeps, dispatch: Dispatch): Promise<string | null> {
+async function research(deps: DispatchDeps, dispatch: PageDispatch): Promise<string | null> {
   if (!deps.writer) throw new Error("No section writer is configured.");
   const changeSetId = await commitAi(deps, `Researcher (for the Curator): started “${dispatch.heading}”`,
     [{ ...NO_PERSON, type: "create_section", targetId: null, input: { pageId: dispatch.pageId, title: dispatch.heading!, query: { unitIds: [], article: true } } }], "curator-dispatch-researcher-v1");
@@ -78,11 +82,26 @@ async function research(deps: DispatchDeps, dispatch: Dispatch): Promise<string 
   }
 }
 
+// PROPOSER: new articles for knowledge no page holds; the pages it touched get their lines written
+async function propose(deps: DispatchDeps, dispatch: Dispatch): Promise<string | null> {
+  const result = await orchestrateClaims({ settings: deps.settings, client: deps.client, db: deps.db, embedder: deps.embedder ?? null }, dispatch.claimIds);
+  // The articles are saved; one page's failed rebuild is reported, never the whole job's failure
+  const unwritten: string[] = [];
+  if (deps.writer) for (const pageId of result.pageIds) {
+    try { await rebuildPage(deps.db, deps.writer, pageId); }
+    catch (error) { unwritten.push(error instanceof Error ? error.message : String(error)); }
+  }
+  const done = result.created + result.updated + result.sections;
+  const problems = unwritten.length ? ` ${unwritten.length} page(s) not fully rebuilt: ${unwritten.join("; ")}` : "";
+  return done ? `${result.created} new article(s), ${result.updated + result.sections} existing article(s) extended, ${result.rejected} proposal(s) turned down.${problems}` : null;
+}
+
 export async function runDispatches(deps: DispatchDeps, dispatches: readonly Dispatch[]): Promise<DispatchOutcome[]> {
   const outcomes: DispatchOutcome[] = [];
   for (const dispatch of dispatches) {
     try {
-      const detail = dispatch.role === "reviewer" ? await review(deps, dispatch) : dispatch.role === "planner" ? await plan(deps, dispatch) : await research(deps, dispatch);
+      const detail = dispatch.role === "proposer" ? await propose(deps, dispatch)
+        : dispatch.role === "reviewer" ? await review(deps, dispatch) : dispatch.role === "planner" ? await plan(deps, dispatch) : await research(deps, dispatch);
       outcomes.push({ ...dispatch, status: detail ? "done" : "nothing", detail: detail ?? "Nothing to add." });
     } catch (error) {
       outcomes.push({ ...dispatch, status: "failed", detail: error instanceof Error ? error.message : String(error) });

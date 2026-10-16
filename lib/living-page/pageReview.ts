@@ -72,6 +72,16 @@ export function validatePageReview(review: { summary: string; findings: Omit<z.i
   }
 }
 
+// A move or consolidation the model could not anchor to another supplied page
+// is a note, not a decision: keep it in the summary instead of failing the review.
+export function settleUnplacedFindings<T extends { findings: z.infer<typeof pageReviewSchema>["findings"] }>(review: T, snapshot: PageReviewSnapshot): T {
+  const placed = (id: string | null) => !!id && id !== snapshot.page.id && snapshot.pages.some((page) => page.id === id);
+  return { ...review, findings: review.findings.map((finding) => placed(finding.destinationId) ? finding
+    : ["move", "consolidate"].includes(finding.operation) || finding.destinationId
+      ? { ...finding, operation: "investigate" as const, destinationId: null, decisionKind: null, decisionQuestion: null }
+      : finding) };
+}
+
 // Keep routine findings in the review summary, never in the approval queue.
 export function needsPageReviewDecision(finding: z.infer<typeof pageReviewSchema>["findings"][number]) {
   if (!finding.decisionQuestion?.trim()) return false;

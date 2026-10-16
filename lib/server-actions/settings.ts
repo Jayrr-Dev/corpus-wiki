@@ -69,7 +69,7 @@ export async function chooseRoleModel(role: ModelRole, model: string | null): Pr
   });
 }
 
-// FULL AUTO: a role that can hold changes in Exceptions has them accepted at once instead (Roles tab)
+// FULL AUTO: a role that can hold changes in Exceptions has them accepted at once instead (Agent Roles)
 export async function setRoleAuto(role: AutoRole, on: boolean): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();

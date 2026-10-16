@@ -4,7 +4,7 @@ import {
   IdCard, ImagePlay, Library, Link2, ListTree, MapPin, Network, PenLine, Scale, ScanText, ShieldCheck, Telescope,
 } from "lucide-react";
 
-// ROLE ICONS: one icon per AI role, shared by the Roles tab and the AI flow canvas. A role keeps
+// ROLE ICONS: one icon per AI role, shared by Agent Roles and the AI flow canvas. A role keeps
 // its icon wherever it appears. Keyed by the role ids in lib/ai/roles.ts.
 export const ROLE_ICONS: Record<string, LucideIcon> = {
   extract_knowledge: ScanText, identify_entities: Fingerprint, link_knowledge: Link2, organize_topics: FolderTree,

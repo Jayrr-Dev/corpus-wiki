@@ -177,6 +177,39 @@ export function readablePassage(text: string): string {
 }
 
 // ACTION INPUT SUMMARY: the one line a person needs to recognise an action
+// A CURATOR CHANGE in words: what it does and to which pages. Proposals made before
+// the titles were saved name "this page" and "another page" instead.
+export function describeCuratorChange(input: JsonObject): string {
+  const titles = asObject(input.titles ?? null);
+  const named = (key: string, fallback: string) => {
+    const title = readString(titles, key);
+    return title ? `“${title}”` : fallback;
+  };
+  const page = named("page", "this page");
+  const parent = named("parent", "another page");
+  switch (readString(input, "operation")) {
+    case "merge": {
+      const claims = readStrings(input, "unitIds").length;
+      const kept = claims ? ` Its ${claims} claim(s) not already there become a new section, “${readString(input, "sectionTitle") ?? ""}”.` : " Every claim it states is already there.";
+      return `Merge ${page} into ${named("into", "another page")} and retire ${page}.${kept} Pages under it move with it.`;
+    }
+    case "move":
+      return input.parentPageId ? `Move ${page} under ${parent}.` : `Move ${page} to the top level.`;
+    case "rename":
+      return `Rename ${page} to “${readString(input, "title") ?? ""}”.`;
+    case "set_type":
+      return `Mark ${page} as ${humanize(readString(input, "articleType") ?? "")}${readString(input, "scope") ? `, covering: ${readString(input, "scope")}` : ""}.`;
+    case "group": {
+      const pages = readStrings(titles, "pages");
+      const filed = pages.length ? pages.map((title) => `“${title}”`).join(", ") : `${page} and the pages with it`;
+      const where = input.parentPageId ? `under ${parent}` : "at the top level";
+      return `Create a new ${humanize(readString(input, "articleType") ?? "page")} page, “${readString(input, "title") ?? ""}”, ${where}, and file ${filed} under it. The Planner writes its overview from those pages.`;
+    }
+    default:
+      return readString(input, "reason") ?? "";
+  }
+}
+
 export function describeActionInput(type: Enums<"action_type">, input: Json): string {
   const review = asObject(input);
   if (review.domainReview === true) {
@@ -234,7 +267,7 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
     case "retire_page":
       return "page removed";
     case "update_page":
-      return text("reason");
+      return object.curator === true ? describeCuratorChange(object) : text("reason");
     case "retire_section":
       return "section removed";
     case "update_entity":

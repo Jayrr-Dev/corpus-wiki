@@ -45,7 +45,7 @@ export function RoleModels({ settings }: { settings: ModelSettings }) {
   );
 }
 
-// ONE ROLE'S MODEL AND EFFORT: the two selects, also shown on each role card on /skills.
+// ONE ROLE'S MODEL AND EFFORT: the two selects, also shown on each role card on /roles.
 // Renders as two grid cells plus a status line, so the parent lays them out.
 export function RoleModelControls({ role, settings }: { role: ModelRole; settings: ModelSettings }) {
   const router = useRouter();

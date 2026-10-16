@@ -37,7 +37,7 @@ export const KNOWLEDGE_CANVAS: CanvasDiagram = {
     write: { shape: "circle", x: 1940, y: Y, title: "Write sections", short: "Writer" },
     article: { shape: "cylinder", variant: "store", x: 2200, y: Y, title: "Living articles" },
     hierarchy: { shape: "box", x: 2460, y: Y, title: "Hierarchy", short: "Keeps contexts in order", icon: ListTree },
-    dedupe: { shape: "circle", x: 2720, y: Y, title: "Clean up repeats", short: "Duplicate reviewer", icon: ROLE_ICONS.deduplicator, instructionsNote: "The Duplicate reviewer uses instructions managed by the app; they cannot be edited on the Roles tab." },
+    dedupe: { shape: "circle", x: 2720, y: Y, title: "Clean up repeats", short: "Duplicate reviewer", icon: ROLE_ICONS.deduplicator, instructionsNote: "The Duplicate reviewer uses instructions managed by the app; they cannot be edited in Agent Roles." },
   }),
   edges: [
     { from: "source", to: "reconcile", kind: "handoff", label: "files" },

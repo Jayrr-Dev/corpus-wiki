@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pageReviewSchema, validatePageReview, duplicateSectionRepairs, type PageReviewSnapshot } from "./pageReview";
+import { pageReviewSchema, validatePageReview, settleUnplacedFindings, duplicateSectionRepairs, type PageReviewSnapshot } from "./pageReview";
 
 const id = "11111111-1111-4111-8111-111111111111";
 const destinationId = "22222222-2222-4222-8222-222222222222";
@@ -17,6 +17,15 @@ describe("page reviewer evidence boundaries", () => {
       expect(() => validatePageReview({ summary: "Review", findings: [{ ...finding, operation: "move", destinationId: destination }] }, snapshot)).toThrow();
     }
     expect(() => validatePageReview({ summary: "Review", findings: [{ ...finding, operation: "consolidate", destinationId }] }, snapshot)).not.toThrow();
+  });
+  it("turns a structural finding without a usable destination into a note", () => {
+    const full = { ...finding, decisionKind: "cross_page_restructure" as const, decisionQuestion: "Move it?" };
+    for (const destination of [null, id, "33333333-3333-4333-8333-333333333333"]) {
+      const settled = settleUnplacedFindings({ summary: "Review", findings: [{ ...full, operation: "move", destinationId: destination }] }, snapshot);
+      expect(settled.findings[0]).toMatchObject({ operation: "investigate", destinationId: null, decisionKind: null, decisionQuestion: null });
+      expect(() => validatePageReview(settled, snapshot)).not.toThrow();
+    }
+    expect(settleUnplacedFindings({ summary: "Review", findings: [{ ...full, operation: "consolidate", destinationId }] }, snapshot).findings[0]?.operation).toBe("consolidate");
   });
   it("caps findings and rejects executable operations", () => {
     expect(pageReviewSchema.safeParse({ summary: "Review", findings: Array(7).fill(finding) }).success).toBe(false);

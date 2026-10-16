@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getModuleTutorial } from "./moduleSteps";
 
 describe("module tutorial routing", () => {
-  it.each(["/", "/glossary", "/graph", "/ask", "/upload", "/units", "/changes", "/decisions", "/exceptions", "/sources", "/entities", "/domains", "/skills", "/settings"])("provides a walkthrough for %s", (path) => {
+  it.each(["/", "/glossary", "/graph", "/ask", "/upload", "/units", "/changes", "/decisions", "/exceptions", "/sources", "/entities", "/domains", "/skills", "/roles", "/settings"])("provides a walkthrough for %s", (path) => {
     const tutorial = getModuleTutorial(path);
     expect(tutorial?.steps.length).toBeGreaterThanOrEqual(2);
     for (const step of tutorial!.steps) {

@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { BookOpen, Images, MessageCircle, Users } from "lucide-react";
+import { BookOpen, Bot, Images, MessageCircle, Users } from "lucide-react";
 import {
   ChangeIcon,
   DecisionIcon,
@@ -40,6 +40,7 @@ export const SECONDARY_NAV: readonly NavItem[] = [
   { label: "Entities", href: "/entities", icon: EntityIcon },
   { label: "Domains", href: "/domains", icon: DomainIcon },
   { label: "Workflow", href: "/skills", icon: SkillIcon },
+  { label: "Agent Roles", href: "/roles", icon: Bot },
 ];
 
 // True when `pathname` is this item's page or below it ("/" matches only itself and wiki pages)

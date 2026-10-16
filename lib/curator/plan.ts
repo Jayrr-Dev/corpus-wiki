@@ -11,7 +11,7 @@ import type { Candidate, CuratorPage } from "./score";
 
 export const ARTICLE_TYPES = ["entity", "process", "requirement", "concept"] as const;
 
-export const DISPATCH_ROLES = ["reviewer", "planner", "researcher"] as const;
+export const DISPATCH_ROLES = ["reviewer", "planner", "researcher", "proposer"] as const;
 // Other roles' runs one Curator pass may start
 export const MAX_DISPATCHES = 5;
 
@@ -30,10 +30,10 @@ export const curatorAnswerSchema = z.object({
     confident: z.boolean(),
     reason: z.string(),
   })),
-  // Work handed to another role on one page (after the structural changes)
+  // Work handed to another role on one page (after the structural changes); the proposer takes no page
   dispatches: z.array(z.object({
     role: z.enum(DISPATCH_ROLES),
-    page: z.string(),
+    page: z.string().nullable(),
     heading: z.string().nullable(),
     note: z.string(),
     reason: z.string(),
@@ -51,7 +51,11 @@ export type CuratorChange =
   | { operation: "set_type"; pageId: string; articleType: (typeof ARTICLE_TYPES)[number]; scope: string; confident: boolean; reason: string }
   | { operation: "group"; pageId: string; pageIds: string[]; title: string; articleType: (typeof ARTICLE_TYPES)[number]; scope: string; parentPageId: string | null; confident: boolean; reason: string };
 export type Skipped = { proposal: Proposal; why: string };
-export type Dispatch = { role: (typeof DISPATCH_ROLES)[number]; pageId: string; heading: string | null; note: string; reason: string };
+// claimIds: the stored claims no page cites that the scores filed under the Planner's page,
+// or, for the Article Proposer, the ones that fit no page (it proposes new articles for them)
+type DispatchFields = { heading: string | null; note: string; reason: string; claimIds: string[] };
+export type PageDispatch = DispatchFields & { role: Exclude<(typeof DISPATCH_ROLES)[number], "proposer">; pageId: string };
+export type Dispatch = PageDispatch | (DispatchFields & { role: "proposer"; pageId: null });
 
 // =====================================================================
 // WHAT THE MODEL READS
@@ -183,21 +187,32 @@ export function checkAnswer(answer: CuratorAnswer, pages: readonly CuratorPage[]
 }
 
 // DISPATCHES: known pages that still exist after the changes, a heading for the
-// Researcher, at most MAX_DISPATCHES, one per page and role
-export function checkDispatches(answer: CuratorAnswer, pages: readonly CuratorPage[], changes: readonly CuratorChange[]): { dispatches: Dispatch[]; skipped: string[] } {
+// Researcher, at most MAX_DISPATCHES, one per page and role. A Planner dispatch
+// carries the claims no page cites that the scores filed under its page.
+export function checkDispatches(answer: CuratorAnswer, pages: readonly CuratorPage[], changes: readonly CuratorChange[], candidates: readonly Candidate[] = []): { dispatches: Dispatch[]; skipped: string[] } {
   const { idOf } = pageRefs(pages);
+  const missing = new Map(candidates.flatMap((candidate) => (candidate.kind === "missing_claims" ? [[candidate.pageIds[0]!, candidate.claimIds ?? []] as const] : [])));
+  const uncovered = candidates.find((candidate) => candidate.kind === "uncovered")?.claimIds ?? [];
   const mergedAway = new Set(changes.flatMap((change) => (change.operation === "merge" ? [change.pageId] : [])));
   const seen = new Set<string>();
   const dispatches: Dispatch[] = [];
   const skipped: string[] = [];
   for (const item of answer.dispatches) {
-    const pageId = idOf.get(item.page);
+    const fields = { heading: item.heading?.trim() || null, note: item.note.trim(), reason: item.reason.trim() };
+    if (item.role === "proposer") {
+      if (!uncovered.length) { skipped.push("proposer: no claims that fit no page"); continue; }
+      if (seen.has("proposer") || dispatches.length >= MAX_DISPATCHES) { skipped.push("proposer: over the limit or repeated"); continue; }
+      seen.add("proposer");
+      dispatches.push({ ...fields, role: "proposer", pageId: null, heading: null, claimIds: [...uncovered] });
+      continue;
+    }
+    const pageId = item.page ? idOf.get(item.page) : undefined;
     const key = `${item.role}:${pageId}`;
     if (!pageId || mergedAway.has(pageId)) { skipped.push(`${item.role} ${item.page}: unknown or merged page`); continue; }
     if (item.role === "researcher" && !item.heading?.trim()) { skipped.push(`researcher ${item.page}: needs a section heading`); continue; }
     if (seen.has(key) || dispatches.length >= MAX_DISPATCHES) { skipped.push(`${item.role} ${item.page}: over the limit or repeated`); continue; }
     seen.add(key);
-    dispatches.push({ role: item.role, pageId, heading: item.heading?.trim() || null, note: item.note.trim(), reason: item.reason.trim() });
+    dispatches.push({ ...fields, role: item.role, pageId, claimIds: item.role === "planner" ? [...(missing.get(pageId) ?? [])] : [] });
   }
   return { dispatches, skipped };
 }
@@ -243,8 +258,15 @@ export function applyChanges(pages: readonly CuratorPage[], changes: readonly Cu
 // TO CHANGE CONTROL: one update_page action per change
 // =====================================================================
 
-export function changeToAction(change: CuratorChange): DraftAction {
-  const common = { curator: true as const, confident: change.confident, reason: change.reason };
+// titles: the pages' titles when proposed, so a person reviewing it reads names, not ids
+export function changeToAction(change: CuratorChange, title?: (id: string) => string): DraftAction {
+  const titles = title ? {
+    page: title(change.pageId),
+    ...(change.operation === "merge" ? { into: title(change.intoPageId) } : {}),
+    ...((change.operation === "move" || change.operation === "group") && change.parentPageId ? { parent: title(change.parentPageId) } : {}),
+    ...(change.operation === "group" ? { pages: change.pageIds.map(title) } : {}),
+  } : undefined;
+  const common = { curator: true as const, confident: change.confident, reason: change.reason, ...(titles ? { titles } : {}) };
   const input = change.operation === "merge"
     ? { ...common, operation: change.operation, intoPageId: change.intoPageId, sectionTitle: change.sectionTitle, unitIds: change.unitIds }
     : change.operation === "move" ? { ...common, operation: change.operation, parentPageId: change.parentPageId }

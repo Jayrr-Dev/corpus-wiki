@@ -1,8 +1,9 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
+import { addUsage, ANSWER_TOKEN_BUDGET, chatJson, CompletionLengthError, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { Embedder } from "@/lib/ai/embeddings";
 import { readArticleCharter } from "@/lib/ai/models";
+import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import type { DraftAction, SectionDraft } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
@@ -76,15 +77,16 @@ async function loadClaims(client: AdminSupabase, unitIds: string[]): Promise<{ c
   return { claims, entities: entities.data ?? [] };
 }
 
-// PROPOSE: one call per batch of claims, with one corrective retry
+// PROPOSE: one call per batch of claims, with one corrective retry; a batch whose answer
+// is cut off runs again as two halves
 async function propose(deps: OrchestratorDeps, claims: Claim[], entities: ProposerEntity[]): Promise<TokenUsage & { planned: PlannedArticle[] }> {
   const charter = await readArticleCharter(deps.db);
   const instructions = `${skillInstructions(["plan_articles"], deps.settings.skills)}\n${ARTICLE_PROPOSER_PROMPT}`;
   const planned: PlannedArticle[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
-  for (let offset = 0; offset < claims.length; offset += BATCH) {
-    const input = { charter, articles: await deps.db.call<ArticleIndexEntry[]>("article_index"), entities, claims: claims.slice(offset, offset + BATCH) };
-    const request = { name: "article_proposals", schema: articleProposalsSchema, jsonSchema: articleProposalsJsonSchema, maxTokens: 6000, messages: buildProposerMessages(instructions, input) };
+  const proposeBatch = async (batch: Claim[]): Promise<void> => {
+    const input = { charter, articles: await deps.db.call<ArticleIndexEntry[]>("article_index"), entities, claims: batch };
+    const request = { name: "article_proposals", schema: articleProposalsSchema, jsonSchema: articleProposalsJsonSchema, maxTokens: ANSWER_TOKEN_BUDGET, messages: buildProposerMessages(instructions, input) };
     let answer = await chatJson(deps.settings, request);
     usage = addUsage(usage, answer);
     try { planned.push(...readProposals(answer.value, input)); }
@@ -93,7 +95,9 @@ async function propose(deps: OrchestratorDeps, claims: Claim[], entities: Propos
       usage = addUsage(usage, answer);
       planned.push(...readProposals(answer.value, input));
     }
-  }
+  };
+  const countCutOff = (error: Error) => { if (error instanceof CompletionLengthError) usage = addUsage(usage, error); };
+  for (let offset = 0; offset < claims.length; offset += BATCH) await splitOnCutOff(claims.slice(offset, offset + BATCH), proposeBatch, countCutOff);
   return { planned, ...usage };
 }
 
@@ -237,6 +241,12 @@ async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope
 // After an upload: the claims it added or changed
 export async function orchestrateEventArticles(deps: OrchestratorDeps, eventId: string): Promise<OrchestratorResult> {
   return orchestrate(deps, eventId, eventId, await eventUnitIds(deps.db, eventId));
+}
+
+// For the Curator: stored claims no article cites that fit no page (keyed by the claims, so the same set is never proposed twice in one upload)
+export async function orchestrateClaims(deps: OrchestratorDeps, unitIds: string[]): Promise<OrchestratorResult> {
+  const scope = `claims:${createHash("sha256").update([...unitIds].sort().join(",")).digest("hex").slice(0, 16)}`;
+  return orchestrate(deps, null, scope, unitIds);
 }
 
 // "Expand knowledge" on an article: every claim about its entity
