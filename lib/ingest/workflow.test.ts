@@ -4,8 +4,9 @@ import { resolveException, submitChangeSet } from "@/lib/change-control";
 import type { DraftChangeSet, ReconciliationInput } from "@/lib/ai/types";
 import { FakeSectionWriter } from "@/lib/living-page";
 import { reconcileUpload, recordUpload, finishApprovedUpload, type PipelineDeps } from "./pipeline";
-import { uploadExecution, workflowWrite } from "./workflowContext";
+import { reportUploadProgress, uploadExecution, workflowWrite } from "./workflowContext";
 import { splitIntoPassages } from "./passages";
+import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
 import { articlesPending, workflowLabel } from "./workflowTypes";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -138,7 +139,7 @@ describe("persistent upload pipeline with real change control and pages", () => 
 
   it("does not grant workflow writes or raw outputs to authenticated browser clients", async () => {
     const access = await store.pg.query<{ rpc: boolean; table_access: boolean }>(`select
-      has_function_privilege('authenticated','public.claim_upload_workflow(uuid)','execute') rpc,
+      has_function_privilege('authenticated','public.claim_upload_workflow(uuid,boolean)','execute') rpc,
       has_table_privilege('authenticated','public.upload_steps','select') table_access`);
     expect(access.rows[0]).toEqual({ rpc: false, table_access: false });
     const source = await upload();
@@ -165,6 +166,22 @@ describe("persistent upload pipeline with real change control and pages", () => 
     expect(pipeline.deduper).toHaveBeenCalledTimes(1);
   });
 
+  it("saves the extracted knowledge first, then merges repeats of stored claims after the save", async () => {
+    const source = await upload(); const pipeline = deps();
+    pipeline.duplicateGuard = vi.fn(async (_input, draft) => draft);
+    let savedBeforeMerge = 0;
+    pipeline.deduper = vi.fn(async () => {
+      savedBeforeMerge = (await store.pg.query("select id from public.revisions where content like 'Workflow team%'")).rows.length;
+    });
+    const result = await reconcileUpload(pipeline, source.eventId, "knowledge");
+    expect(result.status).toBe("applied");
+    expect(pipeline.duplicateGuard).not.toHaveBeenCalled();
+    expect(savedBeforeMerge).toBe(2);
+    expect(result.workflow?.steps.map((step) => step.key).filter((key) => !key.startsWith("extract:")))
+      .toEqual(expect.arrayContaining(["reconciliation-input", "extraction", "reconcile", "embeddings", "duplicates"]));
+    expect(result.workflow?.steps.some((step) => step.key === "duplicate-guard")).toBe(false);
+  });
+
   it("saves the knowledge in its own job, then writes the articles without repeating it", async () => {
     const source = await upload(); const pipeline = deps();
     const knowledge = await reconcileUpload(pipeline, source.eventId, "knowledge");
@@ -179,6 +196,58 @@ describe("persistent upload pipeline with real change control and pages", () => 
     expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 1);
     expect(pipeline.draft).toHaveBeenCalledTimes(1);
     expect(pipeline.deduper).toHaveBeenCalledTimes(1);
+  });
+
+  // Each call in its own savepoint, so an expected raise (a cancel seen by a lease check)
+  // does not abort the test's surrounding transaction the way it would not abort a real request
+  function savepointDb(): DbRpc {
+    return { async call<T>(fn: string, args?: RpcArgs) {
+      await store.pg.exec("savepoint call");
+      try { const result = await store.db.call<T>(fn, args); await store.pg.exec("release savepoint call"); return result; }
+      catch (error) { await store.pg.exec("rollback to savepoint call"); throw error; }
+    } };
+  }
+
+  it("cancels at the next check, keeps what was saved, refuses the automatic articles run and resumes on request", async () => {
+    const source = await upload(); const pipeline = { ...deps(), db: savepointDb() };
+    pipeline.entityDescriber = vi.fn(async () => {}).mockImplementationOnce(async () => {
+      expect(await pipeline.db.call("cancel_upload_workflow", { p_event_id: source.eventId })).toBe("cancelling");
+    });
+    const cancelled = await reconcileUpload(pipeline, source.eventId, "knowledge");
+    expect(cancelled.status).toBe("applied");
+    expect(cancelled.workflow).toMatchObject({ state: "incomplete", error: "Processing was cancelled.", cancel_requested: true, progress: null });
+    expect(cancelled.workflow?.steps.some((step) => step.state === "running")).toBe(false);
+    // Repeats are merged right after the save, before the subjects are described
+    expect(pipeline.deduper).toHaveBeenCalledTimes(1);
+    expect(pipeline.hierarchyOrganizer).not.toHaveBeenCalled();
+    const continued = await reconcileUpload(pipeline, source.eventId, "articles", true);
+    expect(continued.workflow?.state).toBe("incomplete");
+    expect(pipeline.hierarchyOrganizer).not.toHaveBeenCalled();
+    const resumed = await reconcileUpload(pipeline, source.eventId);
+    expect(resumed.workflow).toMatchObject({ state: "complete", error: null, cancel_requested: false });
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
+    // The interrupted role runs again; the committed knowledge is not extracted again
+    expect(pipeline.entityDescriber).toHaveBeenCalledTimes(2);
+    expect(pipeline.deduper).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels a run nobody is working on straight away", async () => {
+    const source = await upload();
+    expect(await store.db.call("cancel_upload_workflow", { p_event_id: source.eventId })).toBe("cancelled");
+    const [workflow] = await store.db.call<{ state: string; error: string }[]>("read_upload_workflows", { p_event_ids: [source.eventId] });
+    expect(workflow).toMatchObject({ state: "incomplete", error: "Processing was cancelled." });
+  });
+
+  it("reports live progress while a role runs and clears it on release", async () => {
+    const source = await upload(); const pipeline = deps();
+    let seen: unknown;
+    pipeline.entityDescriber = vi.fn(async () => {
+      await reportUploadProgress({ step: "describe", done: 1, total: 3 });
+      seen = (await store.db.call<{ progress: unknown }[]>("read_upload_workflows", { p_event_ids: [source.eventId] }))[0]?.progress;
+    });
+    const result = await reconcileUpload(pipeline, source.eventId);
+    expect(seen).toEqual({ step: "describe", done: 1, total: 3 });
+    expect(result.workflow?.progress).toBeNull();
   });
 
   it("resumes a failed editorial reviewer without rewriting already saved page lines", async () => {

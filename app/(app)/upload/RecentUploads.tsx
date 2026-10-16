@@ -26,7 +26,7 @@ type UploadRow = Tables<"shift_events"> & { sourceTitle: string; source: Tables<
 // COLUMNS: status, file, change set, error, who uploaded it and when, then Retry on a failed row and the source's "…" menu
 const COLUMNS = [
   textColumn<UploadRow>("status", "Status", (row) => row.status, (row) => (
-    row.source?.origin === "internal" ? <UploadWorkflowStatus eventId={row.id} allowRetry={!row.source.archived_at} legacyStatus={row.status} /> : <StatusDot
+    row.source?.origin === "internal" ? <UploadWorkflowStatus eventId={row.id} allowRetry={!row.source.archived_at} legacyStatus={row.status} compact /> : <StatusDot
       tone={EVENT_TONE[row.status]}
       label={row.status === "reconciling" ? "Processing" : row.status}
       busy={row.status === "received" || row.status === "extracting" || row.status === "reconciling" || row.status === "checking"}

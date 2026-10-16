@@ -7,15 +7,30 @@ export type UploadWorkflow = {
   error?: string | null;
   steps: { key: string; state: "running" | "succeeded" | "failed"; error: string | null; attempts: number }[];
   waiting: boolean;
+  cancel_requested?: boolean;
+  // How far the current long role has got (batches read, sections written)
+  progress?: { step: string; done: number; total: number } | null;
 };
+
+// The run holds a live lease: something is working on it right now
+export function isRunning(workflow: UploadWorkflow): boolean {
+  return workflow.state === "running" && !!workflow.lease_until && Date.parse(workflow.lease_until) > Date.now();
+}
+
+// Cancel is offered while a run works, and while saved knowledge waits for its articles
+export function canCancelUpload(workflow: UploadWorkflow): boolean {
+  return !workflow.cancel_requested && (isRunning(workflow) || articlesPending(workflow));
+}
 
 // TWO JOBS. Knowledge: the claims are extracted, committed and cleaned. Articles: pages are
 // planned and written once from that finished knowledge. Each job is its own request, so a
 // slow page write never takes the saved knowledge down with it.
 export type UploadJob = "knowledge" | "articles";
 
-// The cleanup roles all finish before any page is written, so pages are built once
-export const KNOWLEDGE_STAGES = ["embeddings", "describe", "duplicates", "hierarchy", "glossary"] as const;
+// After the save: index the new claims, merge their repeats of stored claims (by meaning,
+// so it needs the vectors), then describe and organize what is left. All of it finishes
+// before any page is written, so pages are built once from cleaned knowledge.
+export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "describe", "hierarchy", "glossary"] as const;
 export const ARTICLE_STAGES = ["expand", "plan", "pages"] as const;
 
 // The knowledge job finished cleanly and the articles have not been written yet
@@ -34,7 +49,7 @@ export function canResumeUpload(workflow: UploadWorkflow): boolean {
 export function workflowLabel(workflow: UploadWorkflow): string {
   if (workflow.waiting) return "Awaiting approval";
   if (workflow.state === "complete") return "Processing complete";
-  if (workflow.state === "running" && !canResumeUpload(workflow)) return "Processing";
+  if (isRunning(workflow)) return workflow.cancel_requested ? "Cancelling" : "Processing";
   if (articlesPending(workflow)) return "Knowledge saved; articles not written yet";
   return workflow.change_set_id ? "Knowledge checked; work unfinished" : "Processing unfinished";
 }

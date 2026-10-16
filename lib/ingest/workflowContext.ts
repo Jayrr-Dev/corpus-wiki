@@ -2,7 +2,16 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
 
 // Request-local: other uploads and manual page edits never inherit this run.
-export const uploadExecution = new AsyncLocalStorage<{ eventId: string; token: string; db: DbRpc }>();
+// `signal` aborts when the run loses its lease or is cancelled; AI calls made inside the run listen to it.
+export const uploadExecution = new AsyncLocalStorage<{ eventId: string; token: string; db: DbRpc; signal?: AbortSignal }>();
+
+// HOW FAR A LONG ROLE HAS GOT, shown live on the upload's status line. Also a lease check,
+// so a cancel stops the run at the next batch or section.
+export type UploadProgress = { step: string; done: number; total: number };
+export async function reportUploadProgress(progress: UploadProgress): Promise<void> {
+  const execution = uploadExecution.getStore();
+  if (execution) await execution.db.call("report_upload_progress", { p_event_id: execution.eventId, p_token: execution.token, p_progress: progress });
+}
 
 export async function assertActiveUpload(): Promise<void> {
   const execution = uploadExecution.getStore();

@@ -1,4 +1,4 @@
-import { workflowStep } from "@/lib/ingest/workflowContext";
+import { reportUploadProgress, workflowStep } from "@/lib/ingest/workflowContext";
 import "server-only";
 
 import { chatJson, CompletionLengthError, ProviderTimeoutError, type TokenFactorySettings } from "@/lib/ai/chat";
@@ -69,7 +69,12 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       })));
     };
 
-    for (const passages of passageBatches(input.passages)) await extract(passages);
+    // The status line counts the batches read so far (a split batch still counts once)
+    const batches = passageBatches(input.passages);
+    for (const [index, passages] of batches.entries()) {
+      await reportUploadProgress({ step: "extraction", done: index, total: batches.length });
+      await extract(passages);
+    }
     return {
       summary: [...new Set(summaries)].join(" ") || `Read ${input.source.title}`,
       // Convert together so entities, domains and updates to the same unit are deduplicated.

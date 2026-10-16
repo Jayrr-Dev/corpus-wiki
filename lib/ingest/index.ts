@@ -141,7 +141,7 @@ function requireFormat(fileName: string, browserType: string): UploadFormat {
 
 // STEP 2: reconciliation with Nemotron, the commit and the page rebuild. `job` "knowledge"
 // stops once the claims are saved and cleaned; "articles" also writes the pages.
-export async function processUploadEvent(eventId: string, job: UploadJob = "articles"): Promise<ProcessUploadResult> {
+export async function processUploadEvent(eventId: string, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
   // Old external pages may contain broad, unfiltered text. Never rerun them as
   // uploads without their original article scope; refresh from that article instead.
   const client = getAdminSupabase();
@@ -157,7 +157,14 @@ export async function processUploadEvent(eventId: string, job: UploadJob = "arti
       return { status: "failed", changeSetId: null, error };
     }
   }
-  return reconcileUpload(await getServerDeps(), eventId, job);
+  return reconcileUpload(await getServerDeps(), eventId, job, continuation);
+}
+
+// CANCEL: the running role stops at its next check and its AI call is aborted. What is
+// already committed stays; Resume continues from the last finished role.
+export async function cancelUploadEvent(eventId: string): Promise<"cancelling" | "cancelled" | "idle"> {
+  const { db } = await getServerDeps();
+  return db.call("cancel_upload_workflow", { p_event_id: eventId });
 }
 
 // RETRY: step 2 again for a failed upload, with the model chosen now

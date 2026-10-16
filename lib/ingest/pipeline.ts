@@ -23,8 +23,9 @@ import { uploadExecution, workflowStep } from "./workflowContext";
 //                     the living pages are written once from that knowledge
 // =====================================================================
 
-// duplicateGuard: turns repeats of stored claims into revisions before the draft is submitted
-// (lib/ingest/duplicateGuard.ts); claimEmbedder: saves vectors of the claims a commit wrote
+// duplicateGuard: turns repeats of stored claims into revisions before a web page's draft is
+// submitted (lib/ingest/duplicateGuard.ts); uploads save first and leave repeats to `deduper`,
+// which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote
 export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
@@ -59,8 +60,9 @@ export async function recordUpload(db: DbRpc, record: UploadRecord): Promise<Sta
 
 // STEP 2: persist each role's progress; unfinished processing is separate from the knowledge commit.
 // "knowledge" stops once the claims are committed and cleaned; "articles" (the default) also writes the pages.
-export async function reconcileUpload(deps: PipelineDeps, eventId: string, job: UploadJob = "articles"): Promise<ProcessUploadResult> {
-  return runUploadWorkflow(deps, eventId, () => draftAndCommit(deps, eventId), job);
+// `continuation` marks the automatic articles run after the knowledge job: it never overrides a cancel.
+export async function reconcileUpload(deps: PipelineDeps, eventId: string, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
+  return runUploadWorkflow(deps, eventId, () => draftAndCommit(deps, eventId), job, continuation);
 }
 
 // EXTERNAL STEP 2: scoped web evidence adds claims to established reference domains.
@@ -86,9 +88,12 @@ export async function finishApprovedUpload(deps: PipelineDeps, eventId: string):
   await reconcileUpload(deps, eventId);
 }
 
-// The model reads the file against the current store, the duplicate guard folds repeats of
-// stored claims into them, and Change control judges what is left. New claims are then
-// embedded so the next upload and the cleaning cycle can find them by meaning (not fatal).
+// The model reads the file against the current store and Change control judges and saves
+// what it found, straight away: a slow comparison can never cost the extracted knowledge.
+// An upload's repeats of stored claims are merged after the save, by the "duplicates" role
+// (the merge keeps every citation). A web page only adds claims and has no such cleanup, so
+// its draft still goes through the duplicate guard first. Its new claims are then embedded
+// so the next upload and the cleaning cycle can find them by meaning (not fatal).
 async function draftAndCommit({ db, reconciler, duplicateGuard, claimEmbedder }: PipelineDeps, eventId: string, shape: (draft: DraftChangeSet, input: ReconciliationInput) => DraftChangeSet = (draft) => draft, guardOptions?: GuardOptions, externalScope?: ReconciliationInput["externalScope"]) {
   await setEventStatus(db, eventId, "reconciling", null);
   const input = await workflowStep("reconciliation-input", () => db.call<ReconciliationInput>("reconciliation_input", { p_event_id: eventId }));
@@ -97,7 +102,7 @@ async function draftAndCommit({ db, reconciler, duplicateGuard, claimEmbedder }:
     input.domainPaths = input.domainPaths.filter((path) => externalScope.referenceDomainPaths.includes(path));
   }
   const drafted = await workflowStep("extraction", async () => shape(await reconciler.draftChangeSet(input), input));
-  const draft = await workflowStep("duplicate-guard", () => duplicateGuard ? duplicateGuard(input, drafted, guardOptions) : Promise.resolve(drafted));
+  const draft = externalScope && duplicateGuard ? await duplicateGuard(input, drafted, guardOptions) : drafted;
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai", operationKey: "reconcile:submit" }, draft);
   const result = await commitChangeSet(db, changeSetId);
   try { if (externalScope) await claimEmbedder?.(); }

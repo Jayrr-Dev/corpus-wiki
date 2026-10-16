@@ -8,9 +8,13 @@ import { ARTICLE_STAGES, KNOWLEDGE_STAGES, type UploadJob, type UploadWorkflow }
 
 // The articles job also walks the knowledge roles: finished ones come back from their
 // checkpoints, unfinished ones run first, so articles never read half-cleaned knowledge.
-export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>, job: UploadJob = "articles"): Promise<ProcessUploadResult> {
+// How often a run renews its lease, and so how soon a cancel reaches an AI call in flight
+const HEARTBEAT_MS = 5_000;
+
+// `continuation`: started automatically after the knowledge job, so it never overrides a cancel.
+export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
   const { db } = deps;
-  const claim = await db.call<{ claimed: boolean; token?: string; changeSetId?: string | null }>("claim_upload_workflow", { p_event_id: eventId });
+  const claim = await db.call<{ claimed: boolean; token?: string; changeSetId?: string | null }>("claim_upload_workflow", { p_event_id: eventId, p_continue: continuation });
   if (!claim.claimed || !claim.token) return readResult();
   const token = claim.token;
   let heartbeat: ReturnType<typeof setInterval> | undefined;
@@ -18,6 +22,8 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
   let leaseError: unknown;
   let fatal: string | null = null;
   let resumeAfterRelease = false;
+  // A lost lease or a cancel aborts the AI call in flight instead of waiting for it to finish
+  const abort = new AbortController();
   const checkLease = async () => {
     if (leaseError) throw leaseError;
     await db.call("assert_upload_lease", { p_event_id: eventId, p_token: token });
@@ -26,9 +32,9 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
     heartbeat = setInterval(() => {
       if (heartbeatPending) return;
       heartbeatPending = true;
-      void checkLease().catch((error) => { leaseError = error; }).finally(() => { heartbeatPending = false; });
-    }, 30_000);
-    await uploadExecution.run({ eventId, token, db }, async () => {
+      void checkLease().catch((error) => { leaseError = error; abort.abort(error); }).finally(() => { heartbeatPending = false; });
+    }, HEARTBEAT_MS);
+    await uploadExecution.run({ eventId, token, db, signal: abort.signal }, async () => {
       await workflowStep("reconcile", async () => {
         await checkLease();
         return claim.changeSetId ? commitChangeSet(db, claim.changeSetId) : reconcile();
@@ -66,7 +72,7 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
   } finally {
     if (heartbeat) clearInterval(heartbeat);
   }
-  if (resumeAfterRelease) return runUploadWorkflow(deps, eventId, reconcile, job);
+  if (resumeAfterRelease) return runUploadWorkflow(deps, eventId, reconcile, job, continuation);
   return readResult(fatal);
 
   async function release(state: "waiting" | "complete" | "incomplete") {

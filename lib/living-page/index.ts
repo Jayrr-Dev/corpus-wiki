@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { assertActiveUpload, uploadExecution } from "@/lib/ingest/workflowContext";
+import { assertActiveUpload, reportUploadProgress, uploadExecution } from "@/lib/ingest/workflowContext";
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
@@ -50,7 +50,8 @@ export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenMod
 // Rebuilds every section the event touched (or that has stale lines), with a change note each
 export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string): Promise<void> {
   const sections = await db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId });
-  for (const section of sections) {
+  for (const [index, section] of sections.entries()) {
+    await reportUploadProgress({ step: "pages", done: index, total: sections.length });
     const built = await rebuildSection(db, writer, section.sectionId, eventId, false);
     if (uploadExecution.getStore() && (!built || built.rebuildRequested)) throw new Error("A page section is still being updated. Resume after its current build finishes.");
   }

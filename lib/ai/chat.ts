@@ -5,6 +5,7 @@ import { type AiCallLogger, type AiCallStatus, type CompletionUsage, logSafely, 
 import type { RoleInstruction, StageSkills } from "./skills/types";
 import { DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
+import { uploadExecution } from "@/lib/ingest/workflowContext";
 
 // =====================================================================
 // TOKEN FACTORY CHAT CALL: one OpenAI-compatible chat completion that must
@@ -186,7 +187,8 @@ async function requestCompletion(
 ): Promise<CompletionResponse> {
   const response = await postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
     method: "POST",
-    signal: request.signal,
+    // Inside an upload run, a cancel or lost lease aborts the call
+    signal: request.signal ?? uploadExecution.getStore()?.signal,
     headers: { Authorization: `Bearer ${settings.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,

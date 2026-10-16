@@ -79,7 +79,7 @@ export async function retryUpload(eventId: string): Promise<ActionResult<Process
 // A failed articles job is saved on the workflow, where the screen shows it with Resume
 function writeArticlesAfter(eventId: string, knowledge: ProcessUploadResult): ProcessUploadResult {
   if (knowledge.workflow && articlesPending(knowledge.workflow)) {
-    after(() => processUploadEvent(eventId, "articles").then(() => undefined, (error) => console.error("upload articles failed", error)));
+    after(() => processUploadEvent(eventId, "articles", true).then(() => undefined, (error) => console.error("upload articles failed", error)));
   }
   return knowledge;
 }
