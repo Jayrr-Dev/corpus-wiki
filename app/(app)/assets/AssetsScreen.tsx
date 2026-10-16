@@ -89,7 +89,7 @@ export function AssetsScreen() {
           </div>
         )}
         {shownTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-x-0.5 gap-y-1" aria-label="Tags">
+          <div className="flex flex-wrap items-center gap-1" aria-label="Tags">
             {shownTags.map(([tag]) => (
               <TagFilter key={tag} tag={tag} active={tags.includes(tag)} onClick={() => toggleTag(tag)} tagCounts={tagCounts} onRenamed={renamed} />
             ))}
@@ -147,18 +147,22 @@ function AssetCard({ asset, sourceTitle, activeTags, onTag }: { asset: Asset; so
   );
 }
 
-// A TAG FILTER with a menu (shown on hover or focus) to rename it or merge it into another tag
+// A TAG FILTER: the tag (filters the page) and, inside the same chip, a menu to rename it
+// or merge it into another tag (faint until the chip is hovered or focused)
 function TagFilter({ tag, active, onClick, tagCounts, onRenamed }: {
   tag: string; active: boolean; onClick: () => void; tagCounts: (readonly [string, number])[]; onRenamed: (from: string, to: string) => void;
 }) {
   return (
-    <span className="group/tag inline-flex items-center">
-      <TagChip tag={tag} active={active} onClick={onClick} />
-      {/* Faded, not hidden, so the button stays focusable and clickable */}
-      <span className="opacity-0 transition-opacity group-hover/tag:opacity-100 group-focus-within/tag:opacity-100 has-data-[state=open]:opacity-100">
+    <span className={cn("group/tag inline-flex items-center rounded border text-xs transition-colors",
+      active ? "border-link/40 bg-link/15 text-link" : "text-muted-foreground hover:border-link/40")}>
+      <button type="button" aria-pressed={active} onClick={onClick}
+        className="rounded-l py-0.5 pl-1.5 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
+        {tag}
+      </button>
+      <span className="opacity-40 transition-opacity group-hover/tag:opacity-100 group-focus-within/tag:opacity-100 has-data-[state=open]:opacity-100">
         <DialogMenu
           label={`Actions for the tag ${tag}`}
-          className="w-5"
+          className="w-4"
           items={[{ label: "Rename or merge…", render: (close) => <RenameTagForm tag={tag} tagCounts={tagCounts} onDone={(to) => { onRenamed(tag, to); close(); }} /> }]}
         />
       </span>
