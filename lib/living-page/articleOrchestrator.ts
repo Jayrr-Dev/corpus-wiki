@@ -202,6 +202,20 @@ async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: Pl
   return { verdict: review.verdict, pageId };
 }
 
+// One failed proposal never stops the others: it is recorded, and its claims stay in the store
+async function carryOutSafely(deps: OrchestratorDeps, eventId: string | null, item: PlannedArticle, key: string): Promise<Outcome> {
+  try { return await carryOut(deps, eventId, item, key); }
+  catch (error) {
+    const reason = `Nothing was written because this step failed: ${error instanceof Error ? error.message : String(error)}`;
+    const { error: recordError } = await deps.client.from("article_reviews").insert({
+      event_id: eventId, proposal: { action: item.action, title: item.action === "create" ? item.title : "", claimIds: item.claims.map((claim) => claim.unitId) },
+      verdict: "reject", reason, decided_by: "rule", target_page_id: item.action === "update" ? item.pageId : null, prompt_version: ARTICLE_PROPOSER_PROMPT_VERSION,
+    });
+    if (recordError) console.error("Article review record:", recordError.message);
+    return { verdict: "reject", pageId: null };
+  }
+}
+
 // RUN for a set of claims; `scope` keys the workflow steps so a resume skips finished ones
 async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope: string, unitIds: string[]): Promise<OrchestratorResult> {
   const result: OrchestratorResult = { created: 0, updated: 0, sections: 0, rejected: 0, pageIds: [] };
@@ -210,7 +224,7 @@ async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope
   const { planned } = await workflowStep(`article-proposals:${scope}`, () => propose(deps, claims, entities));
   for (const [index, item] of planned.entries()) {
     const key = `article:${scope}:${index}:${createHash("sha256").update(JSON.stringify(item)).digest("hex").slice(0, 16)}`;
-    const outcome = await workflowStep(key, () => carryOut(deps, eventId, item, key));
+    const outcome = await workflowStep(key, () => carryOutSafely(deps, eventId, item, key));
     if (outcome.verdict === "approve") result.created++;
     else if (outcome.verdict === "update_existing") result.updated++;
     else if (outcome.verdict === "section_of") result.sections++;

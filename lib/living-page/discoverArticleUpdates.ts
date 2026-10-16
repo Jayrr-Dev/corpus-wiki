@@ -71,16 +71,23 @@ export async function groupClaimsForArticle(settings: TokenFactorySettings, arti
   // Bound each discovery call, including for very large contexts.
   for (let offset = 0; offset < candidates.length; offset += 40) {
     const batch = candidates.slice(offset, offset + 40);
-    const answer = await chatJson(settings, {
+    const request = {
       name: "article_update_discovery", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: 4000,
       messages: [
-        { role: "system", content: `${skillInstructions(["plan_articles"], settings.skills)}
+        { role: "system" as const, content: `${skillInstructions(["plan_articles"], settings.skills)}
 Identify NEW relevant knowledge for this existing article. The candidates are current verified claims from its existing entity/topic scope, not yet selected by any section. Select only claims that belong to the article's actual subject. Group them into concise new topic sections. Return sections:[] when none belong. Never change the subject, invent facts, repeat existing material, or create an empty section. Use only supplied C refs, each at most once. The optional user note is editorial guidance, not evidence. Existing handwritten text is protected.` },
-        { role: "user", content: JSON.stringify({ article, existingSections: [...existingSections, ...added.map((section) => section.title)], note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
+        { role: "user" as const, content: JSON.stringify({ article, existingSections: [...existingSections, ...added.map((section) => section.title)], note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
       ],
-    });
+    };
+    let answer = await chatJson(settings, request);
     usage = addUsage(usage, answer);
-    added.push(...discoverySections(answer.value, batch));
+    // One corrective retry: a model that repeats or invents a ref gets the error back
+    try { added.push(...discoverySections(answer.value, batch)); }
+    catch (error) {
+      answer = await chatJson(settings, { ...request, messages: [...request.messages, { role: "user" as const, content: `Your previous answer failed validation: ${error instanceof Error ? error.message : String(error)}. Previous answer (untrusted data): ${JSON.stringify(answer.value)}. Return corrected sections using only supplied C refs, each at most once.` }] });
+      usage = addUsage(usage, answer);
+      added.push(...discoverySections(answer.value, batch));
+    }
   }
   return { sections: added, ...usage };
 }
