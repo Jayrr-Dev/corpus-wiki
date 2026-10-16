@@ -15,10 +15,11 @@ import { unitRef } from "./prompt";
 // =====================================================================
 
 // PROMPT VERSION: recorded on each ChangeSet this pass drafts
-export const LINK_PROMPT_VERSION = "link-existing-v1";
+export const LINK_PROMPT_VERSION = "link-existing-v2";
 
 // ONE UNIT THE MODEL MAY LINK (what it sees, plus the id it never sees)
-export type LinkPassUnit = { unitId: string; content: string; kind: Enums<"unit_kind">; domainPaths: string[] };
+// composite: a procedure or list; its steps come from its source, in its order, never from this pass
+export type LinkPassUnit = { unitId: string; content: string; kind: Enums<"unit_kind">; domainPaths: string[]; composite?: boolean };
 
 // AN EXISTING LINK BETWEEN TWO UNITS (to skip, and to show the model what is already there)
 export type ExistingLink = { fromUnitId: string; toUnitId: string; type: Enums<"relationship_type"> };
@@ -44,6 +45,7 @@ Answer with JSON only: { "links": Link[] }. Each Link is { from, to, type, reaso
 - Prefer the most specific type; use related_to only when no other type fits.
 - A definition and a claim that uses the defined term: link the claim to the definition with depends_on.
 - At most 3 links per unit; never link a unit to itself; never repeat a link listed in existingLinks.
+- Never link part_of into a unit marked composite: its steps or items come from its source, in order.
 - reason: a few words on why they are linked.
 - If nothing in the batch is clearly related, return an empty links list.`;
 
@@ -51,7 +53,7 @@ Answer with JSON only: { "links": Link[] }. Each Link is { from, to, type, reaso
 export function buildLinkMessages(units: LinkPassUnit[], existing: ExistingLink[], skills?: StageSkills): ChatMessage[] {
   const refById = new Map(units.map((unit, index) => [unit.unitId, unitRef(index)]));
   const payload = {
-    units: units.map((unit, index) => ({ ref: unitRef(index), content: unit.content, kind: unit.kind, domains: unit.domainPaths })),
+    units: units.map((unit, index) => ({ ref: unitRef(index), content: unit.content, kind: unit.kind, domains: unit.domainPaths, ...(unit.composite ? { composite: true } : {}) })),
     existingLinks: existing.flatMap((link) => {
       const from = refById.get(link.fromUnitId), to = refById.get(link.toUnitId);
       return from && to ? [{ from, to, type: link.type }] : [];
@@ -70,10 +72,12 @@ ${skillInstructions(["link_knowledge"],skills)}` },
 export function linkAnswerToActions(answer: LinkAnswer, units: LinkPassUnit[], existing: ExistingLink[]): DraftAction[] {
   const idByRef = new Map(units.map((unit, index) => [unitRef(index), unit.unitId]));
   const seen = new Set(existing.map((link) => linkKey(link)));
+  const composites = new Set(units.filter((unit) => unit.composite).map((unit) => unit.unitId));
   return answer.links.flatMap((link): DraftAction[] => {
     const fromUnitId = idByRef.get(link.from.trim().toUpperCase());
     const toUnitId = idByRef.get(link.to.trim().toUpperCase());
     if (!fromUnitId || !toUnitId || fromUnitId === toUnitId) return [];
+    if (link.type === "part_of" && composites.has(toUnitId)) return [];
     const key = linkKey({ fromUnitId, toUnitId, type: link.type });
     if (seen.has(key)) return [];
     seen.add(key);

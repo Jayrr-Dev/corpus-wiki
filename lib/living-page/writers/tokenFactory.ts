@@ -34,6 +34,7 @@ const LAYOUT_RULES = [
   "(3) Table, for comparing several items on the same attributes: '| Header | Header |' then '|---|---|' then one '| cell | cell |' row per item; at least 2 columns and 2 rows.",
   "(4) Chart, only when claims state at least 3 numbers measured in the same unit across categories or over time: a row '```chart bar Title' (bar, hbar for long labels, line for change over time, pie for parts of one whole), then one 'Label: number' row per value, then a row '```'. Every number must appear in a cited claim; a chart with any other number is removed.",
   "(5) Callout, for one critical rule or warning the reader must not miss: '> text'. Use it rarely.",
+  "A claim with a structure is a composite, and the claims whose stepOf names it are its steps or items, already in order. Write a sequence as one numbered-steps line that cites the composite and every step in that order. Write a set as one lead-in list that cites the composite and every item; its lead-in says whether all of the items apply or any one is enough when mode says so, and complete:true means the list is the whole list. Never drop, merge or reorder a composite's steps.",
   "An Overview section is always prose. Never use a layout for a single item or to decorate prose, and never put Markdown headings, bold, links or images in a line.",
 ].join(" ");
 
@@ -128,7 +129,11 @@ function buildRefs(input: SectionReviseInput): Refs {
 // Builds the system + user messages: the page, the section, its claims and its lines as JSON
 function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
   const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
-  const claims = input.units.map((unit) => ({ ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content, context: unit.context }));
+  const claims = input.units.map((unit) => ({
+    ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content, context: unit.context,
+    ...(unit.structure ? { structure: unit.structure } : {}),
+    ...(unit.memberOf && refs.unitRef.has(unit.memberOf) ? { stepOf: refs.unitRef.get(unit.memberOf), ...(unit.position ? { step: unit.position } : {}) } : {}),
+  }));
   const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
   const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds), ...(input.updateNote ? { updateInstructions: input.updateNote } : {}) };
   return [

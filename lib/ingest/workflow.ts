@@ -1,6 +1,6 @@
 import { withSettledActor } from "@/lib/auth/currentPerson";
 import type { CommitResult } from "@/lib/change-control";
-import { commitChangeSet } from "@/lib/change-control";
+import { commitAsRole } from "@/lib/change-control";
 import { proposePages, rebuildAfterEvent } from "@/lib/living-page";
 import type { PipelineDeps } from "./pipeline";
 import type { ProcessUploadResult } from "./types";
@@ -43,7 +43,7 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
     await uploadExecution.run({ eventId, token, db, signal: abort.signal }, async () => {
       await workflowStep("reconcile", async () => {
         await checkLease();
-        return claim.changeSetId ? commitChangeSet(db, claim.changeSetId) : reconcile();
+        return claim.changeSetId ? commitAsRole(db, "reconciler", claim.changeSetId) : reconcile();
       });
       if (await db.call<boolean>("upload_workflow_waiting", { p_event_id: eventId })) {
         await release("waiting");
@@ -68,6 +68,12 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           await rebuildAfterEvent(db, deps.writer, eventId);
           // New articles cite their claims only once written: file them under their context now
           if (deps.articleOrchestrator) await deps.hierarchyOrganizer?.(eventId);
+        },
+        // The Curator tidies the page tree, then organization pages that now repeat their
+        // children become overviews. Housekeeping: a failure is logged, never fails the upload.
+        curate: async () => {
+          try { await deps.pageMaintainer?.(eventId); }
+          catch (error) { console.error("Page tree upkeep after upload failed:", error); }
         },
       };
       // Completed roles are not repeated on resume.

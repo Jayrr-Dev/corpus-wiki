@@ -19,6 +19,9 @@ export type SectionUnit = {
   content: string;
   kind: UnitKind;
   epistemicStatus: EpistemicStatus;
+  structure?: import("@/lib/ai/types").Structure; // a composite: a procedure or a list
+  memberOf?: string; // a step or item of this composite (also in the section)
+  position?: number | null; // its place in the composite's sequence
 };
 
 // ONE CURRENT LINE OF A SECTION, flagged when it must be rewritten

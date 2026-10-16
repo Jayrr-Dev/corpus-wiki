@@ -14,13 +14,14 @@ import { cn } from "@/lib/utils";
 import { AI_STAGES, type AiSkill, type AiStage, type SkillLibrary } from "@/lib/ai/skills/types";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { archiveAiSkill, assignAiSkill, readAiSkills } from "@/lib/server-actions/skills";
+import type { ModelSettings } from "../settings/loadModelSettings";
 import { RolesTab } from "./RolesTab";
 import { FlowsTab } from "./FlowsTab";
 import { AiFlowTab } from "./AiFlowTab";
 import { SkillEditor } from "./SkillEditor";
 
 type Editor={skill?:AiSkill;duplicate?:boolean};
-export function SkillsScreen() {
+export function SkillsScreen({modelSettings}:{modelSettings:ModelSettings}) {
   const library=useQuery({queryKey:["table","ai_skills","library"],queryFn:async()=>{
     const result=await readAiSkills(); if (!result.ok) throw new Error(result.error); return result;
   }});
@@ -42,7 +43,7 @@ export function SkillsScreen() {
       </div>
     </div>
     <QueryState query={library}>
-      {library.data ? tab==="flows" ? <FlowsTab library={library.data} onNavigate={setTab} /> : tab==="ai-flow" ? <AiFlowTab library={library.data} onNavigate={setTab} /> : tab==="roles" ? <RolesTab library={library.data} /> : tab==="assignments" ? <Assignments library={library.data} onView={(skill)=>setEditor({skill})} /> : <SkillList library={library.data} onEdit={(skill)=>setEditor({skill})} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
+      {library.data ? tab==="flows" ? <FlowsTab library={library.data} onNavigate={setTab} /> : tab==="ai-flow" ? <AiFlowTab library={library.data} onNavigate={setTab} /> : tab==="roles" ? <RolesTab library={library.data} modelSettings={modelSettings} /> : tab==="assignments" ? <Assignments library={library.data} onView={(skill)=>setEditor({skill})} /> : <SkillList library={library.data} onEdit={(skill)=>setEditor({skill})} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
     </QueryState>
     {editor ? <SkillEditor key={`${editor.skill?.id??"new"}:${!!editor.duplicate}`} skill={editor.skill} duplicate={editor.duplicate} onClose={()=>setEditor(null)} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
   </div>;

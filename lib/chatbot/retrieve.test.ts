@@ -25,13 +25,14 @@ const revisions = [
 
 type Row = Record<string, unknown>;
 type Query = { table: string; columns: string; filters: { op: string; key: string; value: unknown }[] };
-function mockClient(rows = revisions, extraSources: Row[] = []) {
+function mockClient(rows: Row[] = revisions, relationships: Row[] = [], extraSources: Row[] = []) {
   const queries: Query[] = [];
   const tableRows: Record<string, Row[]> = {
+    relationships,
     entities: [entity],
     units: rows.map(row => ({ id: row.unit_id, current_revision_id: row.id, retired_at: null })),
     revisions: rows,
-    passages: rows.map(row => ({ id: row.passage_ids[0], source_id: `source-${row.unit_id}`, text: `Source evidence for ${row.unit_id}` })),
+    passages: rows.map(row => ({ id: (row.passage_ids as string[])[0], source_id: `source-${row.unit_id}`, text: `Source evidence for ${row.unit_id}` })),
     sources: [...rows.map(row => ({ id: `source-${row.unit_id}`, title: `Source ${row.unit_id}`, archived_at: null, replaced_by_id: null })), ...extraSources],
     section_lines: [
       { page_id: "own", content: "Eligible article", unit_revision_ids: ["r-utilitek"], is_stale: false },
@@ -123,7 +124,7 @@ describe("retrieve scoped knowledge", () => {
   });
 
   it("finds source text by meaning when no claim matches, but never for a scoped question", async () => {
-    mockClient([], [{ id: "source-x", title: "Source x", archived_at: null, replaced_by_id: null }]);
+    mockClient([], [], [{ id: "source-x", title: "Source x", archived_at: null, replaced_by_id: null }]);
     mocks.similarUnits.mockResolvedValue([]);
     mocks.similarPassages.mockResolvedValueOnce([{ passageId: "p-x", sourceId: "source-x", text: "Lockout steps", similarity: 0.7 }]);
     const result = await retrieve("lockout", db, embedder);
@@ -169,5 +170,24 @@ describe("retrieve scoped knowledge", () => {
     expect(result.warning).toContain("text matches only");
     expect(result.references.some(reference => reference.href === "/units/utilitek")).toBe(true);
     expect(result.references.some(reference => reference.href === "/units/other")).toBe(false);
+  });
+});
+
+describe("composites in answers", () => {
+  it("gives a matched step's procedure with every step in order", async () => {
+    const context = scoped("utilitek");
+    const procedure = { ...revision("lockout", context), content: "Utilitek locks out a machine in two steps", structure: { type: "sequence", complete: true, mode: null } };
+    const first = { ...revision("isolate", context), content: "Utilitek isolates the energy" };
+    const second = { ...revision("lock", context), content: "Utilitek applies a lock" };
+    mockClient([procedure, first, second], [
+      { from_unit_id: "lock", to_unit_id: "lockout", type: "part_of", retired_at: null, position: 2, created_at: "2026-11-09T00:00:00Z" },
+      { from_unit_id: "isolate", to_unit_id: "lockout", type: "part_of", retired_at: null, position: 1, created_at: "2026-11-09T00:00:01Z" },
+    ]);
+    mocks.scopeIds.mockResolvedValue(["lock"]);
+    mocks.similarUnits.mockResolvedValue([{ unitId: "lock", revisionId: "r-lock", content: "", similarity: 0.9 }]);
+    mocks.savedVectors.mockResolvedValue(new Map([["r-lock", [1, 0]]]));
+    const result = await retrieve("lock", db, embedder, entity.id);
+    const steps = result.references.find(reference => reference.href === "/units/lockout");
+    expect(steps?.text).toContain(["Steps, in order:", "1. Utilitek isolates the energy", "2. Utilitek applies a lock"].join("\n"));
   });
 });

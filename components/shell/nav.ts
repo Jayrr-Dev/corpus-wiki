@@ -22,9 +22,9 @@ export type NavItem = { label: string; href: string; icon: ComponentType<IconPro
 // SIDEBAR, MAIN GROUP: the places named on the Frontend tab, plus the graph view
 export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Pages", href: "/", icon: PageIcon },
+  { label: "Graph", href: "/graph", icon: GraphIcon },
   { label: "Glossary", href: "/glossary", icon: BookOpen },
   { label: "Stakeholders", href: "/stakeholders", icon: Users },
-  { label: "Graph", href: "/graph", icon: GraphIcon },
   { label: "Ask", href: "/ask", icon: MessageCircle },
   { label: "Upload", href: "/upload", icon: UploadIcon },
   { label: "Knowledge", href: "/units", icon: UnitIcon },

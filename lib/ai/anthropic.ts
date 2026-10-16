@@ -5,6 +5,7 @@ import type { ChatContentPart, ChatMediaMessage, ChatMessage, ChatTool, Completi
 import type { CompletionUsage } from "./callLog";
 import { addCompletionUsage, MAX_TOOL_ROUNDS, ProviderTimeoutError, runToolCalls } from "./chat";
 import { ANTHROPIC_MODEL_PREFIX } from "./config";
+import type { OfferedModel } from "./modelInputs";
 
 // =====================================================================
 // CLAUDE (Anthropic API, optional third provider). Its models show in the
@@ -138,13 +139,14 @@ function toCompletion(message: Anthropic.Message, pickedModel: string): Completi
 }
 
 // Every Claude model this key can use that the app's calls work on: structured outputs and adaptive thinking
-export async function listClaudeModelIds(apiKey: string): Promise<string[]> {
+export async function listClaudeModels(apiKey: string): Promise<OfferedModel[]> {
   const client = new Anthropic({ apiKey });
-  const ids: string[] = [];
+  const models: OfferedModel[] = [];
   for await (const model of client.models.list()) {
-    const capabilities = (model as { capabilities?: { structured_outputs?: { supported?: boolean }; thinking?: { types?: { adaptive?: { supported?: boolean } } } } }).capabilities;
+    const capabilities = (model as { capabilities?: { structured_outputs?: { supported?: boolean }; thinking?: { types?: { adaptive?: { supported?: boolean } } }; image_input?: { supported?: boolean } } }).capabilities;
     if (capabilities?.structured_outputs?.supported === false || capabilities?.thinking?.types?.adaptive?.supported === false) continue;
-    ids.push(model.id);
+    // Claude models read images unless the listing says otherwise
+    models.push({ id: model.id, inputs: capabilities?.image_input?.supported === false ? ["text"] : ["text", "image"] });
   }
-  return ids;
+  return models;
 }

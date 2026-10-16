@@ -36,6 +36,7 @@ export type LinkBatchResult = { changeSetId: string | null; proposed: number; ap
 async function loadStore(client: AdminSupabase): Promise<{ units: LinkPassUnit[]; links: ExistingLink[] }> {
   const rows = await fetchGraphRows(client);
   const contentByRevision = new Map(rows.revisions.map((revision) => [revision.id, revision.content]));
+  const composite = new Set(rows.revisions.filter((revision) => revision.structure).map((revision) => revision.id));
   const pathByDomain = new Map(rows.domains.map((domain) => [domain.id, domain.path]));
   const pathsByUnit = new Map<string, string[]>();
   for (const { unit_id, domain_id } of rows.unitDomains) {
@@ -48,6 +49,7 @@ async function loadStore(client: AdminSupabase): Promise<{ units: LinkPassUnit[]
       content: contentByRevision.get(unit.current_revision_id) ?? "",
       kind: unit.kind,
       domainPaths: pathsByUnit.get(unit.id) ?? [],
+      composite: composite.has(unit.current_revision_id),
     })).filter((unit) => unit.content.trim()),
     links: rows.relationships.map((r) => ({ fromUnitId: r.from_unit_id, toUnitId: r.to_unit_id, type: r.type })),
   };

@@ -16,6 +16,7 @@ import { ChangeFilterBar } from "@/app/(app)/changes/ChangeFilterBar";
 import { useChangeFilters } from "@/app/(app)/changes/useChangeFilters";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/standard/loader";
+import { CuratePagesButton } from "./CuratePagesButton";
 
 // ROW STYLE SHARED BY PAGE AND DOMAIN ROWS
 const rowClass = "flex items-center gap-1.5 rounded-md px-1.5 py-1 text-panel hover:bg-hover";
@@ -74,7 +75,7 @@ export function MobileSidebarTree() {
 // TREE BODY: the pages list, or the filters for the current table page
 function TreeBody({ kind, onMinimize }: { kind: TreeKind; onMinimize?: () => void }) {
   if (kind === "pages") {
-    return <div className="p-2"><SidebarGroup title="Pages" onMinimize={onMinimize}><PagesList /></SidebarGroup></div>;
+    return <div className="p-2"><SidebarGroup title="Pages" onMinimize={onMinimize} actions={<CuratePagesButton />}><PagesList /></SidebarGroup></div>;
   }
   const title = TREE_TITLE[kind];
   return (
@@ -120,7 +121,7 @@ function KnowledgeFilters() {
   );
 }
 // COLLAPSIBLE GROUP WITH A SMALL CAPS HEADER
-function SidebarGroup({ title, onMinimize, children }: { title: string; onMinimize?: () => void; children: ReactNode }) {
+function SidebarGroup({ title, onMinimize, actions, children }: { title: string; onMinimize?: () => void; actions?: ReactNode; children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <section>
@@ -133,6 +134,7 @@ function SidebarGroup({ title, onMinimize, children }: { title: string; onMinimi
         >
           {title}
         </button>
+        {actions}
         {onMinimize ? <MinimizeButton label={title} onClick={onMinimize} /> : null}
       </div>
       {isOpen ? children : null}

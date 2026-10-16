@@ -10,6 +10,7 @@ import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { contextDescription, contextRelevance } from "@/lib/knowledge/contextSelection";
 import { similarGlossary } from "@/lib/glossary/embeddingStore";
 import { glossaryReferences } from "@/lib/glossary/retrieve";
+import { compositesFor, stepsText } from "./composites";
 
 export async function retrieve(question: string, db: DbRpc, embedder: Embedder, entityId?: string) {
   const client = await getServerSupabase();
@@ -80,9 +81,20 @@ export async function retrieve(question: string, db: DbRpc, embedder: Embedder, 
         const context = parseKnowledgeContext(r.knowledge_context);
         return !contextEntity || (context && contextRelevance(context, contextEntity) !== "excluded");
       }).sort((a, b) => (rank.get(a.unit_id) ?? 0) - (rank.get(b.unit_id) ?? 0)).slice(0, 32);
-      for (const r of eligible) {
-        const context = parseKnowledgeContext(r.knowledge_context);
-        references.push({ id: `K${references.length + 1}`, title: r.title || "Knowledge", href: `/units/${r.unit_id}`, kind: "Knowledge", text: `${context ? contextDescription(context) : "Applicability unspecified"}\n${r.content.slice(0, 2400)}` });
+      // A procedure or list comes with its steps in order; a matched step brings its procedure along
+      const composites = await compositesFor(client, eligible.map(r => r.unit_id));
+      const shown = new Set(eligible.map(r => r.unit_id));
+      const parents = [...composites.values()].filter(composite => !shown.has(composite.unitId)).filter(composite => {
+        const context = parseKnowledgeContext(composite.knowledgeContext);
+        return !contextEntity || (context && contextRelevance(context, contextEntity) !== "excluded");
+      }).slice(0, 4);
+      const knowledge = [...eligible.map(r => ({ unitId: r.unit_id, title: r.title, content: r.content, knowledgeContext: r.knowledge_context })),
+        ...parents.map(composite => ({ unitId: composite.unitId, title: composite.title, content: composite.content, knowledgeContext: composite.knowledgeContext }))];
+      for (const r of knowledge) {
+        const context = parseKnowledgeContext(r.knowledgeContext);
+        const composite = composites.get(r.unitId);
+        const steps = composite ? stepsText(composite).slice(0, 4000) : "";
+        references.push({ id: `K${references.length + 1}`, title: r.title || "Knowledge", href: `/units/${r.unitId}`, kind: "Knowledge", text: `${context ? contextDescription(context) : "Applicability unspecified"}\n${r.content.slice(0, 2400)}${steps}` });
       }
       const passageIds = eligible.flatMap(r => r.passage_ids).slice(0, 40);
       // A source passage can contain several parties' policies; scoped answers use

@@ -33,7 +33,7 @@ export type UploadJob = "knowledge" | "articles";
 // approval here), then describe, write stakeholder cards ("profiles") and organize. All of it
 // finishes before any page is written, so pages are built once from cleaned, filed knowledge.
 export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "tidy", "place", "describe", "profiles", "hierarchy", "glossary"] as const;
-export const ARTICLE_STAGES = ["expand", "plan", "pages"] as const;
+export const ARTICLE_STAGES = ["expand", "plan", "pages", "curate"] as const;
 
 // Every knowledge stage is saved and the articles are still unfinished (never run, or failed)
 export function knowledgeSaved(workflow: UploadWorkflow): boolean {

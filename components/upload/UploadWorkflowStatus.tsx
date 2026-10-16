@@ -38,7 +38,7 @@ export function useUploadWorkflows(eventIds: string[]) {
 const LABELS: Record<string, string> = {
   reconcile: "Saving knowledge", "reconciliation-input": "Reading evidence", extraction: "Extracting knowledge",
   "duplicate-guard": "Comparing existing claims", embeddings: "Indexing knowledge", describe: "Describing subjects", tidy: "Tidying entities", profiles: "Writing stakeholder cards",
-  expand: "Expanding definitions", plan: "Planning pages", pages: "Updating and reviewing pages",
+  expand: "Expanding definitions", plan: "Planning pages", pages: "Updating and reviewing pages", curate: "Tidying the page tree",
   hierarchy: "Organizing topics", place: "Filing into topics", duplicates: "Merging repeated claims", "settle-pages": "Checking final page updates", glossary: "Writing dictionary entries",
 };
 

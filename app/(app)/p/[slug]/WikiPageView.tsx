@@ -106,7 +106,9 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
       {staleRefresh.error ? <p role="alert" className="mb-4 text-panel">{staleRefresh.error}</p> : null}
       {staleRefresh.isPending ? <p className="mb-4 text-panel text-faint">Updating stale lines…</p> : null}
       {sectionsQuery.isPending || linesQuery.isPending ? <Loader label="Loading article…" /> : null}
-      {!sectionsQuery.isPending && !sections.length ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
+      {/* A placeholder topic page has no sections: its scope introduces it, and its pages are listed below */}
+      {!sectionsQuery.isPending && !sections.length && page.scope ? <p className="mb-6 max-w-3xl text-lg leading-relaxed text-muted-foreground">{page.scope}</p> : null}
+      {!sectionsQuery.isPending && !sections.length && !page.scope && !children.length ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
       <div className="grid min-w-0 gap-8 xl:grid-cols-[10rem_minmax(0,1fr)]">
         {sections.length > 0 ? <nav aria-label="Article contents" className="text-panel xl:sticky xl:top-6 xl:self-start">
           <h2 className="mb-2 font-semibold">Contents</h2>

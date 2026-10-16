@@ -100,15 +100,15 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
     <section id={`section-${section.id}`} aria-label={section.title} aria-busy={section.status === "building"} className={cn("scroll-mt-6", isStale && "relative pl-3")}>
       {isStale ? <span aria-hidden="true" className="sb-stale-line" /> : null}
       {!hideHeading ? (
-        <header className="group mb-4 flex items-center justify-between gap-2 border-b pb-2">
-          <h2 className={cn("-mx-1 rounded-sm px-1 font-serif text-2xl", isSectionSelected && "bg-hover")}>
-            {section.title}
+        <header className="group mb-4 flex items-end justify-between gap-2 border-b pb-2">
+          <div className="min-w-0">
             {onSelectSection ? (
-              <button type="button" onClick={onSelectSection} aria-label="View history and actions for this section" className="ml-2 align-middle font-sans text-xs text-faint opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-link">
+              <button type="button" onClick={onSelectSection} aria-label="View history and actions for this section" className="block text-xs text-faint opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:text-link">
                 {updatedAt ? `Updated ${noteDate.format(new Date(updatedAt))}` : "details"}
               </button>
             ) : null}
-          </h2>
+            <h2 className={cn("-mx-1 rounded-sm px-1 font-serif text-2xl", isSectionSelected && "bg-hover")}>{section.title}</h2>
+          </div>
           {menu}
         </header>
       ) : null}

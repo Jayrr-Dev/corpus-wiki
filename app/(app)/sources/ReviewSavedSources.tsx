@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { useDomains, useEntities } from "@/lib/queries";
 import { reviewSavedExternalSources } from "@/lib/server-actions/externalReview";
+import { typeIsOrganization } from "@/lib/knowledge/entityTypes";
 
 export function ReviewSavedSources() {
   const [chosen, setChosen] = useState<string | null>(null);
@@ -12,7 +13,7 @@ export function ReviewSavedSources() {
   const entities = useEntities();
   const domains = useDomains();
   const rootOwners = new Set((domains.data ?? []).filter((domain) => !domain.parent_id && !domain.retired_at).map((domain) => domain.context_entity_id));
-  const projects = (entities.data ?? []).filter((entity) => rootOwners.has(entity.id) && !entity.retired_at && ["company", "organization", "project"].includes(entity.type));
+  const projects = (entities.data ?? []).filter((entity) => rootOwners.has(entity.id) && !entity.retired_at && (typeIsOrganization(entity.type) || entity.type === "project"));
   const entityId = chosen ?? (projects.length === 1 ? projects[0]!.id : "");
   const review = useServerAction(reviewSavedExternalSources, { progress: { title: "Reviewing saved external sources…", detail: "Checking each source against the original project evidence. Rejected sources will be archived." } });
   const run = async () => {

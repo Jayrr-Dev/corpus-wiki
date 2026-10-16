@@ -42,6 +42,7 @@ export const CANVAS_NODES: CanvasNode[] = [
 
   placed("domain_steward", 500, L, { short: "Reviews the topic tree", sends: "topic change", needsYou: true }),
   placed("linker", 800, L, { short: "Links related claims", sends: "links" }),
+  placed("curator", 1100, L, { short: "Keeps the page tree clean", sends: "page changes", needsYou: true }),
 
   { id: "start-section", shape: "pill", variant: "person", x: 2420, y: L, title: "You build a section", facts: [{ label: "Starts", text: "Creating, improving or force-creating a section, or saving a stakeholder’s web page. Only when outside knowledge is allowed in Settings. Never during an upload." }] },
   placed("researcher-search", 2650, L, { short: "Proposes a research gap" }),

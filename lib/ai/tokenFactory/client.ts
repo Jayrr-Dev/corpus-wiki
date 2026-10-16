@@ -5,7 +5,7 @@ import { chatJson, CompletionLengthError, ProviderTimeoutError, type TokenFactor
 import { skillTrace } from "@/lib/ai/skills/prompt";
 import { PROMPT_VERSION } from "@/lib/ai/config";
 import type { DraftChangeSet, ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
-import { buildReconciliationMessages, claimRef, passageRef } from "./prompt";
+import { buildReconciliationMessages, claimRef, earlierClaimRef, passageRef, type EarlierComposite } from "./prompt";
 import { reconciliationAnswerSchema, reconciliationJsonSchema, type AnswerClaim, type AnswerLink } from "./schema";
 import { answerToActions } from "./toDraft";
 
@@ -44,7 +44,7 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
           subject: input.source.title,
           schema: reconciliationAnswerSchema,
           jsonSchema: reconciliationJsonSchema,
-          messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills),
+          messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills, earlierComposites(claims, links)),
           // Extraction is careful reading, not puzzle solving: higher efforts only add minutes of hidden thinking
           reasoningEffort: "low",
         }));
@@ -65,7 +65,10 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       const localRefs = new Map(passages.map((passage, index) => [passageRef(index), globalRefs.get(passage.id)!]));
       // Claim refs count from 1 in every batch: shift them past the claims already collected
       const claimOffset = claims.length;
-      const globalClaimRef = (ref: string) => ref.trim().replace(/^C(\d+)$/i, (_, n: string) => claimRef(claimOffset + Number(n) - 1));
+      // An earlier batch's composite (G4) is already counted across the whole file
+      const globalClaimRef = (ref: string) => ref.trim()
+        .replace(/^C(\d+)$/i, (_, n: string) => claimRef(claimOffset + Number(n) - 1))
+        .replace(/^G(\d+)$/i, (_, n: string) => claimRef(Number(n) - 1));
       links.push(...answer.value.links.map((link) => ({ ...link, from: globalClaimRef(link.from), to: globalClaimRef(link.to) })));
       claims.push(...answer.value.claims.map((claim) => ({
         ...claim,
@@ -86,6 +89,16 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       trace: { modelVersion, promptVersion: skillTrace(PROMPT_VERSION,["extract_knowledge","identify_entities","link_knowledge","organize_topics","define_concepts"],this.settings.skills), tokensIn, tokensOut },
     };
   }
+}
+
+// The composites read so far, so a procedure that runs past a batch keeps its later steps
+function earlierComposites(claims: AnswerClaim[], links: AnswerLink[]): EarlierComposite[] {
+  return claims.flatMap((claim, index) => {
+    if (!claim.structure) return [];
+    const ref = claimRef(index);
+    const positions = links.filter((link) => link.to === ref && link.type === "part_of").map((link) => link.position ?? 0);
+    return [{ ref: earlierClaimRef(index), content: claim.content, structure: claim.structure, lastPosition: Math.max(0, ...positions) }];
+  });
 }
 
 function passageBatches(passages: ReconciliationInput["passages"]): ReconciliationInput["passages"][] {

@@ -141,3 +141,16 @@ describe("cleanup context boundaries", () => {
     expect(dedupeAnswerToActions(answer, [keep, other])[0]).toMatchObject({ type: "revise_claim", input: { context } });
   });
 });
+
+describe("composites in the cleaning cycle", () => {
+  it("never groups a composite with its step, or two steps of one procedure", () => {
+    const procedure = unit("proc", "Safety meetings are held in steps");
+    const first = { ...unit("s3", "Safety meetings are verified by the lead"), partOf: [{ compositeId: "proc", sequence: true }] };
+    const again = { ...unit("s9", "Safety meetings are verified by the lead."), partOf: [{ compositeId: "proc", sequence: true }] };
+    expect(findDuplicateClusters([procedure, first, again])).toEqual([]);
+    const elsewhere = { ...unit("x", "Safety meetings are verified by the lead"), partOf: [{ compositeId: "other", sequence: true }] };
+    expect(findDuplicateClusters([first, elsewhere]).map((group) => group.map((u) => u.unitId))).toEqual([["s3", "x"]]);
+    const actions = dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: null, confidence: "high", reason: "" }] }, [first, again]);
+    expect(actions).toEqual([]);
+  });
+});

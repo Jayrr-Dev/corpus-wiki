@@ -3,7 +3,7 @@ import { assertActiveUpload, reportUploadProgress, uploadExecution } from "@/lib
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { type ModelChoice, tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
+import { commitAsRole, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { SectionProgress } from "./buildProgress";
 import { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
@@ -145,7 +145,7 @@ async function rewriteLines(
     trace: { modelVersion: revision.modelVersion, promptVersion: writer.promptVersion ?? null, tokensIn: revision.tokensIn ?? null, tokensOut: revision.tokensOut ?? null },
   };
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai", operationKey: `section:${state.sectionId}:${createHash("sha256").update(JSON.stringify(input)).digest("hex")}` }, draft);
-  const result = await commitChangeSet(db, changeSetId);
+  const result = await commitAsRole(db, "write_articles", changeSetId);
   // Held changes (a person's line the AI wants to change) wait on Exceptions; only a refused change is a failure
   if (result.status === "rejected" || result.rejected > 0) throw new Error("The section update was not fully applied. Review its change set in Changes before retrying.");
   return { applied: result.applied, modelVersion: revision.modelVersion };

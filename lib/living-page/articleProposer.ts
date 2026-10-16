@@ -13,10 +13,11 @@ import type { SectionUnit } from "./types";
 // Topic folders and entities no longer become pages on their own.
 // =====================================================================
 
-export const ARTICLE_PROPOSER_PROMPT_VERSION = "article-proposer-v1";
+export const ARTICLE_PROPOSER_PROMPT_VERSION = "article-proposer-v2";
 
 export const ARTICLE_PROPOSER_PROMPT = `You decide which wiki articles the claims from a newly uploaded file belong in. You get the workspace charter, the index of existing articles, the entities the claims are about (E refs), and the new claims (C refs) with their topic paths and entities.
 Prefer existing articles. When an existing article's subject covers some claims, return action "update" with its pageId: it gains new sections from them.
+An organization's article (type entity) is a short overview of that organization. Claims about one of its programs, processes or policies go to the article for that subject (an article whose parentId is the organization's article), not to the organization's article; send the organization's article only claims about the organization itself.
 Propose action "create" only for a subject that is distinct from every existing article, understandable on its own, substantive (several claims about one subject), and in line with the charter. An independent reviewer checks every new article; propose fewer, broader, well-scoped articles rather than many thin ones.
 Never propose as a new article: a role, step, requirement or detail within a process ("Drafting technologist role in X"), "X at Company Y", a narrower slice of an existing or proposed subject ("X application process" beside "X process"), a synonym or abbreviation of another subject (ULA for Utility Line Assignment), or anything the charter lists as out of scope. Put such claims in the article they belong to instead.
 Topic paths are navigation hints, not article boundaries: several topics can form one article, and most topics are not articles.

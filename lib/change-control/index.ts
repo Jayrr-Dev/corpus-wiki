@@ -3,6 +3,7 @@ import type { Enums } from "@/lib/database/types";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { CommitResult, PersonAction } from "./types";
 import { workflowWrite } from "@/lib/ingest/workflowContext";
+import type { AutoRole } from "@/lib/ai/roles";
 
 export type * from "./types";
 
@@ -66,6 +67,22 @@ export async function resolveException(
     p_accept: input.accept,
     p_note: input.note,
   });
+}
+
+// FULL AUTO: accepts what a role in full auto just held in Exceptions (Roles tab), so it never waits
+// for a person. Nothing happens when the role is not in full auto or nothing was held. A null
+// ChangeSet accepts every open one on the role's attributed ChangeSets (the Reviewer's page review).
+export type AutoAccepted = { exceptionId: string; reason: string; actionId: string; eventId: string | null };
+export async function autoAcceptHeld(db: DbRpc, role: AutoRole, changeSetId: string | null, held: number): Promise<AutoAccepted[]> {
+  if (!(held > 0)) return [];
+  return db.call<AutoAccepted[]>("auto_accept_exceptions", { p_role: role, p_change_set_id: changeSetId });
+}
+
+// Commits a role's ChangeSet, then accepts what it held when the role is in full auto
+export async function commitAsRole(db: DbRpc, role: AutoRole, changeSetId: string): Promise<CommitResult & { autoAccepted: AutoAccepted[] }> {
+  const result = await commitChangeSet(db, changeSetId);
+  const autoAccepted = await autoAcceptHeld(db, role, changeSetId, result.exceptions);
+  return autoAccepted.length ? { ...result, exceptions: result.exceptions - autoAccepted.length, autoAccepted } : { ...result, autoAccepted };
 }
 
 // ONE LINE FOR THE CHANGES SCREEN, per edit type

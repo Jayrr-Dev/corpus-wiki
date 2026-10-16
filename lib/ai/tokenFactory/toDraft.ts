@@ -1,6 +1,7 @@
 import { annotateUnitReferences } from "@/lib/ai/unitReferences";
-import type { DraftAction, ExistingUnit, ReconciliationInput } from "@/lib/ai/types";
+import type { DraftAction, ExistingUnit, ReconciliationInput, Structure } from "@/lib/ai/types";
 import { normalizeKnowledgeContext } from "@/lib/knowledge/context";
+import { normalizeEntityType } from "@/lib/knowledge/entityTypes";
 import { sameClaimText } from "@/lib/knowledge/similarity";
 import { reuseDomainPaths } from "@/lib/domains/reusePaths";
 import { claimRef, passageRef, unitRef } from "./prompt";
@@ -49,7 +50,9 @@ export function answerToActions(answer: Omit<ReconciliationAnswer, "links"> & { 
 }
 
 // LINK: from/to resolved to a unit id or an earlier action's position; unresolvable,
-// self and repeated links are dropped (related_to and contradicts count both ways)
+// self and repeated links are dropped (related_to and contradicts count both ways).
+// A part_of into a sequence keeps the step's position (memberPosition); a new sequence's
+// steps are renumbered 1..n in the file's order. A known member at a new place becomes set_member.
 function linkActions(links: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs, ordered: DraftAction[]): DraftAction[] {
   const resolve = (ref: string): { unitId: string | null; position?: number; key: string } | null => {
     const clean = ref.trim().toUpperCase();
@@ -61,14 +64,30 @@ function linkActions(links: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs
     const position = ordered.indexOf(end.action);
     return position < 0 ? null : { unitId: null, position, key: `#${position}` };
   };
+  const existing = new Map([...refs.units.values()].map((unit) => [unit.unitId, unit]));
+  const structureOf = (end: { unitId: string | null; position?: number }): Structure | null => {
+    if (end.unitId) return existing.get(end.unitId)?.structure ?? null;
+    const action = end.position === undefined ? undefined : ordered[end.position];
+    return action?.type === "add_claim" ? action.input.structure ?? null : null;
+  };
+  const positions = stepPositions(links, resolve, structureOf);
+  const chains = stepChains(links, resolve, structureOf);
   const seen = new Set<string>();
-  return links.flatMap((link): DraftAction[] => {
+  return links.flatMap((link, index): DraftAction[] => {
     const from = resolve(link.from), to = resolve(link.to);
-    if (!from || !to || from.key === to.key) return [];
+    if (!from || !to || from.key === to.key || chains.has(index)) return [];
     const symmetric = link.type === "related_to" || link.type === "contradicts";
     const pair = symmetric && to.key < from.key ? `${to.key}|${from.key}` : `${from.key}|${to.key}`;
     if (seen.has(`${link.type}:${pair}`)) return [];
     seen.add(`${link.type}:${pair}`);
+    const memberPosition = positions.get(index);
+    const members = to.unitId ? existing.get(to.unitId)?.memberUnitIds ?? [] : [];
+    if (link.type === "part_of" && from.unitId && to.unitId && members.includes(from.unitId)) {
+      // Already a member: only a new place in the sequence is a change
+      if (memberPosition === undefined || memberPosition === members.indexOf(from.unitId) + 1) return [];
+      return [{ type: "set_member", targetId: to.unitId, expectedRevisionId: null, passageIds: [], speechAct: null,
+        input: { memberUnitId: from.unitId, position: memberPosition, ...rationale(link.reason) } }];
+    }
     return [{
       type: "link",
       targetId: from.unitId,
@@ -80,10 +99,62 @@ function linkActions(links: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs
         type: link.type,
         ...(from.position === undefined ? {} : { fromPosition: from.position }),
         ...(to.position === undefined ? {} : { toPosition: to.position }),
+        ...(memberPosition === undefined ? {} : { memberPosition }),
         ...rationale(link.reason),
       },
     }];
   });
+}
+
+// STEP POSITIONS, by link index: only part_of into a sequence. A new sequence's steps are
+// renumbered 1..n by the model's numbers, then by the order it listed the links (smaller
+// models leave positions out); an existing sequence keeps the numbers it was given.
+function stepPositions(
+  links: AnswerLink[],
+  resolve: (ref: string) => { unitId: string | null; position?: number; key: string } | null,
+  structureOf: (end: { unitId: string | null; position?: number }) => Structure | null,
+): Map<number, number> {
+  const byComposite = new Map<string, { index: number; position: number | null }[]>();
+  const fixed = new Map<number, number>();
+  links.forEach((link, index) => {
+    const to = link.type === "part_of" ? resolve(link.to) : null;
+    if (!to || structureOf(to)?.type !== "sequence") return;
+    const position = typeof link.position === "number" && link.position >= 1 ? Math.round(link.position) : null;
+    if (to.unitId) { if (position !== null) fixed.set(index, position); }
+    else byComposite.set(to.key, [...(byComposite.get(to.key) ?? []), { index, position }]);
+  });
+  for (const steps of byComposite.values()) {
+    const ordered = [...steps].sort((a, b) => (a.position ?? Number.MAX_SAFE_INTEGER) - (b.position ?? Number.MAX_SAFE_INTEGER) || a.index - b.index);
+    ordered.forEach((step, place) => fixed.set(step.index, place + 1));
+  }
+  return fixed;
+}
+
+// STEP CHAINS: a part_of from one step of a composite to another step is not a membership
+// (models sometimes chain step 1 -> step 2 -> ...); the composite already holds their order
+function stepChains(
+  links: AnswerLink[],
+  resolve: (ref: string) => { unitId: string | null; position?: number; key: string } | null,
+  structureOf: (end: { unitId: string | null; position?: number }) => Structure | null,
+): Set<number> {
+  const members = new Set<string>();
+  for (const link of links) {
+    const from = link.type === "part_of" ? resolve(link.from) : null, to = from ? resolve(link.to) : null;
+    if (from && to && structureOf(to)) members.add(from.key);
+  }
+  const chains = new Set<number>();
+  links.forEach((link, index) => {
+    const from = link.type === "part_of" ? resolve(link.from) : null, to = from ? resolve(link.to) : null;
+    if (from && to && !structureOf(to) && members.has(from.key) && members.has(to.key)) chains.add(index);
+  });
+  return chains;
+}
+
+// A composite's shape as the store keeps it: a sequence has no mode
+function structure(claim: AnswerClaim): { structure: Structure } | Record<string, never> {
+  if (!claim.structure) return {};
+  const { type, complete } = claim.structure;
+  return { structure: { type, complete, mode: type === "set" ? claim.structure.mode : null } };
 }
 
 // Ref -> id maps for passages and units
@@ -124,6 +195,7 @@ function addClaim(claim: AnswerClaim, passageIds: string[], sourceDate: string):
       entities: claimContext(claim).entities,
       context: claimContext(claim),
       domainPaths: [...new Set(claim.domainPaths.map(normalizePath).filter(Boolean))],
+      ...structure(claim),
       ...rationale(claim.reason),
     },
   };
@@ -141,7 +213,7 @@ function changeUnit(claim: AnswerClaim, unit: ExistingUnit, passageIds: string[]
     ...base,
     type: "revise_claim",
     passageIds: isSameClaim ? [...new Set([...unit.passageIds, ...passageIds])] : passageIds,
-    input: { ...(claim.applicability ? { context: claimContext(claim) } : {}), content: isSameClaim ? unit.content : claim.content.trim(), ...title(claim.title), epistemicStatus: claim.epistemicStatus, ...rationale(claim.reason) },
+    input: { ...(claim.applicability ? { context: claimContext(claim) } : {}), content: isSameClaim ? unit.content : claim.content.trim(), ...title(claim.title), ...structure(claim), epistemicStatus: claim.epistemicStatus, ...rationale(claim.reason) },
   };
 }
 
@@ -203,7 +275,7 @@ function entityCreates(claims: AnswerClaim[], actions: DraftAction[], input: Rec
 function uniqueEntities(refs: AnswerEntityRef[]): AnswerEntityRef[] {
   const byKey = new Map<string, AnswerEntityRef>();
   for (const ref of refs) {
-    const entity = { ...ref, type: slug(ref.type), key: slug(ref.key) };
+    const entity = { ...ref, type: normalizeEntityType(ref.type), key: slug(ref.key) };
     if (entity.type && entity.key && !byKey.has(`${entity.type}:${entity.key}`)) byKey.set(`${entity.type}:${entity.key}`, entity);
   }
   return [...byKey.values()];

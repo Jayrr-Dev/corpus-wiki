@@ -76,9 +76,9 @@ describe("stakeholder entities in PostgreSQL", () => {
   });
 
   it("lists stakeholder cards with live counts and a stale flag", async () => {
-    await store.pg.exec("insert into entities(type,key,name) values ('agency','faa','FAA'),('concept','qa','Quality')");
-    const faa = await entityId("agency", "faa"), qa = await entityId("concept", "qa");
-    await addClaim("The FAA fined Boeing", about("agency", "faa"));
+    await store.pg.exec("insert into entities(type,key,name) values ('government_body','faa','FAA'),('concept','qa','Quality')");
+    const faa = await entityId("government_body", "faa"), qa = await entityId("concept", "qa");
+    await addClaim("The FAA fined Boeing", about("government_body", "faa"));
     await store.pg.query("insert into entity_profiles(entity_id,is_stakeholder,kind,relation,generated_at) values ($1,true,'regulator','Regulates aircraft makers',now() - interval '1 day'),($2,false,null,null,now())", [faa, qa]);
     const cards = await store.db.call<{ entityId: string; kind: string; claimCount: number; stale: boolean }[]>("stakeholder_cards");
     expect(cards.map((card) => card.entityId)).toEqual([faa]);

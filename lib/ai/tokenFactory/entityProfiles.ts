@@ -1,14 +1,16 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { ChatMessage } from "@/lib/ai/chat";
+import { entityTypeLabel, typeIsStakeholder } from "@/lib/knowledge/entityTypes";
 
 // =====================================================================
 // STAKEHOLDER CARDS: the model reads what the store says about a batch of
 // entities (their live claims and the entities named alongside them) and
-// decides, for each, whether it is a stakeholder: a party that can act on
-// or be affected by the work. Nothing about types is fixed here: the
-// model names the kind in its own words, reusing kinds already in use so
-// the page groups well. For a stakeholder it writes how it relates to our
+// writes a card for each stakeholder: a party that can act on or be
+// affected by the work. The entity's type decides who is one
+// (lib/knowledge/entityTypes.ts); only for a bare "concept" does the
+// model's answer count. The model names the kind in its own words, reusing
+// kinds already in use so the page groups well. For a stakeholder it writes how it relates to our
 // organization (or to the work, when none is set), key facts, functions
 // and contact details, each citing the claims it came from.
 // =====================================================================
@@ -111,12 +113,14 @@ export function readProfiles(answer: ProfileAnswer, entities: ProfileEvidence[])
     const entity = byRef.get(item.ref.trim().toUpperCase());
     if (!entity || seen.has(entity.entityId)) return [];
     seen.add(entity.entityId);
-    if (!item.isStakeholder) return [{ entityId: entity.entityId, isStakeholder: false, kind: null, relation: null, keyFacts: [], functions: [], contacts: [], person: null }];
+    // The entity's type decides; only for a bare "concept" does the model's reading count
+    const isStakeholder = typeIsStakeholder(entity.type) ?? item.isStakeholder;
+    if (!isStakeholder) return [{ entityId: entity.entityId, isStakeholder: false, kind: null, relation: null, keyFacts: [], functions: [], contacts: [], person: null }];
     const units = (refs: string[]) => [...new Set(refs.flatMap((ref) => {
       const claim = entity.claims[Number(/^C(\d+)$/i.exec(ref.trim())?.[1]) - 1];
       return claim ? [claim.unitId] : [];
     }))];
-    const kind = clip(item.kind, 40).toLowerCase().replace(/[.]+$/, "");
+    const kind = clip(item.kind, 40).toLowerCase().replace(/[.]+$/, "") || (entity.type === "concept" ? "" : entityTypeLabel(entity.type).toLowerCase());
     return [{
       entityId: entity.entityId,
       isStakeholder: true,

@@ -12,6 +12,7 @@ import { externalProjectContext, externalReviewRecorder } from "@/lib/knowledge/
 import { loadArticleKnowledge } from "@/lib/living-page/articlePlanner";
 import { archiveSource, restoreSource } from "@/lib/ingest/sourceLifecycle";
 import { type ActionResult, toActionResult } from "./result";
+import { typeIsOrganization } from "@/lib/knowledge/entityTypes";
 
 export async function reviewSavedExternalSources(entityId: string): Promise<ActionResult<{ approved: number; archived: number; failed: number; skipped: number }>> {
   return toActionResult(async () => {
@@ -23,7 +24,7 @@ export async function reviewSavedExternalSources(entityId: string): Promise<Acti
     if (!settings) throw new Error("Configure an AI provider in Settings before reviewing sources.");
     settings.roleInstructions = await loadRoleInstructions(db);
     const knowledge = await loadArticleKnowledge(client, entityId);
-    if (!["company", "organization", "project"].includes(knowledge.entity.type)) throw new Error("Choose a company, organization, or project as the review context.");
+    if (!typeIsOrganization(knowledge.entity.type) && knowledge.entity.type !== "project") throw new Error("Choose a company, organization, or project as the review context.");
     const { data: sources, error } = await client.from("sources").select("id,title,url,archived_at").eq("origin", "external").order("created_at").limit(20);
     if (error) throw new Error(error.message);
     const roots = await client.from("domains").select("context_entity_id").is("parent_id", null).is("retired_at", null).not("context_entity_id", "is", null);

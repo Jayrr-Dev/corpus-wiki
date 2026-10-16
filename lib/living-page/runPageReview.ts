@@ -1,5 +1,6 @@
 import { reviewMap } from "./reviewConcurrency";
 import { workflowWrite } from "@/lib/ingest/workflowContext";
+import { autoAcceptHeld } from "@/lib/change-control";
 import { createHash } from "node:crypto";
 import "server-only";
 import { z } from "zod";
@@ -16,12 +17,13 @@ import { reviewFragments } from "./fragmentReview";
 export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null };
 export type PageReviewStatus = { latest: { summary: string; edits: number; exceptions: number; change_set_id: string | null; created_at: string } | null; openExceptions: number };
 
-export async function runPageReview(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void): Promise<PageReviewResult> {
+// note: what to focus on, when another role (the Curator) asks for the review
+export async function runPageReview(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void, note?: string): Promise<PageReviewResult> {
   const startedAt = performance.now();
   try {
     let contextWindowTokens = settings.contextWindowTokens ?? 65536;
     for (let attempt = 0; ; attempt++) {
-      try { return await runPageReviewOnce(db, { ...settings, contextWindowTokens }, pageId, embedder, progress); }
+      try { return await runPageReviewOnce(db, { ...settings, contextWindowTokens }, pageId, embedder, progress, note); }
       catch (error) {
         const message = error instanceof Error ? error.message : "";
         if (attempt >= 3 || !/Token Factory (400|413|422):/i.test(message) || !/context.{0,30}(length|window|limit)|maximum.{0,20}tokens|too many tokens/i.test(message)) throw error;
@@ -32,7 +34,7 @@ export async function runPageReview(db: DbRpc, settings: TokenFactorySettings, p
   } finally { console.info("Page review timing", { pageId, stage: "total", durationMs: Math.round(performance.now() - startedAt) }); }
 }
 
-async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void): Promise<PageReviewResult> {
+async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void, note?: string): Promise<PageReviewResult> {
   const timings: Record<string, number> = {};
   const measure = async <T>(stage: string, run: () => Promise<T>): Promise<T> => {
     const start = performance.now();
@@ -63,7 +65,8 @@ async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, page
       console.error("Page reviewer vector search:", error);
     }
   }
-  const instructions = `${PAGE_REVIEW_INSTRUCTIONS}\nThe automaticRepairs are already planned; do not duplicate those findings or edit their surviving introduction. Related knowledge was retrieved by vector similarity, which is not proof of equivalence. Related page text is stored once in relatedPages; relatedKnowledge.pageIds references it. Use actual evidence to identify overlap or conflicts; do not add uncited related claims into this article.\nWhen scope.completeArticle is false, review only the supplied lines and their evidence. Do not infer missing content, rename sections, judge the whole article's structure, or claim a complete cross-section review. Missing optional related context is a limitation, never an approval request.`;
+  const instructions = `${PAGE_REVIEW_INSTRUCTIONS}\nThe automaticRepairs are already planned; do not duplicate those findings or edit their surviving introduction. Related knowledge was retrieved by vector similarity, which is not proof of equivalence. Related page text is stored once in relatedPages; relatedKnowledge.pageIds references it. Use actual evidence to identify overlap or conflicts; do not add uncited related claims into this article.\nWhen scope.completeArticle is false, review only the supplied lines and their evidence. Do not infer missing content, rename sections, judge the whole article's structure, or claim a complete cross-section review. Missing optional related context is a limitation, never an approval request.${note?.trim() ? `
+The Curator asked for this review with a focus (guidance on where to look, not evidence and not an order to change anything the evidence does not support): ${note.trim().slice(0, 1000)}` : ""}`;
   const jsonSchema = z.toJSONSchema(pageReviewSchema);
   // Reserve output, system/schema instructions (schema is transmitted twice), and padding.
   // Provider metadata is not always available; use a conservative 64K planning window.
@@ -128,8 +131,11 @@ async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, page
   const scopeNote = [batches.length > 1 ? `Reviewed all paragraphs in ${batches.length} parts; cross-section structure was not assessed.` : "", fragmentGroups.size ? "Oversized paragraphs used verified excerpts linked to their citations. This is a partial review; full-paragraph rewrites remain disabled." : "", limitedRelated ? "Some related-page comparisons were omitted to fit the review budget." : "", eligibleEdits.length > edits.length || decisions.length > findings.length ? "Additional suggestions exceeded this run's save limit; run another review to address them." : ""].filter(Boolean).join(" ");
   const summary = [repairs.length ? `Consolidated ${repairs.length} duplicate section${repairs.length === 1 ? "" : "s"} into the introduction.` : "", answer.value.summary, scopeNote].filter(Boolean).join(" ") + vectorWarning + notes;
   progress?.(`Saving ${repairs.length + edits.length} fixes and ${findings.length} unresolved decisions…`);
-  return measure("save", () => workflowWrite<PageReviewResult>(db, `review:${pageId}:${createHash("sha256").update(JSON.stringify(snapshot)).digest("hex")}`, "complete_page_review", { p_page_id: pageId, p_snapshot: snapshot, p_review: { ...answer.value, summary: partial ? `Partial review. ${summary}` : summary, findings, coverageComplete: !partial }, p_edits: [...repairs, ...edits],
+  const saved = await measure("save", () => workflowWrite<PageReviewResult>(db, `review:${pageId}:${createHash("sha256").update(JSON.stringify(snapshot)).digest("hex")}`, "complete_page_review", { p_page_id: pageId, p_snapshot: snapshot, p_review: { ...answer.value, summary: partial ? `Partial review. ${summary}` : summary, findings, coverageComplete: !partial }, p_edits: [...repairs, ...edits],
     p_trace: { modelVersion: answer.model, promptVersion: "page-review-v10", tokensIn: answer.tokensIn, tokensOut: answer.tokensOut, reviewBatches: batches.length, timingsMs: { ...timings }, concurrency: 3 } }));
+  // In full auto the Reviewer's findings are acknowledged at once instead of waiting in Exceptions
+  const accepted = await autoAcceptHeld(db, "reviewer", null, saved.exceptions);
+  return { ...saved, exceptions: saved.exceptions - accepted.length };
 }
 
 export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null) {

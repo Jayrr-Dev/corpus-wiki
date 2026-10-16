@@ -6,7 +6,7 @@ import type { ArticleKnowledge } from "./articlePlan";
 
 export const expansionSchema = z.object({ concepts: z.array(z.object({
   name: z.string().min(2).max(100), key: z.string().min(2).max(100),
-  type: z.enum(["concept", "policy", "procedure", "equipment", "standard"]),
+  type: z.enum(["concept", "policy", "procedure", "equipment", "standard", "legislation", "document", "tool"]),
   aliases: z.array(z.string()).max(6), definition: z.string().min(10).max(700),
   applicability: applicabilitySchema.optional(),
   domainPath: z.string(), claims: z.array(z.string()).min(1), passages: z.array(z.string()).min(1),

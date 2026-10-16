@@ -33,7 +33,14 @@ export type ExistingUnit = {
   epistemicStatus: EpistemicStatus;
   sourceDate: string; // newest source behind the current revision (ISO)
   passageIds: string[];
+  structure?: Structure | null; // set on a composite (a procedure, a list)
+  memberUnitIds?: string[]; // a composite's members, in order
 };
+
+// COMPOSITE: a claim that holds the shape of others (revisions.structure). Its members
+// link to it with part_of; a sequence orders them (relationships.position, 1 first).
+// complete: the source says the list is exhaustive. mode (sets only): every item applies, or any one.
+export type Structure = { type: "sequence" | "set"; complete: boolean; mode: "all" | "any" | null };
 
 // INPUT: an existing entity the model may name in a claim
 export type ExistingEntity = { type: string; key: string; name: string };
@@ -71,9 +78,11 @@ export type ActionInputByType = {
     validFrom: string;
     entities: EntityRef[];
     domainPaths: string[];
+    structure?: Structure;
     rationale?: string;
   };
-  revise_claim: { context?: KnowledgeContext; content: string; title?: string; epistemicStatus?: EpistemicStatus; validFrom?: string; rationale?: string };
+  // structure: omitted keeps the composite's shape; null clears it
+  revise_claim: { context?: KnowledgeContext; structure?: Structure | null; content: string; title?: string; epistemicStatus?: EpistemicStatus; validFrom?: string; rationale?: string };
   retire_claim: { reason: string; validTo: string | null };
   // target = the unit that is kept; autoMerge: an AI merge sure enough to skip review (check_deletion)
   merge_duplicates: { duplicateUnitIds: string[]; autoMerge?: boolean; rationale?: string };
@@ -81,7 +90,10 @@ export type ActionInputByType = {
   place_claim: { domainPaths: string[]; rationale?: string };
   // target = the "from" unit. A unit an earlier action of the same set creates is
   // named by that action's position instead (fromPosition / toPosition).
-  link: { toUnitId: string | null; type: RelationshipType; fromPosition?: number; toPosition?: number; rationale?: string };
+  // memberPosition: a part_of step's place in its sequence (not an action position)
+  link: { toUnitId: string | null; type: RelationshipType; fromPosition?: number; toPosition?: number; memberPosition?: number; rationale?: string };
+  // target = the composite; moves a member (position, sequences only) or takes it out
+  set_member: { memberUnitId: string; position?: number; remove?: boolean; rationale?: string };
   set_epistemic_status: { epistemicStatus: EpistemicStatus; rationale?: string };
   // LINES AS ROWS: a wiki line cites the claim revisions it states. citePositions names
   // claim revisions an earlier action of the same set creates (a line edit that revises its claim).
@@ -95,6 +107,11 @@ export type ActionInputByType = {
   rename_page: { title: string };
   review_page: { operation: string; recommendation: string; reason: string; quote: string; guideline: string; destinationId: string | null; pageSlug: string; pageTitle: string };
   retire_page: Record<string, never>;
+  // THE CURATOR'S PAGE-STRUCTURE CHANGE (target = the page; for a merge, the page that goes away).
+  // A merge adds the claims the kept page lacks (unitIds) as one section there and moves the child pages over.
+  update_page: { curator: true; operation: "merge" | "move" | "rename" | "set_type" | "group"; confident: boolean; reason: string; pageIds?: string[];
+    intoPageId?: string; sectionTitle?: string; unitIds?: string[]; parentPageId?: string | null; title?: string;
+    articleType?: "entity" | "process" | "requirement" | "concept"; scope?: string };
   create_section: { pageId: string; position?: number } & SectionDraft; // position: where it goes (default: last)
   rename_section: { title: string };
   retire_section: Record<string, never>;
@@ -104,6 +121,8 @@ export type ActionInputByType = {
   retire_entity: { reason: string; housekeeping?: boolean }; // housekeeping: the AI retires an entity nothing uses
   // ENTITY MERGE (the AI's cleanup after an upload). target = the duplicate; it folds into intoEntityId
   merge_entity: { intoEntityId: string; reason: string; autoMerge?: boolean };
+  // ENTITY RETYPE (the reclassify pass). target = the entity; fromType guards against a stale proposal
+  retype_entity: { type: string; fromType: string; reason: string };
   update_domain: { name: string }; // the path, and every path under it, follows the new name
   retire_domain: { reason: string }; // retires its subtree too
 };

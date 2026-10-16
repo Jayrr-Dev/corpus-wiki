@@ -3,7 +3,7 @@
 import { after } from "next/server";
 import { requireUser } from "@/lib/auth/requireUser";
 import { commitPersonAction, type CommitResult, type PersonAction, resolveException, revertChangeSet } from "@/lib/change-control";
-import { commitLineEdit, rebuildAfterEvent } from "@/lib/living-page";
+import { commitLineEdit, rebuildAfterEvent, rebuildSection } from "@/lib/living-page";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { finishApprovedUpload } from "@/lib/ingest/pipeline";
@@ -61,9 +61,23 @@ export async function answerException(exceptionId: string, accept: boolean, note
     await requireUser();
     const deps = await getServerDeps();
     const { db, writer } = deps;
-    const { data: exception, error } = await getAdminSupabase().from("exceptions").select("reason").eq("id", exceptionId).single();
+    const { data: exception, error } = await getAdminSupabase().from("exceptions").select("reason, action_id").eq("id", exceptionId).single();
     if (error) throw new Error(error.message);
     const { eventId } = await resolveException(db, { exceptionId, accept, note });
+    // An accepted Curator merge adds one section to the page that stays; write its lines now
+    if (accept && exception.reason === "page_structure_review") {
+      const { data: action, error: actionError } = await getAdminSupabase().from("actions").select("undo_state").eq("id", exception.action_id).single();
+      if (actionError) throw new Error(actionError.message);
+      const sectionId = (action.undo_state as { sectionId?: string | null } | null)?.sectionId;
+      // Then the page tree changed: organization pages that now repeat their children become overviews
+      after(async () => {
+        try {
+          if (sectionId) await rebuildSection(db, writer, sectionId, null, false);
+          await deps.pageMaintainer?.(null, { curate: false });
+        } catch (error) { console.error("Upkeep after a Curator change failed", error); }
+      });
+      return {};
+    }
     if (eventId) refreshEmbeddings(deps.claimEmbedder);
     // The answer is saved; page rewrites are AI calls, so they run after the response.
     // A failed rewrite puts its section back to stale rather than leaving it building.

@@ -1,21 +1,45 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Pencil, Sparkles } from "lucide-react";
 import { InfoPopover } from "@/components/standard/info-popover";
 import { Tooltip } from "@/components/standard/tooltip";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { saveRoleInstructions } from "@/lib/server-actions/skills";
+import { setRoleAuto } from "@/lib/server-actions/settings";
 import { AI_STAGES, type SkillLibrary } from "@/lib/ai/skills/types";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
-import { FIXED_ROLES, STAGE_ROLES } from "@/lib/ai/roles";
+import { AUTO_ROLES, type AutoRole, FIXED_ROLES, MODEL_ROLES, type ModelRole, STAGE_ROLES } from "@/lib/ai/roles";
 import { UndoIcon } from "@/components/icons";
 import { ROLE_ICONS } from "./roleIcons";
 import { RoleMemoryPanel } from "./RoleMemoryPanel";
+import { RoleModelControls, RoleSends } from "../settings/RoleModels";
+import type { ModelSettings } from "../settings/loadModelSettings";
+import { ACTION_HINTS, AI_FLOW_LANES } from "./aiFlowModel";
 
-export function RolesTab({ library }: { library: SkillLibrary }) {
+// THE EXCEPTION KINDS EACH ROLE CAN RAISE, read from the AI flow so the cards and the flow agree
+const ROLE_EXCEPTIONS = new Map<string, string[]>();
+for (const node of AI_FLOW_LANES.flatMap((lane) => lane.nodes)) {
+  if (!node.roleId || !node.exceptions?.length) continue;
+  ROLE_EXCEPTIONS.set(node.roleId, [...new Set([...(ROLE_EXCEPTIONS.get(node.roleId) ?? []), ...node.exceptions])]);
+}
+
+// ROLES WHOSE INSTRUCTIONS THE APP MANAGES: they run on their own model (/settings) but have no editable
+// instructions, so their cards show the model row and a note instead
+const APP_ROLES = {
+  media_analyst: { id: "media_analyst", name: "Media analyst", description: "Describes uploaded images and videos so they can be read as text." },
+  reconciler: { id: "reconciler", name: "Reconciler", description: "Turns passages into claims, links and entities in one request, guided by the Extractor, Entity analyst, Linker, Organizer and Definer instructions." },
+  deduplicator: { id: "deduplicator", name: "Duplicate reviewer", description: "Merges repeats of claims an upload added or revised." },
+  dictionary_editor: { id: "dictionary_editor", name: "Dictionary editor", description: "Writes cited glossary entries from live claims." },
+} as const;
+const appRole = (role: (typeof APP_ROLES)[keyof typeof APP_ROLES]) => ({ ...role, instructions: null, source: "Managed by the app", version: undefined });
+
+export function RolesTab({ library, modelSettings }: { library: SkillLibrary; modelSettings: ModelSettings }) {
   const roles = AI_STAGES.map((stage) => {
     const assignment = library.assignments.find((item) => item.stage === stage.id);
     const skill = assignment ? library.skills.find((item) => item.id === assignment.skill_id) : defaultSkill(stage.id);
@@ -25,7 +49,7 @@ export function RolesTab({ library }: { library: SkillLibrary }) {
       source: skill?.name ?? "App rules only", version: skill?.version,
     };
   });
-  const roster = [...roles, ...FIXED_ROLES.map((role) => ({
+  const roster = [appRole(APP_ROLES.media_analyst), ...roles, appRole(APP_ROLES.reconciler), appRole(APP_ROLES.deduplicator), appRole(APP_ROLES.dictionary_editor), ...FIXED_ROLES.map((role) => ({
     ...role,
     source: "Fixed role policy", version: 1,
   }))];
@@ -41,11 +65,17 @@ export function RolesTab({ library }: { library: SkillLibrary }) {
       {roster.map((role, index) => {
         const Icon = ROLE_ICONS[role.id] ?? Sparkles;
         const override = library.roleInstructions?.find((item) => item.role === role.id);
+        const exceptions = ROLE_EXCEPTIONS.get(role.id);
         return <article key={role.id} aria-label={role.name} className="rounded-xl border bg-background p-1 shadow-sm">
           <div className="overflow-hidden rounded-lg border border-border/60">
             <header className="flex items-center justify-between gap-3 border-b px-4 py-3">
               <h2 className="text-xs font-medium tracking-widest text-muted-foreground uppercase">{role.name}</h2>
-              <span className="font-mono text-xs text-faint">{String(index + 1).padStart(2, "0")}</span>
+              <div className="flex shrink-0 items-center gap-2">
+                {exceptions ? <Tooltip content={<div className="space-y-0.5"><p className="font-medium">Can hold changes for you in Exceptions</p>{exceptions.map((kind) => <p key={kind}>{ACTION_HINTS[kind]?.replace(/^Exception: (.)/, (_, first: string) => first.toUpperCase()) ?? kind}</p>)}</div>}>
+                  <span><Badge variant="outline">Exceptions</Badge></span>
+                </Tooltip> : null}
+                <span className="font-mono text-xs text-faint">{String(index + 1).padStart(2, "0")}</span>
+              </div>
             </header>
             <div aria-hidden="true" className="relative flex h-40 items-center justify-center overflow-hidden bg-muted/25">
               <div className="absolute size-44 rounded-full border border-border/40" />
@@ -61,12 +91,24 @@ export function RolesTab({ library }: { library: SkillLibrary }) {
                 {(override?.version ?? role.version) !== undefined ? <span className="shrink-0 font-mono">v{override?.version ?? role.version}</span> : null}
               </div>
             </div>
+            <div className="space-y-2 border-t px-5 py-4">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-xs font-medium text-muted-foreground">Model and effort</h3>
+                <Tooltip content="The data this role sends its model. Only models that read it are offered."><span><RoleSends role={role.id} /></span></Tooltip>
+              </div>
+              {(MODEL_ROLES as readonly string[]).includes(role.id)
+                ? <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"><RoleModelControls role={role.id as ModelRole} settings={modelSettings} /></div>
+                : <p className="text-panel text-faint">Guides the Reconciler’s request, so it uses the Reconciler’s model and effort.</p>}
+            </div>
+            {(AUTO_ROLES as readonly string[]).includes(role.id) ? <RoleFullAuto role={role.id as AutoRole} name={role.name} on={modelSettings.roleAuto.includes(role.id)} /> : null}
             <details className="group border-t">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-panel font-medium transition-colors hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
                 Role instructions
                 <span aria-hidden="true" className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
               </summary>
-              <RoleInstructions key={`${role.id}:${override?.version ?? "default"}:${role.instructions}`} role={role.id} name={role.name} instructions={override?.instructions ?? role.instructions} version={override?.version ?? null} />
+              {role.instructions === null
+                ? <p className="border-t px-5 py-4 text-panel leading-relaxed text-muted-foreground">The app manages this role’s instructions, so they cannot be edited here.</p>
+                : <RoleInstructions key={`${role.id}:${override?.version ?? "default"}:${role.instructions}`} role={role.id} name={role.name} instructions={override?.instructions ?? role.instructions} version={override?.version ?? null} />}
             </details>
           </div>
         </article>;
@@ -74,6 +116,36 @@ export function RolesTab({ library }: { library: SkillLibrary }) {
     </div>
     <RoleMemoryPanel />
   </section>;
+}
+
+// FULL AUTO: what the role would hold in Exceptions is accepted at once, so it never waits for you
+function RoleFullAuto({ role, name, on }: { role: AutoRole; name: string; on: boolean }) {
+  const router = useRouter();
+  const save = useServerAction(setRoleAuto);
+  const id = `full-auto-${role}`;
+  // Shows the new position while it saves; a failed save puts it back
+  const [pending, setPending] = useState<boolean | null>(null);
+  const checked = pending ?? on;
+  async function apply(next: boolean) {
+    setPending(next);
+    const result = await save.run(role, next);
+    if (result.ok) router.refresh();
+    else setPending(null);
+  }
+  return <div className="space-y-1.5 border-t px-5 py-4">
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-1.5">
+        <label htmlFor={id} className="text-panel font-medium">Full auto</label>
+        <InfoPopover label={`About full auto for the ${name}`}>
+          <p>When on, the {name} doesn’t wait for you. Whatever it would hold in Exceptions is accepted right away, with a note saying it was automatic. You can still undo it in Changes.</p>
+          <p>A new root topic still waits for your approval.</p>
+        </InfoPopover>
+      </div>
+      <Switch id={id} checked={checked} disabled={save.isPending} onCheckedChange={(next) => void apply(next)} />
+    </div>
+    <p className="text-xs text-faint">{checked ? "Accepts its own Exceptions" : "Waits for you in Exceptions"}</p>
+    {save.error ? <p role="alert" className="text-panel text-failed">{save.error}</p> : null}
+  </div>;
 }
 
 function RoleInstructions({ role, name, instructions, version }: { role: string; name: string; instructions: string; version: number | null }) {

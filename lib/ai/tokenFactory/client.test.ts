@@ -69,7 +69,30 @@ describe("batched reconciliation", () => {
     expect(claims.map((action) => action.passageIds)).toEqual(input(81).passages.map((passage) => [passage.id]));
     expect(draft.actions.filter((action) => action.type === "create_entity")).toHaveLength(1);
     expect(draft.actions.filter((action) => action.type === "create_domain")).toHaveLength(1);
-    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v10" });
+    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v13-entity-types" });
+  });
+
+  it("lets a later batch continue a procedure an earlier batch started", async () => {
+    let call = 0;
+    vi.stubGlobal("fetch", vi.fn(async (_url: unknown, options: RequestInit) => {
+      const sent = JSON.parse(bodyOf(options).messages.at(-1).content);
+      const base = { unit: null, title: "Step", epistemicStatus: "supported", speechAct: "stated", entities: [], domainPaths: [], reason: "" };
+      const passage = sent.passages[0].ref;
+      call += 1;
+      const answer = call === 1
+        ? { summary: "Started", claims: [
+            { ...base, action: "add", kind: "procedure", content: "Acme deploys in two steps.", passages: [passage], structure: { type: "sequence", complete: true, mode: null } },
+            { ...base, action: "add", kind: "procedure", content: "Acme builds the release.", passages: [passage] }],
+          links: [{ from: "C2", to: "C1", type: "part_of", position: 1, reason: "" }] }
+        : (expect(sent.earlierComposites).toEqual([{ ref: "G1", content: "Acme deploys in two steps.", structure: { type: "sequence", complete: true, mode: null }, lastPosition: 1 }]),
+          { summary: "Finished", claims: [{ ...base, action: "add", kind: "procedure", content: "Acme ships the release.", passages: [passage] }],
+            links: [{ from: "C1", to: "G1", type: "part_of", position: 2, reason: "" }] });
+      return new Response(JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(answer) } }] }));
+    }));
+    const draft = await client().draftChangeSet(input(2, 4000));
+    expect(call).toBe(2);
+    const links = draft.actions.filter((action) => action.type === "link");
+    expect(links.map((link) => link.type === "link" && [link.input.fromPosition, link.input.toPosition, link.input.memberPosition])).toEqual([[1, 0, 1], [2, 0, 2]]);
   });
 
   it("renumbers each batch's claim refs so links point at the right claims", async () => {

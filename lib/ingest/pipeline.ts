@@ -1,5 +1,5 @@
 import type { DraftChangeSet, ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
-import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
+import { commitAsRole, submitChangeSet } from "@/lib/change-control";
 import type { PagePlanner } from "@/lib/living-page/articlePlanner";
 import type { DbRpc } from "@/lib/db/rpc";
 import { type SectionWriter } from "@/lib/living-page";
@@ -27,7 +27,7 @@ import { uploadExecution, workflowStep } from "./workflowContext";
 // submitted (lib/ingest/duplicateGuard.ts); uploads save first and leave repeats to `deduper`,
 // which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote,
 // and of source passages not yet embedded
-export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
+export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string) => Promise<unknown> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
 export type UploadRecord = {
@@ -111,7 +111,7 @@ async function draftAndCommit({ db, reconciler, duplicateGuard, claimEmbedder }:
   });
   const draft = externalScope && duplicateGuard ? await duplicateGuard(input, drafted, guardOptions) : drafted;
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai", operationKey: "reconcile:submit" }, draft);
-  const result = await commitChangeSet(db, changeSetId);
+  const result = await commitAsRole(db, "reconciler", changeSetId);
   try { if (externalScope) await claimEmbedder?.(); }
   catch (error) { console.error("New claims could not be embedded:", error); }
   return result;

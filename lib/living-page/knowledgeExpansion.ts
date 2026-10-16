@@ -14,8 +14,9 @@ import { expansionActions, expansionSchema, naturalKey, validateExpansion, type 
 import type { PageCandidate } from "./proposePages";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import { organizeExistingEntityContext } from "./organizeHierarchy";
+import { typeOwnsContext } from "@/lib/knowledge/entityTypes";
 
-const PROMPT = `Identify important concepts, named procedures, policies, equipment and standards in this knowledge and its source passages.
+const PROMPT = `Identify important concepts, named procedures, policies, equipment, standards, legislation, documents and tools in this knowledge and its source passages. type: legislation for an act or regulation a government made, policy for one an organization set itself, document for a template, form or report, tool for software; concept only when no other type fits.
 Return up to 12 useful glossary subjects, prioritizing undefined acronyms, company jargon, and technical terms. A term does not need to deserve a standalone article. Include recognizable terms such as Job Hazard Analysis, PPE, WHMIS, hazard control hierarchy, return to work, and incident reporting ONLY when the supplied material actually discusses them.
 Extract a short explanatory definition from the SOURCE PASSAGES; do not use background knowledge, make up acronym expansions, invent laws, or assert that a planned program already exists.
 If the material only describes this entity's version, explicitly scope the definition to that entity's context.
@@ -88,7 +89,7 @@ export async function expandEntityKnowledge(deps: Dependencies, entityId: string
 
 export async function expandEventKnowledge(deps: Dependencies, eventId: string): Promise<void> {
   const candidates = await deps.db.call<PageCandidate[]>("page_candidates", { p_event_id: eventId });
-  for (const candidate of candidates.filter((candidate) => ["company", "organization", "project", "person", "team", "product"].includes(candidate.type))) {
+  for (const candidate of candidates.filter((candidate) => typeOwnsContext(candidate.type))) {
     await workflowStep(`expand-entity:${candidate.entityId}`, () => expandEntityKnowledge(deps, candidate.entityId, eventId));
   }
 }

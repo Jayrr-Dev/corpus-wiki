@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Constants } from "@/lib/database/types";
+import { ENTITY_TYPES, normalizeEntityType } from "@/lib/knowledge/entityTypes";
 
 // =====================================================================
 // WHAT NEMOTRON MUST ANSWER: claims, each one typed action on the store,
@@ -15,9 +16,13 @@ const ENUMS = Constants.public.Enums;
 // WHAT A CLAIM DOES TO THE STORE
 export const CLAIM_ACTIONS = ["add", "revise", "retire", "set_status"] as const;
 
+// AN ENTITY'S TYPE: one from the fixed list (guided decoding offers only these); a word from
+// an older answer ("law", "country") is mapped onto the list when it is read back
+const entityTypeSchema = z.preprocess(normalizeEntityType, z.enum(ENTITY_TYPES));
+
 // AN ENTITY A CLAIM IS ABOUT (created when the store does not have it yet)
 const entityRefSchema = z.object({
-  type: z.string().min(1),
+  type: entityTypeSchema,
   key: z.string().min(1),
   name: z.string().min(1),
   role: z.enum(ENUMS.entity_role),
@@ -26,8 +31,15 @@ const entityRefSchema = z.object({
 // Optional only for historical answers; new model output supplies explicit applicability.
 export const applicabilitySchema = z.object({
   status: z.enum(["unspecified", "general", "scoped"]),
-  entities: z.array(z.object({ type: z.string().min(1), key: z.string().min(1), name: z.string().min(1) })),
+  entities: z.array(z.object({ type: entityTypeSchema, key: z.string().min(1), name: z.string().min(1) })),
   conditions: z.string().nullable(),
+});
+
+// A COMPOSITE'S SHAPE (revisions.structure): a procedure's ordered steps, or a list's items
+export const structureSchema = z.object({
+  type: z.enum(["sequence", "set"]),
+  complete: z.boolean(),
+  mode: z.enum(["all", "any"]).nullable(),
 });
 
 // ONE CLAIM READ FROM THE FILE
@@ -43,6 +55,8 @@ const claimSchema = z.object({
   entities: z.array(entityRefSchema),
   applicability: applicabilitySchema.optional(),
   domainPaths: z.array(z.string()),
+  // Set only on a composite; older answers have none
+  structure: structureSchema.nullable().optional(),
   reason: z.string(),
 });
 
@@ -52,6 +66,8 @@ const linkSchema = z.object({
   from: z.string(),
   to: z.string(),
   type: z.enum(ENUMS.relationship_type),
+  // A part_of step's place in its sequence (1 first); null otherwise. Older answers have none.
+  position: z.number().int().nullable().optional(),
   reason: z.string(),
 });
 

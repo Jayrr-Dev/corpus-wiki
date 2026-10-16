@@ -24,7 +24,7 @@ export function UnitDetail({ unitId }: { unitId: string }) {
           <UnitHistory unitId={unit.id} />
           <UnitSources unitId={unit.id} />
           <UnitAbout unitId={unit.id} />
-          <UnitLinks unitId={unit.id} />
+          <UnitLinks unitId={unit.id} structure={unit.structure} />
         </div>
       ) : (
         <Note>No unit with this id.</Note>

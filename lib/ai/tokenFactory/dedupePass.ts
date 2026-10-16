@@ -27,7 +27,7 @@ import { unitRef } from "./prompt";
 // =====================================================================
 
 // PROMPT VERSION: recorded on each ChangeSet this pass drafts
-export const DEDUPE_PROMPT_VERSION = "dedupe-v3-context";
+export const DEDUPE_PROMPT_VERSION = "dedupe-v4-composites";
 
 // ONE UNIT THE PASS MAY MERGE (what the model sees, plus what the actions need)
 export type DedupeUnit = {
@@ -39,7 +39,16 @@ export type DedupeUnit = {
   passageIds: string[];
   createdAt: string;
   context?: KnowledgeContext;
+  // The composites this unit is a step or item of (sequence: an ordered procedure)
+  partOf?: { compositeId: string; sequence: boolean }[];
 };
+
+// A composite and its own member are never the same claim, and neither are two steps of
+// one procedure (a step may repeat, e.g. "verify" at 3 and at 9: merging would drop one)
+export function membersApart(a: DedupeUnit, b: DedupeUnit): boolean {
+  if (a.partOf?.some((link) => link.compositeId === b.unitId) || b.partOf?.some((link) => link.compositeId === a.unitId)) return true;
+  return Boolean(a.partOf?.some((link) => link.sequence && b.partOf?.some((other) => other.compositeId === link.compositeId)));
+}
 
 // Units per model call; a bigger cluster is split
 export const DEDUPE_CLUSTER_MAX = 12;
@@ -58,7 +67,7 @@ export function findDuplicateClusters(units: readonly DedupeUnit[], focusIds?: R
   const root = (i: number): number => (parent[i] === i ? i : (parent[i] = root(parent[i]!)));
   for (let i = 0; i < units.length; i++) {
     for (let j = i + 1; j < units.length; j++) {
-      if (contextsCompatibleForMerge(units[i]!.context, units[j]!.context) && likeness(claims[i]!, claims[j]!).candidate) parent[root(j)] = root(i);
+      if (!membersApart(units[i]!, units[j]!) && contextsCompatibleForMerge(units[i]!.context, units[j]!.context) && likeness(claims[i]!, claims[j]!).candidate) parent[root(j)] = root(i);
     }
   }
   const groups = new Map<number, DedupeUnit[]>();
@@ -107,10 +116,12 @@ Answer with JSON only: { "groups": Group[] }. Each Group is { keep, duplicates, 
 - content: null when keep's wording already holds every detail. Otherwise ONE self-contained sentence (or two at most) that keeps keep's meaning and adds the details only a duplicate has. Never add anything no unit in the group says.
 - confidence: "high" only when every duplicate plainly restates keep (nothing to weigh, nothing lost); otherwise "medium", and a person will check it.
 - reason: a few words on why they are the same claim.
-- Units that are only related (same topic, different claims) are NOT duplicates. If nothing in the batch is a duplicate, return an empty groups list.`;
+- Units that are only related (same topic, different claims) are NOT duplicates. If nothing in the batch is a duplicate, return an empty groups list.
+- partOf names the composites (a procedure, a list) a unit is a step or item of. A composite is never a duplicate of its own step, and two steps of the same procedure are never duplicates of each other.`;
 
 // The user message: the batch with short refs instead of ids
 export function buildDedupeMessages(units: readonly DedupeUnit[]): ChatMessage[] {
+  const refOf = new Map(units.map((unit, index) => [unit.unitId, unitRef(index)]));
   const payload = {
     units: units.map((unit, index) => ({
       ref: unitRef(index),
@@ -119,6 +130,7 @@ export function buildDedupeMessages(units: readonly DedupeUnit[]): ChatMessage[]
       kind: unit.kind,
       epistemicStatus: unit.epistemicStatus,
       created: unit.createdAt.slice(0, 10),
+      ...(unit.partOf?.length ? { partOf: unit.partOf.map((link) => refOf.get(link.compositeId) ?? "a composite outside this batch") } : {}),
     })),
   };
   return [
@@ -154,6 +166,7 @@ export function dedupeAnswerToActions(answer: DedupeAnswer, units: readonly Dedu
       .filter((unit): unit is DedupeUnit => unit !== undefined && unit.unitId !== keep.unitId && !used.has(unit.unitId));
     // Reject the whole group: its proposed wording may include an incompatible unit.
     if (duplicates.length === 0 || duplicates.some((unit) => !contextsCompatibleForMerge(keep.context, unit.context))) continue;
+    if ([keep, ...duplicates].some((unit, index, group) => group.slice(index + 1).some((other) => membersApart(unit, other)))) continue;
     [keep, ...duplicates].forEach((unit) => used.add(unit.unitId));
     const content = group.content?.trim();
     const references = captureUnitReferences(group.reason, units);

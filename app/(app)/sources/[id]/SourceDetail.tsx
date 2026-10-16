@@ -10,6 +10,7 @@ import { usePersonName } from "@/app/(app)/_lib/useActorLabel";
 
 import type { Tables } from "@/lib/database/types";
 
+import { glossaryAnchor } from "@/lib/glossary/entries";
 import { useShiftEvents, useSource, useSources } from "@/lib/queries";
 import { useSourceArticles, useSourceReach, useSourceUnitIds, useSourceUsage, useUnitSummaries } from "@/lib/queries/screens";
 import { SourcePreview } from "../SourcePreview";
@@ -18,7 +19,8 @@ import { SourceFigures } from "./SourceFigures";
 import { SourcePassages } from "./SourcePassages";
 import { UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
 
-// SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the articles built on it, the knowledge that cites it, then its passages
+// SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the articles built on it, the knowledge that cites it,
+// the definitions, entities and domains that knowledge produced, then its passages
 export function SourceDetail({ sourceId }: { sourceId: string }) {
   const query = useSource(sourceId);
   const source = query.data;
@@ -34,6 +36,7 @@ export function SourceDetail({ sourceId }: { sourceId: string }) {
           <SourceFigures sourceId={source.id} />
           <SourceArticles sourceId={source.id} />
           <SourceKnowledge sourceId={source.id} />
+          <SourceReachLists sourceId={source.id} />
           <SourcePassages sourceId={source.id} />
         </div>
       ) : (
@@ -90,9 +93,9 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
   }
   if (reach) {
     facts.push(
-      ["Definitions", <span key="definitions" className="font-mono">{reach.definitions}</span>],
-      ["Entities", <span key="entities" className="font-mono">{reach.entities}</span>],
-      ["Domains", <span key="domains" className="font-mono">{reach.domains}</span>],
+      ["Definitions", <span key="definitions" className="font-mono">{reach.definitions.length}</span>],
+      ["Entities", <span key="entities" className="font-mono">{reach.entities.length}</span>],
+      ["Domains", <span key="domains" className="font-mono">{reach.domains.length}</span>],
     );
   }
   return (
@@ -141,5 +144,52 @@ function SourceKnowledge({ sourceId }: { sourceId: string }) {
         </ul>
       </QueryState>
     </Section>
+  );
+}
+
+// DEFINITIONS, ENTITIES AND DOMAINS: what this file's live knowledge produced, each listed by name
+function SourceReachLists({ sourceId }: { sourceId: string }) {
+  const reach = useSourceReach(sourceId);
+  const { definitions = [], entities = [], domains = [] } = reach.data ?? {};
+  return (
+    <>
+      <Section title={`Definitions from this file (${definitions.length})`}>
+        <QueryState query={reach}>
+          {definitions.length === 0 ? <Note>No glossary definition cites this file.</Note> : null}
+          <ul className="flex flex-col gap-1.5">
+            {definitions.map((entry) => (
+              <li key={entry.term}>
+                <TextLink href={`/glossary#${glossaryAnchor(entry.term)}`}>{entry.term}</TextLink>
+              </li>
+            ))}
+          </ul>
+        </QueryState>
+      </Section>
+      <Section title={`Entities from this file (${entities.length})`}>
+        <QueryState query={reach}>
+          {entities.length === 0 ? <Note>No entity is linked to this file's knowledge.</Note> : null}
+          <ul className="flex flex-col gap-1.5">
+            {entities.map((entity) => (
+              <li key={entity.id} className="flex items-baseline gap-2">
+                <TextLink href={`/entities/${entity.id}`}>{entity.name}</TextLink>
+                <span className="text-xs text-muted-foreground">{entity.type}</span>
+              </li>
+            ))}
+          </ul>
+        </QueryState>
+      </Section>
+      <Section title={`Domains from this file (${domains.length})`}>
+        <QueryState query={reach}>
+          {domains.length === 0 ? <Note>No domain holds this file's knowledge.</Note> : null}
+          <ul className="flex flex-col gap-1.5">
+            {domains.map((domain) => (
+              <li key={domain.id}>
+                <TextLink href="/domains">{domain.path}</TextLink>
+              </li>
+            ))}
+          </ul>
+        </QueryState>
+      </Section>
+    </>
   );
 }

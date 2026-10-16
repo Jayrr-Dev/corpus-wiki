@@ -8,6 +8,7 @@ import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { organizeEventHierarchy } from "@/lib/living-page/organizeHierarchy";
 import { expandEventKnowledge } from "@/lib/living-page/knowledgeExpansion";
 import { orchestrateEventArticles } from "@/lib/living-page/articleOrchestrator";
+import { maintainPageTree } from "@/lib/curator/maintainPageTree";
 import { createArticlePlanner, type PagePlanner } from "@/lib/living-page/articlePlanner";
 import { getReconciliationClient } from "@/lib/ai/factory";
 import type { AiCallLogger } from "@/lib/ai/callLog";
@@ -36,7 +37,7 @@ import { requireContextStorage } from "./contextReadiness";
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
 // Every AI call is logged to public.ai_calls (token usage on /settings).
 // Server actions take them from here; tests build their own (pg + fakes).
-export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
+export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string | null, options?: { curate?: boolean; dispatches?: import("@/lib/curator/plan").Dispatch[] }) => Promise<unknown>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
 
 export async function getServerDeps(): Promise<ServerDeps> {
   const admin = getAdminSupabase();
@@ -73,6 +74,7 @@ export async function getServerDeps(): Promise<ServerDeps> {
     knowledgeExpander: settings ? (eventId) => expandEventKnowledge({ settings, client: admin, db, writer }, eventId) : undefined,
     pagePlanner: settings ? createArticlePlanner(settings, admin) : undefined,
     articleOrchestrator: settings ? (eventId) => orchestrateEventArticles({ settings, client: admin, db, embedder }, eventId) : undefined,
+    pageMaintainer: settings ? (eventId, options) => maintainPageTree({ settings, client: admin, db, writer, embedder }, eventId, options) : undefined,
     reconciler: getReconciliationClient(process.env, chosenModel, skills, logCall),
     videoReader: videoReaderFrom(settings),
     writer,

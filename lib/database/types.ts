@@ -778,6 +778,7 @@ export type Database = {
           event_id: string
           from_unit_id: string
           id: string
+          position: number | null
           retired_at: string | null
           to_unit_id: string
           type: Database["public"]["Enums"]["relationship_type"]
@@ -787,6 +788,7 @@ export type Database = {
           event_id: string
           from_unit_id: string
           id?: string
+          position?: number | null
           retired_at?: string | null
           to_unit_id: string
           type: Database["public"]["Enums"]["relationship_type"]
@@ -796,6 +798,7 @@ export type Database = {
           event_id?: string
           from_unit_id?: string
           id?: string
+          position?: number | null
           retired_at?: string | null
           to_unit_id?: string
           type?: Database["public"]["Enums"]["relationship_type"]
@@ -815,6 +818,7 @@ export type Database = {
           passage_ids: string[]
           replaces_revision_id: string | null
           source_date: string
+          structure: Json | null
           title: string | null
           unit_id: string
         }
@@ -830,6 +834,7 @@ export type Database = {
           passage_ids?: string[]
           replaces_revision_id?: string | null
           source_date: string
+          structure?: Json | null
           title?: string | null
           unit_id: string
         }
@@ -845,6 +850,7 @@ export type Database = {
           passage_ids?: string[]
           replaces_revision_id?: string | null
           source_date?: string
+          structure?: Json | null
           title?: string | null
           unit_id?: string
         }
@@ -1189,12 +1195,15 @@ export type Database = {
         | "update_entity"
         | "retire_entity"
         | "merge_entity"
+        | "set_member"
         | "update_domain"
         | "retire_domain"
         | "source_lifecycle"
         | "source_review"
         | "review_page"
         | "glossary_update"
+        | "update_page"
+        | "retype_entity"
       actor_kind: "ai" | "person"
       change_set_status:
         | "draft"
@@ -1229,6 +1238,7 @@ export type Database = {
         | "domain_tree_review"
         | "root_domain_approval"
         | "update_request"
+        | "page_structure_review"
       exception_status: "open" | "accepted" | "rejected"
       relationship_type:
         | "supports"
@@ -1288,12 +1298,15 @@ export const Constants = {
         "update_entity",
         "retire_entity",
         "merge_entity",
+        "set_member",
         "update_domain",
         "retire_domain",
         "source_lifecycle",
         "source_review",
         "review_page",
         "glossary_update",
+        "update_page",
+        "retype_entity",
       ],
       actor_kind: ["ai", "person"],
       change_set_status: ["draft", "checking", "applied", "partly_applied", "rejected", "reverted"],
@@ -1318,6 +1331,7 @@ export const Constants = {
         "domain_tree_review",
         "root_domain_approval",
         "update_request",
+        "page_structure_review",
       ],
       exception_status: ["open", "accepted", "rejected"],
       relationship_type: [

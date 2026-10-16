@@ -117,6 +117,7 @@ export const EXCEPTION_REASON_TEXT: Record<Enums<"exception_reason">, string> = 
   domain_tree_review: "The domain tree needs a one-time review",
   root_domain_approval: "The AI wants to create a new root domain",
   update_request: "The AI wants to change a line a person wrote",
+  page_structure_review: "The Curator wants to change the page structure",
 };
 
 // JSON READS (jsonb columns arrive as Json; these narrow without casts to any)
@@ -209,7 +210,11 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
     case "place_claim":
       return `filed under ${readStrings(object, "domainPaths").join(", ")}`;
     case "link":
-      return `${humanize(text("type"))} → ${text("toUnitId").slice(0, 8)}`;
+      return typeof object.memberPosition === "number"
+        ? `step ${object.memberPosition} → ${text("toUnitId").slice(0, 8)}`
+        : `${humanize(text("type"))} → ${text("toUnitId").slice(0, 8)}`;
+    case "set_member":
+      return object.remove === true ? "member taken out" : `step moved to ${String(object.position ?? "")}`;
     case "set_epistemic_status":
       return `status → ${text("epistemicStatus")}`;
     case "write_line":
@@ -228,6 +233,8 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return `renamed to “${text("title")}”`;
     case "retire_page":
       return "page removed";
+    case "update_page":
+      return text("reason");
     case "retire_section":
       return "section removed";
     case "update_entity":
@@ -236,6 +243,8 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return `renamed to “${text("name")}”`;
     case "merge_entity":
       return `merged into another entity: ${text("reason")}`;
+    case "retype_entity":
+      return `type ${humanize(text("fromType"))} → ${humanize(text("type"))}: ${text("reason")}`;
     case "retire_entity":
     case "retire_domain":
       return text("reason");

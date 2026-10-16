@@ -13,7 +13,7 @@ import type { RelationshipType } from "./types";
 // ROW SHAPES (only the columns the graph uses)
 export interface GraphRows {
   units: { id: string; kind: Enums<"unit_kind">; epistemic_status: Enums<"epistemic_status">; current_revision_id: string; created_at: string }[];
-  revisions: { id: string; content: string; title?: string | null }[];
+  revisions: { id: string; content: string; title?: string | null; structure?: unknown }[];
   relationships: { id: string; from_unit_id: string; to_unit_id: string; type: RelationshipType }[];
   entities: { id: string; name: string; created_at: string }[];
   unitEntities: { unit_id: string; entity_id: string }[];
@@ -47,7 +47,7 @@ export async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows
       readAllPages((from, to) =>
         client.from("units").select("id, kind, epistemic_status, current_revision_id, created_at").is("retired_at", null).order("id").range(from, to),
       ),
-      readAllPages((from, to) => client.from("revisions").select("id, content, title").order("id").range(from, to)),
+      readAllPages((from, to) => client.from("revisions").select("id, content, title, structure").order("id").range(from, to)),
       readAllPages((from, to) =>
         client.from("relationships").select("id, from_unit_id, to_unit_id, type").is("retired_at", null).order("id").range(from, to),
       ),

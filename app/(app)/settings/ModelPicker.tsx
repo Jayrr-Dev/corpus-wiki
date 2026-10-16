@@ -39,7 +39,7 @@ export function ModelPicker({ settings }: { settings: ModelSettings }) {
       </p>
       <ErrorNote error={settings.listError} />
       <Input className="h-10" placeholder={`Search ${settings.models.length} models…`} value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search models" />
-      <ModelList models={matches} selected={selected} activeModel={settings.activeModel} onSelect={setSelected} />
+      <ModelList models={matches} modelInputs={settings.modelInputs} selected={selected} activeModel={settings.activeModel} onSelect={setSelected} />
       <ErrorNote error={save.error} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex gap-2">

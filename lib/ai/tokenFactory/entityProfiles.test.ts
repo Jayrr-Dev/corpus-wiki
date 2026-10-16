@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { profileInputHash, type ProfileEvidence, readProfiles } from "./entityProfiles";
 
-const evidence = (entityId: string, claims: number): ProfileEvidence => ({
-  entityId, type: "company", name: `Entity ${entityId}`, aliases: [], description: null, related: [],
+const evidence = (entityId: string, claims: number, type = "company"): ProfileEvidence => ({
+  entityId, type, name: `Entity ${entityId}`, aliases: [], description: null, related: [],
   claims: Array.from({ length: claims }, (_, i) => ({ unitId: `${entityId}-u${i + 1}`, revisionId: `${entityId}-r${i + 1}`, title: "", content: `Claim ${i + 1}`, kind: "fact", role: "subject" })),
 });
 
 describe("stakeholder card answers", () => {
   it("maps refs back to entities and claims, caps lists and clears non-stakeholders", () => {
-    const entities = [evidence("a", 3), evidence("b", 1)];
+    const entities = [evidence("a", 3), evidence("b", 1, "standard")];
     const rows = readProfiles({ profiles: [
       { ref: "e1", isStakeholder: true, kind: "Government Agency.", relation: "Regulates our work.",
         keyFacts: [...Array.from({ length: 7 }, (_, i) => ({ label: `L${i}`, value: "v", claims: ["C1", "C9"] })), { label: "", value: "x", claims: [] }],
@@ -24,6 +24,13 @@ describe("stakeholder card answers", () => {
     expect(rows[0]!.functions[0]!.unitIds).toEqual(["a-u2"]);
     expect(rows[0]!.contacts.map((contact) => contact.kind)).toEqual(["email", "other"]);
     expect(rows[1]).toEqual({ entityId: "b", isStakeholder: false, kind: null, relation: null, keyFacts: [], functions: [], contacts: [], person: null });
+  });
+
+  it("lets the entity type decide who is a stakeholder, and the model only for a concept", () => {
+    const entities = [evidence("a", 1, "government_body"), evidence("b", 1, "legislation"), evidence("c", 1, "concept"), evidence("d", 1, "concept")];
+    const answer = (ref: string, isStakeholder: boolean) => ({ ref, isStakeholder, kind: "", relation: "", keyFacts: [], functions: [], contacts: [], person: null });
+    const rows = readProfiles({ profiles: [answer("E1", false), answer("E2", true), answer("E3", true), answer("E4", false)] }, entities);
+    expect(rows.map((row) => [row.entityId, row.isStakeholder, row.kind])).toEqual([["a", true, "government body"], ["b", false, null], ["c", true, null], ["d", false, null]]);
   });
 
   it("records a person's title, employer (linked to its entity) and role", () => {

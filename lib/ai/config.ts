@@ -17,4 +17,4 @@ export const ANTHROPIC_MODEL_PREFIX = "anthropic/";
 export const DEFAULT_AI_MODEL = "nvidia/nemotron-3-super-120b-a12b";
 
 // PROMPT VERSION: bump when the prompt changes, so each ChangeSet records which prompt drafted it
-export const PROMPT_VERSION = "reconcile-v10";
+export const PROMPT_VERSION = "reconcile-v13-entity-types";

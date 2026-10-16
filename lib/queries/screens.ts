@@ -6,6 +6,8 @@ import { knowledgeLabel } from "@/lib/knowledge/label";
 import { fetchDescribableEntityIds } from "@/lib/knowledge/describableEntities";
 import { queryKeys } from "./keys";
 import { parseKnowledgeContext, type KnowledgeContext } from "@/lib/knowledge/context";
+import type { Structure } from "@/lib/ai/types";
+import { typeOwnsContext } from "@/lib/knowledge/entityTypes";
 
 // =====================================================================
 // SCREEN READ HOOKS: the reads the table hooks in ./index.ts cannot
@@ -15,7 +17,8 @@ import { parseKnowledgeContext, type KnowledgeContext } from "@/lib/knowledge/co
 
 // SHARED SHAPES
 // changedBy: who wrote the current revision (a person's profile id, or the AI's model)
-export type UnitSummary = Row<"units"> & { content: string; context?: KnowledgeContext | null; label?: string; evidence?: Evidence; sourceOrigin?: "internal" | "external"; changedBy?: Pick<Row<"revisions">, "author" | "author_id" | "model_version"> };
+// structure: set when the unit is a composite (a procedure, a list) whose members link to it
+export type UnitSummary = Row<"units"> & { content: string; context?: KnowledgeContext | null; label?: string; evidence?: Evidence; sourceOrigin?: "internal" | "external"; changedBy?: Pick<Row<"revisions">, "author" | "author_id" | "model_version">; structure?: Structure | null };
 
 // TABLES THAT HAVE A UUID `id` AND ARE READ BY ID LISTS HERE
 type ByIdTable = "units" | "revisions" | "line_revisions" | "passages" | "sources" | "entities" | "domains" | "actions" | "change_sets";
@@ -71,7 +74,7 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
   }
   for (const result of [links,memberships,subjects,topics,evidence]) if (result.error) throw result.error;
   const evidenceById = new Map((evidence.data ?? []).map((row) => [row.unit_id, toEvidence(row.evidence)]));
-  const subjectById = new Map((subjects.data ?? []).filter((entity)=>!["company","organization","person","project","team","product"].includes(entity.type)).map((entity)=>[entity.id, entity.name]));
+  const subjectById = new Map((subjects.data ?? []).filter((entity)=>!typeOwnsContext(entity.type)).map((entity)=>[entity.id, entity.name]));
   const topicById = new Map((topics.data ?? []).map((topic)=>[topic.id, topic]));
   const hints = (id: string) => ({
     subject: (links.data ?? []).filter((link)=>link.unit_id===id && link.role==="subject").map((link)=>subjectById.get(link.entity_id)).find(Boolean),
@@ -80,7 +83,7 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
   const contentById = new Map(revisions.map((revision) => [revision.id, revision.content]));
   const titleById = new Map(revisions.map((revision) => [revision.id, revision.title?.trim() || null]));
   const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
-  return units.map<UnitSummary>((unit) => ({ ...unit, context: parseKnowledgeContext(revisionById.get(unit.current_revision_id)?.knowledge_context), sourceOrigin: externalUnits.has(unit.id) && !internalUnits.has(unit.id) ? "external" : "internal", content: contentById.get(unit.current_revision_id) ?? "", label: titleById.get(unit.current_revision_id) ?? knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)), evidence: evidenceById.get(unit.id), changedBy: revisionById.get(unit.current_revision_id) }));
+  return units.map<UnitSummary>((unit) => ({ ...unit, context: parseKnowledgeContext(revisionById.get(unit.current_revision_id)?.knowledge_context), sourceOrigin: externalUnits.has(unit.id) && !internalUnits.has(unit.id) ? "external" : "internal", content: contentById.get(unit.current_revision_id) ?? "", label: titleById.get(unit.current_revision_id) ?? knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)), evidence: evidenceById.get(unit.id), changedBy: revisionById.get(unit.current_revision_id), structure: (revisionById.get(unit.current_revision_id)?.structure as Structure | null | undefined) ?? null }));
 }
 
 // UNITS WITH CONTENT: every unit when `ids` is omitted, else just those
@@ -217,18 +220,27 @@ export function useSourceArticles(sourceId: string): UseQueryResult<Row<"pages">
   });
 }
 
-export type SourceReach = { definitions: number; entities: number; domains: number };
+export type SourceReach = {
+  definitions: { term: string; definition: string }[];
+  entities: Row<"entities">[];
+  domains: Row<"domains">[];
+};
 
-// Counts what the file's live knowledge produced: glossary definitions citing the file, and the
-// live entities and domains its live claims are filed under
+// Lists what the file's live knowledge produced: glossary definitions citing the file, and the
+// live entities and domains its live claims are filed under, each sorted by name
 async function fetchSourceReach(client: BrowserSupabase, sourceId: string): Promise<SourceReach> {
   const glossary = await client.from("glossary_state").select("entries").eq("id", true).maybeSingle();
   if (glossary.error) throw glossary.error;
-  const entries = (glossary.data?.entries ?? []) as unknown as { citations?: { sourceId: string }[] }[];
-  const definitions = entries.filter((entry) => entry.citations?.some((cite) => cite.sourceId === sourceId)).length;
+  const entries = (glossary.data?.entries ?? []) as unknown as { term: string; definition: string; citations?: { sourceId: string }[] }[];
+  // A term can repeat across scopes; list it once, since every copy opens the same glossary anchor
+  const byTerm = new Map<string, { term: string; definition: string }>();
+  for (const { term, definition, citations } of entries) {
+    if (citations?.some((cite) => cite.sourceId === sourceId) && !byTerm.has(term.toLowerCase())) byTerm.set(term.toLowerCase(), { term, definition });
+  }
+  const definitions = [...byTerm.values()].sort((a, b) => a.term.localeCompare(b.term));
   const unitIds = uniqueIds(await fetchSourceUnitIds(client, sourceId));
   const units = (await fetchByIds(client, "units", unitIds)).filter((unit) => !unit.retired_at).map((unit) => unit.id);
-  if (units.length === 0) return { definitions, entities: 0, domains: 0 };
+  if (units.length === 0) return { definitions, entities: [], domains: [] };
   const [entityLinks, domainLinks] = await Promise.all([
     client.from("unit_entities").select("entity_id").in("unit_id", units),
     client.from("unit_domains").select("domain_id").in("unit_id", units),
@@ -241,8 +253,8 @@ async function fetchSourceReach(client: BrowserSupabase, sourceId: string): Prom
   ]);
   return {
     definitions,
-    entities: entities.filter((entity) => !entity.retired_at && !entity.merged_into_id).length,
-    domains: domains.filter((domain) => !domain.retired_at).length,
+    entities: entities.filter((entity) => !entity.retired_at && !entity.merged_into_id).sort((a, b) => a.name.localeCompare(b.name)),
+    domains: domains.filter((domain) => !domain.retired_at).sort((a, b) => a.path.localeCompare(b.path)),
   };
 }
 

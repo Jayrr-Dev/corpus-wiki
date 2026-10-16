@@ -2,9 +2,10 @@
 
 import { currentActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
-import { listAvailableModels, saveAiEffort, saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel, saveRoleEffort, saveRoleModel } from "@/lib/ai/models";
+import { listAvailableModels, saveAiEffort, saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel, saveRoleAuto, saveRoleEffort, saveRoleModel } from "@/lib/ai/models";
 import { REASONING_EFFORTS, type ReasoningEffort } from "@/lib/ai/chat";
-import { MODEL_ROLES, type ModelRole } from "@/lib/ai/roles";
+import { AUTO_ROLES, type AutoRole, MODEL_ROLES, type ModelRole, ROLE_INPUTS, roleName } from "@/lib/ai/roles";
+import { describeTypes, missingTypes, type OfferedModel } from "@/lib/ai/modelInputs";
 import { runAndRecordSpeedTest, type StoredSpeedTest } from "@/lib/ai/speedTest";
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import { type ArticleCharter, CHARTER_FIELD_MAX, readCharter } from "@/lib/living-page/articleCharter";
@@ -58,8 +59,22 @@ export async function chooseRoleModel(role: ModelRole, model: string | null): Pr
   return toActionResult(async () => {
     await requireUser();
     if (!MODEL_ROLES.includes(role)) throw new Error(`Unknown AI role "${role}".`);
-    if (model) await requireOfferedModel(model);
+    if (model) {
+      // A role's model must read the data the role sends it (the Media analyst sends images)
+      const missing = missingTypes((await requireOfferedModel(model)).inputs, ROLE_INPUTS[role]);
+      if (missing.length) throw new Error(`${model} cannot read ${describeTypes(missing).toLowerCase()}, which the ${roleName(role)} sends.`);
+    }
     await saveRoleModel(supabaseRpc(getAdminSupabase()), role, model);
+    return {};
+  });
+}
+
+// FULL AUTO: a role that can hold changes in Exceptions has them accepted at once instead (Roles tab)
+export async function setRoleAuto(role: AutoRole, on: boolean): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    if (!AUTO_ROLES.includes(role)) throw new Error(`The ${roleName(role)} raises no Exceptions.`);
+    await saveRoleAuto(supabaseRpc(getAdminSupabase()), role, on);
     return {};
   });
 }
@@ -115,11 +130,12 @@ export async function setArticleCharter(charter: ArticleCharter): Promise<Action
 }
 
 // Refuses a model id the live list does not have (a typo would fail every upload)
-async function requireOfferedModel(model: string): Promise<void> {
+async function requireOfferedModel(model: string): Promise<OfferedModel> {
   const nebiusKey = process.env.NEBIUS_API_KEY;
   if (!nebiusKey) throw new Error("NEBIUS_API_KEY is not set, so there is no model list to pick from.");
-  const models = await listAvailableModels(nebiusKey);
-  if (!models.includes(model)) throw new Error(`No connected AI provider offers "${model}".`);
+  const offered = (await listAvailableModels(nebiusKey)).find((entry) => entry.id === model);
+  if (!offered) throw new Error(`No connected AI provider offers "${model}".`);
+  return offered;
 }
 
 // AI SPEED: times one short streamed answer from a model (latency to the first token, tokens per second after it)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ReconciliationInput } from "@/lib/ai/types";
-import type { AnswerClaim } from "./schema";
+import type { AnswerClaim, AnswerEntityRef } from "./schema";
 import { buildReconciliationMessages } from "./prompt";
 import { answerToActions } from "./toDraft";
 
@@ -20,6 +20,9 @@ const INPUT: ReconciliationInput = {
   domainPaths: ["Projects", "Projects/Alpha"],
   entities: [{ type: "project", key: "alpha", name: "Project Alpha" }],
 };
+
+// A type word as an answer that skipped parsing may carry it (parsing maps it onto the list)
+const loose = (type: string) => type as AnswerEntityRef["type"];
 
 // A claim with every field filled; tests override what they need
 const claim = (overrides: Partial<AnswerClaim>): AnswerClaim => ({
@@ -41,6 +44,17 @@ describe("answerToActions", () => {
     const actions = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1", entities: [{ type: "person", key: "alex-alpha", name: "Alex", role: "subject" }], applicability: { status: "scoped", entities: [{ type: "project", key: "alpha", name: "Alpha" }], conditions: "during the project" } })] }, INPUT);
     expect(actions.map(a => a.type)).toEqual(["create_entity", "revise_claim"]);
     expect(actions[1]?.input).toMatchObject({ context: { entities: [{ type: "person", key: "alex-alpha", role: "subject" }], applicability: { status: "scoped", entities: [{ type: "project", key: "alpha" }], conditions: "during the project" } } });
+  });
+
+  it("keeps listed types as they are and maps stray ones onto the list", () => {
+    const actions = answerToActions({ summary: "", claims: [claim({ entities: [
+      { type: "government_body", key: "Health Canada", name: "Health Canada", role: "subject" },
+      { type: loose("law"), key: "hazardous-products-act", name: "Hazardous Products Act", role: "object" },
+    ] })] }, INPUT);
+    expect(actions.filter((a) => a.type === "create_entity").map((a) => [a.input.type, a.input.key])).toEqual([
+      ["government_body", "health-canada"], ["legislation", "hazardous-products-act"],
+    ]);
+    expect(actions.at(-1)?.input).toMatchObject({ context: { entities: expect.arrayContaining([{ type: "government_body", key: "health-canada", role: "subject" }]) } });
   });
 
   it("creates scope-only entities before a claim without treating them as subjects", () => {
@@ -99,7 +113,7 @@ describe("answerToActions", () => {
   });
 
   it("creates new domains (parents first) and new entities before the claim that uses them", () => {
-    const entities = [{ type: "Team", key: "Finance Team", name: "Finance team", role: "subject" as const }];
+    const entities = [{ type: loose("Team"), key: "Finance Team", name: "Finance team", role: "subject" as const }];
     const actions = answerToActions(
       { summary: "", claims: [claim({ passages: ["P2"], entities, domainPaths: ["Teams/Finance"] })] },
       INPUT,
@@ -157,5 +171,73 @@ describe("answerToActions links", () => {
 
   it("parses older answers without links as having none", () => {
     expect(answerToActions({ summary: "", claims: [claim({})] }, INPUT).map((a) => a.type)).toEqual(["add_claim"]);
+  });
+});
+
+describe("composites", () => {
+  const sequence = { type: "sequence" as const, complete: true, mode: null };
+  const step = (from: string, position: number | null, to = "C1") => ({ from, to, type: "part_of" as const, position, reason: "" });
+
+  it("adds a sequence with its steps renumbered 1..n in the file's order", () => {
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ content: "Alpha deploys in three steps", kind: "procedure", structure: sequence }),
+      claim({ content: "Alpha builds" }), claim({ content: "Alpha tests" }), claim({ content: "Alpha ships" }),
+    ], links: [step("C2", 2), step("C3", 5), step("C4", 9)] }, INPUT);
+    expect(actions.map((a) => a.type)).toEqual(["add_claim", "add_claim", "add_claim", "add_claim", "link", "link", "link"]);
+    expect(actions[0]?.input).toMatchObject({ structure: sequence });
+    expect(actions.slice(4).map((a) => a.type === "link" && a.input.memberPosition)).toEqual([1, 2, 3]);
+  });
+
+  it("drops positions on a set and on links that are not part_of, and a set keeps its mode", () => {
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ content: "Alpha's kit is a helmet and gloves", structure: { type: "set", complete: true, mode: "all" } }),
+      claim({ content: "Alpha's kit includes a helmet" }), claim({ content: "Alpha checks the kit" }),
+    ], links: [step("C2", 1), { from: "C3", to: "C1", type: "depends_on", position: 2, reason: "" }] }, INPUT);
+    expect(actions[0]?.input).toMatchObject({ structure: { type: "set", complete: true, mode: "all" } });
+    expect(actions.filter((a) => a.type === "link").map((a) => a.input)).toEqual([
+      expect.not.objectContaining({ memberPosition: expect.anything() }),
+      expect.not.objectContaining({ memberPosition: expect.anything() }),
+    ]);
+  });
+
+  it("moves a known step with set_member and leaves a step in place alone", () => {
+    const procedure = { unitId: "u-proc", revisionId: "r-proc", content: "Alpha deploys in two steps", kind: "procedure" as const, epistemicStatus: "established" as const, sourceDate: "2026-09-01T00:00:00Z", passageIds: [], structure: sequence, memberUnitIds: ["u-build", "u-ship"] };
+    const member = (unitId: string, content: string) => ({ unitId, revisionId: `r-${unitId}`, content, kind: "procedure" as const, epistemicStatus: "established" as const, sourceDate: "2026-09-01T00:00:00Z", passageIds: [] });
+    const input = { ...INPUT, existingUnits: [procedure, member("u-build", "Alpha builds"), member("u-ship", "Alpha ships")] };
+    const messages = buildReconciliationMessages(input);
+    expect(JSON.parse(messages[1]!.content).existingUnits[0]).toMatchObject({ structure: sequence, members: ["U2", "U3"] });
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ action: "revise", unit: "U2", content: "Alpha builds" }), claim({ action: "revise", unit: "U3", content: "Alpha ships" }),
+    ], links: [step("C1", 2, "U1"), step("C2", 2, "U1")] }, input);
+    expect(actions.filter((a) => a.type === "set_member")).toEqual([
+      expect.objectContaining({ targetId: "u-proc", input: expect.objectContaining({ memberUnitId: "u-build", position: 2 }) }),
+    ]);
+    expect(actions.some((a) => a.type === "link")).toBe(false);
+  });
+});
+
+describe("a composite over steps the store already has", () => {
+  it("adds the composite and links the existing units to it in order", () => {
+    const step = (unitId: string, content: string) => ({ unitId, revisionId: `r-${unitId}`, content, kind: "procedure" as const, epistemicStatus: "established" as const, sourceDate: "2026-09-01T00:00:00Z", passageIds: [] });
+    const input = { ...INPUT, existingUnits: [step("u-build", "Alpha builds"), step("u-ship", "Alpha ships")] };
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ content: "Alpha deploys in two steps", kind: "procedure", structure: { type: "sequence", complete: true, mode: null } }),
+    ], links: [{ from: "U2", to: "C1", type: "part_of", position: 2, reason: "" }, { from: "U1", to: "C1", type: "part_of", position: 1, reason: "" }] }, input);
+    expect(actions.filter((a) => a.type === "link").map((a) => a.type === "link" && [a.targetId, a.input.toPosition, a.input.memberPosition])).toEqual([["u-ship", 0, 2], ["u-build", 0, 1]]);
+  });
+});
+
+describe("composites from a model that leaves positions out", () => {
+  it("numbers the steps in the order the links were listed and drops step-to-step chains", () => {
+    const sequence = { type: "sequence" as const, complete: true, mode: null };
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ content: "Alpha deploys in three steps", kind: "procedure", structure: sequence }),
+      claim({ content: "Alpha builds" }), claim({ content: "Alpha tests" }), claim({ content: "Alpha ships" }),
+    ], links: [
+      { from: "C2", to: "C1", type: "part_of", reason: "" }, { from: "C3", to: "C1", type: "part_of", reason: "" }, { from: "C4", to: "C1", type: "part_of", reason: "" },
+      { from: "C2", to: "C3", type: "part_of", reason: "" }, { from: "C3", to: "C4", type: "part_of", reason: "" },
+    ] }, INPUT);
+    const links = actions.filter((a) => a.type === "link");
+    expect(links.map((a) => a.type === "link" && [a.input.fromPosition, a.input.toPosition, a.input.memberPosition])).toEqual([[1, 0, 1], [2, 0, 2], [3, 0, 3]]);
   });
 });

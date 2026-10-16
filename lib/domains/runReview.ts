@@ -2,6 +2,10 @@ import "server-only";
 
 import { reviewSummarySchema, formatReviewSummary, REVIEW_SUMMARY_INSTRUCTIONS } from "@/lib/domains/reviewSummary";
 import { z } from "zod";
+import { after } from "next/server";
+import { autoAcceptHeld } from "@/lib/change-control";
+import { rebuildAfterEvent } from "@/lib/living-page";
+import { getServerDeps } from "@/lib/server/deps";
 import { requireUser } from "@/lib/auth/requireUser";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -39,6 +43,15 @@ export async function runDomainReview(progress: (detail: string) => void = () =>
       p_snapshot: snapshot, p_review: answer.value,
       p_trace: { modelVersion: answer.model, promptVersion: "domain-steward-v2", tokensIn: answer.tokensIn, tokensOut: answer.tokensOut },
     });
-    return { ...result, reason: answer.value.reason };
+    // In full auto the held change applies at once; its pages rebuild after the response, as an accepted one would
+    const accepted = await autoAcceptHeld(db, "domain_steward", result.changeSetId, result.exceptions);
+    const eventIds = [...new Set(accepted.flatMap((item) => (item.eventId ? [item.eventId] : [])))];
+    if (eventIds.length) {
+      const { writer } = await getServerDeps();
+      after(async () => {
+        for (const eventId of eventIds) await rebuildAfterEvent(db, writer, eventId).catch((error) => console.error("Rebuild after a full-auto domain change failed", error));
+      });
+    }
+    return { ...result, exceptions: result.exceptions - accepted.length, reason: answer.value.reason };
   });
 }

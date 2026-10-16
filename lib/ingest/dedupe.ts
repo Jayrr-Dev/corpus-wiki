@@ -14,7 +14,7 @@ import {
   findDuplicateClusters,
   type UnitVectors,
 } from "@/lib/ai/tokenFactory/dedupePass";
-import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
+import { commitAsRole, commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import { embedMissingUnits, savedVectors } from "@/lib/knowledge/embeddingStore";
 import type { AdminSupabase } from "@/lib/supabase/admin";
@@ -51,6 +51,7 @@ async function loadUnits(client: AdminSupabase): Promise<DedupeUnit[]> {
     if (chunk.error) throw chunk.error;
     for (const revision of chunk.data) revisions.set(revision.id, revision);
   }
+  const partOf = await loadMemberships(client);
   return units.data.flatMap((unit) => {
     const revision = revisions.get(unit.current_revision_id);
     if (!revision?.content.trim()) return [];
@@ -63,8 +64,36 @@ async function loadUnits(client: AdminSupabase): Promise<DedupeUnit[]> {
       epistemicStatus: unit.epistemic_status,
       passageIds: revision.passage_ids ?? [],
       createdAt: unit.created_at,
+      partOf: partOf.get(unit.id) ?? [],
     }];
   });
+}
+
+// Each member's composites (live part_of links), marked when the composite is a sequence
+async function loadMemberships(client: AdminSupabase): Promise<Map<string, { compositeId: string; sequence: boolean }[]>> {
+  const links: { from_unit_id: string; to_unit_id: string }[] = [];
+  for (let start = 0; ; start += 1000) {
+    const page = await client.from("relationships").select("from_unit_id, to_unit_id")
+      .eq("type", "part_of").is("retired_at", null).order("id").range(start, start + 999);
+    if (page.error) throw page.error;
+    links.push(...page.data);
+    if (page.data.length < 1000) break;
+  }
+  const composites = [...new Set(links.map((link) => link.to_unit_id))];
+  const sequences = new Set<string>();
+  for (let start = 0; start < composites.length; start += 200) {
+    const units = await client.from("units").select("id, current_revision_id").in("id", composites.slice(start, start + 200));
+    if (units.error) throw units.error;
+    const shapes = await client.from("revisions").select("id, structure").in("id", units.data.map((unit) => unit.current_revision_id));
+    if (shapes.error) throw shapes.error;
+    const sequenceRevisions = new Set(shapes.data.filter((row) => (row.structure as { type?: string } | null)?.type === "sequence").map((row) => row.id));
+    for (const unit of units.data) if (sequenceRevisions.has(unit.current_revision_id)) sequences.add(unit.id);
+  }
+  const byMember = new Map<string, { compositeId: string; sequence: boolean }[]>();
+  for (const link of links) {
+    byMember.set(link.from_unit_id, [...(byMember.get(link.from_unit_id) ?? []), { compositeId: link.to_unit_id, sequence: sequences.has(link.to_unit_id) }]);
+  }
+  return byMember;
 }
 
 // Saved vectors of these units' current wording, embedding any that are missing first.
@@ -107,7 +136,7 @@ export async function dedupeCluster(deps: Deps, unitIds: string[], mode: "review
     actions,
     trace: { modelVersion: answer.model, promptVersion: DEDUPE_PROMPT_VERSION, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut },
   });
-  const result = await commitChangeSet(deps.db, changeSetId);
+  const result = mode === "apply" ? await commitChangeSet(deps.db, changeSetId) : await commitAsRole(deps.db, "deduplicator", changeSetId);
   if (mode === "apply" && result.status !== "applied") {
     throw new Error("Cleanup could not apply every change. Refresh and try again.");
   }

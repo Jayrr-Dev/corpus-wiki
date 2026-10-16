@@ -6,7 +6,10 @@ import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import { dedupeCluster, planDedupeClusters } from "./dedupe";
 
 vi.mock("@/lib/ai/chat", () => ({ chatJson: vi.fn() }));
-vi.mock("@/lib/change-control", () => ({ submitChangeSet: vi.fn(), commitChangeSet: vi.fn() }));
+vi.mock("@/lib/change-control", () => {
+  const commitChangeSet = vi.fn();
+  return { submitChangeSet: vi.fn(), commitChangeSet, commitAsRole: vi.fn(async (db: unknown, _role: string, id: string) => ({ ...(await commitChangeSet(db, id)), autoAccepted: [] })) };
+});
 
 function store(count = 2) {
   const rows = Array.from({ length: count }, (_, i) => ({
@@ -22,7 +25,10 @@ function store(count = 2) {
   const ranges: number[] = [];
   const client = {
     from: (table: string) => ({
-      select: () => table === "units" ? {
+      // No composites: every part_of page is empty
+      select: () => table === "relationships" ? {
+        eq: () => ({ is: () => ({ order: () => ({ range: async () => ({ data: [], error: null }) }) }) }),
+      } : table === "units" ? {
         is: () => {
           const query = {
             order: () => query,

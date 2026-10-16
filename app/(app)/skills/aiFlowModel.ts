@@ -171,6 +171,14 @@ export const AI_FLOW_LANES: AiFlowLane[] = [
           { label: "Submits", text: "At most one update_domain action per review: rename a topic, merge two equivalent topics, or ask you to inspect one." },
           { label: "You decide", text: "An inspect question, or any change it is not confident about, waits in Exceptions." },
         ] },
+      { id: "curator", step: "Curate pages", kind: "role", roleId: "curator", name: "Curator", roles: ["curator"], does: "Keeps the page tree clean: merges repeated pages, files pages under the right parent, fixes titles and types.", submits: ["update_page"], exceptions: ["page_structure_review"],
+        facts: [
+          { label: "Receives", text: "Every page with the claims it cites, and the pages the app flagged by comparing those claims: duplicates, pages inside other pages, stubs, misplaced pages and look-alike titles." },
+          { label: "Submits", text: "One update_page action per change: merge a page into another (its unique claims become a section there), move it, rename it, set its type and scope, or create a placeholder page and file pages under it." },
+          { label: "Hands on", text: "Up to five pages per run to another role: the Reviewer polishes or trims a page, the Planner adds stored knowledge it is missing, the Researcher builds out a missing section (from the web only when Settings allow it). Each works through its own undoable ChangeSets." },
+          { label: "You decide", text: "Moves, merges that bring claims over, and anything it is not confident about wait in Exceptions. A confident rename, type, or merge of a page that adds nothing applies at once and can be undone in Changes." },
+          { label: "When it runs", text: "On its own as the last step of every upload, and from the Pages sidebar. After it, and after you accept one of its changes, the Planner turns any organization page that repeats the pages under it into a short overview." },
+        ] },
       { id: "linker", step: "Link existing", kind: "role", roleId: "link_knowledge", name: "Linker", roles: ["link_knowledge"], does: "Links saved claims that are related.", submits: ["link"],
         facts: [
           { label: "Receives", text: "A batch of saved claims." },
@@ -199,7 +207,7 @@ export const CHANGE_CONTROL = {
 
 
 export const PERSON_STEPS: PersonStep[] = [
-  { id: "exceptions", name: "Exceptions", does: "Approve or reject held actions. An upload waits on a new root topic.", chips: ["deletion", "root_domain_approval", "update_request", "decision_conflict", "source_tie", "domain_tree_review"],
+  { id: "exceptions", name: "Exceptions", does: "Approve or reject held actions. An upload waits on a new root topic.", chips: ["deletion", "root_domain_approval", "update_request", "decision_conflict", "source_tie", "domain_tree_review", "page_structure_review"],
     facts: [
       { label: "What arrives here", text: "Actions Change control holds instead of applying: deletions and merges, new root topics, edits to lines you wrote, overwrites of your decisions, source ties, and findings from the Reviewer and Domain steward." },
       { label: "What waits", text: "A new root topic pauses the upload until you answer. Other Exceptions leave the rest of the run going." },
@@ -218,7 +226,7 @@ export const PERSON_STEPS: PersonStep[] = [
 export const ACTION_HINTS: Record<string, string> = {
   add_claim: "Add a cited claim", revise_claim: "Revise a saved claim", retire_claim: "Retire a claim (held for you)",
   set_epistemic_status: "Mark how certain a claim is", link: "Link two related claims", create_entity: "Create an entity",
-  merge_duplicates: "Merge repeated claims", merge_entity: "Merge duplicate entities", retire_entity: "Retire an unused entity",
+  merge_duplicates: "Merge repeated claims", merge_entity: "Merge duplicate entities", retire_entity: "Retire an unused entity", retype_entity: "Move an entity to the type that fits",
   create_domain: "Create a topic", place_claim: "File a claim under a topic", update_domain: "Rename, merge or inspect a topic",
   rename_page: "Rename a page", create_page: "Create a new article", create_section: "Add a section", retire_section: "Remove a section", rename_section: "Rename a section",
   write_line: "Write a new line", revise_line: "Revise a line", retire_line: "Remove a line", review_page: "A page finding for you to decide",
@@ -226,4 +234,5 @@ export const ACTION_HINTS: Record<string, string> = {
   deletion: "Exception: the AI wants to retire or merge knowledge", root_domain_approval: "Exception: a new root topic; the upload waits",
   update_request: "Exception: a change to a line you wrote", decision_conflict: "Exception: would overwrite one of your decisions",
   source_tie: "Exception: two same-date sources disagree", domain_tree_review: "Exception: a Reviewer or Domain steward finding",
+  update_page: "Merge, move, rename or type a page", page_structure_review: "Exception: a Curator change to the page tree",
 };

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import type { ReasoningEffort } from "@/lib/ai/chat";
 import { roleName } from "@/lib/ai/roles";
+import { describeTypes } from "@/lib/ai/modelInputs";
 import type { StoredSpeedTest } from "@/lib/ai/speedTest";
 import { testModelSpeed } from "@/lib/server-actions/settings";
 import type { ModelSettings } from "./loadModelSettings";
@@ -29,13 +30,15 @@ const effortLabel = (effort: StoredSpeedTest["effort"]) => (effort === "off" ? "
 // HOW MANY RUNS Test all keeps going at once (every model at once would trip provider rate limits)
 const PARALLEL_RUNS = 6;
 
-// Models in use first (active, then each role's own), then every other offered model, then any tested model no longer offered
+// Models in use first (active, then each role's own), then every other offered model, then any model no longer
+// offered whose last run worked (a failed one, like an embedding model chat refuses, is left out)
 function allRows(settings: ModelSettings, saved: Record<string, StoredSpeedTest>): Row[] {
   const rows = new Map<string, string[]>([[settings.activeModel, ["Active model"]]]);
   for (const [role, model] of Object.entries(settings.roleModels)) {
     if (model) rows.set(model, [...(rows.get(model) ?? []), roleName(role)]);
   }
-  for (const model of [...settings.models, ...Object.keys(saved)]) if (!rows.has(model)) rows.set(model, []);
+  const retired = Object.values(saved).filter((test) => test.status === "ok").map((test) => test.model);
+  for (const model of [...settings.models, ...retired]) if (!rows.has(model)) rows.set(model, []);
   return [...rows].map(([model, uses]) => ({ model, uses }));
 }
 
@@ -69,6 +72,11 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
   const rows = useMemo(() => allRows(settings, saved), [settings, saved]);
   const needle = query.trim().toLowerCase();
   const shown = sortRows(needle ? rows.filter((row) => row.model.toLowerCase().includes(needle)) : rows, sort, tests);
+  // The effort every shown model shares, or "mixed" when they differ
+  const shownEfforts = new Set(shown.map((row) => effortFor(row.model)));
+  const bulkEffort = shownEfforts.size === 1 ? [...shownEfforts][0] : "mixed";
+  const setShownEffort = (effort: ReasoningEffort) =>
+    setEfforts((current) => ({ ...current, ...Object.fromEntries(shown.filter((row) => !running.has(row.model)).map((row) => [row.model, effort])) }));
 
   const run = async (model: string) => {
     setRunning((current) => new Set(current).add(model));
@@ -98,7 +106,6 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <p className="text-panel text-muted-foreground">Each run asks for a ~150-word paragraph and times the answer as it streams in. Results are saved.</p>
       <div className="flex flex-wrap items-center gap-2">
         <Input className="h-9 min-w-48 flex-1" placeholder={`Search ${rows.length} models…`} value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search models" />
         <NativeSelect aria-label="Sort models" value={sort} onChange={(event) => setSort(event.target.value as Sort)}>
@@ -106,6 +113,15 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
           <NativeSelectOption value="speed">Fastest</NativeSelectOption>
           <NativeSelectOption value="latency">Lowest latency</NativeSelectOption>
           <NativeSelectOption value="name">Name</NativeSelectOption>
+        </NativeSelect>
+        <NativeSelect
+          aria-label={needle ? "Reasoning effort for every shown model" : "Reasoning effort for every model"}
+          value={bulkEffort}
+          disabled={shown.length === 0 || batch !== null}
+          onChange={(event) => setShownEffort(event.target.value as ReasoningEffort)}
+        >
+          {bulkEffort === "mixed" ? <NativeSelectOption value="mixed" disabled>Mixed effort</NativeSelectOption> : null}
+          {EFFORTS.map((option) => <NativeSelectOption key={option.value} value={option.value}>{`${option.label} effort`}</NativeSelectOption>)}
         </NativeSelect>
         {batch ? (
           <Button type="button" variant="outline" onClick={() => (stopRequested.current = true)}>
@@ -143,7 +159,7 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
                 <tr key={model} className="align-top">
                   <td className="px-4 py-3">
                     <div className="break-all font-mono">{model}</div>
-                    {uses.length ? <div className="mt-0.5 text-xs text-faint">{uses.join(" · ")}</div> : null}
+                    <div className="mt-0.5 text-xs text-faint">{[`Reads ${describeTypes(settings.modelInputs[model] ?? ["text"]).toLowerCase()}`, ...uses].join(" · ")}</div>
                     {result?.status === "error" && !isRunning ? <p className="mt-1 text-xs text-destructive">{result.error}</p> : null}
                   </td>
                   <td className="px-3 py-2">
@@ -157,14 +173,13 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
                     >
                       {EFFORTS.map((option) => <NativeSelectOption key={option.value} value={option.value}>{option.label}</NativeSelectOption>)}
                     </NativeSelect>
-                    {ok && !isRunning ? <div className="mt-1 text-xs whitespace-nowrap text-faint">{effortLabel(ok.effort)}</div> : null}
                   </td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.latencyMs != null ? ms(ok.latencyMs) : null)}</td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.tokensPerSecond != null ? `${ok.tokensPerSecond.toFixed(1)} tok/s` : null)}</td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.tokensOut != null ? `${ok.estimated ? "~" : ""}${ok.tokensOut}` : null)}</td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.totalMs != null ? ms(ok.totalMs) : null)}</td>
                   <td className="px-3 py-3 text-xs whitespace-nowrap text-faint">
-                    {result ? <>{testedAt(result.testedAt)}<div>{result.runs} {result.runs === 1 ? "run" : "runs"}</div></> : "Never"}
+                    {result ? <>{ok ? <div>{effortLabel(ok.effort)}</div> : null}{testedAt(result.testedAt)}<div>{result.runs} {result.runs === 1 ? "run" : "runs"}</div></> : "Never"}
                   </td>
                   <td className="px-4 py-2 text-right">
                     <Button type="button" size="sm" variant="outline" disabled={isRunning} onClick={() => void run(model)}>
@@ -177,9 +192,6 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
           </tbody>
         </table>
       </div>
-      <p className="text-xs text-faint">
-        Latency is the wait from sending the request to the first token (a model that thinks first counts its thinking). Speed is output tokens per second after that first token, thinking included. Effort is the reasoning effort the test runs at (it starts at the effort picked under Intelligence, Medium when none is); Nemotron 3 runs with thinking off, so its effort changes nothing. Test all runs {PARALLEL_RUNS} models at a time, so models on the same provider can slow each other a little. Some listed models (embeddings, images) can&apos;t chat and will fail. Numbers vary run to run with provider load; each run is a real call and shows under AI costs. A ~ marks a token count estimated from the text because the provider sent none.
-      </p>
     </div>
   );
 }

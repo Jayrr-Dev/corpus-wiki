@@ -2,9 +2,10 @@ import "server-only";
 
 import type { DbRpc } from "@/lib/db/rpc";
 import { type ArticleCharter, readCharter } from "@/lib/living-page/articleCharter";
-import { listClaudeModelIds } from "./anthropic";
+import { listClaudeModels } from "./anthropic";
 import type { ModelChoice, ReasoningEffort } from "./chat";
-import type { ModelRole } from "./roles";
+import type { AutoRole, ModelRole } from "./roles";
+import { inputsFromModality, type OfferedModel } from "./modelInputs";
 import { ANTHROPIC_MODEL_PREFIX, CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN_FACTORY_BASE_URL } from "./config";
 
 // =====================================================================
@@ -15,7 +16,7 @@ import { ANTHROPIC_MODEL_PREFIX, CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN
 
 type ModelsResponse = { data?: { id?: string; architecture?: { modality?: string } }[] };
 
-type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; autoUpdateStale?: boolean; allowExternalKnowledge?: boolean; articleCharter?: unknown };
+type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; aiRoleAuto?: string[]; autoUpdateStale?: boolean; allowExternalKnowledge?: boolean; articleCharter?: unknown };
 
 // The model picked on /settings, or null when none is picked
 export async function readChosenModel(db: DbRpc): Promise<string | null> {
@@ -43,6 +44,17 @@ export async function saveRoleEffort(db: DbRpc, role: ModelRole, effort: Reasoni
 // Saves one role's model (null clears it, so the role uses the workspace model again)
 export async function saveRoleModel(db: DbRpc, role: ModelRole, model: string | null): Promise<void> {
   await db.call("set_ai_role_model", { p_role: role, p_model: model });
+}
+
+// The roles in full auto (Roles tab): what they would hold in Exceptions is accepted at once
+export async function readRoleAuto(db: DbRpc): Promise<string[]> {
+  const settings = await db.call<WorkspaceSettings>("get_workspace_settings");
+  return settings.aiRoleAuto ?? [];
+}
+
+// Turns full auto on or off for one role
+export async function saveRoleAuto(db: DbRpc, role: AutoRole, on: boolean): Promise<void> {
+  await db.call("set_ai_role_auto", { p_role: role, p_on: on });
 }
 
 // True unless /settings has turned off rewriting lines whose claims changed
@@ -85,25 +97,30 @@ export async function saveChosenModel(db: DbRpc, model: string | null): Promise<
 
 // Every model id Token Factory offers this key, sorted by name
 export async function listTokenFactoryModels(apiKey: string): Promise<string[]> {
-  return sortIds(await listModelIds("Token Factory", TOKEN_FACTORY_BASE_URL, apiKey, true));
+  return sortModels(await listModels("Token Factory", TOKEN_FACTORY_BASE_URL, apiKey, true)).map((model) => model.id);
 }
 
 // Every model the picker offers: Token Factory's, plus Cerebras's as "cerebras/<id>" when CEREBRAS_API_KEY is set
 // and Claude's as "anthropic/<id>" when ANTHROPIC_API_KEY is set
-export async function listAvailableModels(nebiusKey: string, env: NodeJS.ProcessEnv = process.env): Promise<string[]> {
+export async function listAvailableModels(nebiusKey: string, env: NodeJS.ProcessEnv = process.env): Promise<OfferedModel[]> {
   const cerebrasKey = env.CEREBRAS_API_KEY;
   const anthropicKey = env.ANTHROPIC_API_KEY;
   const [tokenFactory, cerebras, claude] = await Promise.all([
-    listModelIds("Token Factory", TOKEN_FACTORY_BASE_URL, nebiusKey, true),
-    cerebrasKey ? listModelIds("Cerebras", CEREBRAS_BASE_URL, cerebrasKey) : Promise.resolve([]),
-    anthropicKey ? listClaudeModelIds(anthropicKey) : Promise.resolve([]),
+    listModels("Token Factory", TOKEN_FACTORY_BASE_URL, nebiusKey, true),
+    cerebrasKey ? listModels("Cerebras", CEREBRAS_BASE_URL, cerebrasKey) : Promise.resolve([]),
+    anthropicKey ? listClaudeModels(anthropicKey) : Promise.resolve([]),
   ]);
-  return sortIds([...tokenFactory, ...cerebras.map((id) => CEREBRAS_MODEL_PREFIX + id), ...claude.map((id) => ANTHROPIC_MODEL_PREFIX + id)]);
+  return sortModels([
+    ...tokenFactory,
+    ...cerebras.map((model) => ({ ...model, id: CEREBRAS_MODEL_PREFIX + model.id })),
+    ...claude.map((model) => ({ ...model, id: ANTHROPIC_MODEL_PREFIX + model.id })),
+  ]);
 }
 
 // Chat models only: a model whose listing says it outputs something other than text (an embedding model)
-// is left out, since chat completions refuse it. verbose asks Token Factory for that modality.
-async function listModelIds(provider: string, baseUrl: string, apiKey: string, verbose = false): Promise<string[]> {
+// is left out, since chat completions refuse it. verbose asks Token Factory for that modality, which also
+// says what the model reads (text, images); a listing without one (Cerebras) is taken as text only.
+async function listModels(provider: string, baseUrl: string, apiKey: string, verbose = false): Promise<OfferedModel[]> {
   const response = await fetch(new URL(verbose ? "models?verbose=true" : "models", baseUrl), {
     headers: { Authorization: `Bearer ${apiKey}` },
     cache: "no-store",
@@ -112,8 +129,8 @@ async function listModelIds(provider: string, baseUrl: string, apiKey: string, v
   const body = (await response.json()) as ModelsResponse;
   return (body.data ?? []).flatMap((model) => {
     const modality = model.architecture?.modality;
-    return model.id && (!modality || modality.endsWith("->text")) ? [model.id] : [];
+    return model.id && (!modality || modality.endsWith("->text")) ? [{ id: model.id, inputs: inputsFromModality(modality) }] : [];
   });
 }
 
-const sortIds = (ids: string[]) => ids.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+const sortModels = (models: OfferedModel[]) => models.sort((a, b) => a.id.localeCompare(b.id, undefined, { sensitivity: "base" }));
