@@ -7,8 +7,21 @@ const context = (status: KnowledgeContext["applicability"]["status"]): Knowledge
 describe("context selection", () => {
   it("does not return another company's policy even if it mentions the selected company", () => {
     const claim = context("scoped");
+    claim.entities[0]!.role = "mentioned";
     claim.applicability.entities = [{ type: "company", key: "other" }];
     expect(contextRelevance(claim, company)).toBe("excluded");
+  });
+  it("retains a person's company-scoped role as qualified knowledge about that person", () => {
+    const person = { type: "person", key: "alex" };
+    const claim = context("scoped");
+    claim.entities = [{ ...person, role: "subject" }];
+    expect(contextRelevance(claim, person)).toBe("contextual");
+    expect(contextRelevance(claim, company)).toBe("applicable");
+  });
+  it("retains condition-only claims about an entity without asserting applicability", () => {
+    const claim = context("scoped");
+    claim.applicability = { status: "scoped", entities: [], conditions: "Only during the pilot" };
+    expect(contextRelevance(claim, company)).toBe("contextual");
   });
   it("labels general guidance and unresolved knowledge distinctly", () => {
     expect(contextRelevance(context("general"), company)).toBe("general");

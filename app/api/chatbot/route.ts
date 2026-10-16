@@ -7,6 +7,7 @@ import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { chatRequest } from "@/lib/chatbot/validation";
 import { retrieve } from "@/lib/chatbot/retrieve";
+import { CONTEXT_UPDATE_REQUIRED, requireContextStorage } from "@/lib/server/contextReadiness";
 
 export const maxDuration = 300;
 export async function POST(request: Request) {
@@ -15,7 +16,9 @@ export async function POST(request: Request) {
   const input = chatRequest.safeParse(await request.json().catch(() => null));
   if (!input.success) return Response.json({ error: "Send a question of up to 8,000 characters." }, { status: 400 });
   try {
-    const db = supabaseRpc(getAdminSupabase());
+    const admin = getAdminSupabase();
+    await requireContextStorage(admin);
+    const db = supabaseRpc(admin);
     const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), call => db.call("log_ai_call", { p_call: call }));
     const embedder = embedderFromEnv();
     if (!settings || !embedder) return Response.json({ error: "The AI provider is not configured. Add NEBIUS_API_KEY to the server environment to enable chat." }, { status: 503 });
@@ -34,6 +37,7 @@ export async function POST(request: Request) {
     return Response.json({ content: result.value.answer, references: references.filter(r => result.value.citations.includes(r.id)), warning });
   } catch (error) {
     console.error("Chatbot request failed", error);
+    if (error instanceof Error && error.message === CONTEXT_UPDATE_REQUIRED) return Response.json({ error: error.message }, { status: 503 });
     return Response.json({ error: "The answer could not be completed. Please try again." }, { status: 500 });
   }
 }

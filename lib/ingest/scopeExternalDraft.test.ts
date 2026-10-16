@@ -28,6 +28,23 @@ describe("external taxonomy boundary", () => {
     expect(result.actions[0]?.input).toMatchObject({ domainPaths: ["Health & Safety/WHMIS"] });
   });
 
+  it("retains entities referenced only by context while pruning scopes of dropped claims", () => {
+    const withContext = (paths: string[], scopeKey: string): DraftAction => {
+      const action = claim(paths);
+      if (action.type !== "add_claim") throw new Error("Expected add claim");
+      return { ...action, input: { ...action.input, context: {
+        entities: [{ type: "concept", key: "context-subject", role: "subject" }],
+        applicability: { status: "scoped", entities: [{ type: "concept", key: scopeKey }], conditions: null },
+      } } };
+    };
+    const result = scopeExternalDraft(draft(
+      entity("whmis"), entity("context-subject"), entity("kept-scope"), entity("dropped-scope"),
+      withContext(["Health & Safety/WHMIS"], "kept-scope"), withContext(["Unapproved"], "dropped-scope"),
+    ), ["Health & Safety/WHMIS"]);
+    expect(result.actions.filter(action => action.type === "create_entity").map(action => action.input.key)).toEqual(["whmis", "context-subject", "kept-scope"]);
+    expect(result.actions.at(-1)?.input).toMatchObject({ context: { applicability: { entities: [{ type: "concept", key: "kept-scope" }] } } });
+  });
+
   it("fails closed when there is no established taxonomy", () => {
     expect(scopeExternalDraft(draft(entity("whmis"), claim(["Health & Safety"])), []).actions).toEqual([]);
   });

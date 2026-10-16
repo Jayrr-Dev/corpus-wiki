@@ -1,0 +1,30 @@
+Knowledge context rollout — 2026-10-16 UTC
+
+Local implementation and portable PostgreSQL migration tests completed.
+Configured Supabase database: PostgreSQL 17.11, aarch64, GCC 15.2.0.
+Table access method for public.revisions, public.units, and migration history: orioledb.
+
+Migration attempted through the project's transactional migration runner:
+20261105180000_knowledge_context.sql
+
+First response:
+PANIC: XX000: corrupted undo chain: location 582408 links to non-decreasing location 2132232
+
+One retry after verifying rollback returned:
+PANIC: XX000: corrupted undo chain: location 49248 links to non-decreasing location 2132232
+
+Read-only checks after failure:
+- No migration records for 20261105180000 or 20261105190000.
+- knowledge_context column absent after first failure.
+- public.units readable, 168 units counted after first failure.
+- These checks do not establish overall database integrity.
+
+No further migration retries or engine repair attempted.
+The app now checks context storage availability before processing knowledge or chat,
+and hides context editing until the schema exists, preventing silent data loss.
+
+Next operational step: inspect Supabase/OrioleDB server logs and resolve the
+storage-engine error with the database provider, then apply both context migrations
+using scripts/db/migrate.ts. Do not baseline them as applied without execution.
+There is also an older pending source_usage_lines migration; it was not applied
+as part of this task.

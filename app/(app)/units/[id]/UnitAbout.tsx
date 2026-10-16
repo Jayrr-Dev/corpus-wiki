@@ -41,7 +41,7 @@ export function UnitAbout({ unitId }: { unitId: string }) {
             ["Conditions", scope?.conditions ?? "None recorded"],
           ]}
         />
-        {current && <UnitContextEditor key={current.id} revision={current} context={context} />}
+        {current && (Object.hasOwn(current, "knowledge_context") ? <UnitContextEditor key={current.id} revision={current} context={context} /> : <Note>Context editing will be available after the database update is applied.</Note>)}
       </QueryState>
     </Section>
   );

@@ -4,6 +4,34 @@ The hierarchy has three independent concepts: an entity supplies context, a topi
 organizes knowledge within that context, and an article presents that knowledge.
 Claims and sources remain independent records with their existing provenance.
 
+## Revision context
+
+Each new claim revision stores `knowledge_context`: the entities it is about
+(`subject`, `object`, or `mentioned`) and separate applicability. Applicability is
+`unspecified`, `general`, or `scoped`; scoped knowledge names entities and/or
+textual conditions. Missing context never means universal applicability.
+`unit_entities` projects the current revision's entity roles for existing views.
+Current legacy revisions retain their recorded links with unspecified applicability;
+older revisions without a known snapshot remain unknown.
+
+Context corrections use `revise_claim` through Change Control. Omitting context
+preserves it; supplying context replaces it. Undo restores the previous snapshot.
+Both the old and new matching article sections are marked for rebuilding.
+
+An entity article can include knowledge about that entity or explicitly applicable
+to it. Passing mentions do not establish ownership. A person's role at a company
+can therefore appear in both contexts, with its company qualification preserved.
+General knowledge is not automatically owned by the company whose document contains it.
+
+Duplicate detection requires compatible, explicitly known applicability and matching
+subject/object identities even for identical wording. Unspecified scopes remain
+separate. A merge preserves source citations in a new survivor revision and can be undone.
+
+The Units view exposes applicability filters; unit details support audited context
+corrections. Ask accepts an optional entity context and labels applicability in its
+evidence. Scoped answers use verified claims and eligible article lines, rather than
+raw passages that may mix several companies' policies.
+
 ```text
 Knowledge
 ├── Utilitek Solutions Inc.          entity context + overview article

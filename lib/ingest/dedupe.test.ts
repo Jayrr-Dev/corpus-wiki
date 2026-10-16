@@ -17,6 +17,7 @@ function store(count = 2) {
     id: row.current_revision_id,
     content: i === 0 || i === count - 1 ? "Safety meetings" : `Topic ${i}`,
     passage_ids: [`p${i}`],
+    knowledge_context: { entities: [{ type: "company", key: "utilitek", role: "subject" }], applicability: { status: "scoped", entities: [{ type: "company", key: "utilitek" }], conditions: null } },
   }));
   const ranges: number[] = [];
   const client = {

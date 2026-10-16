@@ -3,9 +3,9 @@ import type { KnowledgeContext } from "@/lib/knowledge/context";
 import type { DbRpc } from "@/lib/db/rpc";
 import { retrieve } from "./retrieve";
 
-const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn(), savedVectors: vi.fn(), scopeIds: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ getServerSupabase: mocks.getServerSupabase }));
-vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: mocks.similarUnits }));
+vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: mocks.similarUnits, savedVectors: mocks.savedVectors }));
 
 const entity = { id: "e-utilitek", type: "company", key: "utilitek", name: "Utilitek" };
 const scoped = (key: string): KnowledgeContext => ({
@@ -44,6 +44,7 @@ function mockClient(rows = revisions) {
     const query: Query = { table, columns: "", filters: [] };
     queries.push(query);
     let single = false;
+    let limit = Infinity;
     const builder = {
       select(columns: string) { query.columns = columns; return builder; },
       eq(key: string, value: unknown) { query.filters.push({ op: "eq", key, value }); return builder; },
@@ -51,7 +52,7 @@ function mockClient(rows = revisions) {
       in(key: string, value: unknown[]) { query.filters.push({ op: "in", key, value }); return builder; },
       overlaps(key: string, value: unknown[]) { query.filters.push({ op: "overlaps", key, value }); return builder; },
       or(value: string) { query.filters.push({ op: "or", key: "", value }); return builder; },
-      limit() { return builder; },
+      limit(value: number) { limit = value; return builder; },
       single() { single = true; return builder; },
       then(resolve: (value: unknown) => unknown) {
         const data = (tableRows[table] ?? []).filter(row => query.filters.every(filter => {
@@ -60,7 +61,7 @@ function mockClient(rows = revisions) {
           if (filter.op === "eq") return row[filter.key] === filter.value;
           if (filter.op === "is") return (row[filter.key] ?? null) === filter.value;
           return true;
-        }));
+        })).slice(0, limit);
         return Promise.resolve(resolve({ data: single ? data[0] : data, error: null }));
       },
     };
@@ -69,12 +70,17 @@ function mockClient(rows = revisions) {
   mocks.getServerSupabase.mockResolvedValue(client);
   return queries;
 }
-const db: DbRpc = { call: async () => { throw new Error("Unexpected database RPC"); } };
+const db: DbRpc = { async call<T>(name: string): Promise<T> {
+  if (name === "living_page_query_units") return await mocks.scopeIds() as T;
+  throw new Error(`Unexpected database RPC ${name}`);
+} };
 const embedder = { model: "test", embed: vi.fn(async () => [[1, 0]]) };
 
 beforeEach(() => {
   vi.clearAllMocks();
   embedder.embed.mockResolvedValue([[1, 0]]);
+  mocks.scopeIds.mockResolvedValue(["utilitek"]);
+  mocks.savedVectors.mockResolvedValue(new Map([["r-utilitek", [1, 0]]]));
   mocks.similarUnits.mockResolvedValue(revisions.map(row => ({ unitId: row.unit_id, revisionId: row.id, content: "vector text must not be exposed", similarity: 0.9 })));
 });
 
@@ -112,6 +118,20 @@ describe("retrieve scoped knowledge", () => {
     expect(result.references.some(reference => reference.kind === "Source")).toBe(true);
     expect(queries.some(query => query.table === "passages" && query.filters.some(filter => filter.op === "or"))).toBe(true);
     expect(queries.some(query => query.table === "section_lines" && query.filters.some(filter => filter.op === "or"))).toBe(true);
+  });
+
+  it.each([true, false])("searches within the entity before global limits (semantic search: %s)", async (semantic) => {
+    const others = Array.from({ length: 40 }, (_, index) => revision(`other-${index}`, scoped("other")));
+    const own = revision("utilitek", scoped("utilitek"));
+    const queries = mockClient([...others, own]);
+    mocks.similarUnits.mockResolvedValue(others.slice(0, 12).map(row => ({ unitId: row.unit_id, revisionId: row.id, content: row.content, similarity: 0.99 })));
+    if (!semantic) embedder.embed.mockRejectedValueOnce(new Error("offline"));
+    const result = await retrieve("orientation", db, embedder, entity.id);
+    expect(result.references.some(reference => reference.href === "/units/utilitek")).toBe(true);
+    expect(result.references.some(reference => reference.href.startsWith("/units/other"))).toBe(false);
+    expect(queries.some(query => query.table === "revisions" && query.filters.some(filter => filter.op === "in" && (filter.value as string[]).includes("r-utilitek")) && query.filters.some(filter => filter.op === "or"))).toBe(true);
+    if (semantic) expect(mocks.savedVectors).toHaveBeenCalledWith(db, "test", ["r-utilitek"]);
+    else expect(mocks.savedVectors).not.toHaveBeenCalled();
   });
 
   it("enforces entity context during lexical-only fallback", async () => {

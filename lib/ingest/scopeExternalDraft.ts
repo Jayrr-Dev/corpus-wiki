@@ -8,7 +8,11 @@ export function scopeExternalDraft(draft: DraftChangeSet, existingPaths: string[
     const domainPaths = [...new Set(action.input.domainPaths.flatMap((path) => known.get(path.toLowerCase()) ?? []))];
     return domainPaths.length ? [{ ...action, input: { ...action.input, domainPaths } }] : [];
   });
-  const used = new Set(claims.flatMap((action) => action.input.entities.map((entity) => `${entity.type}:${entity.key}`)));
+  const used = new Set(claims.flatMap((action) => {
+    const context = action.input.context;
+    return [...action.input.entities, ...(context?.entities ?? []), ...(context?.applicability.entities ?? [])]
+      .map((entity) => `${entity.type}:${entity.key}`);
+  }));
   return { ...draft, actions: [
     ...draft.actions.filter((action) => action.type === "create_entity" && used.has(`${action.input.type}:${action.input.key}`)),
     ...claims,

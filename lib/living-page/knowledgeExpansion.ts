@@ -41,7 +41,7 @@ async function loadContext(client: AdminSupabase, entityId: string): Promise<Exp
   if (sourceError) throw new Error(sourceError.message);
   const { data: domains, error: domainError } = await client.from("domains").select("path");
   if (domainError) throw new Error(domainError.message);
-  const { data: entities, error: entityError } = await client.from("entities").select("id, type, key, name").is("merged_into_id", null);
+  const { data: entities, error: entityError } = await client.from("entities").select("id, type, key, name").is("merged_into_id", null).is("retired_at", null);
   if (entityError) throw new Error(entityError.message);
   const { data: definitionUnits, error: definitionError } = await client.from("units").select("id, current_revision_id").eq("kind", "definition").is("retired_at", null).is("merged_into_id", null);
   if (definitionError) throw new Error(definitionError.message);

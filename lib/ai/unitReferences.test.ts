@@ -1,3 +1,4 @@
+import type { KnowledgeContext } from "@/lib/knowledge/context";
 import { submitChangeSet } from "@/lib/change-control";
 import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
 import { describe, expect, it } from "vitest";
@@ -5,7 +6,9 @@ import { captureUnitReferences, readUnitReferences, splitUnitReferences } from "
 import { dedupeAnswerToActions } from "./tokenFactory/dedupePass";
 import { answerToActions } from "./tokenFactory/toDraft";
 
-const units = [1, 2, 3].map((n) => ({ unitId: `unit-${n}`, revisionId: `revision-${n}`, content: `Claim ${n} about the safety program.`, kind: "fact" as const, epistemicStatus: "supported" as const, passageIds: [`passage-${n}`], createdAt: "2026-01-01T00:00:00Z", sourceDate: "2026-01-01T00:00:00Z" }));
+const context: KnowledgeContext = { entities: [{ type: "company", key: "utilitek", role: "subject" }], applicability: { status: "scoped", entities: [{ type: "company", key: "utilitek" }], conditions: null } };
+
+const units = [1, 2, 3].map((n) => ({ context, unitId: `unit-${n}`, revisionId: `revision-${n}`, content: `Claim ${n} about the safety program.`, kind: "fact" as const, epistemicStatus: "supported" as const, passageIds: [`passage-${n}`], createdAt: "2026-01-01T00:00:00Z", sourceDate: "2026-01-01T00:00:00Z" }));
 
 describe("AI rationale references", () => {
   it("keeps punctuation and only marks standalone U labels", () => {

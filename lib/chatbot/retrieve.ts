@@ -1,6 +1,7 @@
 import "server-only";
 import { getServerSupabase } from "@/lib/supabase/server";
-import { similarUnits } from "@/lib/knowledge/embeddingStore";
+import { cosine } from "@/lib/knowledge/similarity";
+import { savedVectors, similarUnits } from "@/lib/knowledge/embeddingStore";
 import type { Embedder } from "@/lib/ai/embeddings";
 import type { DbRpc } from "@/lib/db/rpc";
 import { searchFilter } from "./validation";
@@ -16,27 +17,61 @@ export async function retrieve(question: string, db: DbRpc, embedder: Embedder, 
   const references: Reference[] = [];
   let warning: string | null = null;
   let matches: Awaited<ReturnType<typeof similarUnits>> = [];
+  let queryVector: number[] | undefined;
   try {
     const [vector] = await embedder.embed([question]);
     if (!vector) throw new Error("No query embedding returned.");
+    queryVector = vector;
     matches = await similarUnits(db, embedder.model, vector, 12, 0.35);
   } catch { warning = "Semantic search is unavailable; this answer uses text matches only."; }
   const filter = searchFilter(["content", "title"], question);
   const lexical = filter ? await client.from("revisions").select("id,unit_id,content,title,passage_ids").or(filter).limit(20) : { data: [], error: null };
   if (lexical.error) throw lexical.error;
-  const candidateIds = [...new Set([...matches.map(m => m.unitId), ...(lexical.data ?? []).map(r => r.unit_id)])];
+  // Search inside the chosen entity before applying result limits. Otherwise global
+  // top matches from larger companies can crowd out every relevant scoped claim.
+  const scopedCandidates: string[] = [];
+  if (contextEntity) {
+    const scopeIds = await db.call<string[]>("living_page_query_units", { p_query: { entity: { type: contextEntity.type, key: contextEntity.key } } });
+    const scored: { unitId: string; score: number }[] = [];
+    for (let start = 0; start < scopeIds.length; start += 200) {
+      const scopeUnits = await client.from("units").select("id,current_revision_id").in("id", scopeIds.slice(start, start + 200)).is("retired_at", null);
+      if (scopeUnits.error) throw scopeUnits.error;
+      const current = scopeUnits.data ?? [];
+      const currentIds = current.map(unit => unit.current_revision_id);
+      if (!currentIds.length) continue;
+      if (filter) {
+        const scopedLexical = await client.from("revisions").select("unit_id").in("id", currentIds).or(filter).limit(20);
+        if (scopedLexical.error) throw scopedLexical.error;
+        scopedCandidates.push(...(scopedLexical.data ?? []).map(row => row.unit_id));
+      }
+      if (queryVector) {
+        try {
+          const vectors = await savedVectors(db, embedder.model, currentIds);
+          for (const unit of current) {
+            const vector = vectors.get(unit.current_revision_id);
+            if (!vector || vector.length !== queryVector.length) continue;
+            const score = cosine(queryVector, vector);
+            if (score >= 0.35) scored.push({ unitId: unit.id, score });
+          }
+        } catch { warning = "Some scoped semantic matches are unavailable; text matches are still included."; }
+      }
+    }
+    scopedCandidates.unshift(...scored.sort((a, b) => b.score - a.score).slice(0, 12).map(item => item.unitId));
+  }
+  const candidateIds = [...new Set([...scopedCandidates.slice(0, 32), ...matches.map(m => m.unitId), ...(lexical.data ?? []).map(r => r.unit_id)])];
   if (candidateIds.length) {
     // Recheck vector results through the user's session and current revision before exposing text.
     const units = await client.from("units").select("id,current_revision_id").in("id", candidateIds).is("retired_at", null);
     if (units.error) throw units.error;
     const ids = (units.data ?? []).map(u => u.current_revision_id);
     if (ids.length) {
-      const revisions = await client.from("revisions").select("id,unit_id,content,title,passage_ids,knowledge_context").in("id", ids).limit(32);
+      const revisions = await client.from("revisions").select("id,unit_id,content,title,passage_ids,knowledge_context").in("id", ids);
       if (revisions.error) throw revisions.error;
+      const rank = new Map(candidateIds.map((id, index) => [id, index]));
       const eligible = (revisions.data ?? []).filter(r => {
         const context = parseKnowledgeContext(r.knowledge_context);
         return !contextEntity || (context && contextRelevance(context, contextEntity) !== "excluded");
-      });
+      }).sort((a, b) => (rank.get(a.unit_id) ?? 0) - (rank.get(b.unit_id) ?? 0)).slice(0, 32);
       for (const r of eligible) {
         const context = parseKnowledgeContext(r.knowledge_context);
         references.push({ id: `K${references.length + 1}`, title: r.title || "Knowledge", href: `/units/${r.unit_id}`, kind: "Knowledge", text: `${context ? contextDescription(context) : "Applicability unspecified"}\n${r.content.slice(0, 2400)}` });

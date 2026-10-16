@@ -24,6 +24,7 @@ import type { PipelineDeps } from "@/lib/ingest/pipeline";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { broadcastSectionProgress } from "./sectionBroadcast";
 import { reviewRebuiltSections } from "@/lib/living-page/runPageReview";
+import { requireContextStorage } from "./contextReadiness";
 
 // SERVER DEPENDENCIES: the database port and the two AI clients, built from env
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
@@ -33,6 +34,7 @@ export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: 
 
 export async function getServerDeps(): Promise<ServerDeps> {
   const admin = getAdminSupabase();
+  await requireContextStorage(admin);
   const db = supabaseRpc(admin);
   const [chosenModel, skills] = await Promise.all([readChosenModel(db), loadStageSkills(db)]);
   const logCall: AiCallLogger = (call) => db.call("log_ai_call", { p_call: call });

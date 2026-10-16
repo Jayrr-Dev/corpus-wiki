@@ -14,6 +14,7 @@ describe("knowledge context compatibility",()=>{
  });
  it("rejects malformed and contradictory scope",()=>{
   expect(parseKnowledgeContext({entities:[]})).toBeNull();
+  expect(parseKnowledgeContext({...known,entities:[...known.entities,{...known.entities[0],role:"mentioned"}]})).toBeNull();
   expect(parseKnowledgeContext({...known,applicability:{...known.applicability,status:"general"}})).toBeNull();
   expect(parseKnowledgeContext({...known,applicability:{status:"scoped",entities:[],conditions:null}})).toBeNull();
  });

@@ -9,6 +9,13 @@ export const knowledgeContextSchema = z.object({
     conditions: z.string().trim().nullable(),
   }),
 }).superRefine((value, ctx) => {
+  const identities = new Map<string, string>();
+  for (const entity of value.entities) {
+    const key = JSON.stringify([entity.type, entity.key]);
+    if (identities.has(key) && identities.get(key) !== entity.role)
+      ctx.addIssue({ code: "custom", message: "An entity cannot have conflicting roles in one claim." });
+    identities.set(key, entity.role);
+  }
   const scope = value.applicability;
   if (scope.status !== "scoped" && (scope.entities.length || scope.conditions))
     ctx.addIssue({ code: "custom", message: "Only scoped applicability may specify entities or conditions." });
