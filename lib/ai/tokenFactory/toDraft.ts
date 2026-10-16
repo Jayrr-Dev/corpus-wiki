@@ -53,7 +53,7 @@ export function answerToActions(answer: Omit<ReconciliationAnswer, "links"> & { 
 // self and repeated links are dropped (related_to and contradicts count both ways).
 // A part_of into a sequence keeps the step's position (memberPosition); a new sequence's
 // steps are renumbered 1..n in the file's order. A known member at a new place becomes set_member.
-function linkActions(links: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs, ordered: DraftAction[]): DraftAction[] {
+function linkActions(answerLinks: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs, ordered: DraftAction[]): DraftAction[] {
   const resolve = (ref: string): { unitId: string | null; position?: number; key: string } | null => {
     const clean = ref.trim().toUpperCase();
     const unit = refs.units.get(clean);
@@ -70,6 +70,12 @@ function linkActions(links: AnswerLink[], ends: Map<string, LinkEnd>, refs: Refs
     const action = end.position === undefined ? undefined : ordered[end.position];
     return action?.type === "add_claim" ? action.input.structure ?? null : null;
   };
+  // A part_of from a composite to a plain claim is a step linked backwards (models do this
+  // with the first step): turn it round so the step joins its composite
+  const links = answerLinks.map((link) => {
+    const from = link.type === "part_of" ? resolve(link.from) : null, to = from ? resolve(link.to) : null;
+    return from && to && structureOf(from) && !structureOf(to) ? { ...link, from: link.to, to: link.from } : link;
+  });
   const positions = stepPositions(links, resolve, structureOf);
   const chains = stepChains(links, resolve, structureOf);
   const seen = new Set<string>();
@@ -114,17 +120,21 @@ function stepPositions(
   resolve: (ref: string) => { unitId: string | null; position?: number; key: string } | null,
   structureOf: (end: { unitId: string | null; position?: number }) => Structure | null,
 ): Map<number, number> {
-  const byComposite = new Map<string, { index: number; position: number | null }[]>();
+  const byComposite = new Map<string, { index: number; position: number | null; claim: number }[]>();
   const fixed = new Map<number, number>();
   links.forEach((link, index) => {
     const to = link.type === "part_of" ? resolve(link.to) : null;
     if (!to || structureOf(to)?.type !== "sequence") return;
     const position = typeof link.position === "number" && link.position >= 1 ? Math.round(link.position) : null;
     if (to.unitId) { if (position !== null) fixed.set(index, position); }
-    else byComposite.set(to.key, [...(byComposite.get(to.key) ?? []), { index, position }]);
+    else byComposite.set(to.key, [...(byComposite.get(to.key) ?? []), { index, position, claim: resolve(link.from)?.position ?? Number.MAX_SAFE_INTEGER }]);
   });
   for (const steps of byComposite.values()) {
-    const ordered = [...steps].sort((a, b) => (a.position ?? Number.MAX_SAFE_INTEGER) - (b.position ?? Number.MAX_SAFE_INTEGER) || a.index - b.index);
+    // Every step numbered: the model's order. One left out: the file's order (claims come in
+    // reading order), so a step without a number is not pushed to the end
+    const numbered = steps.every((step) => step.position !== null);
+    const ordered = [...steps].sort((a, b) =>
+      (numbered ? a.position! - b.position! : a.claim - b.claim) || a.index - b.index);
     ordered.forEach((step, place) => fixed.set(step.index, place + 1));
   }
   return fixed;

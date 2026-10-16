@@ -241,3 +241,19 @@ describe("composites from a model that leaves positions out", () => {
     expect(links.map((a) => a.type === "link" && [a.input.fromPosition, a.input.toPosition, a.input.memberPosition])).toEqual([[1, 0, 1], [2, 0, 2], [3, 0, 3]]);
   });
 });
+
+describe("a first step linked backwards", () => {
+  it("turns the link round and keeps the step first", () => {
+    const sequence = { type: "sequence" as const, complete: true, mode: null };
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ content: "Alpha deploys in three steps", kind: "procedure", structure: sequence }),
+      claim({ content: "Alpha builds" }), claim({ content: "Alpha tests" }), claim({ content: "Alpha ships" }),
+    ], links: [
+      { from: "C1", to: "C2", type: "part_of", position: null, reason: "" },
+      { from: "C3", to: "C1", type: "part_of", position: 1, reason: "" },
+      { from: "C4", to: "C1", type: "part_of", position: 2, reason: "" },
+    ] }, INPUT);
+    const links = actions.filter((a) => a.type === "link");
+    expect(links.map((a) => a.type === "link" && [a.input.fromPosition, a.input.toPosition, a.input.memberPosition])).toEqual([[1, 0, 1], [2, 0, 2], [3, 0, 3]]);
+  });
+});
