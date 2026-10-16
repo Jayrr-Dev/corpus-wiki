@@ -1,5 +1,5 @@
 import type { DraftAction } from "@/lib/ai/types";
-import { withSupportedCharts } from "./blocks";
+import { unsupportedProseNumbers, withSupportedCharts } from "./blocks";
 import type { SectionRevision, SectionState } from "./types";
 
 // =====================================================================
@@ -7,7 +7,7 @@ import type { SectionRevision, SectionState } from "./types";
 // turned into line actions for Change control. The writer may only touch
 // flagged lines and may only cite claims the section shows; anything
 // else in its answer is dropped here, and so is a chart whose numbers
-// the cited claims do not state.
+// the cited claims do not state, and a line whose prose does.
 // =====================================================================
 
 // Claims the section shows that no current line states yet
@@ -21,12 +21,16 @@ export function needsRewrite(state: SectionState): boolean {
   return state.lines.some((line) => line.needsRewrite) || uncoveredUnitIds(state).length > 0;
 }
 
-// The writer's answer as write_line / revise_line / retire_line actions
-export function revisionToActions(revision: SectionRevision, state: SectionState): DraftAction[] {
+// A line dropped because its prose states numbers its cited claims do not
+export type DroppedLine = { text: string; numbers: number[] };
+
+// The writer's answer as write_line / revise_line / retire_line actions; `onDropped` hears each
+// line the number check removes, so the caller can log how often the writer invents numbers
+export function revisionToActions(revision: SectionRevision, state: SectionState, onDropped?: (line: DroppedLine) => void): DraftAction[] {
   const flagged = new Map(state.lines.filter((line) => line.needsRewrite).map((line) => [line.lineId, line]));
   const revisionOf = new Map(state.units.map((unit) => [unit.unitId, unit.revisionId]));
   const cite = (unitIds: string[]) => [...new Set(unitIds.flatMap((id) => revisionOf.get(id) ?? []))];
-  const supported = supportedText(state);
+  const supported = supportedText(state, onDropped);
   const handled = new Set<string>();
   const actions: DraftAction[] = [];
   for (const { lineId, unitIds, ...answer } of revision.revise) {
@@ -46,10 +50,18 @@ export function revisionToActions(revision: SectionRevision, state: SectionState
   return [...actions, ...writeActions(revision, state, cite, supported)];
 }
 
-// The line's text with any chart removed whose values its cited claims do not state
-function supportedText(state: SectionState): (text: string, unitIds: string[]) => string {
+// The line's text with any chart removed whose values its cited claims do not state,
+// or nothing when its prose states a number they do not
+function supportedText(state: SectionState, onDropped?: (line: DroppedLine) => void): (text: string, unitIds: string[]) => string {
   const contentOf = new Map(state.units.map((unit) => [unit.unitId, unit.content]));
-  return (text, unitIds) => withSupportedCharts(text, unitIds.flatMap((id) => contentOf.get(id) ?? []));
+  return (text, unitIds) => {
+    const claims = unitIds.flatMap((id) => contentOf.get(id) ?? []);
+    const charted = withSupportedCharts(text, claims);
+    const numbers = unsupportedProseNumbers(charted, [...claims, state.pageTitle, state.title]);
+    if (numbers.length === 0) return charted;
+    onDropped?.({ text: charted, numbers });
+    return "";
+  };
 }
 
 // New lines go after the last current line, in the writer's order

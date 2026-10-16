@@ -135,7 +135,8 @@ async function rewriteLines(
   const flagged = state.lines.filter((line) => line.needsRewrite).length;
   progress?.step(writingStep(flagged, input.uncoveredUnitIds.length));
   const revision = progress ? await writer.reviseSection(input, progress) : await writer.reviseSection(input);
-  const actions = revisionToActions(revision, state);
+  const actions = revisionToActions(revision, state, ({ text, numbers }) =>
+    console.warn("Writer line dropped for unsupported numbers", { sectionId: state.sectionId, page: state.pageTitle, section: state.title, numbers, text: text.slice(0, 160) }));
   if (actions.length === 0) return { applied: 0, modelVersion: revision.modelVersion };
   progress?.step(`Saving ${actions.length} change${actions.length === 1 ? "" : "s"}…`);
   const draft = {

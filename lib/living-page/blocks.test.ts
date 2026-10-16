@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blockSummary, isBlock, parseBlocks, withSupportedCharts } from "./blocks";
+import { blockSummary, isBlock, parseBlocks, unsupportedProseNumbers, withSupportedCharts } from "./blocks";
 
 describe("parseBlocks", () => {
   it("reads a plain line as one paragraph, as before", () => {
@@ -47,6 +47,33 @@ describe("parseBlocks", () => {
 
   it("summarizes a block as one run of words", () => {
     expect(blockSummary("Items:\n- Hard hats\n- Gloves")).toBe("Items: Hard hats; Gloves");
+  });
+});
+
+describe("unsupportedProseNumbers", () => {
+  const claims = ["Hearing protection is required at 85 dB or greater.", "Audits happen twice a year across 1,200 sites from 9 a.m."];
+
+  it("accepts numbers the claims state in digits or words", () => {
+    expect(unsupportedProseNumbers("Protection is required at 85 decibels.", claims)).toEqual([]);
+    expect(unsupportedProseNumbers("Audits happen 2 times a year at 1200 sites, from 9:00.", claims)).toEqual([]);
+  });
+
+  it("rejects a number no claim states", () => {
+    expect(unsupportedProseNumbers("Protection is required at 90 dB.", claims)).toEqual([90]);
+    expect(unsupportedProseNumbers("| Site | Audits |\n|---|---|\n| A | 3 |", claims)).toEqual([3]);
+  });
+
+  it("ignores step numbers and charts, which have their own check", () => {
+    expect(unsupportedProseNumbers("Steps:\n1. Wear protection\n2. Report noise", claims)).toEqual([]);
+    expect(unsupportedProseNumbers("Levels:\n```chart bar Levels 2024\nA: 7\nB: 8\n```", claims)).toEqual([]);
+  });
+
+  it("reads a quarter like Q3 against an ordinal in the claims", () => {
+    expect(unsupportedProseNumbers("Reviews close in Q3.", ["Reviews close in the third quarter."])).toEqual([]);
+  });
+
+  it("reads a range as its two numbers", () => {
+    expect(unsupportedProseNumbers("Levels of 85-1200 dB.", claims)).toEqual([]);
   });
 });
 

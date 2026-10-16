@@ -41,4 +41,16 @@ describe("section plan", () => {
     const actions = revisionToActions({ revise: [], retire: [], add: [{ text: chart(1, 2), unitIds: ["u1", "u2"] }, { text: chart(1, 9), unitIds: ["u1", "u2"] }], modelVersion: "fake" }, STATE);
     expect(actions.map((action) => (action.input as { content: string }).content)).toEqual([chart(1, 2), "Totals:"]);
   });
+
+  it("drops a revised or new line whose prose states a number the cited claims do not", () => {
+    const dropped: { text: string; numbers: number[] }[] = [];
+    const actions = revisionToActions({
+      revise: [{ lineId: "l0", text: "Claim 1 holds for 30 days.", unitIds: ["u1"] }],
+      retire: [],
+      add: [{ text: "Claim 3 applies.", unitIds: ["u3"] }, { text: "Claim 3 applies to 12 sites.", unitIds: ["u3"] }],
+      modelVersion: "fake",
+    }, STATE, (line) => dropped.push(line));
+    expect(actions.map((action) => [action.type, (action.input as { content?: string }).content])).toEqual([["write_line", "Claim 3 applies."]]);
+    expect(dropped).toEqual([{ text: "Claim 1 holds for 30 days.", numbers: [30] }, { text: "Claim 3 applies to 12 sites.", numbers: [12] }]);
+  });
 });

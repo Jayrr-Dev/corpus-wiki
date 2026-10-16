@@ -19,6 +19,20 @@ describe("withoutEditorialDashes", () => {
   });
 });
 
+describe("withoutEditorialDashes on ranges", () => {
+  it("keeps a range as a hyphenated range", () => {
+    expect(withoutEditorialDashes("Inspections ran 2019–2021.")).toBe("Inspections ran 2019-2021.");
+    expect(withoutEditorialDashes("Pages 3–5 and 7–9 apply.")).toBe("Pages 3-5 and 7-9 apply.");
+    expect(withoutEditorialDashes("Shifts run 9:00 – 17:00, Monday–Friday.")).toBe("Shifts run 9:00-17:00, Monday-Friday.");
+    expect(withoutEditorialDashes("Fees are $10–$20 or 10%–20%.")).toBe("Fees are $10-$20 or 10%-20%.");
+  });
+
+  it("still treats a spaced or em dash between words as editorial", () => {
+    expect(withoutEditorialDashes("Wear gloves – always.")).toBe("Wear gloves, always.");
+    expect(withoutEditorialDashes("Gear—hats and boots—is issued.")).toBe("Gear (hats and boots) is issued.");
+  });
+});
+
 describe("withoutEditorialDashes on blocks", () => {
   it("keeps the line breaks of a list and a table", () => {
     expect(withoutEditorialDashes("Items include:\n- Hard hats—always\n- Gloves")).toBe("Items include:\n- Hard hats, always\n- Gloves");

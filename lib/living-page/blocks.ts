@@ -145,6 +145,48 @@ export function numbersIn(text: string): Set<number> {
   return new Set([...text.matchAll(/-?\d[\d,]*(?:\.\d+)?|-?\.\d+/g)].map((match) => Number(match[0].replace(/,/g, ""))));
 }
 
+// =====================================================================
+// PROSE NUMBER CHECK: the same rule for the rest of the line. Every number
+// in its prose, lists and tables must appear in a claim the line cites
+// (in digits or as a common number word) or in the page or section title.
+// Charts are left to withSupportedCharts, and step numbers ("1. ") are not
+// facts. A line that fails is dropped whole: the writer invented a number.
+// =====================================================================
+
+const NUMBER_WORDS: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20,
+  thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90, hundred: 100, thousand: 1000, dozen: 12,
+  once: 1, twice: 2, first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10,
+};
+
+// "9:00" states the hour only, so it matches a claim that says "9 a.m."
+const withoutWholeHours = (text: string) => text.replace(/(\d):00\b/g, "$1");
+
+function proseNumbersIn(text: string): number[] {
+  return [...withoutWholeHours(text).matchAll(/\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?/g)].map((match) => Number(match[0].replace(/,/g, "")));
+}
+
+// The line's rows outside any chart, without step numbers
+function proseRows(content: string): string[] {
+  const rows = content.split("\n");
+  const kept: string[] = [];
+  for (let index = 0; index < rows.length; index++) {
+    const close = CHART_OPEN.test(rows[index]!) ? rows.findIndex((row, at) => at > index && FENCE_CLOSE.test(row)) : -1;
+    if (close > index) { index = close; continue; }
+    kept.push(rows[index]!.replace(/^\s*\d+[.)]\s+/, ""));
+  }
+  return kept;
+}
+
+// The numbers in the line's prose that no source text states (none: the line is supported)
+export function unsupportedProseNumbers(content: string, sourceTexts: string[]): number[] {
+  const source = withoutWholeHours(sourceTexts.join(" "));
+  const known = new Set([...numbersIn(source)].map(Math.abs));
+  for (const word of source.toLowerCase().match(/\p{L}+/gu) ?? []) if (word in NUMBER_WORDS) known.add(NUMBER_WORDS[word]!);
+  return [...new Set(proseNumbersIn(proseRows(content).join("\n")).filter((number) => !known.has(number)))];
+}
+
 export function withSupportedCharts(content: string, claimTexts: string[]): string {
   if (!/```\s*chart/i.test(content)) return content;
   const known = numbersIn(claimTexts.join(" "));
