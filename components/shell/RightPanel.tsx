@@ -3,23 +3,31 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ErrorBoundary } from "@/components/error";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // =====================================================================
 // RIGHT PANEL: shows the sources and units behind whatever is open.
 // The shell owns the panel; a page fills it by rendering <RightPanelSlot>
 // anywhere in its tree, which portals its children into the panel.
 // The panel stays collapsed until a slot is mounted, then slides open.
+// On a phone the same content opens as a bottom sheet from the top bar.
 // =====================================================================
 
 const RightPanelTargetContext = createContext<HTMLElement | null>(null);
 const SetRightPanelTargetContext = createContext<(el: HTMLElement | null) => void>(() => {});
 const RightPanelOpenContext = createContext(false);
 const RegisterSlotContext = createContext<() => () => void>(() => () => {});
+const MobileSheetContext = createContext<{ isSheetOpen: boolean; setSheetOpen: (open: boolean) => void }>({
+  isSheetOpen: false,
+  setSheetOpen: () => {},
+});
 
 // PROVIDER: holds the panel's DOM node once it mounts, and how many slots are filling it
 export function RightPanelProvider({ children }: { children: ReactNode }) {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [slotCount, setSlotCount] = useState(0);
+  const [isSheetOpen, setSheetOpen] = useState(false);
   const registerSlot = useCallback(() => {
     setSlotCount((n) => n + 1);
     return () => setSlotCount((n) => n - 1);
@@ -28,15 +36,30 @@ export function RightPanelProvider({ children }: { children: ReactNode }) {
     <SetRightPanelTargetContext.Provider value={setTarget}>
       <RegisterSlotContext.Provider value={registerSlot}>
         <RightPanelOpenContext.Provider value={slotCount > 0}>
-          <RightPanelTargetContext.Provider value={target}>{children}</RightPanelTargetContext.Provider>
+          <MobileSheetContext.Provider value={{ isSheetOpen, setSheetOpen }}>
+            <RightPanelTargetContext.Provider value={target}>{children}</RightPanelTargetContext.Provider>
+          </MobileSheetContext.Provider>
         </RightPanelOpenContext.Provider>
       </RegisterSlotContext.Provider>
     </SetRightPanelTargetContext.Provider>
   );
 }
 
-// PANEL: the aside itself; collapsed to zero width until a page puts something in the slot
+// RIGHT PANEL STATE: whether a page filled the panel, and the phone sheet's open state
+export function useRightPanel() {
+  const hasContent = useContext(RightPanelOpenContext);
+  const { isSheetOpen, setSheetOpen } = useContext(MobileSheetContext);
+  return { hasContent, isSheetOpen, setSheetOpen };
+}
+
+// PANEL: a phone gets the bottom sheet, wider screens the aside; never both, so the slot has one target
 export function RightPanel() {
+  const isMobile = useIsMobile();
+  return isMobile ? <MobileDetailsSheet /> : <DesktopPanel />;
+}
+
+// DESKTOP PANEL: the aside itself; collapsed to zero width until a page puts something in the slot
+function DesktopPanel() {
   const setTarget = useContext(SetRightPanelTargetContext);
   const open = useContext(RightPanelOpenContext);
   return (
@@ -50,6 +73,23 @@ export function RightPanel() {
       {/* fixed inner width so content doesn't reflow while the panel animates */}
       <div ref={setTarget} className="flex w-72 shrink-0 flex-col gap-3 overflow-y-auto p-3" />
     </aside>
+  );
+}
+
+// PHONE SHEET: the same panel content, sliding up from the bottom when the top bar's details button is tapped
+function MobileDetailsSheet() {
+  const setTarget = useContext(SetRightPanelTargetContext);
+  const { isSheetOpen, setSheetOpen } = useRightPanel();
+  return (
+    <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+      <SheetContent side="bottom" className="max-h-[80dvh]">
+        <SheetHeader>
+          <SheetTitle>Details</SheetTitle>
+          <SheetDescription className="sr-only">Sources and units behind this page.</SheetDescription>
+        </SheetHeader>
+        <div ref={setTarget} className="flex flex-col gap-3 overflow-y-auto px-3 pb-6" />
+      </SheetContent>
+    </Sheet>
   );
 }
 

@@ -17,8 +17,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { signOut } from "@/lib/auth/actions";
+import { MobileSidebarTree } from "./SidebarTree";
 import { isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
 
 // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
@@ -63,8 +65,10 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
 }
 
 // APP SIDEBAR: brand and search, the two nav groups, then settings / tutorial / sign out
+// On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links
 export function AppSidebar() {
   const openCount = useOpenExceptionCount();
+  const { isMobile } = useSidebar();
   return (
     <Sidebar variant="inset" collapsible="icon" collapseThumb collapseThumbSize="xs">
       <SidebarHeader search searchPlaceholder="Search…" separator>
@@ -82,6 +86,8 @@ export function AppSidebar() {
       <SidebarContent>
         <NavGroup items={PRIMARY_NAV} badges={{ "/exceptions": openCount }} />
         <NavGroup items={SECONDARY_NAV} separator />
+        {/* phones have no room for the pages tree beside the page, so the drawer carries it */}
+        {isMobile ? <MobileSidebarTree /> : null}
       </SidebarContent>
       <SidebarFooter separator>
         <SidebarMenu>

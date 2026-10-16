@@ -23,40 +23,68 @@ const rowClass = "flex items-center gap-1.5 rounded-md px-1.5 py-1 text-panel ho
 // TREE INDENT PER DEPTH (static classes so Tailwind generates them; deeper levels reuse the last)
 const DEPTH_INDENT = ["pl-1.5", "pl-4.5", "pl-7.5", "pl-10.5", "pl-13.5"] as const;
 
-// SIDEBAR: the pages list and the domain tree, each collapsible
-export function SidebarTree() {
+// TREE CONTEXT: which list the current route shows beside the page (pages, or one of two filter sets)
+type TreeKind = "pages" | "knowledge" | "changes";
+const TREE_TITLE: Record<TreeKind, string> = { pages: "Pages", knowledge: "Filter knowledge", changes: "Filter changes" };
+const TREE_LABEL: Record<TreeKind, string> = { pages: "Pages", knowledge: "Knowledge filters", changes: "Change filters" };
+
+export function useTreeKind(): TreeKind | null {
   const pathname = usePathname();
-  const isPages = pathname === "/" || pathname.startsWith("/p/");
-  const isKnowledge = pathname === "/units";
-  const isChanges = pathname === "/changes";
+  if (pathname === "/" || pathname.startsWith("/p/")) return "pages";
+  if (pathname === "/units") return "knowledge";
+  if (pathname === "/changes") return "changes";
+  return null;
+}
+
+// SIDEBAR: the pages list and the domain tree, each collapsible (desktop and tablet; phones get it in the drawer)
+export function SidebarTree() {
+  const kind = useTreeKind();
   const [minimized, setMinimized] = useState(false);
-  if (!isPages && !isKnowledge && !isChanges) return null;
-  const title = isPages ? "Pages" : isChanges ? "Filter changes" : "Filter knowledge";
+  if (!kind) return null;
+  const title = TREE_TITLE[kind];
   const minimize = () => setMinimized(true);
   return (
     // floating card: inset from the edges so it reads as separate from the app sidebar;
     // it sizes to its content (capped by the viewport), and minimizing slides it shut
     // leaving a bare outlined square to reopen it
-    <aside aria-label={isPages ? "Pages" : isChanges ? "Change filters" : "Knowledge filters"} className={cn("relative hidden shrink-0 overflow-hidden p-2 pr-0 transition-all duration-300 ease-in-out md:block", minimized ? "w-10" : "w-auto")}>
+    <aside aria-label={TREE_LABEL[kind]} className={cn("relative hidden shrink-0 overflow-hidden p-2 pr-0 transition-all duration-300 ease-in-out md:block", minimized ? "w-10" : "w-auto")}>
       <Tooltip content={`Expand ${title.toLowerCase()}`} side="right">
         <button type="button" onClick={() => setMinimized(false)} aria-label={`Expand ${title.toLowerCase()}`} tabIndex={minimized ? 0 : -1} aria-hidden={!minimized} className={cn("absolute top-3 left-3 text-faint transition-opacity duration-300 hover:text-foreground", minimized ? "opacity-100 delay-150" : "pointer-events-none opacity-0")}>
           <Square className="size-4" />
         </button>
       </Tooltip>
       <div inert={minimized} className={cn("max-h-full w-max max-w-80 min-w-56 overflow-y-auto rounded-lg border bg-sidebar shadow-md transition-opacity duration-200", minimized && "pointer-events-none opacity-0")}>
-        {isPages ? (
-          <div className="p-2"><SidebarGroup title="Pages" onMinimize={minimize}><PagesList /></SidebarGroup></div>
-        ) : (
-          <div className="p-4">
-            <div className="mb-4 flex items-center gap-2">
-              <h2 className="flex-1 text-sm font-semibold">{title}</h2>
-              <MinimizeButton label={title} onClick={minimize} />
-            </div>
-            <Suspense fallback={<Loader inline className="px-1.5 py-1" />}>{isChanges ? <ChangeFilters /> : <KnowledgeFilters />}</Suspense>
-          </div>
-        )}
+        <TreeBody kind={kind} onMinimize={minimize} />
       </div>
     </aside>
+  );
+}
+
+// MOBILE TREE: the same list inside the phone drawer, under the app links; no minimize there
+export function MobileSidebarTree() {
+  const kind = useTreeKind();
+  if (!kind) return null;
+  return (
+    <section aria-label={TREE_LABEL[kind]} className="border-t border-sidebar-border [&_a]:min-h-9 [&_button]:min-h-9">
+      <TreeBody kind={kind} />
+    </section>
+  );
+}
+
+// TREE BODY: the pages list, or the filters for the current table page
+function TreeBody({ kind, onMinimize }: { kind: TreeKind; onMinimize?: () => void }) {
+  if (kind === "pages") {
+    return <div className="p-2"><SidebarGroup title="Pages" onMinimize={onMinimize}><PagesList /></SidebarGroup></div>;
+  }
+  const title = TREE_TITLE[kind];
+  return (
+    <div className="p-4">
+      <div className="mb-4 flex items-center gap-2">
+        <h2 className="flex-1 text-sm font-semibold">{title}</h2>
+        {onMinimize ? <MinimizeButton label={title} onClick={onMinimize} /> : null}
+      </div>
+      <Suspense fallback={<Loader inline className="px-1.5 py-1" />}>{kind === "changes" ? <ChangeFilters /> : <KnowledgeFilters />}</Suspense>
+    </div>
   );
 }
 
@@ -130,7 +158,7 @@ function PageTreeItem({ node, pathname, depth }: { node: PageNode<Tables<"pages"
     <div className={cn("group", rowClass, DEPTH_INDENT[Math.min(depth, DEPTH_INDENT.length-1)], pathname === `/p/${node.slug}` && "bg-hover")}>
       <button type="button" aria-label={`${isOpen ? "Collapse" : "Expand"} page ${node.title}`} aria-expanded={isOpen} disabled={!node.children.length} onClick={()=>setIsOpen(!isOpen)} className="w-3 shrink-0 text-faint disabled:invisible">{isOpen ? "▾" : "▸"}</button>
       <Link href={`/p/${node.slug}`} className="flex min-w-0 flex-1 items-center gap-1.5"><PageIcon className="shrink-0 text-muted-foreground" /><span className="truncate">{node.title}</span></Link>
-      <PageMenu page={node} showUpdate hasChildren={node.children.length > 0} className="invisible group-focus-within:visible group-hover:visible" />
+      <PageMenu page={node} showUpdate hasChildren={node.children.length > 0} className="invisible group-focus-within:visible group-hover:visible max-md:visible" />
     </div>
     {isOpen && node.children.length ? <PageBranch nodes={node.children} pathname={pathname} depth={depth+1} /> : null}
   </li>;
