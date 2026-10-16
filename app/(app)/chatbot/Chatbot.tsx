@@ -118,5 +118,3 @@ function Answer({ content, references }: { content: string; references: Referenc
     return ref ? <Link key={index} href={ref.href} className="font-medium underline underline-offset-4">{part}</Link> : part;
   });
 }
-
-

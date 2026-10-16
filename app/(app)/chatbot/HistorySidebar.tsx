@@ -23,4 +23,3 @@ export function HistorySidebar({ chats, activeId, busy, onSelect, onDelete, onNe
     </div>}
   </aside>;
 }
-
