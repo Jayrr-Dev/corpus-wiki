@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { BookOpen, MessageCircle, Users } from "lucide-react";
+import { BookOpen, Images, MessageCircle, Users } from "lucide-react";
 import {
   ChangeIcon,
   DecisionIcon,
@@ -36,6 +36,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
 // SIDEBAR, BROWSE GROUP: the other table pages
 export const SECONDARY_NAV: readonly NavItem[] = [
   { label: "Sources", href: "/sources", icon: SourceIcon },
+  { label: "Assets", href: "/assets", icon: Images },
   { label: "Entities", href: "/entities", icon: EntityIcon },
   { label: "Domains", href: "/domains", icon: DomainIcon },
   { label: "Workflow", href: "/skills", icon: SkillIcon },

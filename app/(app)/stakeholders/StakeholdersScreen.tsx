@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { queryKeys } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { cardKind, kindPlural, type StakeholderCard as Card } from "@/lib/stakeholders/cards";
-import { lookUpStakeholderBatch, planStakeholderPass, planStakeholderWebPass, tidyEntities, writeStakeholderBatch } from "@/lib/server-actions/stakeholders";
+import { lookUpStakeholderBatch, planStakeholderPass, planStakeholderSaves, planStakeholderWebPass, saveStakeholderWebPage, tidyEntities, writeStakeholderBatch } from "@/lib/server-actions/stakeholders";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { StakeholderCard } from "./StakeholderCard";
@@ -128,7 +128,7 @@ function KindChip({ active, onClick, children }: { active: boolean; onClick: () 
   );
 }
 
-type Progress = { done: number; total: number; written: number; failed: number; found: number; phase: "cards" | "web" };
+type Progress = { done: number; total: number; written: number; failed: number; found: number; saved: number; phase: "cards" | "web" | "save" };
 
 // UPDATE CARDS: tidy the entities (merge sure duplicates, retire unused ones), then write every
 // card that is missing or whose claims changed, one batch at a time with progress
@@ -138,9 +138,11 @@ function UpdateCardsButton({ missing }: { missing: number }) {
   const write = useServerAction(writeStakeholderBatch, { progress: false });
   const planWeb = useServerAction(planStakeholderWebPass, { progress: false });
   const lookUp = useServerAction(lookUpStakeholderBatch, { progress: false });
+  const planSaves = useServerAction(planStakeholderSaves, { progress: false });
+  const savePage = useServerAction(saveStakeholderWebPage, { progress: false });
   const [progress, setProgress] = useState<Progress | null>(null);
   const [batchError, setBatchError] = useState<string | null>(null);
-  const running = tidy.isPending || plan.isPending || planWeb.isPending || (progress !== null && progress.done < progress.total);
+  const running = tidy.isPending || plan.isPending || planWeb.isPending || planSaves.isPending || (progress !== null && progress.done < progress.total);
 
   const run = async () => {
     setBatchError(null);
@@ -150,7 +152,7 @@ function UpdateCardsButton({ missing }: { missing: number }) {
     toast.update("Finding cards to write…", 0);
     const planned = await plan.run();
     if (!planned.ok) return toast.fail();
-    let current: Progress = { done: 0, total: planned.batches.length, written: 0, failed: 0, found: 0, phase: "cards" };
+    let current: Progress = { done: 0, total: planned.batches.length, written: 0, failed: 0, found: 0, saved: 0, phase: "cards" };
     setProgress(current);
     for (const batch of planned.batches) {
       const result = await write.run(batch);
@@ -173,10 +175,24 @@ function UpdateCardsButton({ missing }: { missing: number }) {
         toast.update(`Looked up ${current.done} of ${current.total} batches on the web`, current.done / current.total);
       }
     }
+    // Then each confirmed page not yet saved becomes external knowledge (approved, stored, reconciled)
+    const saves = await planSaves.run();
+    if (saves.ok && saves.entityIds.length) {
+      current = { ...current, phase: "save", done: 0, total: saves.entityIds.length };
+      setProgress(current);
+      for (const entityId of saves.entityIds) {
+        const result = await savePage.run(entityId);
+        if (!result.ok) setBatchError(result.error);
+        current = { ...current, done: current.done + 1, saved: current.saved + (result.ok && result.saved ? 1 : 0), failed: current.failed + (result.ok ? 0 : 1) };
+        setProgress(current);
+        toast.update(`Saved web knowledge for ${current.done} of ${current.total} stakeholders`, current.done / current.total);
+      }
+    }
     const parts = [
       tidied.applied ? `${tidied.applied} entit${tidied.applied === 1 ? "y" : "ies"} tidied` : "",
       current.written ? `${current.written} card${current.written === 1 ? "" : "s"} written` : "Every card is up to date",
       current.found ? `${current.found} found on the web` : "",
+      current.saved ? `${current.saved} page${current.saved === 1 ? "" : "s"} saved as external knowledge` : "",
       current.failed ? `${current.failed} batch${current.failed === 1 ? "" : "es"} failed` : "",
     ].filter(Boolean);
     toast.done(parts.join(" · "));
@@ -185,7 +201,7 @@ function UpdateCardsButton({ missing }: { missing: number }) {
   return (
     <div className="flex flex-col items-end gap-1">
       <Button size="sm" variant="outline" disabled={running} onClick={() => void run()}>
-        {tidy.isPending ? "Tidying…" : plan.isPending ? "Planning…" : running && progress ? `${progress.phase === "web" ? "Looking up" : "Writing"} ${progress.done + 1} of ${progress.total}…` : missing > 0 ? `Write ${missing} missing card${missing === 1 ? "" : "s"}` : "Update cards"}
+        {tidy.isPending ? "Tidying…" : plan.isPending ? "Planning…" : running && progress ? `${progress.phase === "web" ? "Looking up" : progress.phase === "save" ? "Saving" : "Writing"} ${progress.done + 1} of ${progress.total}…` : missing > 0 ? `Write ${missing} missing card${missing === 1 ? "" : "s"}` : "Update cards"}
       </Button>
       <ErrorNote error={tidy.error ?? plan.error ?? planWeb.error ?? batchError} />
     </div>

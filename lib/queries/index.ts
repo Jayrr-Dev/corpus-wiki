@@ -21,6 +21,10 @@ export const useSource = (id?: string) => useTableRow("sources", id);
 export const usePassages = (o: ListOptions<"passages"> = {}) =>
   useTableList("passages", { orderBy: "position", ...o });
 export const usePassage = (id?: string) => useTableRow("passages", id);
+// ASSETS: media from the sources (pictures, video, audio), newest first
+export const useAssets = (o: ListOptions<"assets"> = {}) =>
+  useTableList("assets", { orderBy: "created_at", ascending: false, ...o });
+export const useAsset = (id?: string) => useTableRow("assets", id);
 export const useShiftEvents = (o: ListOptions<"shift_events"> = {}) =>
   useTableList("shift_events", { orderBy: "created_at", ascending: false, ...o });
 export const useShiftEvent = (id?: string) => useTableRow("shift_events", id);

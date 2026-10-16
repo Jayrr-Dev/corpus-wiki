@@ -60,6 +60,12 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
   if (revisionError) throw new Error(revisionError.message);
   const contents = new Map((revisions ?? []).map((revision) => [revision.id, revision.content]));
   const candidates: SectionUnit[] = units.map((unit) => ({ unitId: unit.id, revisionId: unit.current_revision_id, kind: unit.kind, epistemicStatus: unit.epistemic_status, content: contents.get(unit.current_revision_id) ?? "" }));
+  return groupClaimsForArticle(settings, page.title, (sections ?? []).map((section) => section.title), candidates, note);
+}
+
+// GROUPS CLAIMS INTO NEW SECTIONS of an existing article, 40 at a time; claims that do not
+// belong are left out. Also used when the Article Reviewer sends new claims to an existing article.
+export async function groupClaimsForArticle(settings: TokenFactorySettings, article: string, existingSections: string[], candidates: SectionUnit[], note: string): Promise<TokenUsage & { sections: SectionDraft[] }> {
   const added: SectionDraft[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   // Bound each discovery call, including for very large contexts.
@@ -68,8 +74,9 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
     const answer = await chatJson(settings, {
       name: "article_update_discovery", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: 4000,
       messages: [
-        { role: "system", content: `${skillInstructions(["plan_articles"], settings.skills)}\nIdentify NEW relevant knowledge for this existing article. The candidates are current verified claims from its existing entity/topic scope, not yet selected by any section. Select only claims that belong to the article's actual subject. Group them into concise new topic sections. Return sections:[] when none belong. Never change the subject, invent facts, repeat existing material, or create an empty section. Use only supplied C refs, each at most once. The optional user note is editorial guidance, not evidence. Existing handwritten text is protected.` },
-        { role: "user", content: JSON.stringify({ article: page.title, existingSections: (sections ?? []).map((section) => section.title), note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
+        { role: "system", content: `${skillInstructions(["plan_articles"], settings.skills)}
+Identify NEW relevant knowledge for this existing article. The candidates are current verified claims from its existing entity/topic scope, not yet selected by any section. Select only claims that belong to the article's actual subject. Group them into concise new topic sections. Return sections:[] when none belong. Never change the subject, invent facts, repeat existing material, or create an empty section. Use only supplied C refs, each at most once. The optional user note is editorial guidance, not evidence. Existing handwritten text is protected.` },
+        { role: "user", content: JSON.stringify({ article, existingSections: [...existingSections, ...added.map((section) => section.title)], note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
       ],
     });
     usage = addUsage(usage, answer);

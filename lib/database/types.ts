@@ -86,6 +86,39 @@ export type Database = {
         }
         Relationships: []
       }
+      article_reviews: {
+        Row: {
+          id: string; created_at: string; event_id: string | null; proposal: Json; verdict: string; failed_checks: string[]; reason: string; decided_by: string;
+          target_page_id: string | null; section_title: string | null; result_page_id: string | null; change_set_id: string | null;
+          model: string | null; prompt_version: string; tokens_in: number | null; tokens_out: number | null;
+        }
+        Insert: {
+          id?: string; created_at?: string; event_id?: string | null; proposal: Json; verdict: string; failed_checks?: string[]; reason: string; decided_by: string;
+          target_page_id?: string | null; section_title?: string | null; result_page_id?: string | null; change_set_id?: string | null;
+          model?: string | null; prompt_version: string; tokens_in?: number | null; tokens_out?: number | null;
+        }
+        Update: {
+          result_page_id?: string | null; change_set_id?: string | null;
+        }
+        Relationships: []
+      }
+      assets: {
+        Row: {
+          id: string; source_id: string; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number: number | null;
+          passage_ids: string[]; title: string | null; description: string | null; tags: string[]; input_hash: string | null;
+          described_at: string | null; model: string | null; created_at: string;
+        }
+        Insert: {
+          id?: string; source_id: string; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number?: number | null;
+          passage_ids?: string[]; title?: string | null; description?: string | null; tags?: string[]; input_hash?: string | null;
+          described_at?: string | null; model?: string | null; created_at?: string;
+        }
+        Update: {
+          figure_number?: number | null; passage_ids?: string[]; title?: string | null; description?: string | null; tags?: string[];
+          input_hash?: string | null; described_at?: string | null; model?: string | null;
+        }
+        Relationships: []
+      }
       external_source_reviews: {
         Row: {
           id: string; created_at: string; page_id: string | null; section_id: string | null; source_id: string | null;
@@ -1119,6 +1152,7 @@ export type Database = {
     }
     Functions: {
       read_upload_workflows: { Args: { p_event_ids: string[] }; Returns: Json };
+      sync_assets: { Args: Record<string, never>; Returns: number };
     }
     Enums: {
       action_outcome: "pending" | "applied" | "exception" | "rejected" | "reverted"

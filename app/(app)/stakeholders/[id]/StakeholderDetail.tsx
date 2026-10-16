@@ -211,6 +211,17 @@ function Citations({ unitIds, units }: { unitIds: string[]; units: Map<string, U
 // OVERVIEW: who the party is as a whole. The web's sure-match profile with its links (kept apart
 // from the knowledge), else the description written from the knowledge.
 function OverviewSection({ card }: { card: StakeholderCard }) {
+  // Which of its web pages are stored as external knowledge (a source of their own)
+  const urls = card.web?.sources.map((source) => source.url) ?? [];
+  const stored = useQuery({
+    queryKey: [...queryKeys.table("sources"), "external-by-url", urls],
+    enabled: urls.length > 0,
+    queryFn: async () => {
+      const { data, error } = await getBrowserSupabase().from("sources").select("id, url").eq("origin", "external").is("archived_at", null).in("url", urls);
+      if (error) throw new Error(error.message);
+      return data.flatMap((row) => (row.url ? [{ id: row.id, url: row.url }] : []));
+    },
+  });
   if (!card.web) {
     if (!card.description && !card.webCheckedAt) return null;
     return (
@@ -221,6 +232,7 @@ function OverviewSection({ card }: { card: StakeholderCard }) {
     );
   }
   const { web } = card;
+  const storedByUrl = new Map((stored.data ?? []).map((source) => [source.url, source.id]));
   const cite = (index: number | null) => {
     const source = index === null ? undefined : web.sources[index];
     return source ? (
@@ -248,11 +260,20 @@ function OverviewSection({ card }: { card: StakeholderCard }) {
         <p className="text-panel"><span className="text-muted-foreground">Website </span><a href={web.website} target="_blank" rel="noreferrer" className="text-link hover:underline">{web.website.replace(/^https?:\/\//, "")}</a></p>
       )}
       <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground marker:text-faint">
-        {web.sources.map((source) => (
-          <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" className="hover:text-foreground hover:underline">{source.title}</a></li>
-        ))}
+        {web.sources.map((source) => {
+          const stored = storedByUrl.get(source.url);
+          return (
+            <li key={source.url}>
+              <a href={source.url} target="_blank" rel="noreferrer" className="hover:text-foreground hover:underline">{source.title}</a>
+              {stored && <> · <TextLink href={`/sources/${stored}`} className="text-xs">Saved as external knowledge</TextLink></>}
+            </li>
+          );
+        })}
       </ol>
-      <p className="text-xs text-faint">Not part of your knowledge: found on the web{card.webCheckedAt ? ` on ${formatDate(card.webCheckedAt)}` : ""} and checked against it. Use Look up on the web in the menu to refresh.</p>
+      <p className="text-xs text-faint">
+        Found on the web{card.webCheckedAt ? ` on ${formatDate(card.webCheckedAt)}` : ""} and checked against your knowledge.
+        {storedByUrl.size > 0 ? " A page marked saved is in your knowledge as external knowledge, with its claims marked external." : " Update cards saves its best page as external knowledge once it is approved."}
+      </p>
     </Section>
   );
 }

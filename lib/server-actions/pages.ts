@@ -8,6 +8,9 @@ import { readAllowExternalKnowledge, readAutoUpdateStale, readChosenModel } from
 import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { type ForceCreateResult, fillThinSectionsFromWeb, forceCreateSection as runForceCreate } from "@/lib/living-page/forceCreateSection";
 import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
+import { orchestrateEntityArticles } from "@/lib/living-page/articleOrchestrator";
+import { organizeExistingEntityContext } from "@/lib/living-page/organizeHierarchy";
+import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { requireUser } from "@/lib/auth/requireUser";
 import { type CommitResult, commitPersonEdit, submitChangeSet, commitChangeSet } from "@/lib/change-control";
@@ -196,7 +199,7 @@ export async function improveArticle(pageId: string): Promise<ActionResult> {
   });
 }
 
-// Discover cited definitions, domain articles, and an organization overview.
+// Discover cited definitions, then let the Article Orchestrator propose and review articles for the entity's claims.
 export async function expandRelatedArticles(pageId: string): Promise<ActionResult<{ entities: number; definitions: number; articles: number }>> {
   return toActionResult(async () => {
     await requireUser();
@@ -209,7 +212,12 @@ export async function expandRelatedArticles(pageId: string): Promise<ActionResul
     const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
     if (settings) settings.skills = await loadStageSkills(db);
     if (!settings) throw new Error("Configure an AI provider before expanding knowledge.");
-    return expandEntityKnowledge({ settings, client, db, writer }, entityId);
+    const { entities, definitions } = await expandEntityKnowledge({ settings, client, db, writer }, entityId);
+    const embedder = embedderFromEnv(process.env);
+    const articles = await orchestrateEntityArticles({ settings, client, db, embedder }, entityId);
+    for (const id of articles.pageIds) await rebuildPage(db, writer, id);
+    await organizeExistingEntityContext(db, client, entityId);
+    return { entities, definitions, articles: articles.created + articles.updated + articles.sections };
   });
 }
 

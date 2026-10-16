@@ -125,3 +125,28 @@ export async function wikipediaOfficialSite(pageUrl: string): Promise<string | n
   const preferred = claims.find((claim) => claim.rank === "preferred") ?? claims.find((claim) => claim.rank !== "deprecated");
   return preferred?.mainsnak?.datavalue?.value ?? null;
 }
+
+// ONE PAGE'S TEXT (for storing it as an external source): Wikipedia's plain-text extract for a
+// Wikipedia article, otherwise Tavily's extract (needs the key). Cut like a search page; null when unreadable.
+const TAVILY_EXTRACT_URL = "https://api.tavily.com/extract";
+type TavilyExtractResponse = { results?: { url?: string; raw_content?: string | null }[] };
+
+export async function readWebPage(apiKey: string | null, pageUrl: string): Promise<string | null> {
+  let url: URL;
+  try { url = new URL(pageUrl); } catch { return null; }
+  if (/(^|\.)wikipedia\.org$/.test(url.hostname) && url.pathname.startsWith("/wiki/")) {
+    const body = await wikipedia<WikipediaExtractResponse>({ prop: "extracts", explaintext: "1", titles: decodeURIComponent(url.pathname.slice("/wiki/".length)), redirects: "1" });
+    const text = body.query?.pages?.[0]?.extract?.trim();
+    return text ? text.slice(0, MAX_PAGE_CHARS) : null;
+  }
+  if (!apiKey) return null;
+  const response = await fetch(TAVILY_EXTRACT_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ urls: [pageUrl], format: "markdown" }),
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  const text = ((await response.json()) as TavilyExtractResponse).results?.[0]?.raw_content?.trim();
+  return text ? text.slice(0, MAX_PAGE_CHARS) : null;
+}

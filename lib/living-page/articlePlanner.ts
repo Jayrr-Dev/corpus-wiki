@@ -72,16 +72,22 @@ export function topicSections(plan: Parameters<typeof articleSections>[0], knowl
   return sections.length === 2 ? sections.slice(1) : sections;
 }
 
-// Used for new uploads and the explicit Improve article command. Handwritten sections are kept.
+// Refreshes existing entity pages after uploads, and runs the explicit Improve article command. Handwritten sections are kept.
 export function createArticlePlanner(settings: TokenFactorySettings, client: AdminSupabase, force = false): PagePlanner {
   const planner: PagePlanner = async (candidates) => {
     const actions: DraftAction[] = [];
     let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
     for (const candidate of candidates) {
       if (candidate.claimCount < 2) continue;
+      // New articles come only from the Article Orchestrator, after independent review
       const pageId = candidate.page?.pageId ?? null;
+      if (!pageId) continue;
       let replaceIds: string[] = [];
-      if (pageId) {
+      {
+        // A reviewed article keeps its approved title and scope; the orchestrator adds to it
+        const { data: typed, error: typeError } = await client.from("pages").select("article_type").eq("id", pageId).single();
+        if (typeError) throw new Error(typeError.message);
+        if (typed.article_type && !force) continue;
         const { data: sections, error } = await client.from("sections").select("id, title, mode, query").eq("page_id", pageId).is("retired_at", null);
         if (error) throw new Error(error.message);
         const generated = (sections ?? []).filter((section) => {

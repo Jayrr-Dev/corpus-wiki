@@ -27,5 +27,15 @@ export function roleForAction(type: string | undefined): string | null {
   if (["write_line", "revise_line", "retire_line", "move_line"].includes(type)) return "write_articles";
   if (["create_page", "create_section", "rename_section", "rename_page"].includes(type)) return "plan_articles";
   if (["add_claim", "revise_claim"].includes(type)) return "extract_knowledge";
+  if (type === "review_page") return "reviewer";
+  if (type === "merge_duplicates") return "deduplicator";
+  if (type === "glossary_update") return "dictionary_editor";
   return null;
+}
+// The AI role that proposed a change, without its model; null for a person or an unrecorded role
+export function proposerRoleName(changeSet: Pick<Tables<"change_sets">, "proposed_by" | "actor_attribution"> | undefined, actionType: string | undefined): string | null {
+  if (changeSet?.proposed_by !== "ai") return null;
+  const recorded = jsonObject(jsonObject(changeSet.actor_attribution ?? undefined).proposedBy).role;
+  const role = typeof recorded === "string" ? recorded : roleForAction(actionType);
+  return role ? roleName(role) : null;
 }

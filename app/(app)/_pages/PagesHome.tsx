@@ -11,6 +11,7 @@ import { DateTime, useTimeZone } from "@/app/(app)/_components/DateTime";
 import { useFrontPage } from "@/lib/queries/frontPage";
 import { useSectionLines } from "@/lib/queries";
 import { useArticleEvidence } from "@/lib/queries/articleEvidence";
+import { sourceFileSrc } from "@/lib/living-page/articleEvidence";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/queries/keys";
 import { buildFrontArticles, dailyOrder, editionDay, frontSelections, plainExcerpt, type FrontArticle } from "@/lib/living-page/frontPage";
@@ -113,7 +114,7 @@ function FeaturedArticle({ article }: { article: FrontArticle }) {
   return <article>
     <h3 className="mb-3 text-lg font-medium"><TextLink href={`/p/${article.slug}`}>{article.title}</TextLink></h3>
     <div className="flow-root text-body leading-7">
-      {figure && <figure className="mb-3 sm:float-left sm:mr-4 sm:w-40"><MediaPreview sourceId={figure.sourceId} kind="image" title={figure.title} caption={figure.caption} /><figcaption className="mt-1 text-xs leading-5 text-muted-foreground">{plainExcerpt(figure.caption, 150)}</figcaption></figure>}
+      {figure && <figure className="mb-3 sm:float-left sm:mr-4 sm:w-40"><MediaPreview sourceId={figure.sourceId} src={figure.src} kind="image" title={figure.title} caption={figure.caption} /><figcaption className="mt-1 text-xs leading-5 text-muted-foreground">{plainExcerpt(figure.caption, 150)}</figcaption></figure>}
       <p>{article.excerpt}</p>
     </div>
     <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs"><span className="text-muted-foreground">{article.sectionCount} {article.sectionCount === 1 ? "section" : "sections"}</span><TextLink href={`/p/${article.slug}`}>Continue reading →</TextLink></footer>
@@ -138,9 +139,8 @@ function FeaturedMedia({ media }: { media: Media }) {
   </Panel>;
 }
 
-function MediaPreview({ sourceId, kind, title, caption }: { sourceId: string; kind: "image" | "video"; title: string; caption: string }) {
+function MediaPreview({ sourceId, src = sourceFileSrc(sourceId), kind, title, caption }: { sourceId: string; src?: string; kind: "image" | "video"; title: string; caption: string }) {
   const [failed, setFailed] = useState(false);
-  const src = `/api/sources/${sourceId}/file`;
   if (failed) return <Link href={`/sources/${sourceId}`} className="flex aspect-video items-center justify-center gap-2 rounded-md border bg-sidebar text-muted-foreground"><ImageIcon className="size-4" />View source</Link>;
   if (kind === "video") return <video src={src} controls preload="none" aria-label={title} className="aspect-video w-full rounded-md border bg-sidebar object-contain" onError={() => setFailed(true)} />;
   return <a href={src} target="_blank" rel="noreferrer" aria-label={`Open image: ${title}`}>

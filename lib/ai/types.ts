@@ -91,7 +91,7 @@ export type ActionInputByType = {
   move_line: { position: number; expectedLineRevisionId: string };
   // PAGES: presentation, changed through the same ChangeSets so they are audited and undoable.
   // target = the page or section; a create records the new row in target_id once applied.
-  create_page: { title: string; entityId: string | null; sections: SectionDraft[] };
+  create_page: { title: string; entityId: string | null; sections: SectionDraft[]; articleType?: "entity" | "process" | "requirement" | "concept"; scope?: string; parentPageId?: string | null };
   rename_page: { title: string };
   review_page: { operation: string; recommendation: string; reason: string; quote: string; guideline: string; destinationId: string | null; pageSlug: string; pageTitle: string };
   retire_page: Record<string, never>;

@@ -7,6 +7,7 @@ import { supabaseRpc } from "@/lib/db/rpc";
 import { type CleanupResult, cleanUpEntities } from "@/lib/knowledge/entityCleanup";
 import { planProfileBatches, type ProfileBatchResult, writeProfileBatch } from "@/lib/knowledge/entityProfiles";
 import { lookUpWebBatch, planWebBatches, type WebBatchResult } from "@/lib/knowledge/entityWeb";
+import { type ExternalSaveResult, planExternalSaves, saveStakeholderPage } from "@/lib/knowledge/stakeholderExternal";
 import { cleanPersonContacts, type PersonContact } from "@/lib/stakeholders/cards";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { type ActionResult, toActionResult } from "./result";
@@ -115,5 +116,22 @@ export async function lookUpStakeholderAgain(entityId: string): Promise<ActionRe
     await requireUser();
     const { client, settings } = await aiDeps();
     return lookUpWebBatch({ client, settings }, [entityId], true);
+  });
+}
+
+// SAVE PLAN: stakeholders whose confirmed web page is not yet external knowledge
+export async function planStakeholderSaves(): Promise<ActionResult<{ entityIds: string[] }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    return { entityIds: await planExternalSaves(getAdminSupabase()) };
+  });
+}
+
+// ONE SAVE: the stakeholder's best page goes through external approval and becomes external knowledge
+export async function saveStakeholderWebPage(entityId: string): Promise<ActionResult<ExternalSaveResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const { client, settings } = await aiDeps();
+    return saveStakeholderPage({ client, settings }, entityId);
   });
 }

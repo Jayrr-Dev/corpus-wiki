@@ -24,11 +24,11 @@ export function roleForPurpose(purpose: string): string | null {
   if (purpose === "external_research_justification" || purpose === "external_source_justification") return "researcher";
   if (purpose === "reconciliation") return "reconciler";
   if (["section_lines", "section_rewrite", "claim_titles"].includes(purpose)) return "write_articles";
-  if (["article_outline", "article_update_discovery", "force_create_pick"].includes(purpose)) return "plan_articles";
+  if (["article_outline", "article_update_discovery", "force_create_pick", "article_proposals"].includes(purpose)) return "plan_articles";
   if (purpose === "knowledge_expansion") return "define_concepts";
   if (purpose === "describe_entities") return "identify_entities";
   if (purpose === "link_existing") return "link_knowledge";
   if (["dedupe", "duplicate_judge"].includes(purpose)) return "deduplicator";
-  if (["describe_image", "describe_video"].includes(purpose)) return "media_analyst";
+  if (["describe_image", "describe_video", "describe_assets"].includes(purpose)) return "media_analyst";
   return AI_STAGES.some((stage) => stage.id === purpose) ? purpose : null;
 }

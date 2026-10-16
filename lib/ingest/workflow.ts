@@ -59,8 +59,16 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
         hierarchy: async () => deps.hierarchyOrganizer?.(eventId),
         glossary: async () => deps.glossaryGenerator?.(),
         expand: async () => deps.knowledgeExpander?.(eventId),
-        plan: () => proposePages(db, eventId, deps.pagePlanner),
-        pages: () => rebuildAfterEvent(db, deps.writer, eventId),
+        plan: async () => {
+          const refreshed = await proposePages(db, eventId, deps.pagePlanner);
+          await deps.articleOrchestrator?.(eventId);
+          return refreshed;
+        },
+        pages: async () => {
+          await rebuildAfterEvent(db, deps.writer, eventId);
+          // New articles cite their claims only once written: file them under their context now
+          if (deps.articleOrchestrator) await deps.hierarchyOrganizer?.(eventId);
+        },
       };
       // Completed roles are not repeated on resume.
       const stages = job === "knowledge" ? KNOWLEDGE_STAGES : [...KNOWLEDGE_STAGES, ...ARTICLE_STAGES];

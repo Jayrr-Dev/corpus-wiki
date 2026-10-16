@@ -8,7 +8,7 @@ import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { queryKeys } from "@/lib/queries";
 import { CONTACT_KINDS, CONTACT_LABELS, type ContactKind, type PersonContact, type StakeholderCard } from "@/lib/stakeholders/cards";
-import { lookUpStakeholderAgain, rewriteStakeholderCard, savePersonContacts, setOurOrganization, setStakeholderHidden } from "@/lib/server-actions/stakeholders";
+import { lookUpStakeholderAgain, rewriteStakeholderCard, saveStakeholderWebPage, savePersonContacts, setOurOrganization, setStakeholderHidden } from "@/lib/server-actions/stakeholders";
 import { toast } from "sonner";
 import { startProgress } from "@/components/toast";
 
@@ -27,7 +27,11 @@ export function StakeholderMenu({ card }: { card: StakeholderCard }) {
     const result = await lookUpStakeholderAgain(card.entityId);
     refresh();
     if (!result.ok) { toast.error(result.error); return progress.fail(); }
-    progress.done(result.found ? `Found ${card.name} on the web${result.logos ? " and its logo" : ""}` : "Nothing on the web was sure to be the same party; nothing was kept");
+    if (!result.found) return progress.done("Nothing on the web was sure to be the same party; nothing was kept");
+    progress.update("Saving the page as external knowledge…", 0.5);
+    const saved = await saveStakeholderWebPage(card.entityId);
+    refresh();
+    progress.done(`Found ${card.name} on the web${result.logos ? " and its logo" : ""}${saved.ok && saved.saved ? "; its page is now external knowledge" : saved.ok ? ` (${saved.reason.toLowerCase().replace(/\.$/, "")})` : ""}`);
   };
   return (
     <RowMenu label={card.name} items={[

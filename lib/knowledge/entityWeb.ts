@@ -81,6 +81,12 @@ export async function lookUpNewStakeholders(deps: Deps, entityIds: string[]): Pr
     const batch = ids.slice(index, index + WEB_BATCH_SIZE);
     await workflowStep(`web:${batch.join(":")}`, () => lookUpWebBatch(deps, batch));
   }
+  // A confirmed page becomes external knowledge (approved, stored, reconciled) like any other
+  const { saveStakeholderPage } = await import("./stakeholderExternal");
+  for (const entityId of ids) {
+    try { await workflowStep(`web-save:${entityId}`, () => saveStakeholderPage(deps, entityId)); }
+    catch (error) { console.warn("Stakeholder page not saved:", error instanceof Error ? error.message : error); }
+  }
 }
 
 // ONE BATCH: queries, searches, a sure-match check, then the cards and logos. `force` looks

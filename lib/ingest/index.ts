@@ -1,8 +1,14 @@
 import "server-only";
 
+import { after } from "next/server";
+import { tokenFactoryFromEnv } from "@/lib/ai/chat";
+import { readChosenModel } from "@/lib/ai/models";
+import { describeAssets, syncAssets } from "@/lib/assets/describe";
+import type { DbRpc } from "@/lib/db/rpc";
+
 import { getServerDeps } from "@/lib/server/deps";
 import { CONVERTERS } from "./convert";
-import { DIRECT_UPLOAD_FORMATS, formatOf, MAX_DIRECT_UPLOAD_BYTES, storedMimeType, type UploadFormat, UPLOAD_FORMAT_NAMES } from "./formats";
+import { DIRECT_UPLOAD_FORMATS, formatOf, mediaKindOf, MAX_DIRECT_UPLOAD_BYTES, storedMimeType, type UploadFormat, UPLOAD_FORMAT_NAMES } from "./formats";
 import { sha256 } from "./hash";
 import { splitIntoPassages } from "./passages";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -47,7 +53,21 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
   if (passages.length === 0) throw new Error(NOTHING_READ[format.id] ?? "No text was found in this file (is it a scan?).");
   const storagePath = await storeSourceFile(`${hash}${extensionOf(fileName, format)}`, bytes, mimeType);
   const pageCount = pages.some((page) => page.page !== null) ? pages.length : null;
-  return recordUpload(db, { title: fileName, mimeType, sourceDate: `${sourceDate}T00:00:00Z`, hash, storagePath, passages, byteSize: bytes.byteLength, pageCount });
+  const started = await recordUpload(db, { title: fileName, mimeType, sourceDate: `${sourceDate}T00:00:00Z`, hash, storagePath, passages, byteSize: bytes.byteLength, pageCount });
+  // Media the file brought in (the file itself, or pictures inside it) goes on the Assets page
+  if (mediaKindOf(mimeType) || pages.some((page) => page.figure)) after(() => describeNewAssets(db));
+  return started;
+}
+
+// ASSETS AFTER AN UPLOAD: found and described once the response is sent; a failure never fails the upload
+async function describeNewAssets(db: DbRpc): Promise<void> {
+  const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "media_analyst" } }));
+  try {
+    if (settings) await describeAssets(getAdminSupabase(), settings);
+    else await syncAssets(getAdminSupabase());
+  } catch (error) {
+    console.error("The new assets could not be described:", error);
+  }
 }
 
 // Why a file gave no passages, where it is not "no text"

@@ -3,15 +3,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useShiftEvents, useSources } from "@/lib/queries";
-import { canResumeUpload, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { canResumeUpload, isRunning, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 
 // Slow on purpose: this runs behind every screen (the sidebar badge), not just the upload being watched
 const POLL_MS = 30_000;
+// Faster while a run is live, so its row leaves "Processing" soon after it finishes
+const BUSY_POLL_MS = 5_000;
+
+type SourceRuns = { processing: Set<string>; unfinished: Set<string> };
 
 // UNFINISHED SOURCES: active internal sources whose latest upload stopped before it finished and can be resumed.
 // The same rule the source page uses to offer "Resume unfinished work".
 export function useUnfinishedSources(): Set<string> {
+  return useSourceRuns().unfinished;
+}
+
+// SOURCE RUNS: active internal sources whose latest upload is being worked on right now (processing),
+// or stopped before it finished and can be resumed (unfinished)
+export function useSourceRuns(): SourceRuns {
   const sources = useSources().data;
   const uploads = useShiftEvents({ filters: { cause: "upload" } }).data;
   // Newest first, so the first upload seen per source is its latest run
@@ -30,10 +40,13 @@ export function useUnfinishedSources(): Set<string> {
       return data as unknown as UploadWorkflow[];
     },
     enabled: eventIds.length > 0,
-    refetchInterval: POLL_MS,
+    refetchInterval: (query) => (query.state.data?.some(isRunning) ? BUSY_POLL_MS : POLL_MS),
   }).data;
   return useMemo(() => {
-    const unfinishedEvents = new Set((workflows ?? []).filter(canResumeUpload).map((workflow) => workflow.event_id));
-    return new Set([...latestEventBySource].filter(([, eventId]) => unfinishedEvents.has(eventId)).map(([sourceId]) => sourceId));
+    const sourcesWith = (test: (workflow: UploadWorkflow) => boolean) => {
+      const events = new Set((workflows ?? []).filter(test).map((workflow) => workflow.event_id));
+      return new Set([...latestEventBySource].filter(([, eventId]) => events.has(eventId)).map(([sourceId]) => sourceId));
+    };
+    return { processing: sourcesWith(isRunning), unfinished: sourcesWith(canResumeUpload) };
   }, [workflows, latestEventBySource]);
 }

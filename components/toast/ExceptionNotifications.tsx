@@ -6,12 +6,14 @@ import { exceptionTitle } from "@/app/(app)/exceptions/ExceptionCard";
 import { ExceptionDialog } from "@/app/(app)/exceptions/ExceptionDialog";
 import { useExceptionData } from "@/app/(app)/exceptions/ExceptionsScreen";
 import { UNIT_ACTION_TYPES } from "@/app/(app)/_components/ActionSummary";
+import { proposerRoleName } from "@/app/(app)/decisions/describeDecision";
 import { asObject, describeActionInput, readString } from "@/app/(app)/_lib/format";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip } from "@/components/standard/tooltip";
 import { useExceptions } from "@/lib/queries";
+import { useRowsByIds } from "@/lib/queries/screens";
 import { useRealtimeInvalidation } from "@/lib/realtime/useRealtimeInvalidation";
 import { answerException } from "@/lib/server-actions/knowledge";
 import type { Tables } from "@/lib/database/types";
@@ -37,6 +39,8 @@ export function ExceptionNotifications() {
     .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
   const current = queue[0];
   const currentAction = current ? data.actionById.get(current.action_id) : undefined;
+  const changeSets = useRowsByIds("change_sets", [currentAction?.change_set_id]);
+  const currentChangeSet = changeSets.data?.find((changeSet) => changeSet.id === currentAction?.change_set_id);
   const hide = (id: string) => setDismissed((previous) => new Set(previous).add(id));
 
   const selected = data.exceptions.find((exception) => exception.id === selectedId);
@@ -45,7 +49,7 @@ export function ExceptionNotifications() {
   return <>
     {current && <aside aria-label="Pending approvals" className="fixed top-4 right-4 z-40 max-w-[calc(100vw-2rem)] sm:top-6 sm:right-6">
       <ExceptionToast key={current.id} exception={current} remaining={queue.length}
-        title={exceptionTitle(current, currentAction)}
+        title={exceptionTitle(current, currentAction)} sender={proposerRoleName(currentChangeSet, currentAction?.type)}
         proposal={currentAction ? describeActionInput(currentAction.type, currentAction.input) : null}
         onView={() => setSelectedId(current.id)} onClose={() => hide(current.id)} />
     </aside>}
@@ -53,7 +57,7 @@ export function ExceptionNotifications() {
   </>;
 }
 
-function ExceptionToast({ exception, remaining, title, proposal, onView, onClose }: { exception: Tables<"exceptions">; remaining: number; title: string; proposal: string | null; onView: () => void; onClose: () => void }) {
+function ExceptionToast({ exception, remaining, title, sender, proposal, onView, onClose }: { exception: Tables<"exceptions">; remaining: number; title: string; sender: string | null; proposal: string | null; onView: () => void; onClose: () => void }) {
   const answer = useServerAction(answerException, { progress: false });
   const sending = useRef(false);
   const [note, setNote] = useState("");
@@ -72,7 +76,10 @@ function ExceptionToast({ exception, remaining, title, proposal, onView, onClose
       <Tooltip content="Dismiss notification"><Button variant="ghost" size="icon-sm" className="shrink-0" aria-label="Dismiss approval notification" disabled={answer.isPending} onClick={onClose}><X /></Button></Tooltip>
     </header>
     <div className="min-h-0 space-y-3 overflow-y-auto px-4 py-4 leading-relaxed">
-      <h2 className="font-semibold">{title}</h2>
+      <div className="space-y-0.5">
+        {sender && <p className="text-xs text-muted-foreground">From the {sender}</p>}
+        <h2 className="font-semibold">{title}</h2>
+      </div>
       {detail && !detail.startsWith("# ") && <p className="break-words text-muted-foreground">{detail}</p>}
       {proposal && proposal !== detail && <div className="space-y-1 rounded-lg bg-muted/50 p-3"><p className="text-xs font-medium text-muted-foreground">Proposed change</p><p className="break-words">{proposal}</p></div>}
       <details className="group">
