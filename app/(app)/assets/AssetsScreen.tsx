@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Images, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ErrorNote } from "@/app/(app)/_components/bits";
+import { DialogMenu } from "@/app/(app)/_pages/DialogMenu";
+import { DialogForm } from "@/components/actions/DialogForm";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Loader } from "@/components/standard/loader";
 import { startProgress } from "@/components/toast";
@@ -11,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAssets, useSources } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime";
-import { describeAssets } from "@/lib/server-actions/assets";
+import { ASSET_TYPE_LABEL, ASSET_TYPES, type AssetType, normalizeTag, tagKey } from "@/lib/assets/tags";
+import { describeAssets, renameAssetTag } from "@/lib/server-actions/assets";
 import { cn } from "@/lib/utils";
 import { type Asset, ASSET_KIND_LABEL, AssetThumbnail, assetTitle, TagChip } from "./AssetMedia";
 
@@ -20,8 +23,8 @@ const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase("
 const TAG_FILTERS = 24;
 
 // ASSETS (/assets): every picture, video and sound clip the sources brought in, with the
-// AI's title, description and tags; search, a filter per kind and per tag, and a pass that
-// finds and describes new ones
+// AI's title, description, type and tags; search, a filter per kind, per type and per tag
+// (each tag can be renamed or merged into another), and a pass that finds and describes new ones
 export function AssetsScreen() {
   useRealtimeInvalidation("assets");
   const assets = useAssets();
@@ -29,11 +32,13 @@ export function AssetsScreen() {
   const sourceById = useMemo(() => new Map((sources.data ?? []).map((source) => [source.id, source])), [sources.data]);
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<Asset["kind"] | null>(null);
+  const [type, setType] = useState<AssetType | null>(null);
   const [tags, setTags] = useState<string[]>([]);
 
   // Assets of archived sources stay with their source, off this page
   const all = useMemo(() => (assets.data ?? []).filter((asset) => !sourceById.get(asset.source_id)?.archived_at), [assets.data, sourceById]);
   const kinds = (["image", "video", "audio"] as const).map((name) => [name, all.filter((asset) => asset.kind === name).length] as const).filter(([, count]) => count > 0);
+  const types = ASSET_TYPES.map((name) => [name, all.filter((asset) => asset.asset_type === name).length] as const).filter(([, count]) => count > 0);
   const tagCounts = useMemo(() => {
     const counts = new Map<string, number>();
     for (const asset of all) for (const tag of asset.tags) counts.set(tag, (counts.get(tag) ?? 0) + 1);
@@ -41,11 +46,14 @@ export function AssetsScreen() {
   }, [all]);
   const shownTags = [...tags.filter((tag) => !tagCounts.slice(0, TAG_FILTERS).some(([name]) => name === tag)).map((tag) => [tag, 0] as const), ...tagCounts.slice(0, TAG_FILTERS)];
   const toggleTag = (tag: string) => setTags(tags.includes(tag) ? tags.filter((other) => other !== tag) : [...tags, tag]);
+  // A renamed tag stays selected under its new name
+  const renamed = (from: string, to: string) => setTags((selected) => selected.includes(from) ? [...new Set(selected.map((tag) => (tag === from ? to : tag)))] : selected);
 
   const needle = normalize(search.trim());
   const shown = all.filter((asset) => (!kind || asset.kind === kind)
+    && (!type || asset.asset_type === type)
     && tags.every((tag) => asset.tags.includes(tag))
-    && (!needle || normalize([asset.title ?? "", asset.description ?? "", ...asset.tags, sourceById.get(asset.source_id)?.title ?? ""].join(" ")).includes(needle)));
+    && (!needle || normalize([asset.title ?? "", asset.description ?? "", asset.asset_type ?? "", ...asset.tags, sourceById.get(asset.source_id)?.title ?? ""].join(" ")).includes(needle)));
   const undescribed = all.filter((asset) => !asset.described_at).length;
 
   return (
@@ -70,9 +78,21 @@ export function AssetsScreen() {
             ))}
           </div>
         )}
+        {types.length > 0 && (
+          <div className="flex flex-wrap gap-1" aria-label="Types of assets">
+            <FilterChip active={type === null} onClick={() => setType(null)}>Any type</FilterChip>
+            {types.map(([name, count]) => (
+              <FilterChip key={name} active={type === name} onClick={() => setType(type === name ? null : name)}>
+                {ASSET_TYPE_LABEL[name]} <span className="text-faint">{count}</span>
+              </FilterChip>
+            ))}
+          </div>
+        )}
         {shownTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1" aria-label="Tags">
-            {shownTags.map(([tag]) => <TagChip key={tag} tag={tag} active={tags.includes(tag)} onClick={() => toggleTag(tag)} />)}
+          <div className="flex flex-wrap items-center gap-x-0.5 gap-y-1" aria-label="Tags">
+            {shownTags.map(([tag]) => (
+              <TagFilter key={tag} tag={tag} active={tags.includes(tag)} onClick={() => toggleTag(tag)} tagCounts={tagCounts} onRenamed={renamed} />
+            ))}
             {tags.length > 0 && <Button size="xs" variant="ghost" onClick={() => setTags([])}>Clear tags</Button>}
           </div>
         )}
@@ -87,7 +107,7 @@ export function AssetsScreen() {
           <p className="mt-2 text-sm text-muted-foreground">
             {all.length ? "Try another word, or clear the filters." : "Upload images, videos, or Word documents with pictures; their media shows up here."}
           </p>
-          {all.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setKind(null); setTags([]); }}>Clear filters</Button>}
+          {all.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setKind(null); setType(null); setTags([]); }}>Clear filters</Button>}
         </div>
       ) : null}
 
@@ -113,7 +133,7 @@ function AssetCard({ asset, sourceTitle, activeTags, onTag }: { asset: Asset; so
           {title}
         </Link>
         <p className="truncate text-xs text-faint">
-          {ASSET_KIND_LABEL[asset.kind]}{asset.figure_number ? ` · Figure ${asset.figure_number}` : ""}{sourceTitle ? ` · ${sourceTitle}` : ""}
+          {asset.asset_type ? ASSET_TYPE_LABEL[asset.asset_type] : ASSET_KIND_LABEL[asset.kind]}{asset.figure_number ? ` · Figure ${asset.figure_number}` : ""}{sourceTitle ? ` · ${sourceTitle}` : ""}
         </p>
         {asset.description ? <p className="line-clamp-2 text-xs text-muted-foreground">{asset.description}</p> : <p className="text-xs text-faint italic">Not described yet</p>}
         {asset.tags.length > 0 && (
@@ -124,6 +144,53 @@ function AssetCard({ asset, sourceTitle, activeTags, onTag }: { asset: Asset; so
         )}
       </div>
     </article>
+  );
+}
+
+// A TAG FILTER with a menu (shown on hover or focus) to rename it or merge it into another tag
+function TagFilter({ tag, active, onClick, tagCounts, onRenamed }: {
+  tag: string; active: boolean; onClick: () => void; tagCounts: (readonly [string, number])[]; onRenamed: (from: string, to: string) => void;
+}) {
+  return (
+    <span className="group/tag inline-flex items-center">
+      <TagChip tag={tag} active={active} onClick={onClick} />
+      {/* Faded, not hidden, so the button stays focusable and clickable */}
+      <span className="opacity-0 transition-opacity group-hover/tag:opacity-100 group-focus-within/tag:opacity-100 has-data-[state=open]:opacity-100">
+        <DialogMenu
+          label={`Actions for the tag ${tag}`}
+          className="w-5"
+          items={[{ label: "Rename or merge…", render: (close) => <RenameTagForm tag={tag} tagCounts={tagCounts} onDone={(to) => { onRenamed(tag, to); close(); }} /> }]}
+        />
+      </span>
+    </span>
+  );
+}
+
+// RENAME OR MERGE: a new name renames the tag on every asset; an existing tag's name merges the two
+function RenameTagForm({ tag, tagCounts, onDone }: { tag: string; tagCounts: (readonly [string, number])[]; onDone: (to: string) => void }) {
+  const rename = useServerAction(renameAssetTag, { progress: { title: "Renaming the tag" } });
+  const [name, setName] = useState(tag);
+  const count = tagCounts.find(([other]) => other === tag)?.[1] ?? 0;
+  const target = normalizeTag(name);
+  const existing = target && target !== tag ? tagCounts.find(([other]) => other === target) ?? tagCounts.find(([other]) => other !== tag && tagKey(other) === tagKey(target)) : undefined;
+  const listId = `tags-for-${tagKey(tag)}`;
+  return (
+    <DialogForm
+      title={`Rename or merge "${tag}"`}
+      description={`Changes it on ${count} asset${count === 1 ? "" : "s"}. Pick a tag already in use to merge the two. The Media analyst uses the new name from now on.`}
+      submitLabel={existing ? `Merge into "${existing[0]}"` : "Rename"}
+      isPending={rename.isPending}
+      error={rename.error}
+      isDisabled={!target || target === tag}
+      onSubmit={async () => {
+        const result = await rename.run(tag, existing?.[0] ?? name);
+        if (result.ok) onDone(result.tag);
+      }}
+    >
+      <Input aria-label="New tag name" value={name} onChange={(event) => setName(event.target.value)} list={listId} autoFocus />
+      <datalist id={listId}>{tagCounts.filter(([other]) => other !== tag).map(([other]) => <option key={other} value={other} />)}</datalist>
+      {existing ? <p className="text-xs text-muted-foreground">&quot;{existing[0]}&quot; is on {existing[1]} asset{existing[1] === 1 ? "" : "s"}; the two become one tag.</p> : null}
+    </DialogForm>
   );
 }
 

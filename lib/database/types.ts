@@ -107,16 +107,25 @@ export type Database = {
           id: string; source_id: string; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number: number | null;
           passage_ids: string[]; title: string | null; description: string | null; tags: string[]; input_hash: string | null;
           described_at: string | null; model: string | null; created_at: string;
+          asset_type: "photo" | "diagram" | "chart" | "flowchart" | "map" | "screenshot" | "table" | "logo" | "drawing" | "document scan" | "recording" | "other" | null; edited_fields: ("title" | "description" | "tags" | "asset_type")[];
         }
         Insert: {
           id?: string; source_id: string; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number?: number | null;
           passage_ids?: string[]; title?: string | null; description?: string | null; tags?: string[]; input_hash?: string | null;
           described_at?: string | null; model?: string | null; created_at?: string;
+          asset_type?: "photo" | "diagram" | "chart" | "flowchart" | "map" | "screenshot" | "table" | "logo" | "drawing" | "document scan" | "recording" | "other" | null; edited_fields?: ("title" | "description" | "tags" | "asset_type")[];
         }
         Update: {
           figure_number?: number | null; passage_ids?: string[]; title?: string | null; description?: string | null; tags?: string[];
           input_hash?: string | null; described_at?: string | null; model?: string | null;
+          asset_type?: "photo" | "diagram" | "chart" | "flowchart" | "map" | "screenshot" | "table" | "logo" | "drawing" | "document scan" | "recording" | "other" | null; edited_fields?: ("title" | "description" | "tags" | "asset_type")[];
         }
+        Relationships: []
+      }
+      asset_tag_aliases: {
+        Row: { alias: string; tag: string; created_at: string }
+        Insert: { alias: string; tag: string; created_at?: string }
+        Update: { tag?: string }
         Relationships: []
       }
       external_source_reviews: {
@@ -1153,6 +1162,7 @@ export type Database = {
     Functions: {
       read_upload_workflows: { Args: { p_event_ids: string[] }; Returns: Json };
       sync_assets: { Args: Record<string, never>; Returns: number };
+      rename_asset_tag: { Args: { p_from: string; p_to: string }; Returns: number };
     }
     Enums: {
       action_outcome: "pending" | "applied" | "exception" | "rejected" | "reverted"
