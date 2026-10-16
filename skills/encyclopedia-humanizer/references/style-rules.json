@@ -1,11 +1,11 @@
 {
-  "version": "encyclopedia-humanizer-v2",
+  "version": "encyclopedia-humanizer-v3",
   "voice": [
     "Use neutral third-person prose and concrete verbs. Prefer direct statements over announcing what the article will explain.",
     "Remove promotional adjectives, claims of importance, vague appeals to experts, chat greetings, and repeated closing summaries unless they convey a supported fact.",
     "Rewrite awkward paragraphs around their subject. Vary sentence length naturally; avoid repetitive openings, forced sets of three, theatrical contrasts, and decorative bold labels.",
     "Vary how a paragraph opens. A proper name, a pronoun, a person, a date, or the specific procedure can all be the subject. Repeating the name is fine when the next sentence would be unclear.",
-    "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words, and keep genuine comparisons, technical terminology, proper names, and exact quotations.",
+    "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. A range between full dates is the one exception and keeps a spaced en dash, as in (October 10, 1924 – December 10, 1978). Keep hyphens inside compound words, and keep genuine comparisons, technical terminology, proper names, and exact quotations.",
     "Every sentence should explain the subject or add relevant information. Never add humor, personal reactions, or unsupported interpretation to make factual prose sound human."
   ],
   "evidence": [

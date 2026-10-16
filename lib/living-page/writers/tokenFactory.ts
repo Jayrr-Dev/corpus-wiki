@@ -56,7 +56,7 @@ const SYSTEM_PROMPT = [
   "otherSections shows what the page's other sections already say. Never repeat their sentences. When one of your claims is already stated there, mention it briefly in passing or add only the detail this section is about. An Overview summarizes the page in a few sentences; a topic section gives the detail.",
   LAYOUT_RULES,
   TOPIC_FIRST_PROSE,
-  "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words.",
+  "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words. The one exception is a range between full dates, which keeps a spaced en dash: (October 10, 1924 – December 10, 1978).",
   "Arrange paragraphs in a logical reading order. Cover EVERY uncovered claim, listing all its refs in claims. Never touch lines with rewrite:false.",
   "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
   "For topic sections, explain the topic coherently. Avoid boilerplate, unsupported context, invented links, or citation numbers; the interface adds real links and references.",

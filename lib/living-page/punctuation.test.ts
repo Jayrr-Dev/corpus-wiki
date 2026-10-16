@@ -27,6 +27,13 @@ describe("withoutEditorialDashes on ranges", () => {
     expect(withoutEditorialDashes("Fees are $10–$20 or 10%–20%.")).toBe("Fees are $10-$20 or 10%-20%.");
   });
 
+  it("keeps the spaced en dash of a range between dates written with month names", () => {
+    expect(withoutEditorialDashes("Edward Davis Wood Jr. (October 10, 1924 – December 10, 1978) was a filmmaker.")).toBe("Edward Davis Wood Jr. (October 10, 1924 – December 10, 1978) was a filmmaker.");
+    expect(withoutEditorialDashes("He served (10 October 1924—10 December 1978).")).toBe("He served (10 October 1924 – 10 December 1978).");
+    expect(withoutEditorialDashes("It ran from March 3 – April 9, 2020.")).toBe("It ran from March 3 – April 9, 2020.");
+    expect(withoutEditorialDashes("It ran 1924–1978 – and then stopped.")).toBe("It ran 1924-1978, and then stopped.");
+  });
+
   it("still treats a spaced or em dash between words as editorial", () => {
     expect(withoutEditorialDashes("Wear gloves – always.")).toBe("Wear gloves, always.");
     expect(withoutEditorialDashes("Gear—hats and boots—is issued.")).toBe("Gear (hats and boots) is issued.");

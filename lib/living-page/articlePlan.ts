@@ -11,7 +11,9 @@ export const articlePlanSchema = z.object({
 export type ArticlePlan = z.infer<typeof articlePlanSchema>;
 export type ArticleKnowledge = { entity: { id: string; type: string; key: string; name: string }; units: SectionUnit[] };
 
-// Only real claim refs become section queries. Every claim must be covered by a topic.
+// Only real claim refs become section queries. Every claim is stated once: the introduction states its own
+// claims, and the topic sections hold the rest, so a claim listed in both stays in the introduction alone.
+// A topic left with no claims of its own is dropped.
 export function articleSections(plan: ArticlePlan, knowledge: ArticleKnowledge): SectionDraft[] {
   const ids = (refs: string[]) => [...new Set(refs.map((ref) => {
     const match = /^C([1-9]\d*)$/.exec(ref.trim());
@@ -20,14 +22,16 @@ export function articleSections(plan: ArticlePlan, knowledge: ArticleKnowledge):
     return unit.unitId;
   }))];
   const entity = { type: knowledge.entity.type, key: knowledge.entity.key };
-  const groups = plan.sections.map((group) => ({ title: group.title.trim(), unitIds: ids(group.claims) }));
-  const covered = new Set(groups.flatMap((group) => group.unitIds));
+  const intro = ids(plan.introduction);
+  const inIntro = new Set(intro);
+  const groups = plan.sections.map((group) => ({ title: group.title.trim(), unitIds: ids(group.claims).filter((id) => !inIntro.has(id)) })).filter((group) => group.unitIds.length);
+  const covered = new Set([...intro, ...groups.flatMap((group) => group.unitIds)]);
   const missing = knowledge.units.filter((unit) => !covered.has(unit.unitId));
   if (missing.length) throw new Error(`The article outline omitted ${missing.length} claims (${missing.map((unit) => `C${knowledge.units.indexOf(unit) + 1}`).join(", ")}). Nothing was reorganized.`);
   const titles = groups.map((group) => group.title.toLowerCase());
   if (new Set(titles).size !== titles.length || titles.includes("overview")) throw new Error("The article outline repeated a section heading.");
   return [
-    { title: "Overview", query: { entity, unitIds: ids(plan.introduction), article: true } },
+    { title: "Overview", query: { entity, unitIds: intro, article: true } },
     ...groups.map((group) => ({ title: group.title, query: { entity, unitIds: group.unitIds, article: true } })),
   ];
 }
@@ -53,17 +57,12 @@ export function articleActions(plan: ArticlePlan, knowledge: ArticleKnowledge, p
 
 const REPEAT_HEADING = /^(overview|introduction|summary|background)\b/i;
 
-// A topic section that repeats the introduction: one named like it, or one made (almost) wholly of its claims.
-// A section of a single claim, or an article with only one topic section, has nowhere else to put them.
+// A topic section named like the introduction restates it. (Claims listed in both are kept in the
+// introduction alone by articleSections, so a section can no longer repeat them.)
 export function outlineProblems(plan: ArticlePlan): string[] {
-  const intro = new Set(plan.introduction.map((ref) => ref.trim()));
-  return plan.sections.flatMap((section) => {
-    if (REPEAT_HEADING.test(section.title.trim())) return [`"${section.title}" restates the introduction; the introduction is already the overview, so give its claims to the topic sections they belong to.`];
-    const refs = [...new Set(section.claims.map((ref) => ref.trim()))];
-    const repeated = refs.filter((ref) => intro.has(ref)).length;
-    if (plan.sections.length < 2 || refs.length < 2 || repeated < Math.max(2, Math.ceil(refs.length * 0.75))) return [];
-    return [`"${section.title}" repeats the introduction (${repeated} of its ${refs.length} claims are introduction claims); spread those claims over the topics they belong to and build each section around claims the introduction does not state.`];
-  });
+  return plan.sections.flatMap((section) => (REPEAT_HEADING.test(section.title.trim())
+    ? [`"${section.title}" restates the introduction; the introduction is already the overview, so give its other claims to the topic sections they belong to.`]
+    : []));
 }
 
 // The title and headings in sentence case: the first word capitalized, and a later word kept only when it is an

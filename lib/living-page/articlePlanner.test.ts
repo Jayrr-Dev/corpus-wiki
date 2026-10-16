@@ -11,9 +11,13 @@ const knowledge: ArticleKnowledge = {
     { unitId: "u2", revisionId: "r2", content: "Acme reports incidents.", kind: "procedure", epistemicStatus: "established" },
   ],
 };
-const incomplete = { title: "Safety at Acme", introduction: ["C1", "C2"], sections: [{ title: "Equipment", claims: ["C1"] }] };
-const complete = { ...incomplete, sections: [...incomplete.sections, { title: "Incident reporting", claims: ["C2"] }] };
+const incomplete = { title: "Safety at Acme", introduction: ["C1"], sections: [{ title: "Equipment", claims: ["C1"] }] };
+const complete = { ...incomplete, sections: [{ title: "Incident reporting", claims: ["C2"] }] };
 const answer = (value: typeof incomplete) => ({ value, model: "test", tokensIn: 10, tokensOut: 20 });
+const four: ArticleKnowledge = { ...knowledge, units: [...knowledge.units,
+  { unitId: "u3", revisionId: "r3", content: "Acme trains staff.", kind: "procedure", epistemicStatus: "established" },
+  { unitId: "u4", revisionId: "r4", content: "Acme audits sites.", kind: "procedure", epistemicStatus: "established" },
+] };
 beforeEach(() => vi.clearAllMocks());
 
 describe("article planning completeness", () => {
@@ -25,17 +29,18 @@ describe("article planning completeness", () => {
     expect(input.claims.map((claim: { ref: string }) => claim.ref)).toEqual(["C1", "C2"]);
   });
 
-  it("avoids repeating a short topic as both introduction and body", () => {
-    const short = { ...complete, sections: [{ title: "Safety meetings", claims: ["C1", "C2"] }] };
-    expect(topicSections(short, knowledge).map((section) => section.title)).toEqual(["Safety meetings"]);
-    expect(topicSections(complete, knowledge).map((section) => section.title)).toEqual(["Overview", "Equipment", "Incident reporting"]);
+  it("opens a one-topic article with its introduction claims instead of a separate opening", () => {
+    expect(topicSections(complete, knowledge).map((section) => [section.title, section.query.unitIds])).toEqual([["Incident reporting", ["u1", "u2"]]]);
+    const two = { ...complete, sections: [{ title: "Equipment", claims: ["C2", "C3"] }, { title: "Audits", claims: ["C4"] }] };
+    expect(topicSections(two, four).map((section) => [section.title, section.query.unitIds])).toEqual([["Overview", ["u1"]], ["Equipment", ["u2", "u3"]], ["Audits", ["u4"]]]);
   });
 
-  it("requests a correction when a claim appears only in the introduction", async () => {
+  it("requests a correction when a claim is placed nowhere", async () => {
     vi.mocked(chatJson).mockResolvedValueOnce(answer(incomplete)).mockResolvedValueOnce(answer(complete));
     await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toEqual({ plan: complete, tokensIn: 20, tokensOut: 40 });
     expect(chatJson).toHaveBeenCalledTimes(2);
     expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("C2");
+    expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("exactly once");
   });
 
   it("fails without changing stored content if the corrected outline is still incomplete", async () => {
@@ -44,24 +49,20 @@ describe("article planning completeness", () => {
     expect(chatJson).toHaveBeenCalledTimes(2);
   });
 
-  it("asks once to restructure a section that repeats the introduction, then uses the outline in sentence case", async () => {
-    const four: ArticleKnowledge = { ...knowledge, units: [...knowledge.units,
-      { unitId: "u3", revisionId: "r3", content: "Acme trains staff.", kind: "procedure", epistemicStatus: "established" },
-      { unitId: "u4", revisionId: "r4", content: "Acme audits sites.", kind: "procedure", epistemicStatus: "established" },
-    ] };
-    const repeating = { title: "Safety at Acme", introduction: ["C1", "C2"], sections: [{ title: "Key Rules", claims: ["C1", "C2"] }, { title: "Training and Audits", claims: ["C3", "C4"] }] };
-    const spread = { ...repeating, sections: [{ title: "Equipment and Training", claims: ["C1", "C3"] }, { title: "Reporting and audits", claims: ["C2", "C4"] }] };
-    vi.mocked(chatJson).mockResolvedValueOnce(answer(repeating)).mockResolvedValueOnce(answer(spread));
+  it("asks once to rename a section that restates the introduction, then uses the outline in sentence case", async () => {
+    const restating = { title: "Safety at Acme", introduction: ["C1"], sections: [{ title: "Overview of Rules", claims: ["C2"] }, { title: "Training and Audits", claims: ["C3", "C4"] }] };
+    const renamed = { ...restating, sections: [{ title: "Incident Reporting", claims: ["C2"] }, { title: "Training and audits", claims: ["C3", "C4"] }] };
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(restating)).mockResolvedValueOnce(answer(renamed));
     const { plan } = await planArticle({ apiKey: "test" }, four);
-    expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("repeats the introduction");
-    expect(plan.sections.map((section) => section.title)).toEqual(["Equipment and training", "Reporting and audits"]);
+    expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("restates the introduction");
+    expect(plan.sections.map((section) => section.title)).toEqual(["Incident reporting", "Training and audits"]);
   });
 
-  it("uses a second outline that still repeats the introduction rather than failing the page", async () => {
+  it("uses a second outline that still restates the introduction rather than failing the page", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    const repeating = { title: "Safety at Acme", introduction: ["C1"], sections: [{ title: "Overview of rules", claims: ["C1"] }, { title: "Reporting", claims: ["C2"] }] };
-    vi.mocked(chatJson).mockResolvedValue(answer(repeating));
-    await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toMatchObject({ plan: repeating });
+    const restating = { title: "Safety at Acme", introduction: ["C1"], sections: [{ title: "Overview of rules", claims: ["C2"] }] };
+    vi.mocked(chatJson).mockResolvedValue(answer(restating));
+    await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toMatchObject({ plan: restating });
     expect(chatJson).toHaveBeenCalledTimes(2);
     expect(warn).toHaveBeenCalledWith("Article outline still repeats its introduction", expect.anything());
     warn.mockRestore();

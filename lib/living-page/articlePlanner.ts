@@ -19,15 +19,15 @@ Choose the title from what the claims are ABOUT, not merely the entity name or f
 For a company's safety manual, use a title such as "Health and safety program at ExampleCo", not just "ExampleCo".
 For a broad company profile, the company name is appropriate. Never invent a broader subject than the evidence supports.
 Select 2-6 claim refs for a short opening introduction that defines the subject: what it is, how it is classified or labeled
-(keep critical labels such as "pseudoscientific" or "disputed"), its central idea or purpose, and its most notable facts.
+(keep critical labels such as "pseudoscientific" or "disputed"), its central idea or purpose, and what makes it notable.
+Prefer the facts a reader would remember the subject for (the outcome, the central events, the controversy) over dates and logistics.
 A reader of only the introduction should know what the subject is and why it matters.
-Group ALL claims into 2-8 coherent topic sections (fewer for a short article), in a useful reading order.
+Every claim goes in exactly one place: the introduction or one topic section. The introduction states its claims; never list them again in a topic section.
+Group every claim the introduction does not use into 2-8 coherent topic sections (fewer for a short article), in a useful reading order.
 The introduction is the overview: never add a topic section that restates it (such as "Overview", "Introduction", "Background" or "Overview and origins").
-Introduction claims still need a topic section: put each with the topic it adds detail to, and build each section around claims the introduction does not state.
 Use meaningful subject headings such as "Responsibilities", "Protective equipment" and "Incident reporting" when supported.
 Write the title and headings in sentence case: capitalize only the first word and proper names ("Public appearances", not "Public Appearances").
 Do not use storage categories like Facts, Decisions, Definitions, or Preferences as headings.
-Each claim must appear in at least one topic section. Refs may also appear in the introduction.
 Use only C1, C2, ... from the supplied claims. Return a concise title, introduction refs, and sections with titles and refs.
 Do not write prose or citations here; the section writer will write only from the claims assigned to each section.
 A claim with stepOf is a step or item of the claim that ref names: put it in the same section as that claim, never in another.
@@ -83,12 +83,12 @@ export async function planArticle(settings: TokenFactorySettings, knowledge: Art
       problems = outlineProblems(answer.value);
     } catch (error) {
       if (attempt >= 1) throw error;
-      messages.push({ role: "user", content: `Your previous outline was ${JSON.stringify(answer.value)}. Validation failed: ${error instanceof Error ? error.message : String(error)}. Return the complete corrected outline, covering every supplied claim in the topic sections. Claims listed only in the introduction must ALSO be assigned to a topic section.` });
+      messages.push({ role: "user", content: `Your previous outline was ${JSON.stringify(answer.value)}. Validation failed: ${error instanceof Error ? error.message : String(error)}. Return the complete corrected outline, placing every supplied claim exactly once, in the introduction or in one topic section.` });
       continue;
     }
     // A section that repeats the introduction gets one correction; a second outline with it is still used
     if (problems.length && attempt < 1) {
-      messages.push({ role: "user", content: `Your previous outline was ${JSON.stringify(answer.value)}. It needs restructuring: ${problems.join(" ")} Return the complete corrected outline, still covering every supplied claim in the topic sections.` });
+      messages.push({ role: "user", content: `Your previous outline was ${JSON.stringify(answer.value)}. It needs restructuring: ${problems.join(" ")} Return the complete corrected outline, still placing every supplied claim exactly once, in the introduction or in one topic section.` });
       continue;
     }
     if (problems.length) console.warn("Article outline still repeats its introduction", { entity: knowledge.entity.name, problems });
@@ -96,10 +96,12 @@ export async function planArticle(settings: TokenFactorySettings, knowledge: Art
   }
 }
 
-// A small topic needs no opening that merely repeats its sole body section.
+// A small topic needs no separate opening: with one body section, the introduction's claims open that section.
 export function topicSections(plan: Parameters<typeof articleSections>[0], knowledge: ArticleKnowledge) {
   const sections = articleSections(plan, knowledge);
-  return sections.length === 2 ? sections.slice(1) : sections;
+  if (sections.length !== 2) return sections;
+  const [intro, body] = sections as [typeof sections[number], typeof sections[number]];
+  return [{ ...body, query: { ...body.query, unitIds: [...(intro.query.unitIds ?? []), ...(body.query.unitIds ?? [])] } }];
 }
 
 // Refreshes existing entity pages after uploads, and runs the explicit Improve article command. Handwritten sections are kept.
@@ -149,7 +151,7 @@ export function createArticlePlanner(settings: TokenFactorySettings, client: Adm
     }
     return { actions, ...usage };
   };
-  planner.promptVersion = skillTrace("article-outline-v3",["plan_articles"],settings.skills);
+  planner.promptVersion = skillTrace("article-outline-v4",["plan_articles"],settings.skills);
   planner.model = settings.model;
   return planner;
 }
