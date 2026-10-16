@@ -47,6 +47,8 @@ export type FilePreviewProps = {
   downloadHref?: string;
   // Header with the title, kind and Open/Download buttons
   header?: boolean;
+  // Extra header buttons (PreviewHeaderButton), placed before Open and Download
+  headerActions?: ReactNode;
   // false hides scrollbars (and the PDF viewer's own)
   scrollbar?: boolean;
   // PDF only: first page shown (1-based), fit, and the viewer's toolbar
@@ -78,6 +80,7 @@ export function FilePreview({
   kind: kindOverride,
   downloadHref,
   header = true,
+  headerActions,
   scrollbar = true,
   page,
   fit = "width",
@@ -93,7 +96,7 @@ export function FilePreview({
   const style = { "--preview-height": typeof height === "number" ? `${height}px` : height } as CSSProperties;
   return (
     <figure className={cn("flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card", className)}>
-      {header ? <PreviewHeader title={title} kind={kind} src={src} downloadHref={downloadHref ?? src} /> : null}
+      {header ? <PreviewHeader title={title} kind={kind} src={src} downloadHref={downloadHref ?? src} actions={headerActions} /> : null}
       <div
         className={cn("relative min-h-0 bg-muted/40", kind !== "audio" && "h-(--preview-height)", scrollbar ? "overflow-auto" : "overflow-hidden no-scrollbar")}
         style={style}
@@ -104,8 +107,8 @@ export function FilePreview({
   );
 }
 
-// HEADER: kind icon, title and kind, then Open in a new tab and Download
-function PreviewHeader({ title, kind, src, downloadHref }: { title: string; kind: PreviewKind; src: string; downloadHref: string }) {
+// HEADER: kind icon, title and kind, then the caller's actions, Open in a new tab and Download
+function PreviewHeader({ title, kind, src, downloadHref, actions }: { title: string; kind: PreviewKind; src: string; downloadHref: string; actions?: ReactNode }) {
   const Icon = KIND_ICON[kind];
   return (
     <figcaption className="flex min-w-0 items-center gap-2 border-b px-3 py-2">
@@ -113,6 +116,7 @@ function PreviewHeader({ title, kind, src, downloadHref }: { title: string; kind
       <span className="truncate font-medium">{title}</span>
       <span className="shrink-0 text-xs text-faint">{PREVIEW_KIND_LABEL[kind]}</span>
       <span className="ml-auto flex shrink-0 items-center gap-0.5">
+        {actions}
         <HeaderLink href={src} label="Open in a new tab" isNewTab><ExternalLinkIcon className="size-4" /></HeaderLink>
         <HeaderLink href={downloadHref} label="Download" isDownload><DownloadIcon className="size-4" /></HeaderLink>
       </span>
@@ -129,10 +133,23 @@ function HeaderLink({ href, label, isNewTab, isDownload, children }: { href: str
         target={isNewTab ? "_blank" : undefined}
         rel={isNewTab ? "noreferrer" : undefined}
         download={isDownload ? "" : undefined}
-        className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-hover hover:text-foreground"
+        className={HEADER_BUTTON_CLASS}
       >
         {children}
       </a>
+    </Tooltip>
+  );
+}
+
+const HEADER_BUTTON_CLASS = "inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-hover hover:text-foreground";
+
+// A header icon button for `headerActions`, styled like Open and Download
+export function PreviewHeaderButton({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+  return (
+    <Tooltip content={label}>
+      <button type="button" aria-label={label} onClick={onClick} className={HEADER_BUTTON_CLASS}>
+        {children}
+      </button>
     </Tooltip>
   );
 }
