@@ -1,7 +1,7 @@
 import "server-only";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { cosine } from "@/lib/knowledge/similarity";
-import { savedVectors, similarUnits } from "@/lib/knowledge/embeddingStore";
+import { savedVectors, similarPassages, similarUnits } from "@/lib/knowledge/embeddingStore";
 import type { Embedder } from "@/lib/ai/embeddings";
 import type { DbRpc } from "@/lib/db/rpc";
 import { searchFilter } from "./validation";
@@ -97,6 +97,14 @@ export async function retrieve(question: string, db: DbRpc, embedder: Embedder, 
       const eligibleIds = new Set(eligible.map(r => r.id));
       await addArticles((lines.data ?? []).filter(line => !line.is_stale && (!contextEntity || line.unit_revision_ids?.every(id => eligibleIds.has(id)))));
     }
+  }
+  // Source text by meaning, for what no claim covers; scoped answers stay with verified claims (see above)
+  if (queryVector && !contextEntity) {
+    try {
+      const passages = await similarPassages(db, embedder.model, queryVector, 8, 0.45);
+      await addSources(passages.map((passage) => ({ source_id: passage.sourceId, text: passage.text })));
+    }
+    catch { warning = warning ?? "Source passage matches are temporarily unavailable; other saved evidence is still included."; }
   }
   const lineFilter = searchFilter(["content"], question);
   if (lineFilter && !contextEntity) {

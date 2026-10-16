@@ -14,7 +14,7 @@ import type { AiCallLogger } from "@/lib/ai/callLog";
 import { dedupeAfterEvent } from "@/lib/ingest/dedupe";
 import { duplicateGuardFor } from "@/lib/ingest/duplicateGuardServer";
 import { embedderFromEnv } from "@/lib/ai/embeddings";
-import { embedMissingUnits } from "@/lib/knowledge/embeddingStore";
+import { embedMissingPassages, embedMissingUnits } from "@/lib/knowledge/embeddingStore";
 import type { ImageDescriber } from "@/lib/ingest/describeMedia";
 import { imageDescriberFrom } from "@/lib/ingest/describeMediaServer";
 import type { VideoReader } from "@/lib/ingest/describeVideo";
@@ -57,7 +57,11 @@ export async function getServerDeps(): Promise<ServerDeps> {
       await generateGlossary(admin, settings);
       if (embedder) await embedMissingGlossary(db, embedder);
     } : undefined,
-    claimEmbedder: embedder ? async () => void (await embedMissingUnits(db, embedder)) : undefined,
+    // New claims first (duplicate checks wait on them), then any source passages not yet embedded
+    claimEmbedder: embedder ? async () => {
+      await embedMissingUnits(db, embedder);
+      await embedMissingPassages(db, embedder);
+    } : undefined,
     deduper: settings ? (eventId) => dedupeAfterEvent({ db, client: admin, settings, embedder }, eventId) : undefined,
     topicPlacer: settings ? topicPlacerFor(db, settings) : undefined,
     duplicateGuard: settings ? duplicateGuardFor(db, settings, embedder) : undefined,

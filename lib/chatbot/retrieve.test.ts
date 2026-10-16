@@ -3,9 +3,9 @@ import type { KnowledgeContext } from "@/lib/knowledge/context";
 import type { DbRpc } from "@/lib/db/rpc";
 import { retrieve } from "./retrieve";
 
-const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn(), similarGlossary: vi.fn(), savedVectors: vi.fn(), scopeIds: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn(), similarGlossary: vi.fn(), similarPassages: vi.fn(async (): Promise<unknown[]> => []), savedVectors: vi.fn(), scopeIds: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ getServerSupabase: mocks.getServerSupabase }));
-vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: mocks.similarUnits, savedVectors: mocks.savedVectors }));
+vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: mocks.similarUnits, savedVectors: mocks.savedVectors, similarPassages: mocks.similarPassages }));
 vi.mock("@/lib/glossary/embeddingStore", () => ({ similarGlossary: mocks.similarGlossary }));
 
 const entity = { id: "e-utilitek", type: "company", key: "utilitek", name: "Utilitek" };
@@ -25,14 +25,14 @@ const revisions = [
 
 type Row = Record<string, unknown>;
 type Query = { table: string; columns: string; filters: { op: string; key: string; value: unknown }[] };
-function mockClient(rows = revisions) {
+function mockClient(rows = revisions, extraSources: Row[] = []) {
   const queries: Query[] = [];
   const tableRows: Record<string, Row[]> = {
     entities: [entity],
     units: rows.map(row => ({ id: row.unit_id, current_revision_id: row.id, retired_at: null })),
     revisions: rows,
     passages: rows.map(row => ({ id: row.passage_ids[0], source_id: `source-${row.unit_id}`, text: `Source evidence for ${row.unit_id}` })),
-    sources: rows.map(row => ({ id: `source-${row.unit_id}`, title: `Source ${row.unit_id}`, archived_at: null, replaced_by_id: null })),
+    sources: [...rows.map(row => ({ id: `source-${row.unit_id}`, title: `Source ${row.unit_id}`, archived_at: null, replaced_by_id: null })), ...extraSources],
     section_lines: [
       { page_id: "own", content: "Eligible article", unit_revision_ids: ["r-utilitek"], is_stale: false },
       { page_id: "mixed", content: "Mixed company policies", unit_revision_ids: ["r-utilitek", "r-other"], is_stale: false },
@@ -120,6 +120,18 @@ describe("retrieve scoped knowledge", () => {
     expect(result.references.some(reference => reference.kind === "Source")).toBe(true);
     expect(queries.some(query => query.table === "passages" && query.filters.some(filter => filter.op === "or"))).toBe(true);
     expect(queries.some(query => query.table === "section_lines" && query.filters.some(filter => filter.op === "or"))).toBe(true);
+  });
+
+  it("finds source text by meaning when no claim matches, but never for a scoped question", async () => {
+    mockClient([], [{ id: "source-x", title: "Source x", archived_at: null, replaced_by_id: null }]);
+    mocks.similarUnits.mockResolvedValue([]);
+    mocks.similarPassages.mockResolvedValueOnce([{ passageId: "p-x", sourceId: "source-x", text: "Lockout steps", similarity: 0.7 }]);
+    const result = await retrieve("lockout", db, embedder);
+    expect(result.references.find(reference => reference.href === "/sources/source-x")?.text).toBe("Lockout steps");
+
+    mockClient();
+    await retrieve("orientation", db, embedder, entity.id);
+    expect(mocks.similarPassages).toHaveBeenCalledTimes(1);
   });
 
   it("retrieves glossary meanings through current source claims, excluding other companies and stale revisions", async () => {

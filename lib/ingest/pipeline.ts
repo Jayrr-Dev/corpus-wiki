@@ -25,7 +25,8 @@ import { uploadExecution, workflowStep } from "./workflowContext";
 
 // duplicateGuard: turns repeats of stored claims into revisions before a web page's draft is
 // submitted (lib/ingest/duplicateGuard.ts); uploads save first and leave repeats to `deduper`,
-// which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote
+// which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote,
+// and of source passages not yet embedded
 export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)

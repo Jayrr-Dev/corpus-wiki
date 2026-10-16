@@ -42,3 +42,37 @@ export async function savedVectors(db: DbRpc, model: string, revisionIds: readon
   const rows = await db.call<{ revision_id: string; embedding: string }[]>("unit_vectors", { p_model: model, p_revision_ids: revisionIds });
   return new Map(rows.map((row) => [row.revision_id, JSON.parse(row.embedding) as number[]]));
 }
+
+// =====================================================================
+// SOURCE PASSAGE VECTORS (public.passage_embeddings): the text of live
+// sources, so the chatbot finds what a source says by meaning even where
+// no claim was drawn from it. Kept apart from claim vectors.
+// =====================================================================
+
+// A LIVE SOURCE'S PASSAGE NEAR A VECTOR
+export type SimilarPassage = { passageId: string; sourceId: string; text: string; similarity: number };
+
+type MissingPassageRow = { passage_id: string; text: string };
+type SimilarPassageRow = { passage_id: string; source_id: string; text: string; similarity: number };
+
+// Embeds every passage of a live source that has no vector yet; returns how many were saved
+export async function embedMissingPassages(db: DbRpc, embedder: Embedder, pageSize = 128): Promise<number> {
+  let saved = 0;
+  for (;;) {
+    const missing = await db.call<MissingPassageRow[]>("missing_passage_embeddings", { p_model: embedder.model, p_limit: pageSize });
+    if (!missing.length) return saved;
+    const vectors = await embedder.embed(missing.map((row) => row.text));
+    const count = await db.call<number>("save_passage_embeddings", {
+      p_rows: missing.map((row, index) => ({ passageId: row.passage_id, model: embedder.model, embedding: vectors[index] })),
+    });
+    saved += count;
+    // A passage deleted mid-batch is skipped; stop rather than ask for the same rows again
+    if (!count || missing.length < pageSize) return saved;
+  }
+}
+
+// The live sources' passages most like a vector, most alike first
+export async function similarPassages(db: DbRpc, model: string, vector: readonly number[], limit: number, minSimilarity: number): Promise<SimilarPassage[]> {
+  const rows = await db.call<SimilarPassageRow[]>("similar_passages", { p_embedding: vectorText(vector), p_model: model, p_limit: limit, p_min: minSimilarity });
+  return rows.map((row) => ({ passageId: row.passage_id, sourceId: row.source_id, text: row.text, similarity: row.similarity }));
+}
