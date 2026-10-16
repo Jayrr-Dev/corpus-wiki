@@ -1,5 +1,5 @@
 import type { Force } from "d3-force";
-import { nodeRadius, type SimNode } from "./physics";
+import { nodeRadius, type SimLink, type SimNode } from "./physics";
 import type { GraphNode } from "./types";
 
 // =====================================================================
@@ -39,8 +39,8 @@ export interface ClusterCircle {
 const LEAF_PAD = 10;
 const BRANCH_PAD = 26;
 // SPOT LAYOUT: rough size per dot, and the smallest ring child spots sit on
-const RING_PER_DOT = 14;
-const RING_MIN = 60;
+const RING_PER_DOT = 18;
+const RING_MIN = 80;
 
 // Segments of a node's primary domain path (empty when it has none)
 function primarySegments(node: Pick<GraphNode, "domainPaths">): string[] {
@@ -96,12 +96,23 @@ function centroid(nodes: readonly SimNode[]): { x: number; y: number } {
 // Rough ring size for a group of `count` dots, used to space spots before the layout settles
 const groupSize = (count: number) => RING_PER_DOT * Math.sqrt(count) + BRANCH_PAD;
 
+function orbitRadius(sizes: readonly number[], inner: number): number {
+  if (sizes.length === 1 && inner === 0) return 0;
+  const largest = Math.max(0, ...sizes);
+  const separation = sizes.length > 1
+    ? Math.max(...sizes.map((size, i) => size + sizes[(i + 1) % sizes.length]! + 16)) / (2 * Math.sin(Math.PI / sizes.length))
+    : 0;
+  return Math.max(RING_MIN, inner + largest + 16, separation);
+}
+
 // SPOTS: groups evenly round a ring about `center`, the ring long enough that neighbors do not overlap.
 // A lone group sits on the center itself; `inner` keeps the ring clear of dots held at the center.
 function spotsAround(center: { x: number; y: number }, groups: readonly ClusterGroup[], inner: number): Map<ClusterGroup, { x: number; y: number }> {
   if (groups.length === 1 && inner === 0) return new Map([[groups[0]!, center]]);
+  // Estimate from dot count; recursively reserving entire descendant rings
+  // compounds empty space at every level and makes fitted dots too small.
   const sizes = groups.map((group) => groupSize(group.size));
-  const ring = Math.max(RING_MIN, inner + Math.max(0, ...sizes), sizes.reduce((sum, size) => sum + size * 2, 0) / (Math.PI * 2));
+  const ring = orbitRadius(sizes, inner);
   return new Map(groups.map((group, i) => {
     const angle = (i / groups.length) * Math.PI * 2 - Math.PI / 2;
     return [group, { x: center.x + Math.cos(angle) * ring, y: center.y + Math.sin(angle) * ring }];
@@ -156,6 +167,65 @@ export function clusterCircles(nodes: readonly SimNode[], nodeSize: number): Clu
     return { circle, all: [circle, ...inner.flatMap((child) => child.all)], dots };
   };
   return clusterTree(nodes).flatMap((group, index) => build(group, index).all);
+}
+
+// Move whole root groups apart using their actual drawn bounds. Moving every
+// member equally preserves the compact arrangement inside each root.
+export function separateRootDomains(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = []): void {
+  const roots = clusterCircles(nodes, nodeSize).filter((circle) => circle.depth === 0);
+  const groups = roots.map((circle) => ({
+    circle,
+    nodes: nodes.filter((node) => primarySegments(node)[0] === circle.key),
+  }));
+  const rootByNode = new Map(nodes.map((node) => [node.id, primarySegments(node)[0]]));
+  const connectionWeight = new Map<string, number>();
+  const pairKey = (a: string, b: string) => JSON.stringify([a, b].sort());
+  for (const link of links) {
+    const a = rootByNode.get(typeof link.source === "object" ? link.source.id! : String(link.source));
+    const b = rootByNode.get(typeof link.target === "object" ? link.target.id! : String(link.target));
+    if (!a || !b || a === b) continue;
+    const key = pairKey(a, b);
+    connectionWeight.set(key, (connectionWeight.get(key) ?? 0) + (link.kind === "similar" ? 0.25 : 1));
+  }
+  const move = (group: typeof groups[number], dx: number, dy: number) => {
+    group.circle.x += dx;
+    group.circle.y += dy;
+    for (const node of group.nodes) {
+      node.x = (node.x ?? 0) + dx;
+      node.y = (node.y ?? 0) + dy;
+    }
+  };
+  for (let pass = 0; pass < 4; pass++) {
+    for (let i = 0; i < groups.length; i++) for (let j = i + 1; j < groups.length; j++) {
+      const a = groups[i]!, b = groups[j]!;
+      const dx = b.circle.x - a.circle.x, dy = b.circle.y - a.circle.y;
+      const distance = Math.hypot(dx, dy);
+      // Many cross-domain connections relax the boundary; similarity links
+      // count less than explicit relationships. Internal link forces can
+      // still stretch each group toward its neighbors.
+      const weight = connectionWeight.get(pairKey(a.circle.key, b.circle.key)) ?? 0;
+      const affinity = Math.min(1, weight / Math.max(1, Math.min(a.nodes.length, b.nodes.length)));
+      const gap = 32 * (1 - affinity);
+      const sharedSpace = Math.min(a.circle.r, b.circle.r) * 0.35 * affinity;
+      const overlap = a.circle.r + b.circle.r + gap - sharedSpace - distance;
+      if (overlap <= 0) continue;
+      const pinnedA = a.nodes.some((node) => node.fx != null || node.fy != null);
+      const pinnedB = b.nodes.some((node) => node.fx != null || node.fy != null);
+      if (pinnedA && pinnedB) continue;
+      const ux = distance > 0 ? dx / distance : 1;
+      const uy = distance > 0 ? dy / distance : 0;
+      const shareA = pinnedA ? 0 : pinnedB ? 1 : 0.5;
+      move(a, -ux * overlap * shareA, -uy * overlap * shareA);
+      move(b, ux * overlap * (1 - shareA), uy * overlap * (1 - shareA));
+    }
+  }
+}
+
+export function forceRootSeparation(nodeSize: number, links: readonly SimLink[] = []): Force<SimNode, undefined> {
+  let nodes: SimNode[] = [];
+  const force = () => separateRootDomains(nodes, nodeSize, links);
+  force.initialize = (value: SimNode[]) => { nodes = value; };
+  return force;
 }
 
 // Edge points of every ring, so a fitted camera keeps whole circles (and the name above each) in view

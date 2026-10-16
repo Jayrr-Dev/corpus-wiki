@@ -1,8 +1,9 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { startProgress } from "@/components/toast";
+import type { ProgressHandle } from "@/components/toast/ProgressToast";
 import { type ActionResult, describeCallError } from "@/lib/server-actions/result";
 
 export type ServerActionState<A extends unknown[], R extends object> = {
@@ -10,6 +11,7 @@ export type ServerActionState<A extends unknown[], R extends object> = {
   isPending: boolean;
   error: string | null;
   reset: () => void;
+  updateProgress: (detail: string) => void;
 };
 
 // PROGRESS: a progress toast (with a loading bar) shows until the action finishes.
@@ -30,11 +32,13 @@ export function useServerAction<A extends unknown[], R extends object>(
   const queryClient = useQueryClient();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const activeProgress = useRef<ProgressHandle | null>(null);
   const run = async (...args: A): Promise<ActionResult<R>> => {
     setIsPending(true);
     setError(null);
     const shown = options.progress === undefined ? UNNAMED_PROGRESS : options.progress;
     const progress = shown ? startProgress(shown.title, shown.detail, { delayMs: shown.delayMs }) : null;
+    activeProgress.current = progress;
     const result = await callSafely(action, args);
     if (result.ok) {
       progress?.update("Refreshing the page…");
@@ -45,9 +49,10 @@ export function useServerAction<A extends unknown[], R extends object>(
       setError(result.error);
     }
     setIsPending(false);
+    activeProgress.current = null;
     return result;
   };
-  return { run, isPending, error, reset: () => setError(null) };
+  return { run, isPending, error, reset: () => setError(null), updateProgress: (detail) => activeProgress.current?.update(detail) };
 }
 
 // A network failure rejects instead of returning { ok: false }; fold it into the same shape

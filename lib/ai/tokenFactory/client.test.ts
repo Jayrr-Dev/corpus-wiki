@@ -24,6 +24,42 @@ const response = (options: RequestInit) => new Response(JSON.stringify({
 afterEach(() => vi.unstubAllGlobals());
 
 describe("batched reconciliation", () => {
+  it("does not erase invalid citations while translating batch references", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (_url: unknown, options: RequestInit) => {
+      const payload = await response(options).json();
+      const answer = JSON.parse(payload.choices[0].message.content);
+      answer.claims[0].passages.push("P999");
+      payload.choices[0].message.content = JSON.stringify(answer);
+      return new Response(JSON.stringify(payload));
+    }));
+    await expect(client().draftChangeSet(input(1))).rejects.toThrow("unknown passage");
+  });
+  it("saves a source-backed acronym definition separately from the rule that uses it", async () => {
+    const source = input(1);
+    source.passages[0]!.text = "Personal Protective Equipment (PPE) protects workers. Workers must wear PPE on site.";
+    vi.stubGlobal("fetch", vi.fn(async (_url: unknown, options: RequestInit) => {
+      const body = bodyOf(options);
+      const instructions = body.messages.map((message: { content: string }) => message.content).join("\n");
+      expect(instructions).toContain("Assigned skill for define_concepts");
+      expect(instructions).toContain("Make a separate terminology sweep");
+      const base = {
+        action: "add", unit: null, epistemicStatus: "supported", speechAct: "stated", passages: ["P1"],
+        entities: [], domainPaths: [], reason: "The source explains PPE.",
+      };
+      return new Response(JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify({
+        summary: "Defined PPE and recorded its use.", links: [], claims: [
+          { ...base, kind: "definition", title: "PPE: Personal Protective Equipment", content: "PPE stands for Personal Protective Equipment, which protects workers." },
+          { ...base, kind: "fact", title: "PPE required on site", content: "Workers must wear PPE on site." },
+        ],
+      }) } }] }));
+    }));
+    const draft = await client().draftChangeSet(source);
+    expect(draft.actions.filter((action) => action.type === "add_claim")).toMatchObject([
+      { passageIds: ["passage-0"], input: { kind: "definition", title: "PPE: Personal Protective Equipment" } },
+      { passageIds: ["passage-0"], input: { kind: "fact" } },
+    ]);
+  });
+
   it("covers every passage, preserves citations across batches and creates shared entities/domains once", async () => {
     const fetchMock = vi.fn(async (_url: unknown, options: RequestInit) => response(options));
     vi.stubGlobal("fetch", fetchMock);
@@ -33,7 +69,7 @@ describe("batched reconciliation", () => {
     expect(claims.map((action) => action.passageIds)).toEqual(input(17).passages.map((passage) => [passage.id]));
     expect(draft.actions.filter((action) => action.type === "create_entity")).toHaveLength(1);
     expect(draft.actions.filter((action) => action.type === "create_domain")).toHaveLength(1);
-    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v6" });
+    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v10" });
   });
 
   it("renumbers each batch's claim refs so links point at the right claims", async () => {

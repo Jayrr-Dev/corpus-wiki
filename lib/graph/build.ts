@@ -127,7 +127,23 @@ export function countDegrees(links: readonly GraphLink[]): Map<string, number> {
 
 // BUILD: rows -> the full graph (every layer; filters decide what shows)
 export function buildGraph(rows: GraphRows): GraphData {
-  const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)];
+  const domains = new Map(rows.domains.map((domain) => [domain.id, domain]));
+  const scopeByPath = new Map(rows.domains.map((domain) => {
+    let root = domain;
+    const visited = new Set<string>();
+    while (root.parent_id && domains.has(root.parent_id) && !visited.has(root.id)) {
+      visited.add(root.id);
+      root = domains.get(root.parent_id)!;
+    }
+    return [domain.path, root.context_entity_id === null ? "external" : "internal"] as const;
+  }));
+  const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)].map((node) => ({
+    ...node,
+    domainScopePaths: {
+      internal: node.domainPaths.filter((path) => scopeByPath.get(path) === "internal"),
+      external: node.domainPaths.filter((path) => scopeByPath.get(path) === "external"),
+    },
+  }));
   // A stored title already tells its claim apart; only derived labels are made specific
   const titledRevisions = new Set(rows.revisions.filter((revision) => revision.title?.trim()).map((revision) => revision.id));
   const titled = new Set(rows.units.filter((unit) => titledRevisions.has(unit.current_revision_id)).map((unit) => unit.id));

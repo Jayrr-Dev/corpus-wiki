@@ -45,7 +45,7 @@ export async function proposePages(db: DbRpc, eventId: string, planner?: PagePla
     actions,
     trace: { modelVersion: planner?.model ?? null, promptVersion: planner?.promptVersion ?? null, tokensIn, tokensOut },
   };
-  const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai" }, draft);
+  const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai", operationKey: "pages:propose" }, draft);
   return (await commitChangeSet(db, changeSetId)).applied;
 }
 

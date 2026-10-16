@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 // ONE MENU ENTRY: its label and the dialog body it opens (given a close callback).
 // `separatorBefore` starts a new group; destructive items are moved last (see menuOrder); `hint` adds an "i" that explains it
-export type DialogMenuItem = { label: string; hint?: string; isDestructive?: boolean; separatorBefore?: boolean; render: (close: () => void) => ReactNode };
+export type DialogMenuItem = { label: string; hint?: string; isDestructive?: boolean; separatorBefore?: boolean; disabled?: boolean; onSelect?: () => void; render?: (close: () => void) => ReactNode };
 
 type DialogMenuProps = { label: string; items: DialogMenuItem[]; className?: string };
 
@@ -33,7 +33,7 @@ export function DialogMenu({ label, items, className }: DialogMenuProps) {
           {orderMenuItems(items).map(({ item, hasSeparator }) => (
             <Fragment key={item.label}>
               {hasSeparator && <DropdownMenuSeparator />}
-              <DropdownMenuItem variant={item.isDestructive ? "destructive" : "default"} onSelect={() => setOpenItem(item)}>
+              <DropdownMenuItem variant={item.isDestructive ? "destructive" : "default"} disabled={item.disabled} onSelect={() => item.onSelect ? item.onSelect() : setOpenItem(item)}>
                 {item.label}
                 {item.hint && <ActionHint>{item.hint}</ActionHint>}
               </DropdownMenuItem>
@@ -42,7 +42,7 @@ export function DialogMenu({ label, items, className }: DialogMenuProps) {
         </DropdownMenuContent>
       </DropdownMenu>
       <Dialog open={openItem !== null} onOpenChange={(isOpen) => !isOpen && close()}>
-        <DialogContent>{openItem ? openItem.render(close) : null}</DialogContent>
+        <DialogContent>{openItem ? openItem.render?.(close) : null}</DialogContent>
       </Dialog>
     </>
   );

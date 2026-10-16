@@ -5,7 +5,7 @@ import type { Tables } from "@/lib/database/types";
 // param, so a filtered list can be linked or reloaded as it is.
 // =====================================================================
 
-export type ChangeKind = "knowledge" | "page_rewrite" | "article" | "links" | "duplicates";
+export type ChangeKind = "knowledge" | "page_rewrite" | "article" | "links" | "duplicates" | "sources" | "approvals";
 
 export type ChangeWhen = "" | "today" | "week" | "month";
 
@@ -14,6 +14,8 @@ export type ChangeFilters = { status: string; by: string; kind: string; when: Ch
 export const CHANGE_FILTER_KEYS = ["status", "by", "kind", "when"] as const;
 
 export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
+  sources: "Source archives and restores",
+  approvals: "Approver decisions",
   knowledge: "Knowledge changes",
   page_rewrite: "Page rewrites",
   article: "Article updates",
@@ -34,6 +36,8 @@ export function readChangeFilters(params: { get: (key: string) => string | null 
 
 // What a change set did, from the summary its writer gives it (lib/living-page, lib/ingest, lib/server-actions/pages)
 export function changeKind(summary: string): ChangeKind {
+  if (/^(Archived|Restored) source:/.test(summary)) return "sources";
+  if (/^(Approver |Reversed approver decision:|Reinstated approver decision:)/.test(summary)) return "approvals";
   if (/^Rewrote \d+ lines? of /.test(summary)) return "page_rewrite";
   if (summary.startsWith("Updated article")) return "article";
   if (summary.startsWith("Linked existing claims")) return "links";

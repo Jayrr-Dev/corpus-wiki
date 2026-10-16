@@ -7,6 +7,8 @@ import { useActorLabel } from "@/app/(app)/_lib/useActorLabel";
 import { DiffView } from "@/components/diff/DiffView";
 import type { Tables } from "@/lib/database/types";
 import { useRevisions } from "@/lib/queries";
+import { parseKnowledgeContext } from "@/lib/knowledge/context";
+import { contextDescription } from "@/lib/knowledge/contextSelection";
 
 // HISTORY: every revision, newest first, each diffed against the one before it
 export function UnitHistory({ unitId }: { unitId: string }) {
@@ -31,6 +33,7 @@ type RevisionItemProps = { revision: Tables<"revisions">; previous: Tables<"revi
 // ONE REVISION: when and by whom, then the change from the previous text
 function RevisionItem({ revision, previous }: RevisionItemProps) {
   const label = useActorLabel();
+  const context = parseKnowledgeContext(revision.knowledge_context);
   return (
     <li className="flex flex-col gap-1">
       <p className="flex gap-2 font-mono text-xs text-faint">
@@ -39,6 +42,8 @@ function RevisionItem({ revision, previous }: RevisionItemProps) {
         <span>source date {formatDate(revision.source_date)}</span>
       </p>
       <DiffView before={previous?.content ?? null} after={revision.content} />
+      <p className="text-panel text-muted-foreground">{context ? contextDescription(context) : "Historical context not recorded"}</p>
+      {context && <p className="text-panel text-faint">About: {context.entities.map(entity => `${entity.key} (${entity.role})`).join(", ") || "None recorded"}</p>}
     </li>
   );
 }

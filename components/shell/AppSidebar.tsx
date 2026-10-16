@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useExceptions } from "@/lib/queries";
+import { useExceptionCounts } from "@/app/(app)/exceptions/useExceptionInbox";
 import { HelpIcon, SignOutIcon } from "@/components/icons";
 import { reopenTutorial } from "@/components/tutorial";
 import {
@@ -25,8 +25,8 @@ import { isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } 
 
 // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
 function useOpenExceptionCount(): number {
-  const { data } = useExceptions({ filters: { status: "open" } });
-  return data?.length ?? 0;
+  const { data } = useExceptionCounts();
+  return data?.open ?? 0;
 }
 
 // NAV LINK: one menu row; the tooltip only shows when the sidebar is collapsed to icons
@@ -84,7 +84,7 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavGroup items={PRIMARY_NAV} badges={{ "/exceptions": openCount }} />
+        <NavGroup items={PRIMARY_NAV} badges={{ "/decisions": openCount, "/exceptions": openCount }} />
         <NavGroup items={SECONDARY_NAV} separator />
         {/* phones have no room for the pages tree beside the page, so the drawer carries it */}
         {isMobile ? <MobileSidebarTree /> : null}

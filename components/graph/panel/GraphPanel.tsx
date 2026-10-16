@@ -7,7 +7,7 @@ import { Tooltip } from "@/components/standard/tooltip";
 import type { GraphNode, GraphSettings } from "@/lib/graph";
 import type { UpdateGraphSettings } from "../useGraphSettings";
 import { PanelSection } from "./PanelSection";
-import { DisplaySection, FiltersSection, ForcesSection, GroupsSection } from "./sections";
+import { DisplaySection, DomainsSection, FiltersSection, ForcesSection, GroupsSection } from "./sections";
 
 interface GraphPanelProps {
   settings: GraphSettings;
@@ -51,7 +51,8 @@ export function GraphPanel({ settings, nodes, update, reset, isReplaying, onAnim
         </Tooltip>
       </div>
       {actions ? <PanelSection title="Actions" defaultOpen>{actions}</PanelSection> : null}
-      <FiltersSection value={settings.filters} nodes={nodes} onChange={(next) => update("filters", next)} />
+      <FiltersSection value={settings.filters} onChange={(next) => update("filters", next)} />
+      <DomainsSection value={settings.filters} nodes={nodes} onChange={(next) => update("filters", next)} />
       <GroupsSection value={settings.groups} nodes={nodes} onChange={(next) => update("groups", next)} />
       <DisplaySection value={settings.display} onChange={(next) => update("display", next)} isReplaying={isReplaying} onAnimate={onAnimate} />
       <ForcesSection value={settings.forces} onChange={(next) => update("forces", next)} />

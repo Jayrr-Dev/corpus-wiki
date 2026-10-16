@@ -5,6 +5,7 @@ import { type Evidence, toEvidence } from "@/lib/knowledge/evidence";
 import { knowledgeLabel } from "@/lib/knowledge/label";
 import { fetchDescribableEntityIds } from "@/lib/knowledge/describableEntities";
 import { queryKeys } from "./keys";
+import { parseKnowledgeContext, type KnowledgeContext } from "@/lib/knowledge/context";
 
 // =====================================================================
 // SCREEN READ HOOKS: the reads the table hooks in ./index.ts cannot
@@ -14,7 +15,7 @@ import { queryKeys } from "./keys";
 
 // SHARED SHAPES
 // changedBy: who wrote the current revision (a person's profile id, or the AI's model)
-export type UnitSummary = Row<"units"> & { content: string; label?: string; evidence?: Evidence; changedBy?: Pick<Row<"revisions">, "author" | "author_id" | "model_version"> };
+export type UnitSummary = Row<"units"> & { content: string; context?: KnowledgeContext | null; label?: string; evidence?: Evidence; sourceOrigin?: "internal" | "external"; changedBy?: Pick<Row<"revisions">, "author" | "author_id" | "model_version"> };
 
 // TABLES THAT HAVE A UUID `id` AND ARE READ BY ID LISTS HERE
 type ByIdTable = "units" | "revisions" | "line_revisions" | "passages" | "sources" | "entities" | "domains" | "actions" | "change_sets";
@@ -51,13 +52,23 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
   const units = (data ?? []) as Row<"units">[];
   if (!units.length) return [];
   const revisions = await fetchByIds(client, "revisions", units.map((unit) => unit.current_revision_id));
-  const [links, memberships, subjects, topics, evidence] = await Promise.all([
+  const [links, memberships, subjects, topics, evidence, sourceLinks, sources] = await Promise.all([
     client.from("unit_entities").select("unit_id, entity_id, role").in("unit_id", units.map((unit)=>unit.id)),
     client.from("unit_domains").select("unit_id, domain_id").in("unit_id", units.map((unit)=>unit.id)),
     client.from("entities").select("id, name, type").is("merged_into_id", null),
     client.from("domains").select("id, name, path"),
     ids ? client.from("unit_evidence").select("unit_id, evidence").in("unit_id", ids) : client.from("unit_evidence").select("unit_id, evidence"),
+    client.from("source_units").select("unit_id, source_id").in("unit_id", units.map((unit) => unit.id)),
+    client.from("sources").select("id, origin"),
   ]);
+  for (const result of [sourceLinks, sources]) if (result.error) throw result.error;
+  const externalSources = new Set((sources.data ?? []).filter((source) => source.origin === "external").map((source) => source.id));
+  const externalUnits = new Set<string>();
+  const internalUnits = new Set<string>();
+  for (const link of sourceLinks.data ?? []) {
+    if (!link.unit_id || !link.source_id) continue;
+    (externalSources.has(link.source_id) ? externalUnits : internalUnits).add(link.unit_id);
+  }
   for (const result of [links,memberships,subjects,topics,evidence]) if (result.error) throw result.error;
   const evidenceById = new Map((evidence.data ?? []).map((row) => [row.unit_id, toEvidence(row.evidence)]));
   const subjectById = new Map((subjects.data ?? []).filter((entity)=>!["company","organization","person","project","team","product"].includes(entity.type)).map((entity)=>[entity.id, entity.name]));
@@ -69,7 +80,7 @@ async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null)
   const contentById = new Map(revisions.map((revision) => [revision.id, revision.content]));
   const titleById = new Map(revisions.map((revision) => [revision.id, revision.title?.trim() || null]));
   const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
-  return units.map((unit) => ({ ...unit, content: contentById.get(unit.current_revision_id) ?? "", label: titleById.get(unit.current_revision_id) ?? knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)), evidence: evidenceById.get(unit.id), changedBy: revisionById.get(unit.current_revision_id) }));
+  return units.map<UnitSummary>((unit) => ({ ...unit, context: parseKnowledgeContext(revisionById.get(unit.current_revision_id)?.knowledge_context), sourceOrigin: externalUnits.has(unit.id) && !internalUnits.has(unit.id) ? "external" : "internal", content: contentById.get(unit.current_revision_id) ?? "", label: titleById.get(unit.current_revision_id) ?? knowledgeLabel(contentById.get(unit.current_revision_id) ?? "", hints(unit.id)), evidence: evidenceById.get(unit.id), changedBy: revisionById.get(unit.current_revision_id) }));
 }
 
 // UNITS WITH CONTENT: every unit when `ids` is omitted, else just those

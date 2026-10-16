@@ -7,7 +7,7 @@ import { sha256 } from "./hash";
 import { splitIntoPassages } from "./passages";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { reconcileExternalUpload, reconcileUpload, recordUpload } from "./pipeline";
-import { openRerunEvent, requireFailedUpload } from "./rerun";
+import { openRerunEvent } from "./rerun";
 import { markSourceReplaced } from "./sourceLifecycle";
 import { createDirectUploadUrl, readDirectUpload, removeDirectUpload, storeSourceFile } from "./storage";
 import type { CaptureResult, ProcessUploadResult, StartUploadResult } from "./types";
@@ -92,7 +92,13 @@ function extensionOf(fileName: string, format: UploadFormat): string {
 
 // EXTERNAL STEP 1: a web page is stored as a markdown file and marked external with its URL.
 // The same page read before (same text) is not stored twice: its existing source comes back as skipped.
-export async function startExternalSource(input: { title: string; url: string; text: string; sourceDate: string }): Promise<StartUploadResult> {
+export async function startExternalSource(input: { title: string; url: string; text: string; sourceDate: string; reviewId: string }): Promise<StartUploadResult> {
+  const client = getAdminSupabase();
+  const { data: approval, error: approvalError } = await client.from("external_source_reviews").select("stage,outcome,url,source_title,excerpts,reverted_at").eq("id", input.reviewId).single();
+  if (approvalError) throw new Error(approvalError.message);
+  if (approval.reverted_at || approval.stage !== "source" || approval.outcome !== "approved" || approval.url !== input.url || approval.source_title !== input.title || approval.excerpts.join("\n\n") !== input.text) {
+    throw new Error("External source evidence must match an independent approval before it can be stored.");
+  }
   const bytes = new TextEncoder().encode(`# ${input.title}\n\nSource: ${input.url}\n\n${input.text}`);
   const hash = sha256(bytes);
   const passages = splitIntoPassages(await CONVERTERS.markdown(bytes));
@@ -100,14 +106,29 @@ export async function startExternalSource(input: { title: string; url: string; t
   const storagePath = await storeSourceFile(`${hash}.md`, bytes, "text/markdown");
   const { db } = await getServerDeps();
   const started = await recordUpload(db, { title: input.title, mimeType: "text/markdown", sourceDate: `${input.sourceDate}T00:00:00Z`, hash, storagePath, passages, byteSize: bytes.byteLength, pageCount: null });
-  const { error } = await getAdminSupabase().from("sources").update({ origin: "external", url: input.url }).eq("id", started.sourceId);
+  const { error: reviewError } = await client.from("external_source_reviews").update({ source_id: started.sourceId }).eq("id", input.reviewId);
+  if (reviewError) throw new Error(reviewError.message);
+  const { error } = await client.from("sources").update({ origin: "external", url: input.url }).eq("id", started.sourceId);
   if (error) throw new Error(error.message);
   return started;
 }
 
 // EXTERNAL STEP 2: reconciliation that only adds claims (see reconcileExternalUpload)
-export async function processExternalEvent(eventId: string) {
-  return reconcileExternalUpload(await getServerDeps(), eventId);
+export async function processExternalEvent(eventId: string, scope: { article: string; section: string; note: string }, reviewId: string) {
+  const client = getAdminSupabase();
+  const { data: approval, error: approvalError } = await client.from("external_source_reviews").select("outcome,stage,source_id,context,reverted_at").eq("id", reviewId).single();
+  if (approvalError) throw new Error(approvalError.message);
+  const { data: event, error: eventError } = await client.from("shift_events").select("source_id").eq("id", eventId).single();
+  if (eventError) throw new Error(eventError.message);
+  const context = approval.context as { article?: string; section?: string };
+  if (approval.reverted_at || approval.outcome !== "approved" || approval.stage !== "source" || !approval.source_id || approval.source_id !== event.source_id || context.article !== scope.article || context.section !== scope.section) {
+    throw new Error("This external source has not been independently approved for this article and section.");
+  }
+  const { data: domains, error } = await getAdminSupabase().from("domains").select("path,context_entity_id").is("retired_at", null);
+  if (error) throw new Error(error.message);
+  const organizationPaths = (domains ?? []).filter((domain) => domain.context_entity_id).map((domain) => domain.path);
+  const referenceDomainPaths = (domains ?? []).filter((domain) => !domain.context_entity_id && !organizationPaths.some((path) => domain.path === path || domain.path.startsWith(`${path}/`))).map((domain) => domain.path);
+  return reconcileExternalUpload(await getServerDeps(), eventId, { ...scope, referenceDomainPaths });
 }
 
 // The file's format, or a clear message naming the formats that work
@@ -119,12 +140,28 @@ function requireFormat(fileName: string, browserType: string): UploadFormat {
 
 // STEP 2: reconciliation with Nemotron, the commit and the page rebuild
 export async function processUploadEvent(eventId: string): Promise<ProcessUploadResult> {
+  // Old external pages may contain broad, unfiltered text. Never rerun them as
+  // uploads without their original article scope; refresh from that article instead.
+  const client = getAdminSupabase();
+  const { data: event, error: eventError } = await client.from("shift_events").select("source_id").eq("id", eventId).single();
+  if (eventError) throw new Error(eventError.message);
+  if (event.source_id) {
+    const { data: source, error } = await client.from("sources").select("origin").eq("id", event.source_id).single();
+    if (error) throw new Error(error.message);
+    if (source.origin === "external") {
+      const error = "Refresh external knowledge from its article section using Update or Force Create, so the search stays in scope.";
+      const { db } = await getServerDeps();
+      await db.call("set_event_status", { p_event_id: eventId, p_status: "failed", p_error: error });
+      return { status: "failed", changeSetId: null, error };
+    }
+  }
   return reconcileUpload(await getServerDeps(), eventId);
 }
 
 // RETRY: step 2 again for a failed upload, with the model chosen now
 export async function retryUploadEvent(eventId: string): Promise<ProcessUploadResult> {
-  await requireFailedUpload(eventId);
+  // The workflow claim validates source eligibility and serializes concurrent resumes.
+  // An applied knowledge event may still have unfinished page or review work.
   return processUploadEvent(eventId);
 }
 

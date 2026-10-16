@@ -8,15 +8,17 @@ import type { UnitSummary } from "@/lib/queries/screens";
 
 export type UnitState = "current" | "retired" | "all";
 
-export type UnitFilters = { kind: string; status: string; evidence: string; domain: string; entity: string; state: UnitState };
+export type UnitFilters = { kind: string; status: string; evidence: string; domain: string; entity: string; state: UnitState; origin?: string; applicability?: string };
 
-export const FILTER_KEYS = ["kind", "status", "evidence", "domain", "entity", "state"] as const;
+export const FILTER_KEYS = ["kind", "status", "evidence", "domain", "entity", "state", "origin", "applicability"] as const;
 
 // Reads the filters from search params ("" = any; state defaults to current)
 export function readUnitFilters(params: { get: (key: string) => string | null }): UnitFilters {
   const state = params.get("state");
   return {
     kind: params.get("kind") ?? "",
+    applicability: params.get("applicability") ?? "",
+    origin: params.get("origin") === "external" ? "external" : "internal",
     status: params.get("status") ?? "",
     evidence: params.get("evidence") ?? "",
     domain: params.get("domain") ?? "",
@@ -52,6 +54,8 @@ export function filterUnits(units: readonly UnitSummary[], filters: UnitFilters,
   return units.filter(
     (unit) =>
       matchesState(unit, filters.state) &&
+      (!filters.applicability || (unit.context?.applicability.status ?? "unspecified") === filters.applicability) &&
+      (unit.sourceOrigin ?? "internal") === (filters.origin ?? "internal") &&
       (!filters.kind || unit.kind === filters.kind) &&
       (!filters.status || unit.epistemic_status === filters.status) &&
       (!filters.evidence || unit.evidence === filters.evidence) &&

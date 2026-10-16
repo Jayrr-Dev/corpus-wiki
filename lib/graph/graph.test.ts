@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, shortLabel } from "./build";
-import { labelOpacity, pinchStep, REVEAL_AT, revealOpacity, toWorld, zoomAt, zoomBy } from "./camera";
-import { clusterCircles, clusterTree } from "./clusters";
-import type { SimNode } from "./physics";
+import { hierarchyOpacity, labelOpacity, pinchStep, REVEAL_AT, revealOpacity, toWorld, zoomAt, zoomBy } from "./camera";
+import { clusterCircles, clusterTree, separateRootDomains } from "./clusters";
+import type { SimLink, SimNode } from "./physics";
 import { applyFilters, createdBy } from "./filters";
 import { groupColorLookup, groupCounts, groupSuggestions, joinGroupQuery, parseGroupQuery, splitGroupQuery } from "./groups";
 import { neighborhood } from "./neighborhood";
@@ -58,7 +58,7 @@ const rows: GraphRows = {
 const graph = buildGraph(rows);
 const nodeById = (id: string) => graph.nodes.find((node) => node.id === id) as GraphNode;
 const ids = (data: { nodes: GraphNode[] }) => data.nodes.map((node) => node.id).sort();
-const ALL_LAYERS = { search: "", domain: "", showEntities: true, showPages: true, showOrphans: true, showRelated: false, relatedness: 0.3 };
+const ALL_LAYERS = { domainScope: "internal" as const, search: "", domain: "", showUnits: true, showEntities: true, showPages: true, showOrphans: true, showRelated: false, relatedness: 0.3 };
 
 describe("buildGraph", () => {
   it("makes a node per live unit, entity and page", () => {
@@ -93,6 +93,26 @@ describe("shortLabel", () => {
 });
 
 describe("applyFilters", () => {
+  it("hides knowledge units while retaining the other selected layers", () => {
+    expect(ids(applyFilters(graph, { ...ALL_LAYERS, showUnits: false }))).toEqual(["e1", "p1"]);
+    expect(ids(applyFilters(graph, { ...DEFAULT_GRAPH_SETTINGS.filters, showUnits: false }))).toEqual([]);
+  });
+  it("switches domain scopes using the root context and keeps connected entities", () => {
+    const scoped = buildGraph({ ...rows, domains: [
+      { id: "d1", path: "Projects/Alpha", context_entity_id: "org", parent_id: null },
+      { id: "d2", path: "Projects/Alpha/Data layer", context_entity_id: null, parent_id: "d1" },
+      { id: "ext", path: "Reference", context_entity_id: null, parent_id: null },
+    ], unitDomains: [...rows.unitDomains, { unit_id: "u3", domain_id: "ext" }] });
+    expect(ids(applyFilters(scoped, ALL_LAYERS))).toEqual(["e1", "p1", "u1", "u2"]);
+    expect(ids(applyFilters(scoped, { ...ALL_LAYERS, domainScope: "external" }))).toEqual(["u3"]);
+    expect(ids(applyFilters(scoped, { ...ALL_LAYERS, domainScope: "both" }))).toEqual(["e1", "p1", "u1", "u2", "u3"]);
+    expect(ids(applyFilters(scoped, { ...ALL_LAYERS, domainScope: "none" }))).toEqual([]);
+    for (const domainScope of ["both", "none"] as const) {
+      expect(parseSavedSettings({ ...DEFAULT_GRAPH_SETTINGS, filters: { ...ALL_LAYERS, domainScope } }).filters.domainScope).toBe(domainScope);
+    }
+    expect(parseSavedSettings({ ...DEFAULT_GRAPH_SETTINGS, filters: { ...ALL_LAYERS, domainScope: undefined } }).filters.domainScope).toBe("internal");
+  });
+
   it("shows units only by default", () => {
     expect(ids(applyFilters(graph, DEFAULT_GRAPH_SETTINGS.filters))).toEqual(["u1", "u2", "u3"]);
   });
@@ -259,6 +279,24 @@ describe("claims sharing a topic label", () => {
 
 describe("domain clusters", () => {
   const dot = (id: string, domainPaths: string[], x = 0, y = 0): SimNode => ({ ...({} as GraphNode), id, domainPaths, degree: 0, x, y });
+  it("separates root bounds without spreading their nested members", () => {
+    const nodes = [dot("a", ["A/Child"], 0, 0), dot("b", ["A/Child"], 20, 10), dot("c", ["B/Child"], 5, 0), dot("d", ["B/Child"], 25, 10)];
+    separateRootDomains(nodes, 1);
+    const [a, b] = clusterCircles(nodes, 1).filter((circle) => circle.depth === 0);
+    expect(Math.hypot(a!.x - b!.x, a!.y - b!.y)).toBeGreaterThanOrEqual(a!.r + b!.r + 31.99);
+    expect(nodes[1]!.x! - nodes[0]!.x!).toBe(20);
+    expect(nodes[1]!.y! - nodes[0]!.y!).toBe(10);
+  });
+  it("lets connected roots sit closer, with explicit links stronger than similarity", () => {
+    const distance = (kind?: SimLink["kind"]) => {
+      const nodes = [dot("a", ["A/Child"], 0, 0), dot("b", ["B/Child"], 0, 0)];
+      const links = kind ? [{ source: "a", target: "b", kind } as SimLink] : [];
+      separateRootDomains(nodes, 1, links);
+      return Math.abs(nodes[0]!.x! - nodes[1]!.x!);
+    };
+    expect(distance("similar")).toBeLessThan(distance());
+    expect(distance("supports")).toBeLessThan(distance("similar"));
+  });
 
   it("nests a group for every level of each dot's first domain path", () => {
     const tree = clusterTree([dot("a", ["Co/Safety/PPE"]), dot("b", ["Co/Safety/WHMIS"]), dot("c", ["Co/Safety"]), dot("d", [])]);
@@ -278,6 +316,19 @@ describe("domain clusters", () => {
 });
 
 describe("progressive zoom", () => {
+  it("upgrades the old default spacing without replacing custom forces", () => {
+    const forces = { center: 0.5, repel: 10, link: 1, linkDistance: 60, cluster: 0.5 };
+    expect(parseSavedSettings({ ...DEFAULT_GRAPH_SETTINGS, forces }).forces).toEqual(DEFAULT_GRAPH_SETTINGS.forces);
+    const custom = { ...forces, repel: 7 };
+    expect(parseSavedSettings({ ...DEFAULT_GRAPH_SETTINGS, forces: custom }).forces).toEqual(custom);
+  });
+  it("keeps three hierarchy levels in the overview and reveals deeper ones on zoom", () => {
+    expect([0, 1, 2, 3].map((depth) => hierarchyOpacity(depth, 1, 1))).toEqual([1, 1, 1, 0]);
+    expect(hierarchyOpacity(2, 2.4, 1)).toBeCloseTo(1);
+    expect(hierarchyOpacity(3, 2.4, 1)).toBe(1);
+    expect(hierarchyOpacity(3, 4, 1)).toBe(1);
+    expect(hierarchyOpacity(5, 1, null)).toBe(1);
+  });
   it("hides note titles at the overview and shows them once zoomed in past the reveal", () => {
     expect(revealOpacity(2, 2, REVEAL_AT.title)).toBe(0);
     expect(revealOpacity(2 * REVEAL_AT.title * 1.5, 2, REVEAL_AT.title)).toBeCloseTo(1);

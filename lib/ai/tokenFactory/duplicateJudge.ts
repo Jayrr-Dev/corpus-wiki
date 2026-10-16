@@ -1,3 +1,4 @@
+import type { KnowledgeContext } from "@/lib/knowledge/context";
 import { z } from "zod";
 import type { ChatMessage } from "@/lib/ai/chat";
 
@@ -10,8 +11,8 @@ import type { ChatMessage } from "@/lib/ai/chat";
 // =====================================================================
 
 // WHAT THE MODEL READS: new claims, each with the refs it may duplicate
-export type JudgeClaim = { ref: string; content: string; candidates: string[] };
-export type JudgeRequest = { claims: JudgeClaim[]; known: { ref: string; content: string }[] };
+export type JudgeClaim = { ref: string; content: string; context?: KnowledgeContext; candidates: string[] };
+export type JudgeRequest = { claims: JudgeClaim[]; known: { ref: string; content: string; context?: KnowledgeContext }[] };
 
 const decisionSchema = z.object({
   claim: z.string(),
@@ -32,6 +33,7 @@ Answer with JSON only: { "decisions": Decision[] }, one Decision per new claim: 
 - verdict "same": the candidate already says everything the new claim says (same subject, same facts; wording, order and detail level may differ, and the candidate may say more). match = that candidate's ref. content = null.
 - verdict "adds_detail": the same claim, but the new one adds a detail the candidate lacks, and nothing contradicts it. match = that candidate's ref. content = ONE self-contained sentence (two at most) that keeps everything the candidate says and adds the new detail. Never add anything neither says.
 - verdict "different": not the same claim. match = null, content = null. Use this when any fact differs (a number, date, frequency, scope, party, condition) or when one is only related to the other (same topic, different point).
+- Structured context is authoritative: entity identities, their roles, applicability and conditions must agree. A mention does not establish the subject. Unknown applicability is not universal. Never widen scope when adding detail.
 - Only choose a match from that claim's own candidates. When several fit, pick the closest.
 - reason: a few plain words on why, for a person to read; never mention refs like U1 or N2.`;
 

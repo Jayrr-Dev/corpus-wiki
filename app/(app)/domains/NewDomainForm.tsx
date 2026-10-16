@@ -11,12 +11,12 @@ import { Input } from "@/components/ui/input";
 import { useDomains } from "@/lib/queries";
 
 // NEW DOMAIN BUTTON (page header): a root domain or one under any parent
-export function NewDomainButton() {
-  return <NewButton label="New domain">{(close) => <NewDomainForm parentPath={null} onDone={close} />}</NewButton>;
+export function NewDomainButton({ tabId }: { tabId?: string } = {}) {
+  return <NewButton label="New domain">{(close) => <NewDomainForm parentPath={null} tabId={tabId} onDone={close} />}</NewButton>;
 }
 
 // FORM: a create_domain action through Change control; `parentPath` preselects the parent
-export function NewDomainForm({ parentPath, onDone }: { parentPath: string | null; onDone: () => void }) {
+export function NewDomainForm({ parentPath, onDone, tabId }: { parentPath: string | null; onDone: () => void; tabId?: string }) {
   const [name, setName] = useState("");
   const [parent, setParent] = useState(parentPath ?? "");
   const { data: domains = [] } = useDomains();
@@ -30,7 +30,7 @@ export function NewDomainForm({ parentPath, onDone }: { parentPath: string | nul
       isPending={edit.isPending}
       error={edit.error}
       isDisabled={!name.trim() || name.includes("/")}
-      onSubmit={() => edit.submit(buildCreateDomain(name, parent || null))}
+      onSubmit={() => edit.submit(buildCreateDomain(name, parent || null, tabId))}
     >
       <FormRow htmlFor="domain-name" label="Name">
         <Input id="domain-name" value={name} onChange={(event) => setName(event.target.value)} required />

@@ -1,4 +1,6 @@
 import "server-only";
+import { parseKnowledgeContext } from "@/lib/knowledge/context";
+import type { Json } from "@/lib/database/types";
 
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import type { Embedder } from "@/lib/ai/embeddings";
@@ -42,10 +44,10 @@ async function loadUnits(client: AdminSupabase): Promise<DedupeUnit[]> {
     if (page.data.length < 1000) break;
   }
   const revisionIds = units.data.map((unit) => unit.current_revision_id);
-  const revisions = new Map<string, { content: string; passage_ids: string[] }>();
+  const revisions = new Map<string, { content: string; passage_ids: string[]; knowledge_context: Json }>();
   // Revisions are read in chunks so the id list stays within URL limits
   for (let start = 0; start < revisionIds.length; start += 200) {
-    const chunk = await client.from("revisions").select("id, content, passage_ids").in("id", revisionIds.slice(start, start + 200));
+    const chunk = await client.from("revisions").select("id, content, passage_ids, knowledge_context").in("id", revisionIds.slice(start, start + 200));
     if (chunk.error) throw chunk.error;
     for (const revision of chunk.data) revisions.set(revision.id, revision);
   }
@@ -56,6 +58,7 @@ async function loadUnits(client: AdminSupabase): Promise<DedupeUnit[]> {
       unitId: unit.id,
       revisionId: unit.current_revision_id,
       content: revision.content,
+      context: parseKnowledgeContext(revision.knowledge_context) ?? undefined,
       kind: unit.kind,
       epistemicStatus: unit.epistemic_status,
       passageIds: revision.passage_ids ?? [],
@@ -99,7 +102,7 @@ export async function dedupeCluster(deps: Deps, unitIds: string[], mode: "review
   const actions = dedupeAnswerToActions(answer.value, units, await loadVectors(deps, units));
   const merges = actions.filter((action) => action.type === "merge_duplicates").length;
   if (merges === 0) return empty;
-  const { changeSetId } = await submitChangeSet(deps.db, { eventId: null, cause: "edit", actor: mode === "apply" ? "person" : "ai" }, {
+  const { changeSetId } = await submitChangeSet(deps.db, { eventId: null, cause: "edit", actor: mode === "apply" ? "person" : "ai", operationKey: `dedupe:${[...unitIds].sort().join(":")}` }, {
     summary: `Cleaning cycle: ${merges} duplicate group${merges === 1 ? "" : "s"} to merge`,
     actions,
     trace: { modelVersion: answer.model, promptVersion: DEDUPE_PROMPT_VERSION, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut },

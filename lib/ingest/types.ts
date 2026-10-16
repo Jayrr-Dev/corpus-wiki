@@ -7,6 +7,7 @@ export type StartUploadResult =
 
 // RESULT OF UPLOAD STEP 2: the event's final status and the ChangeSet it produced
 export type ProcessUploadResult = {
+  workflow?: import("./workflowTypes").UploadWorkflow;
   status: Enums<"event_status">;
   changeSetId: string | null;
   error: string | null;

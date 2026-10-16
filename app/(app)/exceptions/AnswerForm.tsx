@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { answerException } from "@/lib/server-actions/knowledge";
 
 type AnswerFormProps = {
+  recommendationOnly?: boolean;
   exceptionId: string;
   // Called as soon as a button is pressed, so the card collapses at once
   onDecided: (accept: boolean) => void;
@@ -18,7 +19,7 @@ type AnswerFormProps = {
 };
 
 // ANSWER FORM: an optional note, then Accept (apply the held action) or Reject (drop it), on one row
-export function AnswerForm({ exceptionId, onDecided, onFailed, error }: AnswerFormProps) {
+export function AnswerForm({ exceptionId, onDecided, onFailed, error, recommendationOnly = false }: AnswerFormProps) {
   const [note, setNote] = useState("");
   const answer = useServerAction(answerException);
   const send = async (accept: boolean) => {
@@ -40,7 +41,7 @@ export function AnswerForm({ exceptionId, onDecided, onFailed, error }: AnswerFo
           Reject
         </Button>
         <Button disabled={answer.isPending} onClick={() => void send(true)}>
-          Accept change
+          {recommendationOnly ? "Acknowledge recommendation" : "Approve change"}
         </Button>
       </div>
       <ErrorNote error={error} />

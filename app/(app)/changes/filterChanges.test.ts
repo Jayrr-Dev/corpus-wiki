@@ -25,6 +25,10 @@ describe("changeKind", () => {
     expect(changeKind("Updated article knowledge selections and introduction")).toBe("article");
     expect(changeKind("Linked existing claims (3 links proposed)")).toBe("links");
     expect(changeKind("Cleaning cycle: 2 duplicate groups to merge")).toBe("duplicates");
+    expect(changeKind("Archived source: WHMIS")).toBe("sources");
+    expect(changeKind("Restored source: WHMIS")).toBe("sources");
+    expect(changeKind("Approver rejected search: WHMIS")).toBe("approvals");
+    expect(changeKind("Reversed approver decision: WHMIS")).toBe("approvals");
     expect(changeKind("Alpha moves its database to MySQL")).toBe("knowledge");
   });
 });

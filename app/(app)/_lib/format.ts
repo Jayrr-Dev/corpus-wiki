@@ -6,8 +6,8 @@ import type { Enums, Json } from "@/lib/database/types";
 // =====================================================================
 
 // DATES: "Feb 25, 26" and "Feb 25, 26 @ 9:30 pm". A day is a calendar
-// day (UTC, as stored); a moment shows in the chosen time zone (UTC by
-// default, set in Settings), so the server and browser render the same text.
+// day (UTC, as stored); a moment shows in the chosen time zone, or the
+// device's zone via TimeZoneProvider. UTC is the server-render fallback.
 export const DEFAULT_TIME_ZONE = "UTC";
 export const TIME_ZONE_COOKIE = "time_zone";
 
@@ -115,6 +115,7 @@ export const EXCEPTION_REASON_TEXT: Record<Enums<"exception_reason">, string> = 
   deletion: "The change would retire knowledge",
   low_confidence: "The AI was not confident enough to apply this",
   domain_tree_review: "The domain tree needs a one-time review",
+  root_domain_approval: "The AI wants to create a new root domain",
   update_request: "The AI wants to change a line a person wrote",
 };
 
@@ -176,9 +177,22 @@ export function readablePassage(text: string): string {
 
 // ACTION INPUT SUMMARY: the one line a person needs to recognise an action
 export function describeActionInput(type: Enums<"action_type">, input: Json): string {
+  const review = asObject(input);
+  if (review.domainReview === true) {
+    if (review.operation === "inspect") return "Acknowledge the question; the domain structure stays unchanged.";
+    if (review.operation === "none") return "Keep the current domain structure.";
+    if (review.operation === "rename") return `Rename the domain to “${review.name}”.`;
+    if (review.operation === "merge") return "Consolidate the equivalent domains under their shared parent.";
+  }
   const object = asObject(input);
   const text = (key: string) => readString(object, key) ?? "";
   switch (type) {
+    case "review_page":
+      return text("recommendation");
+    case "source_lifecycle":
+      return `${text("operation")} source “${text("title")}”: ${text("reason")}`;
+    case "source_review":
+      return `${text("stage")} ${text("outcome")}: ${text("reason")}`;
     case "create_domain":
       return text("path");
     case "create_entity":

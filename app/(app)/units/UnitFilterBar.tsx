@@ -37,6 +37,7 @@ export function UnitFilterBar({ filters, setFilter, domains, entities, vertical 
       <OptionSelect label="Evidence" value={filters.evidence} options={EVIDENCE_OPTIONS} emptyLabel="Any evidence" onChange={(v) => setFilter("evidence", v)} />
       <DomainTreeSelect label="Domain" value={filters.domain} domains={domains} emptyLabel="Any domain" onChange={(v) => setFilter("domain", v)} className={vertical ? "max-w-none" : undefined} />
       <OptionSelect label="Entity" value={filters.entity} options={entityOptions} emptyLabel="Any entity" onChange={(v) => setFilter("entity", v)} />
+      <OptionSelect label="Applicability" value={filters.applicability ?? ""} emptyLabel="Any applicability" options={[{ value: "unspecified", label: "Unspecified" }, { value: "general", label: "General knowledge" }, { value: "scoped", label: "Scoped knowledge" }]} onChange={value => setFilter("applicability", value)} />
       <OptionSelect label="Current or retired" value={filters.state} options={STATE_OPTIONS} onChange={(v) => setFilter("state", v)} />
     </div>
   );

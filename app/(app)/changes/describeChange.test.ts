@@ -3,6 +3,10 @@ import type { ChangeContext } from "@/lib/queries/changeContexts";
 import { classifyChange, describeChange, EMPTY_CONTEXT } from "./describeChange";
 
 describe("classifyChange", () => {
+  it("identifies source lifecycle and approver history", () => {
+    expect(classifyChange(["source_lifecycle"])).toBe("source_lifecycle");
+    expect(classifyChange(["source_review"])).toBe("source_review");
+  });
   it("names a single kind of line edit, and mixed line edits as edits", () => {
     expect(classifyChange(["revise_line"])).toBe("line_rewrite");
     expect(classifyChange(["write_line", "write_line"])).toBe("line_add");

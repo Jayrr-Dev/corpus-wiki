@@ -11,6 +11,8 @@ import type { ChangeContext } from "@/lib/queries/changeContexts";
 type ActionType = Enums<"action_type">;
 
 export type ChangeType =
+  | "source_lifecycle"
+  | "source_review"
   | "line_rewrite"
   | "line_add"
   | "line_remove"
@@ -28,6 +30,8 @@ export type ChangeType =
   | "other";
 
 export const CHANGE_TYPE_LABEL: Record<ChangeType, string> = {
+  source_lifecycle: "Archive Decision",
+  source_review: "Approver decision",
   line_rewrite: "Rewrite",
   line_add: "New line",
   line_remove: "Removal",
@@ -61,6 +65,8 @@ const LINE_TYPE: Partial<Record<ActionType, ChangeType>> = { revise_line: "line_
 // THE TYPE: one family wins, in this order (a line edit that also revises its claim is a line edit)
 export function classifyChange(types: readonly ActionType[]): ChangeType {
   const set = new Set(types);
+  if (set.has("source_lifecycle")) return "source_lifecycle";
+  if (set.has("source_review")) return "source_review";
   const only = (allowed: ActionType[]) => types.length > 0 && types.every((type) => allowed.includes(type));
   if (set.has("create_page")) return "article_new";
   if (types.some((type) => ARTICLE_TYPES.includes(type))) return "article_update";

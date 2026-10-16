@@ -13,7 +13,12 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
   const next = safeNextPath(formData.get("next"));
   const supabase = await getServerSupabase();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  if (error) {
+    const connectionFailed = error.name === "AuthRetryableFetchError" || /fetch failed|failed to fetch|network|load failed/i.test(error.message);
+    return { error: connectionFailed
+      ? "Can't connect to the sign-in service right now. Please try again in a moment."
+      : error.message };
+  }
   redirect(next);
 }
 

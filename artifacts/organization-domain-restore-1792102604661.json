@@ -1,0 +1,3577 @@
+{
+  "before": {
+    "pages": [
+      {
+        "id": "226cb241-6cb0-4374-a321-9fcae322289b",
+        "slug": "training",
+        "title": "Training",
+        "domain_id": "16f5be83-4f37-425c-9fc9-891a475b7b36",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "29a445b4-9768-47df-af85-d1092795e697",
+        "slug": "injury-management",
+        "title": "Injury Management",
+        "domain_id": "097f4c66-8240-4641-a04e-cb6b29c54990",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "48db2a33-dc09-463f-80e5-76453cd8ddbb",
+        "slug": "emergency-preparedness",
+        "title": "Emergency Preparedness",
+        "domain_id": "8ac94f21-0982-4185-8257-58219077e8da",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "4d0246d8-6467-4ff9-87db-19d3ae04ba3a",
+        "slug": "discipline",
+        "title": "Discipline",
+        "domain_id": "39f5b8f2-578e-46a0-9752-050c48c8d6aa",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "slug": "health-safety",
+        "title": "Health & Safety",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "65c6abe3-803f-4dc4-bef9-ab6596093dc7",
+        "slug": "topics",
+        "title": "Topics",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": "2026-10-15T00:01:43.211777+00:00",
+        "parent_page_id": null,
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "723a6736-1830-4eb4-9959-2d1802398bc6",
+        "slug": "test-page",
+        "title": "Test Page",
+        "domain_id": null,
+        "entity_id": null,
+        "created_at": "2026-10-14T22:22:04.513054+00:00",
+        "retired_at": "2026-10-14T23:40:31.774022+00:00",
+        "parent_page_id": null,
+        "context_entity_id": null
+      },
+      {
+        "id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "slug": "utilitek-solutions-inc-2",
+        "title": "Utilitek Solutions Inc.",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": null,
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "7bd53488-d620-4554-8bbd-990a26ed445e",
+        "slug": "whmis",
+        "title": "WHMIS",
+        "domain_id": "bcf501e7-d34b-4bf7-88c6-25e1d37aabca",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "slug": "utilitek-solutions-inc",
+        "title": "Health and safety program at Utilitek Solutions Inc.",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+        "created_at": "2026-10-14T23:12:23.289235+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "959a8dd4-325c-48b0-81ed-2860ce501fae",
+        "slug": "violence-harassment",
+        "title": "Violence & Harassment",
+        "domain_id": "137aaf8a-3d77-4bed-b999-f9e30700ffda",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "9b684190-bbf6-4044-a1d0-ef3e69918346",
+        "slug": "communication",
+        "title": "Communication",
+        "domain_id": "280d3b48-7ab5-4daf-9fee-e78e09dcd7e2",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "ac0ebfef-2645-4ac3-9892-99f68ee98200",
+        "slug": "ppe",
+        "title": "PPE",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "cafbeeca-3b42-4f01-99a2-2d5394dc77ba",
+        "slug": "inspections",
+        "title": "Inspections",
+        "domain_id": "68fc7967-ef9a-43c7-b7c4-2d4a4c20e710",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "dfd90023-6af8-43eb-8c81-80981c005cbd",
+        "slug": "incident-reporting",
+        "title": "Incident Reporting",
+        "domain_id": "9be34a85-c443-45b7-84c6-5f0ee63a7330",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "eb522202-7d12-4d8c-aace-5d46ebbda984",
+        "slug": "hazard-assessment",
+        "title": "Hazard Assessment",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892",
+        "entity_id": null,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "parent_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      }
+    ],
+    "units": 168,
+    "domains": [
+      {
+        "id": "03a7c020-c205-436e-8eee-755922a3902f",
+        "name": "Quality Management",
+        "path": "Quality Management",
+        "parent_id": null,
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "04257d62-301c-4e4a-b703-9d5b0ed43302",
+        "name": "Labels & Safety Data Sheets",
+        "path": "Health & Safety/WHMIS/Labels & Safety Data Sheets",
+        "parent_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9",
+        "created_at": "2026-10-15T21:09:26.464897+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "097f4c66-8240-4641-a04e-cb6b29c54990",
+        "name": "Injury Management",
+        "path": "Health & Safety/Utilitek Solutions Inc./Injury Management",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "09b3f20c-c8ee-4d5d-877a-b84745ab0dfa",
+        "name": "Quality Control",
+        "path": "DM&E/Quality Control",
+        "parent_id": "6d833910-48b4-435a-be60-dacd8e44a67b",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "name": "Quality Control",
+        "path": "Quality Management/Quality Control",
+        "parent_id": "03a7c020-c205-436e-8eee-755922a3902f",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "0a638685-5df7-4fce-8d2a-aa0d8d9ca8c1",
+        "name": "Training",
+        "path": "Health & Safety/WHMIS/Training",
+        "parent_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9",
+        "created_at": "2026-10-15T22:10:55.893213+00:00",
+        "retired_at": null,
+        "proposed_by": "person",
+        "context_entity_id": null
+      },
+      {
+        "id": "0bc20a34-bfe0-40fb-b505-943bb7f16f1e",
+        "name": "Security",
+        "path": "Training/Providers/Government of Canada/Security",
+        "parent_id": "9ad1a8a3-8cd9-4aed-adad-b2744cc067cf",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "0fa6fda7-00d2-4cda-8295-8b9d8c9f336f",
+        "name": "Inspection Failures",
+        "path": "Quality Management/Quality Control/Inspection Failures",
+        "parent_id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "name": "Inspections",
+        "path": "Quality Management/Quality Control/Inspections",
+        "parent_id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "13188be0-f9e6-4572-8769-3d2c2168f174",
+        "name": "Quality Inspections",
+        "path": "Quality Control/Quality Inspections",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "137aaf8a-3d77-4bed-b999-f9e30700ffda",
+        "name": "Violence & Harassment",
+        "path": "Health & Safety/Utilitek Solutions Inc./Violence & Harassment",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "13988d23-67b3-46ea-b457-1792b064246d",
+        "name": "Defect Classification",
+        "path": "Quality Management/Quality Control/Defect Classification",
+        "parent_id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "1574a90e-2ad9-4501-9be0-a52906dbfef3",
+        "name": "Confidential Business Information",
+        "path": "Health & Safety/WHMIS/Confidential Business Information",
+        "parent_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9",
+        "created_at": "2026-10-15T21:09:26.464897+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "16f5be83-4f37-425c-9fc9-891a475b7b36",
+        "name": "Training",
+        "path": "Health & Safety/Utilitek Solutions Inc./Training",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "17897d2b-5a12-422f-9561-c54425c6c669",
+        "name": "Inspections",
+        "path": "Quality Control/Inspections",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "1a45c0d1-6b08-45ae-9a45-27c88e6da3bf",
+        "name": "Reporting",
+        "path": "Quality Management/Quality Control/Inspections/Reporting",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "1b738055-b716-4cfa-916b-c79e0a5ad8ee",
+        "name": "Conformity to Specifications",
+        "path": "Quality Management/Quality Control/Inspections/Reporting/Conformity to Specifications",
+        "parent_id": "1a45c0d1-6b08-45ae-9a45-27c88e6da3bf",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "2569826f-7e3f-486f-9a6c-afd58bc14a17",
+        "name": "Health & Safety",
+        "path": "Utilitek Solutions Inc./Health & Safety",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "27d619f8-e79d-466e-966b-192bcf6c84d3",
+        "name": "Providers",
+        "path": "Quality Management/Quality Control/Providers",
+        "parent_id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "created_at": "2026-10-15T22:10:55.893213+00:00",
+        "retired_at": null,
+        "proposed_by": "person",
+        "context_entity_id": null
+      },
+      {
+        "id": "280d3b48-7ab5-4daf-9fee-e78e09dcd7e2",
+        "name": "Communication",
+        "path": "Health & Safety/Utilitek Solutions Inc./Communication",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "name": "Utilitek Solutions Inc.",
+        "path": "Health & Safety/Utilitek Solutions Inc.",
+        "parent_id": "c67a10b8-38cf-4606-a954-8ee501bd8865",
+        "created_at": "2026-10-15T00:01:43.211777+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "2c5794d0-0435-44b4-9cd0-38892b5101ae",
+        "name": "Supplier Quality",
+        "path": "Quality Management/Quality Control/Providers/DM&E/Supplier Quality",
+        "parent_id": "6d833910-48b4-435a-be60-dacd8e44a67b",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "2c67e2e1-7b81-457c-b49a-cb2dfa4310aa",
+        "name": "Coverage",
+        "path": "Health & Safety/WHMIS/Coverage",
+        "parent_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9",
+        "created_at": "2026-10-15T21:09:26.464897+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "39f5b8f2-578e-46a0-9752-050c48c8d6aa",
+        "name": "Discipline",
+        "path": "Health & Safety/Utilitek Solutions Inc./Discipline",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "42060b4b-08c1-4b43-a4f8-3b76f15b55ed",
+        "name": "Compliance Documentation",
+        "path": "Quality Management/Quality Control/Safety & Regulatory Compliance/Compliance Documentation",
+        "parent_id": "c2d0726f-5900-4776-bb35-4cb03b2f9081",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "46cfb7e7-dce1-4fe7-9615-c7f1fc27c4af",
+        "name": "Sampling Methodology",
+        "path": "Quality Management/Quality Control/Inspections/Sampling Methodology",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "4979b600-0445-4cd0-8994-03e7987ff8cf",
+        "name": "Conformance Verification",
+        "path": "Quality Management/Quality Control/Providers/DM&E/Conformance Verification",
+        "parent_id": "6d833910-48b4-435a-be60-dacd8e44a67b",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "49c19373-a62c-4ab7-bca1-cb492f77b37e",
+        "name": "Course Content",
+        "path": "Health & Safety/WHMIS/Training/COR414/Course Content",
+        "parent_id": "d5b465b3-c3af-4160-9f45-baa95ceacdc2",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "4b9bec2a-3db1-4da4-b156-1f36a220ab77",
+        "name": "Roles",
+        "path": "Health & Safety/WHMIS/Roles",
+        "parent_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a",
+        "created_at": "2026-10-15T21:09:26.464897+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "4cca4101-7baa-4290-9e06-328d512dd220",
+        "name": "Fire Safety",
+        "path": "Training/Fire Safety",
+        "parent_id": "8d43f23d-6a55-496a-b2d2-aa9ace6681e1",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "4dda1c43-6d8e-4785-848e-84e0365627ef",
+        "name": "Training",
+        "path": "Training/Providers/Government of Canada/Security/Training",
+        "parent_id": "0bc20a34-bfe0-40fb-b505-943bb7f16f1e",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "5874a57f-e078-4680-8909-affb0305e777",
+        "name": "Final Inspection",
+        "path": "Quality Management/Quality Control/Inspections/Final Inspection",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "5d62e4e6-ffab-424a-806f-b33a8326d9cb",
+        "name": "Inspection Types",
+        "path": "Quality Management/Quality Control/Inspections/Inspection Types",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "6055b44d-ae34-4ff2-b702-1185d675ea26",
+        "name": "Inspection",
+        "path": "Quality Management/Inspection",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "68fc7967-ef9a-43c7-b7c4-2d4a4c20e710",
+        "name": "Inspections",
+        "path": "Health & Safety/Utilitek Solutions Inc./Inspections",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "6a306c06-6e25-4b53-af70-4093f65c7b70",
+        "name": "Incoming Inspection",
+        "path": "Quality Management/Quality Control/Providers/DM&E/Supplier Quality/Incoming Inspection",
+        "parent_id": "2c5794d0-0435-44b4-9cd0-38892b5101ae",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "6d833910-48b4-435a-be60-dacd8e44a67b",
+        "name": "DM&E",
+        "path": "Quality Management/Quality Control/Providers/DM&E",
+        "parent_id": "27d619f8-e79d-466e-966b-192bcf6c84d3",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892",
+        "name": "Hazard Assessment",
+        "path": "Health & Safety/Utilitek Solutions Inc./Hazard Assessment",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "70ab50d6-02a2-464b-aa13-fddfec521ca7",
+        "name": "In-Process Inspection",
+        "path": "Quality Management/Quality Control/Inspections/In-Process Inspection",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9",
+        "name": "WHMIS",
+        "path": "Health & Safety/WHMIS",
+        "parent_id": "c67a10b8-38cf-4606-a954-8ee501bd8865",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "82c354b1-9750-4d45-b2b5-6dcf1865f466",
+        "name": "Principles",
+        "path": "Quality Management/Principles",
+        "parent_id": "03a7c020-c205-436e-8eee-755922a3902f",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "8ac94f21-0982-4185-8257-58219077e8da",
+        "name": "Emergency Preparedness",
+        "path": "Health & Safety/Utilitek Solutions Inc./Emergency Preparedness",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "8b111b58-841d-4718-8610-bcc13d504e6c",
+        "name": "Training",
+        "path": "Health & Safety/Training",
+        "parent_id": "c67a10b8-38cf-4606-a954-8ee501bd8865",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "8d43f23d-6a55-496a-b2d2-aa9ace6681e1",
+        "name": "Training",
+        "path": "Training",
+        "parent_id": null,
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "96d12eab-5d0c-40d3-948d-63a83a62e14f",
+        "name": "Error Cost",
+        "path": "Quality Management/Error Cost",
+        "parent_id": "03a7c020-c205-436e-8eee-755922a3902f",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "9ad1a8a3-8cd9-4aed-adad-b2744cc067cf",
+        "name": "Government of Canada",
+        "path": "Training/Providers/Government of Canada",
+        "parent_id": "c3e8cb24-a7c7-40b2-a2f3-c656443ec733",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "9be34a85-c443-45b7-84c6-5f0ee63a7330",
+        "name": "Incident Reporting",
+        "path": "Health & Safety/Utilitek Solutions Inc./Incident Reporting",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "b92fb9df-91a7-4080-a22d-e919e803617e",
+        "name": "Pre-Production Inspection",
+        "path": "Quality Management/Quality Control/Inspections/Pre-Production Inspection",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "bcf501e7-d34b-4bf7-88c6-25e1d37aabca",
+        "name": "WHMIS",
+        "path": "Health & Safety/Utilitek Solutions Inc./WHMIS",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "c0998037-4355-48c2-9154-7563d8c45c6d",
+        "name": "Inspection Reporting",
+        "path": "Quality Control/Inspection Reporting",
+        "parent_id": "1a45c0d1-6b08-45ae-9a45-27c88e6da3bf",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "c1d7c84f-ac60-4c45-87e0-41267c792d49",
+        "name": "PPE",
+        "path": "Health & Safety/Utilitek Solutions Inc./PPE",
+        "parent_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f",
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9"
+      },
+      {
+        "id": "c2887b12-9b9c-486f-891e-aa9c9a54d975",
+        "name": "Energy Efficiency",
+        "path": "Training/Energy Efficiency",
+        "parent_id": "8d43f23d-6a55-496a-b2d2-aa9ace6681e1",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "c2d0726f-5900-4776-bb35-4cb03b2f9081",
+        "name": "Safety & Regulatory Compliance",
+        "path": "Quality Management/Quality Control/Safety & Regulatory Compliance",
+        "parent_id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "c3e8cb24-a7c7-40b2-a2f3-c656443ec733",
+        "name": "Providers",
+        "path": "Training/Providers",
+        "parent_id": "8d43f23d-6a55-496a-b2d2-aa9ace6681e1",
+        "created_at": "2026-10-15T22:10:55.893213+00:00",
+        "retired_at": null,
+        "proposed_by": "person",
+        "context_entity_id": null
+      },
+      {
+        "id": "c67a10b8-38cf-4606-a954-8ee501bd8865",
+        "name": "Health & Safety",
+        "path": "Health & Safety",
+        "parent_id": null,
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "caaaf818-5cb7-49b4-84bc-50fde05d6335",
+        "name": "Hazard Classification",
+        "path": "Health & Safety/WHMIS/Hazard Classification",
+        "parent_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9",
+        "created_at": "2026-10-15T21:09:26.464897+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "d07914a5-8855-4738-be96-fafc3db635d3",
+        "name": "Development",
+        "path": "Health & Safety/WHMIS/Training/COR414/Development",
+        "parent_id": "d5b465b3-c3af-4160-9f45-baa95ceacdc2",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "d5b465b3-c3af-4160-9f45-baa95ceacdc2",
+        "name": "COR414",
+        "path": "Health & Safety/WHMIS/Training/COR414",
+        "parent_id": "0a638685-5df7-4fce-8d2a-aa0d8d9ca8c1",
+        "created_at": "2026-10-15T21:02:06.98822+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "e19e93ef-3b80-4a55-af39-0f4bd1969d1a",
+        "name": "Incoming Quality Control",
+        "path": "Quality Management/Quality Control/Inspections/Incoming Quality Control",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:36:18.742525+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "ee827bc1-2aa3-4773-9b08-0827c7b8cf0f",
+        "name": "Quality Inspection",
+        "path": "Quality Control/Quality Inspection",
+        "parent_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "eef4df3f-4c9c-4576-9f04-b229213be335",
+        "name": "Topics",
+        "path": "Topics",
+        "parent_id": null,
+        "created_at": "2026-10-14T23:12:18.655412+00:00",
+        "retired_at": "2026-10-15T19:06:44.633627+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "f836bf6f-d692-42f8-b27a-c132ccf616e9",
+        "name": "Pre-production Inspection",
+        "path": "Quality Control/Quality Inspections/Pre-production Inspection",
+        "parent_id": "b92fb9df-91a7-4080-a22d-e919e803617e",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": "2026-10-15T22:10:55.893213+00:00",
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "f859cef1-3a2a-45a9-b37f-7370f5ce0d3f",
+        "name": "Acceptance Criteria",
+        "path": "Quality Management/Quality Control/Acceptance Criteria",
+        "parent_id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a",
+        "name": "Roles & Responsibilities",
+        "path": "Health & Safety/WHMIS/Roles & Responsibilities",
+        "parent_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9",
+        "created_at": "2026-10-15T21:09:26.464897+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      },
+      {
+        "id": "ffcecbda-a215-4d15-a37b-86abb744f0a8",
+        "name": "Inspection Checks",
+        "path": "Quality Management/Quality Control/Inspection Checks",
+        "parent_id": "0a4b5515-c692-47a3-8c52-1d8fa3b26a0c",
+        "created_at": "2026-10-15T21:28:12.918849+00:00",
+        "retired_at": null,
+        "proposed_by": "ai",
+        "context_entity_id": null
+      }
+    ],
+    "sections": [
+      {
+        "id": "07a1d400-93c2-4fe3-a96d-c9a0f71fdc8b",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./WHMIS"
+          ],
+          "articleAliases": [
+            "WHMIS",
+            "WHMIS Training",
+            "Safety Data Sheets",
+            "SDS"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "7bd53488-d620-4554-8bbd-990a26ed445e",
+        "built_at": "2026-10-15T21:15:30.165908+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": "2026-10-15T21:10:23.897456+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "0ed03358-30e3-41d9-9736-4723ada6bf66",
+        "body": "According to Utilitek Solutions Inc., protecting workers from injury or occupational disease is a major continuing objective. The company states that, as employer, it is ultimately responsible for worker health and safety. Supervisors at Utilitek Solutions Inc. are held accountable for the health and safety of workers under their supervision. Every worker is also responsible and accountable for their individual health and safety performance. The most recent review of the Health & Safety Program took place on April 16, 2025.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "933a9e79-c5a7-4f3c-a802-946001be463f",
+            "b628e02e-b601-40b8-96fb-9beeca401e16",
+            "b4d3dba0-6651-4fe1-8044-2233e9366ec8"
+          ]
+        },
+        "title": "Responsibilities and policy statement",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T02:38:32.43235+00:00",
+        "position": 3,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "11d24690-29ad-4960-a2dc-d4f0bcc0a61e",
+        "body": "Utilitek Solutions Inc. adopts the emergency response plan of the owner or operator when working at client locations. For its office, the fire evacuation gathering point is the northwest corner of 176 St and 106 Ave. Workplace harassment and violence are prohibited on the company's work sites. Employees receive yearly training on workplace violence and harassment. Reported harassment or violence incidents are investigated, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are retained for at least two years. Reviews of the workplace violence and harassment prevention program take place at least annually. Records of all program reviews are kept for a minimum of three years.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "cd7a4f7f-f304-4f89-a6f3-dd0e81080003",
+            "fd4379fd-a7d6-4884-b723-ccf174dc6b26",
+            "ce50a529-20dc-4a96-aa4a-19abd781845e"
+          ]
+        },
+        "title": "Emergency response and violence and harassment prevention",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T20:58:16.90563+00:00",
+        "position": 10,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "1668b8f1-0d59-4206-ad19-165efcf57be3",
+        "body": "Under Utilitek Solutions Inc.'s Discipline Policy, which defines unacceptable behavior on its jobsites and corrective measures, Class A violations (fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment) warrant immediate termination. Class B violations, such as dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination. Utilitek Solutions Inc. categorizes PPE as basic, meaning hard hats, safety glasses, safety footwear, and appropriate clothing worn at all times by all personnel, and specialized, meaning gloves, welder's goggles, respiratory protection, fall arrest equipment, and special clothing for specific jobs or hazards. Employee-owned PPE is not allowed. All employees are required to immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors report promptly to management for timely submission to the applicable worker's compensation board, and critical injuries are reported to the authorities by senior management. Injured employees are provided with a modified work program until they can return to their pre-accident job wherever possible. Before modified duty starts, the employee and employer sign an agreement covering hours of work, reporting requirements, and the nature of the position. The employee supplies medical progress reports every two weeks or as frequently as needed. Utilitek Solutions Inc. states that protection of workers from injury or occupational disease is a major continuing objective and that the company, as employer, is ultimately responsible for worker health and safety. Utilitek Solutions Inc. holds regular safety meetings every week. A daily tailgate meeting is documented at the beginning of each workday when two or more employees, subcontractor representatives, or client representatives are present at a job site, and late arrivals are briefed on the topics and sign the form. Utilitek Solutions Inc.'s Health & Safety Program was last reviewed on April 16, 2025. Supervisors are held accountable for the health and safety of workers under their supervision, and every worker is responsible and accountable for their individual health and safety performance. Utilitek Solutions Inc. employees receive WHMIS training at orientation, as a refresher at least once every three years, or upon program change, and training records are maintained. A designated Safety Representative ensures an SDS is available for all regulated chemicals, reviews SDSs for updates at least once every three years, and participates in planned workplace inspections. Employees must advise management of deteriorated labels or missing SDSs, and an up-to-date SDS log book is maintained at the shop in a clearly visible location. Hearing protection is required for employees exposed to noise of 85 dB or greater, generally whenever voices must be elevated to be heard. The company will also develop a Hearing Conservation Program for workers consistently exposed to noise over 85 dB. When working at client locations, Utilitek Solutions Inc. adopts the emergency response plan of the owner/operator; for its office, the fire evacuation gathering point is the northwest corner of 176 St and 106 Ave. All employees participate in an annual health and safety orientation, conducted by a supervisor or competent designate, along with a site-specific orientation when reporting to a new site. These orientations cover site safety standards, first aid locations, and posted legislation, and all orientation records are documented and filed in the employee file. Planned, documented workplace inspections at Utilitek Solutions Inc. identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections occur weekly on project sites and monthly at the company premises, with supervisors and the health and safety representative involved. The company prohibits workplace harassment and violence on its work sites and trains employees on workplace violence and harassment yearly. Reported harassment or violence incidents are investigated, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are retained for at least two years, and the prevention program is reviewed at least annually with review records kept for a minimum of three years.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          }
+        },
+        "title": "Facts",
+        "status": "building",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T20:58:23.815529+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:12:23.289235+00:00",
+        "retired_at": "2026-10-14T23:31:41.091303+00:00",
+        "building_since": "2026-10-15T21:15:30.441626+00:00",
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "187444ec-7c81-40af-be64-350fd93b4637",
+        "body": "Utilitek Solutions Inc. last reviewed its Health & Safety Program on April 16, 2025.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "b4d3dba0-6651-4fe1-8044-2233e9366ec8"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Program Review and Maintenance",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T02:32:41.444135+00:00",
+        "position": 9,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "1bd669a4-727f-4843-8c00-aa1d5c7ed633",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Violence & Harassment"
+          ],
+          "articleAliases": [
+            "Violence & Harassment",
+            "Workplace Violence and Harassment Prevention",
+            "Harassment and Violence Prevention Plan"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "959a8dd4-325c-48b0-81ed-2860ce501fae",
+        "built_at": "2026-10-15T14:54:26.368614+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "1e46c3fa-cd1a-4fd1-b9b2-6c872155bd59",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Injury Management"
+          ],
+          "articleAliases": [
+            "Injury Management",
+            "Return to Work / Modified Duties",
+            "modified work program"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "29a445b4-9768-47df-af85-d1092795e697",
+        "built_at": "2026-10-15T14:50:09.542418+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": "2026-10-15T14:58:07.283158+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "1edd5afe-6af3-4d31-a61d-724a5a923d84",
+        "body": "Before work begins, Utilitek Solutions Inc. requires a Job Hazard Analysis. Workers take part in breaking the job into sequential steps and identifying the hazards at each step. The hazards are reviewed with affected workers and ranked by risk, the assessment is documented, and the hazards are controlled. Hazard controls follow a set hierarchy of elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is tried first, and personal protective equipment is regarded as the last line of defense.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "88d0f6ed-d461-4030-b295-8bcde1ac9673",
+            "fba20286-eed5-4984-b98f-210ae913f8a8"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Hazard Assessment and Control",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T17:42:17.040972+00:00",
+        "position": 3,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "235290e6-2000-4a19-94c0-f6f9f35a9b5d",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "32746ebb-8d8c-4ede-b117-4786470a83d8",
+            "36f37d73-f442-47d8-a97e-c18fa2e99104",
+            "3a9acf4f-ec61-40c8-9a36-bd3b6181e167"
+          ],
+          "domainPaths": [
+            "Topics"
+          ],
+          "articleAliases": [
+            "Topics"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "65c6abe3-803f-4dc4-bef9-ab6596093dc7",
+        "built_at": "2026-10-15T02:21:05.451162+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "2821b7ab-3710-42bd-ba5e-dee9a019094e",
+        "body": "The Health & Safety Program at Utilitek Solutions Inc. was last reviewed on April 16, 2025. In it, the company states that protecting workers from injury or occupational disease is a major continuing objective and that, as employer, it is ultimately responsible for worker health and safety. Supervisors are held accountable for the health and safety of workers under their supervision, and every worker is responsible and accountable for their individual health and safety performance.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "933a9e79-c5a7-4f3c-a802-946001be463f",
+            "b4d3dba0-6651-4fe1-8044-2233e9366ec8",
+            "b628e02e-b601-40b8-96fb-9beeca401e16"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T02:38:04.805526+00:00",
+        "position": 2,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "2afbed00-1bfd-434a-8084-9b61572c7880",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "7c1909cc-a430-407a-99b6-e46b5f40ad70"
+          ]
+        },
+        "title": "Modified work program",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T14:50:14.212485+00:00",
+        "position": 9,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "2cf75d47-fe51-4c09-a17d-ece2cdeeaeef",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "121c4225-9fc2-4143-9608-89a8db1e7856",
+            "ef2ea4f9-58dc-46bd-b2e6-cb4c0264d359"
+          ]
+        },
+        "title": "Hazard identification and control",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T17:33:22.407918+00:00",
+        "position": 4,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "369b0eba-975e-45f8-99ec-47b32b78b236",
+        "body": "Utilitek Solutions Inc. requires every employee to complete an annual health and safety orientation, conducted by a supervisor or a competent designate. A site-specific orientation is also required when an employee reports to a new site, covering site safety standards, first aid locations, and posted legislation. Records of each orientation are documented and filed in the employee file. Employees receive WHMIS training at orientation and refreshers at least every three years or upon a program change; training records are maintained. A designated Safety Representative ensures SDSs are available for all regulated chemicals and reviewed for updates at least every three years, and participates in planned workplace inspections. Employees must advise management of deteriorated labels or missing SDSs, and an up-to-date SDS log book is kept at the shop in a clearly visible location. Workplace harassment and violence are prohibited on Utilitek Solutions Inc. work sites, and employees receive yearly training on workplace violence and harassment. Reported incidents are investigated, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are kept for at least two years, and the workplace violence and harassment prevention program is reviewed at least annually, with review records retained for a minimum of three years.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "d16a7c48-3966-4a77-93be-0c0ce630e0af",
+            "b69c3078-2ccc-4002-8853-0467a7a3631c",
+            "fd4379fd-a7d6-4884-b723-ccf174dc6b26"
+          ]
+        },
+        "title": "Orientation and training",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T21:15:07.583638+00:00",
+        "position": 4,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "3bb47f93-1ba1-44e2-8f51-6236373dd0b1",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "80692d47-5e9c-4d47-b9b9-5c857449b4fd"
+          ]
+        },
+        "title": "Discipline policy",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T14:51:21.842158+00:00",
+        "position": 10,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "439ec385-9810-4d66-93ff-b03ab2d7416e",
+        "body": "Employees at Utilitek Solutions Inc. receive WHMIS training at orientation, as a refresher at least once every three years, or when the program changes, and training records are maintained. A designated Safety Representative ensures that a safety data sheet is available for all regulated chemicals, reviews the sheets for updates at least once every three years, and participates in planned workplace inspections. Employees must advise management of deteriorated labels or missing safety data sheets, and an up-to-date SDS log book is kept at the shop in a clearly visible location.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./WHMIS"
+          ],
+          "articleAliases": [
+            "WHMIS",
+            "WHMIS Training",
+            "Safety Data Sheets",
+            "SDS"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "7bd53488-d620-4554-8bbd-990a26ed445e",
+        "built_at": "2026-10-15T21:14:58.577084+00:00",
+        "position": 2,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "4b47e574-948b-4ece-9017-db7c3d11b5c5",
+        "body": "Utilitek Solutions Inc. divides personal protective equipment into two categories. Basic PPE, consisting of hard hats, safety glasses, safety footwear, and appropriate clothing, is worn at all times by all personnel. Specialized PPE, which includes gloves, welder's goggles, respiratory protection, fall arrest equipment, and special clothing, is used for specific jobs or hazards. Employee-owned PPE is not allowed. Employees exposed to noise of 85 dB or greater must wear hearing protection, which generally applies whenever voices must be elevated to be heard. For workers consistently exposed to noise over 85 dB, Utilitek Solutions Inc. will develop a Hearing Conservation Program.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "36f37d73-f442-47d8-a97e-c18fa2e99104",
+            "cd1b277f-7b00-443b-8786-e394851a7146"
+          ]
+        },
+        "title": "Personal protective equipment",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T14:51:05.880547+00:00",
+        "position": 6,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "507bfcae-7d65-4535-9100-7fb11c4441eb",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Discipline"
+          ],
+          "articleAliases": [
+            "Discipline",
+            "Discipline Policy"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "4d0246d8-6467-4ff9-87db-19d3ae04ba3a",
+        "built_at": "2026-10-15T00:42:06.876717+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": "2026-10-15T00:44:01.478583+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "55367675-9d5b-45b2-a4c4-01969a91aad8",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "cd23386a-3d1a-4f59-8510-c945c19eb2f9",
+            "c1bcd2bb-9ea5-44dc-b333-472d8f7553d2"
+          ]
+        },
+        "title": "Personal protective equipment",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T14:52:56.029922+00:00",
+        "position": 7,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "5b6e2cf9-b3f1-4c69-9b9a-cdc5e984c5ad",
+        "body": "All employees must immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors report promptly to management so that submissions to the applicable worker's compensation board can be made in a timely manner. Senior management reports critical injuries to the authorities. Utilitek Solutions Inc. provides a modified work program for injured employees until they can return to their pre-accident job wherever possible. Before modified duty starts, the employee and employer sign an agreement covering hours of work, reporting requirements, and the nature of the position. The employee supplies medical progress reports every two weeks, or as frequently as needed.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "3a9acf4f-ec61-40c8-9a36-bd3b6181e167",
+            "56f96253-421e-4ede-b95c-27c1641224c8"
+          ]
+        },
+        "title": "Incident reporting and return to work",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T14:50:28.948742+00:00",
+        "position": 8,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "5c0dc5a9-d6b2-4d36-9407-f97aa474fde4",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "80692d47-5e9c-4d47-b9b9-5c857449b4fd"
+          ]
+        },
+        "title": "Class A and Class B violations",
+        "status": "current",
+        "page_id": "4d0246d8-6467-4ff9-87db-19d3ae04ba3a",
+        "built_at": "2026-10-15T14:51:17.699685+00:00",
+        "position": 3,
+        "created_at": "2026-10-15T02:36:40.172973+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "609dea93-e37c-4df4-814f-8db6910861d2",
+        "body": "Before work begins, Utilitek Solutions Inc. requires a Job Hazard Analysis. Workers take part in breaking the job into sequential steps and identifying the hazards at each one. These hazards are reviewed with affected workers and ranked by risk, the assessment is documented, and the hazards are controlled. Elimination is tried first in the hazard control hierarchy used by Utilitek Solutions Inc. The sequence continues through substitution, isolation, engineering controls, and administrative controls, with personal protective equipment last and regarded as the last line of defense.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "88d0f6ed-d461-4030-b295-8bcde1ac9673",
+            "fba20286-eed5-4984-b98f-210ae913f8a8"
+          ]
+        },
+        "title": "Hazard identification and control",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T17:42:42.372814+00:00",
+        "position": 5,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "636a9f18-b286-4323-852f-b193260f00a2",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Inspections"
+          ],
+          "articleAliases": [
+            "Inspections",
+            "Workplace Inspections",
+            "safety inspection"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "cafbeeca-3b42-4f01-99a2-2d5394dc77ba",
+        "built_at": "2026-10-15T19:18:11.311333+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": "2026-10-15T21:22:20.941+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "6ad15d53-7bd6-4788-b302-622ca30f42aa",
+        "body": "Utilitek Solutions Inc. states that protecting workers from injury or occupational disease is a major continuing objective, and that the company, as employer, is ultimately responsible for worker health and safety. Supervisors are held accountable for the health and safety of workers under their supervision, and every worker is responsible and accountable for their individual health and safety performance. The Health & Safety Program received its most recent review on April 16, 2025. All employees participate in an annual health and safety orientation, conducted by a supervisor or competent designate, and receive a site-specific orientation when reporting to a new site. Orientation covers site safety standards, first aid locations, and posted legislation, and all orientation records are documented and filed in the employee file. Before work begins, Utilitek Solutions Inc. requires a Job Hazard Analysis. Workers take part in breaking the job into sequential steps and identifying hazards at each step. The hazards are reviewed with affected workers, ranked by risk, and the assessment is documented before the hazards are controlled. Utilitek Solutions Inc. applies a hazard control hierarchy of elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is tried first, and personal protective equipment is regarded as the last line of defense. Utilitek Solutions Inc. categorizes personal protective equipment as basic or specialized. Basic items, worn at all times by all personnel, are hard hats, safety glasses, safety footwear, and appropriate clothing. Specialized items, used for specific jobs or hazards, include gloves, welder's goggles, respiratory protection, fall arrest equipment, and special clothing. Employee-owned PPE is not allowed. Employees exposed to noise of 85 dB or greater must wear hearing protection, generally whenever voices must be elevated to be heard. A Hearing Conservation Program will be developed for workers consistently exposed to noise over 85 dB. Utilitek Solutions Inc. employees receive WHMIS training at orientation, as a refresher at least once every three years, or upon program change, and training records are maintained. A designated Safety Representative ensures an SDS is available for all regulated chemicals, reviews the sheets for updates at least once every three years, and participates in planned workplace inspections. Employees must advise management of deteriorated labels or missing SDSs, and an up-to-date SDS log book is maintained at the shop in a clearly visible location. Planned, documented workplace inspections identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections take place weekly on project sites and monthly at the company premises, with supervisors and the health and safety representative involved. Utilitek Solutions Inc. holds regular safety meetings every week. At a job site where two or more employees, subcontractor representatives, or client representatives are present, a daily tailgate meeting is documented at the beginning of each workday. Late arrivals are briefed on the topics and sign the form. Accidents, incidents causing injury or property damage, and near misses must be reported immediately to the employee's supervisor. Supervisors report promptly to management for timely submission to the applicable worker's compensation board, and senior management reports critical injuries to the authorities. Injured employees are provided with a modified work program until they can return to their pre-accident job wherever possible. Before modified duty starts, the employee and employer sign an agreement covering hours of work, reporting requirements, and the nature of the position. The employee supplies medical progress reports every two weeks or as frequently as needed. Under the Discipline Policy, which defines unacceptable behavior on Utilitek Solutions Inc.'s jobsites and the corrective measures that follow, Class A violations warrant immediate termination. These include fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment. Class B violations, such as dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination. Harassment and violence are prohibited on Utilitek Solutions Inc. work sites, and employees receive training on workplace violence and harassment every year. Reported harassment or violence incidents are investigated, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are retained for at least two years. The workplace violence and harassment prevention program is reviewed at least annually, and records of these program reviews are kept for a minimum of three years. When working at client locations, Utilitek Solutions Inc. adopts the emergency response plan of the owner/operator. At the company office, the fire evacuation gathering point is the northwest corner of 176 St and 106 Ave.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc."
+          ],
+          "articleAliases": [
+            "Health & Safety"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T21:14:34.108473+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "6d74d201-e9d6-4e07-a438-382defcc0c01",
+        "body": "Utilitek Solutions Inc.'s Discipline Policy defines unacceptable behavior on the company's jobsites and the corrective measures that apply. Class A violations, which include fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment, warrant immediate termination. Class B violations, such as dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "32746ebb-8d8c-4ede-b117-4786470a83d8"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Discipline"
+          ],
+          "articleAliases": [
+            "Discipline",
+            "Discipline Policy"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "4d0246d8-6467-4ff9-87db-19d3ae04ba3a",
+        "built_at": "2026-10-15T14:51:35.446326+00:00",
+        "position": 2,
+        "created_at": "2026-10-15T00:44:01.478583+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "7020bc72-f3e1-49a5-b9ee-dcd0d7870841",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Topics"
+          ],
+          "articleAliases": [
+            "Topics"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "65c6abe3-803f-4dc4-bef9-ab6596093dc7",
+        "built_at": "2026-10-15T19:18:11.802+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "736745c4-6500-4449-b6a2-7bd9d18e0681",
+        "body": "Utilitek Solutions Inc. requires all employees to immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors report promptly to management so that submissions to the applicable worker's compensation board can be made in a timely manner, and senior management reports critical injuries to the authorities. A modified work program covers injured employees until they can return to their pre-accident job wherever possible. Before modified duty starts, the employee and the employer sign an agreement covering hours of work, reporting requirements, and the nature of the position. The employee supplies medical progress reports every two weeks, or as frequently as needed.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "3a9acf4f-ec61-40c8-9a36-bd3b6181e167",
+            "56f96253-421e-4ede-b95c-27c1641224c8"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Incident Reporting and Return to Work",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T14:50:28.534743+00:00",
+        "position": 6,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "758ca148-f28f-4206-8dca-7262c34f6145",
+        "body": "Regular safety meetings are held every week at Utilitek Solutions Inc. At a job site, the workday begins with a documented tailgate meeting whenever two or more employees, subcontractor representatives, or client representatives are present. Late arrivals are briefed on the topics covered and sign the form. Documented, planned workplace inspections are conducted to identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections take place weekly on project sites and monthly at the company premises, with supervisors and the health and safety representative involved.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "b09134b0-0a32-4a70-bffa-7f3abd1e53ed",
+            "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Safety Meetings and Workplace Inspections",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T17:33:22.685625+00:00",
+        "position": 5,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "780726b5-70fb-44c4-8d1b-f7069e42c89a",
+        "body": "Utilitek Solutions Inc.'s Health & Safety framework covers workplace conduct, protective equipment, and incident reporting. Under the company's Discipline Policy, which defines unacceptable behavior on its jobsites and corrective measures, Class A violations (fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment) warrant immediate termination. Class B violations, such as dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination. Personal protective equipment at Utilitek Solutions Inc. falls into two categories. Basic items, worn at all times by all personnel, include hard hats, safety glasses, safety footwear, and appropriate clothing. Specialized items, intended for specific jobs or hazards, include gloves, welder's goggles, respiratory protection, fall arrest equipment, and special clothing. Employee-owned PPE is not allowed. All employees must immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors report promptly to management so that submissions to the applicable worker's compensation board can be made in a timely manner, and senior management reports critical injuries to the authorities.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "32746ebb-8d8c-4ede-b117-4786470a83d8",
+            "36f37d73-f442-47d8-a97e-c18fa2e99104",
+            "3a9acf4f-ec61-40c8-9a36-bd3b6181e167"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc."
+          ],
+          "articleAliases": [
+            "Health & Safety"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T14:51:44.786952+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "7d5a5cb1-4480-4b5e-8642-f7819b67571f",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "f3bcfbac-f0a3-4412-82d6-93fa9bd08038",
+            "34fdcb3c-06ae-4ec2-936c-2bfb61b42344",
+            "40491913-4490-4995-be18-119140fd701d",
+            "938c22db-510e-4943-96f2-21696cc014d4",
+            "a88396dc-304a-4787-8184-37494f9474fb",
+            "253af7e9-cb74-40b9-b15e-66c46edbb944",
+            "0e506ad8-904a-4301-a792-67f5f085c65d",
+            "15883607-0c0c-47ad-8154-00ef42ab950f",
+            "8db14b6e-0b30-4171-bb80-c45d5e00f537",
+            "4033e742-d677-4d8c-8274-1722d951eea6",
+            "c92d93b8-642f-41b1-9080-bbd3e7643afc",
+            "d06d056b-bba7-473e-a481-1f573f61de3c",
+            "dc3bac1a-c0f0-4544-8504-8ca9bab64e6d",
+            "ece50b40-80f6-4270-8954-7e9eab544421"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./WHMIS"
+          ],
+          "articleAliases": [
+            "WHMIS",
+            "WHMIS Training",
+            "Safety Data Sheets",
+            "SDS"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "7bd53488-d620-4554-8bbd-990a26ed445e",
+        "built_at": "2026-10-15T21:14:42.086679+00:00",
+        "position": 0,
+        "created_at": "2026-10-15T21:10:23.897456+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "80f19a06-5526-42aa-9136-bed1c64a2481",
+        "body": "Utilitek Solutions Inc. requires all employees to take part in an annual health and safety orientation, conducted by a supervisor or competent designate. A site-specific orientation applies when an employee reports to a new site, covering site safety standards, first aid locations, and posted legislation. Orientation records are documented and filed in the employee file.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Training"
+          ],
+          "articleAliases": [
+            "Training",
+            "Health and Safety Orientation",
+            "site specific orientation",
+            "annual orientation"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "226cb241-6cb0-4374-a321-9fcae322289b",
+        "built_at": "2026-10-15T19:18:12.185619+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "83cbce44-b4ad-4f99-9d3e-53f707fd04a4",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "1add1cda-a668-410c-acca-4467c31914f7",
+            "422d94b0-ce7a-4fec-818c-e79bdcd0fdd1"
+          ]
+        },
+        "title": "Training and orientations",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T17:42:04.17633+00:00",
+        "position": 5,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "83d07622-6021-48d7-b92e-882889db1663",
+        "body": "When working at client locations, Utilitek Solutions Inc. adopts the emergency response plan of the owner/operator. For its own office, the fire evacuation gathering point is the northwest corner of 176 St and 106 Ave.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Emergency Preparedness"
+          ],
+          "articleAliases": [
+            "Emergency Preparedness"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "48db2a33-dc09-463f-80e5-76453cd8ddbb",
+        "built_at": "2026-10-15T02:36:33.625032+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "84a2c28e-a254-4f6b-8d83-6ab78236818c",
+        "body": "Utilitek Solutions Inc.'s Discipline Policy defines unacceptable behavior on its jobsites and the corrective measures that follow. Class A violations, which include fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment, warrant immediate termination. Class B violations, such as dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "32746ebb-8d8c-4ede-b117-4786470a83d8"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Discipline Policy",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T14:52:23.737714+00:00",
+        "position": 7,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "8c22d9c1-447e-4533-abc8-c259c9cf5a06",
+        "body": "Utilitek Solutions Inc. conducts documented, planned workplace inspections to identify and correct unsafe conditions and behavior. The inspections cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. They take place weekly on project sites and monthly at the company premises, with supervisors and the health and safety representative involved.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb",
+            "8b27a61b-abe2-4ed0-90dc-a798afcf966d",
+            "a5d06153-aeb3-49d7-8ba1-d9b211e532d8",
+            "9264351a-d68a-4a94-a3ea-2e1256c24065",
+            "87db0e4c-193b-4a10-a81c-7ca797ae331d",
+            "f624a8eb-8123-4524-9dae-eb0221fdcf10",
+            "260fb9e8-510f-4f7b-8e68-f9ce0780297c",
+            "b7936ba9-3db1-44f2-9b5b-74f020044fa3",
+            "93345ace-ab08-4956-a549-6afe816c0fb5",
+            "f2d8bea2-6c89-41b3-8e28-5dd9631c6353",
+            "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+            "27b826a2-d416-4bba-b2c0-172f2215f1e0",
+            "b4da129e-e8ea-4237-b6fa-5ba3815a2f4a",
+            "829ce03f-6649-4007-8394-ffe95b74cc7e",
+            "6018d56e-95ba-49b7-b6e4-0987917c3c12",
+            "c047af4c-2e44-4899-9159-a6b79b752e5a",
+            "b58e96c8-0ce0-40de-9595-b5b17fe97a8b",
+            "5741da65-7f8a-4b2e-be95-b06bb98531ed",
+            "5c506136-4ec9-4a80-b04a-20332da4f217",
+            "be3a5d2e-2cb5-4012-ad77-07a3fc0e849b"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Inspections"
+          ],
+          "articleAliases": [
+            "Inspections",
+            "Workplace Inspections",
+            "safety inspection"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "cafbeeca-3b42-4f01-99a2-2d5394dc77ba",
+        "built_at": "2026-10-15T21:37:52.163613+00:00",
+        "position": 1,
+        "created_at": "2026-10-15T21:37:43.741623+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "8da98144-8032-478e-a9ed-f16cba3d4f79",
+        "body": "Utilitek Solutions Inc. states that protecting workers from injury or occupational disease is a major continuing objective. The company also states that, as employer, it is ultimately responsible for worker health and safety. Supervisors are held accountable for the health and safety of the workers under their supervision. Every worker is responsible and accountable for their individual health and safety performance. All employees are required to participate in an annual health and safety orientation, conducted by a supervisor or competent designate, as well as a site-specific orientation when reporting to a new site. These orientations cover site safety standards, first aid locations, and posted legislation, and all orientation records are documented and filed in the employee file. The company's Health & Safety Program was last reviewed on April 16, 2025.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "933a9e79-c5a7-4f3c-a802-946001be463f",
+            "b4d3dba0-6651-4fe1-8044-2233e9366ec8",
+            "b628e02e-b601-40b8-96fb-9beeca401e16",
+            "d16a7c48-3966-4a77-93be-0c0ce630e0af"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T14:53:03.127744+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "8dd1a7d7-55e4-4766-a774-a572ad87939f",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Communication"
+          ],
+          "articleAliases": [
+            "Communication",
+            "Safety Meetings and Tailgate Meetings",
+            "tailgate meeting",
+            "toolbox meeting"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "9b684190-bbf6-4044-a1d0-ef3e69918346",
+        "built_at": "2026-10-15T17:45:31.213318+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": "2026-10-15T01:57:59.969315+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "8e26124e-343d-4a1f-8069-efac38d86c29",
+        "body": "Utilitek Solutions Inc. requires all employees to immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors pass these reports promptly to management so that submissions to the applicable worker's compensation board can be made in a timely manner, and senior management reports critical injuries to the authorities.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Incident Reporting"
+          ],
+          "articleAliases": [
+            "Incident Reporting",
+            "accident reporting"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "dfd90023-6af8-43eb-8c81-80981c005cbd",
+        "built_at": "2026-10-15T14:50:32.843583+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "9119ca14-eb97-4e7c-af72-06f47e4a6727",
+        "body": "All employees take part in an annual health and safety orientation, conducted by a supervisor or a competent designate, and in a site-specific orientation when they report to a new site. These orientations cover site safety standards, first aid locations, and posted legislation. All orientation records are documented and filed in the employee file. WHMIS training is provided at orientation, as a refresher at least once every three years, or upon a program change, and training records are maintained. A designated Safety Representative ensures that a safety data sheet is available for all regulated chemicals, reviews the sheets for updates at least once every three years, and participates in planned workplace inspections. Employees must advise management of deteriorated labels or missing safety data sheets, and an up-to-date SDS log book is maintained at the shop in a clearly visible location. The company prohibits workplace harassment and violence on its work sites and trains employees on workplace violence and harassment yearly. Reported harassment or violence incidents are investigated, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are retained for at least two years. The workplace violence and harassment prevention program is reviewed at least annually, with review records kept for a minimum of three years.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "d16a7c48-3966-4a77-93be-0c0ce630e0af",
+            "b69c3078-2ccc-4002-8853-0467a7a3631c",
+            "fd4379fd-a7d6-4884-b723-ccf174dc6b26"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Orientation and Training",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T21:14:38.575798+00:00",
+        "position": 2,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "95e14fd3-d709-4a45-a070-211099f98bfa",
+        "body": "Emergency preparedness arrangements at Utilitek Solutions Inc. depend on the work location. When personnel work at client locations, the company adopts the emergency response plan of the owner/operator. At its own office, the fire evacuation gathering point is the northwest corner of 176 St and 106 Ave.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "cd7a4f7f-f304-4f89-a6f3-dd0e81080003"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Emergency Preparedness"
+          ],
+          "articleAliases": [
+            "Emergency Preparedness"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "48db2a33-dc09-463f-80e5-76453cd8ddbb",
+        "built_at": "2026-10-15T02:36:22.550456+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "98089520-203d-4875-a25e-c48cea374ca3",
+        "body": "Utilitek Solutions Inc. provides a modified work program for injured employees until they can return to their pre-accident job wherever possible. Before modified duty starts, the employee and employer sign an agreement covering hours of work, reporting requirements, and the nature of the position, and the employee supplies medical progress reports every two weeks or as frequently as needed.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "56f96253-421e-4ede-b95c-27c1641224c8"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Injury Management"
+          ],
+          "articleAliases": [
+            "Injury Management",
+            "Return to Work / Modified Duties",
+            "modified work program"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "29a445b4-9768-47df-af85-d1092795e697",
+        "built_at": "2026-10-15T14:58:18.215392+00:00",
+        "position": 2,
+        "created_at": "2026-10-15T14:58:07.283158+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "99bdd1a6-60a8-405d-96ed-df8650222441",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Incident Reporting"
+          ],
+          "articleAliases": [
+            "Incident Reporting",
+            "accident reporting"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "dfd90023-6af8-43eb-8c81-80981c005cbd",
+        "built_at": "2026-10-15T14:50:32.439538+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "a5a4a505-8d79-4cba-9467-5b4fec67acfd",
+        "body": "According to Utilitek Solutions Inc., protecting workers from injury or occupational disease is a major continuing objective. The company states that, as employer, it is ultimately responsible for worker health and safety. The company's supervisors are held accountable for the health and safety of the workers under their supervision. Every worker is responsible and accountable for their individual health and safety performance.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "933a9e79-c5a7-4f3c-a802-946001be463f",
+            "b628e02e-b601-40b8-96fb-9beeca401e16"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Responsibilities and Accountability",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T02:30:27.830599+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "a781cf83-9b5f-46de-98dc-c9f929f275c1",
+        "body": "Before work begins, Utilitek Solutions Inc. requires a completed Job Hazard Analysis. Workers take part in breaking the job into sequential steps and identifying the hazards at each step. The findings are reviewed with affected workers, ranked by risk, documented, and used to control the hazards. Utilitek Solutions Inc. uses a hierarchy of hazard controls that runs from elimination and substitution through isolation and engineering controls to administrative controls and personal protective equipment. Elimination is tried first, and personal protective equipment is regarded as the last line of defense.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Hazard Assessment"
+          ],
+          "articleAliases": [
+            "Hazard Assessment",
+            "Job Hazard Analysis",
+            "JHA",
+            "hazard assessment",
+            "Hazard Control Hierarchy",
+            "hierarchy of controls"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "eb522202-7d12-4d8c-aace-5d46ebbda984",
+        "built_at": "2026-10-15T17:42:51.53059+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "b2b9e797-3b89-4c3b-914f-ffceee123a31",
+        "body": "Utilitek Solutions Inc. holds safety meetings every week. A tailgate meeting is also documented at the beginning of each workday when two or more employees, subcontractor representatives, or client representatives are present at a job site. Late arrivals are briefed on the topics and sign the form. Workplace inspections are documented and planned, and they serve to identify and correct unsafe conditions and behavior. The inspections cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. They occur weekly on project sites and monthly at the company premises, with supervisors and the health and safety representative involved.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb",
+            "b09134b0-0a32-4a70-bffa-7f3abd1e53ed"
+          ]
+        },
+        "title": "Inspections and safety meetings",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T17:33:23.045478+00:00",
+        "position": 7,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "bb31d680-8da8-4289-8614-ded51e4fa3da",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "67ae9808-8a37-4a98-bfa3-e1b66c92dda2"
+          ]
+        },
+        "title": "Safety meetings",
+        "status": "current",
+        "page_id": "9b684190-bbf6-4044-a1d0-ef3e69918346",
+        "built_at": "2026-10-15T17:42:46.221935+00:00",
+        "position": 3,
+        "created_at": "2026-10-15T02:42:11.827528+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "c3aea69a-b543-4557-9731-bbf06951dda1",
+        "body": "Utilitek Solutions Inc.'s Discipline Policy defines unacceptable behavior on its jobsites and the corrective measures that follow. Under the policy, Class A violations, which include fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment, warrant immediate termination. Class B violations, such as dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Discipline"
+          ],
+          "articleAliases": [
+            "Discipline",
+            "Discipline Policy"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "4d0246d8-6467-4ff9-87db-19d3ae04ba3a",
+        "built_at": "2026-10-15T14:51:28.758544+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "c7c22039-25e2-4b1c-a8d7-6c098decc870",
+        "body": "Utilitek Solutions Inc. holds regular safety meetings every week. A tailgate meeting is documented at the beginning of each workday when two or more employees, subcontractor representatives, or client representatives are present at a job site, and late arrivals are briefed on the topics and sign the form.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Communication"
+          ],
+          "articleAliases": [
+            "Communication",
+            "Safety Meetings and Tailgate Meetings",
+            "tailgate meeting",
+            "toolbox meeting"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "9b684190-bbf6-4044-a1d0-ef3e69918346",
+        "built_at": "2026-10-15T14:53:45.583988+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "ca35afe1-e777-4d8c-974c-9373a0799ece",
+        "body": "Utilitek Solutions Inc. prohibits workplace harassment and violence on its work sites. Employees receive training on workplace violence and harassment once a year. The company investigates reported harassment or violence incidents, with review commencing within 24 hours of a report being reviewed and investigations completed within 90 days. Investigation reports are retained for at least two years. The workplace violence and harassment prevention program is reviewed at least annually. Records of these reviews are kept for a minimum of three years.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Violence & Harassment"
+          ],
+          "articleAliases": [
+            "Violence & Harassment",
+            "Workplace Violence and Harassment Prevention",
+            "Harassment and Violence Prevention Plan"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "959a8dd4-325c-48b0-81ed-2860ce501fae",
+        "built_at": "2026-10-15T20:58:20.406907+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "cccd8ab2-af03-4e24-aa36-4329236414d8",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./PPE"
+          ],
+          "articleAliases": [
+            "PPE",
+            "Personal Protective Equipment",
+            "Hearing Protection",
+            "Hearing Conservation Program"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "ac0ebfef-2645-4ac3-9892-99f68ee98200",
+        "built_at": "2026-10-15T14:54:01.28348+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "cd9aaff6-b2e0-44c0-ac73-03404ac8e88e",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "cd2ee2e3-6707-4ff1-8e63-f3abd6727f2e"
+          ]
+        },
+        "title": "Incident reporting",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T14:50:28.147069+00:00",
+        "position": 8,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "db3d274e-b7e5-45b7-907e-63fa6d0da696",
+        "body": "Utilitek Solutions Inc. prohibits workplace harassment and violence on its work sites and trains employees on workplace violence and harassment every year. Reported harassment or violence incidents are investigated, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are retained for at least two years. The workplace violence and harassment prevention program is reviewed at least annually, and records of these reviews are kept for a minimum of three years.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "ce50a529-20dc-4a96-aa4a-19abd781845e",
+            "fd4379fd-a7d6-4884-b723-ccf174dc6b26"
+          ]
+        },
+        "title": "Harassment and violence prevention",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T20:58:15.29474+00:00",
+        "position": 2,
+        "created_at": "2026-10-15T19:46:15.509696+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "db409bd3-cdff-4064-8528-1e9772f362ff",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "01cd37a0-bbe5-43a5-afa5-d3634675c5e6"
+          ]
+        },
+        "title": "Harassment and violence prevention",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T16:01:40.98307+00:00",
+        "position": 3,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": "2026-10-15T19:46:15.509696+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "e1217b87-8da9-48f3-b7e3-db8c94b49e32",
+        "body": "Regular safety meetings take place every week at Utilitek Solutions Inc. A daily tailgate meeting is documented at the beginning of each workday when two or more employees, subcontractor representatives, or client representatives are present at a job site. Late arrivals are briefed on the topics and sign the form.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "b09134b0-0a32-4a70-bffa-7f3abd1e53ed"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Communication"
+          ],
+          "articleAliases": [
+            "Communication",
+            "Safety Meetings and Tailgate Meetings",
+            "tailgate meeting",
+            "toolbox meeting"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "9b684190-bbf6-4044-a1d0-ef3e69918346",
+        "built_at": "2026-10-15T14:53:56.698135+00:00",
+        "position": 2,
+        "created_at": "2026-10-15T01:57:59.969315+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "e1f4faec-3191-4e98-abff-7d29b98f8455",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Hazard Assessment"
+          ],
+          "articleAliases": [
+            "Hazard Assessment",
+            "Job Hazard Analysis",
+            "JHA",
+            "hazard assessment",
+            "Hazard Control Hierarchy",
+            "hierarchy of controls"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "eb522202-7d12-4d8c-aace-5d46ebbda984",
+        "built_at": "2026-10-15T20:52:45.319741+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "e2eac608-f841-4736-9ee7-3013822e1bc3",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "52baf20a-7d5c-43cb-9b35-0add2329e1d3",
+            "67ae9808-8a37-4a98-bfa3-e1b66c92dda2"
+          ]
+        },
+        "title": "Inspections and safety meetings",
+        "status": "current",
+        "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+        "built_at": "2026-10-15T19:08:35.901713+00:00",
+        "position": 6,
+        "created_at": "2026-10-15T02:32:49.644793+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "e47ac136-2955-4e88-9d8b-c4ce7f4af49d",
+        "body": "Utilitek Solutions Inc. conducts documented, planned workplace inspections to identify and correct unsafe conditions and behavior. The inspections cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. They occur weekly on project sites and monthly at the company premises, with supervisors and the health and safety representative involved.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb"
+          ],
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Inspections"
+          ],
+          "articleAliases": [
+            "Inspections",
+            "Workplace Inspections",
+            "safety inspection"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "cafbeeca-3b42-4f01-99a2-2d5394dc77ba",
+        "built_at": "2026-10-15T21:22:30.196687+00:00",
+        "position": 3,
+        "created_at": "2026-10-15T21:22:20.941+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "e665e13e-8ec6-4b0e-8155-696903caa8a6",
+        "body": "",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "definition"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Training"
+          ],
+          "articleAliases": [
+            "Training",
+            "Health and Safety Orientation",
+            "site specific orientation",
+            "annual orientation"
+          ]
+        },
+        "title": "Overview",
+        "status": "current",
+        "page_id": "226cb241-6cb0-4374-a321-9fcae322289b",
+        "built_at": "2026-10-15T14:52:06.899457+00:00",
+        "position": 0,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "ebaf8d9d-1682-4439-bbfd-bf7cddc13be7",
+        "body": "Documented, planned workplace inspections at Utilitek Solutions Inc. identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections take place weekly on project sites and monthly at the company premises, with supervisors and the health and safety representative taking part.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Inspections"
+          ],
+          "articleAliases": [
+            "Inspections",
+            "Workplace Inspections",
+            "safety inspection"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "cafbeeca-3b42-4f01-99a2-2d5394dc77ba",
+        "built_at": "2026-10-15T21:22:26.661462+00:00",
+        "position": 2,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": "2026-10-15T21:37:43.741623+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "ee7b39f4-111b-48ef-8278-eb52dfde6917",
+        "body": "When working at client locations, Utilitek Solutions Inc. adopts the emergency response plan of the owner or operator. The fire evacuation gathering point for its office is the northwest corner of 176 St and 106 Ave. Workplace harassment and violence are prohibited on the company's work sites. Employees receive yearly training on workplace violence and harassment. The company investigates reported harassment or violence incidents, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are retained for at least two years. The workplace violence and harassment prevention program is reviewed at least annually. Records of these program reviews are kept for a minimum of three years.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "cd7a4f7f-f304-4f89-a6f3-dd0e81080003",
+            "ce50a529-20dc-4a96-aa4a-19abd781845e",
+            "fd4379fd-a7d6-4884-b723-ccf174dc6b26"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Emergency Response and Violence and Harassment Prevention",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T20:58:16.163762+00:00",
+        "position": 8,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "f0c8b280-b33f-447d-8991-1e2a4afc2cf2",
+        "body": "Before work begins, Utilitek Solutions Inc. requires a Job Hazard Analysis. Workers take part in breaking the job into sequential steps and identifying the hazards at each one. These hazards are reviewed with affected workers, ranked by risk, and documented before they are controlled. Hazard controls follow a hierarchy of elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is tried first, and personal protective equipment is regarded as the last line of defense.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "procedure"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          }
+        },
+        "title": "How it works",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T17:45:22.173303+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:12:23.289235+00:00",
+        "retired_at": "2026-10-14T23:31:41.091303+00:00",
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "f1286e87-1fef-4041-9041-928c07835a06",
+        "body": "Utilitek Solutions Inc. divides personal protective equipment into two categories, basic and specialized. Basic PPE, consisting of hard hats, safety glasses, safety footwear, and appropriate clothing, is worn at all times by all personnel. Specialized PPE, such as gloves, welder's goggles, respiratory protection, fall arrest equipment, and special clothing, is used for specific jobs or hazards. Employee-owned PPE is not allowed. Hearing protection is required for employees exposed to noise of 85 dB or greater, generally whenever voices must be elevated to be heard. For workers consistently exposed to noise over 85 dB, Utilitek Solutions Inc. will develop a Hearing Conservation Program.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./PPE"
+          ],
+          "articleAliases": [
+            "PPE",
+            "Personal Protective Equipment",
+            "Hearing Protection",
+            "Hearing Conservation Program"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "ac0ebfef-2645-4ac3-9892-99f68ee98200",
+        "built_at": "2026-10-15T14:51:12.405147+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "f1fac3ee-f5e0-4252-bbcd-b9f7d3cb1e98",
+        "body": "Utilitek Solutions Inc. groups personal protective equipment into two categories. Basic equipment, made up of hard hats, safety glasses, safety footwear, and appropriate clothing, is worn at all times by all personnel, while specialized equipment, including gloves, welder's goggles, respiratory protection, fall arrest equipment, and special clothing, is reserved for specific jobs or hazards. Employee-owned PPE is not allowed. Hearing protection is required for employees exposed to noise of 85 dB or greater, generally whenever voices must be elevated to be heard. For workers consistently exposed to noise over 85 dB, the company will develop a Hearing Conservation Program.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "36f37d73-f442-47d8-a97e-c18fa2e99104",
+            "cd1b277f-7b00-443b-8786-e394851a7146"
+          ],
+          "articleAliases": [
+            "Utilitek Solutions Inc."
+          ]
+        },
+        "title": "Personal Protective Equipment",
+        "status": "current",
+        "page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+        "built_at": "2026-10-15T14:51:01.607013+00:00",
+        "position": 4,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "f72c0461-eb48-42c2-9bb3-d4dfc0a890f7",
+        "body": "The Discipline Policy at Utilitek Solutions Inc. defines unacceptable behavior on its jobsites and the corrective measures that apply. Class A violations, which include fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment, warrant immediate termination. Class B violations, such as dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination.",
+        "mode": "generated",
+        "query": {
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "unitIds": [
+            "32746ebb-8d8c-4ede-b117-4786470a83d8"
+          ]
+        },
+        "title": "Discipline",
+        "status": "current",
+        "page_id": "81583545-a471-49db-8c18-a6f2a27eec62",
+        "built_at": "2026-10-15T14:53:36.903789+00:00",
+        "position": 9,
+        "created_at": "2026-10-14T23:31:41.091303+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      },
+      {
+        "id": "fa6bc871-e701-46d3-9f73-c45e40e08620",
+        "body": "A modified work program at Utilitek Solutions Inc. covers injured employees until they can return to their pre-accident job wherever possible. Before modified duty begins, the employee and the employer sign an agreement covering hours of work, reporting requirements, and the nature of the position. The employee supplies medical progress reports every two weeks, or as frequently as needed.",
+        "mode": "generated",
+        "query": {
+          "kinds": [
+            "fact",
+            "procedure",
+            "decision",
+            "preference"
+          ],
+          "entity": {
+            "key": "utilitek-solutions-inc",
+            "type": "company"
+          },
+          "article": true,
+          "domainPaths": [
+            "Health & Safety/Utilitek Solutions Inc./Injury Management"
+          ],
+          "articleAliases": [
+            "Injury Management",
+            "Return to Work / Modified Duties",
+            "modified work program"
+          ]
+        },
+        "title": "Context and requirements",
+        "status": "current",
+        "page_id": "29a445b4-9768-47df-af85-d1092795e697",
+        "built_at": "2026-10-15T14:58:12.602824+00:00",
+        "position": 1,
+        "created_at": "2026-10-14T23:47:37.114296+00:00",
+        "retired_at": null,
+        "building_since": null,
+        "rebuild_event_id": null,
+        "rebuild_requested": false,
+        "built_with_model_version": "zai-org/GLM-5.3-Flash"
+      }
+    ],
+    "revisions": 185,
+    "unitDomains": [
+      {
+        "unit_id": "01634d7b-da3d-4b30-92c7-f305c3a96d01",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "01cd37a0-bbe5-43a5-afa5-d3634675c5e6",
+        "domain_id": "137aaf8a-3d77-4bed-b999-f9e30700ffda"
+      },
+      {
+        "unit_id": "099a43ce-ea32-4993-87aa-ca6b37287e9f",
+        "domain_id": "1b738055-b716-4cfa-916b-c79e0a5ad8ee"
+      },
+      {
+        "unit_id": "0cd64276-75c1-4103-b043-af4d50071737",
+        "domain_id": "42060b4b-08c1-4b43-a4f8-3b76f15b55ed"
+      },
+      {
+        "unit_id": "0e18c0c4-dc87-43ec-afdc-6caa47187ee4",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "0e506ad8-904a-4301-a792-67f5f085c65d",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "109fb0fa-68df-4cd6-ad26-580bd7644e66",
+        "domain_id": "70ab50d6-02a2-464b-aa13-fddfec521ca7"
+      },
+      {
+        "unit_id": "121c4225-9fc2-4143-9608-89a8db1e7856",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892"
+      },
+      {
+        "unit_id": "1359ab4d-c5d4-4e33-abe3-322f46940f55",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "13d360fa-6adf-481d-8e58-b9ab4866d3c0",
+        "domain_id": "c2887b12-9b9c-486f-891e-aa9c9a54d975"
+      },
+      {
+        "unit_id": "151f34e1-5064-4064-8af3-bb992940f635",
+        "domain_id": "49c19373-a62c-4ab7-bca1-cb492f77b37e"
+      },
+      {
+        "unit_id": "15748e3b-9cb1-4e90-80bf-6d00309a04da",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "15883607-0c0c-47ad-8154-00ef42ab950f",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "160a991a-b7fa-4ab3-9581-7df4c8ea5d77",
+        "domain_id": "1b738055-b716-4cfa-916b-c79e0a5ad8ee"
+      },
+      {
+        "unit_id": "160b202f-e7e4-4417-8e08-ef71a2585436",
+        "domain_id": "e19e93ef-3b80-4a55-af39-0f4bd1969d1a"
+      },
+      {
+        "unit_id": "191e6eec-0212-45b4-aec9-496b21828a4f",
+        "domain_id": "1a45c0d1-6b08-45ae-9a45-27c88e6da3bf"
+      },
+      {
+        "unit_id": "1958a5a9-2c52-4d4c-bbd7-e021e72aeb97",
+        "domain_id": "5d62e4e6-ffab-424a-806f-b33a8326d9cb"
+      },
+      {
+        "unit_id": "1add1cda-a668-410c-acca-4467c31914f7",
+        "domain_id": "bcf501e7-d34b-4bf7-88c6-25e1d37aabca"
+      },
+      {
+        "unit_id": "1d655470-55ad-43f3-89cc-64762619d21e",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "1d8e2038-bc69-4958-9da9-a3666139e6c7",
+        "domain_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a"
+      },
+      {
+        "unit_id": "1e8983d1-5eb6-4120-a172-562f5f084c7f",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "1eb74875-71e7-4137-91c7-5f2d78791825",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "21f21286-472c-4bb1-9d22-5e40d67ea75c",
+        "domain_id": "39f5b8f2-578e-46a0-9752-050c48c8d6aa"
+      },
+      {
+        "unit_id": "24d39368-2c57-4b31-920a-707026ca7033",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "253af7e9-cb74-40b9-b15e-66c46edbb944",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "260fb9e8-510f-4f7b-8e68-f9ce0780297c",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "27b826a2-d416-4bba-b2c0-172f2215f1e0",
+        "domain_id": "96d12eab-5d0c-40d3-948d-63a83a62e14f"
+      },
+      {
+        "unit_id": "30474c14-89b5-4019-a834-061b3c4d473c",
+        "domain_id": "68fc7967-ef9a-43c7-b7c4-2d4a4c20e710"
+      },
+      {
+        "unit_id": "30982b38-b530-41cc-8c56-61a04a7a9880",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892"
+      },
+      {
+        "unit_id": "32746ebb-8d8c-4ede-b117-4786470a83d8",
+        "domain_id": "39f5b8f2-578e-46a0-9752-050c48c8d6aa"
+      },
+      {
+        "unit_id": "34eeceb0-dc03-41d7-aafd-135a59ec28a3",
+        "domain_id": "4dda1c43-6d8e-4785-848e-84e0365627ef"
+      },
+      {
+        "unit_id": "34fdcb3c-06ae-4ec2-936c-2bfb61b42344",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "36f37d73-f442-47d8-a97e-c18fa2e99104",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "3a9acf4f-ec61-40c8-9a36-bd3b6181e167",
+        "domain_id": "9be34a85-c443-45b7-84c6-5f0ee63a7330"
+      },
+      {
+        "unit_id": "3f4193a6-1fbb-48cc-93cd-e37e706bac33",
+        "domain_id": "8b111b58-841d-4718-8610-bcc13d504e6c"
+      },
+      {
+        "unit_id": "3f7f4f75-c0d1-4cfc-b3c0-bd81aa9de63a",
+        "domain_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a"
+      },
+      {
+        "unit_id": "4033e742-d677-4d8c-8274-1722d951eea6",
+        "domain_id": "caaaf818-5cb7-49b4-84bc-50fde05d6335"
+      },
+      {
+        "unit_id": "40491913-4490-4995-be18-119140fd701d",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "4101981b-f0b9-4748-981c-3946f9168f2c",
+        "domain_id": "04257d62-301c-4e4a-b703-9d5b0ed43302"
+      },
+      {
+        "unit_id": "4137fc06-3ec6-4063-9ab9-0d26fec6dc5f",
+        "domain_id": "70ab50d6-02a2-464b-aa13-fddfec521ca7"
+      },
+      {
+        "unit_id": "4214b8ff-115a-4350-8856-82c6c50f0049",
+        "domain_id": "70ab50d6-02a2-464b-aa13-fddfec521ca7"
+      },
+      {
+        "unit_id": "4214b8ff-115a-4350-8856-82c6c50f0049",
+        "domain_id": "96d12eab-5d0c-40d3-948d-63a83a62e14f"
+      },
+      {
+        "unit_id": "422d94b0-ce7a-4fec-818c-e79bdcd0fdd1",
+        "domain_id": "16f5be83-4f37-425c-9fc9-891a475b7b36"
+      },
+      {
+        "unit_id": "4365d916-7d00-4ef4-b9cd-9b6483d71a46",
+        "domain_id": "5874a57f-e078-4680-8909-affb0305e777"
+      },
+      {
+        "unit_id": "49fddac8-3053-451c-bd59-5a141783065b",
+        "domain_id": "d07914a5-8855-4738-be96-fafc3db635d3"
+      },
+      {
+        "unit_id": "4a396ad5-0c5d-4452-be11-1504098f7638",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "4dfd2fa2-731a-4516-9551-03db67629b84",
+        "domain_id": "6a306c06-6e25-4b53-af70-4093f65c7b70"
+      },
+      {
+        "unit_id": "527773a2-a67e-40ee-929b-6e00c8bff061",
+        "domain_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a"
+      },
+      {
+        "unit_id": "52baf20a-7d5c-43cb-9b35-0add2329e1d3",
+        "domain_id": "68fc7967-ef9a-43c7-b7c4-2d4a4c20e710"
+      },
+      {
+        "unit_id": "56f96253-421e-4ede-b95c-27c1641224c8",
+        "domain_id": "097f4c66-8240-4641-a04e-cb6b29c54990"
+      },
+      {
+        "unit_id": "5741da65-7f8a-4b2e-be95-b06bb98531ed",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "5c506136-4ec9-4a80-b04a-20332da4f217",
+        "domain_id": "46cfb7e7-dce1-4fe7-9615-c7f1fc27c4af"
+      },
+      {
+        "unit_id": "5cf7f41d-a621-49da-9542-f0628668b57c",
+        "domain_id": "e19e93ef-3b80-4a55-af39-0f4bd1969d1a"
+      },
+      {
+        "unit_id": "5e0821ed-b87f-493c-88f4-807a6dc45b6a",
+        "domain_id": "0fa6fda7-00d2-4cda-8295-8b9d8c9f336f"
+      },
+      {
+        "unit_id": "6018d56e-95ba-49b7-b6e4-0987917c3c12",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "612fbc9c-a9c0-45c0-b6dc-ff8406082f49",
+        "domain_id": "1a45c0d1-6b08-45ae-9a45-27c88e6da3bf"
+      },
+      {
+        "unit_id": "62bb5f05-9d61-403b-bcc6-12e35bd20def",
+        "domain_id": "b92fb9df-91a7-4080-a22d-e919e803617e"
+      },
+      {
+        "unit_id": "6639cf38-4b99-4ec2-90ca-5799fb5b49fc",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "66fe4273-90d7-4de4-b964-5c6d068304a0",
+        "domain_id": "097f4c66-8240-4641-a04e-cb6b29c54990"
+      },
+      {
+        "unit_id": "67ae9808-8a37-4a98-bfa3-e1b66c92dda2",
+        "domain_id": "280d3b48-7ab5-4daf-9fee-e78e09dcd7e2"
+      },
+      {
+        "unit_id": "6a6e3148-fe03-4ad7-b450-3ebe68d8a147",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "726cbe8e-5026-418b-b98f-0a5d828765e9",
+        "domain_id": "ffcecbda-a215-4d15-a37b-86abb744f0a8"
+      },
+      {
+        "unit_id": "7415a246-8b8a-46f6-9933-db3c44c7b356",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "7716a512-3d43-4b22-b4b6-7ef9ae4b5429",
+        "domain_id": "9be34a85-c443-45b7-84c6-5f0ee63a7330"
+      },
+      {
+        "unit_id": "792080c9-06f2-477d-a744-f1c62efdbb92",
+        "domain_id": "13988d23-67b3-46ea-b457-1792b064246d"
+      },
+      {
+        "unit_id": "798855d2-3eaa-4f09-a878-59e2c9954800",
+        "domain_id": "e19e93ef-3b80-4a55-af39-0f4bd1969d1a"
+      },
+      {
+        "unit_id": "7c1909cc-a430-407a-99b6-e46b5f40ad70",
+        "domain_id": "097f4c66-8240-4641-a04e-cb6b29c54990"
+      },
+      {
+        "unit_id": "7e911a14-fdaa-41ca-a7bf-29926c46246f",
+        "domain_id": "16f5be83-4f37-425c-9fc9-891a475b7b36"
+      },
+      {
+        "unit_id": "7f02ea46-b740-41de-b180-1bee548eca03",
+        "domain_id": "1a45c0d1-6b08-45ae-9a45-27c88e6da3bf"
+      },
+      {
+        "unit_id": "7f28002c-f0d0-4b5b-978c-3148bbd86ad9",
+        "domain_id": "c2d0726f-5900-4776-bb35-4cb03b2f9081"
+      },
+      {
+        "unit_id": "7fe0fe77-ea28-4a84-b2a8-be86b044f44d",
+        "domain_id": "4979b600-0445-4cd0-8994-03e7987ff8cf"
+      },
+      {
+        "unit_id": "80692d47-5e9c-4d47-b9b9-5c857449b4fd",
+        "domain_id": "39f5b8f2-578e-46a0-9752-050c48c8d6aa"
+      },
+      {
+        "unit_id": "829ce03f-6649-4007-8394-ffe95b74cc7e",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "87db0e4c-193b-4a10-a81c-7ca797ae331d",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "88d0f6ed-d461-4030-b295-8bcde1ac9673",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892"
+      },
+      {
+        "unit_id": "895d8f71-3b9a-4ff5-aabd-bd9c87e17deb",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "8ae55811-f96a-4ce4-bc64-855f4d54ed3a",
+        "domain_id": "04257d62-301c-4e4a-b703-9d5b0ed43302"
+      },
+      {
+        "unit_id": "8b27a61b-abe2-4ed0-90dc-a798afcf966d",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "8db14b6e-0b30-4171-bb80-c45d5e00f537",
+        "domain_id": "2c67e2e1-7b81-457c-b49a-cb2dfa4310aa"
+      },
+      {
+        "unit_id": "8f8907b1-d006-4779-8f5e-87ba6c4efd92",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "9264351a-d68a-4a94-a3ea-2e1256c24065",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "92bd51ab-0415-4025-b1bd-ebfb90c61c55",
+        "domain_id": "42060b4b-08c1-4b43-a4f8-3b76f15b55ed"
+      },
+      {
+        "unit_id": "93345ace-ab08-4956-a549-6afe816c0fb5",
+        "domain_id": "f859cef1-3a2a-45a9-b37f-7370f5ce0d3f"
+      },
+      {
+        "unit_id": "933a9e79-c5a7-4f3c-a802-946001be463f",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f"
+      },
+      {
+        "unit_id": "937a8902-c5e6-40ff-bdf6-1f49697b6f54",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892"
+      },
+      {
+        "unit_id": "9384b573-6a34-4369-8d84-afac2fb30206",
+        "domain_id": "39f5b8f2-578e-46a0-9752-050c48c8d6aa"
+      },
+      {
+        "unit_id": "938c22db-510e-4943-96f2-21696cc014d4",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "97ae613c-789a-406f-b9b3-b3877107146d",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "98bbfc9d-6b34-4ddb-9470-006d9668f6b0",
+        "domain_id": "b92fb9df-91a7-4080-a22d-e919e803617e"
+      },
+      {
+        "unit_id": "9ba82d2a-44cb-4714-9b1f-7e05a1289d25",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "9d0fb242-b426-47ca-a94a-169bf7e91a47",
+        "domain_id": "ffcecbda-a215-4d15-a37b-86abb744f0a8"
+      },
+      {
+        "unit_id": "9d28301f-7618-47e3-8b87-760ff19b03ff",
+        "domain_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a"
+      },
+      {
+        "unit_id": "9e6e222e-2177-4e92-851d-978492e9a9b2",
+        "domain_id": "bcf501e7-d34b-4bf7-88c6-25e1d37aabca"
+      },
+      {
+        "unit_id": "a07d6a98-8464-4643-8a2f-5692517d74cc",
+        "domain_id": "097f4c66-8240-4641-a04e-cb6b29c54990"
+      },
+      {
+        "unit_id": "a5965ae0-2662-48f6-bb40-0c122375c8e1",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "a5d06153-aeb3-49d7-8ba1-d9b211e532d8",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "a88396dc-304a-4787-8184-37494f9474fb",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "a9c5b2ca-aa8c-4e97-9710-5e7454baecbb",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "ac17668f-5650-430d-913c-17304b8febbe",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "add36182-af55-4ef0-872e-710caf083e18",
+        "domain_id": "0fa6fda7-00d2-4cda-8295-8b9d8c9f336f"
+      },
+      {
+        "unit_id": "adef5eed-c10a-4853-bafb-255eadff3bc0",
+        "domain_id": "280d3b48-7ab5-4daf-9fee-e78e09dcd7e2"
+      },
+      {
+        "unit_id": "ae29182b-2f39-49af-900b-a93a619a8c18",
+        "domain_id": "b92fb9df-91a7-4080-a22d-e919e803617e"
+      },
+      {
+        "unit_id": "aeff2b25-5af5-49d3-8473-6317aef9cf42",
+        "domain_id": "ffcecbda-a215-4d15-a37b-86abb744f0a8"
+      },
+      {
+        "unit_id": "b09134b0-0a32-4a70-bffa-7f3abd1e53ed",
+        "domain_id": "280d3b48-7ab5-4daf-9fee-e78e09dcd7e2"
+      },
+      {
+        "unit_id": "b4d3dba0-6651-4fe1-8044-2233e9366ec8",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f"
+      },
+      {
+        "unit_id": "b4da129e-e8ea-4237-b6fa-5ba3815a2f4a",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "b58e96c8-0ce0-40de-9595-b5b17fe97a8b",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "b5ee5029-4537-4060-a122-4437f715beb2",
+        "domain_id": "4cca4101-7baa-4290-9e06-328d512dd220"
+      },
+      {
+        "unit_id": "b628e02e-b601-40b8-96fb-9beeca401e16",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f"
+      },
+      {
+        "unit_id": "b69c3078-2ccc-4002-8853-0467a7a3631c",
+        "domain_id": "bcf501e7-d34b-4bf7-88c6-25e1d37aabca"
+      },
+      {
+        "unit_id": "b7936ba9-3db1-44f2-9b5b-74f020044fa3",
+        "domain_id": "f859cef1-3a2a-45a9-b37f-7370f5ce0d3f"
+      },
+      {
+        "unit_id": "b915e635-9a08-4c6a-adb0-ee8a7b27c132",
+        "domain_id": "9be34a85-c443-45b7-84c6-5f0ee63a7330"
+      },
+      {
+        "unit_id": "b9a4edcf-578b-48de-af4f-e0bb25823473",
+        "domain_id": "4dda1c43-6d8e-4785-848e-84e0365627ef"
+      },
+      {
+        "unit_id": "ba05ce7f-9ab9-4558-944d-1d1cbd97cb03",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "bcc85236-2182-41e0-860e-761e2a13ba26",
+        "domain_id": "1a45c0d1-6b08-45ae-9a45-27c88e6da3bf"
+      },
+      {
+        "unit_id": "bdbb4087-db50-42ea-bb94-b1dfddb0c564",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "be3a5d2e-2cb5-4012-ad77-07a3fc0e849b",
+        "domain_id": "96d12eab-5d0c-40d3-948d-63a83a62e14f"
+      },
+      {
+        "unit_id": "bef15bab-d3dd-456a-9885-af2e7fa0286c",
+        "domain_id": "b92fb9df-91a7-4080-a22d-e919e803617e"
+      },
+      {
+        "unit_id": "bfabd8e2-d8b1-498c-85f1-5d241f7b7ece",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "c047af4c-2e44-4899-9159-a6b79b752e5a",
+        "domain_id": "82c354b1-9750-4d45-b2b5-6dcf1865f466"
+      },
+      {
+        "unit_id": "c1bcd2bb-9ea5-44dc-b333-472d8f7553d2",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "c26c86a9-52bf-493c-bf2d-a7cfe69867b6",
+        "domain_id": "b92fb9df-91a7-4080-a22d-e919e803617e"
+      },
+      {
+        "unit_id": "c6c22169-c438-459c-b505-a0feea86d105",
+        "domain_id": "ffcecbda-a215-4d15-a37b-86abb744f0a8"
+      },
+      {
+        "unit_id": "c7d4b740-6c79-422c-85f8-25cdd910abd7",
+        "domain_id": "2c67e2e1-7b81-457c-b49a-cb2dfa4310aa"
+      },
+      {
+        "unit_id": "c92d93b8-642f-41b1-9080-bbd3e7643afc",
+        "domain_id": "04257d62-301c-4e4a-b703-9d5b0ed43302"
+      },
+      {
+        "unit_id": "c9b0ee78-4ff2-4e72-bb24-cbcf13ff924d",
+        "domain_id": "28c0e25a-fc64-4d48-a8fe-308f5f73de1f"
+      },
+      {
+        "unit_id": "ca6d6eb9-2b55-4c30-88fd-156da21e409a",
+        "domain_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a"
+      },
+      {
+        "unit_id": "cb0d07ca-9e6b-44cd-b4f3-fb94cd47a26a",
+        "domain_id": "1b738055-b716-4cfa-916b-c79e0a5ad8ee"
+      },
+      {
+        "unit_id": "cd1b277f-7b00-443b-8786-e394851a7146",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "cd23386a-3d1a-4f59-8510-c945c19eb2f9",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "cd2ee2e3-6707-4ff1-8e63-f3abd6727f2e",
+        "domain_id": "9be34a85-c443-45b7-84c6-5f0ee63a7330"
+      },
+      {
+        "unit_id": "cd72ecd6-238b-4fca-9fe2-0d53afecadb7",
+        "domain_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a"
+      },
+      {
+        "unit_id": "cd7a4f7f-f304-4f89-a6f3-dd0e81080003",
+        "domain_id": "8ac94f21-0982-4185-8257-58219077e8da"
+      },
+      {
+        "unit_id": "ce50a529-20dc-4a96-aa4a-19abd781845e",
+        "domain_id": "137aaf8a-3d77-4bed-b999-f9e30700ffda"
+      },
+      {
+        "unit_id": "d00d0d26-0e77-4ffe-885c-59023e7f9af5",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "d06d056b-bba7-473e-a481-1f573f61de3c",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "d16a7c48-3966-4a77-93be-0c0ce630e0af",
+        "domain_id": "16f5be83-4f37-425c-9fc9-891a475b7b36"
+      },
+      {
+        "unit_id": "d7210cfa-559f-4c83-82bf-ba30efebcaf1",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "dbc3fb6b-f47a-4621-a760-cf2b4ebaf194",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "dc3bac1a-c0f0-4544-8504-8ca9bab64e6d",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "ddb655fb-2d07-4caa-9235-d69e72f1809e",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "e3b95c05-64cd-4c19-b9aa-7658b32777ef",
+        "domain_id": "fd8e217e-f7b9-458b-afe4-d8b33e9aab5a"
+      },
+      {
+        "unit_id": "e47717f9-5b18-431d-85f5-9333484b6397",
+        "domain_id": "c1d7c84f-ac60-4c45-87e0-41267c792d49"
+      },
+      {
+        "unit_id": "e5716a23-078c-46c8-9804-8473494b2eaa",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892"
+      },
+      {
+        "unit_id": "e613fdf4-f711-4cfe-b227-da67f2d1be5d",
+        "domain_id": "caaaf818-5cb7-49b4-84bc-50fde05d6335"
+      },
+      {
+        "unit_id": "e653b6c9-f473-4cd0-ad5b-3093a09868ba",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "e74e5682-2cb8-4d27-900b-670954d42ea8",
+        "domain_id": "b92fb9df-91a7-4080-a22d-e919e803617e"
+      },
+      {
+        "unit_id": "e7570995-d81f-4d9c-979d-5a97aacaa46c",
+        "domain_id": "0fa6fda7-00d2-4cda-8295-8b9d8c9f336f"
+      },
+      {
+        "unit_id": "ea696f29-04c4-499b-a0dd-d7b516b7cf49",
+        "domain_id": "1574a90e-2ad9-4501-9be0-a52906dbfef3"
+      },
+      {
+        "unit_id": "ec1ace16-537a-44b8-8d93-a9ee699acf5f",
+        "domain_id": "2c67e2e1-7b81-457c-b49a-cb2dfa4310aa"
+      },
+      {
+        "unit_id": "ece50b40-80f6-4270-8954-7e9eab544421",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "ef1592dc-4fd3-4aeb-aade-d03c9844cee6",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "ef2ea4f9-58dc-46bd-b2e6-cb4c0264d359",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892"
+      },
+      {
+        "unit_id": "f143b76c-91f2-48a3-a218-b0c9bbb893fb",
+        "domain_id": "6a306c06-6e25-4b53-af70-4093f65c7b70"
+      },
+      {
+        "unit_id": "f1d02ad9-57db-4f13-b29b-ccf30625bf47",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "f2d8bea2-6c89-41b3-8e28-5dd9631c6353",
+        "domain_id": "82c354b1-9750-4d45-b2b5-6dcf1865f466"
+      },
+      {
+        "unit_id": "f3bcfbac-f0a3-4412-82d6-93fa9bd08038",
+        "domain_id": "bcf501e7-d34b-4bf7-88c6-25e1d37aabca"
+      },
+      {
+        "unit_id": "f53bad0e-7eb1-4770-bdfb-a0538e8e4622",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "f624a8eb-8123-4524-9dae-eb0221fdcf10",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "f7703674-8e8a-4482-999b-2a7d221e6b23",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "f7751843-be7a-4481-bd78-4c3a93c51c22",
+        "domain_id": "d07914a5-8855-4738-be96-fafc3db635d3"
+      },
+      {
+        "unit_id": "f7765115-c5bb-4dcc-82a0-edcb206a4a31",
+        "domain_id": "1574a90e-2ad9-4501-9be0-a52906dbfef3"
+      },
+      {
+        "unit_id": "fa18d917-0c16-4fa4-99fe-920137fbedb0",
+        "domain_id": "75fe2cac-358c-45ed-91d0-fe0c03985ee9"
+      },
+      {
+        "unit_id": "faacd081-1333-42cc-a1f2-c6491542b9f3",
+        "domain_id": "1204dd0c-e7fd-4aed-9dc5-32e32bfedef2"
+      },
+      {
+        "unit_id": "fba20286-eed5-4984-b98f-210ae913f8a8",
+        "domain_id": "6db17067-78f8-4dc4-adc9-ad4c1ad70892"
+      },
+      {
+        "unit_id": "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb",
+        "domain_id": "68fc7967-ef9a-43c7-b7c4-2d4a4c20e710"
+      },
+      {
+        "unit_id": "fd41274e-0c98-465c-85cf-229aaee98ceb",
+        "domain_id": "137aaf8a-3d77-4bed-b999-f9e30700ffda"
+      },
+      {
+        "unit_id": "fd4379fd-a7d6-4884-b723-ccf174dc6b26",
+        "domain_id": "137aaf8a-3d77-4bed-b999-f9e30700ffda"
+      }
+    ],
+    "evidenceLinks": 168
+  }
+}

@@ -4,7 +4,7 @@ import { ExceptionsScreen } from "./ExceptionsScreen";
 // EXCEPTIONS (/exceptions): what the checks could not decide; open ones first
 export default function ExceptionsPage() {
   return (
-    <ReadingPane title="Exceptions" width="prose">
+    <ReadingPane title="Exceptions" width="wide">
       <ExceptionsScreen />
     </ReadingPane>
   );

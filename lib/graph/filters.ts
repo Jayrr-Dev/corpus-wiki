@@ -1,4 +1,4 @@
-import type { GraphData, GraphNodeKind } from "./types";
+import type { GraphData, GraphNode, GraphNodeKind } from "./types";
 
 // =====================================================================
 // FILTERS (Obsidian's Filters section): which nodes show. Order:
@@ -7,9 +7,11 @@ import type { GraphData, GraphNodeKind } from "./types";
 // =====================================================================
 
 export interface GraphFilters {
+  domainScope: "internal" | "external" | "both" | "none";
   search: string;
   // one domain path to focus on, with every subdomain below it ("" = all domains)
   domain: string;
+  showUnits: boolean;
   showEntities: boolean;
   showPages: boolean;
   showOrphans: boolean;
@@ -49,14 +51,33 @@ export function inDomain(data: GraphData, domain: string): GraphData {
   return keepNodes(data, (node) => matched.has(node.id) || (node.kind === "entity" && linked.has(node.id)));
 }
 
+export function domainPathsForScope(node: GraphNode, scope: GraphFilters["domainScope"]): string[] {
+  const internal = node.domainScopePaths?.internal ?? node.domainPaths;
+  const external = node.domainScopePaths?.external ?? [];
+  if (scope === "none") return [];
+  if (scope === "both") return [...new Set([...internal, ...external])];
+  return scope === "internal" ? internal : external;
+}
+
+// Entities follow connected notes; unassigned notes remain in Internal.
+export function inDomainScope(data: GraphData, scope: GraphFilters["domainScope"]): GraphData {
+  const matched = new Set(data.nodes.filter((node) => node.kind !== "entity" &&
+    (domainPathsForScope(node, scope).length > 0 ||
+      ((scope === "internal" || scope === "both") && node.domainPaths.length === 0))).map((node) => node.id));
+  const linked = new Set(data.links.flatMap((link) => matched.has(link.source) ? [link.target] : matched.has(link.target) ? [link.source] : []));
+  const scoped = keepNodes(data, (node) => matched.has(node.id) || (node.kind === "entity" && linked.has(node.id)));
+  return { ...scoped, nodes: scoped.nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, scope) })) };
+}
+
 // APPLY: the visible graph for these filters
 export function applyFilters(data: GraphData, filters: GraphFilters): GraphData {
-  const shownKinds = new Set<GraphNodeKind>(["unit"]);
+  const shownKinds = new Set<GraphNodeKind>();
+  if (filters.showUnits) shownKinds.add("unit");
   if (filters.showEntities) shownKinds.add("entity");
   if (filters.showPages) shownKinds.add("page");
   const search = filters.search.trim().toLowerCase();
 
-  const byLayer = keepNodes(inDomain(data, filters.domain), (node) => shownKinds.has(node.kind));
+  const byLayer = keepNodes(inDomain(inDomainScope(data, filters.domainScope), filters.domain), (node) => shownKinds.has(node.kind));
   const bySearch = search ? keepNodes(byLayer, (node) => node.label.toLowerCase().includes(search)) : byLayer;
   if (filters.showOrphans) return bySearch;
   const linked = linkedIds(bySearch);

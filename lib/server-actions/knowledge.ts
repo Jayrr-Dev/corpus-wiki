@@ -5,7 +5,14 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { commitPersonAction, type CommitResult, type PersonAction, resolveException, revertChangeSet } from "@/lib/change-control";
 import { commitLineEdit, rebuildAfterEvent } from "@/lib/living-page";
 import { getServerDeps } from "@/lib/server/deps";
+import { getAdminSupabase } from "@/lib/supabase/admin";
+import { finishApprovedUpload } from "@/lib/ingest/pipeline";
 import { type ActionResult, toActionResult } from "./result";
+
+// Keep newly created/restored revisions searchable after the response is sent.
+function refreshEmbeddings(claimEmbedder: (() => Promise<void>) | undefined) {
+  if (claimEmbedder) after(() => claimEmbedder().catch((error) => console.error("Knowledge embeddings could not be refreshed:", error)));
+}
 
 // =====================================================================
 // KNOWLEDGE ACTIONS: every change a person makes goes through Change
@@ -16,8 +23,9 @@ import { type ActionResult, toActionResult } from "./result";
 export async function submitEdit(action: PersonAction): Promise<ActionResult<CommitResult>> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = await getServerDeps();
+    const { db, writer, claimEmbedder } = await getServerDeps();
     const { eventId, ...result } = await commitPersonAction(db, action);
+    refreshEmbeddings(claimEmbedder);
     await rebuildAfterEvent(db, writer, eventId);
     return result;
   });
@@ -27,8 +35,9 @@ export async function submitEdit(action: PersonAction): Promise<ActionResult<Com
 export async function submitLineEdit(lineId: string, content: string): Promise<ActionResult<CommitResult>> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = await getServerDeps();
+    const { db, writer, claimEmbedder } = await getServerDeps();
     const { eventId, ...result } = await commitLineEdit(db, lineId, content);
+    refreshEmbeddings(claimEmbedder);
     await rebuildAfterEvent(db, writer, eventId);
     return result;
   });
@@ -38,8 +47,9 @@ export async function submitLineEdit(lineId: string, content: string): Promise<A
 export async function undoChangeSet(changeSetId: string): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = await getServerDeps();
+    const { db, writer, claimEmbedder } = await getServerDeps();
     const { eventId } = await revertChangeSet(db, changeSetId);
+    refreshEmbeddings(claimEmbedder);
     await rebuildAfterEvent(db, writer, eventId);
     return {};
   });
@@ -49,11 +59,17 @@ export async function undoChangeSet(changeSetId: string): Promise<ActionResult> 
 export async function answerException(exceptionId: string, accept: boolean, note: string | null): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();
-    const { db, writer } = await getServerDeps();
+    const deps = await getServerDeps();
+    const { db, writer } = deps;
+    const { data: exception, error } = await getAdminSupabase().from("exceptions").select("reason").eq("id", exceptionId).single();
+    if (error) throw new Error(error.message);
     const { eventId } = await resolveException(db, { exceptionId, accept, note });
+    if (eventId) refreshEmbeddings(deps.claimEmbedder);
     // The answer is saved; page rewrites are AI calls, so they run after the response.
     // A failed rewrite puts its section back to stale rather than leaving it building.
-    if (eventId) after(() => rebuildAfterEvent(db, writer, eventId).catch((error) => console.error("rebuild after exception answer failed", error)));
+    if (eventId) after(() => (exception.reason === "root_domain_approval"
+      ? finishApprovedUpload(deps, eventId)
+      : rebuildAfterEvent(db, writer, eventId)).catch((error) => console.error("rebuild after exception answer failed", error)));
     return {};
   });
 }

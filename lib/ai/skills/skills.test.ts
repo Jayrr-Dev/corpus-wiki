@@ -39,6 +39,11 @@ function intercept(answer:object) {
   return ()=>JSON.parse(String((fetch.mock.calls[0] as unknown as [unknown,RequestInit])[1].body));
 }
 describe("assigned skills reach actual AI requests",()=>{
+  it("uses role overrides and restores the assigned skill when cleared", () => {
+    const library = { skills: [], assignments: [] };
+    expect(resolveStageSkills({ ...library, roleInstructions: [{ role: "plan_articles", instructions: "Custom planner", version: 2 }] }).plan_articles?.instructions).toBe("Custom planner");
+    expect(resolveStageSkills({ ...library, roleInstructions: [] }).plan_articles).toEqual(defaultSkill("plan_articles"));
+  });
   const unit={unitId:"unit",revisionId:"revision",content:"ExampleCo requires hearing protection at 85 dB.",kind:"procedure" as const,epistemicStatus:"established" as const};
   it("uses the selected writing skill and retains claim-reference mapping",async()=>{
     const request=intercept({revise:[],retire:[],add:[{text:"Hearing protection is required at 85 dB.",claims:["C1"]}]});

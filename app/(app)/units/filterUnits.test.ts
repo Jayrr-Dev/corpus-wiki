@@ -32,6 +32,13 @@ function filters(query: string) {
 }
 
 describe("filterUnits", () => {
+  it("separates internal and external units while preserving other filters", () => {
+    const rows = [unit("internal", { sourceOrigin: "internal" }), unit("external", { sourceOrigin: "external", kind: "decision" }), unit("manual")];
+    expect(filterUnits(rows, filters(""), JOINS).map((row) => row.id)).toEqual(["internal", "manual"]);
+    expect(filterUnits(rows, filters("origin=external"), JOINS).map((row) => row.id)).toEqual(["external"]);
+    expect(filterUnits(rows, filters("origin=external&kind=fact"), JOINS)).toEqual([]);
+    expect(filters("origin=invalid").origin).toBe("internal");
+  });
   it("shows current units by default", () => {
     expect(filterUnits(UNITS, filters(""), JOINS).map((u) => u.id)).toEqual(["u1", "u2"]);
   });

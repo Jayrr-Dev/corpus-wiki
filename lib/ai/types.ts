@@ -1,3 +1,4 @@
+import type { KnowledgeContext } from "@/lib/knowledge/context";
 import type { Enums } from "@/lib/database/types";
 
 // =====================================================================
@@ -24,6 +25,7 @@ export type ReconciliationPassage = {
 
 // INPUT: an existing unit the model may revise, retire, link or merge
 export type ExistingUnit = {
+  context?: KnowledgeContext | null;
   unitId: string;
   revisionId: string; // current revision; becomes the action's expectedRevisionId
   content: string;
@@ -37,6 +39,8 @@ export type ExistingUnit = {
 export type ExistingEntity = { type: string; key: string; name: string };
 
 export type ReconciliationInput = {
+  domainTabs?: { name: string; description: string; rootPaths: string[] }[];
+  externalScope?: { article: string; section: string; note: string; referenceDomainPaths: string[] };
   source: { id: string; title: string; sourceDate: string };
   passages: ReconciliationPassage[];
   existingUnits: ExistingUnit[];
@@ -50,9 +54,12 @@ export type ReconciliationInput = {
 export type EntityRef = { type: string; key: string; role: EntityRole };
 
 export type ActionInputByType = {
-  create_domain: { name: string; path: string; parentPath: string | null };
+  source_lifecycle: { title: string; operation: string; reason: string };
+  source_review: { title: string; stage: string; outcome: string; reason: string };
+  create_domain: { name: string; path: string; parentPath: string | null; domainTabId?: string };
   create_entity: { type: string; key: string; name: string; aliases: string[] };
   add_claim: {
+    context?: KnowledgeContext;
     content: string;
     title?: string; // short name that tells it apart on its topic (revisions.title)
     kind: UnitKind;
@@ -62,7 +69,7 @@ export type ActionInputByType = {
     domainPaths: string[];
     rationale?: string;
   };
-  revise_claim: { content: string; title?: string; epistemicStatus?: EpistemicStatus; validFrom?: string; rationale?: string };
+  revise_claim: { context?: KnowledgeContext; content: string; title?: string; epistemicStatus?: EpistemicStatus; validFrom?: string; rationale?: string };
   retire_claim: { reason: string; validTo: string | null };
   // target = the unit that is kept; autoMerge: an AI merge sure enough to skip review (check_deletion)
   merge_duplicates: { duplicateUnitIds: string[]; autoMerge?: boolean; rationale?: string };
@@ -80,6 +87,7 @@ export type ActionInputByType = {
   // target = the page or section; a create records the new row in target_id once applied.
   create_page: { title: string; entityId: string | null; sections: SectionDraft[] };
   rename_page: { title: string };
+  review_page: { operation: string; recommendation: string; reason: string; quote: string; guideline: string; destinationId: string | null; pageSlug: string; pageTitle: string };
   retire_page: Record<string, never>;
   create_section: { pageId: string; position?: number } & SectionDraft; // position: where it goes (default: last)
   rename_section: { title: string };

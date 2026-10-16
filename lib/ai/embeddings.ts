@@ -42,11 +42,13 @@ export function embedderFromEnv(env: NodeJS.ProcessEnv = process.env, logCall?: 
       const body = (await response.json()) as EmbeddingResponse;
       if (!response.ok || !body.data) throw new Error(body.error?.message ?? `Embedding request failed (${response.status})`);
       promptTokens = body.usage?.prompt_tokens ?? null;
-      const vectors = [...body.data].sort((a, b) => a.index - b.index).map((item) => item.embedding);
-      if (vectors.length !== texts.length || vectors.some((vector) => vector.length !== EMBEDDING_DIMENSIONS)) {
-        throw new Error(`${model} returned ${vectors.length} vectors of ${vectors[0]?.length ?? 0} numbers; expected ${texts.length} of ${EMBEDDING_DIMENSIONS}`);
+      const ordered = [...body.data].sort((a, b) => a.index - b.index);
+      if (ordered.length !== texts.length || ordered.some((item, index) => item.index !== index ||
+        !Array.isArray(item.embedding) || item.embedding.length !== EMBEDDING_DIMENSIONS ||
+        item.embedding.some(value => !Number.isFinite(value)) || !item.embedding.some(value => value !== 0))) {
+        throw new Error(`${model} returned invalid embeddings; expected ${texts.length} nonzero, finite vectors of ${EMBEDDING_DIMENSIONS} numbers with unique input indices`);
       }
-      return vectors;
+      return ordered.map(item => item.embedding);
     } catch (caught) {
       error = caught instanceof Error ? caught.message : String(caught);
       throw caught;

@@ -1,6 +1,8 @@
 import { annotateUnitReferences } from "@/lib/ai/unitReferences";
 import type { DraftAction, ExistingUnit, ReconciliationInput } from "@/lib/ai/types";
+import { normalizeKnowledgeContext } from "@/lib/knowledge/context";
 import { sameClaimText } from "@/lib/knowledge/similarity";
+import { reuseDomainPaths } from "@/lib/domains/reusePaths";
 import { claimRef, passageRef, unitRef } from "./prompt";
 import type { AnswerClaim, AnswerEntityRef, AnswerLink, ReconciliationAnswer } from "./schema";
 
@@ -20,9 +22,21 @@ type LinkEnd = { unitId: string } | { action: DraftAction };
 // The whole conversion: creates first, then one action per usable claim, then the links between them
 export function answerToActions(answer: Omit<ReconciliationAnswer, "links"> & { links?: AnswerLink[] }, input: ReconciliationInput): DraftAction[] {
   const refs = buildRefs(input);
+  const reusePath = reuseDomainPaths(input.domainPaths);
+  const claims = answer.claims.map((claim) => ({ ...claim, domainPaths: [...new Set(claim.domainPaths.map(reusePath).filter(Boolean))] }));
   const ends = new Map<string, LinkEnd>();
-  const perClaim = answer.claims.map((claim, index) => {
-    const actions = claimToAction(claim, refs, input);
+  const revisions = new Map<string, { content: string; context: string | undefined }>();
+  const perClaim = claims.map((claim, index) => {
+    let actions = claimToAction(claim, refs, input);
+    const revision = actions[0];
+    if (revision?.type === "revise_claim" && revision.targetId) {
+      const previous = revisions.get(revision.targetId);
+      if (previous !== undefined && (!sameClaimText(previous.content, revision.input.content) || previous.context !== JSON.stringify(revision.input.context))) {
+        // Let the duplicate guard compare this additional detail. Dropping a second
+        // revision here used to lose facts extracted from later document batches.
+        actions = [addClaim(claim, revision.passageIds, input.source.sourceDate)];
+      } else revisions.set(revision.targetId, { content: revision.input.content, context: JSON.stringify(revision.input.context) });
+    }
     const [action] = actions;
     // A retired claim is not linked; a revised or re-stated one links to its existing unit
     if (action?.type === "add_claim") ends.set(claimRef(index), { action });
@@ -30,7 +44,7 @@ export function answerToActions(answer: Omit<ReconciliationAnswer, "links"> & { 
     return actions;
   });
   const claimActions = dedupeTargets(perClaim.flat());
-  const ordered = [...domainCreates(claimActions, input.domainPaths), ...entityCreates(answer.claims, claimActions, input), ...claimActions];
+  const ordered = [...domainCreates(claimActions, input.domainPaths), ...entityCreates(claims, claimActions, input), ...claimActions];
   return [...ordered, ...linkActions(answer.links ?? [], ends, refs, ordered)].map((action) => annotateUnitReferences(action, input.existingUnits));
 }
 
@@ -82,7 +96,10 @@ function buildRefs(input: ReconciliationInput): Refs {
 
 // ONE CLAIM -> ONE ACTION (or none when it cites no real passage or unit)
 function claimToAction(claim: AnswerClaim, refs: Refs, input: ReconciliationInput): DraftAction[] {
-  const passageIds = claim.passages.flatMap((ref) => refs.passages.get(ref.trim()) ?? []);
+  const resolved = claim.passages.map((ref) => refs.passages.get(ref.trim().toUpperCase()));
+  // A partially invalid citation set may be missing evidence for half the claim.
+  if (resolved.some(Boolean) && resolved.some((id) => !id)) throw new Error("A claim cited an unknown passage; retry extraction before saving it.");
+  const passageIds = [...new Set(resolved.filter((id): id is string => Boolean(id)))];
   if (passageIds.length === 0 || !claim.content.trim()) return [];
   if (claim.action === "add") return [addClaim(claim, passageIds, input.source.sourceDate)];
   const unit = claim.unit ? refs.units.get(claim.unit.trim()) : undefined;
@@ -104,7 +121,8 @@ function addClaim(claim: AnswerClaim, passageIds: string[], sourceDate: string):
       kind: claim.kind,
       epistemicStatus: claim.epistemicStatus,
       validFrom: sourceDate,
-      entities: uniqueEntities(claim.entities).map(({ type, key, role }) => ({ type, key, role })),
+      entities: claimContext(claim).entities,
+      context: claimContext(claim),
       domainPaths: [...new Set(claim.domainPaths.map(normalizePath).filter(Boolean))],
       ...rationale(claim.reason),
     },
@@ -123,17 +141,22 @@ function changeUnit(claim: AnswerClaim, unit: ExistingUnit, passageIds: string[]
     ...base,
     type: "revise_claim",
     passageIds: isSameClaim ? [...new Set([...unit.passageIds, ...passageIds])] : passageIds,
-    input: { content: isSameClaim ? unit.content : claim.content.trim(), ...title(claim.title), epistemicStatus: claim.epistemicStatus, ...rationale(claim.reason) },
+    input: { ...(claim.applicability ? { context: claimContext(claim) } : {}), content: isSameClaim ? unit.content : claim.content.trim(), ...title(claim.title), epistemicStatus: claim.epistemicStatus, ...rationale(claim.reason) },
   };
 }
 
 // One action per existing unit: a second claim about the same unit is dropped
 function dedupeTargets(actions: DraftAction[]): DraftAction[] {
-  const seen = new Set<string>();
+  const seen = new Map<string, DraftAction>();
   return actions.filter((action) => {
     if (!action.targetId) return true;
-    if (seen.has(action.targetId)) return false;
-    seen.add(action.targetId);
+    const previous = seen.get(action.targetId);
+    if (previous) {
+      if (previous.type !== action.type) throw new Error("The source proposed incompatible changes to one claim; retry reconciliation.");
+      previous.passageIds = [...new Set([...previous.passageIds, ...action.passageIds])];
+      return false;
+    }
+    seen.set(action.targetId, action);
     return true;
   });
 }
@@ -158,8 +181,13 @@ function domainCreates(actions: DraftAction[], existingPaths: string[]): DraftAc
 // CREATE_ENTITY for every entity an add_claim names that the store does not have
 function entityCreates(claims: AnswerClaim[], actions: DraftAction[], input: ReconciliationInput): DraftAction[] {
   const known = new Set(input.entities.map((e) => `${e.type}:${e.key}`));
-  const used = new Set(actions.flatMap((a) => (a.type === "add_claim" ? a.input.entities.map((e) => `${e.type}:${e.key}`) : [])));
-  return uniqueEntities(claims.flatMap((c) => c.entities))
+  const used = new Set(actions.flatMap((a) => {
+    if (a.type !== "add_claim" && a.type !== "revise_claim") return [];
+    const context = a.input.context;
+    const entities = context ? [...context.entities, ...context.applicability.entities] : a.type === "add_claim" ? a.input.entities : [];
+    return entities.map((e) => `${e.type}:${e.key}`);
+  }));
+  return uniqueEntities(claims.flatMap((c) => [...c.entities, ...(c.applicability?.entities ?? []).map((e) => ({ ...e, role: "mentioned" as const }))]))
     .filter((e) => used.has(`${e.type}:${e.key}`) && !known.has(`${e.type}:${e.key}`))
     .map((e) => ({
       type: "create_entity",
@@ -179,6 +207,15 @@ function uniqueEntities(refs: AnswerEntityRef[]): AnswerEntityRef[] {
     if (entity.type && entity.key && !byKey.has(`${entity.type}:${entity.key}`)) byKey.set(`${entity.type}:${entity.key}`, entity);
   }
   return [...byKey.values()];
+}
+
+function claimContext(claim: AnswerClaim) {
+  const applicability = claim.applicability;
+  const entities = uniqueEntities(claim.entities).map(({ type, key, role }) => ({ type, key, role }));
+  const scope = uniqueEntities((applicability?.entities ?? []).map((e) => ({ ...e, role: "subject" as const }))).map(({ type, key }) => ({ type, key }));
+  if (applicability && applicability.status !== "scoped" && scope.length) throw new Error("Only scoped applicability may name scope entities.");
+  if (applicability?.status === "scoped" && !scope.length && !applicability.conditions?.trim()) throw new Error("Scoped applicability requires entities or conditions.");
+  return normalizeKnowledgeContext({ entities, applicability: { status: applicability?.status ?? "unspecified", entities: scope, conditions: applicability?.conditions?.trim() || null } });
 }
 
 // SMALL TEXT HELPERS

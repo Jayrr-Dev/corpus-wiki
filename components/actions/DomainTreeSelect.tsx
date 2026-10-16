@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
 import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { Tabs } from "radix-ui";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ type DomainTreeSelectProps = {
   label: string;
   value: string;
   domains: readonly DomainLike[];
+  groups?: readonly { id: string; label: string; domains: readonly DomainLike[] }[];
   onChange: (value: string) => void;
   // shown as the first item with value "" (e.g. "Any domain")
   emptyLabel?: string;
@@ -53,14 +55,20 @@ function ancestorIds(roots: DomainNode[], id: string): string[] {
 }
 
 // DOMAIN TREE SELECT: a dropdown of domains nested by path, each level collapsible, showing names not full paths
-export function DomainTreeSelect({ label, value, domains, onChange, emptyLabel, placeholder, className }: DomainTreeSelectProps) {
+export function DomainTreeSelect({ label, value, domains, groups, onChange, emptyLabel, placeholder, className }: DomainTreeSelectProps) {
   const roots = useMemo(() => buildDomainTree(domains), [domains]);
+  const [activeGroup, setActiveGroup] = useState("");
+  const selectedGroup = groups?.find((group) => group.id === activeGroup) ?? groups?.[0];
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const selected = domains.find((domain) => domain.id === value);
 
   // Opening shows the roots' children and the path down to the current selection
   const onOpenChange = (open: boolean) => {
-    if (open) setExpanded(new Set([...roots.map((root) => root.id), ...ancestorIds(roots, value)]));
+    if (open) {
+      setExpanded(new Set([...roots.map((root) => root.id), ...ancestorIds(roots, value)]));
+      const group = groups?.find((group) => group.domains.some((domain) => domain.id === value));
+      if (group) setActiveGroup(group.id);
+    }
   };
 
   const setOpen = (id: string, open: boolean) =>
@@ -137,7 +145,24 @@ export function DomainTreeSelect({ label, value, domains, onChange, emptyLabel, 
             <CheckIcon className={cn("ml-auto size-3.5 text-muted-foreground", value !== "" && "invisible")} aria-hidden="true" />
           </DropdownMenuItem>
         ) : null}
-        {roots.map(renderNode)}
+        {groups?.length ? (
+          <Tabs.Root value={selectedGroup?.id} onValueChange={setActiveGroup}>
+            <Tabs.List aria-label="Domain type" className="mb-1 flex gap-1 border-b p-1" onKeyDown={(event) => event.stopPropagation()}>
+              {groups.map((group) => (
+                <Tabs.Trigger key={group.id} value={group.id} className="flex-1 rounded px-3 py-1 text-panel text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+                  {group.label}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
+            {groups.map((group) => (
+              <Tabs.Content key={group.id} value={group.id}>
+                {group.domains.length ? buildDomainTree(group.domains).map(renderNode) : (
+                  <p className="px-2 py-3 text-panel text-muted-foreground">No {group.label.toLowerCase()} domains</p>
+                )}
+              </Tabs.Content>
+            ))}
+          </Tabs.Root>
+        ) : roots.map(renderNode)}
       </DropdownMenuContent>
     </DropdownMenu>
   );

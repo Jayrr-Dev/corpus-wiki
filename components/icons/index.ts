@@ -21,3 +21,5 @@ export { UnitIcon } from "./Unit";
 export { UploadIcon } from "./Upload";
 
 export { SkillIcon } from "./Skill";
+
+export { DecisionIcon } from "./Decision";

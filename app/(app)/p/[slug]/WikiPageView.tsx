@@ -10,7 +10,6 @@ import { ErrorBoundary } from "@/components/error";
 import { type LinePreview, LinePanel, LiveSection, SectionPanel } from "@/components/living-page";
 import { ArticleSources } from "@/components/living-page/ArticleSources";
 import { ReadingPane, RightPanelSlot } from "@/components/shell";
-import { Button } from "@/components/ui/button";
 import { useServerAction } from "@/components/actions/useServerAction";
 import type { Tables } from "@/lib/database/types";
 import { useEntities, usePages, useSectionLines, useSections, type ShownLine } from "@/lib/queries";
@@ -18,10 +17,11 @@ import { useArticleEvidence } from "@/lib/queries/articleEvidence";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { expandRelatedArticles, improveArticle, refreshStaleSections } from "@/lib/server-actions/pages";
 import { PageMenu } from "@/app/(app)/_pages/PageMenu";
-import { AddSectionDialog } from "./AddSectionDialog";
+import { AddSectionForm } from "./AddSectionDialog";
 import { SectionMenu } from "./SectionMenu";
 import { UpdateArticleDialog } from "./UpdateArticleDialog";
 import { Loader } from "@/components/standard/loader";
+import { ReviewPageButton } from "./ReviewPageButton";
 
 export function WikiPageView({ slug }: { slug: string }) {
   const { data: pages = [], isPending, error } = usePages({ filters: { slug } });
@@ -166,10 +166,13 @@ function PageActions({ page }: { page: Tables<"pages"> }) {
   return (
     <div>
       <div className="flex items-center gap-1">
-        {page.entity_id ? <Button type="button" size="sm" variant="outline" disabled={improve.isPending || expand.isPending} onClick={() => void improve.run(page.id)}>{improve.isPending ? "Structuring article…" : "Improve article"}</Button> : null}
-        {(page.context_entity_id ?? page.entity_id) ? <Button type="button" size="sm" variant="outline" disabled={expand.isPending || improve.isPending} onClick={() => void expand.run(page.id)}>{expand.isPending ? "Expanding knowledge…" : "Expand knowledge"}</Button> : null}
+        <ReviewPageButton pageId={page.id} disabled={improve.isPending || expand.isPending} />
         <UpdateArticleDialog id={page.id} title={page.title} scope="page" disabled={improve.isPending || expand.isPending} />
-        <AddSectionDialog page={page} /><PageMenu page={page} />
+        <PageMenu page={page} extraItems={[
+          ...(page.entity_id ? [{ label: improve.isPending ? "Structuring article…" : "Improve article", disabled: improve.isPending || expand.isPending, onSelect: () => { void improve.run(page.id); } }] : []),
+          ...((page.context_entity_id ?? page.entity_id) ? [{ label: expand.isPending ? "Expanding knowledge…" : "Expand knowledge", disabled: expand.isPending || improve.isPending, onSelect: () => { void expand.run(page.id); } }] : []),
+          { label: "Add section", render: (close) => <AddSectionForm page={page} onDone={close} /> },
+        ]} />
       </div>
       {expand.error ? <p role="alert" className="mt-2 max-w-sm text-panel">{expand.error}</p> : null}
       {improve.error ? <p role="alert" className="mt-2 max-w-sm text-panel">{improve.error}</p> : null}

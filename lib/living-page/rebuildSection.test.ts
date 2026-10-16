@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { DbRpc } from "@/lib/db/rpc";
-import { rebuildSection, type SectionWriter } from "./index";
+import { rebuildAfterEvent, rebuildSection, type SectionWriter } from "./index";
 import type { SectionState } from "./types";
 
 const state: SectionState = { sectionId: "s", title: "Overview", pageTitle: "ExampleCo", units: [], lines: [] };
@@ -27,5 +27,17 @@ describe("one build per section", () => {
     await rebuildSection(db, writer, "s", "first");
     expect(names().filter((name) => name === "finish_section_build")).toHaveLength(2);
     expect(call.mock.calls.filter(([name]) => name === "claim_section_build").map(([, args]) => (args as { p_event_id: string }).p_event_id)).toEqual(["first", "later"]);
+  });
+  it("reviews new knowledge only after all affected sections finish", async () => {
+    const { db, call } = fakeDb([true, true], [{ rebuildRequested: false }, { rebuildRequested: false }]);
+    const original = db.call;
+    db.call = (async (name: string, args?: Record<string, unknown>) => name === "list_affected_sections"
+      ? [{ sectionId: "a", pageId: "page" }, { sectionId: "b", pageId: "page" }]
+      : original(name, args)) as DbRpc["call"];
+    const reviewSections = vi.fn(async () => {
+      expect(call.mock.calls.filter(([name]) => name === "finish_section_build")).toHaveLength(2);
+    });
+    await rebuildAfterEvent(db, { ...writer, reviewSections }, "new-knowledge");
+    expect(reviewSections).toHaveBeenCalledExactlyOnceWith(["a", "b"]);
   });
 });

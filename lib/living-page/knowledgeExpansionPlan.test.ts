@@ -12,7 +12,28 @@ describe("source-backed knowledge expansion", () => {
   it("creates the subject before its definition, with actual passage IDs and source dates", () => {
     const actions = expansionActions(plan, context);
     expect(actions.map((action) => action.type)).toEqual(["create_entity", "add_claim"]);
-    expect(actions[1]).toMatchObject({ passageIds: ["p1"], speechAct: "stated", input: { kind: "definition", validFrom: "2025-04-16", domainPaths: ["Safety/PPE"], entities: [{ type: "equipment", key: "ppe", role: "subject" }, { type: "company", key: "acme", role: "mentioned" }] } });
+    expect(actions[1]).toMatchObject({ passageIds: ["p1"], speechAct: "stated", input: { kind: "definition", validFrom: "2025-04-16", domainPaths: ["Safety/PPE"], entities: [{ type: "equipment", key: "ppe", role: "subject" }] } });
+  });
+
+  it("keeps general definitions independent from the handbook company", () => {
+    const actions = expansionActions({ concepts: [{ ...plan.concepts[0]!, applicability: { status: "general", entities: [], conditions: null } }] }, context);
+    expect(actions[1]?.input).toMatchObject({ context: { entities: [{ type: "equipment", key: "ppe", role: "subject" }], applicability: { status: "general", entities: [], conditions: null } } });
+  });
+
+  it("reuses a general definition globally but still allows a company-specific version", () => {
+    const applicability = { status: "general" as const, entities: [], conditions: null };
+    const known = { ...context, existingEntities: [...context.existingEntities, { type: "equipment", key: "ppe", name: "PPE" }], existingDefinitions: [{ entityKey: "equipment:ppe", context: { entities: [{ type: "equipment", key: "ppe", role: "subject" as const }], applicability } }] };
+    expect(expansionActions({ concepts: [{ ...plan.concepts[0]!, applicability }] }, known)).toEqual([]);
+    const scoped = expansionActions({ concepts: [{ ...plan.concepts[0]!, applicability: { status: "scoped", entities: [{ type: "company", key: "acme", name: "Acme" }], conditions: null } }] }, known);
+    expect(scoped.map(action => action.type)).toEqual(["add_claim"]);
+  });
+
+  it("rejects restrictions on a supposedly general definition", () => {
+    expect(() => expansionActions({ concepts: [{ ...plan.concepts[0]!, applicability: { status: "general", entities: [], conditions: "at Acme" } }] }, context)).toThrow("Only scoped");
+  });
+
+  it("rejects an invented applicability identity", () => {
+    expect(() => expansionActions({ concepts: [{ ...plan.concepts[0]!, applicability: { status: "scoped", entities: [{ type: "company", key: "other", name: "Other" }], conditions: null } }] }, context)).toThrow("Unknown applicability entity");
   });
 
   it("does not recreate an already defined entity on another expansion", () => {

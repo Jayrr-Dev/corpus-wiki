@@ -12,6 +12,7 @@ import {
   type StartUploadResult,
 } from "@/lib/ingest";
 import { type ActionResult, toActionResult } from "./result";
+import { readLink } from "@/lib/ingest/readLink";
 
 // =====================================================================
 // UPLOAD ACTIONS (called by /upload). Two steps so the screen can watch
@@ -19,6 +20,16 @@ import { type ActionResult, toActionResult } from "./result";
 // =====================================================================
 
 // STEP 1: form fields `file` (a PDF) and `sourceDate` (YYYY-MM-DD, the file's own date)
+export async function startLinkUpload(url: string, sourceDate: string): Promise<ActionResult<StartUploadResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const page = await readLink(url);
+    // A user-selected link is an explicit upload, distinct from automatically discovered external evidence.
+    const file = new File([`# ${page.title}\n\nSource: ${page.url}\n\n${page.text}`], `${page.title.replace(/[\\/:*?"<>|]/g, "-").slice(0, 150)}.md`, { type: "text/markdown" });
+    return startUploadFromFile({ file, sourceDate });
+  });
+}
+
 export async function startUpload(formData: FormData): Promise<ActionResult<StartUploadResult>> {
   return toActionResult(async () => {
     await requireUser();

@@ -119,7 +119,7 @@ async function commitOne(summary: string, action: DraftAction): Promise<string> 
 }
 
 // Web searches one article build may run, so a large update cannot run up the search bill
-const MAX_WEB_FILLS = 5;
+const MAX_WEB_FILLS = 2;
 // Sections a background web fill is working on, so a second build does not search them again meanwhile
 const webFilling = new Set<string>();
 

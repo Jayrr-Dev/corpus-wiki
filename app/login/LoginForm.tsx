@@ -1,12 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { ErrorNote } from "@/app/(app)/_components/bits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn, type SignInState } from "@/lib/auth/actions";
-import { describeCallError } from "@/lib/server-actions/result";
 
 const INITIAL_STATE: SignInState = { error: null };
 
@@ -16,20 +15,21 @@ async function signInSafely(previous: SignInState, formData: FormData): Promise<
   try {
     return await signIn(previous, formData);
   } catch (error) {
-    if (error instanceof TypeError) return { error: describeCallError(error) };
+    if (error instanceof TypeError) return { error: "Can't connect to the sign-in service right now. Please try again in a moment." };
     throw error;
   }
 }
 
 // LOGIN FORM: email + password, posted to the signIn server action
 export function LoginForm({ next }: { next: string }) {
+  const [email, setEmail] = useState("");
   const [state, formAction, isPending] = useActionState(signInSafely, INITIAL_STATE);
   return (
     <form action={formAction} className="flex flex-col gap-3">
       <input type="hidden" name="next" value={next} />
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" required />
+        <Input id="email" name="email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="password">Password</Label>

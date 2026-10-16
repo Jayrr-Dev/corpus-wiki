@@ -2,8 +2,9 @@ import "server-only";
 
 import type { z } from "zod";
 import { type AiCallLogger, type AiCallStatus, type CompletionUsage, logSafely, usageTokens } from "./callLog";
-import type { StageSkills } from "./skills/types";
+import type { RoleInstruction, StageSkills } from "./skills/types";
 import { DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
+import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
 
 // =====================================================================
 // TOKEN FACTORY CHAT CALL: one OpenAI-compatible chat completion that must
@@ -15,7 +16,7 @@ import { DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
 
 // `logCall` records every attempt's token usage (the app's server deps set it);
 // `skills` are the instructions assigned to each AI stage on /skills
-export type TokenFactorySettings = { apiKey: string; model?: string; baseUrl?: string; skills?: StageSkills; logCall?: AiCallLogger };
+export type TokenFactorySettings = { apiKey: string; model?: string; baseUrl?: string; contextWindowTokens?: number; skills?: StageSkills; roleInstructions?: RoleInstruction[]; logCall?: AiCallLogger };
 
 export type ChatMessage = { role: "system" | "user"; content: string };
 
@@ -94,6 +95,8 @@ type ChatJsonRequest<S extends z.ZodType> = {
   jsonSchema: object;
   messages: (ChatMessage | ChatMediaMessage)[];
   maxTokens?: number;
+  // Article prose keeps its dedicated encyclopedic writing policy.
+  outputStyle?: "concise" | "wiki_article";
   // When set, the answer is streamed and this hears the text so far (and any visible thinking)
   // after each chunk. A retry at a lower effort starts again from empty text.
   onStream?: (partial: StreamedSoFar) => void;
@@ -176,6 +179,7 @@ async function requestCompletion(
       model,
       messages: [
         { role: "system", content: `Return only JSON matching this schema: ${JSON.stringify(request.jsonSchema)}` },
+        ...(request.outputStyle === "wiki_article" ? [] : [{ role: "system", content: CONCISE_OUTPUT_INSTRUCTIONS }]),
         ...request.messages,
       ],
       temperature: 0,

@@ -2,19 +2,20 @@
 
 import type { ReactNode } from "react";
 import { Facts, Note, QueryState, Section, TextLink, UnitLink } from "@/app/(app)/_components/bits";
-import { StatusDot } from "@/app/(app)/_components/StatusDot";
+import { SourceState } from "../SourceState";
 import { DateTime } from "@/app/(app)/_components/DateTime";
 import { formatBytes, formatDate } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { usePersonName } from "@/app/(app)/_lib/useActorLabel";
-import { SOURCE_STATE_TONE } from "@/app/(app)/_lib/tone";
+
 import type { Tables } from "@/lib/database/types";
-import { sourceState } from "@/lib/knowledge/evidence";
+
 import { useShiftEvents, useSource, useSources } from "@/lib/queries";
 import { useSourceUnitIds, useSourceUsage, useUnitSummaries } from "@/lib/queries/screens";
 import { SourcePreview } from "../SourcePreview";
 import { SourceRowMenu } from "../SourceRowMenu";
 import { SourcePassages } from "./SourcePassages";
+import { UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
 
 // SOURCE DETAIL: what the file is, a preview of it, the knowledge that cites it, then its passages
 export function SourceDetail({ sourceId }: { sourceId: string }) {
@@ -25,6 +26,7 @@ export function SourceDetail({ sourceId }: { sourceId: string }) {
       {source ? (
         <div className="flex flex-col gap-6">
           <SourceHeader source={source} />
+          {source.origin === "internal" ? <SourceUploadProgress sourceId={source.id} active={!source.archived_at} /> : null}
           <Section title="Preview">
             <SourcePreview source={source} />
           </Section>
@@ -38,9 +40,15 @@ export function SourceDetail({ sourceId }: { sourceId: string }) {
   );
 }
 
+function SourceUploadProgress({ sourceId, active }: { sourceId: string; active: boolean }) {
+  const events = useShiftEvents({ filters: { source_id: sourceId, cause: "upload" }, limit: 1 });
+  const latest = events.data?.[0];
+  return latest ? <UploadWorkflowStatus eventId={latest.id} allowRetry={active} /> : null;
+}
+
 // HEADER: title, state, versions, dates, type and how much knowledge and article text cites it, with the source's "…" menu
 function SourceHeader({ source }: { source: Tables<"sources"> }) {
-  const state = sourceState(source);
+
   const versions = useSources();
   const newer = versions.data?.find((other) => other.id === source.replaced_by_id);
   const older = (versions.data ?? []).filter((other) => other.replaced_by_id === source.id);
@@ -49,7 +57,7 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
   const uploaderName = usePersonName(firstUpload?.person_id);
   const uploader = uploaderName ?? (firstUpload?.via === "api" ? "API key" : null);
   const usage = useSourceUsage().data?.get(source.id);
-  const facts: [string, ReactNode][] = [["State", <StatusDot key="state" tone={SOURCE_STATE_TONE[state]} label={state} />]];
+  const facts: [string, ReactNode][] = [["State", <SourceState key="state" source={source} />]];
   if (newer) facts.push(["Replaced by", <TextLink key="newer" href={`/sources/${newer.id}`}>{newer.title}</TextLink>]);
   if (older.length > 0) {
     facts.push(["Replaces", (

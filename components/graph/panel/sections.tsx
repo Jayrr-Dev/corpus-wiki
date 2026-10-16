@@ -5,6 +5,11 @@ import { DomainTreeSelect } from "@/components/actions/DomainTreeSelect";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
+import { colorGroupTree, type ColorTreeRow } from "@/lib/graph/colorGroupTree";
+import { GRAPH_ACCENTS, GRAPH_COLOR_FAMILIES } from "@/lib/graph/groups";
+import { chooseDomainColor } from "@/lib/graph/domainColors";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import {
   DISPLAY_SLIDERS,
@@ -12,6 +17,7 @@ import {
   GRAPH_COLORS,
   GROUP_FIELDS,
   groupCounts,
+  domainPathsForScope,
   groupSuggestions,
   joinGroupQuery,
   splitGroupQuery,
@@ -34,13 +40,12 @@ import { SelectRow, SliderRow, SwitchRow } from "./rows";
 // =====================================================================
 
 // FILTERS: search, one domain to focus on (with its subdomains), the extra layers, orphans, and derived related links with their minimum score
-export function FiltersSection({ value, nodes, onChange }: { value: GraphFilters; nodes: readonly GraphNode[]; onChange: (next: GraphFilters) => void }) {
+export function FiltersSection({ value, onChange }: { value: GraphFilters; onChange: (next: GraphFilters) => void }) {
   const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) => onChange({ ...value, [key]: next });
-  const domains = useMemo(() => groupSuggestions(nodes).domain.map((path) => ({ id: path, path })), [nodes]);
   return (
     <PanelSection title="Filters">
       <Input placeholder="Search…" value={value.search} onChange={(event) => set("search", event.target.value)} aria-label="Search the graph" />
-      <DomainTreeSelect label="Show domain" emptyLabel="All domains" value={value.domain} domains={domains} onChange={(next) => set("domain", next)} className="h-7 w-full max-w-none" />
+      <SwitchRow label="Knowledge units" checked={value.showUnits} onChange={(next) => set("showUnits", next)} />
       <SwitchRow label="Entities" checked={value.showEntities} onChange={(next) => set("showEntities", next)} />
       <SwitchRow label="Pages" checked={value.showPages} onChange={(next) => set("showPages", next)} />
       <SwitchRow label="Orphans" checked={value.showOrphans} onChange={(next) => set("showOrphans", next)} />
@@ -48,6 +53,31 @@ export function FiltersSection({ value, nodes, onChange }: { value: GraphFilters
       {value.showRelated ? (
         <SliderRow label="Min relatedness" value={value.relatedness} min={0.05} max={0.9} step={0.01} onChange={(next) => set("relatedness", next)} />
       ) : null}
+    </PanelSection>
+  );
+}
+
+export function DomainsSection({ value, nodes, onChange }: { value: GraphFilters; nodes: readonly GraphNode[]; onChange: (next: GraphFilters) => void }) {
+  const internal = value.domainScope === "internal" || value.domainScope === "both";
+  const external = value.domainScope === "external" || value.domainScope === "both";
+  const setScopes = (nextInternal: boolean, nextExternal: boolean) => onChange({
+    ...value,
+    domainScope: nextInternal ? (nextExternal ? "both" : "internal") : (nextExternal ? "external" : "none"),
+    domain: "",
+  });
+  const domains = useMemo(() => groupSuggestions(nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, value.domainScope) }))).domain.map((path) => ({ id: path, path })), [nodes, value.domainScope]);
+  const domainGroups = useMemo(() => (["internal", "external"] as const).map((scope) => ({
+    id: scope,
+    label: scope === "internal" ? "Internal" : "External",
+    domains: (value.domainScope === scope || value.domainScope === "both")
+      ? groupSuggestions(nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, scope) }))).domain.map((path) => ({ id: path, path }))
+      : [],
+  })), [nodes, value.domainScope]);
+  return (
+    <PanelSection title="Domains">
+      <SwitchRow label="Internal" checked={internal} onChange={(checked) => setScopes(checked, external)} />
+      <SwitchRow label="External" checked={external} onChange={(checked) => setScopes(internal, checked)} />
+      <DomainTreeSelect label="Show domain" emptyLabel="All domains" value={value.domain} domains={domains} groups={domainGroups} onChange={(domain) => onChange({ ...value, domain })} className="h-7 w-full max-w-none" />
     </PanelSection>
   );
 }
@@ -110,118 +140,154 @@ function GroupValue({ field, value, options, onChange }: { field: GroupField; va
   );
 }
 
-interface GroupRowProps {
-  group: GraphGroup;
-  count: number;
-  options: GroupOptions;
-  onChange: (next: GraphGroup) => void;
-  onRemove: () => void;
-}
 
-// GROUP ROW: color swatch (opens the palette), what to match, the value, and how many dots it colors
-function GroupRow({ group, count, options, onChange, onRemove }: GroupRowProps) {
-  const [isPicking, setIsPicking] = useState(false);
-  const colorLabel = GRAPH_COLORS.find((color) => color.token === group.color)?.label ?? group.color;
-  const { field, value } = splitGroupQuery(group.query);
-  const setQuery = (nextField: GroupField, nextValue: string) => onChange({ ...group, query: joinGroupQuery(nextField, nextValue) });
-  return (
-    <div className="group/row relative flex flex-col gap-1.5 rounded-md border p-2">
-      {/* Remove sits outside the card in the section chevron's column, centered on the card, shown on hover or keyboard focus */}
-      <Tooltip content="Remove group" side="left">
-        <button
-          type="button"
-          aria-label="Remove group"
-          onClick={onRemove}
-          className="absolute top-1/2 -left-4 w-2.5 -translate-y-1/2 text-center leading-none text-faint opacity-0 group-hover/row:opacity-100 hover:text-text focus-visible:opacity-100"
-        >
-          ×
-        </button>
-      </Tooltip>
-      {/* The swatch sits inside the select's left edge, so the select lines up with the value below */}
-      <NativeSelect
-        size="sm"
-        value={field}
-        onChange={(event) => setQuery(event.target.value as GroupField, "")}
-        aria-label="Match by"
-        className="w-full"
-        leading={
-          <Tooltip content="Change color">
-            <button
-              type="button"
-              aria-label={`Color: ${colorLabel}. Change color`}
-              aria-expanded={isPicking}
-              onClick={() => setIsPicking((open) => !open)}
-              className="rounded-full p-0.5 ring-border hover:ring-1"
-            >
-              <Swatch color={group.color} />
-            </button>
-          </Tooltip>
-        }
-      >
-        {GROUP_FIELDS.map((option) => (
-          <NativeSelectOption key={option.key} value={option.key}>
-            {option.label}
-          </NativeSelectOption>
-        ))}
-      </NativeSelect>
-      {isPicking ? (
-        <div className="grid grid-cols-8 justify-items-center" role="listbox" aria-label="Group color">
-          {GRAPH_COLORS.map((color) => (
-            <Tooltip key={color.token} content={color.label}>
-              <button
-                type="button"
-                role="option"
-                aria-selected={color.token === group.color}
-                aria-label={color.label}
-                onClick={() => {
-                  onChange({ ...group, color: color.token });
-                  setIsPicking(false);
-                }}
-                className={cn("rounded-full p-0.5", color.token === group.color && "ring-1 ring-muted-foreground")}
-              >
-                <Swatch color={color.token} />
-              </button>
-            </Tooltip>
-          ))}
-        </div>
-      ) : null}
-      <GroupValue field={field} value={value} options={options} onChange={(next) => setQuery(field, next)} />
-      {value.trim() ? <span className="text-xs text-faint">{count === 1 ? "Colors 1 dot" : `Colors ${count} dots`}</span> : null}
+const PALETTE_FAMILY_ORDER = ["Red", "Orange", "Copper", "Gold", "Lime", "Green", "Teal", "Cyan", "Blue", "Violet", "Purple", "Pink", "Rose"];
+const PALETTE_FAMILIES = [...GRAPH_COLOR_FAMILIES].sort((a, b) => PALETTE_FAMILY_ORDER.indexOf(a.label) - PALETTE_FAMILY_ORDER.indexOf(b.label));
+const NEUTRAL_TOKENS = new Set<string>(["text", "muted", "faint", "graph-slate", "graph-sand"]);
+
+function ColorPalette({ value, onChange }: { value: GraphColor; onChange: (color: GraphColor) => void }) {
+  const renderColor = (color: { token: GraphColor; label: string }) => <Tooltip key={color.token} content={color.label}>
+      <button type="button" aria-label={color.label} aria-pressed={value === color.token} onClick={() => onChange(color.token)}
+        className="flex size-9 items-center justify-center justify-self-center rounded-md hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+        <span className={cn("relative rounded-full", value === color.token && "ring-2 ring-foreground ring-offset-2 ring-offset-popover")}><Swatch color={color.token} className="size-5" />
+          {value === color.token ? <Check className="absolute -bottom-1 -right-1 size-3 rounded-full bg-foreground p-0.5 text-background" aria-hidden /> : null}
+        </span>
+      </button>
+    </Tooltip>;
+  const familyTokens = new Set<string>(GRAPH_COLOR_FAMILIES.flatMap((family) => family.colors.map((color) => color.token)));
+  return <div className="flex w-72 max-w-full flex-col gap-2" role="group" aria-label="Choose a color">
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-sm font-medium">Color</span>
+      <span className="text-xs text-muted-foreground">{GRAPH_COLORS.find((color) => color.token === value)?.label}</span>
     </div>
-  );
+    <div className="max-h-[min(26rem,calc(var(--radix-popover-content-available-height,32rem)-5rem))] overflow-y-auto overscroll-contain [scrollbar-gutter:stable]">
+      <div className="sticky top-0 z-10 grid grid-cols-[minmax(4rem,1fr)_repeat(3,3.5rem)] gap-1 border-b border-border bg-popover pb-2 text-center text-xs text-muted-foreground">
+        <span className="text-left">Family</span><span>Light</span><span>Medium</span><span>Dark</span>
+      </div>
+      {PALETTE_FAMILIES.map((family) => <div key={family.label} className="grid grid-cols-[minmax(4rem,1fr)_repeat(3,3.5rem)] items-center gap-1 py-0.5">
+        <span className="text-xs text-muted-foreground">{family.label}</span>
+        {family.colors.map(renderColor)}
+      </div>)}
+      {[{ label: "Extra accents", neutral: false }, { label: "Neutrals", neutral: true }].map((section) => <div key={section.label} className="mt-3 border-t border-border pt-3">
+        <p className="pb-2 text-xs font-medium text-muted-foreground">{section.label}</p>
+        <div className="grid grid-cols-6 gap-1">
+          {GRAPH_COLORS.filter((color) => !familyTokens.has(color.token) && NEUTRAL_TOKENS.has(color.token) === section.neutral).map(renderColor)}
+        </div>
+      </div>)}
+    </div>
+  </div>;
 }
 
-// Next unused accent, so each new group starts in a different color
-function nextColor(groups: readonly GraphGroup[]): GraphColor {
-  const used = new Set(groups.map((group) => group.color));
-  return GRAPH_COLORS.find((color) => !used.has(color.token))?.token ?? GRAPH_COLORS[0].token;
+function GroupRuleFields({ query, options, onChange }: { query: string; options: GroupOptions; onChange: (query: string) => void }) {
+  const { field, value } = splitGroupQuery(query);
+  return <>
+    <NativeSelect size="sm" value={field} onChange={(event) => onChange(joinGroupQuery(event.target.value as GroupField, ""))} aria-label="Match by" className="w-full">
+      {GROUP_FIELDS.map((option) => <NativeSelectOption key={option.key} value={option.key}>{option.label}</NativeSelectOption>)}
+    </NativeSelect>
+    <GroupValue field={field} value={value} options={options} onChange={(next) => onChange(joinGroupQuery(field, next))} />
+  </>;
 }
 
-// GROUPS: ordered list; the first matching group colors a dot
+// Direct color editing keeps the graph visible; rule editing is secondary.
+function ColorGroupRow({ group, count, options, onChange, onRemove, branch, onToggle, searching }: {
+  group: GraphGroup; count: number; options: GroupOptions;
+  onChange: (next: GraphGroup) => void; onRemove: () => void;
+  branch: ColorTreeRow; onToggle: () => void; searching: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const { field, value } = splitGroupQuery(group.query);
+  const label = value.trim() || "Choose a match";
+  const isChild = field === "domain" && value.includes("/");
+  const displayLabel = isChild ? value.split("/").at(-1) : label;
+  return <div className="group/color flex min-w-0 items-center gap-1 pl-(--branch-indent)" style={{ "--branch-indent": `${branch.depth * 10}px` } as CSSProperties}>
+    {branch.hasChildren ? <button type="button" aria-label={(branch.expanded ? "Collapse " : "Expand ") + label} aria-expanded={branch.expanded} disabled={searching} onClick={onToggle}
+      className="flex size-4 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground disabled:opacity-50">
+      <ChevronRight className={cn("size-3 transition-transform", branch.expanded && "rotate-90")} />
+    </button> : <span className="w-4 shrink-0" />}
+    <Popover open={open} onOpenChange={setOpen}>
+      <Tooltip content="Change color" side="right"><PopoverTrigger asChild>
+        <button type="button" aria-label={"Change color for " + label} className="flex size-7 shrink-0 items-center justify-center rounded hover:bg-muted/50">
+          <Swatch color={group.color} />
+        </button>
+      </PopoverTrigger></Tooltip>
+      <PopoverContent side="right" align="start" className="w-auto" aria-label={"Color for " + label}>
+        <ColorPalette value={group.color} onChange={(color) => { onChange({ ...group, color }); setOpen(false); }} />
+      </PopoverContent>
+    </Popover>
+    <Tooltip content={field === "domain" ? label : field + ": " + label} side="right">
+      <span className="min-w-0 flex-1 truncate text-xs">{displayLabel}</span>
+    </Tooltip>
+    <span className="text-xs tabular-nums text-faint" aria-label={count + " dots"}>{count}</span>
+    <Popover open={editing} onOpenChange={setEditing}>
+      <Tooltip content="Edit matching rule" side="right"><PopoverTrigger asChild>
+        <button type="button" aria-label={"Edit rule for " + label} className="flex size-6 shrink-0 items-center justify-center rounded text-faint opacity-0 hover:bg-muted/50 hover:text-foreground focus-visible:opacity-100 group-hover/color:opacity-100 group-focus-within/color:opacity-100 data-[state=open]:opacity-100">
+          <SlidersHorizontal className="size-3" />
+        </button>
+      </PopoverTrigger></Tooltip>
+      <PopoverContent side="right" align="start" aria-label="Edit color rule">
+        <GroupRuleFields query={group.query} options={options} onChange={(query) => onChange({ ...group, query })} />
+        <Button variant="ghost" size="sm" onClick={onRemove} className="self-start">Remove rule</Button>
+      </PopoverContent>
+    </Popover>
+  </div>;
+}
+
+// Dismissing the draft leaves no empty saved group behind.
+function AddColorGroup({ value, options, onAdd }: { value: GraphGroup[]; options: GroupOptions; onAdd: (group: GraphGroup) => void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("domain:");
+  const [color, setColor] = useState<GraphColor>("applied");
+  const [manualColor, setManualColor] = useState(false);
+  const changeOpen = (next: boolean) => {
+    if (next) {
+      setQuery("domain:");
+      setManualColor(false);
+      setColor(GRAPH_ACCENTS.find((candidate) => !value.some((group) => group.color === candidate.token))?.token ?? "applied");
+    }
+    setOpen(next);
+  };
+  return <Popover open={open} onOpenChange={changeOpen}>
+    <Tooltip content="Add color rule"><PopoverTrigger asChild>
+      <button type="button" aria-label="Add color rule" className="flex size-7 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted/50 hover:text-foreground"><Plus className="size-3.5" /></button>
+    </PopoverTrigger></Tooltip>
+    <PopoverContent side="right" align="start" aria-label="Add color rule">
+      <span className="font-medium">Add color rule</span>
+      <GroupRuleFields query={query} options={options} onChange={(next) => {
+        setQuery(next);
+        const match = splitGroupQuery(next);
+        if (!manualColor && match.field === "domain" && match.value.trim()) setColor(chooseDomainColor(match.value, value));
+      }} />
+      <ColorPalette value={color} onChange={(next) => { setColor(next); setManualColor(true); }} />
+      <Button size="sm" disabled={!splitGroupQuery(query).value.trim()} onClick={() => {
+        onAdd({ id: crypto.randomUUID(), query, color });
+        setOpen(false);
+      }}>Add rule</Button>
+    </PopoverContent>
+  </Popover>;
+}
+
 export function GroupsSection({ value, nodes, onChange }: { value: GraphGroup[]; nodes: readonly GraphNode[]; onChange: (next: GraphGroup[]) => void }) {
+  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const options = useMemo(() => groupSuggestions(nodes), [nodes]);
   const counts = useMemo(() => groupCounts(value, nodes), [value, nodes]);
-  const replace = (index: number, next: GraphGroup) => onChange(value.map((group, at) => (at === index ? next : group)));
-  const remove = (index: number) => onChange(value.filter((_, at) => at !== index));
-  const add = () => onChange([...value, { id: crypto.randomUUID(), query: joinGroupQuery("domain", ""), color: nextColor(value) }]);
-  return (
-    <PanelSection title="Groups" defaultOpen>
-      {value.map((group, index) => (
-        <GroupRow
-          key={group.id}
-          group={group}
-          count={counts.get(group.id) ?? 0}
-          options={options}
-          onChange={(next) => replace(index, next)}
-          onRemove={() => remove(index)}
-        />
-      ))}
-      <Button variant="outline" size="sm" onClick={add} className="self-center">
-        + Add color group
-      </Button>
-    </PanelSection>
-  );
+  const visible = useMemo(() => colorGroupTree(value, expanded, search), [value, expanded, search]);
+  return <PanelSection title="Colors" defaultOpen>
+    <div className="flex items-center gap-1">
+      {value.length > 6 || search ? <Input placeholder="Find a domain…" aria-label="Find color groups" value={search} onChange={(event) => setSearch(event.target.value)} className="h-7 min-w-0 flex-1" /> : <span className="flex-1 text-xs text-faint">By domain</span>}
+      <AddColorGroup value={value} options={options} onAdd={(group) => { onChange([group, ...value]); setSearch(splitGroupQuery(group.query).value); }} />
+    </div>
+    <div className="-mt-2 flex max-h-56 flex-col overflow-y-auto overscroll-contain" aria-label="Domain colors">
+      {visible.map((branch) => <ColorGroupRow key={branch.group.id} group={branch.group} count={counts.get(branch.group.id) ?? 0} options={options} branch={branch} searching={Boolean(search.trim())}
+        onToggle={() => setExpanded((current) => { const next = new Set(current); if (next.has(branch.group.id)) next.delete(branch.group.id); else next.add(branch.group.id); return next; })}
+        onChange={(next) => onChange(value.map((current) => current.id === branch.group.id ? next : current))}
+        onRemove={() => onChange(value.filter((current) => current.id !== branch.group.id))} />)}
+      {!visible.length ? <p className="py-2 text-xs text-faint">{search ? "No matching domains." : "Colors appear as domains are added."}</p> : null}
+    </div>
+  </PanelSection>;
 }
+
 
 // DISPLAY: arrows, the three sliders, and the replay
 const TITLE_OPTIONS = TITLE_POSITIONS.map((position) => ({ value: position, label: position[0]!.toUpperCase() + position.slice(1) }));
@@ -262,3 +328,4 @@ export function ForcesSection({ value, onChange }: { value: GraphForces; onChang
     </PanelSection>
   );
 }
+

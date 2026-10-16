@@ -8,6 +8,7 @@ import { DIRECT_UPLOAD_FORMATS, formatOf } from "@/lib/ingest/formats";
 import type { ActionResult } from "@/lib/server-actions/result";
 import { prepareDirectUpload, processUpload, retryUpload, startUpload, startUploadFromPath } from "@/lib/server-actions/upload";
 import { getBrowserSupabase } from "@/lib/supabase/client";
+import { startLinkUpload } from "@/lib/server-actions/upload";
 
 // =====================================================================
 // UPLOAD FLOW: step 1 stores the file and opens the shift event; step 2
@@ -24,7 +25,7 @@ export type UploadPhase =
 
 // The failed upload a Retry would run again (null when there is nothing stored to retry)
 export function retryTarget(phase: UploadPhase): { eventId: string; sourceId: string } | null {
-  if (phase.kind === "done" && phase.result.status === "failed") return { eventId: phase.eventId, sourceId: phase.sourceId };
+  if (phase.kind === "done" && !phase.result.workflow && phase.result.status === "failed") return { eventId: phase.eventId, sourceId: phase.sourceId };
   if (phase.kind === "error" && phase.eventId && phase.sourceId) return { eventId: phase.eventId, sourceId: phase.sourceId };
   return null;
 }
@@ -59,6 +60,7 @@ async function startFileUpload(file: File, sourceDate: string): Promise<ActionRe
 export type UploadFlow = {
   phase: UploadPhase;
   start: (file: File, sourceDate: string) => Promise<void>;
+  startLink: (url: string, sourceDate: string) => Promise<void>;
   // runs step 2 again for a failed upload, with the model chosen now
   retry: () => Promise<void>;
 };
@@ -74,7 +76,7 @@ export function useUploadFlow(): UploadFlow {
     const progress = startProgress(`Processing “${name}”`, "Reading the file with AI…");
     const processed = await safely(() => run(eventId));
     await queryClient.invalidateQueries({ queryKey: ["table"] });
-    if (!processed.ok || processed.status === "failed") progress.fail();
+    if (!processed.ok || processed.status === "failed" || processed.workflow?.state === "incomplete") progress.fail();
     else progress.done();
     if (!processed.ok) return setPhase({ kind: "error", error: processed.error, eventId, sourceId });
     setPhase({ kind: "done", eventId, sourceId, result: processed });
@@ -96,5 +98,14 @@ export function useUploadFlow(): UploadFlow {
     if (target) await runPipeline(target.eventId, target.sourceId, fileName, retryUpload);
   };
 
-  return { phase, start, retry };
+  const startLink = async (url: string, sourceDate: string) => {
+    setFileName(url);
+    setPhase({ kind: "starting" });
+    const started = await safely(() => startLinkUpload(url, sourceDate));
+    if (!started.ok) return setPhase({ kind: "error", error: started.error, eventId: null, sourceId: null });
+    if (started.kind === "skipped") return setPhase({ kind: "skipped", sourceId: started.sourceId });
+    await runPipeline(started.eventId, started.sourceId, url, processUpload);
+  };
+
+  return { phase, start, startLink, retry };
 }

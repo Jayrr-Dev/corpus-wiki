@@ -21,7 +21,7 @@ const MAX_DEPTH = 5;
 export function LocalGraph({ centerId }: { centerId: string }) {
   const router = useRouter();
   const query = useGraphData();
-  const { settings } = useGraphSettings(GLOBAL_GRAPH_SETTINGS_KEY);
+  const { settings } = useGraphSettings(GLOBAL_GRAPH_SETTINGS_KEY, query.data?.nodes);
   const [depth, setDepth] = useState(MIN_DEPTH);
 
   const local = useMemo(() => {
@@ -34,6 +34,7 @@ export function LocalGraph({ centerId }: { centerId: string }) {
       search: "",
       domain: "",
       showOrphans: true,
+      showUnits: settings.filters.showUnits || centerKind === "unit",
       showEntities: settings.filters.showEntities || centerKind === "entity",
       showPages: settings.filters.showPages || centerKind === "page",
     });

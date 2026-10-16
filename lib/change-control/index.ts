@@ -2,6 +2,7 @@ import type { DraftAction, DraftChangeSet } from "@/lib/ai/types";
 import type { Enums } from "@/lib/database/types";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { CommitResult, PersonAction } from "./types";
+import { workflowWrite } from "@/lib/ingest/workflowContext";
 
 export type * from "./types";
 
@@ -15,11 +16,11 @@ type Submitted = { changeSetId: string; eventId: string };
 
 // WHO DRAFTED A CHANGESET AND WHY. eventId attaches the set to an existing event
 // (an upload, or the living page rewriting lines after one); null starts a new event.
-export type ChangeSetOrigin = { eventId: string | null; cause: Enums<"event_cause">; actor: Enums<"actor_kind"> };
+export type ChangeSetOrigin = { eventId: string | null; cause: Enums<"event_cause">; actor: Enums<"actor_kind">; operationKey?: string };
 
 // Stores a drafted ChangeSet (its event is created when the origin has none)
 export async function submitChangeSet(db: DbRpc, origin: ChangeSetOrigin, draft: DraftChangeSet): Promise<Submitted> {
-  return db.call<Submitted>("submit_change_set", {
+  return workflowWrite<Submitted>(db, origin.operationKey ?? `submit:${draft.summary}`, "submit_change_set", {
     p_event_id: origin.eventId,
     p_cause: origin.cause,
     p_actor: origin.actor,
@@ -31,7 +32,7 @@ export async function submitChangeSet(db: DbRpc, origin: ChangeSetOrigin, draft:
 
 // Checks and applies a stored ChangeSet in one transaction
 export async function commitChangeSet(db: DbRpc, changeSetId: string): Promise<CommitResult> {
-  return db.call<CommitResult>("commit_change_set", { p_change_set_id: changeSetId });
+  return workflowWrite<CommitResult>(db, `commit:${changeSetId}`, "commit_change_set", { p_change_set_id: changeSetId });
 }
 
 // Stores a person's edit as a one-action ChangeSet and commits it

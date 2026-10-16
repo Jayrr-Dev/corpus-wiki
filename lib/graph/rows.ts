@@ -17,7 +17,7 @@ export interface GraphRows {
   relationships: { id: string; from_unit_id: string; to_unit_id: string; type: RelationshipType }[];
   entities: { id: string; name: string; created_at: string }[];
   unitEntities: { unit_id: string; entity_id: string }[];
-  domains: { id: string; path: string }[];
+  domains: { id: string; path: string; parent_id?: string | null; context_entity_id?: string | null }[];
   unitDomains: { unit_id: string; domain_id: string }[];
   pages: { id: string; title: string; slug: string; created_at: string; entity_id: string | null; domain_id: string | null }[];
   sections: { id: string; page_id: string }[];
@@ -55,7 +55,7 @@ export async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows
         client.from("entities").select("id, name, created_at").is("merged_into_id", null).order("id").range(from, to),
       ),
       readAllPages((from, to) => client.from("unit_entities").select("unit_id, entity_id").order("unit_id").order("entity_id").range(from, to)),
-      readAllPages((from, to) => client.from("domains").select("id, path").order("id").range(from, to)),
+      readAllPages((from, to) => client.from("domains").select("id, path, parent_id, context_entity_id").order("id").range(from, to)),
       readAllPages((from, to) => client.from("unit_domains").select("unit_id, domain_id").order("unit_id").order("domain_id").range(from, to)),
       readAllPages((from, to) =>
         client.from("pages").select("id, title, slug, created_at, entity_id, domain_id").is("retired_at", null).order("id").range(from, to),

@@ -1,3 +1,4 @@
+import { workflowStep } from "@/lib/ingest/workflowContext";
 import "server-only";
 
 import { chatJson, CompletionLengthError, type TokenFactorySettings } from "@/lib/ai/chat";
@@ -34,13 +35,13 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
     const extract = async (passages: ReconciliationInput["passages"]): Promise<void> => {
       let answer;
       try {
-        answer = await chatJson(this.settings, {
+        answer = await workflowStep(`extract:${passages.map((p) => p.id).join(":")}`, () => chatJson(this.settings, {
           name: "reconciliation",
           subject: input.source.title,
           schema: reconciliationAnswerSchema,
           jsonSchema: reconciliationJsonSchema,
           messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills),
-        });
+        }));
       } catch (error) {
         if (!(error instanceof CompletionLengthError)) throw error;
         countUsage(error.tokensIn, error.tokensOut);
@@ -62,7 +63,7 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       links.push(...answer.value.links.map((link) => ({ ...link, from: globalClaimRef(link.from), to: globalClaimRef(link.to) })));
       claims.push(...answer.value.claims.map((claim) => ({
         ...claim,
-        passages: claim.passages.flatMap((ref) => localRefs.get(ref.trim()) ?? []),
+        passages: claim.passages.map((ref) => localRefs.get(ref.trim().toUpperCase()) ?? "INVALID_PASSAGE"),
       })));
     };
 
@@ -71,7 +72,7 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       summary: [...new Set(summaries)].join(" ") || `Read ${input.source.title}`,
       // Convert together so entities, domains and updates to the same unit are deduplicated.
       actions: answerToActions({ summary: "", claims, links }, input),
-      trace: { modelVersion, promptVersion: skillTrace(PROMPT_VERSION,["extract_knowledge","identify_entities","link_knowledge","organize_topics"],this.settings.skills), tokensIn, tokensOut },
+      trace: { modelVersion, promptVersion: skillTrace(PROMPT_VERSION,["extract_knowledge","identify_entities","link_knowledge","organize_topics","define_concepts"],this.settings.skills), tokensIn, tokensOut },
     };
   }
 }

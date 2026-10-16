@@ -1,7 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Tabs } from "radix-ui";
 import { UploaderName } from "@/app/(app)/_components/ActorName";
 import { Section, TextLink } from "@/app/(app)/_components/bits";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
@@ -13,10 +14,11 @@ import { DataTable } from "@/components/data-table";
 import { UploadIcon } from "@/components/icons";
 import type { Tables } from "@/lib/database/types";
 import { sourceState } from "@/lib/knowledge/evidence";
+import { cn } from "@/lib/utils";
 import { useChangeSets, useShiftEvents } from "@/lib/queries";
 import { useRowsByIds } from "@/lib/queries/screens";
 import { SourceRowMenu } from "@/app/(app)/sources/SourceRowMenu";
-import { RetryUploadButton } from "./RetryUploadButton";
+import { UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
 
 // ONE ROW: the upload event with its source and change set
 type UploadRow = Tables<"shift_events"> & { sourceTitle: string; source: Tables<"sources"> | null; changeSetId: string | null };
@@ -24,7 +26,7 @@ type UploadRow = Tables<"shift_events"> & { sourceTitle: string; source: Tables<
 // COLUMNS: status, file, change set, error, who uploaded it and when, then Retry on a failed row and the source's "…" menu
 const COLUMNS = [
   textColumn<UploadRow>("status", "Status", (row) => row.status, (row) => (
-    <StatusDot
+    row.source?.origin === "internal" ? <UploadWorkflowStatus eventId={row.id} allowRetry={!row.source.archived_at} legacyStatus={row.status} /> : <StatusDot
       tone={EVENT_TONE[row.status]}
       label={row.status === "reconciling" ? "Processing" : row.status}
       busy={row.status === "received" || row.status === "extracting" || row.status === "reconciling" || row.status === "checking"}
@@ -46,7 +48,7 @@ const COLUMNS = [
     row.changeSetId ? <TextLink href={`/changes/${row.changeSetId}`}>Open</TextLink> : <span className="text-faint">—</span>,
   ),
   textColumn<UploadRow>("error", "Error", (row) => row.error ?? "", (row) => <span className="block w-64 whitespace-normal break-words">{row.error ?? ""}</span>),
-  textColumn<UploadRow>("by", "Uploaded by", (row) => row.person_id ?? row.via ?? "", (row) => <UploaderName event={row} />),
+  textColumn<UploadRow>("by", "Uploaded by", (row) => row.source?.origin === "external" || row.actor === "ai" ? "AI" : row.person_id ?? row.via ?? "", (row) => row.source?.origin === "external" ? <span>AI</span> : <UploaderName event={row} />),
   dateColumn<UploadRow>("created", "Uploaded", (row) => row.created_at, true),
   {
     id: "actions",
@@ -54,7 +56,6 @@ const COLUMNS = [
     enableSorting: false,
     cell: ({ row }) => (
       <div className="flex items-start justify-end gap-1">
-        {row.original.status === "failed" ? <RetryUploadButton eventId={row.original.id} /> : null}
         {row.original.source ? <SourceRowMenu source={row.original.source} /> : null}
       </div>
     ),
@@ -63,24 +64,38 @@ const COLUMNS = [
 
 // RECENT UPLOADS: shift events caused by an upload, newest first
 export function RecentUploads() {
+  const [origin, setOrigin] = useState("internal");
   const query = useUploadRows();
+  const data = useMemo(() => query.data.filter((row) => (row.source?.origin ?? "internal") === origin), [query.data, origin]);
   return (
     <Section title="Recent uploads">
+      <Tabs.Root value={origin} onValueChange={setOrigin} className="space-y-4">
+        <Tabs.List aria-label="Upload source origin" className="flex gap-1 border-b">
+          {(["internal", "external"] as const).map((value) => (
+            <Tabs.Trigger key={value} value={value} className={cn("border-b-2 px-3 py-2 text-panel transition-colors", origin === value ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
+              {value === "internal" ? "Internal" : "External"}
+            </Tabs.Trigger>
+          ))}
+        </Tabs.List>
+        <Tabs.Content value={origin}>
       <DataTable
-        query={query}
+        key={origin}
+        query={{ ...query, data }}
         columns={COLUMNS}
         getRowId={(row) => row.id}
         pageSize={10}
         filterPlaceholder="Search uploads…"
-        emptyState={<EmptyState icon={UploadIcon} title="No uploads yet" />}
+        emptyState={<EmptyState icon={UploadIcon} title={`No ${origin} uploads yet`} />}
       />
+        </Tabs.Content>
+      </Tabs.Root>
     </Section>
   );
 }
 
 // Upload events joined to their source titles and change sets
 function useUploadRows() {
-  const events = useShiftEvents({ filters: { cause: "upload" }, limit: 50 });
+  const events = useShiftEvents({ filters: { cause: "upload" } });
   const sources = useRowsByIds("sources", (events.data ?? []).map((event) => event.source_id));
   const changeSets = useChangeSets();
   const data = useMemo(() => {

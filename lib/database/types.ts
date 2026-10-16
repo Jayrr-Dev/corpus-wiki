@@ -17,8 +17,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      external_source_reviews: {
+        Row: {
+          id: string; created_at: string; page_id: string | null; section_id: string | null; source_id: string | null;
+          stage: string; outcome: string; context: Json; proposal: Json; reason: string;
+          tokens_in: number | null; tokens_out: number | null;
+          url: string | null; source_title: string | null; excerpts: string[]; model: string | null; prompt_version: string; reverted_at: string | null;
+        }
+        Insert: {
+          id?: string; created_at?: string; page_id?: string | null; section_id?: string | null; source_id?: string | null;
+          stage: string; outcome: string; context: Json; proposal: Json; reason: string;
+          tokens_in?: number | null; tokens_out?: number | null;
+          url?: string | null; source_title?: string | null; excerpts?: string[]; model?: string | null; prompt_version?: string;
+        }
+        Update: {
+          source_id?: string | null;
+        }
+        Relationships: []
+      }
       ai_calls: {
         Row: {
+          role?: string | null
           completion_tokens: number | null
           created_at: string
           duration_ms: number
@@ -33,6 +52,7 @@ export type Database = {
           subject: string | null
         }
         Insert: {
+          role?: string | null
           completion_tokens?: number | null
           created_at?: string
           duration_ms: number
@@ -47,6 +67,7 @@ export type Database = {
           subject?: string | null
         }
         Update: {
+          role?: string | null
           completion_tokens?: number | null
           created_at?: string
           duration_ms?: number
@@ -154,6 +175,7 @@ export type Database = {
       }
       change_sets: {
         Row: {
+          actor_attribution?: Json | null
           applied_at: string | null
           author_id: string | null
           created_at: string
@@ -168,6 +190,7 @@ export type Database = {
           tokens_out: number | null
         }
         Insert: {
+          actor_attribution?: Json | null
           applied_at?: string | null
           author_id?: string | null
           created_at?: string
@@ -182,6 +205,7 @@ export type Database = {
           tokens_out?: number | null
         }
         Update: {
+          actor_attribution?: Json | null
           applied_at?: string | null
           author_id?: string | null
           created_at?: string
@@ -195,6 +219,12 @@ export type Database = {
           tokens_in?: number | null
           tokens_out?: number | null
         }
+        Relationships: []
+      }
+      domain_tabs: {
+        Row: { id: string; name: string; description: string; root_ids: string[]; created_at: string }
+        Insert: { id?: string; name: string; description?: string; root_ids?: string[]; created_at?: string }
+        Update: { name?: string; description?: string; root_ids?: string[] }
         Relationships: []
       }
       domains: {
@@ -513,6 +543,7 @@ export type Database = {
         Row: {
           author: Database["public"]["Enums"]["actor_kind"]
           author_id: string | null
+          knowledge_context: Json | null
           content: string
           created_at: string
           event_id: string
@@ -527,6 +558,7 @@ export type Database = {
         Insert: {
           author: Database["public"]["Enums"]["actor_kind"]
           author_id?: string | null
+          knowledge_context?: Json | null
           content: string
           created_at?: string
           event_id: string
@@ -541,6 +573,7 @@ export type Database = {
         Update: {
           author?: Database["public"]["Enums"]["actor_kind"]
           author_id?: string | null
+          knowledge_context?: Json | null
           content?: string
           created_at?: string
           event_id?: string
@@ -658,6 +691,7 @@ export type Database = {
       }
       sources: {
         Row: {
+          archive_reason: string | null
           archived_at: string | null
           byte_size: number | null
           created_at: string
@@ -673,6 +707,7 @@ export type Database = {
           url: string | null
         }
         Insert: {
+          archive_reason?: string | null
           archived_at?: string | null
           byte_size?: number | null
           created_at?: string
@@ -688,6 +723,7 @@ export type Database = {
           url?: string | null
         }
         Update: {
+          archive_reason?: string | null
           archived_at?: string | null
           byte_size?: number | null
           created_at?: string
@@ -861,11 +897,13 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      read_upload_workflows: { Args: { p_event_ids: string[] }; Returns: Json };
     }
     Enums: {
       action_outcome: "pending" | "applied" | "exception" | "rejected" | "reverted"
       action_type:
+        | "source_lifecycle"
+        | "source_review"
         | "create_domain"
         | "create_entity"
         | "add_claim"
@@ -880,6 +918,7 @@ export type Database = {
         | "move_line"
         | "create_page"
         | "rename_page"
+        | "review_page"
         | "retire_page"
         | "create_section"
         | "rename_section"
@@ -920,6 +959,7 @@ export type Database = {
         | "deletion"
         | "low_confidence"
         | "domain_tree_review"
+        | "root_domain_approval"
         | "update_request"
       exception_status: "open" | "accepted" | "rejected"
       relationship_type:
@@ -958,6 +998,8 @@ export const Constants = {
     Enums: {
       action_outcome: ["pending", "applied", "exception", "rejected", "reverted"],
       action_type: [
+        "source_lifecycle",
+        "source_review",
         "create_domain",
         "create_entity",
         "add_claim",
@@ -972,6 +1014,7 @@ export const Constants = {
         "move_line",
         "create_page",
         "rename_page",
+        "review_page",
         "retire_page",
         "create_section",
         "rename_section",
@@ -1002,6 +1045,7 @@ export const Constants = {
         "deletion",
         "low_confidence",
         "domain_tree_review",
+        "root_domain_approval",
         "update_request",
       ],
       exception_status: ["open", "accepted", "rejected"],
@@ -1022,3 +1066,4 @@ export const Constants = {
     },
   },
 } as const
+

@@ -29,6 +29,21 @@ export interface DrawInput {
   focusIds: ReadonlySet<string>;
   // While hovering, show only the hovered dot's text (no neighbor or circle names); its links and neighbors still light up
   hoverLabelOnly: boolean;
+  focusedDomain?: string | null;
+  labelBoxes?: { x: number; y: number; w: number; h: number }[];
+}
+
+function reserveLabel(input: DrawInput, x: number, y: number, w: number, h: number): boolean {
+  const box = { x: x * input.camera.k + input.camera.x - 5, y: y * input.camera.k + input.camera.y - 4, w: w + 10, h: h + 8 };
+  if (box.x + box.w < 0 || box.y + box.h < 0 || box.x > input.width || box.y > input.height) return false;
+  const boxes = input.labelBoxes ?? [];
+  if (boxes.some((other) => box.x < other.x + other.w && box.x + box.w > other.x && box.y < other.y + other.h && box.y + box.h > other.y)) return false;
+  boxes.push(box);
+  return true;
+}
+
+function inDomain(node: GraphNode, domain: string | null | undefined): boolean {
+  return !domain || node.domainPaths.some((path) => path === domain || path.startsWith(`${domain}/`));
 }
 
 // OPACITY OF EVERYTHING OUTSIDE THE HOVER FOCUS
@@ -47,8 +62,8 @@ const SIMILAR_ALPHA = 0.7;
 const LINK_PX = 0.8;
 // DOMAIN CIRCLES: accent per domain (cycled), fill and ring opacity, ring width and label size in screen pixels
 const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "stale", "failed"];
-const CIRCLE_FILL_ALPHA = 0.06;
-const CIRCLE_RING_ALPHA = 0.55;
+const CIRCLE_FILL_ALPHA = 0.16;
+const CIRCLE_RING_ALPHA = 0.8;
 const CIRCLE_RING_PX = 1.2;
 const CIRCLE_LABEL_PX = { branch: 14, leaf: 12 } as const;
 const CIRCLE_LABEL_HALO_PX = 3;
@@ -96,10 +111,10 @@ function drawLinks(input: DrawInput): void {
       ctx.beginPath();
       for (const link of links) {
         const pair = ends(link);
-        if (pair && (link.kind === "similar") === similar && isFocused(...pair) === focused) traceLink(ctx, pair[0], pair[1], input);
+        if (pair && (link.kind === "similar") === similar && isFocused(...pair) === focused && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input);
       }
-      ctx.strokeStyle = focused ? palette.muted : palette.border;
-      const alpha = focused || hoveredId === null ? 1 : DIMMED;
+      ctx.strokeStyle = palette.muted;
+      const alpha = focused ? 1 : hoveredId === null ? 0.7 : 0.45;
       ctx.globalAlpha = similar && !focused ? alpha * SIMILAR_ALPHA : alpha;
       ctx.stroke();
     }
@@ -113,7 +128,7 @@ function drawNodes(input: DrawInput): void {
   const { ctx, nodes, palette, colorOf, hoveredId, focusIds, display } = input;
   for (const node of nodes) {
     const group = colorOf(node);
-    ctx.globalAlpha = hoveredId === null || focusIds.has(node.id) ? 1 : DIMMED;
+    ctx.globalAlpha = !inDomain(node, input.focusedDomain) ? 0.08 : hoveredId === null || focusIds.has(node.id) ? 1 : DIMMED;
     ctx.fillStyle = group ? palette.token(group) : baseColor(node, palette);
     ctx.beginPath();
     ctx.arc(node.x ?? 0, node.y ?? 0, nodeRadius(node, display.nodeSize), 0, Math.PI * 2);
@@ -226,12 +241,15 @@ function drawLabels(input: DrawInput): void {
   let hovered: SimNode | null = null;
   for (const node of nodes) {
     if (node.id === hoveredId) { hovered = node; continue; }
+    if (!inDomain(node, input.focusedDomain)) continue;
     const inFocus = hoveredId !== null && focusIds.has(node.id);
     const opacity = inFocus ? 1 : hoveredId === null ? zoomOpacity : zoomOpacity * DIMMED;
     if (opacity <= 0.01 || !isOnScreen(node, input)) continue;
     ctx.globalAlpha = opacity;
-    const { lines } = wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
+    const { lines, widthPx } = wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
     const { x, y, align } = titleAnchor(node, lines.length, lineHeight, display, camera.k);
+    const left = align === "center" ? x - widthPx / camera.k / 2 : align === "right" ? x - widthPx / camera.k : x;
+    if (!reserveLabel(input, left, y, widthPx, lines.length * LABEL_PX * LINE_HEIGHT)) continue;
     ctx.textAlign = align;
     lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
   }
@@ -244,16 +262,33 @@ function drawLabels(input: DrawInput): void {
 function drawCircles(input: DrawInput): void {
   const { ctx, circles, palette, camera, hoveredId } = input;
   const dim = hoveredId === null ? 1 : 0.4;
-  for (const circle of circles) {
+  // All parents paint before descendants, including across overlapping roots.
+  const ordered = [...circles].sort((a, b) => a.depth - b.depth);
+  for (const circle of ordered) {
+    // Depth controls the circle paint directly, independently of text/zoom.
+    const visibility = Math.max(0.002, 0.18 ** circle.depth);
+    const scope = input.focusedDomain && circle.key !== input.focusedDomain && !circle.key.startsWith(`${input.focusedDomain}/`) ? 0.15 : 1;
     const color = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
     ctx.beginPath();
     ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
-    ctx.globalAlpha = CIRCLE_FILL_ALPHA * dim;
+    if (circle.depth > 0) {
+      // Replace inherited tint with the canvas background, creating a hole.
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = palette.background;
+      ctx.fill();
+    }
+    ctx.globalAlpha = CIRCLE_FILL_ALPHA * dim * visibility * scope;
     ctx.fillStyle = color;
     ctx.fill();
+  }
+  // Outlines draw after the cutouts, so clearing a child never erases a ring.
+  for (const circle of ordered) {
+    const color = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
     ctx.setLineDash(circle.isBranch ? [] : [4 / camera.k, 4 / camera.k]);
     ctx.lineWidth = CIRCLE_RING_PX / camera.k;
-    ctx.globalAlpha = (circle.isBranch ? CIRCLE_RING_ALPHA : CIRCLE_RING_ALPHA * 0.7) * dim;
+    ctx.globalAlpha = CIRCLE_RING_ALPHA;
     ctx.strokeStyle = color;
     ctx.stroke();
   }
@@ -268,7 +303,8 @@ function drawCircles(input: DrawInput): void {
 function drawCircleLabels(input: DrawInput): void {
   const { ctx, circles, palette, camera, hoveredId, overviewZoom, hoverLabelOnly } = input;
   if (circles.length === 0 || (hoveredId !== null && hoverLabelOnly)) return;
-  const dim = hoveredId === null ? 1 : 0.4;
+  // Domain names stay readable independently of ring depth and dot hover.
+  const dim = 1;
   const titles = overviewZoom === null ? 1 : titleOpacity(input);
   const shown = overviewZoom === null ? 1 : revealOpacity(camera.k, overviewZoom, REVEAL_AT.subdomain);
   ctx.textAlign = "center";
@@ -277,12 +313,16 @@ function drawCircleLabels(input: DrawInput): void {
   ctx.strokeStyle = palette.background;
   // One name at one spot; `place` is "top" (above the ring) or "middle" (across the cluster)
   const name = (circle: ClusterCircle, place: "top" | "middle", alpha: number) => {
+    if (input.focusedDomain && circle.key !== input.focusedDomain && !circle.key.startsWith(`${input.focusedDomain}/`)) return;
     if (alpha <= 0.01) return;
     ctx.globalAlpha = alpha;
     ctx.fillStyle = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
     ctx.font = `${circle.isBranch ? "600 " : "500 "}${CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"] / camera.k}px ${palette.fontFamily}`;
     ctx.textBaseline = place === "top" ? "bottom" : "middle";
     const y = place === "top" ? circle.y - circle.r - 3 / camera.k : circle.y;
+    const width = ctx.measureText(circle.label).width * camera.k;
+    const height = CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"];
+    if (!reserveLabel(input, circle.x - width / camera.k / 2, y - (place === "top" ? height : height / 2) / camera.k, width, height)) return;
     ctx.strokeText(circle.label, circle.x, y);
     ctx.fillText(circle.label, circle.x, y);
   };
@@ -298,6 +338,7 @@ function drawCircleLabels(input: DrawInput): void {
 
 // FRAME: clear, move into world space, then the passes from back to front
 export function drawGraph(input: DrawInput): void {
+  input = { ...input, labelBoxes: [] };
   const { ctx, width, height, pixelRatio, camera, palette } = input;
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   ctx.fillStyle = palette.background;

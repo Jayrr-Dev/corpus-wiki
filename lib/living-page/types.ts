@@ -13,6 +13,7 @@ export type { SectionQuery } from "@/lib/ai/types";
 
 // ONE UNIT A SECTION SHOWS, at its current revision
 export type SectionUnit = {
+  context?: import("@/lib/knowledge/context").KnowledgeContext | null;
   unitId: string;
   revisionId: string;
   content: string;

@@ -1,3 +1,5 @@
+import { roleForPurpose } from "./roles";
+
 // =====================================================================
 // AI CALL LOG: what one call to the AI provider cost and how it went.
 // chatJson builds one record per attempt and hands it to the settings'
@@ -7,6 +9,7 @@
 export type AiCallStatus = "ok" | "cut_off" | "error";
 
 export type AiCallRecord = {
+  role?: string | null;
   purpose: string; // the request name: 'reconciliation', 'section_lines'
   subject: string | null; // which file or section, in words
   model: string;
@@ -42,7 +45,7 @@ export function usageTokens(usage: CompletionUsage | undefined): Pick<AiCallReco
 export async function logSafely(logger: AiCallLogger | undefined, call: AiCallRecord): Promise<void> {
   if (!logger) return;
   try {
-    await logger(call);
+    await logger({ ...call, role: call.role ?? roleForPurpose(call.purpose) });
   } catch (error) {
     console.error("Could not log the AI call:", error);
   }

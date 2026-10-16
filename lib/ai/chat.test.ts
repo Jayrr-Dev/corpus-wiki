@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import type { AiCallRecord } from "./callLog";
 import { chatJson, CompletionLengthError, type CompletionResponse, parseContent } from "./chat";
+import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
 
 // =====================================================================
 // PARSING THE MODEL'S ANSWER: every unusable answer gets a clear message.
@@ -97,6 +98,30 @@ const okCompletion = (content: string | null, finish_reason = "stop") => new Res
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 describe("chatJson request options", () => {
+  it("keeps concise guidance out of wiki article requests", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(okCompletion('{"ok":true}'));
+    vi.stubGlobal("fetch", fetchMock);
+    const messages = [{ role: "system" as const, content: "Write a complete wiki article." }, { role: "user" as const, content: "Article evidence" }];
+    await chatJson({ apiKey: "test" }, { ...okRequest, outputStyle: "wiki_article", messages });
+    const sent = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(sent.messages.slice(1)).toEqual(messages);
+  });
+
+  it("adds concise guidance once per retry, preserving custom instructions and media evidence", async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(okCompletion(null, "length"))
+      .mockResolvedValueOnce(okCompletion('{"ok":true}'));
+    vi.stubGlobal("fetch", fetchMock);
+    const messages = [{ role: "system" as const, content: "Custom role instructions" }, { role: "user" as const, content: [{ type: "text" as const, text: "Describe this evidence" }, { type: "image_url" as const, image_url: { url: "data:image/png;base64,test" } }] }];
+    await chatJson({ apiKey: "test", model: "other/model" }, { ...okRequest, messages });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    for (const call of fetchMock.mock.calls) {
+      const sent = JSON.parse(String(call[1]?.body));
+      expect(sent.messages.filter((message: { content: unknown }) => message.content === CONCISE_OUTPUT_INSTRUCTIONS)).toHaveLength(1);
+      expect(sent.messages.slice(2)).toEqual(messages);
+    }
+  });
+
   it.each(["nvidia/nemotron-3-super-120b-a12b", "nvidia/Nemotron-3-Nano-30B-A3B", "nvidia/Nemotron-3-Ultra-550b-a55b"])("disables hidden thinking for %s", async (model) => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(okCompletion('{"ok":true}'));
     vi.stubGlobal("fetch", fetchMock);
@@ -153,7 +178,8 @@ describe("Nebius response handling", () => {
     const sent = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
     expect(sent.response_format.json_schema).toMatchObject({ strict: true, schema: okRequest.jsonSchema });
     expect(sent.messages[0]).toEqual({ role: "system", content: `Return only JSON matching this schema: ${JSON.stringify(okRequest.jsonSchema)}` });
-    expect(sent.messages[1]).toEqual({ role: "user", content: "Check this" });
+    expect(sent.messages[1]).toEqual({ role: "system", content: CONCISE_OUTPUT_INSTRUCTIONS });
+    expect(sent.messages[2]).toEqual({ role: "user", content: "Check this" });
     expect(fetchMock.mock.calls[0]?.[1]?.signal).toBeInstanceOf(AbortSignal);
   });
 

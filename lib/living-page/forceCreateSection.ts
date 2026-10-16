@@ -3,11 +3,14 @@ import "server-only";
 import { z } from "zod";
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import { skillInstructions } from "@/lib/ai/skills/prompt";
+import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import type { DraftAction, SectionQuery } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import { processExternalEvent, startExternalSource } from "@/lib/ingest";
 import { searchWeb } from "@/lib/knowledge/webSearch";
+import { approveExternalSearch, approveExternalSource } from "@/lib/knowledge/externalApproval";
+import { externalProjectContext, externalReviewRecorder } from "@/lib/knowledge/externalReviewStore";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { discoveryQueries } from "./discoverArticleUpdates";
 import { rebuildSection, type SectionState, type SectionWriter } from "./index";
@@ -29,11 +32,10 @@ const MAX_CANDIDATES = 300;
 const NO_PERSON: Pick<DraftAction, "expectedRevisionId" | "passageIds" | "speechAct"> = { expectedRevisionId: null, passageIds: [], speechAct: null };
 
 const pickSchema = z.object({ claims: z.array(z.string()) });
-const searchSchema = z.object({ query: z.string().trim().min(3).max(200) });
 
 type Candidate = { unitId: string; content: string; external: boolean };
 
-export async function forceCreateSection(deps: ForceCreateDeps, sectionId: string, note: string, useWeb: boolean): Promise<ForceCreateResult> {
+export async function forceCreateSection(deps: ForceCreateDeps, sectionId: string, note: string, useWeb: boolean, automatic = false): Promise<ForceCreateResult> {
   const { db, client } = deps;
   const { data: section, error } = await client.from("sections").select("id, page_id, position, title, query, mode").eq("id", sectionId).is("retired_at", null).single();
   if (error) throw new Error("This section is no longer available. Reload the page and try again.");
@@ -48,16 +50,32 @@ export async function forceCreateSection(deps: ForceCreateDeps, sectionId: strin
   const sources: ForceCreateResult["sources"] = [];
   const external: Candidate[] = [];
   if (useWeb) {
-    const query = await searchQuery(deps.settings, page.title, section.title, note);
-    for (const result of await searchWeb(deps.webSearchKey, query)) {
-      const started = await startExternalSource({ title: result.title, url: result.url, text: result.text, sourceDate: (result.publishedDate ?? new Date().toISOString()).slice(0, 10) });
-      if (started.kind === "started") await processExternalEvent(started.eventId);
+    deps = { ...deps, settings: { ...deps.settings, roleInstructions: await loadRoleInstructions(db) } };
+    const record = externalReviewRecorder(client, page.id, sectionId);
+    const context = await externalProjectContext(client, page, section.title, [...state.units, ...internal]);
+    const recent = automatic ? await client.from("external_source_reviews").select("id").eq("page_id", page.id).eq("stage", "search").eq("context->>section", section.title).gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()).limit(1) : { data: [], error: null };
+    if (recent.error) throw new Error(recent.error.message);
+    const research = recent.data?.length ? null : await approveExternalSearch(deps.settings, context, note, record);
+    for (const result of research ? await searchWeb(deps.webSearchKey, research.query) : []) {
+      const scope = { article: page.title, section: section.title, note };
+      const { data: existing, error: existingError } = await client.from("sources").select("id").eq("origin", "external").eq("url", result.url).is("archived_at", null).limit(1);
+      if (existingError) throw new Error(existingError.message);
+      if (existing?.length) {
+        await record({ stage: "source", outcome: "rejected", context, proposal: research!, reason: "This URL is already saved. Reimporting it would duplicate an external source.", url: result.url, sourceTitle: result.title, excerpts: [], model: null });
+        continue;
+      }
+      const approved = await approveExternalSource(deps.settings, context, research!, result, record);
+      if (!approved) continue;
+      const started = await startExternalSource({ title: result.title, url: result.url, text: approved.text, sourceDate: (result.publishedDate ?? new Date().toISOString()).slice(0, 10), reviewId: approved.reviewId });
+      if (started.kind === "started") await processExternalEvent(started.eventId, scope, approved.reviewId);
       sources.push({ title: result.title, url: result.url });
       external.push(...(await sourceCandidates(client, started.sourceId, current)));
+      // One accepted source per section; a second page must not broaden the fill.
+      break;
     }
   }
 
-  const candidates = [...internal, ...external.filter((unit) => !internal.some((known) => known.unitId === unit.unitId))];
+  const candidates = [...internal.filter((unit) => !unit.external), ...external];
   const picked = await pickClaims(deps.settings, page.title, section.title, note, candidates);
   if (!picked.length && !current.size) {
     throw new Error(useWeb ? "Nothing found, saved or on the web, fits this section. Try a note that says what it should cover." : "No saved knowledge fits this section yet. Turn on Search the web to look further.");
@@ -93,14 +111,16 @@ export const THIN_SECTION_CLAIMS = 3;
 // Returns the ids of the sections that replaced the filled ones.
 export async function fillThinSectionsFromWeb(deps: ForceCreateDeps, sectionIds: string[], note: string, maxSearches: number): Promise<string[]> {
   const filled: string[] = [];
+  let attempts = 0;
   for (const sectionId of sectionIds) {
-    if (filled.length >= maxSearches) break;
+    if (attempts >= maxSearches) break;
     const { data: section } = await deps.client.from("sections").select("mode").eq("id", sectionId).is("retired_at", null).maybeSingle();
     if (section?.mode !== "generated") continue;
     const state = await deps.db.call<SectionState>("read_section_state", { p_section_id: sectionId });
     if (state.units.length >= THIN_SECTION_CLAIMS || state.lines.some((line) => line.author === "person")) continue;
+    attempts++;
     try {
-      filled.push((await forceCreateSection(deps, sectionId, note, true)).sectionId);
+      filled.push((await forceCreateSection(deps, sectionId, note, true, true)).sectionId);
     } catch (error) {
       console.warn(`Web fill skipped section ${sectionId}:`, error instanceof Error ? error.message : error);
     }
@@ -150,18 +170,6 @@ async function withContents(client: AdminSupabase, ids: string[], isExternal: (i
   if (revisionError) throw new Error(revisionError.message);
   const contents = new Map((revisions ?? []).map((revision) => [revision.id, revision.content]));
   return (units ?? []).map((unit) => ({ unitId: unit.id, content: contents.get(unit.current_revision_id) ?? "", external: isExternal(unit.id) }));
-}
-
-// One web search phrase for the section's subject, steered by the note
-async function searchQuery(settings: TokenFactorySettings, article: string, section: string, note: string): Promise<string> {
-  const answer = await chatJson(settings, {
-    name: "force_create_search_query", schema: searchSchema, jsonSchema: z.toJSONSchema(searchSchema), maxTokens: 1000,
-    messages: [
-      { role: "system", content: "Write one web search query (a few words, no quotes or operators) that finds authoritative, general information for a wiki section. The section heading names the subject; the article title is context. Follow the person's note when given." },
-      { role: "user", content: JSON.stringify({ article, section, note }) },
-    ],
-  });
-  return answer.value.query;
 }
 
 // The candidates that belong under the heading, asked in bounded batches

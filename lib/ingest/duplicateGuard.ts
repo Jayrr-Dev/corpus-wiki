@@ -1,3 +1,4 @@
+import { contextsCompatibleForMerge } from "@/lib/knowledge/context";
 import type { Embedder } from "@/lib/ai/embeddings";
 import type { JudgeDecision, JudgeRequest } from "@/lib/ai/tokenFactory/duplicateJudge";
 import type { DraftAction, DraftChangeSet, ExistingUnit, ReconciliationInput } from "@/lib/ai/types";
@@ -49,14 +50,29 @@ export async function guardDuplicates(deps: GuardDeps, input: ReconciliationInpu
   const reviseStored = options.reviseStored ?? true;
   const adds: AddAt[] = draft.actions.flatMap((action, position) => (action.type === "add_claim" ? [{ position, action }] : []));
   if (!adds.length) return draft;
-  const warn = deps.warn ?? ((message: string) => console.error(message));
+  const warnings: string[] = [];
+  const warn = (message: string) => {
+    warnings.push(message);
+    (deps.warn ?? console.error)(message);
+  };
   const unitsById = new Map(input.existingUnits.map((unit) => [unit.unitId, unit]));
   const stored = input.existingUnits.map((unit) => ({ unit, claim: comparable(unit.content) }));
 
   // Vectors for the new claims; without them, words alone pick look-alikes
-  let vectors: (number[] | null)[] = adds.map(() => null);
-  if (deps.embedder) {
-    try { vectors = await deps.embedder.embed(adds.map(({ action }) => action.input.content)); }
+  const vectors: (number[] | null)[] = adds.map(() => null);
+  const plain = adds.map(({ action }) => comparable(action.input.content));
+  const storedText = new Set(stored.map(({ claim }) => claim.normalized));
+  const unique = new Map<string, number>();
+  plain.forEach((claim, index) => {
+    if (!storedText.has(claim.normalized) && !unique.has(claim.normalized)) unique.set(claim.normalized, index);
+  });
+  if (deps.embedder && unique.size) {
+    try {
+      const indices = [...unique.values()];
+      const embedded = await deps.embedder.embed(indices.map((index) => adds[index]!.action.input.content));
+      indices.forEach((index, offset) => { vectors[index] = embedded[offset] ?? null; });
+      plain.forEach((claim, index) => { vectors[index] = vectors[unique.get(claim.normalized) ?? index] ?? null; });
+    }
     catch (error) { warn(`Duplicate guard could not embed new claims: ${message(error)}`); }
   }
   const claims: ComparableClaim[] = adds.map(({ action }, index) => comparable(action.input.content, vectors[index] ?? null));
@@ -65,20 +81,29 @@ export async function guardDuplicates(deps: GuardDeps, input: ReconciliationInpu
   const outcomes: Outcome[] = adds.map(() => ({ kind: "keep" }));
   const candidates: { units: string[]; earlier: number[] }[] = [];
   for (let index = 0; index < adds.length; index++) {
-    const units = new Set<string>();
+    const units = new Map<string, number>();
+    const context = adds[index]!.action.input.context;
+    const sameStored = stored.find(({ unit, claim }) => contextsCompatibleForMerge(context, unit.context) && claim.normalized === plain[index]!.normalized);
+    const sameEarlier = plain.findIndex((claim, j) => j < index && contextsCompatibleForMerge(context, adds[j]!.action.input.context) && claim.normalized === plain[index]!.normalized);
+    if (sameStored || sameEarlier >= 0) {
+      outcomes[index] = sameStored
+        ? { kind: "existing", unit: sameStored.unit, content: sameStored.unit.content, reason: "Same wording as a stored claim" }
+        : { kind: "draft", into: sameEarlier, content: null };
+      candidates.push({ units: [], earlier: [] });
+      continue;
+    }
     const vector = vectors[index];
     if (vector) {
       try {
-        for (const near of await deps.findSimilar(vector)) if (unitsById.has(near.unitId) && near.similarity >= CANDIDATE_COSINE) units.add(near.unitId);
+        for (const near of await deps.findSimilar(vector)) if (unitsById.has(near.unitId) && contextsCompatibleForMerge(context, unitsById.get(near.unitId)!.context) && near.similarity >= CANDIDATE_COSINE) units.set(near.unitId, near.similarity);
       } catch (error) { warn(`Duplicate guard could not search stored claims: ${message(error)}`); }
     }
-    for (const { unit, claim } of stored) if (likeness(claims[index]!, claim).candidate) units.add(unit.unitId);
-    const earlier = adds.slice(0, index).map((_, j) => j).filter((j) => likeness(claims[index]!, claims[j]!).candidate);
-    const sameStored = stored.find(({ claim }) => likeness(claims[index]!, claim).exact);
-    const sameEarlier = earlier.find((j) => likeness(claims[index]!, claims[j]!).exact);
-    if (sameStored) outcomes[index] = { kind: "existing", unit: sameStored.unit, content: sameStored.unit.content, reason: "Same wording as a stored claim" };
-    else if (sameEarlier !== undefined) outcomes[index] = { kind: "draft", into: sameEarlier, content: null };
-    candidates.push({ units: [...units].slice(0, STORE_CANDIDATES), earlier });
+    for (const { unit, claim } of stored) {
+      const match = likeness(claims[index]!, claim);
+      if (contextsCompatibleForMerge(context, unit.context) && match.candidate && !units.has(unit.unitId)) units.set(unit.unitId, match.score);
+    }
+    const earlier = adds.slice(0, index).map((_, j) => j).filter((j) => contextsCompatibleForMerge(context, adds[j]!.action.input.context) && likeness(claims[index]!, claims[j]!).candidate);
+    candidates.push({ units: [...units].sort((a, b) => b[1] - a[1]).slice(0, STORE_CANDIDATES).map(([id]) => id), earlier });
   }
 
   // 2. THE JUDGE reads every new claim that has look-alikes and no same-text match
@@ -92,29 +117,31 @@ export async function guardDuplicates(deps: GuardDeps, input: ReconciliationInpu
       claims: batch.map((index) => ({
         ref: newRef(index),
         content: adds[index]!.action.input.content,
+        context: adds[index]!.action.input.context,
         candidates: [...candidates[index]!.units.map(unitRef), ...candidates[index]!.earlier.map(newRef)],
       })),
       known: [],
     };
     const named = new Set(request.claims.flatMap((claim) => claim.candidates));
     request.known = [
-      ...[...unitRefs].filter(([, ref]) => named.has(ref)).map(([unitId, ref]) => ({ ref, content: unitsById.get(unitId)!.content })),
-      ...adds.map((add, index) => ({ ref: newRef(index), content: add.action.input.content })).filter(({ ref }) => named.has(ref)),
+      ...[...unitRefs].filter(([, ref]) => named.has(ref)).map(([unitId, ref]) => ({ ref, content: unitsById.get(unitId)!.content, context: unitsById.get(unitId)!.context ?? undefined })),
+      ...adds.map((add, index) => ({ ref: newRef(index), content: add.action.input.content, context: add.action.input.context })).filter(({ ref }) => named.has(ref)),
     ];
     let decisions: Map<string, JudgeDecision>;
     try { decisions = await deps.judge(request); }
     catch (error) { warn(`Duplicate judge failed; the new claims are kept: ${message(error)}`); continue; }
     for (const index of batch) {
       const decision = decisions.get(newRef(index));
+      if (!decision) warn(`Duplicate judge omitted ${newRef(index)}; its claim was kept for later review.`);
       if (!decision || decision.verdict === "different" || !decision.match) continue;
       const content = decision.verdict === "adds_detail" ? decision.content!.trim() : null;
       const unitId = [...unitRefs].find(([, ref]) => ref === decision.match)?.[0];
-      if (unitId) {
+      if (unitId && candidates[index]!.units.includes(unitId)) {
         const unit = unitsById.get(unitId)!;
         outcomes[index] = { kind: "existing", unit, content: content ?? unit.content, reason: decision.reason.trim() };
       } else {
         const into = Number(decision.match.slice(1)) - 1;
-        if (into >= 0 && into < index) outcomes[index] = { kind: "draft", into, content };
+        if (into >= 0 && into < index && candidates[index]!.earlier.includes(into)) outcomes[index] = { kind: "draft", into, content };
       }
     }
   }
@@ -132,6 +159,16 @@ export async function guardDuplicates(deps: GuardDeps, input: ReconciliationInpu
     const root = settle(index);
     const into = adds[root]!.position;
     const target = actions[into]!;
+    // Independent judge answers were compared against the original text, not against
+    // each other's enrichments. Never replace an accumulated detail with another one.
+    const rootOutcome = outcomes[root]!;
+    const currentContent = rootOutcome.kind === "existing" ? rootOutcome.content : (target as AddAt["action"]).input.content;
+    const comparedContent = adds[outcome.into]!.action.input.content;
+    if (outcome.content && currentContent !== comparedContent && currentContent !== outcome.content) {
+      outcomes[index] = { kind: "keep" };
+      warn("Separate additions were preserved because combining them could lose details.");
+      continue;
+    }
     const passageIds = [...new Set([...target.passageIds, ...adds[index]!.action.passageIds])];
     // A fold into a claim that itself repeats a stored one adds to that revise
     actions[into] = target.type === "add_claim" && outcome.content
@@ -169,13 +206,25 @@ export async function guardDuplicates(deps: GuardDeps, input: ReconciliationInpu
     }
     const kept = actions[first] as Extract<DraftAction, { type: "revise_claim" }>;
     const unit = unitsById.get(action.targetId);
+    if (!contextsCompatibleForMerge(kept.input.context ?? unit?.context, action.input.context ?? unit?.context) ||
+      (kept.input.content !== action.input.content && kept.input.content !== unit?.content && action.input.content !== unit?.content)) {
+      const original = adds.find((add) => add.position === position);
+      if (!original) throw new Error("Conflicting revisions require reconciliation before saving.");
+      actions[position] = original.action;
+      warn("Separate additions were preserved because combining them could lose details.");
+      return;
+    }
     const content = unit && kept.input.content === unit.content ? action.input.content : kept.input.content;
     actions[first] = { ...kept, passageIds: [...new Set([...kept.passageIds, ...action.passageIds])], input: { ...kept.input, content } };
     mergedInto.set(position, first);
   });
 
   const changed = mergedInto.size > 0 || standsFor.size > 0 || outcomes.some((outcome) => outcome.kind === "existing");
-  return changed ? { ...draft, actions: compact(actions, mergedInto, standsFor) } : draft;
+  const finalActions = changed ? compact(actions, mergedInto, standsFor) : actions;
+  const revisions = finalActions.filter((action) => action.type === "revise_claim");
+  const evidenceOnly = revisions.filter((action) => action.input.content === unitsById.get(action.targetId ?? "")?.content).length;
+  const audit = `Ingestion check: ${finalActions.filter((action) => action.type === "add_claim").length} claims kept as new, ${revisions.length - evidenceOnly} claims revised with changed wording, ${evidenceOnly} existing claims given supporting evidence, ${mergedInto.size + standsFor.size} repeats folded or skipped. Matching configured: ${deps.embedder ? "meaning and wording" : "wording only"}.${warnings.length ? ` Check incomplete: ${[...new Set(warnings)].join(" ")}` : ""}`;
+  return { ...draft, summary: [draft.summary, audit].filter(Boolean).join("\n\n"), actions: finalActions };
 }
 
 // THE REVISE THAT REPLACES A REPEATED ADD: the stored unit's wording (or the merged one),
@@ -188,7 +237,7 @@ function reviseFor(outcome: Extract<Outcome, { kind: "existing" }>, add: AddAt["
     expectedRevisionId: unit.revisionId,
     passageIds: [...new Set([...unit.passageIds, ...add.passageIds])],
     speechAct: add.speechAct,
-    input: { content: outcome.content, rationale: `Matches a stored claim${outcome.reason ? `: ${outcome.reason}` : ""}` },
+    input: { content: outcome.content, ...(unit.context ? { context: unit.context } : {}), rationale: `Matches a stored claim${outcome.reason ? `: ${outcome.reason}` : ""}` },
   };
 }
 
@@ -198,7 +247,12 @@ function reviseFor(outcome: Extract<Outcome, { kind: "existing" }>, add: AddAt["
 // new claim is renumbered.
 export function compact(actions: DraftAction[], mergedInto: ReadonlyMap<number, number>, standsFor: ReadonlyMap<number, string> = new Map()): DraftAction[] {
   const adds = actions.filter((action, position) => action.type === "add_claim" && !mergedInto.has(position) && !standsFor.has(position));
-  const usedEntities = new Set(adds.flatMap((action) => (action.type === "add_claim" ? action.input.entities.map((e) => `${e.type}:${e.key}`) : [])));
+  const retained = actions.filter((_, position) => !mergedInto.has(position) && !standsFor.has(position));
+  const usedEntities = new Set(retained.flatMap((action) => {
+    if (action.type !== "add_claim" && action.type !== "revise_claim") return [];
+    const context = action.input.context;
+    return [...(action.type === "add_claim" ? action.input.entities : []), ...(context?.entities ?? []), ...(context?.applicability.entities ?? [])].map((entity) => `${entity.type}:${entity.key}`);
+  }));
   const usedPaths = new Set(adds.flatMap((action) => (action.type === "add_claim" ? action.input.domainPaths.flatMap(withParents) : [])));
   const dropped = new Set<number>([...mergedInto.keys(), ...standsFor.keys()]);
   actions.forEach((action, position) => {

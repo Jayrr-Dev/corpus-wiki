@@ -41,10 +41,10 @@ export async function replaceSource(formData: FormData): Promise<ActionResult<Ex
 }
 
 // ARCHIVE: the file stays; knowledge citing it reads as stale
-export async function archiveSourceAction(sourceId: string): Promise<ActionResult<ArchiveSourceResult>> {
+export async function archiveSourceAction(sourceId: string, reason: string): Promise<ActionResult<ArchiveSourceResult>> {
   return toActionResult(async () => {
     await requireUser();
-    return archiveSource(sourceId);
+    return archiveSource(sourceId, undefined, reason);
   });
 }
 

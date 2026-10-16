@@ -31,8 +31,8 @@ const DRAG_ALPHA_TARGET = 0.3;
 
 type Gesture =
   | { mode: "idle" }
-  | { mode: "pan"; last: Point }
-  | { mode: "drag"; node: SimNode; start: Point }
+  | { mode: "pan"; last: Point; start: Point | null }
+  | { mode: "drag"; node: SimNode; start: Point; offset: Point; moved: boolean; slop: number }
   | { mode: "pinch"; mid: Point; distance: number };
 
 interface PointerOptions {
@@ -44,6 +44,8 @@ interface PointerOptions {
   isAutoFit: RefObject<boolean>;
   nodeSize: number;
   onOpen: (node: SimNode) => void;
+  onBackgroundClick?: (world: Point) => void;
+  motion: { animateTo: (next: Camera) => void; cancel: () => void; target: RefObject<Camera | null> };
   redraw: () => void;
 }
 
@@ -70,12 +72,12 @@ function nodeAt(nodes: readonly SimNode[], world: Point, nodeSize: number, zoom:
 }
 
 // Wires the canvas's pointer and wheel events to the camera, hover and layout
-export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFit, nodeSize, onOpen, redraw }: PointerOptions): void {
-  const latest = useRef({ nodeSize, onOpen, redraw });
+export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFit, nodeSize, onOpen, onBackgroundClick, motion, redraw }: PointerOptions): void {
+  const latest = useRef({ nodeSize, onOpen, onBackgroundClick, redraw });
   // Latest props for the listeners below (synced after render, read in events)
   useLayoutEffect(() => {
-    latest.current = { nodeSize, onOpen, redraw };
-  }, [nodeSize, onOpen, redraw]);
+    latest.current = { nodeSize, onOpen, onBackgroundClick, redraw };
+  }, [nodeSize, onOpen, onBackgroundClick, redraw]);
 
   useEffect(() => {
     const element = canvas.current;
@@ -100,12 +102,13 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
     // ZOOM IN AT A POINT (double-tap / double-click)
     const zoomInAt = (point: Point) => {
       isAutoFit.current = false;
-      camera.current = zoomBy(camera.current, point, DOUBLE_TAP_ZOOM);
+      motion.animateTo(zoomBy(motion.target.current ?? camera.current, point, DOUBLE_TAP_ZOOM));
       latest.current.redraw();
     };
 
     // PRESS: a second finger starts a pinch; otherwise start dragging a dot, or panning
     const onDown = (event: PointerEvent) => {
+      motion.cancel();
       const point = localPoint(element, event);
       lastPointerType = event.pointerType;
       element.setPointerCapture(event.pointerId);
@@ -118,13 +121,13 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
       }
       const node = hitTest(point);
       if (!node) {
-        gesture = { mode: "pan", last: point };
+        gesture = { mode: "pan", last: point, start: point };
         return;
       }
-      gesture = { mode: "drag", node, start: point };
+      const world = toWorld(camera.current, point);
+      gesture = { mode: "drag", node, start: point, offset: { x: world.x - (node.x ?? 0), y: world.y - (node.y ?? 0) }, moved: false, slop: event.pointerType === "touch" ? TAP_SLOP_PX : CLICK_SLOP_PX };
       node.fx = node.x;
       node.fy = node.y;
-      layout.current.simulation?.alphaTarget(DRAG_ALPHA_TARGET).restart();
     };
 
     // MOVE: pinch, drag, pan, or update the hover focus
@@ -137,9 +140,14 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
         camera.current = pinchStep(camera.current, gesture, next);
         gesture = { mode: "pinch", ...next };
       } else if (gesture.mode === "drag") {
+        if (!gesture.moved) {
+          if (Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < gesture.slop) return;
+          gesture.moved = true;
+          layout.current.simulation?.alphaTarget(DRAG_ALPHA_TARGET).restart();
+        }
         const world = toWorld(camera.current, point);
-        gesture.node.fx = world.x;
-        gesture.node.fy = world.y;
+        gesture.node.fx = world.x - gesture.offset.x;
+        gesture.node.fy = world.y - gesture.offset.y;
       } else if (gesture.mode === "pan") {
         camera.current = panBy(camera.current, point.x - gesture.last.x, point.y - gesture.last.y);
         gesture.last = point;
@@ -168,16 +176,17 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
       if (gesture.mode === "pinch") {
         // the finger left behind keeps panning, so the view doesn't jump
         const [remaining] = pressed.values();
-        gesture = remaining ? { mode: "pan", last: remaining } : { mode: "idle" };
+        gesture = remaining ? { mode: "pan", last: remaining, start: null } : { mode: "idle" };
         return;
       }
       const slop = event.pointerType === "touch" ? TAP_SLOP_PX : CLICK_SLOP_PX;
       if (gesture.mode === "drag") {
-        const { node, start } = gesture;
+        const { node, moved } = gesture;
         releaseDrag();
-        if (Math.hypot(point.x - start.x, point.y - start.y) < slop) latest.current.onOpen(node);
-      } else if (gesture.mode === "pan" && isDoubleTap(event, point)) {
-        zoomInAt(point);
+        if (!moved) latest.current.onOpen(node);
+      } else if (gesture.mode === "pan" && gesture.start && Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < slop) {
+        if (isDoubleTap(event, point)) zoomInAt(point);
+        else latest.current.onBackgroundClick?.(toWorld(camera.current, point));
       }
       gesture = { mode: "idle" };
     };
@@ -200,7 +209,8 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
       isAutoFit.current = false;
-      camera.current = zoomAt(camera.current, localPoint(element, event), event.deltaY);
+      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1);
+      motion.animateTo(zoomAt(motion.target.current ?? camera.current, localPoint(element, event), Math.max(-160, Math.min(160, delta))));
       latest.current.redraw();
     };
 
@@ -227,5 +237,5 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
       element.removeEventListener("dblclick", onDoubleClick);
       element.removeEventListener("wheel", onWheel);
     };
-  }, [canvas, layout, camera, hoveredId, isAutoFit]);
+  }, [canvas, layout, camera, hoveredId, isAutoFit, motion]);
 }

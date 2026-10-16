@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { assertActiveUpload, uploadExecution } from "@/lib/ingest/workflowContext";
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
@@ -32,6 +34,7 @@ export interface SectionWriter {
   reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision>;
   prepareSection?(state: SectionState): Promise<SectionState>;
   progress?: (sectionId: string) => SectionProgress;
+  reviewSections?: (sectionIds: string[]) => Promise<void>;
 }
 
 // Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
@@ -47,13 +50,18 @@ export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenMod
 // Rebuilds every section the event touched (or that has stale lines), with a change note each
 export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string): Promise<void> {
   const sections = await db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId });
-  for (const section of sections) await rebuildSection(db, writer, section.sectionId, eventId);
+  for (const section of sections) {
+    const built = await rebuildSection(db, writer, section.sectionId, eventId, false);
+    if (uploadExecution.getStore() && (!built || built.rebuildRequested)) throw new Error("A page section is still being updated. Resume after its current build finishes.");
+  }
+  if (sections.length) await writer.reviewSections?.(sections.map((section) => section.sectionId));
 }
 
 // Builds every generated section of one page (used after a page is created); no change notes
 export async function rebuildPage(db: DbRpc, writer: SectionWriter, pageId: string): Promise<void> {
   const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
-  for (const section of sections) await rebuildSection(db, writer, section.sectionId, null);
+  for (const section of sections) await rebuildSection(db, writer, section.sectionId, null, false);
+  if (sections.length) await writer.reviewSections?.(sections.map((section) => section.sectionId));
 }
 
 // One section, in order: claim it, read its lines, rewrite what needs it, finish.
@@ -65,14 +73,19 @@ export async function rebuildSection(
   writer: SectionWriter,
   sectionId: string,
   eventId: string | null,
+  review = true,
 ): Promise<FinishedSectionBuild | null> {
   let causeId = eventId;
   let finished: FinishedSectionBuild | null = null;
   for (let pass = 0; pass < 3; pass++) {
+    await assertActiveUpload();
     const claim = await db.call<{ claimed: boolean }>("claim_section_build", { p_section_id: sectionId, p_event_id: causeId });
     if (!claim.claimed) return finished;
     finished = await buildClaimedSection(db, writer, sectionId, causeId);
-    if (!finished.rebuildRequested) return finished;
+    if (!finished.rebuildRequested) {
+      if (review) await writer.reviewSections?.([sectionId]);
+      return finished;
+    }
     causeId = finished.rebuildEventId ?? null;
   }
   // Still asked for after three passes: stop here rather than loop; the next trigger claims it
@@ -92,6 +105,7 @@ async function buildClaimedSection(
     const state = writer.prepareSection ? await writer.prepareSection(loaded) : loaded;
     const written = needsRewrite(state) ? await rewriteLines(db, writer, state, eventId, progress) : null;
     progress?.step("Finishing up…");
+    await assertActiveUpload();
     return await db.call<FinishedSectionBuild>("finish_section_build", {
       p_section_id: sectionId,
       p_event_id: eventId,
@@ -99,6 +113,7 @@ async function buildClaimedSection(
       p_changed: (written?.applied ?? 0) > 0,
     });
   } catch (error) {
+    await assertActiveUpload();
     await db.call("mark_section_stale", { p_section_id: sectionId });
     throw error;
   } finally {
@@ -127,7 +142,7 @@ async function rewriteLines(
     actions,
     trace: { modelVersion: revision.modelVersion, promptVersion: writer.promptVersion ?? null, tokensIn: revision.tokensIn ?? null, tokensOut: revision.tokensOut ?? null },
   };
-  const { changeSetId } = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai" }, draft);
+  const { changeSetId } = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai", operationKey: `section:${state.sectionId}:${createHash("sha256").update(JSON.stringify(input)).digest("hex")}` }, draft);
   const result = await commitChangeSet(db, changeSetId);
   // Held changes (a person's line the AI wants to change) wait on Exceptions; only a refused change is a failure
   if (result.status === "rejected" || result.rejected > 0) throw new Error("The section update was not fully applied. Review its change set in Changes before retrying.");

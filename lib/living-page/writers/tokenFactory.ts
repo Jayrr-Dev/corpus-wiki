@@ -68,6 +68,7 @@ export class TokenFactorySectionWriter {
   async reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision> {
     const refs = buildRefs(input);
     const { value, model, tokensIn, tokensOut } = await chatJson(this.settings, {
+      outputStyle: "wiki_article",
       name: "section_lines",
       subject: `${input.pageTitle} › ${input.sectionTitle}`,
       schema: sectionAnswerSchema,
@@ -126,12 +127,13 @@ function buildRefs(input: SectionReviseInput): Refs {
 // Builds the system + user messages: the page, the section, its claims and its lines as JSON
 function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
   const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
-  const claims = input.units.map((unit) => ({ ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content }));
+  const claims = input.units.map((unit) => ({ ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content, context: unit.context }));
   const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
   const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds), ...(input.updateNote ? { updateInstructions: input.updateNote } : {}) };
   return [
     { role: "system", content: `${SYSTEM_PROMPT}
 
+Preserve each claim's explicit context and conditions. General reference knowledge does not establish an organization's policy or a person's preferences. Unspecified applicability means unknown. Mentioned entities do not own the claim.
 ${skillInstructions(["write_articles"],skills)}` },
     { role: "user", content: JSON.stringify(request) },
   ];

@@ -1,6 +1,8 @@
 "use client";
 
+import { ReviewSummary } from "@/components/standard/ReviewSummary";
 import { Tooltip } from "@/components/standard/tooltip";
+import { Button } from "@/components/ui/button";
 import { readUnitReferences, splitUnitReferences, type UnitReference } from "@/lib/ai/unitReferences";
 
 
@@ -26,10 +28,11 @@ type ExceptionCardProps = {
   unit: UnitSummary | undefined;
   // on an applied action, the text it replaced (the unit itself already reads as the proposal)
   before?: string | null;
+  onView?: () => void;
 };
 
 // EXCEPTION CARD: what was raised, the AI's reason, the change side by side with what stands now, the source, then the answer
-export function ExceptionCard({ exception, action, unit, before = null }: ExceptionCardProps) {
+export function ExceptionCard({ exception, action, unit, before = null, onView }: ExceptionCardProps) {
   // The answer given here, shown at once while the server saves it and the list refreshes
   const [decided, setDecided] = useState<boolean | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -47,16 +50,20 @@ export function ExceptionCard({ exception, action, unit, before = null }: Except
   // The AI's reason: `rationale` on proposals, `reason` on retires
   const input = action ? asObject(action.input) : null;
   const rationale = input ? (readString(input, "rationale") ?? readString(input, "reason")) : null;
+  const detail = readString(evidence, "detail");
+  const repeatedDetail = detail?.trim() === rationale?.trim();
   return (
     <article className="overflow-hidden rounded-lg border">
-      <CardHeader exception={exception} action={action} detail={readString(evidence, "detail")} domainPaths={readStrings(evidence, "domainPaths")} />
+      {onView && <div className="flex justify-end px-3 pt-2"><Button variant="ghost" size="sm" onClick={onView}>View exception</Button></div>}
+      <CardHeader exception={exception} action={action} detail={input?.domainReview === true || repeatedDetail ? null : detail} domainPaths={readStrings(evidence, "domainPaths")} />
       <div className="flex flex-col gap-4 px-4 pb-4">
-        {rationale ? <Rationale text={rationale} references={readUnitReferences(input?.rationaleReferences)} currentClaim={before ?? unit?.content} /> : null}
+        {action?.type === "review_page" ? <div className="space-y-2 text-panel"><p className="text-muted-foreground">Accepting records your decision. Edit the page separately to apply it.</p><TextLink href={`/p/${encodeURIComponent(readString(input!, "pageSlug") ?? "")}`}>Open reviewed page</TextLink><details className="text-muted-foreground"><summary className="cursor-pointer">Review guideline</summary><p className="mt-2">{readString(input!, "guideline")}</p></details></div> : null}
+        {rationale && input?.domainReview === true ? <ReviewSummary text={rationale} /> : rationale ? <Rationale text={rationale} references={readUnitReferences(input?.rationaleReferences)} currentClaim={before ?? unit?.content} /> : null}
         {action ? <Comparison action={action} unit={unit} before={before} lineText={readString(evidence, "lineText")} /> : <Note>The held action could not be loaded.</Note>}
         {quote ? <SourceExcerpt quote={quote} /> : null}
       </div>
       <footer className="border-t bg-sidebar px-4 py-3">
-        {exception.status === "open" ? <AnswerForm exceptionId={exception.id} onDecided={decide} onFailed={fail} error={failure} /> : <Answered exception={exception} />}
+        {exception.status === "open" ? <AnswerForm exceptionId={exception.id} onDecided={decide} onFailed={fail} error={failure} recommendationOnly={action?.type === "review_page"} /> : <Answered exception={exception} />}
       </footer>
     </article>
   );
@@ -132,7 +139,8 @@ const RETIRES: Partial<Record<Tables<"actions">["type"], string>> = {
   merge_duplicates: "The AI wants to merge and retire duplicate claims",
 };
 
-function exceptionTitle(exception: Tables<"exceptions">, action: Tables<"actions"> | undefined): string {
+export function exceptionTitle(exception: Tables<"exceptions">, action: Tables<"actions"> | undefined): string {
+  if (action?.type === "review_page") return "Page review recommendation";
   return (exception.reason === "deletion" && action && RETIRES[action.type]) || EXCEPTION_REASON_TEXT[exception.reason];
 }
 
@@ -148,7 +156,7 @@ function restates(title: string, detail: string): boolean {
 function Rationale({ text, references, currentClaim }: { text: string; references: UnitReference[]; currentClaim?: string }) {
   return (
     <section className="flex flex-col gap-1.5 rounded-md border p-3">
-      <h4 className="text-xs font-medium tracking-wide text-faint uppercase">Because…</h4>
+      <h4 className="text-xs font-medium tracking-wide text-faint uppercase">Why this matters</h4>
       <p className="text-panel leading-relaxed">{splitUnitReferences(text).map((part, index) => {
         if (!part.label) return part.text;
         const reference = references.find((item) => item.label === part.label);
@@ -181,7 +189,7 @@ function Comparison({ action, unit, before, lineText }: ComparisonProps) {
   const isRevision = unit ? action.type === "revise_claim" || action.type === "add_claim" : action.type === "revise_line";
   const diff = (unit || lineText !== null) && current !== undefined && isRevision ? wordDiff(current, proposed) : null;
   const proposedPane = (
-    <Pane label={`Proposed · ${humanize(action.type)}`} emphasis>
+    <Pane label={action.type === "review_page" ? "Suggested action" : `Proposed · ${humanize(action.type)}`} emphasis>
       {diff ? <DiffText parts={diff} show="added" /> : proposed || <span className="text-faint">No details</span>}
     </Pane>
   );

@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { AI_STAGES } from "@/lib/ai/skills/types";
+import { FIXED_ROLES } from "@/lib/ai/roles";
 import { loadSkillLibrary, skillInputSchema, type SkillInput } from "@/lib/ai/skills/server";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -11,7 +12,18 @@ import { toActionResult } from "./result";
 export async function readAiSkills() {
   return toActionResult(async()=>{
     await requireUser();
-    return loadSkillLibrary(supabaseRpc(getAdminSupabase()));
+    const db = supabaseRpc(getAdminSupabase());
+    return loadSkillLibrary(db);
+  });
+}
+export async function saveRoleInstructions(role: string, instructions: string | null, expectedVersion: number | null) {
+  return toActionResult(async () => {
+    await requireUser();
+    if (!AI_STAGES.some((item) => item.id === role) && !FIXED_ROLES.some((item) => item.id === role)) throw new Error("Unknown AI role.");
+    const value = z.string().trim().min(1).max(20000).nullable().parse(instructions);
+    z.number().int().positive().nullable().parse(expectedVersion);
+    await supabaseRpc(getAdminSupabase()).call("save_ai_role_instructions", { p_role: role, p_instructions: value, p_expected_version: expectedVersion });
+    return {};
   });
 }
 export async function saveAiSkill(input:SkillInput) {

@@ -6,6 +6,7 @@ import { reportTutorialAction } from "@/components/tutorial";
 import { UploadDropzone } from "@/components/upload/UploadDropzone";
 import { UploadItem } from "@/components/upload/UploadItem";
 import { RecentUploads } from "./RecentUploads";
+import { AddLink } from "@/components/upload/AddLink";
 
 // Stable key for a chosen file (the same file picked twice is listed once)
 function fileKey(file: File): string {
@@ -25,6 +26,7 @@ export function UploadScreen() {
   return (
     <div className="flex flex-col gap-6">
       <UploadDropzone onFiles={addFiles} />
+      <AddLink />
       {files.length > 0 ? (
         <Section title="Chosen files">
           <ul>

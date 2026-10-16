@@ -1,3 +1,4 @@
+import type { KnowledgeContext } from "@/lib/knowledge/context";
 import { describe, expect, it } from "vitest";
 import { dedupeAnswerToActions, type DedupeUnit, findDuplicateClusters } from "./dedupePass";
 
@@ -7,8 +8,13 @@ import { dedupeAnswerToActions, type DedupeUnit, findDuplicateClusters } from ".
 // detail), u5 is unrelated, u6 is too short to judge by overlap.
 // =====================================================================
 
+const context: KnowledgeContext = {
+  entities: [{ type: "company", key: "utilitek", role: "subject" }],
+  applicability: { status: "scoped", entities: [{ type: "company", key: "utilitek" }], conditions: null },
+};
+
 const unit = (unitId: string, content: string, passageIds = [`p-${unitId}`]): DedupeUnit => ({
-  unitId, revisionId: `r-${unitId}`, content, kind: "fact", epistemicStatus: "established", passageIds, createdAt: "2026-10-14T00:00:00Z",
+  unitId, revisionId: `r-${unitId}`, context, content, kind: "fact", epistemicStatus: "established", passageIds, createdAt: "2026-10-14T00:00:00Z",
 });
 
 const units = [
@@ -111,5 +117,27 @@ describe("auto merge", () => {
     const same = [units[2]!, unit("u9", ` ${units[2]!.content.toUpperCase()} `)];
     const [action] = dedupeAnswerToActions({ groups: [{ keep: "U1", duplicates: ["U2"], content: null, confidence: "high", reason: "" }] }, same);
     expect(action!.input).toMatchObject({ autoMerge: true });
+  });
+});
+
+
+describe("cleanup context boundaries", () => {
+  const keep = unit("keep", "Employees require orientation before starting work.");
+  const other = unit("other", keep.content);
+  const answer = { groups: [{ keep: "U1", duplicates: ["U2"], content: "Merged detail", confidence: "high" as const, reason: "same wording" }] };
+
+  it.each([
+    ["different company", { ...context, applicability: { ...context.applicability, entities: [{ type: "company", key: "other" }] } }],
+    ["different role", { ...context, entities: [{ type: "company", key: "utilitek", role: "object" }] }],
+    ["unspecified", { ...context, applicability: { status: "unspecified", entities: [], conditions: null } }],
+    ["missing", undefined],
+  ] as [string, KnowledgeContext | undefined][])("blocks %s before clustering and after model output", (_, value) => {
+    const pair = [keep, { ...other, context: value }];
+    expect(findDuplicateClusters(pair)).toEqual([]);
+    expect(dedupeAnswerToActions(answer, pair)).toEqual([]);
+  });
+
+  it("preserves context on a merged wording revision", () => {
+    expect(dedupeAnswerToActions(answer, [keep, other])[0]).toMatchObject({ type: "revise_claim", input: { context } });
   });
 });

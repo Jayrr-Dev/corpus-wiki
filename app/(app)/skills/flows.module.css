@@ -1,0 +1,66 @@
+.intro { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.eyebrow { margin-bottom: 7px; color: var(--color-muted-foreground); font-size: 10px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
+.viewSwitch { display: flex; flex-wrap: wrap; gap: 3px; padding: 4px; border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-muted); }
+.viewSwitch button { display: flex; align-items: center; gap: 7px; padding: 7px 11px; border-radius: 7px; color: var(--color-muted-foreground); font-size: 12px; cursor: pointer; transition: background .15s, color .15s; }
+.viewSwitch button[aria-pressed="true"] { background: var(--color-background); color: var(--color-foreground); box-shadow: 0 1px 4px #0002; }
+.viewSwitch button:focus-visible, .node:focus-visible, .viewport:focus-visible { outline: 2px solid var(--color-ring); outline-offset: -2px; }
+.frame { overflow: hidden; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-background); }
+.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 12px 18px 5px; }
+.boardTitle { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; }
+.liveDot { width: 7px; height: 7px; border-radius: 50%; background: #7dbaaa; box-shadow: 0 0 0 4px #7dbaaa12; }
+.zoomValue { width: 41px; text-align: center; color: var(--color-muted-foreground); font-size: 11px; font-variant-numeric: tabular-nums; }
+.boardDescription { padding: 0 18px 14px; font-size: 12px; color: var(--color-muted-foreground); }
+.viewport { max-height: 690px; overflow: auto; overscroll-behavior: contain; border-block: 1px solid var(--color-border); background-color: color-mix(in srgb, var(--color-muted) 30%, var(--color-background)); background-image: radial-gradient(color-mix(in srgb, var(--color-foreground) 14%, transparent) .7px, transparent .7px); background-size: 20px 20px; cursor: grab; }
+.viewport[data-dragging="true"] { cursor: grabbing; user-select: none; }
+.boardSize { width: var(--scaled-width); height: var(--scaled-height); }
+.board { position: relative; width: var(--board-width); height: var(--board-height); transform: scale(var(--board-scale)); transform-origin: top left; }
+.laneLabel { position: absolute; left: var(--x); top: var(--y); display: flex; align-items: center; gap: 10px; color: var(--color-muted-foreground); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+.laneLabel > span { display: grid; width: 23px; height: 23px; place-items: center; border: 1px solid var(--color-border); border-radius: 50%; font-size: 9px; letter-spacing: 0; }
+.laneLabel > svg { opacity: .5; }
+.connections { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.connections path { fill: none; stroke: color-mix(in srgb, var(--color-muted-foreground) 50%, transparent); stroke-width: 1.6; stroke-linejoin: round; }
+.connections g[data-active="true"] > path { stroke: #85bba9; stroke-width: 2; }
+.connections g[data-branch="true"] > path { stroke-dasharray: 5 5; stroke: #bfa477; }
+.connections rect { fill: var(--color-background); }
+.connections text { fill: var(--color-muted-foreground); font-size: 10px; font-family: inherit; }
+.node { --node-accent: #9ca5b6; position: absolute; left: var(--x); top: var(--y); width: var(--node-width); height: var(--node-height); display: flex; flex-direction: column; align-items: stretch; padding: 18px; border: 1px solid var(--color-border); border-top: 2px solid color-mix(in srgb, var(--node-accent) 65%, var(--color-border)); border-radius: 11px; background: var(--color-background); text-align: left; box-shadow: 0 3px 12px #0000000a; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.node[data-kind="role"] { --node-accent: #99a5dd; }
+.node[data-kind="gate"] { --node-accent: #c4a575; }
+.node[data-kind="output"] { --node-accent: #7dbaaa; background: color-mix(in srgb, #7dbaaa 5%, var(--color-background)); }
+.node[data-kind="input"] { --node-accent: #a9b4bc; }
+.node:hover { border-color: color-mix(in srgb, var(--node-accent) 70%, var(--color-border)); box-shadow: 0 5px 18px #0001; }
+.node[aria-pressed="true"] { border-color: var(--node-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--node-accent) 12%, transparent), 0 5px 20px #0001; }
+.nodeLabel { display: flex; align-items: center; justify-content: space-between; gap: 7px; color: var(--node-accent); font-size: 9px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+.nodeLabel > svg { flex-shrink: 0; }
+.nodeTitle { margin-top: 12px; font-size: 16px; line-height: 1.25; font-weight: 600; letter-spacing: -.02em; }
+.nodeDescription { margin-top: 6px; font-size: 12px; line-height: 1.5; color: var(--color-muted-foreground); }
+.roleList { display: flex; flex-direction: column; gap: 9px; margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--color-border); }
+.roleRow { display: flex; align-items: flex-start; gap: 8px; }
+.roleDot { flex-shrink: 0; width: 5px; height: 5px; margin-top: 5px; border-radius: 2px; background: var(--node-accent); }
+.roleRow strong { display: block; font-size: 11px; line-height: 1.3; font-weight: 600; }
+.roleRow > span:last-child { min-width: 0; }
+.roleRow > span:last-child > span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; color: var(--color-muted-foreground); font-size: 10px; line-height: 1.4; overflow-wrap: anywhere; }
+.outputMark { display: flex; align-items: center; gap: 5px; margin-top: auto; padding-top: 9px; color: var(--node-accent); font-size: 10px; }
+.footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding: 12px 18px; }
+.legend { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; font-size: 10px; color: var(--color-muted-foreground); }
+.legend > span { display: flex; align-items: center; gap: 5px; }
+.legend i { width: 7px; height: 7px; border-radius: 2px; background: #9ca5b6; }
+.legend i[data-kind="role"] { background: #99a5dd; }
+.legend i[data-kind="gate"] { background: #c4a575; }
+.legend i[data-kind="output"] { background: #7dbaaa; }
+.branchLegend { color: #b29a75; }
+.panHint { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--color-muted-foreground); }
+.inspector { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; gap: 28px; padding: 22px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-background); }
+.detailRoles { display: grid; gap: 8px; }
+.detailRole { border: 1px solid var(--color-border); border-radius: 8px; }
+.detailRole summary { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 13px; list-style: none; cursor: pointer; }
+.detailRole summary::-webkit-details-marker { display: none; }
+.detailRole summary strong { display: block; font-size: 12px; font-weight: 600; }
+.detailRole summary span span { display: block; margin-top: 3px; color: var(--color-muted-foreground); font-size: 11px; overflow-wrap: anywhere; }
+.detailRole summary > svg { flex-shrink: 0; color: var(--color-muted-foreground); transition: transform .15s; }
+.detailRole[open] summary > svg { transform: rotate(45deg); }
+.detailRole > p { border-top: 1px solid var(--color-border); padding: 13px; font-size: 12px; line-height: 1.7; color: var(--color-muted-foreground); white-space: pre-wrap; }
+.systemNote { display: flex; gap: 12px; align-items: center; padding: 18px; background: var(--color-muted); border-radius: 8px; color: var(--color-muted-foreground); font-size: 12px; }
+.systemNote svg { flex-shrink: 0; }
+@media (max-width: 640px) { .inspector { grid-template-columns: 1fr; gap: 20px; padding: 16px; } .toolbar { padding-inline: 12px; } .boardDescription { padding-inline: 12px; } .viewport { min-height: 400px; } .panHint { display: none; } }
+@media (prefers-reduced-motion: reduce) { .node, .viewSwitch button, .detailRole summary > svg { transition: none; } }

@@ -63,6 +63,12 @@ export function labelOpacity(zoom: number, threshold: number): number {
 // of text needs before it fades in. Domain names always show; topics come next, then note titles.
 export const REVEAL_AT = { subdomain: 0.6, title: 1.4 } as const;
 
+// Keep three levels in the overview; reveal deeper levels gradually on zoom.
+export function hierarchyOpacity(depth: number, zoom: number, overviewZoom: number | null): number {
+  if (overviewZoom === null || depth < 3) return 1;
+  return revealOpacity(zoom, overviewZoom, 1.4 ** (depth - 2));
+}
+
 // Opacity for a layer that fades in at `reveal` times the overview zoom (the text fade threshold shifts it)
 export function revealOpacity(zoom: number, overviewZoom: number, reveal: number, threshold = 0): number {
   return labelOpacity(zoom / (overviewZoom * reveal), threshold);

@@ -14,11 +14,12 @@ import { useDomains, useEntities, useUnitDomains, useUnitEntities } from "@/lib/
 import { type UnitSummary, useUnitSummaries } from "@/lib/queries/screens";
 import { useHydrated } from "@/app/(app)/_lib/hydrated";
 import { readsState } from "@/app/(app)/_lib/reads";
-import { filterUnits, type UnitFilters } from "./filterUnits";
+import { domainSubtreeIds, filterUnits, type UnitFilters } from "./filterUnits";
 import { StatusLegend } from "./StatusLegend";
 import { UnitFilterBar } from "./UnitFilterBar";
 import { UnitRowMenu } from "./UnitRowMenu";
 import { useUnitFilters } from "./useUnitFilters";
+import { contextDescription } from "@/lib/knowledge/contextSelection";
 
 // COLUMNS: status glyph, content, kind, last changed, and the "…" menu
 const COLUMNS = [
@@ -34,6 +35,7 @@ const COLUMNS = [
       <Link href={`/units/${unit.id}`} className="font-medium text-link hover:underline">{unit.label ?? unit.content}</Link>
       <EvidenceBadge evidence={unit.evidence} className="ml-2 text-xs" />
       <p className="mt-1 line-clamp-2 text-panel text-muted-foreground">{unit.content}</p>
+      <p className="mt-1 text-panel text-faint">{unit.context ? contextDescription(unit.context) : "Applicability unspecified"}</p>
     </div>
   )),
   textColumn<UnitSummary>("kind", "Kind", (unit) => unit.kind),
@@ -44,6 +46,25 @@ const COLUMNS = [
 ];
 
 const PENDING = { data: [] as UnitSummary[], isPending: true, error: null };
+
+// A domain's current units, across origins and including its descendants.
+export function DomainUnitsTable({ domainId }: { domainId: string }) {
+  const units = useUnitSummaries();
+  const domains = useDomains();
+  const unitDomains = useUnitDomains();
+  const data = useMemo(() => {
+    const ids = domainSubtreeIds(domains.data ?? [], domainId);
+    const unitIds = new Set((unitDomains.data ?? []).filter((row) => ids.has(row.domain_id)).map((row) => row.unit_id));
+    return (units.data ?? []).filter((unit) => !unit.retired_at && unitIds.has(unit.id));
+  }, [units.data, domains.data, unitDomains.data, domainId]);
+  return <DataTable
+    query={{ data, ...readsState([units, domains, unitDomains]) }}
+    columns={COLUMNS}
+    getRowId={(unit) => unit.id}
+    filterPlaceholder="Search units…"
+    emptyState={<EmptyState icon={UnitIcon} title="No knowledge units" hint="This domain and its subdomains have no current units." />}
+  />;
+}
 
 // UNITS SCREEN: filter bar over the unit table
 export function UnitsScreen() {
@@ -56,6 +77,15 @@ export function UnitsScreen() {
   const { data: entities = [] } = useEntities();
   return (
     <div className="flex flex-col gap-3">
+      <nav aria-label="Unit source origin" className="flex gap-1 border-b">
+        {(["internal", "external"] as const).map((origin) => (
+          <Link key={origin} href={`?${new URLSearchParams({ ...Object.fromEntries(Object.entries(filterState.filters).filter(([, value]) => Boolean(value))), origin }).toString()}`}
+            aria-current={filterState.filters.origin === origin ? "page" : undefined}
+            className={`border-b-2 px-3 py-2.5 text-panel ${filterState.filters.origin === origin ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
+            {origin === "internal" ? "Internal" : "External"}
+          </Link>
+        ))}
+      </nav>
       <div className="md:hidden"><UnitFilterBar {...filterState} domains={hydrated ? domains : []} entities={hydrated ? entities : []} /></div>
       <DataTable
         query={query}

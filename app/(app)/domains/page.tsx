@@ -1,6 +1,6 @@
 import { ReadingPane } from "@/components/shell";
-import { DomainsPageMenu, DomainsTree } from "./DomainsTree";
-import { NewDomainButton } from "./NewDomainForm";
+import { DomainsTree } from "./DomainsTree";
+import { DomainsPageMenu } from "./DomainsPageMenu";
 
 type DomainsPageProps = { searchParams: Promise<{ retired?: string }> };
 
@@ -14,7 +14,6 @@ export default async function DomainsPage({ searchParams }: DomainsPageProps) {
       width="prose"
       actions={
         <div className="flex items-center gap-1">
-          <NewDomainButton />
           <DomainsPageMenu showRetired={showRetired} />
         </div>
       }
@@ -23,3 +22,5 @@ export default async function DomainsPage({ searchParams }: DomainsPageProps) {
     </ReadingPane>
   );
 }
+
+

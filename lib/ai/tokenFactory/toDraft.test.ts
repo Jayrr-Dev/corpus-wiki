@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ReconciliationInput } from "@/lib/ai/types";
 import type { AnswerClaim } from "./schema";
+import { buildReconciliationMessages } from "./prompt";
 import { answerToActions } from "./toDraft";
 
 // A STORE WITH ONE DECISION AND ONE FILE OF TWO PASSAGES
@@ -27,6 +28,59 @@ const claim = (overrides: Partial<AnswerClaim>): AnswerClaim => ({
 });
 
 describe("answerToActions", () => {
+  it("gives reconciliation existing structured context", () => {
+    const context = { entities: [{ type: "project", key: "alpha", role: "subject" as const }], applicability: { status: "scoped" as const, entities: [{ type: "project", key: "alpha" }], conditions: null } };
+    const messages = buildReconciliationMessages({ ...INPUT, existingUnits: [{ ...INPUT.existingUnits[0]!, context }] });
+    expect(JSON.parse(messages[1]!.content).existingUnits[0].context).toEqual(context);
+    expect(messages[0]!.content).toContain("Two people sharing a name are not automatically identical");
+  });
+
+  it("preserves legacy revision context and carries explicit context corrections", () => {
+    const legacy = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1" })] }, INPUT);
+    expect(legacy[0]?.input).not.toHaveProperty("context");
+    const actions = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1", entities: [{ type: "person", key: "alex-alpha", name: "Alex", role: "subject" }], applicability: { status: "scoped", entities: [{ type: "project", key: "alpha", name: "Alpha" }], conditions: "during the project" } })] }, INPUT);
+    expect(actions.map(a => a.type)).toEqual(["create_entity", "revise_claim"]);
+    expect(actions[1]?.input).toMatchObject({ context: { entities: [{ type: "person", key: "alex-alpha", role: "subject" }], applicability: { status: "scoped", entities: [{ type: "project", key: "alpha" }], conditions: "during the project" } } });
+  });
+
+  it("creates scope-only entities before a claim without treating them as subjects", () => {
+    const actions = answerToActions({ summary: "", claims: [claim({ applicability: { status: "scoped", entities: [{ type: "company", key: "acme", name: "Acme" }], conditions: "employees" } })] }, INPUT);
+    expect(actions.map(a => a.type)).toEqual(["create_entity", "add_claim"]);
+    expect(actions[1]?.input).toMatchObject({ entities: [], context: { applicability: { entities: [{ type: "company", key: "acme" }] } } });
+  });
+
+  it("does not collapse same-text revisions with different applicability", () => {
+    const actions = answerToActions({ summary: "", claims: ["onsite", "remote"].map(conditions => claim({ action: "revise", unit: "U1", applicability: { status: "scoped", entities: [], conditions } })) }, INPUT);
+    expect(actions.map(a => a.type)).toEqual(["revise_claim", "add_claim"]);
+  });
+
+  it("keeps different revisions from later batches available to the duplicate guard", () => {
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL." }),
+      claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL with daily backups.", passages: ["P2"] }),
+    ] }, INPUT);
+    expect(actions.map((action) => action.type)).toEqual(["revise_claim", "add_claim"]);
+    expect(actions[1]).toMatchObject({ passageIds: ["p-b"], input: { content: "Alpha will use MySQL with daily backups." } });
+  });
+
+  it("unions evidence when several batches revise to the same wording", () => {
+    const actions = answerToActions({ summary: "", claims: [
+      claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL." }),
+      claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL.", passages: ["P2"] }),
+    ] }, INPUT);
+    expect(actions).toHaveLength(1);
+    expect(actions[0]?.passageIds).toEqual(["p-a", "p-b"]);
+  });
+
+  it("rejects partial citation sets instead of saving a partially supported claim", () => {
+    expect(() => answerToActions({ summary: "", claims: [claim({ passages: ["P1", "P99"] })] }, INPUT)).toThrow("unknown passage");
+  });
+  it("reuses established company and topic branches instead of creating spelling duplicates", () => {
+    const path = "Utilitek Solutions Inc./Health & Safety/Inspections";
+    const actions = answerToActions({ summary: "", claims: [claim({ domainPaths: ["utilitek solutions inc/Health and Safety/Quality Inspection"] })] }, { ...INPUT, domainPaths: ["Utilitek Solutions Inc.", "Utilitek Solutions Inc./Health & Safety", path] });
+    expect(actions.map((action) => action.type)).toEqual(["add_claim"]);
+    expect(actions[0]?.input).toMatchObject({ domainPaths: [path] });
+  });
   it("turns a changed decision into a revise pinned to the revision the model saw", () => {
     const [action] = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1", content: "Alpha will use MySQL." })] }, INPUT);
     expect(action).toMatchObject({ type: "revise_claim", targetId: "u1", expectedRevisionId: "r1", passageIds: ["p-a"] });

@@ -1,17 +1,22 @@
 "use client";
 
-import { createContext, type ReactNode, useContext } from "react";
+import { createContext, type ReactNode, useContext, useSyncExternalStore } from "react";
 import { DEFAULT_TIME_ZONE, formatDateTime } from "@/app/(app)/_lib/format";
 
 // =====================================================================
-// TIME ZONE: the zone picked in Settings (a cookie, read in the layout)
-// reaches every date-and-time on screen through this context.
+// Prefer the zone picked in Settings; otherwise follow the device.
+// The server snapshot keeps the first browser render consistent with SSR.
 // =====================================================================
 
 const TimeZoneContext = createContext(DEFAULT_TIME_ZONE);
 
-export function TimeZoneProvider({ timeZone, children }: { timeZone: string; children: ReactNode }) {
-  return <TimeZoneContext.Provider value={timeZone}>{children}</TimeZoneContext.Provider>;
+const subscribe = () => () => {};
+const deviceTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || DEFAULT_TIME_ZONE;
+const serverTimeZone = () => DEFAULT_TIME_ZONE;
+
+export function TimeZoneProvider({ timeZone, children }: { timeZone: string | null; children: ReactNode }) {
+  const deviceZone = useSyncExternalStore(subscribe, deviceTimeZone, serverTimeZone);
+  return <TimeZoneContext.Provider value={timeZone ?? deviceZone}>{children}</TimeZoneContext.Provider>;
 }
 
 export function useTimeZone(): string {

@@ -23,6 +23,7 @@ import { getSectionWriter, type SectionWriter } from "@/lib/living-page";
 import type { PipelineDeps } from "@/lib/ingest/pipeline";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { broadcastSectionProgress } from "./sectionBroadcast";
+import { reviewRebuiltSections } from "@/lib/living-page/runPageReview";
 
 // SERVER DEPENDENCIES: the database port and the two AI clients, built from env
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
@@ -41,13 +42,14 @@ export async function getServerDeps(): Promise<ServerDeps> {
   // Section builds tell open pages what they are doing and stream their draft
   writer.progress = broadcastSectionProgress(admin);
   const embedder = embedderFromEnv(process.env, logCall);
+  if (settings) writer.reviewSections = (sectionIds) => reviewRebuiltSections(db, settings, sectionIds, embedder);
   return {
     db,
     claimEmbedder: embedder ? async () => void (await embedMissingUnits(db, embedder)) : undefined,
     deduper: settings ? (eventId) => dedupeAfterEvent({ db, client: admin, settings, embedder }, eventId) : undefined,
     duplicateGuard: settings ? duplicateGuardFor(db, settings, embedder) : undefined,
     entityDescriber: settings ? (eventId) => describeEventEntities({ client: admin, settings }, eventId) : undefined,
-    hierarchyOrganizer: (eventId) => organizeEventHierarchy(db, eventId),
+    hierarchyOrganizer: (eventId) => organizeEventHierarchy(db, admin, eventId),
     imageDescriber: imageDescriberFrom(settings),
     knowledgeExpander: settings ? (eventId) => expandEventKnowledge({ settings, client: admin, db, writer }, eventId) : undefined,
     pagePlanner: settings ? createArticlePlanner(settings, admin) : undefined,

@@ -15,4 +15,5 @@ export type AiSkill = {
 export type AssignedSkill = Pick<AiSkill, "id" | "name" | "instructions" | "version">;
 export type StageSkills = Partial<Record<AiStage, AssignedSkill | null>>;
 export type SkillAssignment = { stage: AiStage; skill_id: string | null };
-export type SkillLibrary = { skills: AiSkill[]; assignments: SkillAssignment[] };
+export type RoleInstruction = { role: string; instructions: string; version: number };
+export type SkillLibrary = { skills: AiSkill[]; assignments: SkillAssignment[]; roleInstructions?: RoleInstruction[] };

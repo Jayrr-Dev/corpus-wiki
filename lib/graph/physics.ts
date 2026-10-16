@@ -9,7 +9,7 @@ import {
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from "d3-force";
-import { deepestPaths, forceClusters } from "./clusters";
+import { deepestPaths, forceClusters, forceRootSeparation } from "./clusters";
 import type { GraphForces } from "./settings";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -53,7 +53,8 @@ export function applyForces(simulation: GraphSimulation, forces: GraphForces, no
     .force("y", forceY<SimNode>(0).strength(forces.center * CENTER_SCALE))
     .force("charge", forceManyBody<SimNode>().strength(-forces.repel * REPEL_SCALE).distanceMax(REPEL_REACH))
     .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2))
-    .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE));
+    .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE))
+    .force("root-separation", forces.cluster > 0 ? forceRootSeparation(nodeSize, simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")?.links() ?? []) : null);
   const link = simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link");
   const strength = forces.link * LINK_SCALE;
   // Links between different domain groups slacken as the domain pull rises, so groups can sit apart

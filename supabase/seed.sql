@@ -19,9 +19,9 @@ begin;
 
 -- DOMAINS: Topics and Projects branches
 insert into public.domains (id, name, parent_id, path, proposed_by) values
-  ('00000000-0000-4000-8000-0d0000000001', 'Topics',     null,                                   'Topics',                    'ai'),
+  ('00000000-0000-4000-8000-0d0000000001', 'Topics',     null,                                   'Topics',                    'person'),
   ('00000000-0000-4000-8000-0d0000000002', 'Databases',  '00000000-0000-4000-8000-0d0000000001', 'Topics/Databases',          'ai'),
-  ('00000000-0000-4000-8000-0d0000000003', 'Projects',   null,                                   'Projects',                  'ai'),
+  ('00000000-0000-4000-8000-0d0000000003', 'Projects',   null,                                   'Projects',                  'person'),
   ('00000000-0000-4000-8000-0d0000000004', 'Alpha',      '00000000-0000-4000-8000-0d0000000003', 'Projects/Alpha',            'ai'),
   ('00000000-0000-4000-8000-0d0000000005', 'Data layer', '00000000-0000-4000-8000-0d0000000004', 'Projects/Alpha/Data layer', 'ai'),
   ('00000000-0000-4000-8000-0d0000000006', 'Planning',   '00000000-0000-4000-8000-0d0000000004', 'Projects/Alpha/Planning',   'ai');

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { formatOf } from "@/lib/ingest/formats";
 import { useLiveShiftEvent } from "@/lib/queries/screens";
 import { EventProgress } from "./EventProgress";
+import { UploadWorkflowStatus } from "./UploadWorkflowStatus";
 import { retryTarget, type UploadPhase, useUploadFlow } from "./useUploadFlow";
 
 // UPLOAD ITEM: one chosen file with its own date, an Upload button and the live result
@@ -36,7 +37,7 @@ export function UploadItem({ file }: { file: File }) {
 }
 
 // STATUS LINE PER PHASE (the event is polled while the pipeline runs)
-function UploadStatus({ phase }: { phase: UploadPhase }) {
+export function UploadStatus({ phase }: { phase: UploadPhase }) {
   const eventId = phase.kind === "processing" || phase.kind === "done" ? phase.eventId : undefined;
   const { data: event } = useLiveShiftEvent(eventId, phase.kind === "processing");
   if (phase.kind === "idle") return null;
@@ -49,7 +50,7 @@ function UploadStatus({ phase }: { phase: UploadPhase }) {
       </p>
     );
   }
-  if (phase.kind === "processing") return <EventProgress status={event?.status ?? "received"} />;
+  if (phase.kind === "processing") return <UploadWorkflowStatus eventId={phase.eventId} allowRetry={false} legacyStatus={event?.status ?? "received"} />;
   return <UploadResult phase={phase} />;
 }
 
@@ -59,11 +60,11 @@ function UploadResult({ phase }: { phase: Extract<UploadPhase, { kind: "done" }>
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-wrap items-center gap-3">
-        <EventProgress status={result.status} />
+        {!result.workflow ? <EventProgress status={result.status} /> : null}
         {result.changeSetId ? <TextLink href={`/changes/${result.changeSetId}`}>Open change set</TextLink> : null}
         <TextLink href={`/sources/${sourceId}`}>Open source</TextLink>
       </div>
-      {result.status === "failed" ? <ErrorNote error={result.error ?? "The upload failed."} /> : null}
+      {result.workflow ? <UploadWorkflowStatus eventId={phase.eventId} /> : result.error ? <ErrorNote error={result.error} /> : null}
     </div>
   );
 }

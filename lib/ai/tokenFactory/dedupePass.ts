@@ -1,3 +1,4 @@
+import { contextsCompatibleForMerge, type KnowledgeContext } from "@/lib/knowledge/context";
 import { captureUnitReferences } from "@/lib/ai/unitReferences";
 import { z } from "zod";
 import type { ChatMessage } from "@/lib/ai/chat";
@@ -26,7 +27,7 @@ import { unitRef } from "./prompt";
 // =====================================================================
 
 // PROMPT VERSION: recorded on each ChangeSet this pass drafts
-export const DEDUPE_PROMPT_VERSION = "dedupe-v2";
+export const DEDUPE_PROMPT_VERSION = "dedupe-v3-context";
 
 // ONE UNIT THE PASS MAY MERGE (what the model sees, plus what the actions need)
 export type DedupeUnit = {
@@ -37,6 +38,7 @@ export type DedupeUnit = {
   epistemicStatus: Enums<"epistemic_status">;
   passageIds: string[];
   createdAt: string;
+  context?: KnowledgeContext;
 };
 
 // Units per model call; a bigger cluster is split
@@ -56,7 +58,7 @@ export function findDuplicateClusters(units: readonly DedupeUnit[], focusIds?: R
   const root = (i: number): number => (parent[i] === i ? i : (parent[i] = root(parent[i]!)));
   for (let i = 0; i < units.length; i++) {
     for (let j = i + 1; j < units.length; j++) {
-      if (likeness(claims[i]!, claims[j]!).candidate) parent[root(j)] = root(i);
+      if (contextsCompatibleForMerge(units[i]!.context, units[j]!.context) && likeness(claims[i]!, claims[j]!).candidate) parent[root(j)] = root(i);
     }
   }
   const groups = new Map<number, DedupeUnit[]>();
@@ -98,6 +100,7 @@ const SYSTEM_PROMPT = `You keep a knowledge store of atomic claims ("units") fre
 
 Answer with JSON only: { "groups": Group[] }. Each Group is { keep, duplicates, content, confidence, reason }.
 - Two units are duplicates only if they make the same claim: the same subject, the same question, and no fact that contradicts or changes the other (a different number, date, frequency, scope or party means NOT a duplicate). Wording, order and level of detail may differ.
+- Entity identities, roles, applicability and conditions are part of the claim. Different or unspecified applicability cannot establish equivalence. Never merge on text alone or widen scope.
 - A unit that combines several distinct claims is NOT a duplicate of just one of those claims. Never retire a combined unit unless the kept unit preserves all of its facts.
 - keep: the ref (e.g. "U2") of the unit to keep. Prefer the unit whose kind and epistemicStatus fit best (a policy or rule is a fact or procedure, not a definition), then the oldest.
 - duplicates: refs of the units that are the same claim as keep. Never include keep itself; never put a unit in two groups.
@@ -112,6 +115,7 @@ export function buildDedupeMessages(units: readonly DedupeUnit[]): ChatMessage[]
     units: units.map((unit, index) => ({
       ref: unitRef(index),
       content: unit.content,
+      context: unit.context,
       kind: unit.kind,
       epistemicStatus: unit.epistemicStatus,
       created: unit.createdAt.slice(0, 10),
@@ -148,7 +152,8 @@ export function dedupeAnswerToActions(answer: DedupeAnswer, units: readonly Dedu
     if (!keep || used.has(keep.unitId)) continue;
     const duplicates = [...new Set(group.duplicates.map((ref) => byRef.get(ref.trim().toUpperCase())))]
       .filter((unit): unit is DedupeUnit => unit !== undefined && unit.unitId !== keep.unitId && !used.has(unit.unitId));
-    if (duplicates.length === 0) continue;
+    // Reject the whole group: its proposed wording may include an incompatible unit.
+    if (duplicates.length === 0 || duplicates.some((unit) => !contextsCompatibleForMerge(keep.context, unit.context))) continue;
     [keep, ...duplicates].forEach((unit) => used.add(unit.unitId));
     const content = group.content?.trim();
     const references = captureUnitReferences(group.reason, units);
@@ -161,7 +166,7 @@ export function dedupeAnswerToActions(answer: DedupeAnswer, units: readonly Dedu
         // The merged wording stands on every merged unit's evidence
         passageIds: [...new Set([keep, ...duplicates].flatMap((unit) => unit.passageIds))],
         speechAct: "stated",
-        input: { content, ...rationale },
+        input: { content, ...(keep.context ? { context: keep.context } : {}), ...rationale },
       });
     }
     merges.push({

@@ -25,6 +25,8 @@ export const useShiftEvents = (o: ListOptions<"shift_events"> = {}) =>
   useTableList("shift_events", { orderBy: "created_at", ascending: false, ...o });
 export const useShiftEvent = (id?: string) => useTableRow("shift_events", id);
 
+export const useDomainTabs = () => useTableList("domain_tabs", { orderBy: "created_at" });
+
 // KNOWLEDGE STORE
 export const useDomains = (o: ListOptions<"domains"> = {}) =>
   useTableList("domains", { orderBy: "path", ...o });

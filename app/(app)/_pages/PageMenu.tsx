@@ -9,11 +9,12 @@ import { DeleteForm, RenameForm } from "./PageRowActions";
 type Page = Tables<"pages">;
 
 // PAGE MENU: "…" with Rename and Remove. The sidebar also offers Update, and Update All when the page has children.
-export function PageMenu({ page, className, showUpdate = false, hasChildren = false }: { page: Page; className?: string; showUpdate?: boolean; hasChildren?: boolean }) {
+export function PageMenu({ page, className, showUpdate = false, hasChildren = false, extraItems = [] }: { page: Page; className?: string; showUpdate?: boolean; hasChildren?: boolean; extraItems?: DialogMenuItem[] }) {
   const leaveIfOpen = useLeaveRemovedPage(page.slug);
   const items: DialogMenuItem[] = [
+    ...extraItems,
     ...(showUpdate ? updateItems(page, hasChildren) : []),
-    { label: "Rename", separatorBefore: showUpdate, render: (close: () => void) => <RenameForm page={page} onDone={close} /> },
+    { label: "Rename", separatorBefore: showUpdate || extraItems.length > 0, render: (close: () => void) => <RenameForm page={page} onDone={close} /> },
     {
       label: "Remove",
       isDestructive: true,

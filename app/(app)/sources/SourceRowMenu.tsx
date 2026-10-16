@@ -144,17 +144,23 @@ function ReplaceForm({ source, onDone }: FormProps) {
 // ARCHIVE: the file stays; everything citing it is marked stale
 function ArchiveForm({ source, onDone }: FormProps) {
   const archive = useServerAction(archiveSourceAction);
+  const [reason, setReason] = useState("");
+  const reasonId = useId();
   return (
     <DialogForm
       title={`Archive “${source.title}”?`}
       description="The file is kept but no longer counts as current evidence. Knowledge that cites it is marked stale. Restore it any time."
       submitLabel="Archive"
       isPending={archive.isPending}
+      isDisabled={!reason.trim()}
       error={archive.error}
       onSubmit={async () => {
-        if ((await archive.run(source.id)).ok) onDone();
+        if ((await archive.run(source.id, reason)).ok) onDone();
       }}
     >
+      <FormRow htmlFor={reasonId} label="Archive justification">
+        <Input id={reasonId} required value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Why is this source being archived?" />
+      </FormRow>
       <ImpactNote sourceId={source.id} describe={(impact) => `${count(impact.linkedUnits, "unit")} will be marked stale.`} />
     </DialogForm>
   );

@@ -26,6 +26,7 @@ export interface GraphNode {
   degree: number;
   // What group queries match on
   domainPaths: string[];
+  domainScopePaths?: { internal: string[]; external: string[] };
   entityNames: string[];
   unitKind: Enums<"unit_kind"> | null;
   status: Enums<"epistemic_status"> | null;

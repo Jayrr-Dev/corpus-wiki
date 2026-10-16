@@ -15,6 +15,7 @@ export const CATEGORY_OF_REASON: Record<Enums<"exception_reason">, ExceptionCate
   deletion: "removals",
   low_confidence: "uncertain",
   domain_tree_review: "structure",
+  root_domain_approval: "structure",
   update_request: "updates",
 };
 
@@ -25,7 +26,7 @@ export const CATEGORY_TABS: { id: CategoryTab; label: string; hint: string }[] =
   { id: "removals", label: "Removals", hint: "Changes that would retire knowledge" },
   { id: "updates", label: "Update requests", hint: "The AI wants to change a line a person wrote" },
   { id: "uncertain", label: "Low confidence", hint: "The AI was unsure enough to ask first" },
-  { id: "structure", label: "Structure", hint: "Reviews of the domain tree" },
+  { id: "structure", label: "Structure", hint: "Page quality, organization, and domain reviews" },
 ];
 
 // Whether an exception with this reason shows under the tab

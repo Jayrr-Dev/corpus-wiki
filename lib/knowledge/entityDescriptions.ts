@@ -1,4 +1,5 @@
 import "server-only";
+import { assertActiveUpload, workflowStep } from "@/lib/ingest/workflowContext";
 
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import {
@@ -46,7 +47,11 @@ export async function describeEventEntities(deps: Deps, eventId: string): Promis
   const actions = await deps.client.from("actions").select("target_id").in("change_set_id", sets.data.map((set) => set.id)).eq("type", "create_entity").eq("outcome", "applied");
   if (actions.error) throw actions.error;
   const ids = [...new Set(actions.data.flatMap((action) => (action.target_id ? [action.target_id] : [])))];
-  for (let index = 0; index < ids.length; index += DESCRIBE_BATCH_SIZE) await describeEntityBatch(deps, ids.slice(index, index + DESCRIBE_BATCH_SIZE));
+  ids.sort();
+  for (let index = 0; index < ids.length; index += DESCRIBE_BATCH_SIZE) {
+    const batch = ids.slice(index, index + DESCRIBE_BATCH_SIZE);
+    await workflowStep(`describe:${batch.join(":")}`, () => describeEntityBatch(deps, batch));
+  }
 }
 
 // ONE BATCH: load the evidence, ask the model, write what it answered
@@ -62,6 +67,7 @@ export async function describeEntityBatch(deps: Deps, entityIds: string[]): Prom
   const rows = describeAnswerToRows(answer.value, evidence);
   const now = new Date().toISOString();
   for (const row of rows) {
+    await assertActiveUpload();
     const { error } = await deps.client.from("entities").update({ description: row.description, description_updated_at: now, description_model: answer.model }).eq("id", row.entityId);
     if (error) throw error;
   }

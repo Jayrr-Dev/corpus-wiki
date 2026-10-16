@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { GraphFilters } from "./filters";
-import { GRAPH_COLORS, type GraphGroup } from "./groups";
+import { GRAPH_COLORS, splitGroupQuery, type GraphGroup } from "./groups";
+import { chooseDomainColor, themeAutomaticGroups } from "./domainColors";
+import type { GraphNode } from "./types";
 
 // =====================================================================
 // GRAPH SETTINGS: everything the panel controls, with Obsidian-like
@@ -34,16 +36,21 @@ export interface GraphForces {
 export interface GraphSettings {
   filters: GraphFilters;
   groups: GraphGroup[];
+  // Remember discovered domains so removed or edited defaults stay changed.
+  colorGroupDomains?: string[];
+  colorThemeVersion?: number;
   display: GraphDisplay;
   forces: GraphForces;
 }
 
-// DEFAULTS: units and orphans shown, extra layers off, no groups until the person adds one
+// DEFAULTS: domain color groups are populated when graph data arrives.
 export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
-  filters: { search: "", domain: "", showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
+  filters: { domainScope: "internal", search: "", domain: "", showUnits: true, showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
   groups: [],
+  colorGroupDomains: [],
+  colorThemeVersion: 1,
   display: { arrows: false, domainCircles: true, titlePosition: "bottom", textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
-  forces: { center: 0.5, repel: 10, link: 1, linkDistance: 60, cluster: 0.5 },
+  forces: { center: 0.4, repel: 11, link: 0.8, linkDistance: 80, cluster: 0.5 },
 };
 
 // SLIDER RULES: label, range and step for each numeric setting
@@ -77,8 +84,10 @@ const colorTokens = GRAPH_COLORS.map((color) => color.token) as [GraphGroup["col
 const settingsSchema = z.object({
   // Fields added later default, so older saved settings keep everything else
   filters: z.object({
+    domainScope: z.enum(["internal", "external", "both", "none"]).default("internal"),
     search: z.string(),
     domain: z.string().default(""),
+    showUnits: z.boolean().default(true),
     showEntities: z.boolean(),
     showPages: z.boolean(),
     showOrphans: z.boolean(),
@@ -86,6 +95,8 @@ const settingsSchema = z.object({
     relatedness: z.number().default(DEFAULT_RELATED.relatedness),
   }),
   groups: z.array(z.object({ id: z.string(), query: z.string(), color: z.enum(colorTokens) })),
+  colorGroupDomains: z.array(z.string()).default([]),
+  colorThemeVersion: z.number().default(0),
   display: z.object({ arrows: z.boolean(), domainCircles: z.boolean().default(DEFAULT_DISPLAY.domainCircles), titlePosition: z.enum(TITLE_POSITIONS).default(DEFAULT_DISPLAY.titlePosition), textFadeThreshold: z.number(), nodeSize: z.number(), linkThickness: z.number() }),
   forces: z.object({ center: z.number(), repel: z.number(), link: z.number(), linkDistance: z.number(), cluster: z.number().default(DEFAULT_FORCES.cluster) }),
 });
@@ -93,5 +104,55 @@ const settingsSchema = z.object({
 // Reads saved settings; the defaults when nothing valid was saved
 export function parseSavedSettings(saved: unknown): GraphSettings {
   const parsed = settingsSchema.safeParse(saved);
-  return parsed.success ? parsed.data : DEFAULT_GRAPH_SETTINGS;
+  if (!parsed.success) return DEFAULT_GRAPH_SETTINGS;
+  const settings = parsed.data;
+  if (settings.colorThemeVersion < 1) {
+    settings.groups = themeAutomaticGroups(settings.groups);
+    settings.colorThemeVersion = 1;
+  }
+  // Upgrade the previous untouched defaults while retaining deliberate adjustments.
+  const previousDefaults = [
+    { center: 0.5, repel: 10, link: 1, linkDistance: 60, cluster: 0.5 },
+    { center: 0.2, repel: 14, link: 0.6, linkDistance: 110, cluster: 0.7 },
+  ];
+  if (previousDefaults.some((previous) => (Object.keys(previous) as (keyof GraphForces)[]).every((key) => settings.forces[key] === previous[key]))) {
+    settings.forces = { ...DEFAULT_FORCES };
+  }
+  return settings;
+}
+
+// Seed three domain levels once. Children precede their ancestors
+// in matching order, so the parent's broad match cannot hide a child's color.
+// changes and removals survive reloads, and newly discovered domains still get colors.
+export function withDomainColorGroups(settings: GraphSettings, nodes: readonly GraphNode[]): GraphSettings {
+  const roots = new Map<string, string>();
+  for (const node of nodes) {
+    for (const path of node.domainPaths) {
+      const parts = path.split("/").map((part) => part.trim()).filter(Boolean);
+      for (let depth = 1; depth <= Math.min(3, parts.length); depth++) {
+        const domain = parts.slice(0, depth).join("/");
+        roots.set(domain.toLowerCase(), domain);
+      }
+    }
+  }
+  const seen = new Set(settings.colorGroupDomains ?? []);
+  const additions = [...roots.keys()].sort((a, b) => a.split("/").length - b.split("/").length || a.localeCompare(b)).filter((root) => !seen.has(root));
+  if (!additions.length) return settings;
+  const groups = [...settings.groups];
+  for (const root of additions) {
+    seen.add(root);
+    // Migrate saved custom domain groups without adding a competing default.
+    if (groups.some((group) => group.query.trim().toLowerCase().replace(/\/+$/, "") === `domain:${root}` || group.query.trim().toLowerCase().replace(/\/+$/, "") === `path:${root}`)) continue;
+    const ancestors = groups.filter((group) => {
+      const match = splitGroupQuery(group.query);
+      const path = match.value.trim().replace(/\/+$/, "").toLowerCase();
+      return match.field === "domain" && path !== "" && root.startsWith(path + "/");
+    });
+    const parentIndex = ancestors.length ? groups.indexOf(ancestors[0]!) : -1;
+    const color = chooseDomainColor(root, groups);
+    const group = { id: `domain:${root}`, query: `domain:${roots.get(root)!}`, color };
+    if (parentIndex >= 0) groups.splice(parentIndex, 0, group);
+    else groups.push(group);
+  }
+  return { ...settings, groups, colorGroupDomains: [...seen] };
 }

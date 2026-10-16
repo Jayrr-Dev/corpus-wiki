@@ -13,16 +13,83 @@ import type { GraphNode } from "./types";
 // =====================================================================
 
 // COLORS: token names from app/globals.css (the dull accents, then grays). Never a raw hex.
-export const GRAPH_COLORS = [
+const BASE_GRAPH_COLORS = [
   { token: "applied", label: "Green" },
   { token: "needs-you", label: "Orange" },
   { token: "failed", label: "Red" },
   { token: "stale", label: "Gold" },
   { token: "link", label: "Blue" },
+  { token: "graph-teal", label: "Teal" },
+  { token: "graph-cyan", label: "Cyan" },
+  { token: "graph-violet", label: "Violet" },
+  { token: "graph-purple", label: "Purple" },
+  { token: "graph-pink", label: "Pink" },
+  { token: "graph-rose", label: "Rose" },
+  { token: "graph-lime", label: "Lime" },
+  { token: "graph-copper", label: "Copper" },
+  { token: "graph-scarlet", label: "Scarlet" },
+  { token: "graph-coral", label: "Coral" },
+  { token: "graph-peach", label: "Peach" },
+  { token: "graph-amber", label: "Amber" },
+  { token: "graph-yellow", label: "Yellow" },
+  { token: "graph-chartreuse", label: "Chartreuse" },
+  { token: "graph-emerald", label: "Emerald" },
+  { token: "graph-mint", label: "Mint" },
+  { token: "graph-aqua", label: "Aqua" },
+  { token: "graph-sky", label: "Sky" },
+  { token: "graph-indigo", label: "Indigo" },
+  { token: "graph-lavender", label: "Lavender" },
+  { token: "graph-magenta", label: "Magenta" },
+  { token: "graph-blush", label: "Blush" },
+  { token: "graph-sand", label: "Sand" },
+  { token: "graph-slate", label: "Slate" },
   { token: "text", label: "Light" },
   { token: "muted", label: "Gray" },
   { token: "faint", label: "Dim" },
 ] as const;
+
+const GRAPH_SHADES = [
+  { token: "applied-light", label: "Light green" },
+  { token: "applied-dark", label: "Dark green" },
+  { token: "needs-you-light", label: "Light orange" },
+  { token: "needs-you-dark", label: "Dark orange" },
+  { token: "failed-light", label: "Light red" },
+  { token: "failed-dark", label: "Dark red" },
+  { token: "stale-light", label: "Light gold" },
+  { token: "stale-dark", label: "Dark gold" },
+  { token: "link-light", label: "Light blue" },
+  { token: "link-dark", label: "Dark blue" },
+  { token: "graph-teal-light", label: "Light teal" },
+  { token: "graph-teal-dark", label: "Dark teal" },
+  { token: "graph-cyan-light", label: "Light cyan" },
+  { token: "graph-cyan-dark", label: "Dark cyan" },
+  { token: "graph-violet-light", label: "Light violet" },
+  { token: "graph-violet-dark", label: "Dark violet" },
+  { token: "graph-purple-light", label: "Light purple" },
+  { token: "graph-purple-dark", label: "Dark purple" },
+  { token: "graph-pink-light", label: "Light pink" },
+  { token: "graph-pink-dark", label: "Dark pink" },
+  { token: "graph-rose-light", label: "Light rose" },
+  { token: "graph-rose-dark", label: "Dark rose" },
+  { token: "graph-lime-light", label: "Light lime" },
+  { token: "graph-lime-dark", label: "Dark lime" },
+  { token: "graph-copper-light", label: "Light copper" },
+  { token: "graph-copper-dark", label: "Dark copper" },
+] as const;
+
+export const GRAPH_COLORS = [...BASE_GRAPH_COLORS, ...GRAPH_SHADES] as const;
+
+// Each primary family keeps its existing token as the medium shade.
+export const GRAPH_COLOR_FAMILIES = BASE_GRAPH_COLORS.slice(0, 13).map((color) => ({
+  label: color.label,
+  colors: [
+    GRAPH_SHADES.find((shade) => shade.token === `${color.token}-light`)!,
+    color,
+    GRAPH_SHADES.find((shade) => shade.token === `${color.token}-dark`)!,
+  ],
+}));
+
+export const GRAPH_ACCENTS = BASE_GRAPH_COLORS.filter(({ token }) => token !== "text" && token !== "muted" && token !== "faint");
 
 export type GraphColor = (typeof GRAPH_COLORS)[number]["token"];
 

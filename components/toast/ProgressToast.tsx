@@ -100,7 +100,7 @@ function ProgressCard({ title, detail, fraction, finished, onClose }: ProgressSt
             {finished ? <Check className="size-3.5 text-applied" aria-hidden="true" /> : null}
             <span className="truncate">{title}</span>
           </p>
-          {detail ? <p className="truncate text-muted-foreground">{detail}</p> : null}
+          {detail ? <p className="line-clamp-3 break-words text-muted-foreground">{detail}</p> : null}
         </div>
         <button type="button" aria-label="Hide" onClick={onClose} className="-mr-1 -mt-0.5 rounded p-0.5 text-faint hover:bg-hover hover:text-text">
           <X className="size-3.5" aria-hidden="true" />

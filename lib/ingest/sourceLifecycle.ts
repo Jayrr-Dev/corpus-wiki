@@ -38,18 +38,20 @@ export async function readSourceImpact(sourceId: string): Promise<SourceImpact> 
 }
 
 // ARCHIVE: the file stays readable; every unit citing it is stale until re-sourced
-export async function archiveSource(sourceId: string): Promise<ArchiveSourceResult> {
+export async function archiveSource(sourceId: string, reviewId?: string, reason?: string): Promise<ArchiveSourceResult> {
   const source = await requireSource(sourceId);
+  if (!reviewId && !reason?.trim()) throw new Error("An archive justification is required.");
   if (source.archived_at) throw new Error("This source is already archived.");
-  await updateSource(sourceId, { archived_at: new Date().toISOString() });
+  const { db } = await getServerDeps();
+  await db.call("set_source_archive", { p_source_id: sourceId, p_archive: true, p_review_id: reviewId ?? null, p_reason: reason?.trim() ?? null });
   return { staleUnits: (await readSourceImpact(sourceId)).linkedUnits };
 }
 
 // RESTORE: an archived (or replaced) file counts as active evidence again
-export async function restoreSource(sourceId: string): Promise<object> {
+export async function restoreSource(sourceId: string, reviewId?: string): Promise<object> {
   const source = await requireSource(sourceId);
   if (!source.archived_at) throw new Error("This source is not archived.");
-  await updateSource(sourceId, { archived_at: null, replaced_by_id: null });
+  await setArchive(sourceId, false, reviewId);
   return {};
 }
 
@@ -57,7 +59,7 @@ export async function restoreSource(sourceId: string): Promise<object> {
 export async function markSourceReplaced(oldSourceId: string, newSourceId: string): Promise<void> {
   if (oldSourceId === newSourceId) throw new Error("That is the same file that is already stored.");
   const source = await requireSource(oldSourceId);
-  await updateSource(oldSourceId, { archived_at: source.archived_at ?? new Date().toISOString(), replaced_by_id: newSourceId });
+  await updateSource(oldSourceId, { archived_at: source.archived_at ?? new Date().toISOString(), replaced_by_id: newSourceId, archive_reason: `Replaced by source ${newSourceId}.` });
 }
 
 // DELETE: the record, its passages and the stored file go; knowledge citing it stays, marked lost
@@ -119,9 +121,14 @@ async function requireSource(sourceId: string): Promise<Source> {
   return data;
 }
 
-async function updateSource(sourceId: string, patch: { archived_at?: string | null; replaced_by_id?: string | null }): Promise<void> {
+async function updateSource(sourceId: string, patch: { archive_reason?: string | null; archived_at?: string | null; replaced_by_id?: string | null }): Promise<void> {
   const { error } = await getAdminSupabase().from("sources").update(patch).eq("id", sourceId);
   if (error) throw new Error(`Could not update the source: ${error.message}`);
+}
+
+async function setArchive(sourceId: string, archive: boolean, reviewId?: string): Promise<void> {
+  const { db } = await getServerDeps();
+  await db.call("set_source_archive", { p_source_id: sourceId, p_archive: archive, p_review_id: reviewId ?? null });
 }
 
 // The row goes (passages cascade, upload events keep their history with no source), then the stored file

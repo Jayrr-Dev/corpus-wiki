@@ -21,6 +21,7 @@ import { ChangeRowMenu } from "./ChangeRowMenu";
 import { CHANGE_TYPE_LABEL, type ChangeDescription, describeChange, EMPTY_CONTEXT } from "./describeChange";
 import { filterChanges } from "./filterChanges";
 import { useChangeFilters } from "./useChangeFilters";
+import { jsonObject, roleLabel, roleForAction } from "../decisions/describeDecision";
 
 type ChangeSet = Tables<"change_sets">;
 
@@ -78,7 +79,12 @@ const COLUMNS = [
 function describeAll(changeSets: ChangeSet[], contexts: Map<string, ChangeContext> | undefined, label: ActorLabel): ChangeRow[] {
   return changeSets.map((changeSet) => ({
     ...changeSet,
-    proposer: label(changeSet.proposed_by, changeSet.author_id, changeSet.model_version),
+    proposer: changeSet.proposed_by === "ai"
+      ? (roleLabel(jsonObject(changeSet.actor_attribution).proposedBy)
+        ?? [...new Set((contexts?.get(changeSet.id)?.action_types ?? []).map(roleForAction).filter((role) => role !== null))]
+          .map((role) => roleLabel({ role, model: changeSet.model_version })).join(", "))
+        || label(changeSet.proposed_by, changeSet.author_id, changeSet.model_version)
+      : label(changeSet.proposed_by, changeSet.author_id, changeSet.model_version),
     described: contexts ? describeChange(contexts.get(changeSet.id) ?? EMPTY_CONTEXT(changeSet.id), changeSet.summary) : null,
   }));
 }
@@ -91,13 +97,13 @@ export function ChangesTable() {
   const listed = useMemo(() => (changeSets.data ? filterChanges(changeSets.data, filters) : undefined), [changeSets.data, filters]);
   const contexts = useChangeContexts(changeSets.data?.map((changeSet) => changeSet.id));
   const label = useActorLabel();
-  const data = useMemo(() => (listed ? describeAll(listed, contexts.data, label) : undefined), [listed, contexts.data, label]);
+  const data = useMemo(() => (listed && contexts.data ? describeAll(listed, contexts.data, label).filter((row) => row.described?.type !== "source_review" && row.described?.type !== "source_lifecycle") : undefined), [listed, contexts.data, label]);
   const filtered = Object.values(filters).some(Boolean);
   return (
     <div className="flex flex-col gap-3">
       <div className="md:hidden"><ChangeFilterBar {...filterState} /></div>
       <DataTable
-        query={{ data, isPending: changeSets.isPending, error: changeSets.error }}
+        query={{ data, isPending: changeSets.isPending || contexts.isPending, error: changeSets.error ?? contexts.error }}
         columns={COLUMNS}
         getRowId={(changeSet) => changeSet.id}
         filterPlaceholder="Search changes…"

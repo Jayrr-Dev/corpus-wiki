@@ -23,6 +23,13 @@ const entityRefSchema = z.object({
   role: z.enum(ENUMS.entity_role),
 });
 
+// Optional only for historical answers; new model output supplies explicit applicability.
+export const applicabilitySchema = z.object({
+  status: z.enum(["unspecified", "general", "scoped"]),
+  entities: z.array(z.object({ type: z.string().min(1), key: z.string().min(1), name: z.string().min(1) })),
+  conditions: z.string().nullable(),
+});
+
 // ONE CLAIM READ FROM THE FILE
 const claimSchema = z.object({
   action: z.enum(CLAIM_ACTIONS),
@@ -34,6 +41,7 @@ const claimSchema = z.object({
   speechAct: z.enum(ENUMS.speech_act),
   passages: z.array(z.string()),
   entities: z.array(entityRefSchema),
+  applicability: applicabilitySchema.optional(),
   domainPaths: z.array(z.string()),
   reason: z.string(),
 });

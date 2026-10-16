@@ -36,8 +36,8 @@ export function domainPath(name: string, parentPath: string | null): string {
 }
 
 // NEW DOMAIN -> create_domain (under a parent, or a new root)
-export function buildCreateDomain(name: string, parentPath: string | null): PersonAction {
-  const input = { name: name.trim(), path: domainPath(name, parentPath), parentPath };
+export function buildCreateDomain(name: string, parentPath: string | null, domainTabId?: string): PersonAction {
+  const input = { name: name.trim(), path: domainPath(name, parentPath), parentPath, ...(domainTabId ? { domainTabId } : {}) };
   return { type: "create_domain", ...CREATE_BASE, input };
 }
 

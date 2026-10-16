@@ -33,7 +33,7 @@ export function AddSectionDialog({ page }: { page: Tables<"pages"> }) {
 }
 
 // FORM: title, which entity's claims it shows (the page's own by default), and optionally one kind
-function AddSectionForm({ page, onDone }: { page: Tables<"pages">; onDone: () => void }) {
+export function AddSectionForm({ page, onDone }: { page: Tables<"pages">; onDone: () => void }) {
   const [title, setTitle] = useState("");
   const [entityId, setEntityId] = useState(page.entity_id ?? "");
   const [kind, setKind] = useState("");
