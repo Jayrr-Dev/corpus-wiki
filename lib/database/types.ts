@@ -17,6 +17,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      glossary_embeddings: {
+        Row: {
+          created_at: string
+          embedding: string
+          entry: Json
+          entry_hash: string
+          model: string
+        }
+        Insert: {
+          created_at?: string
+          embedding: string
+          entry: Json
+          entry_hash: string
+          model: string
+        }
+        Update: {
+          created_at?: string
+          embedding?: string
+          entry?: Json
+          entry_hash?: string
+          model?: string
+        }
+        Relationships: []
+      }
+      glossary_state: {
+        Row: {
+          batches: Json
+          completed_batches: number
+          entries: Json
+          error: string | null
+          generated_at: string | null
+          generation_started_at: string | null
+          id: boolean
+          input_hash: string | null
+          lease_token: string | null
+          lease_until: string | null
+          status: string
+          total_batches: number
+        }
+        Insert: {
+          batches?: Json
+          completed_batches?: number
+          entries?: Json
+          error?: string | null
+          generated_at?: string | null
+          generation_started_at?: string | null
+          id?: boolean
+          input_hash?: string | null
+          lease_token?: string | null
+          lease_until?: string | null
+          status?: string
+          total_batches?: number
+        }
+        Update: {
+          batches?: Json
+          completed_batches?: number
+          entries?: Json
+          error?: string | null
+          generated_at?: string | null
+          generation_started_at?: string | null
+          id?: boolean
+          input_hash?: string | null
+          lease_token?: string | null
+          lease_until?: string | null
+          status?: string
+          total_batches?: number
+        }
+        Relationships: []
+      }
       external_source_reviews: {
         Row: {
           id: string; created_at: string; page_id: string | null; section_id: string | null; source_id: string | null;
@@ -902,8 +971,6 @@ export type Database = {
     Enums: {
       action_outcome: "pending" | "applied" | "exception" | "rejected" | "reverted"
       action_type:
-        | "source_lifecycle"
-        | "source_review"
         | "create_domain"
         | "create_entity"
         | "add_claim"
@@ -918,7 +985,6 @@ export type Database = {
         | "move_line"
         | "create_page"
         | "rename_page"
-        | "review_page"
         | "retire_page"
         | "create_section"
         | "rename_section"
@@ -927,6 +993,10 @@ export type Database = {
         | "retire_entity"
         | "update_domain"
         | "retire_domain"
+        | "source_lifecycle"
+        | "source_review"
+        | "review_page"
+        | "glossary_update"
       actor_kind: "ai" | "person"
       change_set_status:
         | "draft"
@@ -998,8 +1068,6 @@ export const Constants = {
     Enums: {
       action_outcome: ["pending", "applied", "exception", "rejected", "reverted"],
       action_type: [
-        "source_lifecycle",
-        "source_review",
         "create_domain",
         "create_entity",
         "add_claim",
@@ -1014,7 +1082,6 @@ export const Constants = {
         "move_line",
         "create_page",
         "rename_page",
-        "review_page",
         "retire_page",
         "create_section",
         "rename_section",
@@ -1023,6 +1090,10 @@ export const Constants = {
         "retire_entity",
         "update_domain",
         "retire_domain",
+        "source_lifecycle",
+        "source_review",
+        "review_page",
+        "glossary_update",
       ],
       actor_kind: ["ai", "person"],
       change_set_status: ["draft", "checking", "applied", "partly_applied", "rejected", "reverted"],

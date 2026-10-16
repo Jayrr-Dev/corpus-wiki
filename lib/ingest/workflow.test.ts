@@ -47,6 +47,10 @@ describe("persistent upload pipeline with real change control and pages", () => 
 
   it("runs extraction through committed claims and real generated page lines; a second call does nothing", async () => {
     const source = await upload(); const pipeline = deps();
+    const dictionary = vi.fn(async () => {
+      expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 1);
+    });
+    pipeline.glossaryGenerator = dictionary;
     const result = await reconcileUpload(pipeline, source.eventId);
     expect(result.error).toBeNull();
     expect(result.workflow?.state).toBe("complete");
@@ -56,6 +60,7 @@ describe("persistent upload pipeline with real change control and pages", () => 
     await reconcileUpload(pipeline, source.eventId);
     expect(await count("change_sets")).toBe(before);
     expect(pipeline.draft).toHaveBeenCalledTimes(1);
+    expect(dictionary).toHaveBeenCalledTimes(1);
   });
 
   it("persists partial failure and retries pages without repeating completed roles or extraction", async () => {

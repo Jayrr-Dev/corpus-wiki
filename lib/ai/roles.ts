@@ -11,9 +11,11 @@ export const FIXED_ROLES = [
   { id: "reviewer", name: "Reviewer", description: "Automatically improves pages after knowledge updates, checks related evidence in the vector store, and raises only unresolved decisions as Exceptions. Edits are reversible in Changes.", instructions: REVIEWER_INSTRUCTIONS },
 ] as const;
 export function roleName(role: string): string {
+  if (role === "dictionary_editor") return "Dictionary editor";
   return FIXED_ROLES.find((entry) => entry.id === role)?.name ?? STAGE_ROLES[role as AiStage] ?? ({ reconciler: "Reconciler", deduplicator: "Duplicate reviewer", media_analyst: "Media analyst" }[role]) ?? role;
 }
 export function roleForPurpose(purpose: string): string | null {
+  if (purpose === "glossary_dictionary") return "dictionary_editor";
   if (purpose === "page_editorial_review") return "reviewer";
   if (purpose === "domain_structure_review") return "domain_steward";
   if (purpose.startsWith("independent_external_")) return "reviewer";

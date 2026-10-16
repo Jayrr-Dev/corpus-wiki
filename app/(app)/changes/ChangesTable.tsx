@@ -15,6 +15,7 @@ import { estimateCost, formatUsd } from "@/lib/ai/pricing";
 import type { Tables } from "@/lib/database/types";
 import { Badge } from "@/components/ui/badge";
 import { type ChangeContext, useChangeContexts, useChangeSets } from "@/lib/queries";
+import { useRealtimeInvalidation } from "@/lib/realtime";
 import { ChangeDiffPreview } from "./ChangeDiffPreview";
 import { ChangeFilterBar } from "./ChangeFilterBar";
 import { ChangeRowMenu } from "./ChangeRowMenu";
@@ -91,6 +92,8 @@ function describeAll(changeSets: ChangeSet[], contexts: Map<string, ChangeContex
 
 // CHANGES TABLE: newest first (the hook's default order), narrowed by the sidebar filters
 export function ChangesTable() {
+  useRealtimeInvalidation("change_sets");
+  useRealtimeInvalidation("actions");
   const filterState = useChangeFilters();
   const changeSets = useChangeSets();
   const { filters } = filterState;

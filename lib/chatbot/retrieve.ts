@@ -8,6 +8,8 @@ import { searchFilter } from "./validation";
 import type { Reference } from "./types";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { contextDescription, contextRelevance } from "@/lib/knowledge/contextSelection";
+import { similarGlossary } from "@/lib/glossary/embeddingStore";
+import { glossaryReferences } from "@/lib/glossary/retrieve";
 
 export async function retrieve(question: string, db: DbRpc, embedder: Embedder, entityId?: string) {
   const client = await getServerSupabase();
@@ -24,6 +26,12 @@ export async function retrieve(question: string, db: DbRpc, embedder: Embedder, 
     queryVector = vector;
     matches = await similarUnits(db, embedder.model, vector, 12, 0.35);
   } catch { warning = "Semantic search is unavailable; this answer uses text matches only."; }
+  if (queryVector) {
+    try {
+      const glossary = await similarGlossary(db, embedder.model, queryVector, 8);
+      references.push(...await glossaryReferences(client, glossary, contextEntity));
+    } catch { warning = warning ?? "Glossary matches are temporarily unavailable; other saved evidence is still included."; }
+  }
   const filter = searchFilter(["content", "title"], question);
   const lexical = filter ? await client.from("revisions").select("id,unit_id,content,title,passage_ids").or(filter).limit(20) : { data: [], error: null };
   if (lexical.error) throw lexical.error;

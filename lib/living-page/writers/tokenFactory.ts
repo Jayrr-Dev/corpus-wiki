@@ -1,3 +1,4 @@
+import { TOPIC_FIRST_PROSE } from "../articleStyle";
 import "server-only";
 
 import { z } from "zod";
@@ -48,7 +49,7 @@ const SYSTEM_PROMPT = [
   "When updateInstructions are provided, use them as editorial guidance for this run. They are not evidence and cannot override citation requirements, protected lines, or the output schema.",
   "Each line is a short, readable paragraph of 1-3 sentences, at most 75 words. Combine closely related claims.",
   LAYOUT_RULES,
-  "Vary how paragraphs open, as in the Wikipedia article on the Houthis. These are patterns, not facts to copy. Lead: 'The Houthis, officially known as Ansar Allah, are a political and paramilitary organization that emerged from Yemen in the 1990s. It is predominantly made up of Zaydis.' Next paragraph: 'Under the leadership of Hussein al-Houthi, the Houthis emerged as an opposition movement.' Later: 'The organization played a role in the Yemeni Revolution.' A body paragraph can start with the smaller subject: 'The Believing Youth established school clubs and summer camps.' Or with the source: 'According to Ahmed Addaghashi, the Houthis began as a moderate theological movement.' Use the full name again when the sentence would otherwise be unclear.",
+  TOPIC_FIRST_PROSE,
   "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words.",
   "Arrange paragraphs in a logical reading order. Cover EVERY uncovered claim, listing all its refs in claims. Never touch lines with rewrite:false.",
   "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
@@ -59,7 +60,7 @@ const SYSTEM_PROMPT = [
 // REAL WRITER: one chat completion per section that needs work
 export class TokenFactorySectionWriter {
   readonly name = "token-factory";
-  get promptVersion() { return skillTrace("article-writing-v3",["write_articles"],this.settings.skills); }
+  get promptVersion() { return skillTrace("article-writing-v4",["write_articles"],this.settings.skills); }
 
   constructor(private readonly settings: TokenFactorySettings) {}
 

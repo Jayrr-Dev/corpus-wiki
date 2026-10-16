@@ -90,7 +90,7 @@ function TreeBody({ kind, onMinimize }: { kind: TreeKind; onMinimize?: () => voi
 
 function MinimizeButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <Tooltip content="Minimize">
+    <Tooltip content="Minimize" side="right">
       <button type="button" onClick={onClick} aria-label={`Minimize ${label.toLowerCase()}`} className="flex size-6 shrink-0 items-center justify-center text-faint hover:text-foreground">
         <Minus className="size-3.5" />
       </button>

@@ -54,6 +54,7 @@ export type ReconciliationInput = {
 export type EntityRef = { type: string; key: string; role: EntityRole };
 
 export type ActionInputByType = {
+  glossary_update: { title: string; operation: string; total: number; added: string[]; revised: string[]; removed: string[] };
   source_lifecycle: { title: string; operation: string; reason: string };
   source_review: { title: string; stage: string; outcome: string; reason: string };
   create_domain: { name: string; path: string; parentPath: string | null; domainTabId?: string };

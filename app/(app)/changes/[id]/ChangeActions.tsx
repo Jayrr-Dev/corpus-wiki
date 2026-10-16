@@ -38,10 +38,28 @@ function ActionItem({ action, before, after }: ActionItemProps) {
     <li className="flex flex-col gap-2 py-3">
       <ActionSummary action={action} />
       {action.type === "source_review" || action.type === "source_lifecycle" ? <SourceAuditDetails action={action} /> : null}
+      {action.type === "glossary_update" ? <GlossaryAuditDetails action={action} /> : null}
       <CheckList checks={readCheckResults(action.check_results)} />
       {hasDiff ? <DiffView before={before} after={after} /> : null}
     </li>
   );
+}
+
+function GlossaryAuditDetails({ action }: { action: Tables<"actions"> }) {
+  const input = asObject(action.input);
+  const snapshot = asObject(input.snapshot);
+  const previous = asObject(action.undo_state);
+  const before = Array.isArray(previous.entries) ? previous.entries.map(asObject) : [];
+  const after = Array.isArray(snapshot.entries) ? snapshot.entries.map(asObject) : [];
+  const key = (entry: ReturnType<typeof asObject>) => `${entry.term}|${entry.expansion}|${entry.scopeKey}`;
+  const oldByKey = new Map(before.map((entry) => [key(entry), entry]));
+  const changed = after.filter((entry) => JSON.stringify(oldByKey.get(key(entry))) !== JSON.stringify(entry));
+  return <div className="space-y-3 text-panel">
+    <p className="text-muted-foreground">{readStrings(input, "added").length} added · {readStrings(input, "revised").length} revised · {readStrings(input, "removed").length} removed</p>
+    <details><summary className="cursor-pointer">See generated definitions ({changed.length})</summary><div className="mt-3 space-y-5">{changed.map((entry) => <div key={key(entry)}><p className="mb-2 font-medium">{readString(entry, "term")}</p><DiffView before={readString(oldByKey.get(key(entry)) ?? {}, "definition")} after={readString(entry, "definition")} /></div>)}</div></details>
+    {readStrings(input, "removed").length > 0 && <p>Removed: {readStrings(input, "removed").join(", ")}</p>}
+    <p className="text-muted-foreground">Undo restores the previous dictionary. The source knowledge is preserved.</p>
+  </div>;
 }
 
 function SourceAuditDetails({ action }: { action: Tables<"actions"> }) {

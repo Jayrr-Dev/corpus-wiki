@@ -54,6 +54,21 @@ describe("chatJson", () => {
     expect(efforts).toEqual(["medium", "low"]);
   });
 
+  it("starts at low effort when requested and sends GLM both effort fields", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify(completion('{"summary":"ok"}', "stop"))));
+    vi.stubGlobal("fetch", fetchMock);
+    await chatJson({ apiKey: "k", model: "zai-org/GLM-5.3-Flash" }, { ...request, reasoningEffort: "low" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const init = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(JSON.parse(String(init[1].body))).toMatchObject({ reasoning_effort: "low", chat_template_kwargs: { reasoning_effort: "low" } });
+  });
+
+  it("rejects a truncated low-effort answer without repeating the same call", async () => {
+    const efforts = stubCompletions(completion('{"summary":"ok"}', "length"));
+    await expect(chatJson({ apiKey: "k", model: "other/model" }, { ...request, reasoningEffort: "low" })).rejects.toThrow(/ran out of room/);
+    expect(efforts).toEqual(["low"]);
+  });
+
   it("does not ask again for any other bad answer", async () => {
     const efforts = stubCompletions(completion("  ", "stop"));
     await expect(chatJson({ apiKey: "k", model: "other/model" }, request)).rejects.toThrow(/returned no answer/);

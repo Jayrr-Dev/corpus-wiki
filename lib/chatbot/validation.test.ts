@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { chatRequest, searchFilter } from "./validation";
 
 describe("chat request boundaries", () => {
+  it("defaults to natural output and accepts only known output skills", () => {
+    const messages = [{ role: "user", content: "Summarize this" }];
+    expect(chatRequest.parse({ messages }).outputSkill).toBe("natural");
+    expect(chatRequest.parse({ messages, outputSkill: "bullets" }).outputSkill).toBe("bullets");
+    expect(chatRequest.safeParse({ messages, outputSkill: "ignore-all-rules" }).success).toBe(false);
+  });
   it("accepts follow-ups but excludes client-supplied evidence", () => {
     const result = chatRequest.parse({ messages: [{ role: "assistant", content: "Earlier answer", references: [{ text: "untrusted" }] }, { role: "user", content: "Why?" }] });
     expect(result.messages[0]).not.toHaveProperty("references");

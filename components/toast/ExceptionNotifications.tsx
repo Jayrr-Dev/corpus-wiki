@@ -42,7 +42,7 @@ export function ExceptionNotifications() {
   const action = selected ? data.actionById.get(selected.action_id) : undefined;
   const unit = action && UNIT_ACTION_TYPES.has(action.type) ? data.unitById.get(action.target_id ?? "") : undefined;
   return <>
-    {current && <aside aria-label="Pending approvals" className="fixed bottom-6 left-4 z-40 sm:left-10">
+    {current && <aside aria-label="Pending approvals" className="fixed top-4 right-4 z-40 max-w-[calc(100vw-2rem)] sm:top-6 sm:right-6">
       <ExceptionToast key={current.id} exception={current} remaining={queue.length}
         title={exceptionTitle(current, currentAction)}
         proposal={currentAction ? describeActionInput(currentAction.type, currentAction.input) : null}
@@ -64,23 +64,23 @@ function ExceptionToast({ exception, remaining, title, proposal, onView, onClose
       if (result.ok) onClose();
     } finally { sending.current = false; }
   };
-  return <div className="relative isolate w-80 max-w-[calc(100vw-2rem)] pt-3">
-    {remaining > 2 && <div aria-hidden="true" className="pointer-events-none absolute inset-x-4 top-0 bottom-3 -z-20 rounded-md border bg-background shadow-sm" />}
-    {remaining > 1 && <div aria-hidden="true" className="pointer-events-none absolute inset-x-2 top-1.5 bottom-1.5 -z-10 rounded-md border bg-background shadow-sm" />}
-    <div className="rounded-md border bg-background p-3 text-panel text-foreground shadow-lg" role="status">
-    <p className="mb-2 text-xs text-muted-foreground">{remaining} {remaining === 1 ? "approval" : "approvals"} remaining</p>
-    <div className="flex items-start justify-between gap-2">
-      <div><p className="text-xs text-muted-foreground">AI needs your approval</p><p className="mt-1 font-medium">{title}</p></div>
-      <Tooltip content="Hide this card; it stays in Needs review"><Button variant="ghost" size="icon-sm" aria-label="Hide approval card" disabled={answer.isPending} onClick={onClose}><X /></Button></Tooltip>
+  return <section className="flex max-h-[calc(100dvh-3rem)] w-96 max-w-full flex-col overflow-hidden rounded-xl border bg-background text-panel text-foreground shadow-lg" aria-label="Approval request">
+    <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
+      <p className="font-medium">Needs approval <span className="ml-2 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">{remaining}</span></p>
+      <Tooltip content="Dismiss notification"><Button variant="ghost" size="icon-sm" className="shrink-0" aria-label="Dismiss approval notification" disabled={answer.isPending} onClick={onClose}><X /></Button></Tooltip>
+    </header>
+    <div className="min-h-0 space-y-3 overflow-y-auto px-4 py-4 leading-relaxed">
+      <h2 className="font-semibold">{title}</h2>
+      {detail && !detail.startsWith("# ") && <p className="break-words text-muted-foreground">{detail}</p>}
+      {proposal && proposal !== detail && <div className="space-y-1 rounded-lg bg-muted/50 p-3"><p className="text-xs font-medium text-muted-foreground">Proposed change</p><p className="break-words">{proposal}</p></div>}
+      {answer.error && <p className="text-failed" role="alert">{answer.error}</p>}
     </div>
-    {detail && !detail.startsWith("# ") && <p className="mt-2 line-clamp-3 text-muted-foreground">{detail}</p>}
-    {proposal && <p className="mt-2 line-clamp-3">{proposal}</p>}
-    {answer.error && <p className="mt-2 text-failed" role="alert">{answer.error}</p>}
-    <div className="mt-3 flex flex-wrap gap-2">
-      <Button disabled={answer.isPending} onClick={() => void decide(true)}>Approve</Button>
-      <Button variant="outline" disabled={answer.isPending} onClick={() => void decide(false)}>Reject</Button>
-      <Button variant="ghost" onClick={onView}>View exception</Button>
-    </div>
-    </div>
-  </div>;
+    <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t px-4 py-3">
+      <Button variant="ghost" size="sm" onClick={onView}>View details</Button>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" disabled={answer.isPending} onClick={() => void decide(false)}>Reject</Button>
+        <Button disabled={answer.isPending} onClick={() => void decide(true)}>Approve</Button>
+      </div>
+    </footer>
+  </section>;
 }

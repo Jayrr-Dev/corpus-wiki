@@ -23,7 +23,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Pages", href: "/", icon: PageIcon },
   { label: "Glossary", href: "/glossary", icon: BookOpen },
   { label: "Graph", href: "/graph", icon: GraphIcon },
-  { label: "Ask", href: "/chatbot", icon: MessageCircle },
+  { label: "Ask", href: "/ask", icon: MessageCircle },
   { label: "Upload", href: "/upload", icon: UploadIcon },
   { label: "Knowledge", href: "/units", icon: UnitIcon },
   { label: "Changes", href: "/changes", icon: ChangeIcon },

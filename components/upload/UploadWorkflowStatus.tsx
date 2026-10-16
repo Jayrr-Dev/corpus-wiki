@@ -25,7 +25,7 @@ const LABELS: Record<string, string> = {
   reconcile: "Checking knowledge", "reconciliation-input": "Reading evidence", extraction: "Extracting knowledge",
   "duplicate-guard": "Comparing existing claims", embeddings: "Indexing knowledge", describe: "Describing subjects",
   expand: "Expanding definitions", plan: "Planning pages", pages: "Updating and reviewing pages",
-  hierarchy: "Organizing topics", duplicates: "Checking duplicates", "settle-pages": "Checking final page updates",
+  hierarchy: "Organizing topics", duplicates: "Checking duplicates", "settle-pages": "Checking final page updates", glossary: "Writing dictionary entries",
 };
 
 export function UploadWorkflowStatus({ eventId, allowRetry = true, legacyStatus }: { eventId: string; allowRetry?: boolean; legacyStatus?: string }) {

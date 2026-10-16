@@ -37,6 +37,27 @@ describe("review workflow", () => {
     expect(call.mock.calls.filter(([name]) => name === "complete_page_review")).toHaveLength(1);
   });
 
+  it("corrects an invalid same-page destination and saves the validated rewrite", async () => {
+    const { db, call } = database();
+    const edit = { type: "revise_line", targetId: line, text: "Inspections follow a weekly schedule.", reason: "Shorten the repeated lead." };
+    chat.mockResolvedValueOnce({ value: { summary: "Consolidate", edits: [], findings: [{ operation: "consolidate", quote: "Inspections occur weekly.", guideline: "Repetition", reason: "Repeated", recommendation: "Shorten the lead", destinationId: page, decisionKind: null, decisionQuestion: null }] }, model: "test" });
+    chat.mockResolvedValueOnce({ value: { summary: "Shortened the repeated lead.", edits: [edit], findings: [] }, model: "test" });
+    await runPageReview(db, { apiKey: "test" }, page);
+    expect(chat).toHaveBeenCalledTimes(2);
+    expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [edit], p_snapshot: snapshot, p_trace: expect.objectContaining({ timingsMs: expect.objectContaining({ snapshot: expect.any(Number), editorial: expect.any(Number) }) }) }));
+  });
+
+  it("accepts a destination whose text was actually supplied through related retrieval", async () => {
+    const { db, call } = database();
+    const destination = "33333333-3333-4333-8333-333333333333";
+    const original = call.getMockImplementation()!;
+    call.mockImplementation(async (name, args) => name === "page_review_related" ? [{ content: "Related", passages: [], pages: [{ id: destination, title: "Related page", content: "Inspections occur weekly." }] }] : original(name, args));
+    chat.mockResolvedValueOnce({ value: { summary: "Compare pages", edits: [], findings: [{ operation: "consolidate", quote: "Inspections occur weekly.", guideline: "Repetition", reason: "Repeated", recommendation: "Consolidate", destinationId: destination, decisionKind: "cross_page_restructure", decisionQuestion: "Keep this on the related page?" }] }, model: "test" });
+    await runPageReview(db, { apiKey: "test" }, page, { model: "embedding", embed: vi.fn().mockResolvedValue([[0.1]]) });
+    expect(chat).toHaveBeenCalledTimes(1);
+    expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_snapshot: snapshot }));
+  });
+
   it("does not retry authentication failures as context problems", async () => {
     const { db, call } = database();
     chat.mockRejectedValueOnce(new Error("Token Factory 401: Unauthorized"));
@@ -111,6 +132,7 @@ describe("review workflow", () => {
     await runPageReview(db, { apiKey: "test" }, page, { model: "embedding", embed });
     expect(similar).toHaveBeenCalledWith(db, "embedding", [0.1, 0.2], 12, 0.65);
     expect(chat.mock.calls[0]![1].messages[1].content).toContain("Supporting evidence");
+    expect(chat.mock.calls[0]![1].reasoningEffort).toBe("low");
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [], p_review: expect.objectContaining({ findings: [] }) }));
   });
   it("rejects fabricated edit targets before making database changes", async () => {

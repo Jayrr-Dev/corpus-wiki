@@ -89,14 +89,17 @@ export function tokenFactoryFromEnv(
 
 // `subject` names what the call is about (a file title, a section) for the usage log
 type ChatJsonRequest<S extends z.ZodType> = {
+  signal?: AbortSignal;
   name: string;
   subject?: string;
   schema: S;
   jsonSchema: object;
   messages: (ChatMessage | ChatMediaMessage)[];
   maxTokens?: number;
+  // Stage-specific starting effort; low has no lower-effort retry on truncation.
+  reasoningEffort?: ReasoningEffort;
   // Article prose keeps its dedicated encyclopedic writing policy.
-  outputStyle?: "concise" | "wiki_article";
+  outputStyle?: "concise" | "wiki_article" | "chat";
   // When set, the answer is streamed and this hears the text so far (and any visible thinking)
   // after each chunk. A retry at a lower effort starts again from empty text.
   onStream?: (partial: StreamedSoFar) => void;
@@ -111,7 +114,8 @@ const isNemotron3 = (model: string) => /^nvidia\/(?:nvidia-)?nemotron-3[\/_.-]/i
 // the token budget is asked again at the next lower reasoning effort (for models that
 // reason; for the rest a retry would only repeat the cut-off); other errors stop at once.
 export async function chatJson<S extends z.ZodType>(settings: TokenFactorySettings, request: ChatJsonRequest<S>): Promise<ChatJsonResult<z.infer<S>>> {
-  const efforts = isNemotron3(settings.model || DEFAULT_AI_MODEL) ? REASONING_EFFORTS.slice(0, 1) : REASONING_EFFORTS;
+  const startingEfforts = request.reasoningEffort === "low" ? REASONING_EFFORTS.slice(1) : REASONING_EFFORTS;
+  const efforts = isNemotron3(settings.model || DEFAULT_AI_MODEL) ? startingEfforts.slice(0, 1) : startingEfforts;
   let cutOff: AnswerCutOffError | null = null;
   for (const effort of efforts) {
     try {
@@ -174,12 +178,13 @@ async function requestCompletion(
 ): Promise<CompletionResponse> {
   const response = await postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
     method: "POST",
+    signal: request.signal,
     headers: { Authorization: `Bearer ${settings.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
       messages: [
         { role: "system", content: `Return only JSON matching this schema: ${JSON.stringify(request.jsonSchema)}` },
-        ...(request.outputStyle === "wiki_article" ? [] : [{ role: "system", content: CONCISE_OUTPUT_INSTRUCTIONS }]),
+        ...(request.outputStyle === "wiki_article" || request.outputStyle === "chat" ? [] : [{ role: "system", content: CONCISE_OUTPUT_INSTRUCTIONS }]),
         ...request.messages,
       ],
       temperature: 0,
@@ -271,7 +276,7 @@ async function postCompletion(url: URL, init: RequestInit): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     let response: Response;
     try {
-      response = await fetch(url, { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+      response = await fetch(url, { ...init, signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]) : AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
     } catch (error) {
       if (error instanceof Error && error.name === "TimeoutError") {
         throw new Error("The AI provider did not respond within three minutes. Retry processing the upload.");

@@ -187,6 +187,8 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
   const object = asObject(input);
   const text = (key: string) => readString(object, key) ?? "";
   switch (type) {
+    case "glossary_update":
+      return `${text("operation")} glossary: ${object.total ?? 0} definitions`;
     case "review_page":
       return text("recommendation");
     case "source_lifecycle":

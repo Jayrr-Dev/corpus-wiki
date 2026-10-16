@@ -3,9 +3,10 @@ import type { KnowledgeContext } from "@/lib/knowledge/context";
 import type { DbRpc } from "@/lib/db/rpc";
 import { retrieve } from "./retrieve";
 
-const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn(), savedVectors: vi.fn(), scopeIds: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn(), similarGlossary: vi.fn(), savedVectors: vi.fn(), scopeIds: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ getServerSupabase: mocks.getServerSupabase }));
 vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: mocks.similarUnits, savedVectors: mocks.savedVectors }));
+vi.mock("@/lib/glossary/embeddingStore", () => ({ similarGlossary: mocks.similarGlossary }));
 
 const entity = { id: "e-utilitek", type: "company", key: "utilitek", name: "Utilitek" };
 const scoped = (key: string): KnowledgeContext => ({
@@ -80,6 +81,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   embedder.embed.mockResolvedValue([[1, 0]]);
   mocks.scopeIds.mockResolvedValue(["utilitek"]);
+  mocks.similarGlossary.mockResolvedValue([]);
   mocks.savedVectors.mockResolvedValue(new Map([["r-utilitek", [1, 0]]]));
   mocks.similarUnits.mockResolvedValue(revisions.map(row => ({ unitId: row.unit_id, revisionId: row.id, content: "vector text must not be exposed", similarity: 0.9 })));
 });
@@ -118,6 +120,20 @@ describe("retrieve scoped knowledge", () => {
     expect(result.references.some(reference => reference.kind === "Source")).toBe(true);
     expect(queries.some(query => query.table === "passages" && query.filters.some(filter => filter.op === "or"))).toBe(true);
     expect(queries.some(query => query.table === "section_lines" && query.filters.some(filter => filter.op === "or"))).toBe(true);
+  });
+
+  it("retrieves glossary meanings through current source claims, excluding other companies and stale revisions", async () => {
+    mockClient();
+    const meaning = (id: string, revisionId = `r-${id}`) => ({ entry: {
+      term: `Term ${id}`, expansion: null, aliases: [], category: "technical term", definition: `Dictionary meaning for ${id}`,
+      context: id, scopeKey: id, citations: [{ unitId: id, revisionId, sourceId: `source-${id}`, sourceTitle: `Source ${id}` }],
+    }, similarity: 0.9 });
+    mocks.similarGlossary.mockResolvedValue([meaning("utilitek"), meaning("other"), meaning("general"), meaning("unknown"), meaning("utilitek", "superseded")]);
+    const result = await retrieve("explain terminology", db, embedder, entity.id);
+    const definitions = result.references.filter((reference) => reference.kind === "Glossary");
+    expect(definitions.map((reference) => reference.title)).toEqual(["Term utilitek", "Term general"]);
+    expect(definitions[0]?.href).toContain("/glossary#term-");
+    expect(definitions[0]?.text).toContain("AI-generated dictionary meaning");
   });
 
   it.each([true, false])("searches within the entity before global limits (semantic search: %s)", async (semantic) => {

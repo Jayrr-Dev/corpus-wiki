@@ -3,6 +3,9 @@ import type { ChangeContext } from "@/lib/queries/changeContexts";
 import { classifyChange, describeChange, EMPTY_CONTEXT } from "./describeChange";
 
 describe("classifyChange", () => {
+  it("identifies generated dictionary history as Glossary", () => {
+    expect(classifyChange(["glossary_update"])).toBe("glossary");
+  });
   it("identifies source lifecycle and approver history", () => {
     expect(classifyChange(["source_lifecycle"])).toBe("source_lifecycle");
     expect(classifyChange(["source_review"])).toBe("source_review");

@@ -45,6 +45,7 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
         ["hierarchy", async () => deps.hierarchyOrganizer?.(eventId)],
         ["duplicates", async () => deps.deduper?.(eventId)],
         ["settle-pages", () => rebuildAfterEvent(db, deps.writer, eventId)],
+        ["glossary", async () => deps.glossaryGenerator?.()],
       ];
       let failed = false;
       for (const [key, run] of stages) {
