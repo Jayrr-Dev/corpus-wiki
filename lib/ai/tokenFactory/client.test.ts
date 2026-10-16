@@ -64,12 +64,12 @@ describe("batched reconciliation", () => {
     const fetchMock = vi.fn(async (_url: unknown, options: RequestInit) => response(options));
     vi.stubGlobal("fetch", fetchMock);
     const draft = await client().draftChangeSet(input(17));
-    expect(fetchMock.mock.calls.map(([, options]) => passagesOf(options).length)).toEqual([8, 8, 1]);
+    expect(fetchMock.mock.calls.map(([, options]) => passagesOf(options).length)).toEqual([4, 4, 4, 4, 1]);
     const claims = draft.actions.filter((action) => action.type === "add_claim");
     expect(claims.map((action) => action.passageIds)).toEqual(input(17).passages.map((passage) => [passage.id]));
     expect(draft.actions.filter((action) => action.type === "create_entity")).toHaveLength(1);
     expect(draft.actions.filter((action) => action.type === "create_domain")).toHaveLength(1);
-    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v10" });
+    expect(draft.trace).toMatchObject({ tokensIn: 50, tokensOut: 100, promptVersion: "reconcile-v10" });
   });
 
   it("renumbers each batch's claim refs so links point at the right claims", async () => {
@@ -79,7 +79,9 @@ describe("batched reconciliation", () => {
     const links = draft.actions.filter((action) => action.type === "link").map((action) => action.input);
     expect(links).toEqual([
       { toUnitId: null, type: "related_to", fromPosition: 3, toPosition: 2, rationale: "Same policy" },
+      { toUnitId: null, type: "related_to", fromPosition: 7, toPosition: 6, rationale: "Same policy" },
       { toUnitId: null, type: "related_to", fromPosition: 11, toPosition: 10, rationale: "Same policy" },
+      { toUnitId: null, type: "related_to", fromPosition: 15, toPosition: 14, rationale: "Same policy" },
     ]);
   });
 
@@ -100,6 +102,15 @@ describe("batched reconciliation", () => {
     expect(fetchMock.mock.calls.map(([, options]) => passagesOf(options).length)).toEqual([4, 2, 2]);
     expect(draft.actions.filter((action) => action.type === "add_claim").map((action) => action.passageIds)).toEqual(input(4).passages.map((passage) => [passage.id]));
     expect(draft.trace).toMatchObject({ tokensIn: 60, tokensOut: 8040 });
+  });
+
+  it("splits a batch the provider never answered instead of failing the upload", async () => {
+    const fetchMock = vi.fn(async (_url: unknown, options: RequestInit) => response(options));
+    fetchMock.mockImplementationOnce(async () => { throw new DOMException("Timed out", "TimeoutError"); });
+    vi.stubGlobal("fetch", fetchMock);
+    const draft = await client().draftChangeSet(input(4));
+    expect(fetchMock.mock.calls.map(([, options]) => passagesOf(options).length)).toEqual([4, 2, 2]);
+    expect(draft.actions.filter((action) => action.type === "add_claim").map((action) => action.passageIds)).toEqual(input(4).passages.map((passage) => [passage.id]));
   });
 
   it("stops at one passage rather than retrying forever or silently saving an incomplete document", async () => {

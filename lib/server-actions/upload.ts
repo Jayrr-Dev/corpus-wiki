@@ -11,6 +11,8 @@ import {
   startUploadFromStorage,
   type StartUploadResult,
 } from "@/lib/ingest";
+import { after } from "next/server";
+import { articlesPending } from "@/lib/ingest/workflowTypes";
 import { type ActionResult, toActionResult } from "./result";
 import { readLink } from "@/lib/ingest/readLink";
 
@@ -56,20 +58,30 @@ export async function startUploadFromPath(input: { path: string; fileName: strin
   });
 }
 
-// STEP 2: reconcile with the AI, commit, rebuild the page; returns the event's final status
+// STEP 2: the knowledge job answers the caller as soon as the claims are saved and cleaned;
+// the articles job runs after the response, so it never holds up the screen's other actions.
+// The screen watches its progress through read_upload_workflows.
 export async function processUpload(eventId: string): Promise<ActionResult<ProcessUploadResult>> {
   return toActionResult(async () => {
     await requireUser();
-    return processUploadEvent(eventId);
+    return writeArticlesAfter(eventId, await processUploadEvent(eventId, "knowledge"));
   });
 }
 
-// RETRY: step 2 again for a failed upload (Recent uploads, the chosen file's status line)
+// RETRY: step 2 again for an unfinished upload (Recent uploads, the chosen file's status line)
 export async function retryUpload(eventId: string): Promise<ActionResult<ProcessUploadResult>> {
   return toActionResult(async () => {
     await requireUser();
-    return retryUploadEvent(eventId);
+    return writeArticlesAfter(eventId, await retryUploadEvent(eventId, "knowledge"));
   });
+}
+
+// A failed articles job is saved on the workflow, where the screen shows it with Resume
+function writeArticlesAfter(eventId: string, knowledge: ProcessUploadResult): ProcessUploadResult {
+  if (knowledge.workflow && articlesPending(knowledge.workflow)) {
+    after(() => processUploadEvent(eventId, "articles").then(() => undefined, (error) => console.error("upload articles failed", error)));
+  }
+  return knowledge;
 }
 
 // RERUN STEP 1: a stored source gets a fresh upload event (Sources "…" menu); processUpload runs it

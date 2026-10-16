@@ -11,6 +11,7 @@ import { openRerunEvent } from "./rerun";
 import { markSourceReplaced } from "./sourceLifecycle";
 import { createDirectUploadUrl, readDirectUpload, removeDirectUpload, storeSourceFile } from "./storage";
 import type { CaptureResult, ProcessUploadResult, StartUploadResult } from "./types";
+import type { UploadJob } from "./workflowTypes";
 
 export type * from "./types";
 
@@ -138,8 +139,9 @@ function requireFormat(fileName: string, browserType: string): UploadFormat {
   return format;
 }
 
-// STEP 2: reconciliation with Nemotron, the commit and the page rebuild
-export async function processUploadEvent(eventId: string): Promise<ProcessUploadResult> {
+// STEP 2: reconciliation with Nemotron, the commit and the page rebuild. `job` "knowledge"
+// stops once the claims are saved and cleaned; "articles" also writes the pages.
+export async function processUploadEvent(eventId: string, job: UploadJob = "articles"): Promise<ProcessUploadResult> {
   // Old external pages may contain broad, unfiltered text. Never rerun them as
   // uploads without their original article scope; refresh from that article instead.
   const client = getAdminSupabase();
@@ -155,14 +157,14 @@ export async function processUploadEvent(eventId: string): Promise<ProcessUpload
       return { status: "failed", changeSetId: null, error };
     }
   }
-  return reconcileUpload(await getServerDeps(), eventId);
+  return reconcileUpload(await getServerDeps(), eventId, job);
 }
 
 // RETRY: step 2 again for a failed upload, with the model chosen now
-export async function retryUploadEvent(eventId: string): Promise<ProcessUploadResult> {
+export async function retryUploadEvent(eventId: string, job: UploadJob = "articles"): Promise<ProcessUploadResult> {
   // The workflow claim validates source eligibility and serializes concurrent resumes.
   // An applied knowledge event may still have unfinished page or review work.
-  return processUploadEvent(eventId);
+  return processUploadEvent(eventId, job);
 }
 
 // RERUN: a stored source gets a fresh upload event; step 2 runs on it next

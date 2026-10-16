@@ -8,16 +8,19 @@ import type { ProcessUploadResult, StartUploadResult } from "./types";
 import type { PassageDraft } from "./passages";
 import { scopeExternalDraft } from "./scopeExternalDraft";
 import { runUploadWorkflow } from "./workflow";
+import type { UploadJob } from "./workflowTypes";
 import { uploadExecution, workflowStep } from "./workflowContext";
 
 // =====================================================================
 // UPLOAD PIPELINE (runtime-neutral: the app runs it on Supabase, the
 // evals on a throwaway Postgres). Two steps, in order:
 //   1. recordUpload    source + passages + a 'received' event
-//   2. reconcileUpload model drafts a ChangeSet -> Change control commits
-//                      it -> new entities get a short description ->
-//                      pages are proposed for the entities it is
-//                      about -> the living page rebuilds what changed
+//   2. reconcileUpload two jobs (lib/ingest/workflow.ts):
+//      knowledge      model drafts a ChangeSet -> Change control commits
+//                     it -> claims are embedded and deduplicated, entities
+//                     described, topics organized, the glossary updated
+//      articles       pages are proposed for the entities it is about ->
+//                     the living pages are written once from that knowledge
 // =====================================================================
 
 // duplicateGuard: turns repeats of stored claims into revisions before the draft is submitted
@@ -55,8 +58,9 @@ export async function recordUpload(db: DbRpc, record: UploadRecord): Promise<Sta
 }
 
 // STEP 2: persist each role's progress; unfinished processing is separate from the knowledge commit.
-export async function reconcileUpload(deps: PipelineDeps, eventId: string): Promise<ProcessUploadResult> {
-  return runUploadWorkflow(deps, eventId, () => draftAndCommit(deps, eventId));
+// "knowledge" stops once the claims are committed and cleaned; "articles" (the default) also writes the pages.
+export async function reconcileUpload(deps: PipelineDeps, eventId: string, job: UploadJob = "articles"): Promise<ProcessUploadResult> {
+  return runUploadWorkflow(deps, eventId, () => draftAndCommit(deps, eventId), job);
 }
 
 // EXTERNAL STEP 2: scoped web evidence adds claims to established reference domains.

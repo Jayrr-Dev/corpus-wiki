@@ -6,6 +6,7 @@ import { FakeSectionWriter } from "@/lib/living-page";
 import { reconcileUpload, recordUpload, finishApprovedUpload, type PipelineDeps } from "./pipeline";
 import { uploadExecution, workflowWrite } from "./workflowContext";
 import { splitIntoPassages } from "./passages";
+import { articlesPending, workflowLabel } from "./workflowTypes";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -47,8 +48,9 @@ describe("persistent upload pipeline with real change control and pages", () => 
 
   it("runs extraction through committed claims and real generated page lines; a second call does nothing", async () => {
     const source = await upload(); const pipeline = deps();
+    // The glossary is knowledge: it is written before any page, so pages are built once
     const dictionary = vi.fn(async () => {
-      expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 1);
+      expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 0);
     });
     pipeline.glossaryGenerator = dictionary;
     const result = await reconcileUpload(pipeline, source.eventId);
@@ -154,11 +156,29 @@ describe("persistent upload pipeline with real change control and pages", () => 
     const first = await reconcileUpload(pipeline, source.eventId);
     expect(first.workflow?.state).toBe("incomplete");
     expect(first.workflow?.steps.some((step) => step.key === "pages")).toBe(false);
-    expect(pipeline.deduper).not.toHaveBeenCalled();
+    // Knowledge cleanup finished before the articles started, so it is not repeated
+    expect(pipeline.deduper).toHaveBeenCalledTimes(1);
     const second = await reconcileUpload(pipeline, source.eventId);
     expect(second.workflow?.state).toBe("complete");
     expect(pipeline.knowledgeExpander).toHaveBeenCalledTimes(2);
     expect(pipeline.entityDescriber).toHaveBeenCalledTimes(1);
+    expect(pipeline.deduper).toHaveBeenCalledTimes(1);
+  });
+
+  it("saves the knowledge in its own job, then writes the articles without repeating it", async () => {
+    const source = await upload(); const pipeline = deps();
+    const knowledge = await reconcileUpload(pipeline, source.eventId, "knowledge");
+    expect(knowledge.error).toBeNull();
+    expect(knowledge.status).toBe("applied");
+    expect(knowledge.workflow && articlesPending(knowledge.workflow)).toBe(true);
+    expect(workflowLabel(knowledge.workflow!)).toBe("Knowledge saved; articles not written yet");
+    expect(knowledge.workflow?.steps.some((step) => ["expand", "plan", "pages"].includes(step.key))).toBe(false);
+    expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 0);
+    const articles = await reconcileUpload(pipeline, source.eventId, "articles");
+    expect(articles.workflow?.state).toBe("complete");
+    expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 1);
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
+    expect(pipeline.deduper).toHaveBeenCalledTimes(1);
   });
 
   it("resumes a failed editorial reviewer without rewriting already saved page lines", async () => {

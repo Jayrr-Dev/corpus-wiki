@@ -5,6 +5,7 @@ import { useState } from "react";
 import { startProgress } from "@/components/toast";
 import type { ProcessUploadResult, StartUploadResult } from "@/lib/ingest";
 import { DIRECT_UPLOAD_FORMATS, formatOf } from "@/lib/ingest/formats";
+import { articlesPending } from "@/lib/ingest/workflowTypes";
 import type { ActionResult } from "@/lib/server-actions/result";
 import { prepareDirectUpload, processUpload, retryUpload, startUpload, startUploadFromPath } from "@/lib/server-actions/upload";
 import { getBrowserSupabase } from "@/lib/supabase/client";
@@ -12,7 +13,8 @@ import { startLinkUpload } from "@/lib/server-actions/upload";
 
 // =====================================================================
 // UPLOAD FLOW: step 1 stores the file and opens the shift event; step 2
-// runs the pipeline. While step 2 runs, the screen polls the event.
+// saves the knowledge, then writes the articles in the background. The
+// screen polls the upload's workflow throughout.
 // =====================================================================
 
 export type UploadPhase =
@@ -76,7 +78,9 @@ export function useUploadFlow(): UploadFlow {
     const progress = startProgress(`Processing “${name}”`, "Reading the file with AI…");
     const processed = await safely(() => run(eventId));
     await queryClient.invalidateQueries({ queryKey: ["table"] });
-    if (!processed.ok || processed.status === "failed" || processed.workflow?.state === "incomplete") progress.fail();
+    // Saved knowledge with its articles still being written counts as done; the status line follows the articles
+    const unfinished = processed.ok && processed.workflow?.state === "incomplete" && !articlesPending(processed.workflow);
+    if (!processed.ok || processed.status === "failed" || unfinished) progress.fail();
     else progress.done();
     if (!processed.ok) return setPhase({ kind: "error", error: processed.error, eventId, sourceId });
     setPhase({ kind: "done", eventId, sourceId, result: processed });

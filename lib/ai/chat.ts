@@ -66,6 +66,14 @@ export const ANSWER_TOKEN_BUDGET = 32_000;
 // HOW LONG ONE COMPLETION MAY TAKE (a slow model at medium effort needs over two minutes)
 const REQUEST_TIMEOUT_MS = 180_000;
 
+// THE PROVIDER NEVER ANSWERED: a caller that can shrink its input (reconciliation batches) retries smaller
+export class ProviderTimeoutError extends Error {
+  constructor() {
+    super("The AI provider did not respond within three minutes. Retry processing the upload.");
+    this.name = "ProviderTimeoutError";
+  }
+}
+
 export type CompletionResponse = {
   model?: string;
   choices?: { message?: { content?: string | null; refusal?: string | null }; finish_reason?: string }[];
@@ -279,7 +287,7 @@ async function postCompletion(url: URL, init: RequestInit): Promise<Response> {
       response = await fetch(url, { ...init, signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]) : AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
     } catch (error) {
       if (error instanceof Error && error.name === "TimeoutError") {
-        throw new Error("The AI provider did not respond within three minutes. Retry processing the upload.");
+        throw new ProviderTimeoutError();
       }
       throw error;
     }

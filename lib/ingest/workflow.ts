@@ -4,9 +4,11 @@ import { proposePages, rebuildAfterEvent } from "@/lib/living-page";
 import type { PipelineDeps } from "./pipeline";
 import type { ProcessUploadResult } from "./types";
 import { uploadExecution, workflowStep } from "./workflowContext";
-import type { UploadWorkflow } from "./workflowTypes";
+import { ARTICLE_STAGES, KNOWLEDGE_STAGES, type UploadJob, type UploadWorkflow } from "./workflowTypes";
 
-export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>): Promise<ProcessUploadResult> {
+// The articles job also walks the knowledge roles: finished ones come back from their
+// checkpoints, unfinished ones run first, so articles never read half-cleaned knowledge.
+export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>, job: UploadJob = "articles"): Promise<ProcessUploadResult> {
   const { db } = deps;
   const claim = await db.call<{ claimed: boolean; token?: string; changeSetId?: string | null }>("claim_upload_workflow", { p_event_id: eventId });
   if (!claim.claimed || !claim.token) return readResult();
@@ -35,27 +37,28 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
         await release("waiting");
         return;
       }
-      // The original roles still run, but completed roles are not repeated on resume.
-      const stages: [string, () => Promise<unknown>][] = [
-        ["embeddings", async () => deps.claimEmbedder?.()],
-        ["describe", async () => deps.entityDescriber?.(eventId)],
-        ["expand", async () => deps.knowledgeExpander?.(eventId)],
-        ["plan", () => proposePages(db, eventId, deps.pagePlanner)],
-        ["pages", () => rebuildAfterEvent(db, deps.writer, eventId)],
-        ["hierarchy", async () => deps.hierarchyOrganizer?.(eventId)],
-        ["duplicates", async () => deps.deduper?.(eventId)],
-        ["settle-pages", () => rebuildAfterEvent(db, deps.writer, eventId)],
-        ["glossary", async () => deps.glossaryGenerator?.()],
-      ];
+      const run: Record<(typeof KNOWLEDGE_STAGES)[number] | (typeof ARTICLE_STAGES)[number], () => Promise<unknown>> = {
+        embeddings: async () => deps.claimEmbedder?.(),
+        describe: async () => deps.entityDescriber?.(eventId),
+        duplicates: async () => deps.deduper?.(eventId),
+        hierarchy: async () => deps.hierarchyOrganizer?.(eventId),
+        glossary: async () => deps.glossaryGenerator?.(),
+        expand: async () => deps.knowledgeExpander?.(eventId),
+        plan: () => proposePages(db, eventId, deps.pagePlanner),
+        pages: () => rebuildAfterEvent(db, deps.writer, eventId),
+      };
+      // Completed roles are not repeated on resume.
+      const stages = job === "knowledge" ? KNOWLEDGE_STAGES : [...KNOWLEDGE_STAGES, ...ARTICLE_STAGES];
       let failed = false;
-      for (const [key, run] of stages) {
+      for (const key of stages) {
         await checkLease();
-        try { await workflowStep(key, run); }
+        try { await workflowStep(key, run[key]); }
         // Later roles depend on earlier outputs. Do not checkpoint pages against
         // incomplete expansion, then incorrectly skip them when expansion resumes.
         catch { failed = true; break; }
       }
-      await release(failed ? "incomplete" : "complete");
+      // A finished knowledge job leaves the upload incomplete without an error: articles are next
+      await release(failed || job === "knowledge" ? "incomplete" : "complete");
     });
   } catch (error) {
     fatal = error instanceof Error ? error.message : String(error);
@@ -63,7 +66,7 @@ export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, rec
   } finally {
     if (heartbeat) clearInterval(heartbeat);
   }
-  if (resumeAfterRelease) return runUploadWorkflow(deps, eventId, reconcile);
+  if (resumeAfterRelease) return runUploadWorkflow(deps, eventId, reconcile, job);
   return readResult(fatal);
 
   async function release(state: "waiting" | "complete" | "incomplete") {

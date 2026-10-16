@@ -1,7 +1,7 @@
 import { workflowStep } from "@/lib/ingest/workflowContext";
 import "server-only";
 
-import { chatJson, CompletionLengthError, type TokenFactorySettings } from "@/lib/ai/chat";
+import { chatJson, CompletionLengthError, ProviderTimeoutError, type TokenFactorySettings } from "@/lib/ai/chat";
 import { skillTrace } from "@/lib/ai/skills/prompt";
 import { PROMPT_VERSION } from "@/lib/ai/config";
 import type { DraftChangeSet, ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
@@ -9,9 +9,11 @@ import { buildReconciliationMessages, claimRef, passageRef } from "./prompt";
 import { reconciliationAnswerSchema, reconciliationJsonSchema, type AnswerClaim, type AnswerLink } from "./schema";
 import { answerToActions } from "./toDraft";
 
-// Bound output growth for long documents without discarding any source passages.
-const MAX_BATCH_CHARS = 6000;
-const MAX_BATCH_PASSAGES = 8;
+// Bound output growth for long documents without discarding any source passages. Small
+// batches keep each call well inside the provider timeout; every batch is checkpointed,
+// so a resume only re-reads the batches that never finished.
+const MAX_BATCH_CHARS = 3000;
+const MAX_BATCH_PASSAGES = 4;
 
 // REAL CLIENT: batched extraction, combined into ONE audited change set per file.
 export class TokenFactoryReconciliationClient implements ReconciliationClient {
@@ -43,9 +45,9 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
           messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills),
         }));
       } catch (error) {
-        if (!(error instanceof CompletionLengthError)) throw error;
-        countUsage(error.tokensIn, error.tokensOut);
-        // Retry only truncation, using smaller batches; one passage is the hard stop.
+        if (!(error instanceof CompletionLengthError) && !(error instanceof ProviderTimeoutError)) throw error;
+        if (error instanceof CompletionLengthError) countUsage(error.tokensIn, error.tokensOut);
+        // Retry only truncation and timeouts, using smaller batches; one passage is the hard stop.
         if (passages.length <= 1) throw error;
         const middle = Math.ceil(passages.length / 2);
         await extract(passages.slice(0, middle));
