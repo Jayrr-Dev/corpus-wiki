@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { ErrorBoundary } from "@/components/error";
 import { type LinePreview, LinePanel, LiveSection, SectionPanel } from "@/components/living-page";
 import { ArticleSources } from "@/components/living-page/ArticleSources";
+import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import { useServerAction } from "@/components/actions/useServerAction";
 import type { Tables } from "@/lib/database/types";
@@ -91,14 +92,14 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   );
   return (
     <div className="mx-auto max-w-5xl px-6 py-7">
-      <header className="mb-6 border-b pb-4">
+      <header data-tour="module-header" className="mb-6 border-b pb-4">
         <nav aria-label="Page hierarchy" className="mb-3 flex flex-wrap items-center gap-2 text-panel">
           <Link href="/" className="text-link hover:underline">Knowledge</Link>
           {ancestors.map((ancestor) => <span key={ancestor.id} className="inline-flex items-center gap-2"><span aria-hidden="true">/</span><Link href={`/p/${ancestor.slug}`} className="text-link hover:underline">{ancestor.title}</Link></span>)}
           <span aria-hidden="true">/</span><span aria-current="page">{page.title}</span>
         </nav>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-serif text-3xl leading-tight">{page.title}</h1>
+          <div className="flex min-w-0 items-center gap-2"><h1 className="font-serif text-3xl leading-tight">{page.title}</h1><ModuleHelp /></div>
           <div className="text-panel"><PageActions page={page} /></div>
         </div>
       </header>

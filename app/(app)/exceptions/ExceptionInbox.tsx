@@ -68,7 +68,7 @@ export function ExceptionInbox() {
       {(search || category !== "all") ? <Button variant="ghost" size="sm" onClick={() => { setSearch(""); setAppliedSearch(""); setCategory("all"); resetSelection(); }}>Clear filters</Button> : null}
     </div>
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.35fr)]">
-      <section aria-label="Exception inbox" className={cn("overflow-hidden rounded-lg border", selected && "hidden lg:block")}>
+      <section data-tour="exceptions-inbox" aria-label="Exception inbox" className={cn("overflow-hidden rounded-lg border", selected && "hidden lg:block")}>
         <div className="border-b bg-sidebar px-3 py-2 text-xs text-muted-foreground" aria-live="polite">
           {waiting ? "Loading exceptions…" : total ? `${page * INBOX_PAGE_SIZE + 1}–${Math.min((page + 1) * INBOX_PAGE_SIZE, total)} of ${total}` : "No exceptions"}
         </div>

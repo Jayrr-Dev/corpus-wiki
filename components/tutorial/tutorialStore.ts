@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { TUTORIAL_STEPS, type TutorialAction } from "./steps";
+import { getModuleTutorial } from "./moduleSteps";
 
 // =====================================================================
 // TUTORIAL STATE: which step is showing, or that it was closed.
@@ -11,7 +12,7 @@ import { TUTORIAL_STEPS, type TutorialAction } from "./steps";
 // shows nothing, the browser shows the remembered state.
 // =====================================================================
 
-export type TutorialState = { isOpen: boolean; stepIndex: number };
+export type TutorialState = { isOpen: boolean; stepIndex: number; modulePath?: string };
 
 const STORAGE_KEY = "second-brain:tutorial";
 const FIRST_VISIT: TutorialState = { isOpen: true, stepIndex: 0 };
@@ -31,7 +32,9 @@ export function useTutorialState(): TutorialState {
 
 // Shows one step (past the last one closes the tutorial)
 export function goToStep(stepIndex: number): void {
-  writeState(stepIndex >= TUTORIAL_STEPS.length ? { isOpen: false, stepIndex: 0 } : { isOpen: true, stepIndex: Math.max(0, stepIndex) });
+  const state = readState();
+  const steps = state.modulePath ? getModuleTutorial(state.modulePath)?.steps ?? TUTORIAL_STEPS : TUTORIAL_STEPS;
+  writeState({ ...state, isOpen: stepIndex < steps.length, stepIndex: stepIndex >= steps.length ? 0 : Math.max(0, stepIndex) });
 }
 
 // Closes the tutorial; it stays closed until reopened
@@ -44,10 +47,15 @@ export function reopenTutorial(): void {
   writeState(FIRST_VISIT);
 }
 
+export function openModuleTutorial(pathname: string): void {
+  if (getModuleTutorial(pathname)) writeState({ isOpen: true, stepIndex: 0, modulePath: pathname });
+}
+
 // A screen reports a completed action; the tour moves on when it was the current step's
 export function reportTutorialAction(action: TutorialAction): void {
   const state = readState();
-  if (state.isOpen && TUTORIAL_STEPS[state.stepIndex]?.completedBy === action) goToStep(state.stepIndex + 1);
+  const steps = state.modulePath ? getModuleTutorial(state.modulePath)?.steps ?? TUTORIAL_STEPS : TUTORIAL_STEPS;
+  if (state.isOpen && steps[state.stepIndex]?.completedBy === action) goToStep(state.stepIndex + 1);
 }
 
 // =====================================================================
@@ -81,8 +89,10 @@ function parseState(raw: string | null): TutorialState {
   if (!raw) return FIRST_VISIT;
   try {
     const value = JSON.parse(raw) as Partial<TutorialState>;
-    const stepIndex = Number.isInteger(value.stepIndex) ? Math.min(Number(value.stepIndex), TUTORIAL_STEPS.length - 1) : 0;
-    return { isOpen: value.isOpen !== false, stepIndex: Math.max(0, stepIndex) };
+    const modulePath = typeof value.modulePath === "string" && getModuleTutorial(value.modulePath) ? value.modulePath : undefined;
+    const steps = modulePath ? getModuleTutorial(modulePath)!.steps : TUTORIAL_STEPS;
+    const stepIndex = Number.isInteger(value.stepIndex) ? Math.min(Number(value.stepIndex), steps.length - 1) : 0;
+    return { isOpen: value.isOpen !== false, stepIndex: Math.max(0, stepIndex), ...(modulePath ? { modulePath } : {}) };
   } catch {
     return FIRST_VISIT;
   }

@@ -1,9 +1,10 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { type CSSProperties, useSyncExternalStore } from "react";
+import { type CSSProperties, useEffect, useSyncExternalStore } from "react";
 import { placePopover } from "./placement";
 import { TUTORIAL_STEPS } from "./steps";
+import { getModuleTutorial } from "./moduleSteps";
 import { closeTutorial, goToStep, useTutorialState } from "./tutorialStore";
 import { type TargetRect, useTargetRect } from "./useTargetRect";
 import { TutorialPopover } from "./TutorialPopover";
@@ -13,33 +14,46 @@ import { TutorialPopover } from "./TutorialPopover";
 // real controls. Each step outlines its target on the current screen
 // (or the nav item that leads there) and anchors a popover to it. Doing
 // the step's action moves the tour on; closing it is remembered. The
-// "?" button in the ribbon (components/shell/Ribbon.tsx) reopens it.
+// Sidebar help reopens onboarding; header help opens the current module.
 // =====================================================================
 
 const SPOTLIGHT_PADDING = 4;
 
 export function Tutorial() {
-  const { isOpen, stepIndex } = useTutorialState();
-  if (!isOpen) return null;
-  return <ActiveStep stepIndex={stepIndex} />;
+  const { isOpen, stepIndex, modulePath } = useTutorialState();
+  const pathname = usePathname();
+  if (!isOpen || (modulePath && modulePath !== pathname)) return null;
+  return <ActiveStep stepIndex={stepIndex} modulePath={modulePath} />;
 }
 
 // THE CURRENT STEP: target outline plus the popover next to it
-function ActiveStep({ stepIndex }: { stepIndex: number }) {
+function ActiveStep({ stepIndex, modulePath }: { stepIndex: number; modulePath?: string }) {
   const pathname = usePathname();
-  const step = TUTORIAL_STEPS[stepIndex];
+  const steps = modulePath ? getModuleTutorial(modulePath)?.steps ?? TUTORIAL_STEPS : TUTORIAL_STEPS;
+  const step = steps[stepIndex];
   const target = step?.targetFor(pathname);
   const rect = useTargetRect(target?.tourId ?? "");
   const viewport = useViewportSize();
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeTutorial();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
   if (!step || !target) return null;
-  const placement = rect && viewport ? placePopover(rect, viewport) : null;
+  // Large content areas are useful spotlights, but cannot anchor a card
+  // above or below themselves without putting it outside the viewport.
+  const canAnchor = rect && viewport && rect.top >= 0 && rect.top < viewport.height
+    && rect.height < viewport.height - 240;
+  const placement = canAnchor ? placePopover(rect, viewport) : null;
   return (
     <>
       {rect ? <Spotlight rect={rect} /> : null}
       <TutorialPopover
         step={step}
         stepIndex={stepIndex}
-        stepCount={TUTORIAL_STEPS.length}
+        stepCount={steps.length}
         hint={target.hint}
         placement={placement}
         onStep={goToStep}

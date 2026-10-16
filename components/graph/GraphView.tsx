@@ -1,12 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import { applyFilters, createdBy, DEFAULT_GRAPH_SETTINGS, withRelated, type GraphData, type GraphNode } from "@/lib/graph";
 import { Button } from "@/components/ui/button";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphPanel } from "./panel/GraphPanel";
-import { UnitPreviewDialog } from "./UnitPreviewDialog";
+import { NodePreviewDialog } from "./UnitPreviewDialog";
 import { GLOBAL_GRAPH_SETTINGS_KEY, useGraphSettings } from "./useGraphSettings";
 import { useReplay } from "./useReplay";
 
@@ -17,10 +16,9 @@ import { useReplay } from "./useReplay";
 // =====================================================================
 
 export function GraphView({ data, actions }: { data: GraphData; actions?: ReactNode }) {
-  const router = useRouter();
   const { settings, update, reset } = useGraphSettings(GLOBAL_GRAPH_SETTINGS_KEY, data.nodes);
   const replay = useReplay(data.nodes);
-  // A clicked unit previews in a dialog; entities and pages open directly
+  // Every node previews without leaving the graph.
   const [preview, setPreview] = useState<GraphNode | null>(null);
   const { showRelated, relatedness } = settings.filters;
 
@@ -34,7 +32,7 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
 
   return (
     <div className="relative h-full">
-      <GraphCanvas graph={visible} settings={settings} onOpen={(node) => (node.kind === "unit" ? setPreview(node) : router.push(node.href))} />
+      <GraphCanvas graph={visible} settings={settings} onOpen={setPreview} />
       {visible.nodes.length === 0 && data.nodes.length > 0 && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center pl-64 pr-4" role="status">
           <div className="pointer-events-auto flex max-w-sm flex-col items-center gap-3 rounded-lg border bg-background p-6 text-center shadow-sm">
@@ -59,7 +57,7 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
       <p className="pointer-events-none absolute right-3 bottom-2 font-mono text-xs text-faint">
         {visible.nodes.length} nodes · {visible.links.length} links
       </p>
-      <UnitPreviewDialog node={preview} onClose={() => setPreview(null)} />
+      <NodePreviewDialog node={preview} onClose={() => setPreview(null)} />
     </div>
   );
 }

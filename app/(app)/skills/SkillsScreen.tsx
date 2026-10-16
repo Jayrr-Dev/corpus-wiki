@@ -30,7 +30,7 @@ export function SkillsScreen() {
       <p className="max-w-2xl text-panel text-muted-foreground">Choose how the AI handles each part of your knowledge workflow. Create your own instructions or duplicate a default skill. Changes apply to future runs.</p>
       <Button size="sm" onClick={()=>setEditor({})}>New skill</Button>
     </div>
-    <div role="tablist" aria-label="Workflow views" className="flex flex-wrap gap-1 border-b">
+    <div data-tour="workflow-tabs" role="tablist" aria-label="Workflow views" className="flex flex-wrap gap-1 border-b">
       {tabs.map((item)=>{const selected=item.id===tab;return <button key={item.id} type="button" role="tab" aria-selected={selected} onClick={()=>setTab(item.id)} className={cn("-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-panel transition-colors",selected?"border-foreground font-medium text-foreground":"border-transparent text-muted-foreground hover:text-foreground")}>
         {item.label}{"count" in item&&item.count?<span className="rounded-sm bg-hover px-1.5 font-mono text-xs text-muted-foreground">{item.count}</span>:null}
       </button>;})}

@@ -34,7 +34,7 @@ export function SettingsTabs({ tabs }: { tabs: SettingsTab[] }) {
 
   return (
     <div className="grid gap-6">
-      <div role="tablist" aria-label="Settings sections" onKeyDown={onKeyDown} className="flex gap-1 overflow-x-auto overflow-y-hidden border-b">
+      <div data-tour="settings-tabs" role="tablist" aria-label="Settings sections" onKeyDown={onKeyDown} className="flex gap-1 overflow-x-auto overflow-y-hidden border-b">
         {tabs.map(({ id, label, icon }) => {
           const selected = id === active;
           return (

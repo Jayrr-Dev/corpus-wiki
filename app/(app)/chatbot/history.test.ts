@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { readHistory, saveConversation } from "./history";
 
 describe("Ask history", () => {
+  it("preserves agent results and pending decisions alongside glossary citations", () => {
+    const messages = [{ role: "assistant" as const, content: "Decision ready [G1]", references: [{ id: "G1", title: "Term", href: "/glossary#term", kind: "Glossary" as const, text: "Meaning" }], activities: [{ id: "activity", label: "Review exception", status: "confirmation" as const, detail: "Pending", href: "/exceptions", decision: { name: "resolve_exception" as const, exceptionId: "00000000-0000-4000-8000-000000000001", accept: false, note: "Conflicting sources" } }] }];
+    expect(readHistory(JSON.stringify(saveConversation([], "agent", messages)))[0]?.messages).toEqual(messages);
+  });
   it("preserves messages and references across storage round trips", () => {
     const messages = [{ role: "user" as const, content: "What did I save?" }, { role: "assistant" as const, content: "See [K1]", references: [{ id: "K1", title: "A note", kind: "Knowledge" as const, href: "/units/123", text: "Evidence" }] }];
     const saved = saveConversation([], "one", messages, 100);

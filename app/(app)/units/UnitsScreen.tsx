@@ -77,7 +77,7 @@ export function UnitsScreen() {
   const { data: entities = [] } = useEntities();
   return (
     <div className="flex flex-col gap-3">
-      <nav aria-label="Unit source origin" className="flex gap-1 border-b">
+      <nav data-tour="units-origin" aria-label="Unit source origin" className="flex gap-1 border-b">
         {(["internal", "external"] as const).map((origin) => (
           <Link key={origin} href={`?${new URLSearchParams({ ...Object.fromEntries(Object.entries(filterState.filters).filter(([, value]) => Boolean(value))), origin }).toString()}`}
             aria-current={filterState.filters.origin === origin ? "page" : undefined}

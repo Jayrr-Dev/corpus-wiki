@@ -20,9 +20,10 @@ import { changeGlossaryDefinition, requestGlossaryGeneration, searchGlossaryMean
 import { cn } from "@/lib/utils";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat("#");
-const CATEGORIES = ["All terms", "acronym", "technical term", "jargon", "uncommon word"] as const;
-const CATEGORY_LABELS = ["All terms", "Acronyms", "Technical terms", "Jargon", "Uncommon words"];
+const CATEGORIES = ["All terms", "general term", "acronym", "technical term", "jargon", "uncommon word"] as const;
+const CATEGORY_LABELS = ["All terms", "General terms", "Acronyms", "Technical terms", "Jargon", "Uncommon words"];
 const CATEGORY_COLORS: Record<string, string> = {
+  "general term": "bg-muted text-muted-foreground",
   acronym: "bg-blue-950 text-blue-100",
   "technical term": "bg-emerald-950 text-emerald-100",
   jargon: "bg-amber-950 text-amber-100",
@@ -116,7 +117,7 @@ export function GlossaryScreen() {
         <form onSubmit={(event) => { event.preventDefault(); setLetter(null); meaning.mutate(search); }} className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm [&_input]:pl-8">
           <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input type="search" aria-label="Search glossary" value={search} onChange={(event) => { setSearch(event.target.value); setLetter(null); meaning.reset(); }} placeholder="Search terms or describe a meaning…" />
+          <Input data-tour="glossary-search" type="search" aria-label="Search glossary" value={search} onChange={(event) => { setSearch(event.target.value); setLetter(null); meaning.reset(); }} placeholder="Search terms or describe a meaning…" />
         </div>
           <Button type="submit" variant="outline" disabled={!search.trim() || meaning.isPending}>{meaning.isPending ? "Finding meanings…" : "Search by meaning"}</Button>
         </form>

@@ -12,12 +12,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import type { Enums } from "@/lib/database/types";
 import type { GraphNode } from "@/lib/graph";
 import { type UnitSummary, useRowsByIds, useUnitSummaries } from "@/lib/queries/screens";
+import { EntityPreview, PagePreview } from "./NodePreviews";
 
 // UNIT PREVIEW: a clicked unit's key facts (status, claim, domains, entities) without leaving the graph
-export function UnitPreviewDialog({ node, onClose }: { node: GraphNode | null; onClose: () => void }) {
+export function NodePreviewDialog({ node, onClose }: { node: GraphNode | null; onClose: () => void }) {
   return (
     <Dialog open={node !== null} onOpenChange={(isOpen) => (isOpen ? null : onClose())}>
-      <DialogContent className="overflow-hidden">{node ? <UnitPreview node={node} /> : null}</DialogContent>
+      <DialogContent className="max-h-[80vh] overflow-y-auto">
+        {node ? node.kind === "unit" ? <UnitPreview key={node.id} node={node} /> : node.kind === "entity" ? <EntityPreview key={node.id} node={node} /> : <PagePreview key={node.id} node={node} /> : null}
+      </DialogContent>
     </Dialog>
   );
 }

@@ -43,7 +43,7 @@ export function DomainsTree({ showRetired = false }: { showRetired?: boolean }) 
     <QueryState query={readsState([state, tabQuery])}>
       <Tabs.Root value={tab} onValueChange={setTab} className="space-y-4">
         <div className="flex items-center gap-2 border-b pb-2">
-        <Tabs.List aria-label="Domain groups" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
+        <Tabs.List data-tour="domains-groups" aria-label="Domain groups" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
           {customTabs.map((group) => <Tabs.Trigger key={group.id} value={group.id} className={cn("shrink-0 rounded-md px-3 py-2 text-panel transition-colors focus-visible:outline-2 focus-visible:outline-ring", tab === group.id ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-hover hover:text-foreground")}>{group.name}</Tabs.Trigger>)}
         </Tabs.List>
           <Dialog open={creatingTab} onOpenChange={setCreatingTab}><Tooltip content="New domain tab"><DialogTrigger asChild><button type="button" aria-label="New domain tab" className="my-auto flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-hover hover:text-foreground"><Plus className="size-4" /></button></DialogTrigger></Tooltip><DialogContent className="sm:max-w-lg">{creatingTab && <DomainTabForm onDone={(id) => { setTab(id); setCreatingTab(false); }} />}</DialogContent></Dialog>

@@ -1,5 +1,6 @@
 "use client";
 
+import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { QueryState } from "@/app/(app)/_components/bits";
 import { EmptyState } from "@/components/EmptyState";
 import { GraphView } from "@/components/graph";
@@ -16,7 +17,9 @@ export function GraphScreen() {
   const query = useGraphData();
   const isEmpty = query.data?.nodes.length === 0;
   return (
-    <div className="h-full">
+    <div className="flex h-full min-h-0 flex-col">
+      <header data-tour="module-header" className="flex items-center gap-2 border-b px-6 py-3"><h1 className="text-title font-semibold">Graph</h1><ModuleHelp /></header>
+      <div data-tour="reading-pane" className="min-h-0 flex-1">
       <QueryState
         query={query}
         loading={
@@ -29,6 +32,7 @@ export function GraphScreen() {
           <GraphView data={query.data} actions={<div className="flex flex-col gap-2"><LinkExistingButton /><DescribeEntitiesButton /><CleanDuplicatesButton /></div>} />
         ) : null}
       </QueryState>
+      </div>
     </div>
   );
 }

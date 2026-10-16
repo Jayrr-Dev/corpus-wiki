@@ -5,7 +5,7 @@ export const dictionaryAnswerSchema = z.object({
     term: z.string().trim().min(1).max(100),
     expansion: z.string().trim().max(180).nullable(),
     aliases: z.array(z.string().trim().min(1).max(150)).max(12),
-    category: z.enum(["acronym", "technical term", "jargon", "uncommon word"]),
+    category: z.enum(["general term", "acronym", "technical term", "jargon", "uncommon word"]),
     definition: z.string().trim().min(10).max(1000),
     citations: z.array(z.string()).min(1),
   })).max(100),
@@ -20,10 +20,11 @@ export type GlossaryEntry = {
   citations: GlossaryCitation[];
 };
 
-export const GLOSSARY_VERSION = "dictionary-v1";
+export const GLOSSARY_VERSION = "dictionary-v2";
 export const DICTIONARY_PROMPT = `You are a dictionary editor building a useful personal dictionary from accumulated knowledge and its source evidence.
-Read ALL supplied knowledge, not just claims labelled definition. Identify useful jargon, technical concepts, acronyms, initialisms, and interesting uncommon words. One claim can explain several terms; extract each supported meaning. Skip ordinary everyday words, names of companies/people, course catalog entries, policy requirements, article headings, and unsupported terms.
+Read ALL supplied knowledge, not just claims labelled definition. Identify useful general concepts, jargon, technical concepts, acronyms, initialisms, and interesting uncommon words. One claim can explain several terms; extract each supported meaning. Include ordinary terms when the evidence explains a useful meaning; skip trivial everyday words without a meaningful explanation, names of companies/people, course catalog entries, policy requirements, article headings, and unsupported terms.
 Write actual dictionary entries, not summaries of claims:
+- category: use "general term" for broadly useful concepts that are not acronyms, specialized technical terms, jargon, or uncommon words. Categorize the term itself, not whether its applicability is general or organization-specific.
 - term: a clean headword or established phrase in sentence case, e.g. "Quality inspection", "Consumer product", "PPE". Preserve acronyms and proper nouns. Never "ASQ definition of quality inspection", "Consumer products definition", "X: timing and goal", or a sentence.
 - expansion: the evidenced full name if the headword is an acronym; otherwise null. Never guess an expansion.
 - aliases: evidenced alternate spellings, abbreviations or full names for search. Use sentence case for aliases and expansions, preserving acronyms and proper nouns.

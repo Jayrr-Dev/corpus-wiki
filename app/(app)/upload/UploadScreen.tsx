@@ -26,7 +26,7 @@ export function UploadScreen() {
   return (
     <div className="flex flex-col gap-6">
       <UploadDropzone onFiles={addFiles} />
-      <AddLink />
+      <div data-tour="upload-link"><AddLink /></div>
       {files.length > 0 ? (
         <Section title="Chosen files">
           <ul>
@@ -36,7 +36,7 @@ export function UploadScreen() {
           </ul>
         </Section>
       ) : null}
-      <RecentUploads />
+      <div data-tour="upload-recent"><RecentUploads /></div>
     </div>
   );
 }

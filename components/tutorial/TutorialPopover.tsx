@@ -51,7 +51,7 @@ export function TutorialPopover({ step, stepIndex, stepCount, hint, placement, o
           </Button>
         ) : null}
         <Button type="button" size="sm" variant={isLast ? "default" : "outline"} onClick={() => onStep(stepIndex + 1)}>
-          {isLast ? "Done" : "Skip step"}
+          {isLast ? "Done" : step.completedBy ? "Skip step" : "Next"}
         </Button>
       </div>
     </aside>
