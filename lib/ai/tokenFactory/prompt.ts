@@ -37,6 +37,7 @@ Answer with JSON only: { "summary": string, "claims": Claim[], "links": Link[] }
 - domainTabs supplies user-defined grouping and guidance for eligible roots. Use descriptions to choose appropriate roots and reuse rootPaths. These are filing preferences, never evidence about an organization or permission to bypass root approval or externalScope. Group names are not path prefixes.
 - Extract definitions when the source explains a term, acronym, procedure, policy, equipment category, or standard. Use kind "definition" and cite the exact explanatory passages; never invent definitions from background knowledge.
 - Identify significant concepts, named procedures, policies, organizations, equipment, and standards as separate entities, rather than attaching every claim only to the company. Reuse existing natural keys and add meaningful subject/object roles.
+- A named individual is a "person" entity, separate from the role they hold. Keep contact details the source states (email, phone, website, office address, named contact person) as their own fact claims about the organization, person or role they reach.
 - Skip titles, dates, page numbers, greetings and anything that is not knowledge.
 - Never revise a decision with a proposal or a question: add the proposal as its own hypothesis claim instead.
 - links: typed relationships between claims, so related knowledge is connected. Each Link is { from, to, type, reason }.

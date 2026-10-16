@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { BookOpen, MessageCircle } from "lucide-react";
+import { BookOpen, MessageCircle, Users } from "lucide-react";
 import {
   ChangeIcon,
   DecisionIcon,
@@ -23,6 +23,7 @@ export type NavItem = { label: string; href: string; icon: ComponentType<IconPro
 export const PRIMARY_NAV: readonly NavItem[] = [
   { label: "Pages", href: "/", icon: PageIcon },
   { label: "Glossary", href: "/glossary", icon: BookOpen },
+  { label: "Stakeholders", href: "/stakeholders", icon: Users },
   { label: "Graph", href: "/graph", icon: GraphIcon },
   { label: "Ask", href: "/ask", icon: MessageCircle },
   { label: "Upload", href: "/upload", icon: UploadIcon },

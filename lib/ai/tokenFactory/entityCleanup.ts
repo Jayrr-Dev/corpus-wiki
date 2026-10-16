@@ -12,7 +12,7 @@ import type { ChatMessage } from "@/lib/ai/chat";
 // groups it is sure of are merged.
 // =====================================================================
 
-export const ENTITY_CLEANUP_PROMPT_VERSION = "entity-cleanup-v1";
+export const ENTITY_CLEANUP_PROMPT_VERSION = "entity-cleanup-v2";
 
 // WHAT THE CLEANUP READS PER LIVE ENTITY (public.entity_cleanup_input)
 export type CleanupEntity = {
@@ -101,7 +101,7 @@ const SYSTEM_PROMPT = `You find duplicate entities in a knowledge store. Each gr
 
 Answer with JSON only: { "groups": [{ "ref": "G1", "same": [["G1.1", "G1.3"]], "reason": "..." }] }, one item per group.
 - "same" lists sets of entity refs you are SURE are one thing. Leave an entity out when unsure. An empty list means none are the same.
-- Same name is not enough: two people can share a name; a company and its product, a law and the agency that enforces it, or a parent company and its subsidiary are different things.
+- Same name is not enough: two people can share a name; a company and its product, a law and the agency that enforces it, a parent company and its subsidiary, or a thing and a course, training, policy or document about it (fire extinguishers and a fire extinguisher course) are different things.
 - An acronym and its full name are the same thing only when the descriptions agree.
 - reason: one short sentence.`;
 
