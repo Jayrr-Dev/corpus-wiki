@@ -11,6 +11,11 @@ export const FIXED_ROLES = [
   { id: "reviewer", name: "Reviewer", description: "Automatically improves pages after knowledge updates, checks related evidence in the vector store, and raises only unresolved decisions as Exceptions. Edits are reversible in Changes.", instructions: REVIEWER_INSTRUCTIONS },
   { id: "article_reviewer", name: "Article reviewer", description: "Independently approves or rejects each proposed new article against the charter and the existing articles: approve, update an existing article instead, make it a section, or reject.", instructions: ARTICLE_REVIEWER_INSTRUCTIONS },
 ] as const;
+// ROLES THAT CAN RUN ON THEIR OWN MODEL (/settings), in workflow order. Each owns AI calls through
+// roleForPurpose. The Extractor and Organizer only guide the Reconciler's request, so they use its model.
+// Keep in step with set_ai_role_model in the database.
+export const MODEL_ROLES = ["media_analyst", "reconciler", "deduplicator", "identify_entities", "link_knowledge", "dictionary_editor", "define_concepts", "plan_articles", "article_reviewer", "write_articles", "reviewer", "researcher", "domain_steward"] as const;
+export type ModelRole = (typeof MODEL_ROLES)[number];
 export function roleName(role: string): string {
   if (role === "dictionary_editor") return "Dictionary editor";
   return FIXED_ROLES.find((entry) => entry.id === role)?.name ?? STAGE_ROLES[role as AiStage] ?? ({ reconciler: "Reconciler", deduplicator: "Duplicate reviewer", media_analyst: "Media analyst" }[role]) ?? role;

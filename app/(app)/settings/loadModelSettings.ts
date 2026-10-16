@@ -1,8 +1,9 @@
 import "server-only";
 
-import { resolveModel } from "@/lib/ai/chat";
-import { listAvailableModels,readAllowExternalKnowledge, readArticleCharter, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { type ReasoningEffort, resolveModel } from "@/lib/ai/chat";
+import { listAvailableModels,readAllowExternalKnowledge, readArticleCharter, readAutoUpdateStale, readModelChoice } from "@/lib/ai/models";
 import type { ArticleCharter } from "@/lib/living-page/articleCharter";
+import { readLatestSpeedTests, type StoredSpeedTest } from "@/lib/ai/speedTest";
 import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { currentActor } from "@/lib/auth/currentPerson";
 import { supabaseRpc } from "@/lib/db/rpc";
@@ -12,6 +13,12 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 export type ModelSettings = {
   chosenModel: string | null;
   activeModel: string;
+  // role id → the model that replaces the active model for that role's calls
+  roleModels: Record<string, string>;
+  // the default reasoning effort picked on /settings, or null for the built-in default
+  effort: ReasoningEffort | null;
+  // role id → the effort that replaces the default effort for that role's calls
+  roleEfforts: Record<string, ReasoningEffort>;
   models: string[];
   listError: string | null;
 };
@@ -39,13 +46,18 @@ export async function loadExternalKnowledge(): Promise<{ enabled: boolean; ready
 
 // Reads the pick from the database and the list from Token Factory (plus Cerebras and Claude when their keys are set)
 export async function loadModelSettings(): Promise<ModelSettings> {
-  const chosenModel = await readChosenModel(supabaseRpc(getAdminSupabase()));
+  const { model: chosenModel, roleModels, effort = null, roleEfforts = {} } = await readModelChoice(supabaseRpc(getAdminSupabase()));
   const activeModel = resolveModel(chosenModel);
   const nebiusKey = process.env.NEBIUS_API_KEY;
-  if (!nebiusKey) return { chosenModel, activeModel, models: [], listError: "NEBIUS_API_KEY is not set, so uploads use the offline fake model." };
+  if (!nebiusKey) return { chosenModel, activeModel, roleModels, effort, roleEfforts, models: [], listError: "NEBIUS_API_KEY is not set, so uploads use the offline fake model." };
   try {
-    return { chosenModel, activeModel, models: await listAvailableModels(nebiusKey), listError: null };
+    return { chosenModel, activeModel, roleModels, effort, roleEfforts, models: await listAvailableModels(nebiusKey), listError: null };
   } catch (error) {
-    return { chosenModel, activeModel, models: [], listError: `Could not load the model list: ${error instanceof Error ? error.message : String(error)}` };
+    return { chosenModel, activeModel, roleModels, effort, roleEfforts, models: [], listError: `Could not load the model list: ${error instanceof Error ? error.message : String(error)}` };
   }
+}
+
+// Each model's latest speed test from AI Speed, keyed by model id (empty when none have run)
+export async function loadSpeedTests(): Promise<Record<string, StoredSpeedTest>> {
+  return readLatestSpeedTests(supabaseRpc(getAdminSupabase()));
 }

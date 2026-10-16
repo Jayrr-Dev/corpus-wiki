@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { generateGlossary, regenerateDefinition } from "@/lib/glossary/generate";
 import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { embedMissingGlossary, similarGlossary } from "@/lib/glossary/embeddingStore";
@@ -34,7 +34,7 @@ export async function regenerateGlossaryDefinition(original: GlossaryEntry) {
     await requireUser();
     const client = getAdminSupabase();
     const db = supabaseRpc(client);
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "dictionary_editor" } }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "dictionary_editor" } }));
     if (!settings) throw new Error("Configure the AI provider in Settings to regenerate definitions.");
     const definition = await regenerateDefinition(client, settings, original);
     await db.call("edit_glossary_definition", { p_original: original, p_definition: definition, p_actor: "ai", p_model: settings.model });
@@ -79,7 +79,7 @@ export async function requestGlossaryGeneration(force = false) {
     await requireUser();
     const client = getAdminSupabase();
     const db = supabaseRpc(client);
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
     if (!settings) throw new Error("Configure the AI provider in Settings to generate your dictionary.");
     after(async () => {
       try {

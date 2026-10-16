@@ -9,7 +9,7 @@ export type ArticleReviewResult = ArticleReviewDecision & { model: string | null
 
 // Only the connection and call log: never the stage skills or other roles' instructions
 function independent(settings: TokenFactorySettings): TokenFactorySettings {
-  return { apiKey: settings.apiKey, model: settings.model, baseUrl: settings.baseUrl, logCall: settings.logCall };
+  return { apiKey: settings.apiKey, model: settings.model, baseUrl: settings.baseUrl, logCall: settings.logCall, roleRoutes: settings.roleRoutes, effort: settings.effort, roleEfforts: settings.roleEfforts };
 }
 
 // REVIEW ONE PROPOSAL: rules first, then the model in a fresh two-message context, with one

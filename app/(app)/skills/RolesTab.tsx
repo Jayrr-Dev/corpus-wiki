@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ComponentType } from "react";
-import { Pencil } from "lucide-react";
+import { useState } from "react";
+import { Pencil, Sparkles } from "lucide-react";
+import { InfoPopover } from "@/components/standard/info-popover";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,16 +11,9 @@ import { saveRoleInstructions } from "@/lib/server-actions/skills";
 import { AI_STAGES, type SkillLibrary } from "@/lib/ai/skills/types";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { FIXED_ROLES, STAGE_ROLES } from "@/lib/ai/roles";
-import {
-  DecisionIcon, DomainIcon, EntityIcon, GraphIcon, LinkIcon,
-  PageIcon, PassageIcon, SkillIcon, UnitIcon, UndoIcon, type IconProps,
-} from "@/components/icons";
-
-const ROLE_ICONS: Record<string, ComponentType<IconProps>> = {
-  extract_knowledge: PassageIcon, identify_entities: EntityIcon, link_knowledge: LinkIcon,
-  organize_topics: DomainIcon, define_concepts: UnitIcon, plan_articles: GraphIcon,
-  write_articles: PageIcon, researcher: SkillIcon, reviewer: DecisionIcon, domain_steward: DomainIcon, article_reviewer: DecisionIcon,
-};
+import { UndoIcon } from "@/components/icons";
+import { ROLE_ICONS } from "./roleIcons";
+import { RoleMemoryPanel } from "./RoleMemoryPanel";
 
 export function RolesTab({ library }: { library: SkillLibrary }) {
   const roles = AI_STAGES.map((stage) => {
@@ -37,10 +31,15 @@ export function RolesTab({ library }: { library: SkillLibrary }) {
   }))];
 
   return <section aria-label="AI roles" className="space-y-5">
-    <p className="max-w-2xl text-panel text-muted-foreground">The roster behind your workflow. Each role has a responsibility and a set of instructions. Open a card’s instructions to see how it works.</p>
+    <div className="flex items-center gap-2">
+      <h2 className="text-xl font-semibold tracking-tight">The roster behind your workflow</h2>
+      <InfoPopover label="About roles">
+        <p>Each role has a responsibility and a set of instructions. Open a card’s instructions to see how it works.</p>
+      </InfoPopover>
+    </div>
     <div className="grid items-start gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {roster.map((role, index) => {
-        const Icon = ROLE_ICONS[role.id] ?? UnitIcon;
+        const Icon = ROLE_ICONS[role.id] ?? Sparkles;
         const override = library.roleInstructions?.find((item) => item.role === role.id);
         return <article key={role.id} aria-label={role.name} className="rounded-xl border bg-background p-1 shadow-sm">
           <div className="overflow-hidden rounded-lg border border-border/60">
@@ -52,7 +51,7 @@ export function RolesTab({ library }: { library: SkillLibrary }) {
               <div className="absolute size-44 rounded-full border border-border/40" />
               <div className="absolute size-32 rounded-full border border-border/60" />
               <div className="relative flex size-24 items-center justify-center rounded-full border bg-background text-foreground">
-                <Icon size={40} />
+                <Icon size={40} strokeWidth={1.5} />
               </div>
             </div>
             <div className="flex min-h-44 flex-col border-t px-5 py-4">
@@ -73,6 +72,7 @@ export function RolesTab({ library }: { library: SkillLibrary }) {
         </article>;
       })}
     </div>
+    <RoleMemoryPanel />
   </section>;
 }
 

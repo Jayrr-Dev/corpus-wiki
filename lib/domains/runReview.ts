@@ -6,7 +6,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { chatJson, tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { FIXED_ROLES } from "@/lib/ai/roles";
 import { domainReviewSchema, validateDomainReview, type DomainReviewSnapshot } from "@/lib/domains/review";
@@ -17,7 +17,7 @@ export async function runDomainReview(progress: (detail: string) => void = () =>
     await requireUser();
     progress("Loading domain hierarchy and saved evidence…");
     const db = supabaseRpc(getAdminSupabase());
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "domain_steward" } }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "domain_steward" } }));
     if (!settings) throw new Error("Configure an AI provider in Settings before reviewing domains.");
     const snapshot = await db.call<DomainReviewSnapshot>("domain_review_snapshot");
     const instructions = (await loadRoleInstructions(db)).find((r) => r.role === "domain_steward")?.instructions ?? FIXED_ROLES.find((r) => r.id === "domain_steward")!.instructions;

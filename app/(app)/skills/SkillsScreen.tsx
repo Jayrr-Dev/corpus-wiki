@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { QueryState } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { RowMenu } from "@/components/row-menu/RowMenu";
+import { InfoPopover } from "@/components/standard/info-popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { archiveAiSkill, assignAiSkill, readAiSkills } from "@/lib/server-actions/skills";
 import { RolesTab } from "./RolesTab";
 import { FlowsTab } from "./FlowsTab";
+import { AiFlowTab } from "./AiFlowTab";
 import { SkillEditor } from "./SkillEditor";
 
 type Editor={skill?:AiSkill;duplicate?:boolean};
@@ -22,21 +24,25 @@ export function SkillsScreen() {
   const library=useQuery({queryKey:["table","ai_skills","library"],queryFn:async()=>{
     const result=await readAiSkills(); if (!result.ok) throw new Error(result.error); return result;
   }});
-  const [tab,setTab]=useState<"assignments"|"library"|"flows"|"roles">("assignments");
+  const [tab,setTab]=useState<"assignments"|"library"|"flows"|"ai-flow"|"roles">("assignments");
   const [editor,setEditor]=useState<Editor|null>(null);
-  const tabs=[{id:"assignments",label:"Stage assignments"},{id:"library",label:"Skill library",count:library.data?.skills.filter((skill)=>!skill.archived_at).length},{id:"flows",label:"Flows"},{id:"roles",label:"Roles"}] as const;
+  const tabs=[{id:"assignments",label:"Stage assignments"},{id:"library",label:"Skill library",count:library.data?.skills.filter((skill)=>!skill.archived_at).length},{id:"flows",label:"Flows"},{id:"ai-flow",label:"AI flow"},{id:"roles",label:"Roles"}] as const;
   return <div className="space-y-5">
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <p className="max-w-2xl text-panel text-muted-foreground">Choose how the AI handles each part of your knowledge workflow. Create your own instructions or duplicate a default skill. Changes apply to future runs.</p>
-      <Button size="sm" onClick={()=>setEditor({})}>New skill</Button>
-    </div>
-    <div data-tour="workflow-tabs" role="tablist" aria-label="Workflow views" className="flex flex-wrap gap-1 border-b">
-      {tabs.map((item)=>{const selected=item.id===tab;return <button key={item.id} type="button" role="tab" aria-selected={selected} onClick={()=>setTab(item.id)} className={cn("-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-panel transition-colors",selected?"border-foreground font-medium text-foreground":"border-transparent text-muted-foreground hover:text-foreground")}>
-        {item.label}{"count" in item&&item.count?<span className="rounded-sm bg-hover px-1.5 font-mono text-xs text-muted-foreground">{item.count}</span>:null}
-      </button>;})}
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b">
+      <div data-tour="workflow-tabs" role="tablist" aria-label="Workflow views" className="flex flex-wrap gap-1">
+        {tabs.map((item)=>{const selected=item.id===tab;return <button key={item.id} type="button" role="tab" aria-selected={selected} onClick={()=>setTab(item.id)} className={cn("-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-panel transition-colors",selected?"border-foreground font-medium text-foreground":"border-transparent text-muted-foreground hover:text-foreground")}>
+          {item.label}{"count" in item&&item.count?<span className="rounded-sm bg-hover px-1.5 font-mono text-xs text-muted-foreground">{item.count}</span>:null}
+        </button>;})}
+      </div>
+      <div className="ml-auto flex items-center gap-3 pb-1.5">
+        <InfoPopover label="About the workflow">
+          <p>Choose how the AI handles each part of your knowledge workflow. Create your own instructions or duplicate a default skill. Changes apply to future runs.</p>
+        </InfoPopover>
+        <Button size="sm" onClick={()=>setEditor({})}>New skill</Button>
+      </div>
     </div>
     <QueryState query={library}>
-      {library.data ? tab==="flows" ? <FlowsTab library={library.data} onNavigate={setTab} /> : tab==="roles" ? <RolesTab library={library.data} /> : tab==="assignments" ? <Assignments library={library.data} onView={(skill)=>setEditor({skill})} /> : <SkillList library={library.data} onEdit={(skill)=>setEditor({skill})} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
+      {library.data ? tab==="flows" ? <FlowsTab library={library.data} onNavigate={setTab} /> : tab==="ai-flow" ? <AiFlowTab library={library.data} onNavigate={setTab} /> : tab==="roles" ? <RolesTab library={library.data} /> : tab==="assignments" ? <Assignments library={library.data} onView={(skill)=>setEditor({skill})} /> : <SkillList library={library.data} onEdit={(skill)=>setEditor({skill})} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
     </QueryState>
     {editor ? <SkillEditor key={`${editor.skill?.id??"new"}:${!!editor.duplicate}`} skill={editor.skill} duplicate={editor.duplicate} onClose={()=>setEditor(null)} onDuplicate={(skill)=>setEditor({skill,duplicate:true})} /> : null}
   </div>;

@@ -2,7 +2,11 @@
 
 import { currentActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
-import { listAvailableModels,saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
+import { listAvailableModels, saveAiEffort, saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel, saveRoleEffort, saveRoleModel } from "@/lib/ai/models";
+import { REASONING_EFFORTS, type ReasoningEffort } from "@/lib/ai/chat";
+import { MODEL_ROLES, type ModelRole } from "@/lib/ai/roles";
+import { runAndRecordSpeedTest, type StoredSpeedTest } from "@/lib/ai/speedTest";
+import type { AiCallLogger } from "@/lib/ai/callLog";
 import { type ArticleCharter, CHARTER_FIELD_MAX, readCharter } from "@/lib/living-page/articleCharter";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -49,6 +53,38 @@ export async function chooseModel(model: string | null): Promise<ActionResult> {
   });
 }
 
+// ROLE MODEL: runs one AI role on its own model (fast, smart or cheap); null puts it back on the workspace model
+export async function chooseRoleModel(role: ModelRole, model: string | null): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    if (!MODEL_ROLES.includes(role)) throw new Error(`Unknown AI role "${role}".`);
+    if (model) await requireOfferedModel(model);
+    await saveRoleModel(supabaseRpc(getAdminSupabase()), role, model);
+    return {};
+  });
+}
+
+// EFFORT: how hard AI calls think by default; null goes back to the built-in default (medium)
+export async function chooseAiEffort(effort: ReasoningEffort | null): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    if (effort && !REASONING_EFFORTS.includes(effort)) throw new Error(`Unknown reasoning effort "${effort}".`);
+    await saveAiEffort(supabaseRpc(getAdminSupabase()), effort);
+    return {};
+  });
+}
+
+// ROLE EFFORT: one AI role starts at its own reasoning effort; null puts it back on the default effort
+export async function chooseRoleEffort(role: ModelRole, effort: ReasoningEffort | null): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    if (!MODEL_ROLES.includes(role)) throw new Error(`Unknown AI role "${role}".`);
+    if (effort && !REASONING_EFFORTS.includes(effort)) throw new Error(`Unknown reasoning effort "${effort}".`);
+    await saveRoleEffort(supabaseRpc(getAdminSupabase()), role, effort);
+    return {};
+  });
+}
+
 // STALE LINES: on rewrites them when an article opens; off waits for Update
 export async function setAutoUpdateStale(enabled: boolean): Promise<ActionResult> {
   return toActionResult(async () => {
@@ -84,4 +120,18 @@ async function requireOfferedModel(model: string): Promise<void> {
   if (!nebiusKey) throw new Error("NEBIUS_API_KEY is not set, so there is no model list to pick from.");
   const models = await listAvailableModels(nebiusKey);
   if (!models.includes(model)) throw new Error(`No connected AI provider offers "${model}".`);
+}
+
+// AI SPEED: times one short streamed answer from a model (latency to the first token, tokens per second after it)
+// and stores it. No check against the live model list: Test all runs every model at once, and an id no
+// provider offers simply comes back as a failed run.
+export async function testModelSpeed(model: string, effort: ReasoningEffort): Promise<ActionResult<{ test: StoredSpeedTest }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    if (!model.trim()) throw new Error("Pick a model to test.");
+    if (!REASONING_EFFORTS.includes(effort)) throw new Error(`Unknown reasoning effort "${effort}".`);
+    const db = supabaseRpc(getAdminSupabase());
+    const logCall: AiCallLogger = (call) => db.call("log_ai_call", { p_call: call });
+    return { test: await runAndRecordSpeedTest(db, model, effort, logCall) };
+  });
 }

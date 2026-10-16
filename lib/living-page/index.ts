@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { assertActiveUpload, reportUploadProgress, uploadExecution } from "@/lib/ingest/workflowContext";
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import type { StageSkills } from "@/lib/ai/skills/types";
-import { tokenFactoryFromEnv } from "@/lib/ai/chat";
+import { type ModelChoice, tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { SectionProgress } from "./buildProgress";
@@ -38,7 +38,7 @@ export interface SectionWriter {
 }
 
 // Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
-export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null = null, skills?: StageSkills, logCall?: AiCallLogger): SectionWriter {
+export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null | ModelChoice = null, skills?: StageSkills, logCall?: AiCallLogger): SectionWriter {
   const settings = tokenFactoryFromEnv(env, chosenModel, logCall);
   return settings ? new TokenFactorySectionWriter({ ...settings, skills }) : new FakeSectionWriter();
 }

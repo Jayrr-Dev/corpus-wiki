@@ -3,7 +3,7 @@
 import { requireUser } from "@/lib/auth/requireUser";
 import { loadStageSkills } from "@/lib/ai/skills/server";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { type LinkBatchResult, linkUnitBatch, planLinkBatches } from "@/lib/ingest/linkExisting";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -28,7 +28,7 @@ export async function linkBatch(unitIds: string[]): Promise<ActionResult<LinkBat
     await requireUser();
     const client = getAdminSupabase();
     const db = supabaseRpc(client);
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db));
     if (settings) settings.skills = await loadStageSkills(db);
     if (!settings) throw new Error("Linking needs NEBIUS_API_KEY in the server env.");
     return linkUnitBatch({ db, client, settings }, unitIds);

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { approveExternalSearch, approveExternalSource, type ReviewRecorder } from "@/lib/knowledge/externalApproval";
@@ -19,7 +19,7 @@ export async function reviewSavedExternalSources(entityId: string): Promise<Acti
     z.uuid().parse(entityId);
     const client = getAdminSupabase();
     const { db } = await getServerDeps();
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
     if (!settings) throw new Error("Configure an AI provider in Settings before reviewing sources.");
     settings.roleInstructions = await loadRoleInstructions(db);
     const knowledge = await loadArticleKnowledge(client, entityId);

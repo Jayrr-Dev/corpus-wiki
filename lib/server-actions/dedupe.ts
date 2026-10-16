@@ -3,7 +3,7 @@
 import { requireUser } from "@/lib/auth/requireUser";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { embedderFromEnv } from "@/lib/ai/embeddings";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { type DedupeBatchResult, dedupeCluster, planDedupeClusters } from "@/lib/ingest/dedupe";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -29,7 +29,7 @@ export async function dedupeBatch(unitIds: string[]): Promise<ActionResult<Dedup
     await requireUser();
     const client = getAdminSupabase();
     const db = supabaseRpc(client);
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db));
     if (!settings) throw new Error("The cleaning cycle needs NEBIUS_API_KEY in the server env.");
     return dedupeCluster({ db, client, settings, embedder: embedderFromEnv(process.env) }, unitIds, "apply");
   });

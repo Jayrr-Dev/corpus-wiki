@@ -2,7 +2,7 @@
 
 import { requireUser } from "@/lib/auth/requireUser";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { type DescribeBatchResult, describeEntityBatch, planDescribeBatches } from "@/lib/knowledge/entityDescriptions";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -28,7 +28,7 @@ export async function describeBatch(entityIds: string[]): Promise<ActionResult<D
     await requireUser();
     const client = getAdminSupabase();
     const db = supabaseRpc(client);
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
     if (!settings) throw new Error("Describing entities needs NEBIUS_API_KEY in the server env.");
     return describeEntityBatch({ client, settings }, entityIds);
   });

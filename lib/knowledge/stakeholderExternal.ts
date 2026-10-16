@@ -2,6 +2,7 @@ import "server-only";
 
 import type { TokenFactorySettings } from "@/lib/ai/chat";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
+import { commitPersonEdit } from "@/lib/change-control";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { processExternalEvent, startExternalSource } from "@/lib/ingest";
 import type { WebContext } from "@/lib/stakeholders/cards";
@@ -26,7 +27,25 @@ import { webLookupAllowed } from "./entityWeb";
 type Deps = { client: AdminSupabase; settings: TokenFactorySettings };
 export type ExternalSaveResult = { saved: boolean; title: string | null; reason: string };
 
-export const stakeholderScope = (name: string) => ({ article: `Stakeholder: ${name}`, section: "Overview", note: "General identity of this stakeholder for its card" });
+// THE REFERENCE TOPIC their claims are filed under: external knowledge may only use existing
+// reference topics (never organization roots), so it is created once, as an audited edit
+export const STAKEHOLDERS_TOPIC = "Stakeholders";
+
+export const stakeholderScope = (name: string) => ({
+  article: `Stakeholder: ${name}`, section: "Overview",
+  note: `Extract who ${name} is as a whole, as claims about ${name}: what it is, its main business or mandate, ownership or parent, headquarters, founding, size, and where it operates. File them under the "${STAKEHOLDERS_TOPIC}" topic. Skip procedures, rules, products and news.`,
+});
+
+async function ensureStakeholdersTopic(client: AdminSupabase): Promise<void> {
+  const { data, error } = await client.from("domains").select("id").eq("path", STAKEHOLDERS_TOPIC).is("retired_at", null).maybeSingle();
+  if (error) throw error;
+  if (data) return;
+  const result = await commitPersonEdit(supabaseRpc(client), `Added topic: ${STAKEHOLDERS_TOPIC} (general facts about stakeholders, from the web)`, [{
+    type: "create_domain", targetId: null, expectedRevisionId: null, passageIds: [], speechAct: null,
+    input: { name: STAKEHOLDERS_TOPIC, path: STAKEHOLDERS_TOPIC, parentPath: null },
+  }]);
+  if (result.status !== "applied") throw new Error(`The ${STAKEHOLDERS_TOPIC} topic could not be created.`);
+}
 
 type Candidate = { entityId: string; name: string; kind: string; relation: string | null; web: WebContext };
 
@@ -80,6 +99,7 @@ export async function saveStakeholderPage(deps: Deps, entityId: string): Promise
   if (!candidate) return { saved: false, title: null, reason: "Nothing on the web was confirmed for this stakeholder." };
   const saved = await savedUrls(deps.client, candidate.web.sources.map((source) => source.url));
   if (candidate.web.sources.some((source) => saved.has(source.url))) return { saved: false, title: null, reason: "Already saved as external knowledge." };
+  await ensureStakeholdersTopic(deps.client);
   const settings = { ...deps.settings, roleInstructions: await loadRoleInstructions(supabaseRpc(deps.client)) };
   const scope = stakeholderScope(candidate.name);
   const ourName = await ourOrganizationName(deps.client);
@@ -107,8 +127,13 @@ export async function saveStakeholderPage(deps: Deps, entityId: string): Promise
     const approved = await approveExternalSource(settings, context, research, { title: page.title, url: page.url, text }, record);
     if (!approved) { last = { saved: false, title: page.title, reason: "The independent reviewer did not approve its pages." }; continue; }
     const started = await startExternalSource({ title: page.title, url: page.url, text: approved.text, sourceDate: new Date().toISOString().slice(0, 10), reviewId: approved.reviewId });
-    if (started.kind !== "started") return { saved: false, title: page.title, reason: "This page is already stored." };
-    await processExternalEvent(started.eventId, scope, approved.reviewId);
+    let eventId = started.kind === "started" ? started.eventId : null;
+    if (!eventId) {
+      // The same approved text is stored already: process it again only when it never yielded a claim
+      eventId = await emptyStoredEvent(deps.client, started.sourceId);
+      if (!eventId) return { saved: false, title: page.title, reason: "This page is already stored." };
+    }
+    await processExternalEvent(eventId, scope, approved.reviewId);
     return { saved: true, title: page.title, reason: "Saved as external knowledge." };
   }
   return last;
@@ -132,4 +157,18 @@ async function knowledgeAbout(client: AdminSupabase, entityId: string): Promise<
   const revisions = units.data.length ? await client.from("revisions").select("content").in("id", units.data.map((unit) => unit.current_revision_id)) : { data: [], error: null };
   if (revisions.error) throw revisions.error;
   return revisions.data.map((revision) => revision.content.slice(0, 1000)).slice(0, 32);
+}
+
+// A stored external page that yielded no live claim (e.g. saved before its topic existed): back
+// in use, and its upload event to process again; null when it has claims or no event
+async function emptyStoredEvent(client: AdminSupabase, sourceId: string): Promise<string | null> {
+  const claims = await client.from("source_units").select("unit_id").eq("source_id", sourceId).limit(1);
+  if (claims.error) throw claims.error;
+  if (claims.data.length) return null;
+  const event = await client.from("shift_events").select("id").eq("source_id", sourceId).eq("cause", "upload").order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (event.error) throw event.error;
+  if (!event.data) return null;
+  const unarchived = await client.from("sources").update({ archived_at: null, archive_reason: null }).eq("id", sourceId).eq("origin", "external");
+  if (unarchived.error) throw unarchived.error;
+  return event.data.id;
 }

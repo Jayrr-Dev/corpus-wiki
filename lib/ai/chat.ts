@@ -7,6 +7,10 @@ import { CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, DEFAULT_AI_MODEL, TOKEN_FACTO
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
 import { isAnthropicModel, requestClaudeCompletion } from "./anthropic";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
+import { roleForPurpose } from "./roles";
+import { isNemotron3 } from "./effortSupport";
+import { memoryHint, memoryTools, openRoleMemory } from "./memory";
+import type { DbRpc } from "@/lib/db/rpc";
 
 // =====================================================================
 // TOKEN FACTORY CHAT CALL: one OpenAI-compatible chat completion that must
@@ -18,7 +22,17 @@ import { uploadExecution } from "@/lib/ingest/workflowContext";
 
 // `logCall` records every attempt's token usage (the app's server deps set it);
 // `skills` are the instructions assigned to each AI stage on /skills
-export type TokenFactorySettings = { apiKey: string; model?: string; baseUrl?: string; contextWindowTokens?: number; skills?: StageSkills; roleInstructions?: RoleInstruction[]; logCall?: AiCallLogger };
+// `roleRoutes` sends a role's calls (roleForPurpose of the call name) to the model picked for it on /settings;
+// `memoryDb` gives each role its memory (lib/ai/memory.ts); `effort` is the default reasoning effort picked on /settings,
+// and `roleEfforts` a role's own effort that replaces it for that role's calls
+export type TokenFactorySettings = { apiKey: string; model?: string; baseUrl?: string; contextWindowTokens?: number; skills?: StageSkills; roleInstructions?: RoleInstruction[]; logCall?: AiCallLogger; roleRoutes?: Record<string, ModelRoute>; memoryDb?: DbRpc; effort?: ReasoningEffort; roleEfforts?: Record<string, ReasoningEffort> };
+
+// WHERE ONE MODEL'S CALLS GO: the provider key, the model id and (for Cerebras) the endpoint
+export type ModelRoute = { apiKey: string; model: string; baseUrl?: string };
+
+// THE MODEL PICKS ON /settings: the workspace model, plus a model per role that replaces it for that role's calls
+// (`db`, when set, is where the roles' memory lives; `effort`, when set, is the default reasoning effort; `roleEfforts` a role's own effort)
+export type ModelChoice = { model: string | null; roleModels: Record<string, string>; db?: DbRpc; effort?: ReasoningEffort | null; roleEfforts?: Record<string, ReasoningEffort> };
 
 export type ChatMessage = { role: "system" | "user"; content: string };
 
@@ -44,8 +58,11 @@ export function addUsage(total: TokenUsage, call: TokenUsage): TokenUsage {
 //   GLM-5.3-Flash  low: 19 actions in 14 s   medium: 64 actions in 134 s, or cut off after 160 s
 //   Nemotron Super low:  4 actions in 3 s    medium: 26 actions in 18 s
 // "medium" reads the whole file when it finishes; when it runs out of room, "low" still answers.
-const REASONING_EFFORTS = ["medium", "low"] as const;
-type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+// A call starts at its stage's effort, else the default picked on /settings, else medium,
+// and steps down from there; "high" is only ever a starting point someone picked.
+export const REASONING_EFFORTS = ["high", "medium", "low"] as const;
+export const DEFAULT_REASONING_EFFORT: ReasoningEffort = "medium";
+export type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
 
 // AN ANSWER CUT OFF BY THE TOKEN BUDGET: the one failure a lower reasoning effort can fix
 export class AnswerCutOffError extends Error {}
@@ -78,9 +95,39 @@ export class ProviderTimeoutError extends Error {
 
 export type CompletionResponse = {
   model?: string;
-  choices?: { message?: { content?: string | null; refusal?: string | null }; finish_reason?: string }[];
+  choices?: { message?: { content?: string | null; refusal?: string | null; tool_calls?: ToolCall[] }; finish_reason?: string }[];
   usage?: CompletionUsage;
 };
+
+// OPTIONAL TOOLS a call offers the model (like a harness): it may call them before it answers,
+// or not at all. `parameters` is a JSON schema; `run` gets the parsed arguments and returns JSON.
+export type ChatTool = { name: string; description: string; parameters: object; run: (args: unknown) => Promise<unknown> };
+export type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
+
+// At most this many rounds of tool calls; the round after must answer
+export const MAX_TOOL_ROUNDS = 4;
+
+// Runs the model's tool calls; a failing or unknown tool answers with its error, so the model can go on
+export async function runToolCalls(tools: ChatTool[], calls: { id: string; name: string; arguments: string }[]): Promise<{ id: string; content: string }[]> {
+  return Promise.all(calls.map(async (call) => {
+    const tool = tools.find((item) => item.name === call.name);
+    let result: unknown;
+    try {
+      if (!tool) throw new Error(`There is no tool named ${call.name}.`);
+      result = await tool.run(call.arguments.trim() ? JSON.parse(call.arguments) : {});
+    } catch (error) {
+      result = { error: error instanceof Error ? error.message : String(error) };
+    }
+    return { id: call.id, content: JSON.stringify(result ?? null).slice(0, 20_000) };
+  }));
+}
+
+// Adds one round's token usage to the running total (a round without usage counts as zero)
+export function addCompletionUsage(total: CompletionUsage | undefined, round: CompletionUsage | undefined): CompletionUsage | undefined {
+  if (!round) return total;
+  if (!total) return round;
+  return { prompt_tokens: (total.prompt_tokens ?? 0) + (round.prompt_tokens ?? 0), completion_tokens: (total.completion_tokens ?? 0) + (round.completion_tokens ?? 0) };
+}
 
 // The model AI calls use: the one picked on /settings, else AI_MODEL, else the Nemotron default
 export function resolveModel(chosenModel: string | null | undefined, env: NodeJS.ProcessEnv = process.env): string {
@@ -90,23 +137,41 @@ export function resolveModel(chosenModel: string | null | undefined, env: NodeJS
 // True for a "cerebras/<id>" pick, which runs on Cerebras instead of Token Factory
 export const isCerebrasModel = (model: string) => model.startsWith(CEREBRAS_MODEL_PREFIX);
 
-// Reads the AI settings from server env (+ the picked model and the usage logger); null when there is
+// Reads the AI settings from server env (+ the picked models and the usage logger); null when there is
 // no NEBIUS_API_KEY. A Cerebras pick swaps in CEREBRAS_API_KEY and the Cerebras endpoint;
-// a Claude ("anthropic/<id>") pick swaps in ANTHROPIC_API_KEY.
+// a Claude ("anthropic/<id>") pick swaps in ANTHROPIC_API_KEY. A role's own model is routed the same way.
 export function tokenFactoryFromEnv(
   env: NodeJS.ProcessEnv = process.env,
-  chosenModel: string | null = null,
+  chosen: string | null | ModelChoice = null,
   logCall?: AiCallLogger,
 ): TokenFactorySettings | null {
   if (!env.NEBIUS_API_KEY) return null;
-  const model = resolveModel(chosenModel, env);
+  const choice = typeof chosen === "object" && chosen !== null ? chosen : { model: chosen, roleModels: {} };
+  const roles = Object.entries(choice.roleModels).filter(([, model]) => model);
+  const roleRoutes = roles.length ? Object.fromEntries(roles.map(([role, model]) => [role, routeModel(env, model)])) : undefined;
+  const memoryDb = "db" in choice ? choice.db : undefined;
+  const effort = "effort" in choice ? choice.effort : undefined;
+  const roleEfforts = "roleEfforts" in choice && choice.roleEfforts && Object.keys(choice.roleEfforts).length ? choice.roleEfforts : undefined;
+  return { ...routeModel(env, resolveModel(choice.model, env)), logCall, ...(roleRoutes ? { roleRoutes } : {}), ...(memoryDb ? { memoryDb } : {}), ...(effort ? { effort } : {}), ...(roleEfforts ? { roleEfforts } : {}) };
+}
+
+export function routeModel(env: NodeJS.ProcessEnv, model: string): ModelRoute {
   if (isAnthropicModel(model)) {
     if (!env.ANTHROPIC_API_KEY) throw new Error(`${model} is picked in Settings, but ANTHROPIC_API_KEY is not set in the server env.`);
-    return { apiKey: env.ANTHROPIC_API_KEY, model, logCall };
+    return { apiKey: env.ANTHROPIC_API_KEY, model };
   }
-  if (!isCerebrasModel(model)) return { apiKey: env.NEBIUS_API_KEY, model, logCall };
+  if (!isCerebrasModel(model)) return { apiKey: env.NEBIUS_API_KEY!, model };
   if (!env.CEREBRAS_API_KEY) throw new Error(`${model} is picked in Settings, but CEREBRAS_API_KEY is not set in the server env.`);
-  return { apiKey: env.CEREBRAS_API_KEY, model, baseUrl: CEREBRAS_BASE_URL, logCall };
+  return { apiKey: env.CEREBRAS_API_KEY, model, baseUrl: CEREBRAS_BASE_URL };
+}
+
+// The settings one call runs with: its role's own model and effort when picked, else the workspace ones
+export function settingsForCall(settings: TokenFactorySettings, name: string): TokenFactorySettings {
+  const role = settings.roleRoutes || settings.roleEfforts ? roleForPurpose(name) : null;
+  const route = role ? settings.roleRoutes?.[role] : undefined;
+  const effort = role ? settings.roleEfforts?.[role] : undefined;
+  if (!route && !effort) return settings;
+  return { ...settings, ...(route ? { apiKey: route.apiKey, model: route.model, baseUrl: route.baseUrl } : {}), ...(effort ? { effort } : {}) };
 }
 
 // `subject` names what the call is about (a file title, a section) for the usage log
@@ -118,10 +183,12 @@ type ChatJsonRequest<S extends z.ZodType> = {
   jsonSchema: object;
   messages: (ChatMessage | ChatMediaMessage)[];
   maxTokens?: number;
-  // Stage-specific starting effort; low has no lower-effort retry on truncation.
+  // Stage-specific starting effort (wins over the /settings default); low has no lower-effort retry on truncation.
   reasoningEffort?: ReasoningEffort;
   // Article prose keeps its dedicated encyclopedic writing policy.
   outputStyle?: "concise" | "wiki_article" | "chat";
+  // Tools the model may call before it answers (the role's memory, for one)
+  tools?: ChatTool[];
   // When set, the answer is streamed and this hears the text so far (and any visible thinking)
   // after each chunk. A retry at a lower effort starts again from empty text.
   onStream?: (partial: StreamedSoFar) => void;
@@ -129,14 +196,26 @@ type ChatJsonRequest<S extends z.ZodType> = {
 
 export type StreamedSoFar = { content: string; reasoning: string };
 
-// Nemotron 3 runs with thinking off, so a reasoning effort changes nothing for it
-const isNemotron3 = (model: string) => /^nvidia\/(?:nvidia-)?nemotron-3[\/_.-]/i.test(model);
+export { isNemotron3 } from "./effortSupport";
 
 // Sends the messages and returns the parsed, validated JSON answer. An answer cut off by
 // the token budget is asked again at the next lower reasoning effort (for models that
 // reason; for the rest a retry would only repeat the cut-off); other errors stop at once.
-export async function chatJson<S extends z.ZodType>(settings: TokenFactorySettings, request: ChatJsonRequest<S>): Promise<ChatJsonResult<z.infer<S>>> {
-  const startingEfforts = request.reasoningEffort === "low" ? REASONING_EFFORTS.slice(1) : REASONING_EFFORTS;
+// A call with a role is offered that role's memory as optional tools (lib/ai/memory.ts)
+export async function chatJson<S extends z.ZodType>(workspace: TokenFactorySettings, request: ChatJsonRequest<S>): Promise<ChatJsonResult<z.infer<S>>> {
+  const settings = settingsForCall(workspace, request.name);
+  const memory = await openRoleMemory(settings.memoryDb, request.name);
+  if (!memory) return chatJsonAnswer(settings, request);
+  return chatJsonAnswer(settings, {
+    ...request,
+    tools: [...(request.tools ?? []), ...memoryTools(memory, request.name)],
+    messages: [{ role: "system", content: memoryHint(memory) }, ...request.messages],
+  });
+}
+
+async function chatJsonAnswer<S extends z.ZodType>(settings: TokenFactorySettings, request: ChatJsonRequest<S>): Promise<ChatJsonResult<z.infer<S>>> {
+  const start = request.reasoningEffort ?? settings.effort ?? DEFAULT_REASONING_EFFORT;
+  const startingEfforts = REASONING_EFFORTS.slice(REASONING_EFFORTS.indexOf(start));
   const efforts = isNemotron3(settings.model || DEFAULT_AI_MODEL) ? startingEfforts.slice(0, 1) : startingEfforts;
   let cutOff: AnswerCutOffError | null = null;
   for (const effort of efforts) {
@@ -184,7 +263,7 @@ async function chatJsonOnce<S extends z.ZodType>(
 
 // Per-model request fields: Nemotron 3 otherwise spends its whole budget on hidden reasoning,
 // so its thinking is off; GLM-5.3-Flash only honours the effort through its chat template
-function reasoningFields(model: string, effort: ReasoningEffort): Record<string, unknown> {
+export function reasoningFields(model: string, effort: ReasoningEffort): Record<string, unknown> {
   if (isNemotron3(model)) return { chat_template_kwargs: { enable_thinking: false } };
   if (/^zai-org\/glm-5\.3-flash$/i.test(model)) return { reasoning_effort: effort, chat_template_kwargs: { reasoning_effort: effort } };
   return { reasoning_effort: effort };
@@ -207,29 +286,84 @@ async function requestCompletion(
   // Inside an upload run, a cancel or lost lease aborts the call
   const signal = request.signal ?? uploadExecution.getStore()?.signal;
   if (isAnthropicModel(model)) {
-    return requestClaudeCompletion({ apiKey: settings.apiKey, model, messages, jsonSchema: request.jsonSchema, maxTokens, effort, signal, onStream: request.onStream });
+    return requestClaudeCompletion({ apiKey: settings.apiKey, model, messages, jsonSchema: request.jsonSchema, maxTokens, effort, signal, onStream: request.onStream, tools: request.tools });
   }
-  const response = await postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
+  const provider = cerebras ? "Cerebras" : "Token Factory";
+  let tools = request.tools?.length ? request.tools : undefined;
+  let conversation: WireMessage[] = cerebras ? oneLeadingSystemMessage(messages) : messages;
+  let usage: CompletionUsage | undefined;
+  // A strict json_schema response format stops Token Factory models from ever calling a tool
+  // (measured on GLM-5.3-Flash: same request, tool call only without it). So a round that offers
+  // tools runs unconstrained, with the schema in the system message; an answer that misses the
+  // schema is asked once more with the format on and the tools closed.
+  const post = (toolChoice: "auto" | "none" | null) => postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
     method: "POST",
     signal,
     headers: { Authorization: `Bearer ${settings.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       // Cerebras knows its models without the "cerebras/" prefix the picker adds
       model: cerebras ? model.slice(CEREBRAS_MODEL_PREFIX.length) : model,
-      messages: cerebras ? oneLeadingSystemMessage(messages) : messages,
+      messages: conversation,
       temperature: 0,
       ...reasoningFields(model, effort),
       max_tokens: maxTokens,
-      response_format: { type: "json_schema", json_schema: { name: request.name, schema: request.jsonSchema, strict: true } },
+      ...(toolChoice === "auto" ? {} : { response_format: { type: "json_schema", json_schema: { name: request.name, schema: request.jsonSchema, strict: true } } }),
+      ...(tools && toolChoice ? { tools: tools.map((tool) => ({ type: "function", function: { name: tool.name, description: tool.description, parameters: tool.parameters } })), tool_choice: toolChoice } : {}),
       // Cerebras sends usage in its last chunk unasked and does not document stream_options
       ...(request.onStream ? { stream: true, ...(cerebras ? {} : { stream_options: { include_usage: true } }) } : {}),
     }),
   });
-  if (!response.ok) throw new Error(`${cerebras ? "Cerebras" : "Token Factory"} ${response.status}: ${(await response.text()).slice(0, 300)}`);
-  const body = request.onStream ? await readCompletionStream(response, request.onStream) : ((await response.json()) as CompletionResponse);
-  // Logs and traces keep the prefixed id, so a Cerebras call never reads as the Token Factory model of the same name
-  return cerebras ? { ...body, model } : body;
+  let toolRounds = 0;
+  let toolsClosed = false;
+  for (;;) {
+    let offering = !!tools && !toolsClosed && toolRounds < MAX_TOOL_ROUNDS;
+    // Once tools were used they stay listed (the history refers to them) but cannot be called
+    const toolChoice = offering ? "auto" : tools && toolRounds > 0 ? "none" : null;
+    let response = await post(toolChoice);
+    // A model or provider without tool calling answers without the tools instead of failing the call
+    if (!response.ok && offering && toolRounds === 0 && (response.status === 400 || response.status === 422)) {
+      console.warn(`${provider} rejected tools for ${model}; answering without them: ${(await response.text()).slice(0, 200)}`);
+      tools = undefined;
+      offering = false;
+      response = await post(null);
+    }
+    if (!response.ok) throw new Error(`${provider} ${response.status}: ${(await response.text()).slice(0, 300)}`);
+    const body = request.onStream ? await readCompletionStream(response, request.onStream) : ((await response.json()) as CompletionResponse);
+    usage = addCompletionUsage(usage, body.usage);
+    const choice = body.choices?.[0];
+    const calls = choice?.message?.tool_calls ?? [];
+    if (offering && tools && calls.length > 0) {
+      const results = await runToolCalls(tools, calls.map((call) => ({ id: call.id, name: call.function.name, arguments: call.function.arguments })));
+      conversation = [
+        ...conversation,
+        { role: "assistant", content: choice?.message?.content ?? null, tool_calls: calls },
+        ...results.map((result) => ({ role: "tool" as const, tool_call_id: result.id, content: result.content })),
+      ];
+      toolRounds++;
+      continue;
+    }
+    // An unconstrained answer that misses the schema gets one constrained retry; a cut-off goes
+    // to the caller as usual (a lower reasoning effort, not the format, is what fixes that)
+    if (offering && choice?.finish_reason !== "length" && !matchesSchema(choice?.message?.content, request.schema)) {
+      toolsClosed = true;
+      continue;
+    }
+    // Logs and traces keep the prefixed id, so a Cerebras call never reads as the Token Factory model of the same name
+    return { ...body, usage, ...(cerebras ? { model } : {}) };
+  }
 }
+
+// True when the text is JSON that the schema accepts
+function matchesSchema(content: string | null | undefined, schema: z.ZodType): boolean {
+  try {
+    return !!content?.trim() && schema.safeParse(JSON.parse(content)).success;
+  } catch {
+    return false;
+  }
+}
+
+// What travels to an OpenAI-compatible provider: the call's messages, then any tool rounds
+type WireMessage = ChatMessage | ChatMediaMessage | { role: "assistant"; content: string | null; tool_calls: ToolCall[] } | { role: "tool"; tool_call_id: string; content: string };
 
 // Qwen on Cerebras refuses a second system message ("System message must be at the beginning"),
 // so every system message joins one at the start, in order; the rest keep their order
@@ -241,7 +375,7 @@ export function oneLeadingSystemMessage(messages: (ChatMessage | ChatMediaMessag
 
 type StreamChunk = {
   model?: string;
-  choices?: { delta?: { content?: string | null; reasoning_content?: string | null; reasoning?: string | null; refusal?: string | null }; finish_reason?: string | null }[];
+  choices?: { delta?: { content?: string | null; reasoning_content?: string | null; reasoning?: string | null; refusal?: string | null; tool_calls?: { index: number; id?: string; function?: { name?: string; arguments?: string } }[] }; finish_reason?: string | null }[];
   usage?: CompletionUsage | null;
 };
 
@@ -258,6 +392,8 @@ export async function readCompletionStream(response: Response, onStream: (partia
   let finishReason: string | undefined;
   let model: string | undefined;
   let usage: CompletionUsage | undefined;
+  // Tool calls arrive in pieces: the id and name first, then the arguments a few characters at a time
+  const toolCalls: ToolCall[] = [];
   const take = (line: string) => {
     const data = line.startsWith("data:") ? line.slice(5).trim() : "";
     if (!data || data === "[DONE]") return;
@@ -270,6 +406,12 @@ export async function readCompletionStream(response: Response, onStream: (partia
     const delta = choice.delta;
     if (!delta) return;
     refusal += delta.refusal ?? "";
+    for (const piece of delta.tool_calls ?? []) {
+      const call = (toolCalls[piece.index] ??= { id: "", type: "function", function: { name: "", arguments: "" } });
+      if (piece.id) call.id = piece.id;
+      call.function.name += piece.function?.name ?? "";
+      call.function.arguments += piece.function?.arguments ?? "";
+    }
     const thought = delta.reasoning_content ?? delta.reasoning ?? "";
     if (!delta.content && !thought) return;
     content += delta.content ?? "";
@@ -284,7 +426,8 @@ export async function readCompletionStream(response: Response, onStream: (partia
     for (const line of lines) take(line);
     if (done) break;
   }
-  return { model, usage, choices: [{ message: { content, refusal: refusal || null }, finish_reason: finishReason }] };
+  const calls = toolCalls.filter(Boolean);
+  return { model, usage, choices: [{ message: { content, refusal: refusal || null, ...(calls.length ? { tool_calls: calls } : {}) }, finish_reason: finishReason }] };
 }
 
 // Pulls the message text out of the completion and validates it against the schema.

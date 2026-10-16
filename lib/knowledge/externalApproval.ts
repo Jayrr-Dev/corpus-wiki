@@ -30,7 +30,7 @@ const sourceDecisionSchema = decisionSchema.extend({ excerptIndices: z.array(z.n
 
 
 function independent(settings: TokenFactorySettings): TokenFactorySettings {
-  return { apiKey: settings.apiKey, model: settings.model, baseUrl: settings.baseUrl, logCall: settings.logCall };
+  return { apiKey: settings.apiKey, model: settings.model, baseUrl: settings.baseUrl, logCall: settings.logCall, roleRoutes: settings.roleRoutes, effort: settings.effort, roleEfforts: settings.roleEfforts };
 }
 
 // Include every provider attempt, including retries and failed responses.

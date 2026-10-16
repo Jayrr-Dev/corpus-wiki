@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { AiCallLogger } from "./callLog";
-import { tokenFactoryFromEnv } from "./chat";
+import { type ModelChoice, tokenFactoryFromEnv } from "./chat";
 import { FakeReconciliationClient } from "./fake/FakeReconciliationClient";
 import { TokenFactoryReconciliationClient } from "./tokenFactory/client";
 import type { StageSkills } from "./skills/types";
@@ -11,7 +11,7 @@ import type { ReconciliationClient } from "./types";
 // answers the eval fixtures with canned ChangeSets (so the demo runs without a key)
 export function getReconciliationClient(
   env: NodeJS.ProcessEnv = process.env,
-  chosenModel: string | null = null,
+  chosenModel: string | null | ModelChoice = null,
   skills?: StageSkills,
   logCall?: AiCallLogger,
 ): ReconciliationClient {

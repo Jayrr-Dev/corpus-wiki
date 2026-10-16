@@ -4,7 +4,7 @@ import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { loadStageSkills } from "@/lib/ai/skills/server";
 import { skillTrace } from "@/lib/ai/skills/prompt";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readAllowExternalKnowledge, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { readAllowExternalKnowledge, readAutoUpdateStale, readModelChoice } from "@/lib/ai/models";
 import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { type ForceCreateResult, fillThinSectionsFromWeb, forceCreateSection as runForceCreate } from "@/lib/living-page/forceCreateSection";
 import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
@@ -137,7 +137,7 @@ function fillFromWebLater(sectionIds: string[], note: string): void {
     try {
       const { db, writer } = await getServerDeps();
       if (writer.name === "fake" || !(await readAllowExternalKnowledge(db))) return;
-      const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+      const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
       if (!settings) return;
       settings.skills = await loadStageSkills(db);
       await fillThinSectionsFromWeb({ db, client: getAdminSupabase(), settings, writer, webSearchKey: webSearchKey() }, ids, note, MAX_WEB_FILLS);
@@ -187,7 +187,7 @@ export async function improveArticle(pageId: string): Promise<ActionResult> {
     const { data: entity, error: entityError } = await admin.from("entities").select("id, type, key, name").eq("id", page.entity_id).single();
     if (entityError) throw new Error(entityError.message);
     const { db, writer } = await getServerDeps();
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db));
     if (settings) settings.skills = await loadStageSkills(db);
     if (!settings) throw new Error("Configure an AI provider to structure this article.");
     const { actions } = await createArticlePlanner(settings, admin, true)([{ entityId: entity.id, type: entity.type, key: entity.key, name: entity.name, claimCount: 2, kinds: [], page: { pageId, coveredKinds: [], coversAll: true } }]);
@@ -209,7 +209,7 @@ export async function expandRelatedArticles(pageId: string): Promise<ActionResul
     const entityId = page.context_entity_id ?? page.entity_id;
     if (!entityId) throw new Error("Choose the organization's main article to expand its knowledge.");
     const { db, writer } = await getServerDeps();
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db));
     if (settings) settings.skills = await loadStageSkills(db);
     if (!settings) throw new Error("Configure an AI provider before expanding knowledge.");
     const { entities, definitions } = await expandEntityKnowledge({ settings, client, db, writer }, entityId);
@@ -241,7 +241,7 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
     if (error) throw new Error(error.message);
     if (!(pages ?? []).some((page) => page.id === request.id)) throw new Error("This article or section is no longer available. Reload the page and try again.");
     const pageIds = request.scope === "tree" ? pageAndDescendants(pages ?? [], request.id) : [request.id];
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
     if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
     settings.skills = await loadStageSkills(db);
     let completed = 0;
@@ -295,7 +295,7 @@ export async function forceCreateSection(input: { sectionId: string; note: strin
     const request = z.object({ sectionId: z.uuid(), note: z.string().max(2000), useWeb: z.boolean() }).parse(input);
     const { db, writer } = await getServerDeps();
     if (writer.name === "fake") throw new Error("Configure an AI provider in Settings before using Force Create.");
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
     if (!settings) throw new Error("Configure an AI provider in Settings before using Force Create.");
     settings.skills = await loadStageSkills(db);
     if (request.useWeb && !(await readAllowExternalKnowledge(db))) throw new Error("External knowledge is turned off in Settings.");

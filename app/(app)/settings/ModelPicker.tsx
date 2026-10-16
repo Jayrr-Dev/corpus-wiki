@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { chooseModel } from "@/lib/server-actions/settings";
 import type { ModelSettings } from "./loadModelSettings";
+import { AiEffort } from "./AiEffort";
 import { ModelList } from "./ModelList";
 
 // =====================================================================
 // MODEL PICKER: search Token Factory's live list, pick one, save it.
-// The pick applies to the next upload, line edit or page build.
+// The pick applies to the next upload, line edit or page build. The default
+// effort sits on the right of the buttons.
 // =====================================================================
 
 export function ModelPicker({ settings }: { settings: ModelSettings }) {
@@ -39,15 +41,18 @@ export function ModelPicker({ settings }: { settings: ModelSettings }) {
       <Input className="h-10" placeholder={`Search ${settings.models.length} models…`} value={query} onChange={(event) => setQuery(event.target.value)} aria-label="Search models" />
       <ModelList models={matches} selected={selected} activeModel={settings.activeModel} onSelect={setSelected} />
       <ErrorNote error={save.error} />
-      <div className="flex gap-2">
-        <Button type="button" size="sm" disabled={save.isPending || isUnchanged} onClick={() => apply(selected)}>
-          {save.isPending ? "Saving…" : "Use this model"}
-        </Button>
-        {settings.chosenModel ? (
-          <Button type="button" size="sm" variant="ghost" disabled={save.isPending} onClick={() => apply(null)}>
-            Back to default
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex gap-2">
+          <Button type="button" size="sm" disabled={save.isPending || isUnchanged} onClick={() => apply(selected)}>
+            {save.isPending ? "Saving…" : "Use this model"}
           </Button>
-        ) : null}
+          {settings.chosenModel ? (
+            <Button type="button" size="sm" variant="ghost" disabled={save.isPending} onClick={() => apply(null)}>
+              Back to default
+            </Button>
+          ) : null}
+        </div>
+        <AiEffort effort={settings.effort} model={selected} />
       </div>
     </div>
   );

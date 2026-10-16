@@ -1,14 +1,16 @@
-import { BrainCircuit, ChartNoAxesCombined, CircleDollarSign, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
+import { BrainCircuit, ChartNoAxesCombined, CircleDollarSign, Gauge, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { ReadingPane } from "@/components/shell";
 import { CostTable } from "@/components/usage/CostTable";
 import { UsagePanel } from "@/components/usage/UsagePanel";
+import { AiSpeed } from "./AiSpeed";
 import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoUpdateStale } from "./AutoUpdateStale";
 import { ExternalKnowledge } from "./ExternalKnowledge";
-import { loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile } from "./loadModelSettings";
+import { loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile, loadSpeedTests } from "./loadModelSettings";
 import { ModelPicker } from "./ModelPicker";
 import { NameForm } from "./NameForm";
+import { RoleModels } from "./RoleModels";
 import { PasswordForm } from "./PasswordForm";
 import { SettingHint } from "./SettingHint";
 import { SettingsTabs } from "./SettingsTabs";
@@ -23,6 +25,7 @@ const sections = [
   { id: "security", label: "Security", icon: LockKeyhole },
   { id: "usage", label: "Usage & activity", icon: ChartNoAxesCombined },
   { id: "costs", label: "AI costs", icon: CircleDollarSign },
+  { id: "speed", label: "AI Speed", icon: Gauge },
 ];
 
 // Every IANA zone the runtime knows, UTC first (listed on the server so both renders match)
@@ -45,7 +48,7 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
 }
 
 export default async function SettingsPage() {
-  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter()]);
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests()]);
   const panels: Record<string, ReactNode> = {
     preferences: (
       <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
@@ -57,6 +60,10 @@ export default async function SettingsPage() {
       <SettingsCard id="intelligence" title="Intelligence" description="Fine-tune the AI behind your second brain." icon={BrainCircuit}>
         <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">AI model</h3><SettingHint>Used for uploads, line edits, and page builds.</SettingHint></div>
         <ModelPicker settings={modelSettings} />
+        <div className="mt-6 border-t pt-6">
+          <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">Model by role</h3><SettingHint>Run a role on its own model: a fast one to write, a smart one to decide and review, a cheap one for routine work. Roles left on Active model follow the pick above.</SettingHint></div>
+          <RoleModels settings={modelSettings} />
+        </div>
         <div className="mt-6 border-t pt-6">
           <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">Article charter</h3><SettingHint>Steers which subjects get their own article. Leave Purpose empty and new articles are not checked against it.</SettingHint></div>
           <ArticleCharterForm charter={articleCharter} />
@@ -72,6 +79,7 @@ export default async function SettingsPage() {
     security: <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>,
     usage: <SettingsCard id="usage" title="Usage & activity" description="A closer look at your AI calls and token consumption." icon={ChartNoAxesCombined}><UsagePanel /></SettingsCard>,
     costs: <SettingsCard id="costs" title="AI costs" description="What each model costs per million tokens, and what you've spent." icon={CircleDollarSign}><CostTable activeModel={modelSettings.activeModel} /></SettingsCard>,
+    speed: <SettingsCard id="speed" title="AI Speed" description="A live test of how fast each model answers: latency and tokens per second." icon={Gauge}><AiSpeed settings={modelSettings} saved={speedTests} /></SettingsCard>,
   };
   return (
     <ReadingPane title="Settings">

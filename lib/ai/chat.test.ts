@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import type { AiCallRecord } from "./callLog";
-import { chatJson, CompletionLengthError, type CompletionResponse, oneLeadingSystemMessage, parseContent } from "./chat";
+import { chatJson, CompletionLengthError, type CompletionResponse, oneLeadingSystemMessage, parseContent, settingsForCall, tokenFactoryFromEnv } from "./chat";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
+import { forgetCachedMemory } from "./memory";
+import { MODEL_ROLES } from "./roles";
 
 // =====================================================================
 // PARSING THE MODEL'S ANSWER: every unusable answer gets a clear message.
@@ -250,5 +252,143 @@ describe("oneLeadingSystemMessage", () => {
       { role: "system", content: "b" },
       { role: "user", content: "u2" },
     ])).toEqual([{ role: "system", content: "a\n\nb" }, { role: "user", content: "u1" }, { role: "user", content: "u2" }]);
+  });
+});
+
+describe("model by role", () => {
+  const env = { NEBIUS_API_KEY: "nebius", CEREBRAS_API_KEY: "cerebras" } as unknown as NodeJS.ProcessEnv;
+  const settings = tokenFactoryFromEnv(env, { model: "base/model", roleModels: { write_articles: "cerebras/fast", reviewer: "smart/model" } })!;
+
+  it("sends a role's calls to its own model and provider", () => {
+    expect(settingsForCall(settings, "section_lines")).toMatchObject({ apiKey: "cerebras", model: "cerebras/fast", baseUrl: expect.stringContaining("cerebras") });
+    expect(settingsForCall(settings, "page_editorial_review")).toMatchObject({ apiKey: "nebius", model: "smart/model", baseUrl: undefined });
+  });
+
+  it("keeps the workspace model for other roles and unnamed calls", () => {
+    expect(settingsForCall(settings, "reconciliation").model).toBe("base/model");
+    expect(settingsForCall(settings, "place_topics").model).toBe("base/model");
+  });
+
+  it("accepts a plain model id as before", () => {
+    expect(tokenFactoryFromEnv(env, "base/model")).toEqual({ apiKey: "nebius", model: "base/model", logCall: undefined });
+  });
+});
+
+describe("role memory tools", () => {
+  // The in-process copies are shared by every call; each test starts without them
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    for (const role of MODEL_ROLES) forgetCachedMemory(role);
+  });
+
+  // A fake database port holding one role's saved notes, recording what was written
+  const memoryDb = (saved: { key: string; value: string }[]) => {
+    const writes: Record<string, unknown>[] = [];
+    return {
+      writes,
+      call: async <T,>(fn: string, args: Record<string, unknown> = {}): Promise<T> => {
+        if (fn === "get_role_memory") return saved.map((entry) => ({ ...entry, source: null, updatedAt: "", expiresAt: null })) as T;
+        writes.push({ fn, ...args });
+        return 1 as T;
+      },
+    };
+  };
+  // Answers each round with the next reply: tool calls, or the final JSON
+  const toolCall = (id: string, name: string, args: unknown): CompletionResponse => ({
+    choices: [{ message: { content: null, tool_calls: [{ id, type: "function", function: { name, arguments: JSON.stringify(args) } }] }, finish_reason: "tool_calls" }],
+    usage: { prompt_tokens: 100, completion_tokens: 10 },
+  });
+  const rounds = (...replies: CompletionResponse[]) => {
+    let round = 0;
+    const fetchMock = vi.fn<(url: URL, init: RequestInit) => Promise<Response>>(async () => new Response(JSON.stringify(replies[round++])));
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+  };
+  const sent = (fetchMock: ReturnType<typeof rounds>, round: number) => JSON.parse(String(fetchMock.mock.calls[round]![1].body));
+
+  it("offers the tools and lists note keys, never their values, and answers in one round when unused", async () => {
+    const fetchMock = rounds(completion('{"summary":"ok"}', "stop"));
+    const db = memoryDb([{ key: "pref:tone", value: "zebra-crossing" }]);
+    const result = await chatJson({ apiKey: "k", model: "other/model", memoryDb: db }, { name: "section_lines", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    expect(result.value).toEqual({ summary: "ok" });
+    const body = sent(fetchMock, 0);
+    expect(body.tools.map((tool: { function: { name: string } }) => tool.function.name)).toEqual(["memory_read", "memory_write", "memory_forget"]);
+    expect(body.tool_choice).toBe("auto");
+    const text = JSON.stringify(body.messages);
+    expect(text).toContain("pref:tone");
+    expect(text).not.toContain("zebra-crossing");
+    expect(db.writes).toEqual([]);
+  });
+
+  it("runs the tools the model calls, sends the results back, and sums the usage", async () => {
+    const fetchMock = rounds(
+      toolCall("c1", "memory_read", { keys: ["pref:tone"] }),
+      toolCall("c2", "memory_write", { key: "cache:page", value: "Safety", scope: "saved", ttlHours: 0 }),
+      completion('{"summary":"done"}', "stop"),
+    );
+    const db = memoryDb([{ key: "pref:tone", value: "plain" }]);
+    const result = await chatJson({ apiKey: "k", model: "other/model", memoryDb: db }, { name: "section_lines", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    expect(result).toMatchObject({ value: { summary: "done" }, tokensIn: 100 + 100 + 18_680, tokensOut: 10 + 10 + 100 });
+    const second = sent(fetchMock, 1).messages;
+    expect(second.at(-2)).toMatchObject({ role: "assistant", tool_calls: [{ id: "c1" }] });
+    expect(second.at(-1)).toMatchObject({ role: "tool", tool_call_id: "c1" });
+    expect(JSON.parse(second.at(-1).content)).toMatchObject({ notes: [{ key: "pref:tone", value: "plain", scope: "saved" }] });
+    expect(db.writes).toEqual([{ fn: "remember_role_memory", p_role: "write_articles", p_entries: [{ key: "cache:page", value: "Safety", ttlHours: null }], p_forget: [], p_source: "section_lines" }]);
+  });
+
+  it("keeps run notes in this server's memory for the role's next call", async () => {
+    const db = memoryDb([]);
+    rounds(toolCall("c1", "memory_write", { key: "dedupe:seen", value: "c1,c2", scope: "run", ttlHours: 0 }), completion('{"summary":"a"}', "stop"));
+    await chatJson({ apiKey: "k", model: "other/model", memoryDb: db }, { name: "dedupe", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    const next = rounds(completion('{"summary":"b"}', "stop"));
+    await chatJson({ apiKey: "k", model: "other/model", memoryDb: db }, { name: "duplicate_judge", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    expect(JSON.stringify(sent(next, 0).messages)).toContain("dedupe:seen");
+    expect(db.writes).toEqual([]);
+  });
+
+  it("returns a tool's error to the model instead of failing the call", async () => {
+    const fetchMock = rounds(toolCall("c1", "memory_write", { key: "", value: "x", scope: "saved", ttlHours: 0 }), completion('{"summary":"ok"}', "stop"));
+    await expect(chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([]) }, { name: "section_lines", schema: SCHEMA, jsonSchema: {}, messages: [] })).resolves.toMatchObject({ value: { summary: "ok" } });
+    expect(JSON.parse(sent(fetchMock, 1).messages.at(-1).content)).toHaveProperty("error");
+  });
+
+  it("answers without tools when the provider rejects them", async () => {
+    const fetchMock = vi.fn(async (_url: URL, init: RequestInit) => JSON.parse(String(init.body)).tools
+      ? new Response("tools are not supported for this model", { status: 400 })
+      : new Response(JSON.stringify(completion('{"summary":"ok"}', "stop"))));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    await expect(chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([]) }, { name: "section_lines", schema: SCHEMA, jsonSchema: {}, messages: [] })).resolves.toMatchObject({ value: { summary: "ok" } });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops offering tools after the last tool round", async () => {
+    const calls = Array.from({ length: 4 }, (_, index) => toolCall(`c${index}`, "memory_read", {}));
+    const fetchMock = rounds(...calls, completion('{"summary":"ok"}', "stop"));
+    await chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([]) }, { name: "section_lines", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    expect(sent(fetchMock, 4).tool_choice).toBe("none");
+  });
+
+  it("offers tools without the strict response format, and asks once more with it when the answer misses the schema", async () => {
+    const fetchMock = rounds(completion("Sure, here is a summary.", "stop"), completion('{"summary":"ok"}', "stop"));
+    const result = await chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([]) }, { name: "section_lines", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    expect(result.value).toEqual({ summary: "ok" });
+    expect(sent(fetchMock, 0).response_format).toBeUndefined();
+    expect(sent(fetchMock, 1)).toMatchObject({ response_format: { type: "json_schema" } });
+    expect(sent(fetchMock, 1).tools).toBeUndefined();
+  });
+
+  it("accepts an unconstrained answer that already matches the schema", async () => {
+    const fetchMock = rounds(completion('{"summary":"ok"}', "stop"));
+    await chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([]) }, { name: "section_lines", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives independent reviewers and unnamed calls no memory", async () => {
+    for (const name of ["independent_article_review", "independent_external_source_approval", "place_topics"]) {
+      const fetchMock = rounds(completion('{"summary":"ok"}', "stop"));
+      await chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([{ key: "pref:x", value: "y" }]) }, { name, schema: SCHEMA, jsonSchema: {}, messages: [] });
+      expect(sent(fetchMock, 0).tools).toBeUndefined();
+    }
   });
 });

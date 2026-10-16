@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { describeAssets as describe, tagVocabulary } from "@/lib/assets/describe";
 import { ASSET_TYPES, isTypeWord, normalizeTag } from "@/lib/assets/tags";
 import { toActionResult } from "./result";
@@ -21,7 +21,7 @@ export async function describeAssets(options: { ids?: string[] } = {}) {
     const ids = options.ids ? z.array(z.string().uuid()).max(200).parse(options.ids) : undefined;
     const client = getAdminSupabase();
     const db = supabaseRpc(client);
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "media_analyst" } }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "media_analyst" } }));
     if (!settings) throw new Error("Configure the AI provider in Settings to describe assets.");
     return describe(client, settings, ids ? { ids } : { limit: ASSETS_PER_CALL });
   });

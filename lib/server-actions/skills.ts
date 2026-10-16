@@ -3,7 +3,8 @@
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { AI_STAGES } from "@/lib/ai/skills/types";
-import { FIXED_ROLES } from "@/lib/ai/roles";
+import { FIXED_ROLES, MODEL_ROLES, type ModelRole } from "@/lib/ai/roles";
+import { forgetCachedMemory, type MemoryEntry } from "@/lib/ai/memory";
 import { loadSkillLibrary, skillInputSchema, type SkillInput } from "@/lib/ai/skills/server";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -14,6 +15,23 @@ export async function readAiSkills() {
     await requireUser();
     const db = supabaseRpc(getAdminSupabase());
     return loadSkillLibrary(db);
+  });
+}
+// ROLE MEMORY: every role's saved notes, { role: entries }, newest first
+export async function readRoleMemory() {
+  return toActionResult(async () => {
+    await requireUser();
+    return { memory: await supabaseRpc(getAdminSupabase()).call<Record<string, MemoryEntry[]>>("get_all_role_memory") };
+  });
+}
+// Clears one note, or the role's whole memory when key is null (its run notes on this server too)
+export async function clearRoleMemory(role: ModelRole, key: string | null) {
+  return toActionResult(async () => {
+    await requireUser();
+    if (!MODEL_ROLES.includes(role)) throw new Error("Unknown AI role.");
+    await supabaseRpc(getAdminSupabase()).call("clear_role_memory", { p_role: role, p_key: key });
+    forgetCachedMemory(role);
+    return {};
   });
 }
 export async function saveRoleInstructions(role: string, instructions: string | null, expectedVersion: number | null) {

@@ -4,7 +4,7 @@ import { HUMAN_CHAT_STYLE, humanizeChatPunctuation } from "@/lib/chatbot/style";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/requireUser";
 import { chatJson, tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const admin = getAdminSupabase();
     await requireContextStorage(admin);
     const db = supabaseRpc(admin);
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), call => db.call("log_ai_call", { p_call: call }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), call => db.call("log_ai_call", { p_call: call }));
     const embedder = embedderFromEnv();
     if (!settings || !embedder) return Response.json({ error: "The AI provider is not configured. Add NEBIUS_API_KEY to the server environment to enable chat." }, { status: 503 });
     const { messages } = input.data;

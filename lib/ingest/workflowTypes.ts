@@ -54,8 +54,9 @@ export function canResumeUpload(workflow: UploadWorkflow): boolean {
 
 export function workflowLabel(workflow: UploadWorkflow): string {
   if (workflow.waiting) return "Awaiting approval";
-  // Complete with an error: processing was closed early (its file was removed)
-  if (workflow.state === "complete") return workflow.error ? "Processing stopped" : "Processing complete";
+  // Complete with an error: processing was closed early (its file was removed). A clean finish
+  // reads "Applied", the same as an older upload that has no workflow record
+  if (workflow.state === "complete") return workflow.error ? "Processing stopped" : "Applied";
   if (isRunning(workflow)) return workflow.cancel_requested ? "Cancelling" : "Processing";
   if (articlesPending(workflow)) return "Knowledge saved; articles not written yet";
   return workflow.change_set_id ? "Knowledge checked; work unfinished" : "Processing unfinished";

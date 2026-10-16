@@ -22,7 +22,7 @@ import { videoReaderFrom } from "@/lib/ingest/describeVideoServer";
 import { describeEventEntities } from "@/lib/knowledge/entityDescriptions";
 import { cleanUpEntities } from "@/lib/knowledge/entityCleanup";
 import { profileEventEntities } from "@/lib/knowledge/entityProfiles";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import type { ReconciliationClient } from "@/lib/ai/types";
 import { type DbRpc, supabaseRpc } from "@/lib/db/rpc";
 import { getSectionWriter, type SectionWriter } from "@/lib/living-page";
@@ -42,7 +42,7 @@ export async function getServerDeps(): Promise<ServerDeps> {
   const admin = getAdminSupabase();
   await requireContextStorage(admin);
   const db = supabaseRpc(admin);
-  const [chosenModel, skills] = await Promise.all([readChosenModel(db), loadStageSkills(db)]);
+  const [chosenModel, skills] = await Promise.all([readModelChoice(db), loadStageSkills(db)]);
   const logCall: AiCallLogger = (call) => db.call("log_ai_call", { p_call: call });
   const settings = tokenFactoryFromEnv(process.env, chosenModel, logCall);
   if (settings) settings.skills = skills;

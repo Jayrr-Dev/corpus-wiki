@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import { chatJson, settingsForCall, type TokenFactorySettings } from "@/lib/ai/chat";
 import type { Json, Tables } from "@/lib/database/types";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
@@ -85,7 +85,7 @@ export async function generateGlossary(client: AdminSupabase, settings: TokenFac
 async function generateOnce(client: AdminSupabase, settings: TokenFactorySettings, force: boolean): Promise<boolean> {
   const storage = glossaryClient(client);
   const claims = await currentClaims(client);
-  const inputHash = hash([GLOSSARY_VERSION, settings.model, claims]);
+  const inputHash = hash([GLOSSARY_VERSION, settingsForCall(settings, "glossary_dictionary").model, claims]);
   const token = await supabaseRpc(client).call<string | null>("claim_glossary_generation", { p_hash: inputHash, p_force: force });
   if (!token) return false;
   const save = async (values: GlossaryUpdate) => {
@@ -101,7 +101,7 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     const completed: GlossaryState["batches"] = {};
     await save({ total_batches: batches.length });
     for (const [index, batch] of batches.entries()) {
-      const batchHash = hash([GLOSSARY_VERSION, settings.model, batch]);
+      const batchHash = hash([GLOSSARY_VERSION, settingsForCall(settings, "glossary_dictionary").model, batch]);
       if (!force && cached[batchHash]) completed[batchHash] = cached[batchHash];
       else {
         const refs = new Map(batch.map((claim, i) => [`K${i + 1}`, claim]));
@@ -133,7 +133,7 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     }
     // Never publish against superseded knowledge. A retry reuses every unchanged batch.
     const current = await currentClaims(client);
-    if (hash([GLOSSARY_VERSION, settings.model, current]) !== inputHash) {
+    if (hash([GLOSSARY_VERSION, settingsForCall(settings, "glossary_dictionary").model, current]) !== inputHash) {
       await save({ status: "idle", lease_token: null, lease_until: null });
       return true;
     }

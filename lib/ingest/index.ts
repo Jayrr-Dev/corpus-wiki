@@ -2,7 +2,7 @@ import "server-only";
 
 import { after } from "next/server";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { describeAssets, syncAssets } from "@/lib/assets/describe";
 import type { DbRpc } from "@/lib/db/rpc";
 
@@ -61,7 +61,7 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
 
 // ASSETS AFTER AN UPLOAD: found and described once the response is sent; a failure never fails the upload
 async function describeNewAssets(db: DbRpc): Promise<void> {
-  const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "media_analyst" } }));
+  const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "media_analyst" } }));
   try {
     if (settings) await describeAssets(getAdminSupabase(), settings);
     else await syncAssets(getAdminSupabase());

@@ -2,7 +2,7 @@
 
 import { requireUser } from "@/lib/auth/requireUser";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { type CleanupResult, cleanUpEntities } from "@/lib/knowledge/entityCleanup";
 import { planProfileBatches, type ProfileBatchResult, writeProfileBatch } from "@/lib/knowledge/entityProfiles";
@@ -22,7 +22,7 @@ import { type ActionResult, toActionResult } from "./result";
 async function aiDeps() {
   const client = getAdminSupabase();
   const db = supabaseRpc(client);
-  const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
+  const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
   if (!settings) throw new Error("Writing stakeholder cards needs NEBIUS_API_KEY in the server env.");
   return { client, db, settings };
 }

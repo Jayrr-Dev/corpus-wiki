@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth/requireUser";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readChosenModel } from "@/lib/ai/models";
+import { readModelChoice } from "@/lib/ai/models";
 import { runPageReview, type PageReviewStatus } from "@/lib/living-page/runPageReview";
 import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { toActionResult } from "./result";
@@ -17,7 +17,7 @@ export async function reviewPage(pageId: string, runId?: string) {
     z.uuid().parse(pageId);
     if (runId) z.uuid().parse(runId);
     const db = supabaseRpc(getAdminSupabase());
-    const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "reviewer" } }));
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "reviewer" } }));
     if (!settings) throw new Error("Configure an AI provider in Settings before reviewing pages.");
     const admin = getAdminSupabase();
     const channel = runId ? admin.channel(reviewProgressChannel(runId)) : null;

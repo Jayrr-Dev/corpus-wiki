@@ -72,14 +72,11 @@ function ExceptionToast({ exception, remaining, title, sender, proposal, onView,
   };
   return <section className="flex max-h-[calc(100dvh-3rem)] w-96 max-w-full flex-col overflow-hidden rounded-xl border bg-background text-panel text-foreground shadow-lg" aria-label="Approval request">
     <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
-      <p className="font-medium">Needs approval <span className="ml-2 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">{remaining}</span></p>
+      <p className="font-medium">{sender ? <>The <span className="text-needs-you">{sender}</span> wants approval</> : "Needs approval"} <span className="ml-2 rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground">{remaining}</span></p>
       <Tooltip content="Dismiss notification"><Button variant="ghost" size="icon-sm" className="shrink-0" aria-label="Dismiss approval notification" disabled={answer.isPending} onClick={onClose}><X /></Button></Tooltip>
     </header>
     <div className="min-h-0 space-y-3 overflow-y-auto px-4 py-4 leading-relaxed">
-      <div className="space-y-0.5">
-        {sender && <p className="text-xs text-muted-foreground">From the {sender}</p>}
-        <h2 className="font-semibold">{title}</h2>
-      </div>
+      <h2 className="font-semibold">{title}</h2>
       {detail && !detail.startsWith("# ") && <p className="break-words text-muted-foreground">{detail}</p>}
       {proposal && proposal !== detail && <div className="space-y-1 rounded-lg bg-muted/50 p-3"><p className="text-xs font-medium text-muted-foreground">Proposed change</p><p className="break-words">{proposal}</p></div>}
       <details className="group">
