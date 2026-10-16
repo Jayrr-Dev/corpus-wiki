@@ -1,10 +1,20 @@
 -- Context is revision evidence; historical unknown associations remain NULL.
-alter table public.revisions add column knowledge_context jsonb;
-update public.revisions r set knowledge_context=jsonb_build_object('entities',coalesce((
- select jsonb_agg(jsonb_build_object('type',e.type,'key',e.key,'role',ue.role) order by e.type,e.key,ue.role)
- from public.unit_entities ue join public.entities e on e.id=ue.entity_id where ue.unit_id=r.unit_id),'[]'::jsonb),
- 'applicability',jsonb_build_object('status','unspecified','entities','[]'::jsonb,'conditions',null))
-where exists(select 1 from public.units u where u.current_revision_id=r.id);
+-- Column prepared in 20261105175000, committed before this data update.
+-- Materialize before writing, then update by primary key. The preview OrioleDB
+-- engine panicked on the bulk UPDATE's sequential scan/hash semi-join, while
+-- indexed updates succeeded. No table scan remains open during the writes.
+do $$
+declare snapshots jsonb; snapshot jsonb;
+begin
+ select coalesce(jsonb_agg(jsonb_build_object('id',r.id,'context',jsonb_build_object('entities',coalesce((
+  select jsonb_agg(jsonb_build_object('type',e.type,'key',e.key,'role',ue.role) order by e.type,e.key,ue.role)
+  from public.unit_entities ue join public.entities e on e.id=ue.entity_id where ue.unit_id=r.unit_id),'[]'::jsonb),
+  'applicability',jsonb_build_object('status','unspecified','entities','[]'::jsonb,'conditions',null)))),'[]'::jsonb)
+ into snapshots from public.revisions r join public.units u on u.current_revision_id=r.id;
+ for snapshot in select value from jsonb_array_elements(snapshots) loop
+  update public.revisions set knowledge_context=snapshot->'context' where id=(snapshot->>'id')::uuid;
+ end loop;
+end $$;
 
 create function change_control.validate_knowledge_context(c jsonb) returns void language plpgsql set search_path='' as $$
 declare e jsonb; scope jsonb:=c->'applicability';

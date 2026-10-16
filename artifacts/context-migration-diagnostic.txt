@@ -19,12 +19,32 @@ Read-only checks after failure:
 - public.units readable, 168 units counted after first failure.
 - These checks do not establish overall database integrity.
 
-No further migration retries or engine repair attempted.
-The app now checks context storage availability before processing knowledge or chat,
-and hides context editing until the schema exists, preventing silent data loss.
+RESOLVED: context activation completed on 2026-10-16 UTC.
 
-Next operational step: inspect Supabase/OrioleDB server logs and resolve the
-storage-engine error with the database provider, then apply both context migrations
-using scripts/db/migrate.ts. Do not baseline them as applied without execution.
-There is also an older pending source_usage_lines migration; it was not applied
-as part of this task.
+Systematic isolation on the configured application database:
+- Migration bookkeeping and ADD COLUMN succeeded; the bulk backfill UPDATE panicked.
+- Separating column creation into a committed transaction alone did not fix it.
+- Reading all snapshot inputs succeeded; a primary-key UPDATE succeeded.
+- EXPLAIN showed the failing bulk UPDATE used a sequential scan/hash semi-join.
+- Materializing snapshots before primary-key updates avoided the failing engine path.
+This identifies a reproducible engine failure path, not its internal root cause.
+No storage-engine repair or overall database integrity claim is made.
+
+Applied through scripts/db/migrate.ts, with actual execution (no baselining):
+- 20261105175000_context_column
+- 20261105180000_knowledge_context
+- 20261105190000_context_selection_merge_evidence
+
+Verification:
+- All 168 current revisions have snapshots with unspecified applicability.
+- The 17 historical revisions remain without invented context.
+- Original units (168), revisions (185), entities (99), and unit_entities (332)
+  matched the pre-repair backup exactly, excluding the new context column.
+- Supabase API context-column read and reconciliation_input RPC succeeded.
+- Live revision commit and undo succeeded in a rollback-only test transaction;
+  the original revision was restored and no test records were retained.
+- Portable PostgreSQL context migration tests: 7 passed.
+
+A private local backup was saved before repair; it is excluded from Git.
+The app's readiness guard remains and now passes with the activated schema.
+Unrelated migrations were not applied as part of this repair.
