@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { PageReviewSnapshot } from "./pageReview";
-import { checkReviewEdits } from "./reviewEditCheck";
+import { checkReviewEdits, keepSectionsCovered } from "./reviewEditCheck";
 
 // The model is a queue of answers per call name; every request body is kept
 function fakeModel(answers: Record<string, unknown[]>) {
@@ -66,8 +66,16 @@ describe("Reviewer edit check", () => {
     });
     const moved = edit("l2", "The site was one long continuous page.");
     const trimmed = edit("l3", "It used much self-invented jargon.");
-    const { edits } = await checkReviewEdits({ apiKey: "k", model: "test" }, snapshot, [moved, trimmed]);
+    // The section keeps its other claim (r1) through a third line, so neither edit leaves it unstated
+    const withOrigin = { ...snapshot, lines: [...snapshot.lines, { line_id: "l4", section_id: "site", content: "Gene Ray set it up in 1997.", author: "ai", unit_revision_ids: ["r1"] }] } as PageReviewSnapshot;
+    const { edits } = await checkReviewEdits({ apiKey: "k", model: "test" }, withOrigin, [moved, trimmed]);
     expect(edits).toEqual([{ ...moved, unitRevisionIds: ["r2"] }, { ...trimmed, unitRevisionIds: ["r3"] }]);
+  });
+
+  it("takes editorial dashes out of a rewrite, as the writer does", async () => {
+    fakeModel({ line_fact_check: [{ lines: [verdict("L1", true)] }] });
+    const { edits } = await checkReviewEdits({ apiKey: "k", model: "test" }, snapshot, [edit("l1", "Time Cube—a web page—was set up in 1997.")]);
+    expect(edits[0]!.text).not.toMatch(/[–—]/);
   });
 
   it("never removes every citation a line has", async () => {
@@ -75,6 +83,31 @@ describe("Reviewer edit check", () => {
     const rewrite = edit("l1", "Gene Ray set up Time Cube in 1997.");
     const { edits } = await checkReviewEdits({ apiKey: "k", model: "test" }, snapshot, [rewrite]);
     expect(edits).toEqual([rewrite]);
+  });
+
+  it("keeps a merge: one paragraph takes over the other's claims and the other is removed", async () => {
+    fakeModel({
+      line_fact_check: [{ lines: [verdict("L1", false, { problem: "undefined jargon: C1 does not say this", missingCitations: ["C3"], unstatedCitations: [] })] }],
+      line_fact_confirm: [{ reason: "C3 states it.", lineHasFault: false }],
+    });
+    const merged = edit("l2", "Time Cube was a web page Gene Ray set up in 1997. It used undefined jargon.");
+    const removed = { type: "retire_line", targetId: "l3", text: "Merged into the paragraph above", reason: "r" };
+    const covered = { ...snapshot, lines: [...snapshot.lines, { line_id: "l4", section_id: "site", content: "The site was one long page.", author: "ai", unit_revision_ids: ["r2"] }] } as PageReviewSnapshot;
+    const { edits } = await checkReviewEdits({ apiKey: "k", model: "test" }, covered, [merged, removed]);
+    expect(edits).toEqual([{ ...merged, unitRevisionIds: ["r1", "r3"] }, removed]);
+  });
+
+  it("drops a removal or rewrite that would leave a claim of its section unstated", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const removeOnly = { type: "retire_line", targetId: "l3", text: "Repeats", reason: "r" };
+    expect(keepSectionsCovered(snapshot, [removeOnly])).toEqual([]);
+    const lostCitation = { ...edit("l3", "The site was one long page."), unitRevisionIds: ["r2"] };
+    expect(keepSectionsCovered(snapshot, [lostCitation])).toEqual([]);
+    const sameSectionCopy = { ...snapshot, lines: [...snapshot.lines, { line_id: "l4", section_id: "site", content: "Copy.", author: "ai", unit_revision_ids: ["r2", "r3"] }] } as PageReviewSnapshot;
+    expect(keepSectionsCovered(sameSectionCopy, [removeOnly])).toEqual([removeOnly]);
+    // The lead and the body both cite r1: removing the body's copy still leaves the body without it
+    expect(keepSectionsCovered(snapshot, [{ type: "retire_line", targetId: "l2", text: "Repeats the lead", reason: "r" }])).toEqual([]);
+    warn.mockRestore();
   });
 
   it("passes edits through untouched when the snapshot carries no claims", async () => {

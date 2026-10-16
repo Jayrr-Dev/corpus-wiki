@@ -76,7 +76,12 @@ it.runIf(process.env.RUN_AI_ARTICLE_PIPELINE === "1")("plans, writes and reviews
   const lines: Line[] = [];
   try {
     for (const section of outline) {
-      const revision = await writer.reviseSection({ pageTitle: planned.plan.title, sectionTitle: section.title, lines: [], units: section.unitIds.map((id) => unitOf.get(id)!), uncoveredUnitIds: section.unitIds });
+      // The sections written so far, as read_page_context gives them during a page build
+      const pageContext = outline.flatMap((other) => {
+        const text = lines.filter((line) => line.sectionId === other.id).map((line) => line.content).join("\n\n");
+        return other.id !== section.id && text ? [{ section: other.title, text }] : [];
+      });
+      const revision = await writer.reviseSection({ pageTitle: planned.plan.title, sectionTitle: section.title, lines: [], units: section.unitIds.map((id) => unitOf.get(id)!), uncoveredUnitIds: section.unitIds, pageContext });
       usage.writer += (revision.tokensIn ?? 0) + (revision.tokensOut ?? 0);
       lines.push(...revision.add.map((line) => ({ lineId: randomUUID(), sectionId: section.id, content: line.text, unitIds: line.unitIds })));
     }
@@ -104,7 +109,7 @@ it.runIf(process.env.RUN_AI_ARTICLE_PIPELINE === "1")("plans, writes and reviews
     return { summary: "Dry run", edits: saved!.p_edits.length, exceptions: 0, changeSetId: null };
   } } as DbRpc;
   const droppedEdits: unknown[] = [];
-  console.warn = (message: unknown, detail?: unknown) => { if (message === "Reviewer edit dropped by the fact-check") droppedEdits.push(detail); else warn(message, detail); };
+  console.warn = (message: unknown, detail?: unknown) => { if (typeof message === "string" && message.startsWith("Reviewer edit dropped")) droppedEdits.push({ why: message, ...(detail as object) }); else warn(message, detail); };
   try {
     await runPageReview(db, settings, pageId, null);
   } finally {
@@ -113,10 +118,11 @@ it.runIf(process.env.RUN_AI_ARTICLE_PIPELINE === "1")("plans, writes and reviews
   const review = saved!.p_review;
   usage.reviewer = (saved!.p_trace.tokensIn ?? 0) + (saved!.p_trace.tokensOut ?? 0);
 
-  // The reviewed article: the saved line rewrites (with their citations) and heading renames applied
+  // The reviewed article: the saved line rewrites (with their citations), removals and heading renames applied
   const savedEdits = saved!.p_edits;
   const unitOfRevision = new Map(CLAIMS.map((unit) => [unit.revisionId, unit.unitId]));
-  const reviewedLines = lines.map((line) => {
+  const removed = new Set(savedEdits.filter((item) => item.type === "retire_line").map((item) => item.targetId));
+  const reviewedLines = lines.filter((line) => !removed.has(line.lineId)).map((line) => {
     const edit = savedEdits.find((item) => item.type === "revise_line" && item.targetId === line.lineId);
     return edit ? { ...line, content: edit.text, unitIds: edit.unitRevisionIds?.map((id) => unitOfRevision.get(id)!) ?? line.unitIds } : line;
   });
@@ -137,7 +143,7 @@ it.runIf(process.env.RUN_AI_ARTICLE_PIPELINE === "1")("plans, writes and reviews
         const line = lines.find((item) => item.lineId === edit.targetId);
         const number = (unitId: string) => CLAIMS.indexOf(unitOf.get(unitId)!) + 1;
         return { type: edit.type, before: line?.content ?? outline.find((section) => section.id === edit.targetId)?.title, text: edit.text, reason: edit.reason,
-          ...(line ? { citesBefore: line.unitIds.map(number), citesAfter: (edit.unitRevisionIds?.map((id) => unitOfRevision.get(id)!) ?? line.unitIds).map(number) } : {}) };
+          ...(line && edit.type === "revise_line" ? { citesBefore: line.unitIds.map(number), citesAfter: (edit.unitRevisionIds?.map((id) => unitOfRevision.get(id)!) ?? line.unitIds).map(number) } : {}) };
       }),
     },
   };

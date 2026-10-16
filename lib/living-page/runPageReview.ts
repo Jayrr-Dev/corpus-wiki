@@ -139,7 +139,7 @@ The Curator asked for this review with a focus (guidance on where to look, not e
   const summary = [repairs.length ? `Consolidated ${repairs.length} duplicate section${repairs.length === 1 ? "" : "s"} into the introduction.` : "", answer.value.summary, scopeNote].filter(Boolean).join(" ") + vectorWarning + notes;
   progress?.(`Saving ${repairs.length + edits.length} fixes and ${findings.length} unresolved decisions…`);
   const saved = await measure("save", () => workflowWrite<PageReviewResult>(db, `review:${pageId}:${createHash("sha256").update(JSON.stringify(snapshot)).digest("hex")}`, "complete_page_review", { p_page_id: pageId, p_snapshot: snapshot, p_review: { ...answer.value, summary: partial ? `Partial review. ${summary}` : summary, findings, coverageComplete: !partial }, p_edits: [...repairs, ...edits],
-    p_trace: { modelVersion: answer.model, promptVersion: "page-review-v10", tokensIn: answer.tokensIn, tokensOut: answer.tokensOut, reviewBatches: batches.length, timingsMs: { ...timings }, concurrency: 3 } }));
+    p_trace: { modelVersion: answer.model, promptVersion: "page-review-v11", tokensIn: answer.tokensIn, tokensOut: answer.tokensOut, reviewBatches: batches.length, timingsMs: { ...timings }, concurrency: 3 } }));
   // In full auto the Reviewer's findings are acknowledged at once instead of waiting in Exceptions
   const accepted = await autoAcceptHeld(db, "reviewer", null, saved.exceptions);
   return { ...saved, exceptions: saved.exceptions - accepted.length };

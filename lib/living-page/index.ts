@@ -7,7 +7,7 @@ import { commitAsRole, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { SectionProgress } from "./buildProgress";
 import { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
-import type { FinishedSectionBuild, SectionRef, SectionReviseInput, SectionRevision, SectionState } from "./types";
+import type { FinishedSectionBuild, PageContextSection, SectionRef, SectionReviseInput, SectionRevision, SectionState } from "./types";
 import { FakeSectionWriter } from "./writers/fake";
 import { TokenFactorySectionWriter } from "./writers/tokenFactory";
 
@@ -131,7 +131,8 @@ async function rewriteLines(
   eventId: string | null,
   progress: SectionProgress | undefined,
 ): Promise<{ applied: number; modelVersion: string }> {
-  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state) };
+  const pageContext = await readPageContext(db, state.sectionId);
+  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}) };
   const flagged = state.lines.filter((line) => line.needsRewrite).length;
   progress?.step(writingStep(flagged, input.uncoveredUnitIds.length));
   const revision = progress ? await writer.reviseSection(input, progress) : await writer.reviseSection(input);
@@ -149,6 +150,17 @@ async function rewriteLines(
   // Held changes (a person's line the AI wants to change) wait on Exceptions; only a refused change is a failure
   if (result.status === "rejected" || result.rejected > 0) throw new Error("The section update was not fully applied. Review its change set in Changes before retrying.");
   return { applied: result.applied, modelVersion: revision.modelVersion };
+}
+
+// What the page's other sections say, for the writer; a database without read_page_context gives none
+async function readPageContext(db: DbRpc, sectionId: string): Promise<PageContextSection[]> {
+  try {
+    const sections = await db.call<PageContextSection[]>("read_page_context", { p_section_id: sectionId });
+    return Array.isArray(sections) ? sections : [];
+  } catch (error) {
+    console.warn("Section written without the rest of its page", { sectionId, error: error instanceof Error ? error.message : String(error) });
+    return [];
+  }
 }
 
 // "Rewriting 2 paragraphs and covering 3 new claims…", for the step shown on the page

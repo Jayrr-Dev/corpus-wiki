@@ -43,7 +43,7 @@ describe("user-triggered section update", () => {
     const reviseSection = vi.fn(async () => ({ modelVersion: "current-model", revise: [{ lineId: "generated", text: "Updated wording", unitIds: ["a"] }], retire: [], add: [{ text: "Newly saved knowledge.", unitIds: ["new"] }] }));
     await refreshSectionStyle({ call: call as import("@/lib/db/rpc").DbRpc["call"] }, { name: "test", promptVersion: "skill-v3", reviseSection }, "s", "Keep it concise.");
     expect(reviseSection).toHaveBeenCalledWith(expect.objectContaining({ updateNote: "Keep it concise.", uncoveredUnitIds: ["new"], units: latest.units, lines: expect.arrayContaining([expect.objectContaining({ lineId: "manual", needsRewrite: false }), expect.objectContaining({ lineId: "generated", needsRewrite: true })]) }));
-    expect(call.mock.calls.map(([name]) => name)).toEqual(["claim_section_build", "read_section_state", "submit_change_set", "commit_change_set", "finish_section_build"]);
+    expect(call.mock.calls.map(([name]) => name)).toEqual(["claim_section_build", "read_section_state", "read_page_context", "submit_change_set", "commit_change_set", "finish_section_build"]);
   });
   it("reports a rejected commit and leaves the section stale instead of reporting success", async () => {
     const call = vi.fn(async (fn: string) => {

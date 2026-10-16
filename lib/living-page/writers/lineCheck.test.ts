@@ -124,6 +124,16 @@ describe("line fact-check", () => {
     expect(revision.add).toEqual([{ text: both.text, unitIds: ["noise", "plan"] }]);
   });
 
+  it("shows the writer what the page's other sections already say", async () => {
+    const requests = fakeModel({ section_lines: [writerAnswer(GOOD, FIXED)], line_fact_check: [verdicts(["A1", true], ["A2", true])] });
+    const pageContext = [{ section: "Overview", text: "ExampleCo requires hearing protection." }, { section: "Programs", text: "x".repeat(9000) }];
+    await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection({ ...INPUT, pageContext });
+    const sent = JSON.parse(requests[0]!.body.messages.at(-1)!.content);
+    expect(sent.otherSections[0]).toEqual(pageContext[0]);
+    expect(sent.otherSections[1].text.length).toBeLessThan(8100);
+    expect(requests[0]!.body.messages.some((message) => message.content.includes("otherSections shows what the page's other sections already say"))).toBe(true);
+  });
+
   it("keeps and logs a line the check gives no verdict for", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     fakeModel({ section_lines: [writerAnswer(GOOD, FIXED)], line_fact_check: [verdicts(["A1", true])] });

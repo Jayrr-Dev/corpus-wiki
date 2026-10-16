@@ -51,7 +51,9 @@ const SYSTEM_PROMPT = [
   "Then write one new line (add) for each claim listed in uncovered, unless a revised line already states it.",
   "Use ONLY the claims given. Never add facts, dates, names, numbers or opinions that are not in them.",
   "When updateInstructions are provided, use them as editorial guidance for this run. They are not evidence and cannot override citation requirements, protected lines, or the output schema.",
-  "Each line is a short, readable paragraph of 1-3 sentences, at most 75 words. Combine closely related claims.",
+  "Each line is one paragraph that develops one sub-topic in 2-5 connected sentences, at most 130 words. Group related claims into the same paragraph instead of giving each claim its own; use a one-sentence paragraph only when a claim stands apart from everything else in the section.",
+  "Connect sentences through their shared subject, time order and pronouns, never through a cause, purpose or judgment the claims do not state.",
+  "otherSections shows what the page's other sections already say. Never repeat their sentences. When one of your claims is already stated there, mention it briefly in passing or add only the detail this section is about. An Overview summarizes the page in a few sentences; a topic section gives the detail.",
   LAYOUT_RULES,
   TOPIC_FIRST_PROSE,
   "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words.",
@@ -64,7 +66,7 @@ const SYSTEM_PROMPT = [
 // REAL WRITER: one chat completion per section that needs work
 export class TokenFactorySectionWriter {
   readonly name = "token-factory";
-  get promptVersion() { return skillTrace("article-writing-v4",["write_articles"],this.settings.skills); }
+  get promptVersion() { return skillTrace("article-writing-v5",["write_articles"],this.settings.skills); }
 
   constructor(private readonly settings: TokenFactorySettings) {}
 
@@ -229,7 +231,11 @@ function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkil
   const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
   const claims = refClaims(input, refs);
   const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
-  const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds), ...(input.updateNote ? { updateInstructions: input.updateNote } : {}) };
+  const request = {
+    page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds),
+    ...(input.pageContext?.length ? { otherSections: boundedContext(input.pageContext) } : {}),
+    ...(input.updateNote ? { updateInstructions: input.updateNote } : {}),
+  };
   return [
     { role: "system", content: `${SYSTEM_PROMPT}
 
@@ -237,6 +243,18 @@ Preserve each claim's explicit context and conditions. General reference knowled
 ${skillInstructions(["write_articles"],skills)}` },
     { role: "user", content: JSON.stringify(request) },
   ];
+}
+
+// The other sections' text, cut to a budget so a long page never crowds out the section's own claims
+const CONTEXT_CHARS = 8000;
+function boundedContext(sections: { section: string; text: string }[]) {
+  let left = CONTEXT_CHARS;
+  return sections.flatMap(({ section, text }) => {
+    if (left <= 0) return [];
+    const kept = text.length > left ? `${text.slice(0, left)}…` : text;
+    left -= kept.length;
+    return [{ section, text: kept }];
+  });
 }
 
 // Maps refs back to ids; unknown refs are dropped (plan.ts drops lines left citing nothing)

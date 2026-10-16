@@ -47,7 +47,12 @@ export type SectionReviseInput = {
   lines: SectionLine[];
   uncoveredUnitIds: string[];
   updateNote?: string;
+  // What the page's other sections already say, in page order, so the writer builds on it instead of repeating it
+  pageContext?: PageContextSection[];
 };
+
+// DB: read_page_context (the other sections of the page, with their current text)
+export type PageContextSection = { section: string; text: string };
 
 // WRITER OUTPUT: lines to rewrite, lines to remove, lines to add (each citing the units it states)
 export type LineText = { text: string; unitIds: string[] };
