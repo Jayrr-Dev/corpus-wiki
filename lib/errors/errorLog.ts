@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { inspect } from "node:util";
+import { componentFromStack } from "./componentFromStack";
 import { ACTION_FAILED } from "@/lib/server-actions/result";
 
 // =====================================================================
@@ -18,6 +19,9 @@ export type ErrorEntry = {
   source: ErrorSource;
   location?: string | null;
   path?: string | null;
+  // the component it happened in; read from the stack when not given
+  component?: string | null;
+  componentStack?: string | null;
   message: string;
   stack?: string | null;
   digest?: string | null;
@@ -57,7 +61,9 @@ export async function logError(entry: ErrorEntry): Promise<void> {
   const db = logClient();
   if (!db) return;
   try {
-    const { error } = await db.rpc("log_error", { p_error: { ...entry, level: entry.level ?? "error", message } });
+    const { componentStack, ...fields } = entry;
+    const component = entry.component ?? componentFromStack(componentStack, entry.stack);
+    const { error } = await db.rpc("log_error", { p_error: { ...fields, component, level: entry.level ?? "error", message } });
     if (error) original.error("Could not write to the error log:", error.message);
   } catch (error) {
     original.error("Could not write to the error log:", error instanceof Error ? error.message : error);

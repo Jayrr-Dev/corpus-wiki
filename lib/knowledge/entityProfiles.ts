@@ -13,6 +13,7 @@ import {
 } from "@/lib/ai/tokenFactory/entityProfiles";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { assertActiveUpload, workflowStep } from "@/lib/ingest/workflowContext";
+import { lookUpNewStakeholders } from "./entityWeb";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 
 // =====================================================================
@@ -75,6 +76,8 @@ export async function profileEventEntities(deps: Deps, eventId: string): Promise
     const batch = stale.slice(index, index + PROFILE_BATCH_SIZE);
     await workflowStep(`profiles:${batch.join(":")}`, () => writeProfileBatch(deps, batch));
   }
+  // New stakeholders are looked up on the web (when allowed); a failed lookup never fails the upload
+  try { await lookUpNewStakeholders(deps, [...ids]); } catch (error) { console.warn("Stakeholder web lookup failed:", error instanceof Error ? error.message : error); }
 }
 
 // ONE BATCH: load the evidence, ask the model, write what it answered. `force` rewrites a card
@@ -106,6 +109,7 @@ export async function writeProfileBatch(deps: Deps, entityIds: string[], force =
     key_facts: row.keyFacts,
     functions: row.functions,
     contacts: row.contacts,
+    person: row.person,
     input_hash: hashById.get(row.entityId) ?? null,
     generated_at: now,
     model: answer.model,

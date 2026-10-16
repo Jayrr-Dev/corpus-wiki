@@ -1,4 +1,5 @@
 import { ReadingPane } from "@/components/shell";
+import { AutoDescribeEntities } from "../graph/AutoDescribeEntities";
 import { EntitiesPageMenu, EntitiesTable } from "./EntitiesTable";
 import { NewEntityButton } from "./NewEntityButton";
 
@@ -17,6 +18,7 @@ export default async function EntitiesPage({ searchParams }: EntitiesPageProps) 
         </div>
       }
     >
+      <AutoDescribeEntities />
       <EntitiesTable showRetired={showRetired} />
     </ReadingPane>
   );

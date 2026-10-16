@@ -18,6 +18,7 @@ import { CitationChip } from "./CitationChip";
 import type { LinePreview } from "./LiveSection";
 import { TextEditor } from "./TextEditor";
 import { Loader } from "@/components/standard/loader";
+import { RightPanelClose } from "@/components/shell/RightPanel";
 
 // DATE FORMAT FOR LINE AND SECTION HISTORY
 export const historyDate = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" });
@@ -45,13 +46,14 @@ export function LinePanel({ line, preview, onPreview, isEditing, onEdit }: LineP
   );
 }
 
-// ONE PANEL SECTION: a ruled-off block with a small uppercase heading and optional header buttons
-export function PanelSection({ title, actions, children }: { title: string; actions?: ReactNode; children: ReactNode }) {
+// ONE PANEL SECTION: a ruled-off block with a small uppercase heading and optional header buttons;
+// the panel's top section passes closable to put the panel's X after its buttons
+export function PanelSection({ title, actions, closable = false, children }: { title: string; actions?: ReactNode; closable?: boolean; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3 border-t py-4 first:border-t-0 first:pt-0">
       <header className="flex min-h-7 items-center justify-between gap-2">
-        <h2 className="text-panel font-medium tracking-wide text-faint uppercase">{title}</h2>
-        {actions ? <div className="flex gap-1.5">{actions}</div> : null}
+        <h2 className="text-panel font-medium tracking-wide whitespace-nowrap text-faint uppercase">{title}</h2>
+        {actions || closable ? <div className="flex shrink-0 items-center gap-1">{actions}{closable ? <RightPanelClose /> : null}</div> : null}
       </header>
       {children}
     </section>
@@ -73,7 +75,7 @@ function LineSection({ line, isEditing, onEdit }: { line: ShownLine; isEditing: 
     </>
   );
   return (
-    <PanelSection title="This line" actions={actions}>
+    <PanelSection title="This line" actions={actions} closable>
       <p className="whitespace-pre-line text-panel">{line.content}</p>
       {remove.error ? <p className="text-panel text-failed">{remove.error}</p> : null}
     </PanelSection>
@@ -81,7 +83,7 @@ function LineSection({ line, isEditing, onEdit }: { line: ShownLine; isEditing: 
 }
 
 // ONE CLAIM THE LINE CITES: status, current text (and the cited text when it changed), sources, Edit
-function ClaimCard({ citedRevisionId }: { citedRevisionId: string }) {
+export function ClaimCard({ citedRevisionId }: { citedRevisionId: string }) {
   const [isEditing, setIsEditing] = useState(false);
   const { data: cited } = useRevision(citedRevisionId);
   const { data: unit } = useUnit(cited?.unit_id);

@@ -14,6 +14,13 @@ export const CONTACT_LABELS: Record<ContactKind, string> = {
 export type CardContact = { kind: ContactKind; value: string; label: string | null; unitIds?: string[] };
 export type PersonContact = { kind: ContactKind; value: string; label: string | null };
 
+// WHAT THE WEB SAID about a stakeholder (kept only for a sure match); sourceIndex points into sources
+export type WebContext = {
+  summary: string; website: string | null;
+  facts: { label: string; value: string; sourceIndex: number | null }[];
+  sources: { title: string; url: string }[];
+};
+
 export type StakeholderCard = {
   entityId: string; name: string; type: string; aliases: string[]; description: string | null;
   kind: string | null; relation: string | null;
@@ -21,6 +28,8 @@ export type StakeholderCard = {
   functions: { text: string; unitIds: string[] }[];
   contacts: CardContact[]; personContacts: PersonContact[];
   hidden: boolean; generatedAt: string | null;
+  web: WebContext | null; webCheckedAt: string | null; logoUrl: string | null;
+  person: { title: string | null; organization: string | null; organizationEntityId: string | null; role: string | null; unitIds: string[] } | null;
   claimCount: number; sourceCount: number; lastChangedAt: string | null; stale: boolean; isOurs: boolean;
 };
 
@@ -28,10 +37,11 @@ export type StakeholderCard = {
 export const cardKind = (card: Pick<StakeholderCard, "kind" | "type">) => (card.kind || card.type).trim().toLowerCase();
 
 // "government agency" -> "Government agencies" (a heading or filter label)
+const IRREGULAR_PLURALS: Record<string, string> = { person: "people", man: "men", woman: "women", child: "children", staff: "staff" };
 export function kindPlural(kind: string): string {
   const words = kind.split(" ");
   const last = words.pop() ?? "";
-  const plural = /(s|x|z|ch|sh)$/.test(last) ? `${last}es` : /[^aeiou]y$/.test(last) ? `${last.slice(0, -1)}ies` : `${last}s`;
+  const plural = IRREGULAR_PLURALS[last] ?? (/(s|x|z|ch|sh)$/.test(last) ? `${last}es` : /[^aeiou]y$/.test(last) ? `${last.slice(0, -1)}ies` : `${last}s`);
   const text = [...words, plural].join(" ");
   return text.charAt(0).toUpperCase() + text.slice(1);
 }

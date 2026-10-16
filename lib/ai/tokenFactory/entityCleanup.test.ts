@@ -20,9 +20,10 @@ describe("entity cleanup candidates", () => {
       entity("3", "FAA"), entity("4", "Federal Aviation Administration"),
       entity("5", "American Society for Quality (ASQ)"), entity("6", "ASQ"),
       entity("7", "Health Canada"),
+      entity("8", "Stakeholder", { type: "role" }), entity("9", "Stakeholders", { type: "role" }),
     ];
     const groups = duplicateCandidates(entities, null).map((group) => group.map((e) => e.id).sort());
-    expect(groups).toEqual(expect.arrayContaining([["1", "2"], ["3", "4"], ["5", "6"]]));
+    expect(groups).toEqual(expect.arrayContaining([["1", "2"], ["3", "4"], ["5", "6"], ["8", "9"]]));
     expect(groups.flat()).not.toContain("7");
     // An upload only re-judges groups it touched
     expect(duplicateCandidates(entities, new Set(["3"])).map((group) => group.map((e) => e.id).sort())).toEqual([["3", "4"]]);

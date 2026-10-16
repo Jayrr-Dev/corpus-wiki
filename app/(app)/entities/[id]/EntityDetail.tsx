@@ -1,28 +1,38 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { Facts, Note, QueryState, Section, TextLink, UnitLink } from "@/app/(app)/_components/bits";
 import { actorLabel, formatDate } from "@/app/(app)/_lib/format";
 import { useActorLabel } from "@/app/(app)/_lib/useActorLabel";
 import { readsState } from "@/app/(app)/_lib/reads";
+import { RightPanelSlot } from "@/components/shell";
 import { Tooltip } from "@/components/standard/tooltip";
+import { Button } from "@/components/ui/button";
 import type { Tables } from "@/lib/database/types";
 import { useActions, useEntity, usePages, useUnitEntities } from "@/lib/queries";
 import { useRowsByIds, useUnitDomainsFor, useUnitSummaries } from "@/lib/queries/screens";
+import { DescriptionPanel } from "./DescriptionPanel";
 
 // A change this soon after the entity was added is part of adding it, not an update
 const UPDATED_AFTER_MS = 60_000;
 
-// ENTITY DETAIL: name and description, its facts and wiki page, then every unit about it
+type DescriptionPreview = { id: string; description: string; created_at: string };
+
+// ENTITY DETAIL: name and description, its facts and wiki page, then every unit about it;
+// the side panel holds the description's history, where an older version can be previewed here
 export function EntityDetail({ entityId }: { entityId: string }) {
   const query = useEntity(entityId);
   const entity = query.data;
+  const [preview, setPreview] = useState<DescriptionPreview | null>(null);
   return (
     <QueryState query={query}>
       {entity ? (
         <div className="flex flex-col gap-6">
-          <EntityHeader entity={entity} />
+          <EntityHeader entity={entity} preview={preview} onStopPreview={() => setPreview(null)} />
           <EntityUnits entityId={entity.id} />
+          <RightPanelSlot>
+            <DescriptionPanel key={entity.id} entity={entity} previewId={preview?.id ?? null} onPreview={setPreview} />
+          </RightPanelSlot>
         </div>
       ) : (
         <Note>No entity with this id.</Note>
@@ -33,7 +43,8 @@ export function EntityDetail({ entityId }: { entityId: string }) {
 
 // HEADER: the AI description, then facts: what it is, its wiki page, when and by whom it was
 // added and last changed (only when it changed after it was added), and where it shows up
-function EntityHeader({ entity }: { entity: Tables<"entities"> }) {
+type EntityHeaderProps = { entity: Tables<"entities">; preview: DescriptionPreview | null; onStopPreview: () => void };
+function EntityHeader({ entity, preview, onStopPreview }: EntityHeaderProps) {
   const { data: pages = [] } = usePages({ filters: { entity_id: entity.id } });
   const page = pages[0];
   const history = useEntityHistory(entity.id, entity.created_at);
@@ -54,7 +65,17 @@ function EntityHeader({ entity }: { entity: Tables<"entities"> }) {
   return (
     <Section title="Entity">
       <p className="text-body font-medium">{entity.name}</p>
-      {entity.description ? (
+      {preview ? (
+        <div className="flex max-w-prose flex-col gap-1.5 rounded-md bg-muted px-3 py-2 text-panel">
+          <span className="flex items-center justify-between gap-2 text-xs text-faint">
+            Previewing the version from {formatDate(preview.created_at)} · not saved
+            <Button type="button" size="xs" variant="outline" onClick={onStopPreview}>
+              Stop preview
+            </Button>
+          </span>
+          <p>{preview.description}</p>
+        </div>
+      ) : entity.description ? (
         <Tooltip content={`Written by ${actorLabel("ai", null, entity.description_model)} from the units that mention it${entity.description_updated_at ? ` · ${formatDate(entity.description_updated_at)}` : ""}`}>
           <p className="max-w-prose text-panel text-muted-foreground">{entity.description}</p>
         </Tooltip>

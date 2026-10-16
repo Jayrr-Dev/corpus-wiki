@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import type { Tables } from "@/lib/database/types";
+import { componentFromStack } from "@/lib/errors/componentFromStack";
 import { useErrorLog } from "@/lib/queries";
 import { clearErrorLog } from "@/lib/server-actions/errors";
 
@@ -42,11 +43,19 @@ const sourceLabel = (source: string) => SOURCE_LABEL[source] ?? source;
 // How often the log reloads while open
 const REFRESH_MS = 10_000;
 
+// The component an error happened in (rows logged before it was stored are read from their stack)
+const componentOf = (row: ErrorRow) => row.component ?? componentFromStack(row.stack);
+
 const COLUMNS: ColumnDef<ErrorRow, unknown>[] = [
   dateColumn<ErrorRow>("created", "When", (row) => row.created_at, true),
   statusColumn<ErrorRow, Level>("Level", (row) => (row.level === "warning" ? "warning" : "error"), LEVEL_TONE),
   textColumn<ErrorRow>("source", "Source", (row) => sourceLabel(row.source)),
-  { ...textColumn<ErrorRow>("message", "Message", (row) => `${row.message} ${row.location ?? ""} ${row.path ?? ""}`, (row) => (
+  textColumn<ErrorRow>("page", "Page", (row) => row.path ?? "", (row) => row.path ? <span className="block max-w-56 truncate font-mono text-muted-foreground">{row.path}</span> : <span className="text-faint">—</span>),
+  textColumn<ErrorRow>("component", "Component", (row) => componentOf(row) ?? "", (row) => {
+    const component = componentOf(row);
+    return component ? <span className="font-mono">{component}</span> : <span className="text-faint">—</span>;
+  }),
+  { ...textColumn<ErrorRow>("message", "Message", (row) => `${row.message} ${row.location ?? ""}`, (row) => (
     <span className="block truncate">
       {row.message}
       {row.location ? <span className="text-faint"> · {row.location}</span> : null}
@@ -103,7 +112,7 @@ function ErrorDetail({ row, onClose }: { row: ErrorRow | undefined; onClose: () 
           </DialogHeader>
           <Facts items={[
             ["When", <DateTime key="when" iso={row.created_at} />],
-            ...facts([["Where", row.location], ["Path", row.path], ["Digest", row.digest]]),
+            ...facts([["Where", row.location], ["Page", row.path], ["Component", componentOf(row)], ["Digest", row.digest]]),
           ]} />
           <pre className="rounded-lg bg-muted/50 p-3 text-panel whitespace-pre-wrap break-words">{row.message}</pre>
           {row.stack ? <pre className="max-h-80 overflow-auto rounded-lg bg-muted/50 p-3 font-mono text-xs whitespace-pre">{row.stack}</pre> : null}
@@ -113,7 +122,7 @@ function ErrorDetail({ row, onClose }: { row: ErrorRow | undefined; onClose: () 
   );
 }
 
-// The facts that were recorded, the path and digest in mono
+// The facts that were recorded, the page, component and digest in mono
 function facts(items: [string, string | null][]): [string, ReactNode][] {
   return items.filter((item): item is [string, string] => !!item[1])
     .map(([label, value]) => [label, label === "Where" ? value : <span key={label} className="font-mono break-all">{value}</span>]);

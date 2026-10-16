@@ -1,7 +1,8 @@
 import "server-only";
 
 import { resolveModel } from "@/lib/ai/chat";
-import { listAvailableModels,readAllowExternalKnowledge, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import { listAvailableModels,readAllowExternalKnowledge, readArticleCharter, readAutoUpdateStale, readChosenModel } from "@/lib/ai/models";
+import type { ArticleCharter } from "@/lib/living-page/articleCharter";
 import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { currentActor } from "@/lib/auth/currentPerson";
 import { supabaseRpc } from "@/lib/db/rpc";
@@ -27,12 +28,16 @@ export async function loadAutoUpdateStale(): Promise<boolean> {
   return readAutoUpdateStale(supabaseRpc(getAdminSupabase()));
 }
 
+export async function loadArticleCharter(): Promise<ArticleCharter> {
+  return readArticleCharter(supabaseRpc(getAdminSupabase()));
+}
+
 // The external-knowledge switch, and whether a web search key is set so it can work
 export async function loadExternalKnowledge(): Promise<{ enabled: boolean; ready: boolean }> {
   return { enabled: await readAllowExternalKnowledge(supabaseRpc(getAdminSupabase())), ready: webSearchKey() !== null };
 }
 
-// Reads the pick from the database and the list from Token Factory (plus Cerebras when its key is set)
+// Reads the pick from the database and the list from Token Factory (plus Cerebras and Claude when their keys are set)
 export async function loadModelSettings(): Promise<ModelSettings> {
   const chosenModel = await readChosenModel(supabaseRpc(getAdminSupabase()));
   const activeModel = resolveModel(chosenModel);

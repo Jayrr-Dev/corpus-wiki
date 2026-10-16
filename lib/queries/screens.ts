@@ -191,6 +191,69 @@ export function useSourceUnitIds(sourceId: string): UseQueryResult<string[]> {
   });
 }
 
+// Reads the live articles built on the file's live knowledge (same join as source_usage.article_count), by title
+async function fetchSourceArticles(client: BrowserSupabase, sourceId: string): Promise<Row<"pages">[]> {
+  const unitIds = await fetchSourceUnitIds(client, sourceId);
+  const units = (await fetchByIds(client, "units", uniqueIds(unitIds))).filter((unit) => !unit.retired_at);
+  if (units.length === 0) return [];
+  const inputs = await client.from("section_inputs").select("section_id").in("unit_id", units.map((unit) => unit.id));
+  if (inputs.error) throw inputs.error;
+  const sectionIds = uniqueIds((inputs.data ?? []).map((input) => input.section_id));
+  if (sectionIds.length === 0) return [];
+  const sections = await client.from("sections").select("page_id").in("id", sectionIds).is("retired_at", null);
+  if (sections.error) throw sections.error;
+  const pageIds = uniqueIds((sections.data ?? []).map((section) => section.page_id));
+  if (pageIds.length === 0) return [];
+  const pages = await client.from("pages").select("*").in("id", pageIds).is("retired_at", null).order("title");
+  if (pages.error) throw pages.error;
+  return pages.data ?? [];
+}
+
+// ARTICLES BUILT FROM A FILE (Source detail). Keyed under units, like the article count it lists
+export function useSourceArticles(sourceId: string): UseQueryResult<Row<"pages">[]> {
+  return useQuery({
+    queryKey: [...queryKeys.table("units"), "source-articles", sourceId],
+    queryFn: () => fetchSourceArticles(getBrowserSupabase(), sourceId),
+  });
+}
+
+export type SourceReach = { definitions: number; entities: number; domains: number };
+
+// Counts what the file's live knowledge produced: glossary definitions citing the file, and the
+// live entities and domains its live claims are filed under
+async function fetchSourceReach(client: BrowserSupabase, sourceId: string): Promise<SourceReach> {
+  const glossary = await client.from("glossary_state").select("entries").eq("id", true).maybeSingle();
+  if (glossary.error) throw glossary.error;
+  const entries = (glossary.data?.entries ?? []) as unknown as { citations?: { sourceId: string }[] }[];
+  const definitions = entries.filter((entry) => entry.citations?.some((cite) => cite.sourceId === sourceId)).length;
+  const unitIds = uniqueIds(await fetchSourceUnitIds(client, sourceId));
+  const units = (await fetchByIds(client, "units", unitIds)).filter((unit) => !unit.retired_at).map((unit) => unit.id);
+  if (units.length === 0) return { definitions, entities: 0, domains: 0 };
+  const [entityLinks, domainLinks] = await Promise.all([
+    client.from("unit_entities").select("entity_id").in("unit_id", units),
+    client.from("unit_domains").select("domain_id").in("unit_id", units),
+  ]);
+  if (entityLinks.error) throw entityLinks.error;
+  if (domainLinks.error) throw domainLinks.error;
+  const [entities, domains] = await Promise.all([
+    fetchByIds(client, "entities", uniqueIds((entityLinks.data ?? []).map((link) => link.entity_id))),
+    fetchByIds(client, "domains", uniqueIds((domainLinks.data ?? []).map((link) => link.domain_id))),
+  ]);
+  return {
+    definitions,
+    entities: entities.filter((entity) => !entity.retired_at && !entity.merged_into_id).length,
+    domains: domains.filter((domain) => !domain.retired_at).length,
+  };
+}
+
+// DEFINITIONS, ENTITIES AND DOMAINS FROM A FILE (Source detail). Keyed under units so knowledge edits refresh it
+export function useSourceReach(sourceId: string): UseQueryResult<SourceReach> {
+  return useQuery({
+    queryKey: [...queryKeys.table("units"), "source-reach", sourceId],
+    queryFn: () => fetchSourceReach(getBrowserSupabase(), sourceId),
+  });
+}
+
 // Counts the entities a describe pass would plan (same read as planDescribeBatches)
 async function fetchUndescribedEntityCount(client: BrowserSupabase): Promise<number> {
   return (await fetchDescribableEntityIds(client)).length;

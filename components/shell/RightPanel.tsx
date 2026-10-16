@@ -4,6 +4,9 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { createPortal } from "react-dom";
 import { ErrorBoundary } from "@/components/error";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { XIcon } from "lucide-react";
+import { Tooltip } from "@/components/standard/tooltip";
+import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // =====================================================================
@@ -17,6 +20,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const RightPanelTargetContext = createContext<HTMLElement | null>(null);
 const SetRightPanelTargetContext = createContext<(el: HTMLElement | null) => void>(() => {});
 const RightPanelOpenContext = createContext(false);
+const CloseSlotContext = createContext<(() => void) | null>(null);
 const RegisterSlotContext = createContext<() => () => void>(() => () => {});
 const MobileSheetContext = createContext<{ isSheetOpen: boolean; setSheetOpen: (open: boolean) => void }>({
   isSheetOpen: false,
@@ -93,11 +97,25 @@ function MobileDetailsSheet() {
   );
 }
 
-// SLOT: what a page renders to fill the right panel; a crash in it stays inside the panel
-export function RightPanelSlot({ children }: { children: ReactNode }) {
+// SLOT: what a page renders to fill the right panel; a crash in it stays inside the panel.
+// A panel opened by a click (a line, a definition) passes onClose, which its header's X calls.
+export function RightPanelSlot({ children, onClose }: { children: ReactNode; onClose?: () => void }) {
   const target = useContext(RightPanelTargetContext);
   const registerSlot = useContext(RegisterSlotContext);
   useEffect(() => registerSlot(), [registerSlot]);
   if (!target) return null;
-  return createPortal(<ErrorBoundary where="The side panel">{children}</ErrorBoundary>, target);
+  return createPortal(<CloseSlotContext.Provider value={onClose ?? null}><ErrorBoundary where="The side panel">{children}</ErrorBoundary></CloseSlotContext.Provider>, target);
+}
+
+// CLOSE BUTTON for a panel header; renders nothing when the slot has no onClose
+export function RightPanelClose() {
+  const close = useContext(CloseSlotContext);
+  if (!close) return null;
+  return (
+    <Tooltip content="Close">
+      <Button type="button" size="icon-xs" variant="ghost" className="-mr-1.5" aria-label="Close panel" onClick={close}>
+        <XIcon />
+      </Button>
+    </Tooltip>
+  );
 }

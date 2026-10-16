@@ -5,6 +5,7 @@ import { type AiCallLogger, type AiCallStatus, type CompletionUsage, logSafely, 
 import type { RoleInstruction, StageSkills } from "./skills/types";
 import { CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, DEFAULT_AI_MODEL, TOKEN_FACTORY_BASE_URL } from "./config";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
+import { isAnthropicModel, requestClaudeCompletion } from "./anthropic";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
 
 // =====================================================================
@@ -90,7 +91,8 @@ export function resolveModel(chosenModel: string | null | undefined, env: NodeJS
 export const isCerebrasModel = (model: string) => model.startsWith(CEREBRAS_MODEL_PREFIX);
 
 // Reads the AI settings from server env (+ the picked model and the usage logger); null when there is
-// no NEBIUS_API_KEY. A Cerebras pick swaps in CEREBRAS_API_KEY and the Cerebras endpoint.
+// no NEBIUS_API_KEY. A Cerebras pick swaps in CEREBRAS_API_KEY and the Cerebras endpoint;
+// a Claude ("anthropic/<id>") pick swaps in ANTHROPIC_API_KEY.
 export function tokenFactoryFromEnv(
   env: NodeJS.ProcessEnv = process.env,
   chosenModel: string | null = null,
@@ -98,6 +100,10 @@ export function tokenFactoryFromEnv(
 ): TokenFactorySettings | null {
   if (!env.NEBIUS_API_KEY) return null;
   const model = resolveModel(chosenModel, env);
+  if (isAnthropicModel(model)) {
+    if (!env.ANTHROPIC_API_KEY) throw new Error(`${model} is picked in Settings, but ANTHROPIC_API_KEY is not set in the server env.`);
+    return { apiKey: env.ANTHROPIC_API_KEY, model, logCall };
+  }
   if (!isCerebrasModel(model)) return { apiKey: env.NEBIUS_API_KEY, model, logCall };
   if (!env.CEREBRAS_API_KEY) throw new Error(`${model} is picked in Settings, but CEREBRAS_API_KEY is not set in the server env.`);
   return { apiKey: env.CEREBRAS_API_KEY, model, baseUrl: CEREBRAS_BASE_URL, logCall };
@@ -198,10 +204,14 @@ async function requestCompletion(
     ...(request.outputStyle === "wiki_article" || request.outputStyle === "chat" ? [] : [{ role: "system" as const, content: CONCISE_OUTPUT_INSTRUCTIONS }]),
     ...request.messages,
   ];
+  // Inside an upload run, a cancel or lost lease aborts the call
+  const signal = request.signal ?? uploadExecution.getStore()?.signal;
+  if (isAnthropicModel(model)) {
+    return requestClaudeCompletion({ apiKey: settings.apiKey, model, messages, jsonSchema: request.jsonSchema, maxTokens, effort, signal, onStream: request.onStream });
+  }
   const response = await postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
     method: "POST",
-    // Inside an upload run, a cancel or lost lease aborts the call
-    signal: request.signal ?? uploadExecution.getStore()?.signal,
+    signal,
     headers: { Authorization: `Bearer ${settings.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       // Cerebras knows its models without the "cerebras/" prefix the picker adds

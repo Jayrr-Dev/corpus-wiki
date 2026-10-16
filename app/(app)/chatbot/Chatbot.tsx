@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowUp, BookOpen, Network, MessagesSquare, Square } from "lucide-react";
-import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { Tooltip } from "@/components/standard/tooltip";
 import type { AgentActivity, Message, Reference } from "@/lib/chatbot/types";
 import { HistorySidebar } from "./HistorySidebar";
 import { readHistory, saveConversation, type SavedChat } from "./history";
 import { useEntities } from "@/lib/queries";
 import { OutputSkillPicker } from "./OutputSkillPicker";
+import { ModePicker } from "./ModePicker";
 import type { OutputSkillId } from "@/lib/chatbot/outputSkills";
 import { ContextPicker } from "./ContextPicker";
 
@@ -142,7 +142,6 @@ export function Chatbot({ userId }: { userId: string }) {
   return <div className="flex h-[calc(100%-2.75rem)] min-h-0 overflow-hidden md:h-full">
     <HistorySidebar chats={chats} activeId={activeId} busy={busy || !!deciding || !historyReady} onSelect={selectChat} onNew={newChat} onDelete={id => { persist(chats.filter(chat => chat.id !== id)); if (id === activeId) newChat(); }} />
     <section data-tour="reading-pane" aria-label="Ask your second brain" className={`flex min-h-0 min-w-0 flex-1 flex-col ${!messages.length ? "overflow-y-auto" : ""}`}>
-    <header data-tour="module-header" className="flex items-center gap-2 border-b px-5 py-3"><h1 className="text-sm font-semibold">Ask</h1><ModuleHelp /></header>
     <div className={`flex w-full flex-col ${!messages.length ? "my-auto shrink-0 py-10 sm:py-16" : "min-h-0 flex-1"}`}>
     <div onScroll={event => { const el = event.currentTarget; followAnswer.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100; }} className={messages.length ? "min-h-0 flex-1 overflow-y-auto px-5" : "px-5"}>
       {!messages.length ? <div className="mx-auto max-w-3xl pb-6">
@@ -167,12 +166,10 @@ export function Chatbot({ userId }: { userId: string }) {
       {storageError && <p role="alert" className="mb-3 text-xs text-destructive">{storageError}</p>}
       <form data-tour="ask-composer" onSubmit={event => { event.preventDefault(); void send(); }} className="rounded-2xl border bg-sidebar p-3 shadow-sm focus-within:ring-1 focus-within:ring-ring">
         <textarea ref={input} aria-label="Message Ask" placeholder="Ask your second brain…" value={draft} onChange={event => setDraft(event.target.value)} maxLength={8000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send(); } }} className="max-h-40 w-full resize-none bg-transparent px-1 py-2 text-panel outline-none" />
-        <div className="mt-2 flex items-center justify-between gap-3"><div className="flex min-w-0 flex-wrap items-center gap-1"><ContextPicker disabled={busy} value={entityId} options={(entities.data ?? []).filter(entity => !entity.merged_into_id).map(entity => ({ id: entity.id, name: entity.name, type: entity.type }))} onChange={setEntityId} loading={entities.isPending} failed={entities.isError} /><OutputSkillPicker value={outputSkill} onChange={setOutputSkill} disabled={busy} /></div>
+        <div className="mt-2 flex items-center justify-between gap-3"><div className="flex min-w-0 flex-wrap items-center gap-1"><ContextPicker disabled={busy} value={entityId} options={(entities.data ?? []).filter(entity => !entity.merged_into_id).map(entity => ({ id: entity.id, name: entity.name, type: entity.type }))} onChange={setEntityId} loading={entities.isPending} failed={entities.isError} /><OutputSkillPicker value={outputSkill} onChange={setOutputSkill} disabled={busy} /><ModePicker agent={agent} onChange={setAgent} disabled={busy} /></div>
           <Tooltip content={busy ? "Stop response" : "Send message"}><button type={busy ? "button" : "submit"} onClick={busy ? event => { event.preventDefault(); controller.current?.abort(); } : undefined} disabled={!busy && !draft.trim()} aria-label={busy ? "Stop response" : "Send message"} className="flex size-9 items-center justify-center rounded-full bg-foreground text-background disabled:opacity-30">{busy ? <Square className="size-3.5" /> : <ArrowUp className="size-4" />}</button></Tooltip>
         </div>
       </form>
-      <label className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={agent} disabled={busy} onChange={event => setAgent(event.target.checked)} />Agent mode: can create articles and import source links on request</label>
-      <p className="mt-2 text-center text-xs text-muted-foreground">Exception decisions need confirmation. Stopping prevents further steps; completed changes stay saved.</p>
     </div>
     </div>
   </section></div>;

@@ -15,9 +15,11 @@ import { useUnits } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { glossaryClient, type GlossaryState } from "@/lib/glossary/storage";
-import { glossaryAnchor, glossaryLetter, glossarySentenceCase, type GlossaryEntry } from "@/lib/glossary/entries";
-import { changeGlossaryDefinition, requestGlossaryGeneration, searchGlossaryMeaning } from "@/lib/server-actions/glossary";
+import { RightPanelSlot } from "@/components/shell";
+import { glossaryAnchor, glossaryEntryKey, glossaryLetter, glossarySentenceCase, type GlossaryEntry } from "@/lib/glossary/entries";
+import { changeGlossaryDefinition, regenerateGlossaryDefinition, requestGlossaryGeneration, searchGlossaryMeaning } from "@/lib/server-actions/glossary";
 import { cn } from "@/lib/utils";
+import { DefinitionPanel, type DefinitionPreview } from "./DefinitionPanel";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat("#");
 const CATEGORIES = ["All terms", "general term", "acronym", "technical term", "jargon", "uncommon word"] as const;
@@ -42,6 +44,9 @@ export function GlossaryScreen() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("All terms");
   const [letter, setLetter] = useState<string | null>(null);
+  // The definition whose details fill the right panel, and an older version shown in its place
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [preview, setPreview] = useState<DefinitionPreview | null>(null);
   const meaning = useMutation({
     mutationFn: async (question: string) => {
       const result = await searchGlossaryMeaning(question);
@@ -103,16 +108,13 @@ export function GlossaryScreen() {
     const key = normalize(entry.term);
     terms.set(key, [...terms.get(key) ?? [], entry]);
   }
+  const selected = selectedKey ? entries.find((entry) => glossaryEntryKey(entry) === selectedKey) ?? null : null;
+  const select = (key: string | null) => { setSelectedKey(key); setPreview(null); };
   const error = generation.error?.message || query.error?.message || state?.error;
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-panel text-muted-foreground">Terms and definitions from your sources.</p>
-        <Button size="sm" variant="outline" disabled={busy} onClick={() => generate(true)}>
-          {busy ? "Updating…" : "Regenerate"}
-        </Button>
-      </div>
+      <p className="text-panel text-muted-foreground">Terms and definitions from your sources.</p>
       <div className="my-6 flex flex-col gap-4">
         <form onSubmit={(event) => { event.preventDefault(); setLetter(null); meaning.mutate(search); }} className="flex flex-wrap items-center gap-2">
         <div className="relative w-full max-w-sm [&_input]:pl-8">
@@ -146,7 +148,7 @@ export function GlossaryScreen() {
       {[...groups].sort(([a], [b]) => ALPHABET.indexOf(a) - ALPHABET.indexOf(b)).map(([initial, terms]) => <section key={initial} aria-label={`Letter ${initial}`} className="grid grid-cols-[2rem_1fr] gap-4 border-b py-8 sm:grid-cols-[3.5rem_1fr] sm:gap-6">
         <h3 className="sticky top-14 flex size-10 items-center justify-center rounded-md bg-link/10 text-xl font-semibold text-link">{initial}</h3>
         <dl className="min-w-0 divide-y divide-border">
-          {[...terms.values()].map((senses) => <DictionaryWord key={normalize(senses[0]!.term)} senses={senses} sourceNumbers={sourceNumbers} />)}
+          {[...terms.values()].map((senses) => <DictionaryWord key={normalize(senses[0]!.term)} senses={senses} sourceNumbers={sourceNumbers} selectedKey={selected ? selectedKey : null} preview={preview} onSelect={select} />)}
         </dl>
       </section>)}
       {shown.length > 0 && <section aria-labelledby="glossary-references-title" className="border-t pt-8">
@@ -157,29 +159,50 @@ export function GlossaryScreen() {
           </li>)}
         </ol>
       </section>}
+      {selected ? <RightPanelSlot onClose={() => select(null)}><DefinitionPanel key={selectedKey} entry={selected} queryKey={QUERY_KEY} preview={preview} onPreview={setPreview} onRemoved={() => select(null)} /></RightPanelSlot> : null}
     </div>
   );
 }
 
-function DictionaryWord({ senses, sourceNumbers }: { senses: GlossaryEntry[]; sourceNumbers: Map<string, DictionarySource> }) {
+type DictionaryWordProps = { senses: GlossaryEntry[]; sourceNumbers: Map<string, DictionarySource>; selectedKey: string | null; preview: DefinitionPreview | null; onSelect: (key: string | null) => void };
+function DictionaryWord({ senses, sourceNumbers, selectedKey, preview, onSelect }: DictionaryWordProps) {
   const head = senses[0]!;
+  const client = useQueryClient();
+  // Rewrites one definition from the current claims it cites; the rest of the glossary is untouched
+  const regeneration = useMutation({
+    mutationFn: async (entry: GlossaryEntry) => {
+      const result = await regenerateGlossaryDefinition(entry);
+      if (!result.ok) throw new Error(result.error);
+    },
+    onSuccess: () => client.invalidateQueries({ queryKey: QUERY_KEY }),
+  });
+  const regenerating = regeneration.isPending ? glossaryEntryKey(regeneration.variables) : null;
+  const failed = regeneration.isError ? glossaryEntryKey(regeneration.variables) : null;
   return <div className="py-8 first:pt-0 last:pb-0">
     <dt id={glossaryAnchor(head.term)} className="flex scroll-mt-20 flex-wrap items-baseline gap-x-3 gap-y-1"><span className="text-lg font-semibold tracking-tight text-foreground">{glossarySentenceCase(head.term)}</span><span className={cn("rounded px-2 py-0.5 text-xs font-medium", CATEGORY_COLORS[head.category])}>{glossarySentenceCase(head.category)}</span></dt>
     {head.expansion && <dd className="mt-2 text-panel font-medium text-muted-foreground">{glossarySentenceCase(head.expansion)}</dd>}
     {senses.map((entry, index) => {
       const sources = [...new Map(entry.citations.map((cite) => [cite.sourceId, cite])).values()].sort((a, b) => (sourceNumbers.get(a.sourceId)?.number ?? 0) - (sourceNumbers.get(b.sourceId)?.number ?? 0));
+      const key = glossaryEntryKey(entry);
+      const isSelected = key === selectedKey;
+      const previewed = preview?.key === key ? preview.definition : null;
+      const isRegenerating = regenerating === key;
+      // Clicking the definition (not one of its reference links) opens its details and history
       return <dd key={index} className="mt-6">
         <div className="flex items-start justify-between gap-3">
-          <p className="max-w-2xl text-sm leading-7">{senses.length > 1 && <span className="mr-2 font-mono text-xs text-muted-foreground">{index + 1}.</span>}{entry.definition}{sources.map((cite) => {
+          <p onClick={(event) => { if (!(event.target as HTMLElement).closest("a")) onSelect(isSelected ? null : key); }} className={cn("-mx-2 max-w-2xl cursor-pointer rounded-md px-2 text-sm leading-7 transition-colors hover:bg-hover", isSelected && "bg-muted", (previewed || isRegenerating) && "text-stale")}>{senses.length > 1 && <span className="mr-2 font-mono text-xs text-muted-foreground">{index + 1}.</span>}{previewed ?? entry.definition}{sources.map((cite) => {
             const source = sourceNumbers.get(cite.sourceId);
             return source ? <sup key={source.sourceId} className="ml-1 text-xs leading-none"><Tooltip content={source.sourceTitle}><a href={`#glossary-reference-${source.number}`} aria-label={`Reference ${source.number}: ${source.sourceTitle}`} className="text-muted-foreground hover:text-link hover:underline">[{source.number}]</a></Tooltip></sup> : null;
           })}</p>
           <RowMenu label={`${entry.term} definition ${index + 1}`} items={[
-            ...(entry.citations[0] ? [{ label: "View evidence and history", href: `/units/${entry.citations[0].unitId}` }] : []),
+            { label: "Show evidence and history", run: () => onSelect(key) },
+            { label: isRegenerating ? "Regenerating…" : "Regenerate definition", isDisabled: regenerating !== null, separatorBefore: true, run: () => regeneration.mutate(entry) },
             { label: "Edit definition", body: (close) => <DefinitionForm entry={entry} close={close} /> },
             { label: "Delete definition", isDestructive: true, body: (close) => <DefinitionForm entry={entry} close={close} deleting /> },
           ]} />
         </div>
+        {isRegenerating && <p role="status" className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Loader inline /><span>Regenerating definition…</span></p>}
+        {failed === key && <p role="alert" className="mt-2 text-xs text-destructive">{regeneration.error?.message}</p>}
         {entry.context && <p className="mt-2 text-xs text-muted-foreground">In context: {glossarySentenceCase(entry.context)}</p>}
         {entry.aliases.length > 0 && <p className="mt-2 text-xs text-muted-foreground">Also: {entry.aliases.map(glossarySentenceCase).join(" · ")}</p>}
       </dd>;
@@ -199,7 +222,7 @@ function DefinitionForm({ entry, close, deleting = false }: { entry: GlossaryEnt
   });
   return <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
     <DialogTitle>{deleting ? "Delete definition" : "Edit definition"}</DialogTitle>
-    <DialogDescription>{entry.term}. Regenerating the glossary may replace manual changes.</DialogDescription>
+    <DialogDescription>{entry.term}. Changes to its sources may replace manual edits when the glossary updates.</DialogDescription>
     {deleting ? <p className="text-panel">Delete this definition from the glossary?</p> : <label className="block space-y-2 text-panel"><span>Definition</span><Textarea value={definition} onChange={(event) => setDefinition(event.target.value)} required maxLength={1000} rows={5} /></label>}
     {mutation.error && <p role="alert" className="text-panel text-destructive">{mutation.error.message}</p>}
     <div className="flex justify-end gap-2">

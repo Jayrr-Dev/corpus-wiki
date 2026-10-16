@@ -26,4 +26,11 @@ describe("resolveModel", () => {
     expect(settings).toMatchObject({ apiKey: "c", model: "cerebras/gpt-oss-120b", baseUrl: CEREBRAS_BASE_URL });
     expect(() => tokenFactoryFromEnv({ NEBIUS_API_KEY: "n" } as unknown as NodeJS.ProcessEnv, "cerebras/gpt-oss-120b")).toThrow(/CEREBRAS_API_KEY/);
   });
+
+  it("sends an anthropic/ pick to Claude with its own key", () => {
+    const env = { NEBIUS_API_KEY: "n", ANTHROPIC_API_KEY: "a" } as unknown as NodeJS.ProcessEnv;
+    const settings = tokenFactoryFromEnv(env, "anthropic/claude-opus-5-5");
+    expect(settings).toMatchObject({ apiKey: "a", model: "anthropic/claude-opus-5-5" });
+    expect(() => tokenFactoryFromEnv({ NEBIUS_API_KEY: "n" } as unknown as NodeJS.ProcessEnv, "anthropic/claude-opus-5-5")).toThrow(/ANTHROPIC_API_KEY/);
+  });
 });

@@ -9,7 +9,7 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 import { type ActionResult, toActionResult } from "./result";
 
 // =====================================================================
-// DESCRIBE ENTITIES (called by /graph): plan the batches of entities
+// DESCRIBE ENTITIES (run on opening /graph or /entities): plan the batches of entities
 // still without a description, then the screen runs them one at a time
 // so it can show progress.
 // =====================================================================
@@ -31,5 +31,14 @@ export async function describeBatch(entityIds: string[]): Promise<ActionResult<D
     const settings = tokenFactoryFromEnv(process.env, await readChosenModel(db), (call) => db.call("log_ai_call", { p_call: call }));
     if (!settings) throw new Error("Describing entities needs NEBIUS_API_KEY in the server env.");
     return describeEntityBatch({ client, settings }, entityIds);
+  });
+}
+
+// RESTORE (entity page history): an older description becomes the current one, as a new version
+export async function restoreEntityDescription(revisionId: string): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    await supabaseRpc(getAdminSupabase()).call("restore_entity_description", { p_revision_id: revisionId });
+    return {};
   });
 }

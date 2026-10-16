@@ -11,7 +11,7 @@ import { type ActionResult, toActionResult } from "./result";
 // (/errors) and the server terminal.
 // =====================================================================
 
-export type ClientErrorReport = { where: string; message: string; digest?: string; path?: string; stack?: string };
+export type ClientErrorReport = { where: string; message: string; digest?: string; path?: string; stack?: string; componentStack?: string };
 
 // The longest message and stack kept from the browser
 const MAX_MESSAGE_LENGTH = 2000;
@@ -27,6 +27,7 @@ export async function reportClientError(report: ClientErrorReport): Promise<void
     path: report.path ?? null,
     message,
     stack: report.stack ? String(report.stack).slice(0, MAX_STACK_LENGTH) : null,
+    componentStack: report.componentStack ? String(report.componentStack).slice(0, MAX_STACK_LENGTH) : null,
     digest: report.digest ?? null,
   });
 }

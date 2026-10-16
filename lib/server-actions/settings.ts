@@ -2,7 +2,8 @@
 
 import { currentActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
-import { listAvailableModels,saveAllowExternalKnowledge, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
+import { listAvailableModels,saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel } from "@/lib/ai/models";
+import { type ArticleCharter, CHARTER_FIELD_MAX, readCharter } from "@/lib/living-page/articleCharter";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getServerSupabase } from "@/lib/supabase/server";
@@ -62,6 +63,17 @@ export async function setAllowExternalKnowledge(enabled: boolean): Promise<Actio
   return toActionResult(async () => {
     await requireUser();
     await saveAllowExternalKnowledge(supabaseRpc(getAdminSupabase()), enabled);
+    return {};
+  });
+}
+
+// ARTICLE CHARTER: what the wiki is for, so the Article Reviewer can judge which subjects earn a page
+export async function setArticleCharter(charter: ArticleCharter): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    const clean = readCharter(charter);
+    if (Object.values(clean).some((text) => text.length > CHARTER_FIELD_MAX)) throw new Error(`Keep each field under ${CHARTER_FIELD_MAX} characters.`);
+    await saveArticleCharter(supabaseRpc(getAdminSupabase()), clean);
     return {};
   });
 }

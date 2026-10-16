@@ -1,13 +1,12 @@
 "use client";
 
-import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { QueryState } from "@/app/(app)/_components/bits";
 import { EmptyState } from "@/components/EmptyState";
 import { GraphView } from "@/components/graph";
 import { GraphIcon } from "@/components/icons";
 import { useGraphData } from "@/lib/graph";
 import { CleanDuplicatesButton } from "./CleanDuplicatesButton";
-import { DescribeEntitiesButton } from "./DescribeEntitiesButton";
+import { AutoDescribeEntities } from "./AutoDescribeEntities";
 import { LinkExistingButton } from "./LinkExistingButton";
 import { Loader } from "@/components/standard/loader";
 
@@ -18,7 +17,6 @@ export function GraphScreen() {
   const isEmpty = query.data?.nodes.length === 0;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header data-tour="module-header" className="flex items-center gap-2 border-b px-6 py-3"><h1 className="text-title font-semibold">Graph</h1><ModuleHelp /></header>
       <div data-tour="reading-pane" className="min-h-0 flex-1">
       <QueryState
         query={query}
@@ -29,7 +27,7 @@ export function GraphScreen() {
         {isEmpty ? (
           <EmptyState icon={GraphIcon} title="Nothing to graph yet" hint="Upload a file and its knowledge units appear here." />
         ) : query.data ? (
-          <GraphView data={query.data} actions={<div className="flex flex-col gap-2"><LinkExistingButton /><DescribeEntitiesButton /><CleanDuplicatesButton /></div>} />
+          <GraphView data={query.data} actions={<div className="flex flex-col gap-2"><LinkExistingButton /><AutoDescribeEntities /><CleanDuplicatesButton /></div>} />
         ) : null}
       </QueryState>
       </div>

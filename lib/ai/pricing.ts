@@ -2,7 +2,7 @@
 // AI PRICING: Token Factory list prices in US dollars per 1M tokens, used
 // to estimate what the logged AI calls cost. Reasoning tokens bill as
 // output. Prices change: update this table when Nebius changes theirs.
-// Source: Nebius Token Factory pricing, checked 2026-10-15.
+// Source: Nebius Token Factory pricing, checked 2026-10-15; Claude rows: Anthropic API list prices, checked 2026-10-16.
 // =====================================================================
 
 export const PRICES_CHECKED_ON = "2026-10-15";
@@ -31,6 +31,14 @@ export const MODEL_PRICES: readonly ModelPrice[] = [
   { model: "Qwen3-235B-A22B-Instruct-2507", inputPerM: 0.2, outputPerM: 0.6 },
   { model: "gpt-oss-120b", inputPerM: 0.15, outputPerM: 0.6 },
   { model: "Llama-3.3-70B-Instruct", inputPerM: 0.13, outputPerM: 0.4 },
+  // Claude ("anthropic/<id>" picks); cache reads bill lower, so cached calls are overestimated
+  { model: "claude-fable-5-1", inputPerM: 10.0, outputPerM: 50.0 },
+  { model: "claude-opus-5-5", inputPerM: 4.0, outputPerM: 20.0 },
+  { model: "claude-opus-5", inputPerM: 5.0, outputPerM: 25.0 },
+  { model: "claude-opus-4-8", inputPerM: 5.0, outputPerM: 25.0 },
+  { model: "claude-sonnet-5-5", inputPerM: 2.0, outputPerM: 10.0 },
+  { model: "claude-sonnet-5", inputPerM: 2.0, outputPerM: 10.0 },
+  { model: "claude-haiku-5-5", inputPerM: 0.1, outputPerM: 0.5 },
 ];
 
 const BY_NAME = new Map(MODEL_PRICES.map((price) => [price.model.toLowerCase(), price]));

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Globe, Mail, MapPin, Phone, StickyNote, UserRound } from "lucide-react";
-import type { ComponentType } from "react";
+import { type ComponentType, useState } from "react";
 import { Tooltip } from "@/components/standard/tooltip";
 import { allContacts, CONTACT_LABELS, type ContactKind, contactHref, initialsOf, sentenceCase, type StakeholderCard as Card, cardKind } from "@/lib/stakeholders/cards";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,7 @@ export function StakeholderCard({ card }: { card: Card }) {
   return (
     <article className={cn("relative flex h-full flex-col gap-3 rounded-lg border bg-card p-4 transition-colors hover:border-link/40", card.hidden && "opacity-60")}>
       <header className="flex items-start gap-3">
-        <span aria-hidden="true" className={cn("flex size-10 shrink-0 items-center justify-center rounded-md text-sm font-semibold", kindColor(kind))}>{initialsOf(card.name)}</span>
+        <StakeholderBadge card={card} className="size-10 text-sm" />
         <div className="min-w-0 flex-1">
           <Link href={`/stakeholders/${card.entityId}`} className="block truncate text-body font-semibold after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none">
             {card.name}
@@ -44,11 +44,31 @@ export function StakeholderCard({ card }: { card: Card }) {
             {card.isOurs && <span className="rounded bg-link/15 px-1.5 py-0.5 font-medium text-link">Our organization</span>}
             {card.hidden && <span className="text-faint">Hidden</span>}
           </div>
+          {card.person && (card.person.title || card.person.organization) && (
+            <p className="mt-1 truncate text-xs text-muted-foreground">{[card.person.title, card.person.organization].filter(Boolean).join(" · ")}</p>
+          )}
         </div>
         <div className="relative z-10"><StakeholderMenu card={card} /></div>
       </header>
 
-      {card.relation && <p className="text-panel text-muted-foreground">{card.relation}</p>}
+      {/* WHO THEY ARE first (the web's overview, else the description from the knowledge), then their part in the work */}
+      {(card.web?.summary || card.description) && (
+        <p className="flex items-start gap-1.5 text-panel">
+          {card.web && (
+            <Tooltip content={`From the web: ${card.web.sources.map((source) => source.title).join(" · ")}`}>
+              <span className="relative z-10 mt-1 shrink-0" aria-label="From the web"><Globe className="size-3 text-faint" /></span>
+            </Tooltip>
+          )}
+          <span className="line-clamp-3">{card.web?.summary || card.description}</span>
+        </p>
+      )}
+
+      {card.relation && (
+        <div className="space-y-0.5">
+          <p className="text-xs font-medium uppercase tracking-wide text-faint">In your work</p>
+          <p className="text-xs text-muted-foreground">{card.relation}</p>
+        </div>
+      )}
 
       {card.keyFacts.length > 0 && (
         <dl className="grid grid-cols-[minmax(5rem,auto)_1fr] gap-x-3 gap-y-1 text-xs">
@@ -103,4 +123,19 @@ function ContactIcon({ contact }: { contact: ReturnType<typeof allContacts>[numb
       )}
     </Tooltip>
   );
+}
+
+// THE CARD'S BADGE: the logo from its official website, or its initials in its kind's colour
+// (also when the logo will not load)
+export function StakeholderBadge({ card, className }: { card: Pick<Card, "name" | "logoUrl" | "kind" | "type">; className?: string }) {
+  const [broken, setBroken] = useState(false);
+  if (card.logoUrl && !broken) {
+    return (
+      <span aria-hidden="true" className={cn("flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-1", className)}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- a logo from the public bucket, tiny and unoptimized on purpose */}
+        <img src={card.logoUrl} alt="" loading="lazy" className="size-full object-contain" onError={() => setBroken(true)} />
+      </span>
+    );
+  }
+  return <span aria-hidden="true" className={cn("flex shrink-0 items-center justify-center rounded-md font-semibold", kindColor(cardKind(card)), className)}>{initialsOf(card.name)}</span>;
 }

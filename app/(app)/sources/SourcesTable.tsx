@@ -3,6 +3,9 @@
 import { useMemo, useState } from "react";
 import { UploaderName } from "@/app/(app)/_components/ActorName";
 import { SourceState } from "./SourceState";
+import { StatusDot } from "@/app/(app)/_components/StatusDot";
+import { Tooltip } from "@/components/standard/tooltip";
+import { useUnfinishedSources } from "@/components/upload/useUnfinishedSources";
 import { countColumn, dateColumn, linkColumn, textColumn } from "@/app/(app)/_components/columns";
 
 import { EmptyState } from "@/components/EmptyState";
@@ -29,9 +32,11 @@ const SOURCE_TABS = [
 // Counts show a dash until they load.
 type Uploads = Map<string, Tables<"shift_events">>;
 
-function sourceColumns(usage: Map<string, SourceUsage> | undefined, uploads: Uploads, origin: Source["origin"]) {
+function sourceColumns(usage: Map<string, SourceUsage> | undefined, uploads: Uploads, origin: Source["origin"], unfinished: Set<string>) {
   return [
-    textColumn<Source>("state", "State", (source) => sourceState(source), (source) => (
+    textColumn<Source>("state", "State", (source) => unfinished.has(source.id) ? "unfinished" : sourceState(source), (source) => unfinished.has(source.id) ? (
+      <Tooltip content="Processing stopped before it finished. Open the source to resume it."><span tabIndex={0} className="inline-flex cursor-help"><StatusDot tone="needs-you" label="unfinished" /></span></Tooltip>
+    ) : (
       <SourceState source={source} />
     )),
     linkColumn<Source>("title", "Title", (source) => source.title, (source) => `/sources/${source.id}`),
@@ -61,7 +66,8 @@ export function SourcesTable() {
   const sources = useSources();
   const usage = useSourceUsage();
   const uploads = useFirstUploads();
-  const columns = useMemo(() => sourceColumns(usage.data, uploads, origin), [usage.data, uploads, origin]);
+  const unfinished = useUnfinishedSources();
+  const columns = useMemo(() => sourceColumns(usage.data, uploads, origin, unfinished), [usage.data, uploads, origin, unfinished]);
   const data = useMemo(() => sources.data?.filter((source) => source.origin === origin), [sources.data, origin]);
   return (
     <div className="flex flex-col gap-4">

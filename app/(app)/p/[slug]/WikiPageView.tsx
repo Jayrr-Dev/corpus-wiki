@@ -9,7 +9,6 @@ import { EmptyState } from "@/components/EmptyState";
 import { ErrorBoundary } from "@/components/error";
 import { type LinePreview, LinePanel, LiveSection, SectionPanel } from "@/components/living-page";
 import { ArticleSources } from "@/components/living-page/ArticleSources";
-import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import { useServerAction } from "@/components/actions/useServerAction";
 import type { Tables } from "@/lib/database/types";
@@ -99,7 +98,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           <span aria-hidden="true">/</span><span aria-current="page">{page.title}</span>
         </nav>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2"><h1 className="font-serif text-3xl leading-tight">{page.title}</h1><ModuleHelp /></div>
+          <h1 className="min-w-0 font-serif text-3xl leading-tight">{page.title}</h1>
           <div className="text-panel"><PageActions page={page} /></div>
         </div>
       </header>
@@ -130,8 +129,8 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           <ArticleSources references={evidence.references} loading={evidence.loading} error={evidence.error} />
         </article>
       </div>
-      {selectedSection ? <RightPanelSlot><SectionPanel key={selectedSection.id} section={selectedSection} lines={lines.filter((line) => line.sectionId === selectedSection.id)} menu={<SectionMenu section={selectedSection} className="" />} onSelectLine={selectLine} /></RightPanelSlot> : null}
-      {selected ? <RightPanelSlot><LinePanel key={selected.lineRevisionId} line={selected} preview={shownPreview} onPreview={setPreview} isEditing={editingLineId === selected.lineId} onEdit={() => editLine(selected)} /></RightPanelSlot> : null}
+      {selectedSection ? <RightPanelSlot onClose={() => setSelectedSectionId(null)}><SectionPanel key={selectedSection.id} section={selectedSection} lines={lines.filter((line) => line.sectionId === selectedSection.id)} menu={<SectionMenu section={selectedSection} className="" />} onSelectLine={selectLine} /></RightPanelSlot> : null}
+      {selected ? <RightPanelSlot onClose={() => { setSelectedLineId(null); setPreview(null); }}><LinePanel key={selected.lineRevisionId} line={selected} preview={shownPreview} onPreview={setPreview} isEditing={editingLineId === selected.lineId} onEdit={() => editLine(selected)} /></RightPanelSlot> : null}
     </div>
   );
 }

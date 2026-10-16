@@ -11,14 +11,14 @@ import { usePersonName } from "@/app/(app)/_lib/useActorLabel";
 import type { Tables } from "@/lib/database/types";
 
 import { useShiftEvents, useSource, useSources } from "@/lib/queries";
-import { useSourceUnitIds, useSourceUsage, useUnitSummaries } from "@/lib/queries/screens";
+import { useSourceArticles, useSourceReach, useSourceUnitIds, useSourceUsage, useUnitSummaries } from "@/lib/queries/screens";
 import { SourcePreview } from "../SourcePreview";
 import { SourceRowMenu } from "../SourceRowMenu";
 import { SourceFigures } from "./SourceFigures";
 import { SourcePassages } from "./SourcePassages";
 import { UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
 
-// SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the knowledge that cites it, then its passages
+// SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the articles built on it, the knowledge that cites it, then its passages
 export function SourceDetail({ sourceId }: { sourceId: string }) {
   const query = useSource(sourceId);
   const source = query.data;
@@ -32,6 +32,7 @@ export function SourceDetail({ sourceId }: { sourceId: string }) {
             <SourcePreview source={source} />
           </Section>
           <SourceFigures sourceId={source.id} />
+          <SourceArticles sourceId={source.id} />
           <SourceKnowledge sourceId={source.id} />
           <SourcePassages sourceId={source.id} />
         </div>
@@ -59,6 +60,7 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
   const uploaderName = usePersonName(firstUpload?.person_id);
   const uploader = uploaderName ?? (firstUpload?.via === "api" ? "API key" : null);
   const usage = useSourceUsage().data?.get(source.id);
+  const reach = useSourceReach(source.id).data;
   const facts: [string, ReactNode][] = [["State", <SourceState key="state" source={source} />]];
   if (newer) facts.push(["Replaced by", <TextLink key="newer" href={`/sources/${newer.id}`}>{newer.title}</TextLink>]);
   if (older.length > 0) {
@@ -86,10 +88,37 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
       ["Article lines", <span key="lines" className="font-mono">{usage.lines}</span>],
     );
   }
+  if (reach) {
+    facts.push(
+      ["Definitions", <span key="definitions" className="font-mono">{reach.definitions}</span>],
+      ["Entities", <span key="entities" className="font-mono">{reach.entities}</span>],
+      ["Domains", <span key="domains" className="font-mono">{reach.domains}</span>],
+    );
+  }
   return (
     <Section title="File" actions={<SourceRowMenu source={source} />}>
       <p className="text-body font-medium">{source.title}</p>
       <Facts items={facts} />
+    </Section>
+  );
+}
+
+// ARTICLES: every live article with a live section built on this file's knowledge
+function SourceArticles({ sourceId }: { sourceId: string }) {
+  const articles = useSourceArticles(sourceId);
+  const list = articles.data ?? [];
+  return (
+    <Section title={`Articles from this file (${list.length})`}>
+      <QueryState query={articles}>
+        {list.length === 0 ? <Note>No article is built on this file's knowledge yet.</Note> : null}
+        <ul className="flex flex-col gap-1.5">
+          {list.map((page) => (
+            <li key={page.id}>
+              <TextLink href={`/p/${page.slug}`}>{page.title}</TextLink>
+            </li>
+          ))}
+        </ul>
+      </QueryState>
     </Section>
   );
 }

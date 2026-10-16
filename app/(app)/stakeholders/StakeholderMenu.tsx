@@ -8,8 +8,9 @@ import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { queryKeys } from "@/lib/queries";
 import { CONTACT_KINDS, CONTACT_LABELS, type ContactKind, type PersonContact, type StakeholderCard } from "@/lib/stakeholders/cards";
-import { rewriteStakeholderCard, savePersonContacts, setOurOrganization, setStakeholderHidden } from "@/lib/server-actions/stakeholders";
+import { lookUpStakeholderAgain, rewriteStakeholderCard, savePersonContacts, setOurOrganization, setStakeholderHidden } from "@/lib/server-actions/stakeholders";
 import { toast } from "sonner";
+import { startProgress } from "@/components/toast";
 
 // "…" MENU FOR ONE CARD: open (card, entity) | edit (contacts, rewrite, our organization) | hide
 export function StakeholderMenu({ card }: { card: StakeholderCard }) {
@@ -20,12 +21,21 @@ export function StakeholderMenu({ card }: { card: StakeholderCard }) {
     if (!result.ok) toast.error(result.error);
     refresh();
   };
+  // Takes a few seconds: a progress toast says what it found
+  const lookUp = async () => {
+    const progress = startProgress(`Looking up ${card.name}`, "Searching the web…");
+    const result = await lookUpStakeholderAgain(card.entityId);
+    refresh();
+    if (!result.ok) { toast.error(result.error); return progress.fail(); }
+    progress.done(result.found ? `Found ${card.name} on the web${result.logos ? " and its logo" : ""}` : "Nothing on the web was sure to be the same party; nothing was kept");
+  };
   return (
     <RowMenu label={card.name} items={[
       { label: "Open card", href: `/stakeholders/${card.entityId}` },
       { label: "Open entity", href: `/entities/${card.entityId}` },
       { label: "Edit contacts", separatorBefore: true, body: (close) => <ContactsForm card={card} close={() => { refresh(); close(); }} /> },
       { label: "Rewrite card", run: () => void act(() => rewriteStakeholderCard(card.entityId))() },
+      { label: "Look up on the web", run: () => void lookUp() },
       card.isOurs
         ? { label: "Unset as our organization", run: () => void act(() => setOurOrganization(null))() }
         : { label: "Set as our organization", run: () => void act(() => setOurOrganization(card.entityId))() },

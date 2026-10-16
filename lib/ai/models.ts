@@ -1,7 +1,9 @@
 import "server-only";
 
 import type { DbRpc } from "@/lib/db/rpc";
-import { CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN_FACTORY_BASE_URL } from "./config";
+import { type ArticleCharter, readCharter } from "@/lib/living-page/articleCharter";
+import { listClaudeModelIds } from "./anthropic";
+import { ANTHROPIC_MODEL_PREFIX, CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN_FACTORY_BASE_URL } from "./config";
 
 // =====================================================================
 // MODEL CHOICE: which Token Factory model the AI calls use. The list
@@ -11,7 +13,7 @@ import { CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN_FACTORY_BASE_URL } from
 
 type ModelsResponse = { data?: { id?: string }[] };
 
-type WorkspaceSettings = { aiModel: string | null; autoUpdateStale?: boolean; allowExternalKnowledge?: boolean };
+type WorkspaceSettings = { aiModel: string | null; autoUpdateStale?: boolean; allowExternalKnowledge?: boolean; articleCharter?: unknown };
 
 // The model picked on /settings, or null when none is picked
 export async function readChosenModel(db: DbRpc): Promise<string | null> {
@@ -41,6 +43,17 @@ export async function saveAllowExternalKnowledge(db: DbRpc, enabled: boolean): P
   await db.call("set_allow_external_knowledge", { p_enabled: enabled });
 }
 
+// The article charter set on /settings, with every field present (empty when unset)
+export async function readArticleCharter(db: DbRpc): Promise<ArticleCharter> {
+  const settings = await db.call<WorkspaceSettings>("get_workspace_settings");
+  return readCharter(settings.articleCharter);
+}
+
+// Saves the article charter for the whole workspace (empty fields are cleared)
+export async function saveArticleCharter(db: DbRpc, charter: ArticleCharter): Promise<void> {
+  await db.call("set_article_charter", { p_charter: charter });
+}
+
 // Saves the pick (null clears it, so AI_MODEL or the default applies again)
 export async function saveChosenModel(db: DbRpc, model: string | null): Promise<void> {
   await db.call("set_ai_model", { p_model: model });
@@ -52,13 +65,16 @@ export async function listTokenFactoryModels(apiKey: string): Promise<string[]> 
 }
 
 // Every model the picker offers: Token Factory's, plus Cerebras's as "cerebras/<id>" when CEREBRAS_API_KEY is set
+// and Claude's as "anthropic/<id>" when ANTHROPIC_API_KEY is set
 export async function listAvailableModels(nebiusKey: string, env: NodeJS.ProcessEnv = process.env): Promise<string[]> {
   const cerebrasKey = env.CEREBRAS_API_KEY;
-  const [tokenFactory, cerebras] = await Promise.all([
+  const anthropicKey = env.ANTHROPIC_API_KEY;
+  const [tokenFactory, cerebras, claude] = await Promise.all([
     listModelIds("Token Factory", TOKEN_FACTORY_BASE_URL, nebiusKey),
     cerebrasKey ? listModelIds("Cerebras", CEREBRAS_BASE_URL, cerebrasKey) : Promise.resolve([]),
+    anthropicKey ? listClaudeModelIds(anthropicKey) : Promise.resolve([]),
   ]);
-  return sortIds([...tokenFactory, ...cerebras.map((id) => CEREBRAS_MODEL_PREFIX + id)]);
+  return sortIds([...tokenFactory, ...cerebras.map((id) => CEREBRAS_MODEL_PREFIX + id), ...claude.map((id) => ANTHROPIC_MODEL_PREFIX + id)]);
 }
 
 async function listModelIds(provider: string, baseUrl: string, apiKey: string): Promise<string[]> {

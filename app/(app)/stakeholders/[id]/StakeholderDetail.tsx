@@ -8,10 +8,10 @@ import { readsState } from "@/app/(app)/_lib/reads";
 import { Tooltip } from "@/components/standard/tooltip";
 import { queryKeys, useUnitEntities } from "@/lib/queries";
 import { type UnitSummary, useUnitSummaries } from "@/lib/queries/screens";
-import { allContacts, CONTACT_LABELS, cardKind, contactHref, initialsOf, sentenceCase, type StakeholderCard } from "@/lib/stakeholders/cards";
+import { allContacts, CONTACT_LABELS, cardKind, contactHref, sentenceCase, type StakeholderCard } from "@/lib/stakeholders/cards";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
-import { CONTACT_ICONS, kindColor } from "../StakeholderCard";
+import { CONTACT_ICONS, kindColor, StakeholderBadge } from "../StakeholderCard";
 import { StakeholderMenu } from "../StakeholderMenu";
 import { useStakeholderCards } from "../StakeholdersScreen";
 
@@ -46,7 +46,7 @@ function Header({ card }: { card: StakeholderCard }) {
   const kind = cardKind(card);
   return (
     <header className="flex items-start gap-4">
-      <span aria-hidden="true" className={cn("flex size-14 shrink-0 items-center justify-center rounded-lg text-lg font-semibold", kindColor(kind))}>{initialsOf(card.name)}</span>
+      <StakeholderBadge card={card} className="size-14 rounded-lg text-lg" />
       <div className="min-w-0 flex-1 space-y-2">
         <h2 className="text-lg font-semibold">{card.name}</h2>
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
@@ -54,8 +54,14 @@ function Header({ card }: { card: StakeholderCard }) {
           {card.isOurs && <span className="rounded bg-link/15 px-1.5 py-0.5 font-medium text-link">Our organization</span>}
           {card.aliases.length > 0 && <span className="text-faint">Also: {card.aliases.join(" · ")}</span>}
         </div>
-        {card.relation && <p className="max-w-prose text-body">{card.relation}</p>}
-        {card.description && <p className="max-w-prose text-panel text-muted-foreground">{card.description}</p>}
+        {card.person && (card.person.title || card.person.organization) && (
+          <p className="text-panel text-muted-foreground">
+            {card.person.title}{card.person.title && card.person.organization ? " · " : ""}
+            {card.person.organization && (card.person.organizationEntityId
+              ? <TextLink href={`/stakeholders/${card.person.organizationEntityId}`}>{card.person.organization}</TextLink>
+              : card.person.organization)}
+          </p>
+        )}
         <p className="text-xs text-faint">
           {card.claimCount} claim{card.claimCount === 1 ? "" : "s"} · {card.sourceCount} source{card.sourceCount === 1 ? "" : "s"}
           {card.generatedAt ? ` · card written ${formatDate(card.generatedAt)}` : ""}
@@ -86,6 +92,15 @@ function Body({ card }: { card: StakeholderCard }) {
 
   return (
     <>
+      <OverviewSection card={card} />
+
+      {(card.relation || card.person?.role || card.keyFacts.length > 0 || card.functions.length > 0) && (
+        <Section title="In your work">
+          {card.relation && <p className="max-w-prose text-body">{card.relation}</p>}
+          {card.person?.role && <p className="max-w-prose text-panel"><span className="text-muted-foreground">Role </span>{card.person.role}<Citations unitIds={card.person.unitIds} units={unitById} /></p>}
+        </Section>
+      )}
+
       {card.keyFacts.length > 0 && (
         <Section title="Key facts">
           <dl className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-4 gap-y-2 text-panel">
@@ -190,5 +205,54 @@ function Citations({ unitIds, units }: { unitIds: string[]; units: Map<string, U
         </sup>
       ))}
     </>
+  );
+}
+
+// OVERVIEW: who the party is as a whole. The web's sure-match profile with its links (kept apart
+// from the knowledge), else the description written from the knowledge.
+function OverviewSection({ card }: { card: StakeholderCard }) {
+  if (!card.web) {
+    if (!card.description && !card.webCheckedAt) return null;
+    return (
+      <Section title="Overview">
+        {card.description && <p className="max-w-prose text-body">{card.description}</p>}
+        {card.webCheckedAt && <p className="text-xs text-faint">Looked up on the web on {formatDate(card.webCheckedAt)}; nothing found was sure to be this {cardKind(card)}, so nothing was kept.</p>}
+      </Section>
+    );
+  }
+  const { web } = card;
+  const cite = (index: number | null) => {
+    const source = index === null ? undefined : web.sources[index];
+    return source ? (
+      <sup className="ml-0.5 text-xs leading-none">
+        <Tooltip content={source.title}>
+          <a href={source.url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-link hover:underline">[{index! + 1}]</a>
+        </Tooltip>
+      </sup>
+    ) : null;
+  };
+  return (
+    <Section title="Overview">
+      <p className="max-w-prose text-body">{web.summary}</p>
+      {web.facts.length > 0 && (
+        <dl className="grid grid-cols-[minmax(7rem,auto)_1fr] gap-x-4 gap-y-2 text-panel">
+          {web.facts.map((fact) => (
+            <div key={`${fact.label}:${fact.value}`} className="contents">
+              <dt className="text-muted-foreground">{fact.label}</dt>
+              <dd>{fact.value}{cite(fact.sourceIndex)}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {web.website && (
+        <p className="text-panel"><span className="text-muted-foreground">Website </span><a href={web.website} target="_blank" rel="noreferrer" className="text-link hover:underline">{web.website.replace(/^https?:\/\//, "")}</a></p>
+      )}
+      <ol className="list-decimal space-y-1 pl-5 text-xs text-muted-foreground marker:text-faint">
+        {web.sources.map((source) => (
+          <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer" className="hover:text-foreground hover:underline">{source.title}</a></li>
+        ))}
+      </ol>
+      <p className="text-xs text-faint">Not part of your knowledge: found on the web{card.webCheckedAt ? ` on ${formatDate(card.webCheckedAt)}` : ""} and checked against it. Use Look up on the web in the menu to refresh.</p>
+    </Section>
   );
 }

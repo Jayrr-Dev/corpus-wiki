@@ -15,7 +15,7 @@ import { fetchDescribableEntityIds } from "./describableEntities";
 
 // =====================================================================
 // ENTITY DESCRIPTIONS (server side): after an upload, the entities it
-// created get a description; /graph backfills the ones still without.
+// created get a description; /graph and /entities backfill the ones still without.
 // A description is derived text (like an article), not knowledge, so it
 // is written straight to entities.description, not through Change control.
 // =====================================================================

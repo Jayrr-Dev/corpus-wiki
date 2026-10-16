@@ -4,9 +4,10 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { Tabs } from "radix-ui";
 import { UploaderName } from "@/app/(app)/_components/ActorName";
-import { Section, TextLink } from "@/app/(app)/_components/bits";
+import { ErrorNote, Section, TextLink } from "@/app/(app)/_components/bits";
+import { DateTime } from "@/app/(app)/_components/DateTime";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
-import { dateColumn, textColumn } from "@/app/(app)/_components/columns";
+import { textColumn } from "@/app/(app)/_components/columns";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { EVENT_TONE, SOURCE_STATE_TONE } from "@/app/(app)/_lib/tone";
 import { EmptyState } from "@/components/EmptyState";
@@ -18,44 +19,53 @@ import { cn } from "@/lib/utils";
 import { useChangeSets, useShiftEvents } from "@/lib/queries";
 import { useRowsByIds } from "@/lib/queries/screens";
 import { SourceRowMenu } from "@/app/(app)/sources/SourceRowMenu";
-import { UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
+import { UploadWorkflowActions, UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
 
 // ONE ROW: the upload event with its source and change set
 type UploadRow = Tables<"shift_events"> & { sourceTitle: string; source: Tables<"sources"> | null; changeSetId: string | null };
 
-// COLUMNS: status, file, change set, error, who uploaded it and when, then Retry on a failed row and the source's "…" menu
+// COLUMNS: file (with its change set), status (with its error), who uploaded it and when, then the source's "…" menu
 const COLUMNS = [
-  textColumn<UploadRow>("status", "Status", (row) => row.status, (row) => (
-    row.source?.origin === "internal" ? <UploadWorkflowStatus eventId={row.id} allowRetry={!row.source.archived_at} legacyStatus={row.status} compact /> : <StatusDot
-      tone={EVENT_TONE[row.status]}
-      label={row.status === "reconciling" ? "Processing" : row.status}
-      busy={row.status === "received" || row.status === "extracting" || row.status === "reconciling" || row.status === "checking"}
-    />
-  )),
-  textColumn<UploadRow>("source", "File", (row) => row.sourceTitle, (row) =>
-    row.source ? (
-      <div className="flex w-56 flex-col gap-0.5">
-        <TextLink href={`/sources/${row.source.id}`} className="whitespace-normal break-words">{row.sourceTitle}</TextLink>
-        {sourceState(row.source) !== "active" ? (
-          <StatusDot tone={SOURCE_STATE_TONE[sourceState(row.source)]} label={sourceState(row.source)} className="text-xs text-muted-foreground" />
-        ) : null}
+  { ...textColumn<UploadRow>("source", "File", (row) => row.sourceTitle, (row) => (
+    <div className="flex flex-col gap-1 whitespace-normal">
+      {row.source ? (
+        <TextLink href={`/sources/${row.source.id}`} className="font-medium break-words">{row.sourceTitle}</TextLink>
+      ) : (
+        <span className="text-faint">{row.sourceTitle}</span>
+      )}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        {row.source && sourceState(row.source) !== "active" ? <StatusDot tone={SOURCE_STATE_TONE[sourceState(row.source)]} label={sourceState(row.source)} /> : null}
+        {row.changeSetId ? <TextLink href={`/changes/${row.changeSetId}`}>View change set</TextLink> : null}
       </div>
-    ) : (
-      <span className="text-faint">{row.sourceTitle}</span>
-    ),
-  ),
-  textColumn<UploadRow>("change", "Change set", (row) => row.changeSetId ?? "", (row) =>
-    row.changeSetId ? <TextLink href={`/changes/${row.changeSetId}`}>Open</TextLink> : <span className="text-faint">—</span>,
-  ),
-  textColumn<UploadRow>("error", "Error", (row) => row.error ?? "", (row) => <span className="block w-64 whitespace-normal break-words">{row.error ?? ""}</span>),
-  textColumn<UploadRow>("by", "Uploaded by", (row) => row.source?.origin === "external" || row.actor === "ai" ? "AI" : row.person_id ?? row.via ?? "", (row) => row.source?.origin === "external" ? <span>AI</span> : <UploaderName event={row} />),
-  dateColumn<UploadRow>("created", "Uploaded", (row) => row.created_at, true),
+    </div>
+  )), meta: { cellClassName: "w-2/5 max-w-0 min-w-40 py-3 align-top" } },
+  { ...textColumn<UploadRow>("status", "Status", (row) => `${row.status} ${row.error ?? ""}`, (row) => (
+    row.source?.origin === "internal" ? <UploadWorkflowStatus eventId={row.id} allowRetry={!row.source.archived_at} legacyStatus={row.status} legacyError={row.error} compact /> : (
+      <div className="flex flex-col gap-1.5 whitespace-normal">
+        <StatusDot
+          tone={EVENT_TONE[row.status]}
+          label={row.status === "reconciling" ? "Processing" : row.status}
+          busy={row.status === "received" || row.status === "extracting" || row.status === "reconciling" || row.status === "checking"}
+          className="font-medium"
+        />
+        {row.error ? <ErrorNote error={row.error} /> : null}
+      </div>
+    )
+  )), meta: { cellClassName: "w-2/5 max-w-0 min-w-40 py-3 align-top" } },
+  { ...textColumn<UploadRow>("created", "Uploaded", (row) => row.created_at, (row) => (
+    <div className="flex flex-col gap-0.5 whitespace-nowrap">
+      {row.source?.origin === "external" ? <span>AI</span> : <UploaderName event={row} />}
+      <span className="font-mono text-xs text-muted-foreground"><DateTime iso={row.created_at} /></span>
+    </div>
+  )), meta: { cellClassName: "py-3 align-top" } },
   {
     id: "actions",
     header: "",
     enableSorting: false,
+    meta: { cellClassName: "py-3 align-top" },
     cell: ({ row }) => (
-      <div className="flex items-start justify-end gap-1">
+      <div className="flex items-start justify-end gap-2">
+        {row.original.source?.origin === "internal" ? <UploadWorkflowActions eventId={row.original.id} allowRetry={!row.original.source.archived_at} legacyStatus={row.original.status} /> : null}
         {row.original.source ? <SourceRowMenu source={row.original.source} /> : null}
       </div>
     ),
@@ -67,6 +77,8 @@ export function RecentUploads() {
   const [origin, setOrigin] = useState("internal");
   const query = useUploadRows();
   const data = useMemo(() => query.data.filter((row) => (row.source?.origin ?? "internal") === origin), [query.data, origin]);
+  const counts = { internal: 0, external: 0 };
+  for (const row of query.data) counts[row.source?.origin === "external" ? "external" : "internal"] += 1;
   return (
     <Section title="Recent uploads">
       <Tabs.Root value={origin} onValueChange={setOrigin} className="space-y-4">
@@ -74,19 +86,20 @@ export function RecentUploads() {
           {(["internal", "external"] as const).map((value) => (
             <Tabs.Trigger key={value} value={value} className={cn("border-b-2 px-3 py-2 text-panel transition-colors", origin === value ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
               {value === "internal" ? "Internal" : "External"}
+              <span className="ml-1.5 font-mono text-xs text-faint">{counts[value]}</span>
             </Tabs.Trigger>
           ))}
         </Tabs.List>
         <Tabs.Content value={origin}>
-      <DataTable
-        key={origin}
-        query={{ ...query, data }}
-        columns={COLUMNS}
-        getRowId={(row) => row.id}
-        pageSize={10}
-        filterPlaceholder="Search uploads…"
-        emptyState={<EmptyState icon={UploadIcon} title={`No ${origin} uploads yet`} />}
-      />
+          <DataTable
+            key={origin}
+            query={{ ...query, data }}
+            columns={COLUMNS}
+            getRowId={(row) => row.id}
+            pageSize={10}
+            filterPlaceholder="Search uploads…"
+            emptyState={<EmptyState icon={UploadIcon} title={`No ${origin} uploads yet`} />}
+          />
         </Tabs.Content>
       </Tabs.Root>
     </Section>

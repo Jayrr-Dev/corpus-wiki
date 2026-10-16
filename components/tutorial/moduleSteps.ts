@@ -47,7 +47,7 @@ const MODULES: Record<string, ModuleTutorial> = {
     id: "ask", label: "Ask",
     steps: [
       step("Ask about your knowledge", "Ask questions or request an article using the saved knowledge in your workspace. Answers can include references you can open to check the evidence.", "Write a request and send it.", "ask-composer"),
-      step("Choose context and output", "The topic picker narrows context to an entity. The output picker changes the response style. Agent mode can create articles and import source links on request.", "Choose context and response style, then decide whether to enable Agent mode.", "ask-composer"),
+      step("Choose context and output", "The topic picker narrows context to an entity. The output picker changes the response style. The mode picker switches between Ask (answers only) and Agent (can also create articles and import source links on request).", "Choose context, response style and mode.", "ask-composer"),
       step("Review actions and keep conversations", "Activity cards show agent work; exception decisions require your confirmation. Chat history is saved in this browser for your account. Stopping a response leaves completed changes saved.", "Open references and review any confirmation before applying a decision."),
     ],
   },

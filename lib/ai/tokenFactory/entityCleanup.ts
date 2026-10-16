@@ -34,6 +34,11 @@ export function normalizeName(text: string): string {
   return words.join(" ");
 }
 
+// The last word made singular: "land agents" -> "land agent", "companies" -> "company"; "class" stays
+export function singularOf(name: string): string {
+  return name.replace(/(\w{3,}?)ies$/, "$1y").replace(/(\w{3,}[^s])s$/, "$1");
+}
+
 // "Federal Aviation Administration" -> "faa"; one-word names have no acronym
 export function acronymOf(text: string): string | null {
   const words = normalizeName(text).split(" ").filter((word) => word && !ACRONYM_SKIPS.has(word));
@@ -45,7 +50,14 @@ export function acronymOf(text: string): string | null {
 export function namesOf(entity: Pick<CleanupEntity, "name" | "aliases" | "key">): string[] {
   const names = new Set<string>();
   for (const raw of [entity.name, ...entity.aliases, entity.key.replace(/-/g, " ")]) {
-    const add = (text: string) => { const normal = normalizeName(text); if (normal.length >= 2) names.add(normal); };
+    const add = (text: string) => {
+      const normal = normalizeName(text);
+      if (normal.length < 2) return;
+      names.add(normal);
+      // "Stakeholders" and "Stakeholder" name the same thing: the singular is a name too
+      const singular = singularOf(normal);
+      if (singular !== normal) names.add(singular);
+    };
     add(raw);
     const bracket = /^(.*?)\s*\(([^)]+)\)\s*$/.exec(raw);
     if (bracket) { add(bracket[1]!); add(bracket[2]!); }

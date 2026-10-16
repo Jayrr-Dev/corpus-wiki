@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Circle, LoaderCircle, Minus, X } from "lucide-react";
 import { useState } from "react";
 import { ErrorNote, TextLink } from "@/app/(app)/_components/bits";
+import { StatusDot } from "@/app/(app)/_components/StatusDot";
+import { EVENT_TONE, type Tone } from "@/app/(app)/_lib/tone";
 import { RetryUploadButton } from "@/app/(app)/upload/RetryUploadButton";
 import { Button } from "@/components/ui/button";
 import { getBrowserSupabase } from "@/lib/supabase/client";
@@ -149,12 +151,74 @@ function CancelUploadButton({ eventId }: { eventId: string }) {
   );
 }
 
+// The status's tone: green when done cleanly, red on an error, amber when it needs a person or a resume
+function workflowTone(workflow: UploadWorkflow): Tone {
+  if (workflow.error) return "failed";
+  if (workflow.state === "complete") return "applied";
+  if (isRunning(workflow)) return "muted";
+  return "needs-you";
+}
+
+// Share of the stages that are done, for the slim bar under a running status
+function stageShare(workflow: UploadWorkflow): number {
+  const keys = STAGES.flatMap((group) => group.keys);
+  return keys.filter((key) => stageState(workflow, key) === "done").length / keys.length;
+}
+
+// COMPACT (tables): a dot and the status, the live stage and a progress bar under it; the buttons live in UploadWorkflowActions
+function CompactStatus({ workflow }: { workflow: UploadWorkflow }) {
+  const running = isRunning(workflow);
+  const activity = currentActivity(workflow);
+  const share = stageShare(workflow);
+  const failed = workflow.steps.find((step) => step.state === "failed" && step.error && step.error !== "Cancelled" && step.error !== workflow.error);
+  return (
+    <div className="flex flex-col gap-1.5 whitespace-normal" aria-live="polite">
+      <StatusDot tone={workflowTone(workflow)} label={workflowLabel(workflow)} busy={running} className="font-medium" />
+      {activity ? <p className="text-xs text-muted-foreground">{activity}</p> : null}
+      {running ? (
+        <div className="h-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Stages done" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(share * 100)}>
+          <div className="h-full w-(--share) rounded-full bg-foreground/60 transition-all duration-500" style={{ "--share": `${Math.max(share * 100, 4)}%` } as React.CSSProperties} />
+        </div>
+      ) : null}
+      {workflow.error ? <ErrorNote error={workflow.error} /> : failed ? <ErrorNote error={`${LABELS[failed.key] ?? "Document processing"}: ${failed.error}`} /> : null}
+      {workflow.waiting ? <TextLink href="/exceptions" className="text-xs">Review pending decisions</TextLink> : null}
+    </div>
+  );
+}
+
+// TABLE ACTIONS: Cancel while it runs, Resume when it stopped (Retry for an old upload that failed)
+export function UploadWorkflowActions({ eventId, allowRetry = true, legacyStatus }: { eventId: string; allowRetry?: boolean; legacyStatus?: string }) {
+  const query = useUploadWorkflows([eventId]);
+  const workflow = query.data?.[0];
+  if (query.isPending || query.error) return null;
+  if (!workflow) return allowRetry && legacyStatus === "failed" ? <RetryUploadButton eventId={eventId} /> : null;
+  return (
+    <>
+      {canCancelUpload(workflow) ? <CancelUploadButton eventId={eventId} /> : null}
+      {allowRetry && canResumeUpload(workflow) ? <RetryUploadButton eventId={eventId} /> : null}
+    </>
+  );
+}
+
+// An upload from before workflows were tracked: its event status and its error
+function LegacyStatus({ status, error }: { status: string; error?: string | null }) {
+  const tone = EVENT_TONE[status as keyof typeof EVENT_TONE] ?? "muted";
+  return (
+    <div className="flex flex-col gap-1.5 whitespace-normal">
+      <StatusDot tone={tone} label={status === "reconciling" ? "Processing" : status} busy={["received", "extracting", "reconciling", "checking"].includes(status)} className="font-medium" />
+      {error ? <ErrorNote error={error} /> : null}
+    </div>
+  );
+}
+
 // `compact` (tables): the status line and its live activity, without the stage list
-export function UploadWorkflowStatus({ eventId, allowRetry = true, legacyStatus, compact = false }: { eventId: string; allowRetry?: boolean; legacyStatus?: string; compact?: boolean }) {
+export function UploadWorkflowStatus({ eventId, allowRetry = true, legacyStatus, legacyError, compact = false }: { eventId: string; allowRetry?: boolean; legacyStatus?: string; legacyError?: string | null; compact?: boolean }) {
   const query = useUploadWorkflows([eventId]);
   const workflow = query.data?.[0];
   if (query.error) return <ErrorNote error="Processing progress could not be loaded. Refresh to try again." />;
+  if (!workflow && compact) return legacyStatus ? <LegacyStatus status={legacyStatus} error={legacyError} /> : null;
   if (!workflow) return legacyStatus ? <div className="flex flex-col gap-2"><span>{legacyStatus}</span>{!query.isPending && allowRetry && legacyStatus === "failed" ? <RetryUploadButton eventId={eventId} /> : null}</div> : null;
+  if (compact) return <CompactStatus workflow={workflow} />;
   // One failure is listed once: the roles that wrap it (extraction inside the knowledge commit)
   // repeat its message, and a cancel marks the roles it interrupted
   const failed = workflow.steps.filter((step) => step.state === "failed" && !step.key.startsWith("extract:") && step.error !== "Cancelled")

@@ -331,6 +331,7 @@ export type Database = {
       }
       error_log: {
         Row: {
+          component: string | null
           created_at: string
           digest: string | null
           id: string
@@ -343,6 +344,7 @@ export type Database = {
           stack: string | null
         }
         Insert: {
+          component?: string | null
           created_at?: string
           digest?: string | null
           id?: string
@@ -355,6 +357,7 @@ export type Database = {
           stack?: string | null
         }
         Update: {
+          component?: string | null
           created_at?: string
           digest?: string | null
           id?: string
@@ -365,6 +368,39 @@ export type Database = {
           person_id?: string | null
           source?: string
           stack?: string | null
+        }
+        Relationships: []
+      }
+      entity_description_revisions: {
+        Row: {
+          author: Database["public"]["Enums"]["actor_kind"]
+          author_id: string | null
+          created_at: string
+          description: string
+          entity_id: string
+          id: string
+          model_version: string | null
+          restored_from_id: string | null
+        }
+        Insert: {
+          author: Database["public"]["Enums"]["actor_kind"]
+          author_id?: string | null
+          created_at?: string
+          description: string
+          entity_id: string
+          id?: string
+          model_version?: string | null
+          restored_from_id?: string | null
+        }
+        Update: {
+          author?: Database["public"]["Enums"]["actor_kind"]
+          author_id?: string | null
+          created_at?: string
+          description?: string
+          entity_id?: string
+          id?: string
+          model_version?: string | null
+          restored_from_id?: string | null
         }
         Relationships: []
       }
@@ -428,6 +464,11 @@ export type Database = {
           generated_at: string | null
           model: string | null
           updated_at: string
+          web: Json | null
+          web_checked_at: string | null
+          web_hash: string | null
+          logo_url: string | null
+          person: Json | null
         }
         Insert: {
           entity_id: string
@@ -443,6 +484,11 @@ export type Database = {
           generated_at?: string | null
           model?: string | null
           updated_at?: string
+          web?: Json | null
+          web_checked_at?: string | null
+          web_hash?: string | null
+          logo_url?: string | null
+          person?: Json | null
         }
         Update: {
           entity_id?: string
@@ -458,6 +504,11 @@ export type Database = {
           generated_at?: string | null
           model?: string | null
           updated_at?: string
+          web?: Json | null
+          web_checked_at?: string | null
+          web_hash?: string | null
+          logo_url?: string | null
+          person?: Json | null
         }
         Relationships: [
           {
@@ -580,6 +631,8 @@ export type Database = {
       pages: {
         Row: {
           parent_page_id?: string | null
+          article_type?: string | null
+          scope?: string | null
           context_entity_id?: string | null
           created_at: string
           domain_id: string | null
@@ -591,6 +644,8 @@ export type Database = {
         }
         Insert: {
           parent_page_id?: string | null
+          article_type?: string | null
+          scope?: string | null
           context_entity_id?: string | null
           created_at?: string
           domain_id?: string | null
@@ -602,6 +657,8 @@ export type Database = {
         }
         Update: {
           parent_page_id?: string | null
+          article_type?: string | null
+          scope?: string | null
           context_entity_id?: string | null
           created_at?: string
           domain_id?: string | null

@@ -3,9 +3,10 @@ import type { ReactNode } from "react";
 import { ReadingPane } from "@/components/shell";
 import { CostTable } from "@/components/usage/CostTable";
 import { UsagePanel } from "@/components/usage/UsagePanel";
+import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoUpdateStale } from "./AutoUpdateStale";
 import { ExternalKnowledge } from "./ExternalKnowledge";
-import { loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile } from "./loadModelSettings";
+import { loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile } from "./loadModelSettings";
 import { ModelPicker } from "./ModelPicker";
 import { NameForm } from "./NameForm";
 import { PasswordForm } from "./PasswordForm";
@@ -44,7 +45,7 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
 }
 
 export default async function SettingsPage() {
-  const [modelSettings, autoUpdateStale, profile, externalKnowledge] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge()]);
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter()]);
   const panels: Record<string, ReactNode> = {
     preferences: (
       <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
@@ -56,6 +57,10 @@ export default async function SettingsPage() {
       <SettingsCard id="intelligence" title="Intelligence" description="Fine-tune the AI behind your second brain." icon={BrainCircuit}>
         <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">AI model</h3><SettingHint>Used for uploads, line edits, and page builds.</SettingHint></div>
         <ModelPicker settings={modelSettings} />
+        <div className="mt-6 border-t pt-6">
+          <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">Article charter</h3><SettingHint>Steers which subjects get their own article. Leave Purpose empty and new articles are not checked against it.</SettingHint></div>
+          <ArticleCharterForm charter={articleCharter} />
+        </div>
       </SettingsCard>
     ),
     features: (

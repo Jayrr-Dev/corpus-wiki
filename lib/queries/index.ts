@@ -74,6 +74,8 @@ export const useChangeNote = (id?: string) => useTableRow("change_notes", id);
 export const useLine = (id?: string) => useTableRow("lines", id);
 export const useLineRevisions = (o: ListOptions<"line_revisions"> = {}) =>
   useTableList("line_revisions", { orderBy: "created_at", ascending: false, ...o });
+export const useEntityDescriptionRevisions = (o: ListOptions<"entity_description_revisions"> = {}) =>
+  useTableList("entity_description_revisions", { orderBy: "created_at", ascending: false, ...o });
 
 // AI USAGE: one row per AI call (token log on /settings), newest first
 export const useAiCalls = (o: ListOptions<"ai_calls"> = {}) =>

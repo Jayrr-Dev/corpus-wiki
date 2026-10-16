@@ -60,7 +60,7 @@ export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revi
 type EmbeddedFigure = { path: string; lineId: string; reference: ArticleReference; caption: string };
 
 // The stored file, through the route that signs a short-lived URL for it
-const sourceFileSrc = (sourceId: string) => `/api/sources/${sourceId}/file`;
+export const sourceFileSrc = (sourceId: string) => `/api/sources/${sourceId}/file`;
 export const embeddedFigureSrc = (sourceId: string, path: string) => `/api/sources/${sourceId}/figure?path=${encodeURIComponent(path)}`;
 
 // One figure per image or video source, and one per picture embedded in a cited document,

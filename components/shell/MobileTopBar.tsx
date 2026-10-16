@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { InfoIcon } from "@/components/icons";
+import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { useSidebar } from "@/components/ui/sidebar";
 import { isActivePath, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
 import { useRightPanel } from "./RightPanel";
@@ -35,7 +36,7 @@ function useCloseDrawersOnNavigate() {
   }, [pathname, setOpenMobile, setSheetOpen]);
 }
 
-// TOP BAR: menu | title | details
+// TOP BAR: menu | title | tutorial | details
 export function MobileTopBar() {
   const title = useScreenTitle();
   const { setOpenMobile } = useSidebar();
@@ -47,6 +48,7 @@ export function MobileTopBar() {
         <Menu className="size-4" />
       </TopBarButton>
       <h1 className="min-w-0 flex-1 truncate text-sm font-semibold">{title}</h1>
+      <ModuleHelp />
       {hasContent ? (
         <TopBarButton label="Open details" onClick={() => setSheetOpen(true)}>
           <InfoIcon />

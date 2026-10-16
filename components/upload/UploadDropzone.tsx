@@ -1,13 +1,13 @@
 "use client";
 
-import { type ChangeEvent, type DragEvent, useRef, useState } from "react";
+import { type ChangeEvent, type DragEvent, type ReactNode, useRef, useState } from "react";
 import { ErrorNote } from "@/app/(app)/_components/bits";
 import { UploadIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { formatOf, UPLOAD_ACCEPT, UPLOAD_FORMAT_NAMES } from "@/lib/ingest/formats";
 import { cn } from "@/lib/utils";
 
-type UploadDropzoneProps = { onFiles: (files: File[]) => void };
+type UploadDropzoneProps = { onFiles: (files: File[]) => void; children?: ReactNode };
 
 // Splits picked files into ones a converter can read and the names of the rest
 function splitByFormat(files: File[]): { accepted: File[]; rejected: string[] } {
@@ -22,8 +22,9 @@ function rejectionMessage(names: string[]): string | null {
   return `This file type can't be read yet. Upload ${UPLOAD_FORMAT_NAMES}. (${names.join(", ")})`;
 }
 
-// UPLOAD DROPZONE: drop files or pick them from the computer; unreadable types are refused with a message
-export function UploadDropzone({ onFiles }: UploadDropzoneProps) {
+// UPLOAD DROPZONE: drop files or pick them from the computer; unreadable types are refused with a message.
+// `children` are further actions shown beside Choose files (Add link)
+export function UploadDropzone({ onFiles, children }: UploadDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isOver, setIsOver] = useState(false);
   const [rejected, setRejected] = useState<string[]>([]);
@@ -51,13 +52,24 @@ export function UploadDropzone({ onFiles }: UploadDropzoneProps) {
         onDragLeave={() => setIsOver(false)}
         onDrop={onDrop}
         data-tour="upload-dropzone"
-        className={cn("flex flex-col items-center gap-2 rounded-lg border border-dashed px-6 py-10 text-center", isOver && "bg-hover")}
+        className={cn(
+          "flex flex-col items-center gap-3 rounded-lg border border-dashed px-6 py-10 text-center transition-colors",
+          isOver ? "border-foreground/40 bg-hover" : "hover:border-foreground/25",
+        )}
       >
-        <UploadIcon className="text-faint" size={20} />
-        <p className="text-panel text-muted-foreground">Drop {UPLOAD_FORMAT_NAMES} files here</p>
-        <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
-          Choose files
-        </Button>
+        <span className="flex size-10 items-center justify-center rounded-full bg-muted">
+          <UploadIcon className="text-muted-foreground" size={18} />
+        </span>
+        <div className="flex flex-col gap-1">
+          <p className="font-medium">{isOver ? "Release to add these files" : "Drop files here to upload"}</p>
+          <p className="text-xs text-muted-foreground">{UPLOAD_FORMAT_NAMES}</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+            Choose files
+          </Button>
+          {children}
+        </div>
         <input ref={inputRef} type="file" accept={UPLOAD_ACCEPT} multiple hidden onChange={onPick} />
       </div>
       <ErrorNote error={rejectionMessage(rejected)} />

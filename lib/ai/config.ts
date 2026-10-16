@@ -8,6 +8,11 @@ export const TOKEN_FACTORY_BASE_URL = "https://api.tokenfactory.nebius.com/v1/";
 export const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1/";
 export const CEREBRAS_MODEL_PREFIX = "cerebras/";
 
+// CLAUDE (optional third provider, Anthropic API via its SDK). Its models show in the Settings
+// picker as "anthropic/<id>"; picking one sends chat calls there with ANTHROPIC_API_KEY.
+// Embeddings stay on Token Factory (Anthropic offers none).
+export const ANTHROPIC_MODEL_PREFIX = "anthropic/";
+
 // DEFAULT MODEL: the Settings pick takes precedence over AI_MODEL and this fallback.
 export const DEFAULT_AI_MODEL = "nvidia/nemotron-3-super-120b-a12b";
 

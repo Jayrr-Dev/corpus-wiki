@@ -56,6 +56,10 @@ export function glossaryLetter(term: string): string {
   return /^[A-Z]$/.test(first) ? first : "#";
 }
 
+// One definition's identity across regenerations; mirrors change_control.glossary_entry_key in the database
+export const glossaryEntryKey = (entry: Pick<GlossaryEntry, "term" | "expansion" | "scopeKey">) =>
+  `${entry.term.toLowerCase()}|${entry.expansion ?? ""}|${entry.scopeKey ?? ""}`;
+
 export const glossaryAnchor = (term: string) => `term-${normalized(term).replaceAll(" ", "-")}`;
 
 // Preserve acronyms and proper names from the evidence; capitalize ordinary headwords.

@@ -23,7 +23,7 @@ export function SectionPanel({ section, lines, menu, onSelectLine }: { section: 
   const label = useActorLabel();
   return (
     <div className="flex flex-col">
-      <PanelSection title="This section" actions={menu}>
+      <PanelSection title="This section" actions={menu} closable>
         <p className="text-panel font-medium">{section.title}</p>
         <p className="text-panel text-faint">
           {lines.length} {lines.length === 1 ? "line" : "lines"}

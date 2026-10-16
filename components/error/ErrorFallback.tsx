@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 // ERROR FALLBACK: what any error boundary shows in place of the part
 // that crashed. One look for every boundary: the icon, what broke, the
 // message (inline and as a toast, through ErrorNote) and a Retry button.
-// It also reports the crash to the server log once.
+// It also reports the crash to the error log once, unless its boundary did.
 // =====================================================================
 
 type ErrorFallbackProps = {
@@ -21,12 +21,15 @@ type ErrorFallbackProps = {
   onRetry: () => void;
   // Smaller padding for a panel or a section inside a page
   isCompact?: boolean;
+  // The boundary already reported it (with its component stack)
+  isReported?: boolean;
 };
 
-export function ErrorFallback({ error, where, onRetry, isCompact = false }: ErrorFallbackProps) {
+export function ErrorFallback({ error, where, onRetry, isCompact = false, isReported = false }: ErrorFallbackProps) {
   useEffect(() => {
+    if (isReported) return;
     void reportClientError({ where, message: error.message, digest: error.digest, path: window.location.pathname, stack: error.stack }).catch(() => {});
-  }, [error, where]);
+  }, [error, where, isReported]);
 
   return (
     <div role="alert" className={cn("flex flex-col items-center gap-2 text-center text-muted-foreground", isCompact ? "py-4" : "py-12")}>

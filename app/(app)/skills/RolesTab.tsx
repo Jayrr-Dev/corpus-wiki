@@ -18,7 +18,7 @@ import {
 const ROLE_ICONS: Record<string, ComponentType<IconProps>> = {
   extract_knowledge: PassageIcon, identify_entities: EntityIcon, link_knowledge: LinkIcon,
   organize_topics: DomainIcon, define_concepts: UnitIcon, plan_articles: GraphIcon,
-  write_articles: PageIcon, researcher: SkillIcon, reviewer: DecisionIcon, domain_steward: DomainIcon,
+  write_articles: PageIcon, researcher: SkillIcon, reviewer: DecisionIcon, domain_steward: DomainIcon, article_reviewer: DecisionIcon,
 };
 
 export function RolesTab({ library }: { library: SkillLibrary }) {

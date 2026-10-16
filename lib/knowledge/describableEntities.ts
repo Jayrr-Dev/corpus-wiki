@@ -6,7 +6,7 @@ const ID_CHUNK = 100;
 
 // DESCRIBABLE ENTITIES: live entities without a description that some live unit
 // mentions, by name. One with no live unit has nothing to describe it from, so the
-// Describe entities action neither counts nor plans it (it would only be skipped).
+// graph's auto describe neither counts nor plans it (it would only be skipped).
 // Shared by the server plan and the browser count so both agree.
 export async function fetchDescribableEntityIds(client: SupabaseClient<Database>): Promise<string[]> {
   const entities = await client.from("entities").select("id").is("description", null).is("merged_into_id", null).is("retired_at", null).order("name");

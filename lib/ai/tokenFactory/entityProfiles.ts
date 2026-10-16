@@ -13,7 +13,7 @@ import type { ChatMessage } from "@/lib/ai/chat";
 // and contact details, each citing the claims it came from.
 // =====================================================================
 
-export const PROFILE_PROMPT_VERSION = "entity-profiles-v1";
+export const PROFILE_PROMPT_VERSION = "entity-profiles-v3";
 export const PROFILE_BATCH_SIZE = 6;
 
 const CONTACT_KINDS = ["email", "phone", "website", "address", "person", "other"] as const;
@@ -31,9 +31,11 @@ export type OurOrganization = { name: string; description: string | null } | nul
 export type ProfileFact = { label: string; value: string; unitIds: string[] };
 export type ProfileFunction = { text: string; unitIds: string[] };
 export type ProfileContact = { kind: ContactKind; value: string; label: string | null; unitIds: string[] };
+// A PERSON'S JOB: their title, employer (linked to its entity when the store has it) and role
+export type ProfilePerson = { title: string | null; organization: string | null; organizationEntityId: string | null; role: string | null; unitIds: string[] };
 export type ProfileRow = {
   entityId: string; isStakeholder: boolean; kind: string | null; relation: string | null;
-  keyFacts: ProfileFact[]; functions: ProfileFunction[]; contacts: ProfileContact[];
+  keyFacts: ProfileFact[]; functions: ProfileFunction[]; contacts: ProfileContact[]; person: ProfilePerson | null;
 };
 
 const cited = z.array(z.string()).default([]);
@@ -46,6 +48,7 @@ const answerSchema = z.object({
     keyFacts: z.array(z.object({ label: z.string(), value: z.string(), claims: cited })).default([]),
     functions: z.array(z.object({ text: z.string(), claims: cited })).default([]),
     contacts: z.array(z.object({ kind: z.string(), value: z.string(), label: z.string().nullable().default(null), claims: cited })).default([]),
+    person: z.object({ title: z.string().nullable().default(null), organization: z.string().nullable().default(null), role: z.string().nullable().default(null), claims: cited }).nullable().default(null),
   })),
 });
 export const profileAnswerSchema = answerSchema;
@@ -56,11 +59,12 @@ const SYSTEM_PROMPT = `You write quick-reference cards for the stakeholders in a
 
 Answer with JSON only: { "profiles": [{ "ref": "E1", "isStakeholder": true, "kind": "...", "relation": "...", "keyFacts": [{ "label": "...", "value": "...", "claims": ["C2"] }], "functions": [{ "text": "...", "claims": ["C1"] }], "contacts": [{ "kind": "email", "value": "...", "label": null, "claims": ["C4"] }] }] }, one item per entity.
 
-- isStakeholder: true for a party that can act on or be affected by the work: companies, organizations, government bodies, agencies, regulators, municipalities, countries and other jurisdictions, teams, named people, and the roles people hold. False for concepts, documents, laws, standards, policies, procedures, products, tools, equipment, courses and topics. For a non-stakeholder leave every other field empty.
-- kind: a short lowercase singular noun phrase for what kind of stakeholder it is (for example: company, government agency, regulator, municipality, country, organization, team, person, role). Reuse a kind from "kindsInUse" when one fits; coin a new one only when none does.
+- isStakeholder: decided by WHAT the entity is, never by how important or how often mentioned it is. ALWAYS true for any company, organization, government body, agency, regulator, municipality, country or other jurisdiction, team, named person, and any role or function a person or organization holds (an administrator, a supplier, an inspector, a designer), even when the claims mention it only once. False only for concepts, documents, laws, standards, policies, procedures, products, tools, equipment, courses and topics. For a non-stakeholder leave every other field empty.
+- kind: a short lowercase singular noun phrase for what kind of stakeholder it is (for example: company, government agency, regulator, municipality, country, organization, team, person, role). Reuse a kind from "kindsInUse" when one fits; coin a new one only when none does. A named individual (a real person, whatever their job) is always "person"; the job they hold goes in relation or keyFacts.
 - relation: one sentence, at most 25 words, on how this stakeholder relates to OUR ORGANIZATION ("ourOrganization") when one is given, otherwise to the work described in the claims: what they do for, require of, or decide about it. For our organization itself, say what it does.
 - keyFacts: at most 5 short facts a reader needs at a glance (label of 1 to 3 words, value of at most 15 words): location, jurisdiction, parent organization, certifications, size, key dates, notable events.
 - functions: at most 5 things it does or is responsible for in the claims, each at most 15 words, starting with a verb.
+- person: ONLY for a named individual (kind "person"), otherwise null: { "title": their job title, "organization": the company or body they work for, exactly as named in the claims or namedAlongside, "role": the part they play in the work (e.g. "Approves ULA applications"), "claims": [...] }. Leave a field null when the claims do not say it.
 - contacts: only contact details stated in the claims: email addresses, phone numbers, websites, street or mailing addresses, or named contact people (kind "person", value = the person's name, label = their title). kind is one of ${CONTACT_KINDS.join(", ")}.
 - Every fact, function and contact cites the claim refs it comes from. Use ONLY what the claims say: no outside knowledge, no guesses. Leave a list empty rather than pad it.`;
 
@@ -107,7 +111,7 @@ export function readProfiles(answer: ProfileAnswer, entities: ProfileEvidence[])
     const entity = byRef.get(item.ref.trim().toUpperCase());
     if (!entity || seen.has(entity.entityId)) return [];
     seen.add(entity.entityId);
-    if (!item.isStakeholder) return [{ entityId: entity.entityId, isStakeholder: false, kind: null, relation: null, keyFacts: [], functions: [], contacts: [] }];
+    if (!item.isStakeholder) return [{ entityId: entity.entityId, isStakeholder: false, kind: null, relation: null, keyFacts: [], functions: [], contacts: [], person: null }];
     const units = (refs: string[]) => [...new Set(refs.flatMap((ref) => {
       const claim = entity.claims[Number(/^C(\d+)$/i.exec(ref.trim())?.[1]) - 1];
       return claim ? [claim.unitId] : [];
@@ -127,6 +131,18 @@ export function readProfiles(answer: ProfileAnswer, entities: ProfileEvidence[])
         label: contact.label?.trim() ? clip(contact.label, 80) : null,
         unitIds: units(contact.claims),
       })),
+      person: readPerson(item.person, entity, units),
     }];
   });
+}
+
+// A person's job, with the employer matched to an entity named alongside them; null when empty
+function readPerson(person: ProfileAnswer["profiles"][number]["person"], entity: ProfileEvidence, units: (refs: string[]) => string[]): ProfilePerson | null {
+  if (!person) return null;
+  const text = (value: string | null, max: number) => (value?.trim() ? clip(value, max) : null);
+  const title = text(person.title, 80), organization = text(person.organization, 120), role = text(person.role, 160);
+  if (!title && !organization && !role) return null;
+  const key = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const employer = organization ? entity.related.find((other) => key(other.name) === key(organization)) : undefined;
+  return { title, organization, organizationEntityId: employer?.entityId ?? null, role, unitIds: units(person.claims) };
 }

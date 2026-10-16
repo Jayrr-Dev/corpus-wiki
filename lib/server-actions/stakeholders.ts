@@ -6,6 +6,7 @@ import { readChosenModel } from "@/lib/ai/models";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { type CleanupResult, cleanUpEntities } from "@/lib/knowledge/entityCleanup";
 import { planProfileBatches, type ProfileBatchResult, writeProfileBatch } from "@/lib/knowledge/entityProfiles";
+import { lookUpWebBatch, planWebBatches, type WebBatchResult } from "@/lib/knowledge/entityWeb";
 import { cleanPersonContacts, type PersonContact } from "@/lib/stakeholders/cards";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { type ActionResult, toActionResult } from "./result";
@@ -88,5 +89,31 @@ export async function setOurOrganization(entityId: string | null): Promise<Actio
     await requireUser();
     const settings = await supabaseRpc(getAdminSupabase()).call<{ ourEntityId: string | null }>("set_our_entity", { p_entity_id: entityId });
     return { ourEntityId: settings.ourEntityId };
+  });
+}
+
+// WEB LOOKUP PLAN: every stakeholder (Update cards refreshes them all); none while external knowledge is off
+export async function planStakeholderWebPass(): Promise<ActionResult<{ batches: string[][] }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    return { batches: await planWebBatches(getAdminSupabase(), true) };
+  });
+}
+
+// ONE WEB BATCH: search again, keep only sure matches, fetch logos again
+export async function lookUpStakeholderBatch(entityIds: string[]): Promise<ActionResult<WebBatchResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const { client, settings } = await aiDeps();
+    return lookUpWebBatch({ client, settings }, entityIds.slice(0, 10), true);
+  });
+}
+
+// ONE STAKEHOLDER AGAIN, even when it was looked up already
+export async function lookUpStakeholderAgain(entityId: string): Promise<ActionResult<WebBatchResult>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const { client, settings } = await aiDeps();
+    return lookUpWebBatch({ client, settings }, [entityId], true);
   });
 }

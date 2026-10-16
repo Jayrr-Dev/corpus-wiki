@@ -19,6 +19,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useUnfinishedSources } from "@/components/upload/useUnfinishedSources";
 import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
 import { ERROR_LOG_NAV, isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
@@ -68,6 +69,7 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
 // On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links
 export function AppSidebar() {
   const openCount = useOpenExceptionCount();
+  const unfinishedSources = useUnfinishedSources().size;
   const { isMobile } = useSidebar();
   return (
     <Sidebar variant="inset" collapsible="icon" collapseThumb collapseThumbSize="xs">
@@ -85,7 +87,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <NavGroup items={PRIMARY_NAV} badges={{ "/decisions": openCount, "/exceptions": openCount }} />
-        <NavGroup items={SECONDARY_NAV} separator />
+        <NavGroup items={SECONDARY_NAV} separator badges={{ "/sources": unfinishedSources }} />
         {/* phones have no room for the pages tree beside the page, so the drawer carries it */}
         {isMobile ? <MobileSidebarTree /> : null}
       </SidebarContent>

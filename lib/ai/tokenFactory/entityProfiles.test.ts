@@ -13,9 +13,9 @@ describe("stakeholder card answers", () => {
       { ref: "e1", isStakeholder: true, kind: "Government Agency.", relation: "Regulates our work.",
         keyFacts: [...Array.from({ length: 7 }, (_, i) => ({ label: `L${i}`, value: "v", claims: ["C1", "C9"] })), { label: "", value: "x", claims: [] }],
         functions: [{ text: "Issues permits", claims: ["C2", "C2"] }],
-        contacts: [{ kind: "Email", value: "permits@example.org", label: null, claims: ["C3"] }, { kind: "fax", value: "123", label: "Main", claims: [] }] },
-      { ref: "E2", isStakeholder: false, kind: "concept", relation: "x", keyFacts: [{ label: "a", value: "b", claims: [] }], functions: [], contacts: [] },
-      { ref: "E7", isStakeholder: true, kind: "", relation: "", keyFacts: [], functions: [], contacts: [] },
+        contacts: [{ kind: "Email", value: "permits@example.org", label: null, claims: ["C3"] }, { kind: "fax", value: "123", label: "Main", claims: [] }], person: null },
+      { ref: "E2", isStakeholder: false, kind: "concept", relation: "x", keyFacts: [{ label: "a", value: "b", claims: [] }], functions: [], contacts: [], person: null },
+      { ref: "E7", isStakeholder: true, kind: "", relation: "", keyFacts: [], functions: [], contacts: [], person: null },
     ] }, entities);
     expect(rows).toHaveLength(2);
     expect(rows[0]).toMatchObject({ entityId: "a", kind: "government agency", relation: "Regulates our work." });
@@ -23,7 +23,14 @@ describe("stakeholder card answers", () => {
     expect(rows[0]!.keyFacts[0]!.unitIds).toEqual(["a-u1"]);
     expect(rows[0]!.functions[0]!.unitIds).toEqual(["a-u2"]);
     expect(rows[0]!.contacts.map((contact) => contact.kind)).toEqual(["email", "other"]);
-    expect(rows[1]).toEqual({ entityId: "b", isStakeholder: false, kind: null, relation: null, keyFacts: [], functions: [], contacts: [] });
+    expect(rows[1]).toEqual({ entityId: "b", isStakeholder: false, kind: null, relation: null, keyFacts: [], functions: [], contacts: [], person: null });
+  });
+
+  it("records a person's title, employer (linked to its entity) and role", () => {
+    const jane = { ...evidence("p", 2), related: [{ entityId: "org-1", name: "City of Edmonton", type: "organization", shared: 2 }] };
+    const [row] = readProfiles({ profiles: [{ ref: "E1", isStakeholder: true, kind: "person", relation: "Approves our ULA applications.", keyFacts: [], functions: [], contacts: [],
+      person: { title: "ULA Administrator", organization: "City of  Edmonton", role: "Approves ULA applications", claims: ["C2"] } }] }, [jane]);
+    expect(row!.person).toEqual({ title: "ULA Administrator", organization: "City of Edmonton", organizationEntityId: "org-1", role: "Approves ULA applications", unitIds: ["p-u2"] });
   });
 
   it("hashes the evidence, not its order, and changes with the anchor organization", () => {

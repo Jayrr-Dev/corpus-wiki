@@ -18,6 +18,7 @@
     "db:types": "echo 'Regenerate lib/database/types.ts with: npx supabase gen types typescript --project-id qeuvxnvwommyjdzxoodd --schema public > lib/database/types.ts (needs supabase login; keep the Constants block and helpers at the bottom)'"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.131.0",
     "@huggingface/transformers": "4.3.0",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.117.2",

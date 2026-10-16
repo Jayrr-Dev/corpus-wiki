@@ -2,5 +2,5 @@
 export { AppShell } from "./AppShell";
 export { AppSidebar } from "./AppSidebar";
 export { ReadingPane } from "./ReadingPane";
-export { RightPanel, RightPanelProvider, RightPanelSlot } from "./RightPanel";
+export { RightPanel, RightPanelClose, RightPanelProvider, RightPanelSlot } from "./RightPanel";
 export { SidebarTree } from "./SidebarTree";

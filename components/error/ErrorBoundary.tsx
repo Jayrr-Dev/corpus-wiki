@@ -1,6 +1,7 @@
 "use client";
 
-import { Component, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
+import { reportClientError } from "@/lib/server-actions/errors";
 import { ErrorFallback } from "./ErrorFallback";
 
 // =====================================================================
@@ -21,12 +22,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { error };
   }
 
+  // Reports the crash with React's component stack, which names the component that threw
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    void reportClientError({ where: this.props.where, message: error.message, path: window.location.pathname, stack: error.stack, componentStack: info.componentStack ?? undefined }).catch(() => {});
+  }
+
   // Clears the error so the children render again
   private retry = () => this.setState({ error: null });
 
   render() {
     const { error } = this.state;
     if (!error) return this.props.children;
-    return <ErrorFallback error={error} where={this.props.where} onRetry={this.retry} isCompact />;
+    return <ErrorFallback error={error} where={this.props.where} onRetry={this.retry} isCompact isReported />;
   }
 }
