@@ -1,6 +1,7 @@
 "use client";
 
 import { Note, QueryState, Section } from "@/app/(app)/_components/bits";
+import { ImageViewer } from "@/components/preview";
 import { asObject, readString } from "@/app/(app)/_lib/format";
 import type { Tables } from "@/lib/database/types";
 import { embeddedFigureSrc } from "@/lib/living-page/articleEvidence";
@@ -45,7 +46,9 @@ export function SourceFigures({ sourceId }: { sourceId: string }) {
                 <p className="text-xs font-medium">Figure {figure.number}</p>
                 <p className="line-clamp-3 text-panel">{figure.caption}</p>
                 <p className="mt-auto flex flex-wrap gap-x-3 gap-y-0.5 text-xs whitespace-nowrap">
-                  <a href={embeddedFigureSrc(sourceId, figure.path)} target="_blank" rel="noreferrer" className="text-link hover:underline">Open picture</a>
+                  <ImageViewer src={embeddedFigureSrc(sourceId, figure.path)} title={`Figure ${figure.number}`}>
+                    <button type="button" className="text-link hover:underline">Open picture</button>
+                  </ImageViewer>
                   <a href={`#passage-${figure.passages[0]!.id}`} className="text-link hover:underline">
                     {figure.passages.length === 1 ? `Passage #${figure.passages[0]!.position}` : `Passages #${figure.passages[0]!.position}–${figure.passages.at(-1)!.position}`}
                   </a>
@@ -59,12 +62,15 @@ export function SourceFigures({ sourceId }: { sourceId: string }) {
   );
 }
 
-// THUMBNAIL: the stored picture, small, opening full size in a new tab
+// THUMBNAIL: the stored picture, small, opening full size in the image viewer
 export function FigureThumbnail({ sourceId, figure, size = "md" }: { sourceId: string; figure: Pick<SourceFigure, "path" | "number">; size?: "sm" | "md" }) {
+  const src = embeddedFigureSrc(sourceId, figure.path);
   return (
-    <a href={embeddedFigureSrc(sourceId, figure.path)} target="_blank" rel="noreferrer" className="shrink-0 self-start overflow-hidden rounded border bg-white">
-      {/* eslint-disable-next-line @next/next/no-img-element -- a signed redirect, not an optimizable asset */}
-      <img src={embeddedFigureSrc(sourceId, figure.path)} alt={`Figure ${figure.number}`} loading="lazy" className={size === "sm" ? "h-14 w-20 object-contain" : "h-20 w-28 object-contain"} />
-    </a>
+    <ImageViewer src={src} title={`Figure ${figure.number}`}>
+      <button type="button" aria-label={`View figure ${figure.number}`} className="shrink-0 cursor-zoom-in self-start overflow-hidden rounded border bg-white">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a signed redirect, not an optimizable asset */}
+        <img src={src} alt={`Figure ${figure.number}`} loading="lazy" className={size === "sm" ? "h-14 w-20 object-contain" : "h-20 w-28 object-contain"} />
+      </button>
+    </ImageViewer>
   );
 }

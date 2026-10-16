@@ -11,8 +11,10 @@ import {
   FileTextIcon,
   FileVideoIcon,
   type LucideIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
 } from "lucide-react";
-import { type CSSProperties, type ReactNode, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/standard/tooltip";
 import { PREVIEW_KIND_LABEL, type PreviewKind, parseDelimited, previewKindOf, TEXT_KINDS } from "./kind";
@@ -23,7 +25,8 @@ import { Loader } from "@/components/standard/loader";
 // renderer from the MIME type / file name, so callers pass a URL and
 // never branch on the type:
 //   pdf               the browser's viewer (page, fit, toolbar via the URL fragment)
-//   image/video/audio native elements
+//   image             fitted, with zoom and pan
+//   video/audio       native elements
 //   markdown/text/code/json/table  fetched and drawn here (large files are cut)
 //   html/docx         rendered into a sandboxed iframe (no scripts)
 //   unknown           a quiet note with Open and Download
@@ -150,12 +153,7 @@ function PreviewBody({ src, title, kind, scrollbar, maxTextChars, downloadHref, 
     case "pdf":
       return <iframe title={title} src={pdfUrl(src, { ...pdf, scrollbar })} className="size-full border-0 bg-white" />;
     case "image":
-      return (
-        <div className="flex min-h-full items-center justify-center p-3">
-          {/* eslint-disable-next-line @next/next/no-img-element -- signed, short-lived URLs; next/image cannot cache them */}
-          <img src={src} alt={title} className="max-h-full max-w-full object-contain" />
-        </div>
-      );
+      return <ImageBody key={src} src={src} title={title} />;
     case "video":
       return <video src={src} controls preload="metadata" className="size-full bg-black object-contain" />;
     case "audio":
@@ -171,6 +169,129 @@ function PreviewBody({ src, title, kind, scrollbar, maxTextChars, downloadHref, 
     default:
       return TEXT_KINDS.has(kind) ? <TextBody src={src} title={title} kind={kind} maxChars={maxTextChars} /> : null;
   }
+}
+
+// IMAGE: fitted to the frame, then zoomed with the buttons, Ctrl/⌘ + wheel (or a trackpad pinch)
+// or a double-click, keeping the point under the cursor still; drag to pan while zoomed
+const ZOOM_STEP = 1.25;
+const ZOOM_MIN = 0.1;
+const ZOOM_MAX = 8;
+
+function ImageBody({ src, title }: { src: string; title: string }) {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  // null: fitted to the frame
+  const [scale, setScale] = useState<number | null>(null);
+  const [naturalWidth, setNaturalWidth] = useState(0);
+  // The image point to keep under the cursor once the new size is laid out
+  const anchor = useRef<{ x: number; y: number; atX: number; atY: number } | null>(null);
+  const drag = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
+
+  const zoomTo = (next: number | null, at?: { x: number; y: number }) => {
+    const box = boxRef.current;
+    const image = imageRef.current;
+    if (!box || !image || !image.naturalWidth) return;
+    const current = scale ?? image.clientWidth / image.naturalWidth;
+    const atX = at?.x ?? box.clientWidth / 2;
+    const atY = at?.y ?? box.clientHeight / 2;
+    anchor.current = { x: (box.scrollLeft + atX - image.offsetLeft) / current, y: (box.scrollTop + atY - image.offsetTop) / current, atX, atY };
+    setScale(next === null ? null : Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next)));
+  };
+  const zoomBy = (factor: number, at?: { x: number; y: number }) => {
+    const image = imageRef.current;
+    if (!image?.naturalWidth) return;
+    zoomTo((scale ?? image.clientWidth / image.naturalWidth) * factor, at);
+  };
+
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    const image = imageRef.current;
+    const point = anchor.current;
+    anchor.current = null;
+    if (!box || !image || !point || scale === null) return;
+    box.scrollLeft = image.offsetLeft + point.x * scale - point.atX;
+    box.scrollTop = image.offsetTop + point.y * scale - point.atY;
+  }, [scale]);
+
+  // Wheel zoom needs a non-passive listener to stop the page zooming or scrolling
+  const zoomByRef = useRef(zoomBy);
+  useLayoutEffect(() => {
+    zoomByRef.current = zoomBy;
+  });
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box) return;
+    const onWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      const rect = box.getBoundingClientRect();
+      zoomByRef.current(Math.exp(-event.deltaY * 0.002), { x: event.clientX - rect.left, y: event.clientY - rect.top });
+    };
+    box.addEventListener("wheel", onWheel, { passive: false });
+    return () => box.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const pointAt = (event: { clientX: number; clientY: number }) => {
+    const rect = boxRef.current!.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  };
+  const zoomStyle = scale !== null && naturalWidth ? ({ "--zoom-width": `${naturalWidth * scale}px` } as CSSProperties) : undefined;
+  return (
+    <div className="relative size-full">
+      <div
+        ref={boxRef}
+        className={cn("relative size-full overflow-auto", scale !== null && "cursor-grab active:cursor-grabbing")}
+        onDoubleClick={(event) => zoomTo(scale === null ? 1 : null, pointAt(event))}
+        onPointerDown={(event) => {
+          if (scale === null || event.button !== 0) return;
+          drag.current = { x: event.clientX, y: event.clientY, left: event.currentTarget.scrollLeft, top: event.currentTarget.scrollTop };
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }}
+        onPointerMove={(event) => {
+          if (!drag.current) return;
+          event.currentTarget.scrollLeft = drag.current.left - (event.clientX - drag.current.x);
+          event.currentTarget.scrollTop = drag.current.top - (event.clientY - drag.current.y);
+        }}
+        onPointerUp={() => (drag.current = null)}
+        onPointerCancel={() => (drag.current = null)}
+      >
+        <div className={cn("flex items-center justify-center p-3", scale === null ? "size-full" : "min-h-full min-w-full w-max")}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- signed, short-lived URLs; next/image cannot cache them */}
+          <img
+            ref={imageRef}
+            src={src}
+            alt={title}
+            draggable={false}
+            onLoad={(event) => setNaturalWidth(event.currentTarget.naturalWidth)}
+            style={zoomStyle}
+            className={cn("select-none", zoomStyle ? "w-(--zoom-width) max-w-none" : "max-h-full max-w-full object-contain")}
+          />
+        </div>
+      </div>
+      <div className="absolute right-2 bottom-2 flex items-center gap-0.5 rounded-md border bg-card/90 p-0.5 shadow-sm backdrop-blur">
+        <ZoomButton label="Zoom out" onClick={() => zoomBy(1 / ZOOM_STEP)}><ZoomOutIcon className="size-4" /></ZoomButton>
+        <ZoomButton label={scale === null ? "Actual size" : "Fit to frame"} onClick={() => zoomTo(scale === null ? 1 : null)}>
+          <span className="min-w-10 text-xs tabular-nums">{scale === null ? "Fit" : `${Math.round(scale * 100)}%`}</span>
+        </ZoomButton>
+        <ZoomButton label="Zoom in" onClick={() => zoomBy(ZOOM_STEP)}><ZoomInIcon className="size-4" /></ZoomButton>
+      </div>
+    </div>
+  );
+}
+
+function ZoomButton({ label, onClick, children }: { label: string; onClick: () => void; children: ReactNode }) {
+  return (
+    <Tooltip content={label}>
+      <button
+        type="button"
+        aria-label={label}
+        onClick={onClick}
+        className="inline-flex h-7 min-w-7 items-center justify-center rounded-sm px-1 text-muted-foreground hover:bg-hover hover:text-foreground"
+      >
+        {children}
+      </button>
+    </Tooltip>
+  );
 }
 
 // PDF URL: the open-parameters fragment Chrome, Edge and Firefox read (page, view, toolbar, scrollbar)

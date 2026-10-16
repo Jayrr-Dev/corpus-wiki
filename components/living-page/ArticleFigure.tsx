@@ -1,5 +1,6 @@
 "use client";
 
+import { ImageViewer } from "@/components/preview";
 import type { ArticleFigure as Figure } from "@/lib/living-page/articleEvidence";
 
 // ARTICLE FIGURE: an image or video source beside the paragraph that first cites it, captioned
@@ -11,10 +12,12 @@ export function ArticleFigure({ figure }: { figure: Figure }) {
       {figure.kind === "video" ? (
         <video src={figure.src} controls preload="metadata" aria-label={figure.title} className="w-full rounded-sm bg-black" />
       ) : (
-        <a href={figure.src} target="_blank" rel="noreferrer" aria-label={`Open ${figure.title}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- signed, short-lived URLs; next/image cannot cache them */}
-          <img src={figure.src} alt={figure.caption} loading="lazy" className="w-full rounded-sm" />
-        </a>
+        <ImageViewer src={figure.src} title={figure.title}>
+          <button type="button" aria-label={`View ${figure.title}`} className="block w-full cursor-zoom-in">
+            {/* eslint-disable-next-line @next/next/no-img-element -- signed, short-lived URLs; next/image cannot cache them */}
+            <img src={figure.src} alt={figure.caption} loading="lazy" className="w-full rounded-sm" />
+          </button>
+        </ImageViewer>
       )}
       <figcaption className="mt-2 text-xs leading-5 text-muted-foreground">
         {figure.caption}
