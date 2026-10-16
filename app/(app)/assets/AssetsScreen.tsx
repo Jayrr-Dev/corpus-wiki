@@ -4,12 +4,14 @@ import Link from "next/link";
 import { Images, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ErrorNote } from "@/app/(app)/_components/bits";
-import { DialogMenu } from "@/app/(app)/_pages/DialogMenu";
 import { DialogForm } from "@/components/actions/DialogForm";
+import { MoreIcon } from "@/components/icons";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Loader } from "@/components/standard/loader";
 import { startProgress } from "@/components/toast";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { useAssets, useSources } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime";
@@ -89,7 +91,7 @@ export function AssetsScreen() {
           </div>
         )}
         {shownTags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1" aria-label="Tags">
+          <div className="flex flex-wrap items-center gap-1.5" aria-label="Tags">
             {shownTags.map(([tag]) => (
               <TagFilter key={tag} tag={tag} active={tags.includes(tag)} onClick={() => toggleTag(tag)} tagCounts={tagCounts} onRenamed={renamed} />
             ))}
@@ -147,25 +149,36 @@ function AssetCard({ asset, sourceTitle, activeTags, onTag }: { asset: Asset; so
   );
 }
 
-// A TAG FILTER: the tag (filters the page) and, inside the same chip, a menu to rename it
-// or merge it into another tag (faint until the chip is hovered or focused)
+// A TAG FILTER: the tag (filters the page) and, inside the same chip, a small menu to rename it
+// or merge it into another tag (faint until the chip is hovered or focused). The dialog lives
+// outside the menu so it stays open after the menu closes.
 function TagFilter({ tag, active, onClick, tagCounts, onRenamed }: {
   tag: string; active: boolean; onClick: () => void; tagCounts: (readonly [string, number])[]; onRenamed: (from: string, to: string) => void;
 }) {
+  const [renaming, setRenaming] = useState(false);
   return (
-    <span className={cn("group/tag inline-flex items-center rounded border text-xs transition-colors",
+    <span className={cn("group/tag inline-flex items-center gap-0.5 rounded border pr-0.5 text-xs transition-colors",
       active ? "border-link/40 bg-link/15 text-link" : "text-muted-foreground hover:border-link/40")}>
       <button type="button" aria-pressed={active} onClick={onClick}
-        className="rounded-l py-0.5 pl-1.5 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
+        className="rounded-l py-0.5 pl-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
         {tag}
       </button>
-      <span className="opacity-40 transition-opacity group-hover/tag:opacity-100 group-focus-within/tag:opacity-100 has-data-[state=open]:opacity-100">
-        <DialogMenu
-          label={`Actions for the tag ${tag}`}
-          className="w-4"
-          items={[{ label: "Rename or merge…", render: (close) => <RenameTagForm tag={tag} tagCounts={tagCounts} onDone={(to) => { onRenamed(tag, to); close(); }} /> }]}
-        />
-      </span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" aria-label={`Actions for the tag ${tag}`}
+            className="flex size-4 items-center justify-center rounded-sm opacity-40 transition-opacity group-hover/tag:opacity-100 group-focus-within/tag:opacity-100 hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring data-[state=open]:bg-muted data-[state=open]:opacity-100">
+            <MoreIcon className="size-3" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem onSelect={() => setRenaming(true)}>Rename or merge…</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Dialog open={renaming} onOpenChange={setRenaming}>
+        <DialogContent>
+          {renaming && <RenameTagForm tag={tag} tagCounts={tagCounts} onDone={(to) => { onRenamed(tag, to); setRenaming(false); }} />}
+        </DialogContent>
+      </Dialog>
     </span>
   );
 }
