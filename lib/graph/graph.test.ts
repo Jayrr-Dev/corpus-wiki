@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, shortLabel } from "./build";
-import { labelOpacity, REVEAL_AT, revealOpacity, toWorld, zoomAt } from "./camera";
+import { labelOpacity, pinchStep, REVEAL_AT, revealOpacity, toWorld, zoomAt, zoomBy } from "./camera";
 import { clusterCircles, clusterTree } from "./clusters";
 import type { SimNode } from "./physics";
 import { applyFilters, createdBy } from "./filters";
@@ -197,6 +197,26 @@ describe("camera", () => {
     const after = toWorld(zoomAt(camera, cursor, -500), cursor);
     expect(after.x).toBeCloseTo(before.x);
     expect(after.y).toBeCloseTo(before.y);
+  });
+
+  it("zooms by a factor around a point and stays inside the limits", () => {
+    const camera = { x: 0, y: 0, k: 1 };
+    const point = { x: 50, y: 80 };
+    const zoomed = zoomBy(camera, point, 2);
+    expect(zoomed.k).toBe(2);
+    expect(toWorld(zoomed, point).x).toBeCloseTo(toWorld(camera, point).x);
+    expect(zoomBy(camera, point, 1000).k).toBe(8);
+  });
+
+  it("keeps the world point between the fingers under them while pinching", () => {
+    const camera = { x: 20, y: 10, k: 1 };
+    const from = { mid: { x: 100, y: 100 }, distance: 100 };
+    const to = { mid: { x: 130, y: 90 }, distance: 150 };
+    const grabbed = toWorld(camera, from.mid);
+    const after = pinchStep(camera, from, to);
+    expect(after.k).toBeCloseTo(1.5);
+    expect(toWorld(after, to.mid).x).toBeCloseTo(grabbed.x);
+    expect(toWorld(after, to.mid).y).toBeCloseTo(grabbed.y);
   });
 
   it("fades labels in past the threshold", () => {

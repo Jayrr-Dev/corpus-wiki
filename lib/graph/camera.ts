@@ -29,11 +29,23 @@ export function toWorld(camera: Camera, screen: Point): Point {
   return { x: (screen.x - camera.x) / camera.k, y: (screen.y - camera.y) / camera.k };
 }
 
-// Zooms by a wheel delta, keeping the world point under the cursor fixed
-export function zoomAt(camera: Camera, screen: Point, wheelDelta: number): Camera {
-  const k = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, camera.k * Math.exp(-wheelDelta * WHEEL_SPEED)));
+// Zooms by a scale factor (2 = twice as close), keeping the world point under `screen` fixed
+export function zoomBy(camera: Camera, screen: Point, factor: number): Camera {
+  const k = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, camera.k * factor));
   const ratio = k / camera.k;
   return { k, x: screen.x - (screen.x - camera.x) * ratio, y: screen.y - (screen.y - camera.y) * ratio };
+}
+
+// Zooms by a wheel delta, keeping the world point under the cursor fixed
+export function zoomAt(camera: Camera, screen: Point, wheelDelta: number): Camera {
+  return zoomBy(camera, screen, Math.exp(-wheelDelta * WHEEL_SPEED));
+}
+
+// PINCH: one frame of a two-finger gesture. The midpoint's movement pans, the change in finger
+// distance zooms around the new midpoint, so the world point between the fingers stays under them.
+export function pinchStep(camera: Camera, from: { mid: Point; distance: number }, to: { mid: Point; distance: number }): Camera {
+  const panned = panBy(camera, to.mid.x - from.mid.x, to.mid.y - from.mid.y);
+  return zoomBy(panned, to.mid, to.distance / Math.max(1, from.distance));
 }
 
 // Moves the camera by a screen-space drag

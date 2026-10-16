@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { circleExtents, clusterCircles, type GraphData, type GraphNode, type GraphSettings, groupColorLookup } from "@/lib/graph";
-import { type Camera, centeredCamera, fitCamera } from "@/lib/graph/camera";
+import { type Camera, centeredCamera, fitCamera, zoomBy } from "@/lib/graph/camera";
 import type { SimLink, SimNode } from "@/lib/graph/physics";
 import { cn } from "@/lib/utils";
 import { drawGraph } from "./drawGraph";
 import { readCanvasPalette } from "./palette";
 import { useForceLayout } from "./useForceLayout";
 import { usePointerControls } from "./usePointerControls";
+import { ZoomControls } from "./ZoomControls";
 
 // =====================================================================
 // GRAPH CANVAS: one <canvas> filling its parent. Owns the frame loop:
@@ -26,6 +27,9 @@ export interface GraphCanvasProps {
   hoverLabelOnly?: boolean;
   className?: string;
 }
+
+// How much one zoom button press zooms
+const BUTTON_ZOOM = 1.5;
 
 // Room above a ring for its label, in world units at the fitted zoom (roughly)
 const CIRCLE_LABEL_ROOM = 20;
@@ -135,6 +139,20 @@ export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, h
   useCanvasSize(container, canvas, onResize);
   usePointerControls({ canvas, layout, camera, hoveredId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, redraw });
 
+  // ZOOM BUTTONS: zoom around the canvas center; fit hands the camera back to auto-fit
+  const zoomCenter = useCallback(
+    (factor: number) => {
+      isAutoFit.current = false;
+      camera.current = zoomBy(camera.current, { x: size.current.width / 2, y: size.current.height / 2 }, factor);
+      redraw();
+    },
+    [redraw],
+  );
+  const fitView = useCallback(() => {
+    isAutoFit.current = true;
+    redraw();
+  }, [redraw]);
+
   // REDRAW when display settings or groups change (no layout change needed)
   useEffect(redraw, [redraw, settings.display, colorOf]);
   // CLEANUP: cancel a pending frame and clear the handle, so a remount (React dev's double
@@ -150,6 +168,7 @@ export function GraphCanvas({ graph, settings, onOpen, progressiveZoom = true, h
   return (
     <div ref={container} className={cn("relative h-full w-full overflow-hidden", className)}>
       <canvas ref={canvas} className="absolute inset-0 touch-none" aria-label="Knowledge graph" role="img" />
+      <ZoomControls onZoomIn={() => zoomCenter(BUTTON_ZOOM)} onZoomOut={() => zoomCenter(1 / BUTTON_ZOOM)} onFit={fitView} />
     </div>
   );
 }
