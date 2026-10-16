@@ -2,12 +2,13 @@ import { TOPIC_FIRST_PROSE } from "../articleStyle";
 import "server-only";
 
 import { z } from "zod";
-import { type ChatMessage, chatJson, type StreamedSoFar, type TokenFactorySettings } from "@/lib/ai/chat";
+import { addUsage, type ChatMessage, chatJson, type StreamedSoFar, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { SectionReviseInput, SectionRevision } from "../types";
 import { partialSectionAnswer, type SectionProgress } from "../buildProgress";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import { withoutEditorialDashes } from "../punctuation";
 import type { StageSkills } from "@/lib/ai/skills/types";
+import { checkLines, failedLines, type LineToCheck, type LineVerdict } from "./lineCheck";
 
 // =====================================================================
 // TOKEN FACTORY WRITER: Nemotron rewrites only the lines whose claims
@@ -15,6 +16,8 @@ import type { StageSkills } from "@/lib/ai/skills/types";
 // neutral style of an encyclopedia. It sees short refs (L1, C1) instead
 // of uuids, so it cannot invent ids; refs it makes up are dropped, and
 // plan.ts drops anything that touches an unflagged line or cites nothing.
+// Every line it writes is then fact-checked against its cited claims
+// (./lineCheck.ts); failures go back once for a fix, then are dropped.
 // =====================================================================
 
 // ANSWER SHAPE (validated after the call; also sent as the JSON schema)
@@ -66,21 +69,107 @@ export class TokenFactorySectionWriter {
   constructor(private readonly settings: TokenFactorySettings) {}
 
   // Sends the section with short refs, then maps the answer's refs back to ids
-  // and streams the paragraphs to `progress` as they are written
+  // and streams the paragraphs to `progress` as they are written.
+  // The answer is fact-checked; failed lines get one fix, and lines still failing are dropped.
   async reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision> {
     const refs = buildRefs(input);
-    const { value, model, tokensIn, tokensOut } = await chatJson(this.settings, {
+    const messages = buildMessages(input, refs, this.settings.skills);
+    const claims = refClaims(input, refs);
+    const write = (prompt: ChatMessage[]) => chatJson(this.settings, {
       outputStyle: "wiki_article",
       name: "section_lines",
       subject: `${input.pageTitle} › ${input.sectionTitle}`,
       schema: sectionAnswerSchema,
       jsonSchema: z.toJSONSchema(sectionAnswerSchema),
-      messages: buildMessages(input, refs, this.settings.skills),
+      messages: prompt,
       maxTokens: 8000,
       ...(progress ? { onStream: ({ content, reasoning }: StreamedSoFar) => streamToProgress(content, reasoning, refs, progress) } : {}),
     });
-    return { ...answerToRevision(value, refs), modelVersion: model, tokensIn, tokensOut };
+    const first = await write(messages);
+    let usage: TokenUsage = addUsage({ tokensIn: 0, tokensOut: 0 }, first);
+    let answer = first.value;
+    progress?.step("Checking each paragraph against its claims…");
+    const check = (draft: SectionAnswer) => checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: linesToCheck(draft, claims), sectionClaims: sectionClaims(claims) });
+    let checked = await check(answer);
+    answer = withCitations(answer, checked.verdicts);
+    usage = addUsage(usage, checked);
+    const failed = failedLines(checked.verdicts);
+    if (failed.length) {
+      progress?.step(`Fixing ${failed.length} paragraph${failed.length === 1 ? "" : "s"} the claims do not support…`);
+      const fixed = await write([...messages, { role: "user", content: repairRequest(answer, failed) }]);
+      usage = addUsage(usage, fixed);
+      answer = fixed.value;
+      checked = await check(answer);
+      answer = withCitations(answer, checked.verdicts);
+      usage = addUsage(usage, checked);
+      const stillFailing = failedLines(checked.verdicts);
+      const lineOf = new Map(linesToCheck(answer, claims).map((line) => [line.ref, line]));
+      for (const verdict of stillFailing) {
+        const line = lineOf.get(verdict.line);
+        console.warn("Writer line dropped by the fact-check", { page: input.pageTitle, section: input.sectionTitle, line: verdict.line, text: line?.text.slice(0, 200), claims: line?.claims.map((claim) => claim.ref), problem: verdict.problem });
+      }
+      answer = withoutLines(answer, new Set(stillFailing.map((verdict) => verdict.line)));
+    }
+    return { ...answerToRevision(answer, refs), modelVersion: first.model, ...usage };
   }
+}
+
+// =====================================================================
+// FACT-CHECK: the answer's lines in ref space (L1 revised, A1 added),
+// each beside only the claims it cites
+// =====================================================================
+
+// The checker sees each claim exactly as the writer saw it
+function linesToCheck(answer: SectionAnswer, claims: ReturnType<typeof refClaims>): LineToCheck[] {
+  const claimOf = new Map(claims.map((claim) => [claim.ref, claim]));
+  const cited = (claims: string[]) => [...new Set(claims.map((ref) => ref.trim()))].flatMap((ref) => {
+    const claim = claimOf.get(ref);
+    return claim ? [{ ref, claim: claim.claim, status: claim.status, context: claim.context ?? null }] : [];
+  });
+  const lines = [
+    ...answer.revise.map((line) => ({ ref: line.line.trim(), text: line.text, claims: cited(line.claims) })),
+    ...answer.add.map((line, index) => ({ ref: addRef(index), text: line.text, claims: cited(line.claims) })),
+  ];
+  // A line with no text or no known claim is dropped later anyway; nothing to check
+  return lines.filter((line) => line.text.trim() && line.claims.length > 0);
+}
+
+const addRef = (index: number) => `A${index + 1}`;
+
+// Every claim of the section, for mending a line that states a claim it forgot to cite
+function sectionClaims(claims: ReturnType<typeof refClaims>) {
+  return claims.map((claim) => ({ ref: claim.ref, claim: claim.claim, status: claim.status, context: claim.context ?? null }));
+}
+
+// The answer with the citations the fact-check found missing added to their lines
+export function withCitations(answer: SectionAnswer, verdicts: LineVerdict[]): SectionAnswer {
+  const extra = new Map(verdicts.flatMap((verdict) => (verdict.addCitations?.length ? [[verdict.line, verdict.addCitations] as const] : [])));
+  if (extra.size === 0) return answer;
+  const cite = (claims: string[], ref: string) => [...claims, ...(extra.get(ref) ?? []).filter((add) => !claims.some((claim) => claim.trim() === add))];
+  return {
+    revise: answer.revise.map((line) => ({ ...line, claims: cite(line.claims, line.line.trim()) })),
+    retire: answer.retire,
+    add: answer.add.map((line, index) => ({ ...line, claims: cite(line.claims, addRef(index)) })),
+  };
+}
+
+// Asks the writer for its whole answer again, with the failed lines fixed
+function repairRequest(answer: SectionAnswer, failed: LineVerdict[]): string {
+  return [
+    `Your previous answer was ${JSON.stringify(answer)}.`,
+    `A fact-check found lines that state things their cited claims do not support (A1, A2, ... are your add entries in order): ${JSON.stringify(failed.map(({ line, problem }) => ({ line, problem })))}.`,
+    "Return the complete corrected answer. Rewrite each listed line using only what its cited claims state, or cite the claim that does state it. Keep every other line exactly as it was.",
+  ].join(" ");
+}
+
+// The answer without the lines named by ref
+export function withoutLines(answer: SectionAnswer, drop: ReadonlySet<string>): SectionAnswer {
+  if (drop.size === 0) return answer;
+  return {
+    revise: answer.revise.filter((line) => !drop.has(line.line.trim())),
+    retire: answer.retire,
+    add: answer.add.filter((_, index) => !drop.has(addRef(index))),
+  };
 }
 
 // THINKING SHOWN ON THE PAGE: the tail of the model's visible reasoning, from a word start
@@ -126,14 +215,19 @@ function buildRefs(input: SectionReviseInput): Refs {
   };
 }
 
-// Builds the system + user messages: the page, the section, its claims and its lines as JSON
-function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
-  const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
-  const claims = input.units.map((unit) => ({
-    ref: refs.unitRef.get(unit.unitId), kind: unit.kind, status: unit.epistemicStatus, claim: unit.content, context: unit.context,
+// The section's claims as the writer sees them (C1, C2, ...); the fact-check reads the same ones
+function refClaims(input: SectionReviseInput, refs: Refs) {
+  return input.units.map((unit) => ({
+    ref: refs.unitRef.get(unit.unitId)!, kind: unit.kind, status: unit.epistemicStatus, claim: unit.content, context: unit.context,
     ...(unit.structure ? { structure: unit.structure } : {}),
     ...(unit.memberOf && refs.unitRef.has(unit.memberOf) ? { stepOf: refs.unitRef.get(unit.memberOf), ...(unit.position ? { step: unit.position } : {}) } : {}),
   }));
+}
+
+// Builds the system + user messages: the page, the section, its claims and its lines as JSON
+function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
+  const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
+  const claims = refClaims(input, refs);
   const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
   const request = { page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds), ...(input.updateNote ? { updateInstructions: input.updateNote } : {}) };
   return [

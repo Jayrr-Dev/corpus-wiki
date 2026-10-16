@@ -116,6 +116,7 @@ export const AI_FLOW_LANES: AiFlowLane[] = [
       { id: "writer", step: "Write", kind: "role", roleId: "write_articles", name: "Writer", roles: ["write_articles"], receivesShort: "approved outline", does: "Writes each affected section from its claims and citations.", submits: ["write_line", "revise_line", "retire_line"], exceptions: ["update_request"],
         facts: [
           { label: "Receives", text: "One section at a time: its assigned claims, current lines, flagged lines and uncovered claims." },
+          { label: "Checked by", text: "The Reviewer's model reads each new or rewritten line beside only the claims it cites, and gives each objection a second look. Lines that say more than their claims go back once for a fix; any still unsupported are not saved." },
           { label: "Hands on", text: "Rebuilt sections, passed to the Reviewer." },
           { label: "Submits", text: "Line-by-line ChangeSets." },
           { label: "You decide", text: "A change to a line you wrote is held in Exceptions as an update request." },

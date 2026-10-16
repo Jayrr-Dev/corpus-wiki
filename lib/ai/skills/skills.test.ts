@@ -34,7 +34,11 @@ describe("stage skill selection",()=>{
 });
 
 function intercept(answer:object) {
-  const fetch=vi.fn(async()=>new Response(JSON.stringify({model:"test",choices:[{finish_reason:"stop",message:{content:JSON.stringify(answer)}}]})));
+  // The writer's line fact-check gets an empty verdict list, which keeps every line
+  const fetch=vi.fn(async(_url:unknown,init:RequestInit)=>{
+    const checking=JSON.parse(String(init.body)).response_format?.json_schema?.name==="line_fact_check";
+    return new Response(JSON.stringify({model:"test",choices:[{finish_reason:"stop",message:{content:JSON.stringify(checking?{lines:[]}:answer)}}]}));
+  });
   vi.stubGlobal("fetch",fetch);
   return ()=>JSON.parse(String((fetch.mock.calls[0] as unknown as [unknown,RequestInit])[1].body));
 }
