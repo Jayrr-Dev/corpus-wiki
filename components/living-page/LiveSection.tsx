@@ -119,7 +119,7 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
         <div className="flow-root space-y-4">
           {lines.map((line) => (
             <Fragment key={line.lineId}>
-              {(evidence?.figuresByLine.get(line.lineId) ?? []).map((figure) => <ArticleFigure key={figure.sourceId} figure={figure} />)}
+              {(evidence?.figuresByLine.get(line.lineId) ?? []).map((figure) => <ArticleFigure key={figure.key} figure={figure} />)}
               {renderLine(line)}
             </Fragment>
           ))}

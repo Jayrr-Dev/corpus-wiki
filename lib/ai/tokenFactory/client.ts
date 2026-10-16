@@ -9,11 +9,13 @@ import { buildReconciliationMessages, claimRef, passageRef } from "./prompt";
 import { reconciliationAnswerSchema, reconciliationJsonSchema, type AnswerClaim, type AnswerLink } from "./schema";
 import { answerToActions } from "./toDraft";
 
-// Bound output growth for long documents without discarding any source passages. Small
-// batches keep each call well inside the provider timeout; every batch is checkpointed,
-// so a resume only re-reads the batches that never finished.
-const MAX_BATCH_CHARS = 3000;
-const MAX_BATCH_PASSAGES = 4;
+// Bound output growth for long documents without discarding any source passages; every
+// batch is checkpointed, so a resume only re-reads the batches that never finished.
+// Measured live on a 63-passage .docx (16-passage sample): GLM-5.3-Flash at low effort read
+// one 16-passage batch in 11 s, at medium each 8-passage batch took 78-168 s or timed out,
+// with the same claims. Low effort keeps big batches well inside the provider timeout.
+const MAX_BATCH_CHARS = 6000;
+const MAX_BATCH_PASSAGES = 40;
 
 // REAL CLIENT: batched extraction, combined into ONE audited change set per file.
 export class TokenFactoryReconciliationClient implements ReconciliationClient {
@@ -43,6 +45,8 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
           schema: reconciliationAnswerSchema,
           jsonSchema: reconciliationJsonSchema,
           messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills),
+          // Extraction is careful reading, not puzzle solving: higher efforts only add minutes of hidden thinking
+          reasoningEffort: "low",
         }));
       } catch (error) {
         if (!(error instanceof CompletionLengthError) && !(error instanceof ProviderTimeoutError)) throw error;

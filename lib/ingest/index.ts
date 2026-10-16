@@ -42,7 +42,7 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
   const known = await findSourceByHash(hash);
   if (known) return { kind: "skipped", sourceId: known };
   const mimeType = storedMimeType(format, fileName, input.browserType);
-  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader });
+  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, storeFigure: storeSourceFile });
   const passages = splitIntoPassages(pages);
   if (passages.length === 0) throw new Error(NOTHING_READ[format.id] ?? "No text was found in this file (is it a scan?).");
   const storagePath = await storeSourceFile(`${hash}${extensionOf(fileName, format)}`, bytes, mimeType);

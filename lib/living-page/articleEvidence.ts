@@ -8,8 +8,9 @@ export type ArticleReference = {
   quote: string; page: number | null; passages: ReferencePassage[]; backlinks: { lineId: string; anchorId: string }[];
 };
 export type ArticleCitation = ArticleReference & { anchorId: string; citedPages: number[] };
-// A PICTURE OR FILM SOURCE, drawn once beside the first line that cites it, its description as caption
-export type ArticleFigure = { sourceId: string; kind: MediaKind; title: string; caption: string; src: string; referenceNumber: number };
+// A PICTURE OR FILM SOURCE, or a picture embedded in a document, drawn once beside the first line
+// that cites it, its description as caption; `key` tells figures from the same source apart
+export type ArticleFigure = { key: string; sourceId: string; kind: MediaKind; title: string; caption: string; src: string; referenceNumber: number };
 export type ArticleEvidence = { references: ArticleReference[]; byLine: Map<string, ArticleCitation[]>; figuresByLine: Map<string, ArticleFigure[]> };
 
 // One bibliography entry per document; exact passage/page evidence stays attached
@@ -23,6 +24,8 @@ export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revi
   const references: ArticleReference[] = [];
   const bySource = new Map<string, ArticleReference>();
   const byLine = new Map<string, ArticleCitation[]>();
+  // Pictures embedded in a document (location.figure), each at the first line citing its description
+  const embedded = new Map<string, EmbeddedFigure>();
   for (const line of lines) {
     const cited = new Map<string, { reference: ArticleReference; pages: Set<number> }>();
     const ids = [...new Set(line.unitRevisionIds.flatMap((id) => revisionById.get(id)?.passage_ids ?? []))];
@@ -30,7 +33,7 @@ export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revi
       const passage = passageById.get(id);
       const source = passage ? sourceById.get(passage.source_id) : undefined;
       if (!passage || !source) continue;
-      const location = passage.location as { page?: unknown } | null;
+      const location = passage.location as { page?: unknown; figure?: unknown } | null;
       const page = typeof location?.page === "number" ? location.page : null;
       let reference = bySource.get(source.id);
       if (!reference) {
@@ -40,6 +43,9 @@ export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revi
       }
       if (!reference.passages.some((entry) => entry.id === id)) reference.passages.push({ id, quote: passage.text, page });
       if (!cited.has(source.id)) cited.set(source.id, { reference, pages: new Set() });
+      if (typeof location?.figure === "string" && !embedded.has(location.figure)) {
+        embedded.set(location.figure, { path: location.figure, lineId: line.lineId, reference, caption: passage.text });
+      }
       if (page !== null) cited.get(source.id)!.pages.add(page);
     }
     byLine.set(line.lineId, [...cited.values()].map(({ reference, pages }) => {
@@ -48,20 +54,27 @@ export function buildArticleEvidence(lines: ShownLine[], revisions: Tables<"revi
       return { ...reference, anchorId, citedPages: [...pages].sort((a, b) => a - b) };
     }));
   }
-  return { references, byLine, figuresByLine: buildArticleFigures(references, sourceById, captions) };
+  return { references, byLine, figuresByLine: buildArticleFigures(references, sourceById, captions, [...embedded.values()]) };
 }
+
+type EmbeddedFigure = { path: string; lineId: string; reference: ArticleReference; caption: string };
 
 // The stored file, through the route that signs a short-lived URL for it
 const sourceFileSrc = (sourceId: string) => `/api/sources/${sourceId}/file`;
+const embeddedFigureSrc = (sourceId: string, path: string) => `/api/sources/${sourceId}/figure?path=${encodeURIComponent(path)}`;
 
-// One figure per image or video source, beside the first line citing it (in article order)
-function buildArticleFigures(references: ArticleReference[], sourceById: ReadonlyMap<string, Tables<"sources">>, captions: ReadonlyMap<string, string>): Map<string, ArticleFigure[]> {
+// One figure per image or video source, and one per picture embedded in a cited document,
+// beside the first line citing it (in article order)
+function buildArticleFigures(references: ArticleReference[], sourceById: ReadonlyMap<string, Tables<"sources">>, captions: ReadonlyMap<string, string>, embedded: EmbeddedFigure[]): Map<string, ArticleFigure[]> {
   const figuresByLine = new Map<string, ArticleFigure[]>();
+  const place = (lineId: string, figure: ArticleFigure) => figuresByLine.set(lineId, [...(figuresByLine.get(lineId) ?? []), figure]);
   for (const reference of references) {
     const kind = mediaKindOf(sourceById.get(reference.sourceId)?.mime_type);
     if (!kind) continue;
-    const figure: ArticleFigure = { sourceId: reference.sourceId, kind, title: reference.title, caption: captions.get(reference.sourceId) ?? reference.quote, src: sourceFileSrc(reference.sourceId), referenceNumber: reference.number };
-    figuresByLine.set(reference.firstLineId, [...(figuresByLine.get(reference.firstLineId) ?? []), figure]);
+    place(reference.firstLineId, { key: reference.sourceId, sourceId: reference.sourceId, kind, title: reference.title, caption: captions.get(reference.sourceId) ?? reference.quote, src: sourceFileSrc(reference.sourceId), referenceNumber: reference.number });
+  }
+  for (const { path, lineId, reference, caption } of embedded) {
+    place(lineId, { key: path, sourceId: reference.sourceId, kind: "image", title: reference.title, caption, src: embeddedFigureSrc(reference.sourceId, path), referenceNumber: reference.number });
   }
   return figuresByLine;
 }

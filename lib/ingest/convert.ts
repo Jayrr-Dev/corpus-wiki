@@ -1,5 +1,6 @@
 import type { ImageDescriber } from "./describeMedia";
 import { type VideoReader, videoPages } from "./describeVideo";
+import { readDocx } from "./docx";
 import type { UploadFormatId } from "./formats";
 import type { ExtractedPage } from "./passages";
 
@@ -9,8 +10,12 @@ import type { ExtractedPage } from "./passages";
 // =====================================================================
 
 // What some converters need besides the bytes: the file's name and type, and for
-// images and videos the models that read them (the server passes them; tests pass fakes)
-export type ConvertContext = { fileName: string; mimeType: string; describeImage?: ImageDescriber | null; readVideo?: VideoReader | null };
+// images and videos the models that read them, and for pictures inside a document a place to
+// store them (the server passes them; tests pass fakes)
+export type ConvertContext = {
+  fileName: string; mimeType: string; describeImage?: ImageDescriber | null; readVideo?: VideoReader | null;
+  storeFigure?: ((path: string, bytes: Uint8Array, mimeType: string) => Promise<string>) | null;
+};
 
 export type Converter = (bytes: Uint8Array, context?: ConvertContext) => Promise<ExtractedPage[]>;
 
@@ -23,11 +28,9 @@ async function convertPdf(bytes: Uint8Array): Promise<ExtractedPage[]> {
   return text.map((pageText, index) => ({ page: index + 1, text: pageText }));
 }
 
-// WORD (.docx): the document's text, one paragraph per line break pair (mammoth)
-async function convertDocx(bytes: Uint8Array): Promise<ExtractedPage[]> {
-  const { default: mammoth } = await import("mammoth");
-  const { value } = await mammoth.extractRawText({ buffer: Buffer.from(bytes) });
-  return [{ page: null, text: value }];
+// WORD (.docx): the document's paragraphs, with each embedded picture described in its place (docx.ts)
+async function convertDocx(bytes: Uint8Array, context?: ConvertContext): Promise<ExtractedPage[]> {
+  return readDocx(bytes, context && { fileName: context.fileName, describeImage: context.describeImage, storeFigure: context.storeFigure });
 }
 
 // TEXT AND MARKDOWN: no pages; Markdown headings become passage locations

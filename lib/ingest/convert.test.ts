@@ -50,6 +50,37 @@ describe("one pipeline, one converter per format", () => {
     expect(passages.map((p) => p.text)).toContain("Decision: Beta ships on iOS first, in March 2027.");
   });
 
+  it("stores and describes a Word document's picture in its place, skipping icons", async () => {
+    const stored: { path: string; mimeType: string; size: number }[] = [];
+    const described: string[] = [];
+    const pages = await CONVERTERS.docx(fixture("figure-report.docx"), {
+      fileName: "report.docx",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      storeFigure: async (path, bytes, mimeType) => { stored.push({ path, mimeType, size: bytes.byteLength }); return path; },
+      describeImage: async (image) => { described.push(image.fileName); return "Bar chart of Acme revenue.\n\nAcme revenue was 5.0 million USD in Q4."; },
+    });
+    expect(stored).toEqual([{ path: expect.stringMatching(/^figures\/[0-9a-f]{64}\.png$/), mimeType: "image/png", size: 12415 }]);
+    expect(described).toEqual(["a picture in report.docx"]);
+    const passages = splitIntoPassages(pages);
+    expect(passages.map((p) => [p.text, p.location.figure ?? null])).toEqual([
+      ["Revenue section.", null],
+      ["Figure 1: Bar chart of Acme revenue.", stored[0]!.path],
+      ["Acme revenue was 5.0 million USD in Q4.", stored[0]!.path],
+      ["An icon:", null],
+      ["Revenue grew in Q4.", null],
+    ]);
+  });
+
+  it("still reads a Word document's text when a picture cannot be described", async () => {
+    const pages = await CONVERTERS.docx(fixture("figure-report.docx"), {
+      fileName: "report.docx",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      storeFigure: async (path) => path,
+      describeImage: async () => { throw new Error("vision model down"); },
+    });
+    expect(splitIntoPassages(pages).map((p) => p.text)).toEqual(["Revenue section.", "An icon:", "Revenue grew in Q4."]);
+  });
+
   it("reads Markdown with its headings as locations", async () => {
     const bytes = new TextEncoder().encode("# Plan\n\nShip in May.");
     const passages = splitIntoPassages(await CONVERTERS.markdown(bytes));

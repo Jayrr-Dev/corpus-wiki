@@ -83,11 +83,27 @@ describe("article figures", () => {
     const evidence = buildArticleEvidence(mediaLines, mediaRevisions, mediaPassages, mediaSources, new Map([["img", "Bar chart of Acme revenue."]]));
     expect(evidence.figuresByLine.get("l1")).toBeUndefined();
     expect(evidence.figuresByLine.get("l2")).toEqual([
-      { sourceId: "img", kind: "image", title: "revenue.png", caption: "Bar chart of Acme revenue.", src: "/api/sources/img/file", referenceNumber: 2 },
+      { key: "img", sourceId: "img", kind: "image", title: "revenue.png", caption: "Bar chart of Acme revenue.", src: "/api/sources/img/file", referenceNumber: 2 },
     ]);
     // The image already stands beside l2; the video is new on l3 and, without a summary, uses the cited passage
     expect(evidence.figuresByLine.get("l3")).toEqual([
-      { sourceId: "vid", kind: "video", title: "demo.mp4", caption: "The demo shows the arm picking a box.", src: "/api/sources/vid/file", referenceNumber: 3 },
+      { key: "vid", sourceId: "vid", kind: "video", title: "demo.mp4", caption: "The demo shows the arm picking a box.", src: "/api/sources/vid/file", referenceNumber: 3 },
     ]);
+  });
+
+  it("shows a picture embedded in a document beside the first line citing its description", () => {
+    const path = `figures/${"a".repeat(64)}.png`;
+    const docPassages = [
+      { id: "p-text", source_id: "doc", text: "Handbook text", location: {} },
+      { id: "p-image", source_id: "doc", text: "Figure 1: Site plan of lot 2.", location: { figure: path } },
+      { id: "p-video", source_id: "doc", text: "The plan marks the right-of-way.", location: { figure: path } },
+    ] as Tables<"passages">[];
+    const evidence = buildArticleEvidence(mediaLines, mediaRevisions, docPassages, mediaSources);
+    expect(evidence.figuresByLine.get("l1")).toBeUndefined();
+    expect(evidence.figuresByLine.get("l2")).toEqual([
+      { key: path, sourceId: "doc", kind: "image", title: "Handbook.pdf", caption: "Figure 1: Site plan of lot 2.", src: `/api/sources/doc/figure?path=${encodeURIComponent(path)}`, referenceNumber: 1 },
+    ]);
+    // The same picture is not drawn again for a later line citing it
+    expect(evidence.figuresByLine.get("l3")).toBeUndefined();
   });
 });

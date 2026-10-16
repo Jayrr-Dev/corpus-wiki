@@ -63,26 +63,31 @@ describe("batched reconciliation", () => {
   it("covers every passage, preserves citations across batches and creates shared entities/domains once", async () => {
     const fetchMock = vi.fn(async (_url: unknown, options: RequestInit) => response(options));
     vi.stubGlobal("fetch", fetchMock);
-    const draft = await client().draftChangeSet(input(17));
-    expect(fetchMock.mock.calls.map(([, options]) => passagesOf(options).length)).toEqual([4, 4, 4, 4, 1]);
+    const draft = await client().draftChangeSet(input(81));
+    expect(fetchMock.mock.calls.map(([, options]) => passagesOf(options).length)).toEqual([40, 40, 1]);
     const claims = draft.actions.filter((action) => action.type === "add_claim");
-    expect(claims.map((action) => action.passageIds)).toEqual(input(17).passages.map((passage) => [passage.id]));
+    expect(claims.map((action) => action.passageIds)).toEqual(input(81).passages.map((passage) => [passage.id]));
     expect(draft.actions.filter((action) => action.type === "create_entity")).toHaveLength(1);
     expect(draft.actions.filter((action) => action.type === "create_domain")).toHaveLength(1);
-    expect(draft.trace).toMatchObject({ tokensIn: 50, tokensOut: 100, promptVersion: "reconcile-v10" });
+    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v10" });
   });
 
   it("renumbers each batch's claim refs so links point at the right claims", async () => {
     vi.stubGlobal("fetch", vi.fn(async (_url: unknown, options: RequestInit) => response(options)));
-    const draft = await client().draftChangeSet(input(17));
+    const draft = await client().draftChangeSet(input(81));
     // create_domain and create_entity take positions 0 and 1, so claim n sits at position n + 1
     const links = draft.actions.filter((action) => action.type === "link").map((action) => action.input);
     expect(links).toEqual([
       { toUnitId: null, type: "related_to", fromPosition: 3, toPosition: 2, rationale: "Same policy" },
-      { toUnitId: null, type: "related_to", fromPosition: 7, toPosition: 6, rationale: "Same policy" },
-      { toUnitId: null, type: "related_to", fromPosition: 11, toPosition: 10, rationale: "Same policy" },
-      { toUnitId: null, type: "related_to", fromPosition: 15, toPosition: 14, rationale: "Same policy" },
+      { toUnitId: null, type: "related_to", fromPosition: 43, toPosition: 42, rationale: "Same policy" },
     ]);
+  });
+
+  it("reads at low reasoning effort", async () => {
+    const fetchMock = vi.fn(async (_url: unknown, options: RequestInit) => response(options));
+    vi.stubGlobal("fetch", fetchMock);
+    await new TokenFactoryReconciliationClient({ apiKey: "test", model: "zai-org/GLM-5.3-Flash" }).draftChangeSet(input(2));
+    expect(bodyOf(fetchMock.mock.calls[0]![1]).reasoning_effort).toBe("low");
   });
 
   it("also bounds batches by text length", async () => {
