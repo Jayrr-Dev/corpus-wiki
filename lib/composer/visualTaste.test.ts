@@ -1,0 +1,86 @@
+import { expect, it, vi } from "vitest";
+import sharp from "sharp";
+import { chatJson } from "@/lib/ai/chat";
+import { composerVisualTaste, contactSheet, contextProof, passesTaste } from "./visualTaste";
+import { roleForPurpose } from "@/lib/ai/roles";
+vi.mock("@/lib/ai/chat", () => ({ chatJson: vi.fn() }));
+const grade = { subjectMatch: 4, learningValue: 4, composition: 3, thumbnailClarity: 3, contextualFit: 4, problems: [], reason: "Visible settlement layout" };
+const article = { title: "Village", sourceUrl: "test", paragraphs: [{ id: "P1", text: "Earthworks reveal former houses.", section: "Overview" }], existingFigures: [] };
+const candidate = { id: "42", title: "Village", description: "Earthworks", imageUrl: "https://upload.wikimedia.org/village.jpg", sourceUrl: "https://commons.wikimedia.org/wiki/File:Village.jpg", creator: "Author", license: "CC0", licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/" };
+const pixels = () => sharp({ create: { width: 800, height: 600, channels: 3, background: "#446633" } }).png().toBuffer();
+it("persists candidate grades across instances and invalidates context, model and pixels", async () => {
+  vi.mocked(chatJson).mockClear();
+  const entries = new Map<string, unknown>();
+  const cache = { get: async (key: string) => entries.get(key), set: async (key: string, value: unknown) => { entries.set(key, value); } };
+  let bytes = await pixels();
+  const download = async () => ({ bytes, mime: "image/png", extension: "png" as const });
+  vi.mocked(chatJson).mockResolvedValue({ value: { candidates: [{ ...grade, id: "42" }] }, model: "vision", tokensIn: 1, tokensOut: 1 });
+  const make = (model = "one") => composerVisualTaste({ apiKey: "test", model }, { cache, download });
+  const first = await make().assess([candidate], article);
+  expect(await make().assess([candidate], article)).toEqual(first);
+  expect(chatJson).toHaveBeenCalledTimes(1);
+  await make().assess([candidate], { ...article, title: "Changed topic" });
+  await make("two").assess([candidate], article);
+  bytes = await sharp({ create: { width: 100, height: 100, channels: 3, background: "red" } }).png().toBuffer();
+  await make().assess([candidate], article);
+  expect(chatJson).toHaveBeenCalledTimes(4);
+  vi.mocked(chatJson).mockReset();
+});
+it("reuses context grades but rechecks changed captions", async () => {
+  vi.mocked(chatJson).mockClear();
+  const entries = new Map<string, unknown>();
+  const cache = { get: async (key: string) => entries.get(key), set: async (key: string, value: unknown) => { entries.set(key, value); } };
+  const bytes = await pixels();
+  const figure = { after: "P1", assetId: "asset", svg: "", caption: "Earthworks", alt: "Earthworks", learningGoal: "Traces", evidence: ["P1"] };
+  vi.mocked(chatJson).mockResolvedValue({ value: grade, model: "vision", tokensIn: 1, tokensOut: 1 });
+  const make = () => composerVisualTaste({ apiKey: "test" }, { cache, loadAsset: async () => bytes });
+  await make().review({ figures: [figure], omitted: "" }, article);
+  await make().review({ figures: [figure], omitted: "" }, article);
+  expect(chatJson).toHaveBeenCalledTimes(1);
+  await make().review({ figures: [{ ...figure, caption: "New claim" }], omitted: "" }, article);
+  expect(chatJson).toHaveBeenCalledTimes(2);
+  vi.mocked(chatJson).mockReset();
+});
+it("requires usefulness and clarity, not just a high average score", () => {
+  expect(passesTaste(grade)).toBe(true);
+  expect(passesTaste({ ...grade, learningValue: 2 })).toBe(false);
+  expect(passesTaste({ ...grade, problems: ["Wrong location"] })).toBe(false);
+});
+it("sends actual pixels to the vision role and permits rejecting every candidate", async () => {
+  const download = vi.fn().mockResolvedValue({ bytes: await pixels(), mime: "image/png", extension: "png" });
+  vi.mocked(chatJson).mockResolvedValueOnce({ value: { candidates: [{ ...grade, id: "42", learningValue: 1, problems: ["No visible earthworks"] }] }, model: "vision", tokensIn: 1, tokensOut: 1 });
+  const visual = composerVisualTaste({ apiKey: "test" }, { download });
+  expect((await visual.assess([candidate], article))[0]?.accepted).toBe(false);
+  const request = vi.mocked(chatJson).mock.calls.at(-1)![1];
+  expect(request.name).toBe("composer_image_comparison");
+  expect(JSON.stringify(request.messages)).toContain("data:image/png;base64,");
+  expect(roleForPurpose(request.name)).toBe("composer");
+  await visual.file(candidate);
+  expect(download).toHaveBeenCalledTimes(1);
+});
+it("rejects invented or missing candidate assessments", async () => {
+  vi.mocked(chatJson).mockResolvedValueOnce({ value: { candidates: [{ ...grade, id: "invented" }] }, model: "vision", tokensIn: 1, tokensOut: 1 });
+  const download = vi.fn().mockResolvedValue({ bytes: await pixels(), mime: "image/png", extension: "png" });
+  await expect(composerVisualTaste({ apiKey: "test" }, { download }).assess([candidate], article)).rejects.toThrow("every candidate");
+});
+it("renders uncropped 256px thumbnails and checks caption in context", async () => {
+  const bytes = await pixels();
+  const sheet = await contactSheet([{ id: "42", bytes }]);
+  expect(await sharp(sheet).metadata()).toMatchObject({ width: 280, height: 380 });
+  const figure = { after: "P1", assetId: "asset", svg: "", caption: "Visible house platforms", alt: "Earthworks", learningGoal: "Recognize traces", evidence: ["P1"] };
+  const proof = await contextProof(article, figure, bytes);
+  expect((await sharp(proof).metadata()).width).toBe(900);
+  vi.mocked(chatJson).mockResolvedValueOnce({ value: { ...grade, subjectMatch: 1, problems: ["Caption claims invisible houses"] }, model: "vision", tokensIn: 1, tokensOut: 1 });
+  const visual = composerVisualTaste({ apiKey: "test" }, { loadAsset: async () => bytes });
+  const result = await visual.review({ figures: [figure], omitted: "" }, article);
+  expect(result.accepted).toBe(false);
+  expect(result.problems[0]).toContain("Caption claims invisible houses");
+  expect(roleForPurpose(vi.mocked(chatJson).mock.calls.at(-1)![1].name)).toBe("composer");
+});
+it("feeds concrete improvement advice back when a borderline grade fails", async () => {
+  const bytes = await pixels();
+  vi.mocked(chatJson).mockResolvedValueOnce({ value: { ...grade, contextualFit: 2, improvements: ["Remove the unsupported restoration date"] }, model: "vision", tokensIn: 1, tokensOut: 1 });
+  const figure = { after: "P1", assetId: "asset", svg: "", caption: "Restored in 1900", alt: "Village", learningGoal: "Traces", evidence: ["P1"] };
+  const review = await composerVisualTaste({ apiKey: "test" }, { loadAsset: async () => bytes }).review({ figures: [figure], omitted: "" }, article);
+  expect(review.problems[0]).toContain("Remove the unsupported restoration date");
+});

@@ -1,4 +1,6 @@
-import { TOPIC_FIRST_PROSE } from "../articleStyle";
+import { TOPIC_FIRST_PROSE, SOURCE_ATTRIBUTION_POLICY } from "../articleStyle";
+import { checkEditorialDraft, selectEditorialClaims } from "./editorialSelection";
+import { revisionToActions } from "../plan";
 import "server-only";
 
 import { z } from "zod";
@@ -7,8 +9,9 @@ import type { SectionReviseInput, SectionRevision } from "../types";
 import { partialSectionAnswer, type SectionProgress } from "../buildProgress";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import { withoutEditorialDashes } from "../punctuation";
+import { unsupportedProseNumbers, withSupportedCharts } from "../blocks";
 import type { StageSkills } from "@/lib/ai/skills/types";
-import { checkLines, failedLines, type LineToCheck, type LineVerdict } from "./lineCheck";
+import { checkLines, failedLines, type CheckedClaim, type LineToCheck, type LineVerdict } from "./lineCheck";
 
 // =====================================================================
 // TOKEN FACTORY WRITER: Nemotron rewrites only the lines whose claims
@@ -34,15 +37,18 @@ const LAYOUT_RULES = [
   "Most lines are prose. A line may instead use one of these layouts when it reads better than a paragraph, separating rows with \\n inside the JSON string:",
   "(1) Lead-in list, for several parallel items such as equipment or violation types: one lead-in sentence, then one '- item' row per item.",
   "(2) Numbered steps, for a procedure whose order matters: '1. step' rows, optionally after a lead-in sentence.",
+  "When a source already numbers steps and cites branch destinations, do not introduce conflicting local step numbers. Use chronological prose or unnumbered phase bullets, explicitly attributing retained step numbers to the source. Present alternative branches as alternatives, never as successive mandatory actions.",
   "(3) Table, for comparing several items on the same attributes: '| Header | Header |' then '|---|---|' then one '| cell | cell |' row per item; at least 2 columns and 2 rows.",
   "(4) Chart, only when claims state at least 3 numbers measured in the same unit across categories or over time: a row '```chart bar Title' (bar, hbar for long labels, line for change over time, pie for parts of one whole), then one 'Label: number' row per value, then a row '```'. Every number must appear in a cited claim; a chart with any other number is removed.",
   "(5) Callout, for one critical rule or warning the reader must not miss: '> text'. Use it rarely.",
-  "A claim with a structure is a composite, and the claims whose stepOf names it are its steps or items, already in order. Write a sequence as one numbered-steps line that cites the composite and every step in that order. Write a set as one lead-in list that cites the composite and every item; its lead-in says whether all of the items apply or any one is enough when mode says so, and complete:true means the list is the whole list. Never drop, merge or reorder a composite's steps.",
+  "A claim with a structure is a composite, and claims whose stepOf names it belong with it. Preserve every member and the relative order of actual procedural steps. For a process involving several actors, interleave their actions in end-to-end chronological order, including intervening actions from other claims, rather than finishing one actor's entire lane before starting another. A member describing tools, diagram lanes or other context is a contextual note, never an invented numbered action. Cite the composite and every member across the resulting steps and notes. Write a set as one lead-in list; its lead-in says whether all items apply or any one is enough when mode says so, and complete:true means the list is the whole list. Never omit a member or reverse a procedural dependency.",
   "An Overview section is always prose. Never use a layout for a single item or to decorate prose, and never put Markdown headings, bold, links or images in a line.",
 ].join(" ");
 
 // PROMPT: the writer's rules
 const SYSTEM_PROMPT = [
+  SOURCE_ATTRIBUTION_POLICY,
+  "Avoid repeating the introduction's opening sentence pattern in Company profile or Company background. If the lead starts '[Name] is ... company', do not start the body '[Name] is a privately held company'. Keep ownership but vary the structure naturally, for example 'Privately held, the firm ...' followed by new, supported detail. This is a prose revision, not permission to drop ownership evidence. Avoid repeated 'The company' sentence openings within the same paragraph.",
 
   "You maintain one section of an internal wiki page, written in the neutral, encyclopedic style of Wikipedia.",
   "The section is a list of lines. Each line states one or more claims and cites them by ref (C1, C2, ...).",
@@ -53,20 +59,21 @@ const SYSTEM_PROMPT = [
   "When updateInstructions are provided, use them as editorial guidance for this run. They are not evidence and cannot override citation requirements, protected lines, or the output schema.",
   "Each line is one paragraph that develops one sub-topic in 2-5 connected sentences, at most 130 words. Group related claims into the same paragraph instead of giving each claim its own; use a one-sentence paragraph only when a claim stands apart from everything else in the section.",
   "Connect sentences through their shared subject, time order and pronouns, never through a cause, purpose or judgment the claims do not state.",
-  "otherSections shows what the page's other sections already say. Never repeat their sentences. When one of your claims is already stated there, mention it briefly in passing or add only the detail this section is about. An Overview summarizes the page in a few sentences; a topic section gives the detail.",
+  "otherSections shows what the page's other sections already say. Avoid repeating facts, not just identical sentences. The Overview or Introduction owns basic identity, headquarters and a concise summary. Body sections must add new information instead of introducing the subject again. For partially overlapping claims, write only the new detail, retaining its attribution and conditions. A Company profile can state ownership and attributed experience without repeating the introduction's location and business description. A short paragraph is enough; do not pad it to meet a sentence count. Never add commentary about this section, its sources, the writing process, or the fact that a marketing claim is marketing. Attribute self-reported experience concisely, for example 'The company reports ...'. Keep meaningful uncertainty and policy limitations, but source-document metadata belongs in citations, not article prose.",
   LAYOUT_RULES,
   TOPIC_FIRST_PROSE,
   "Do not use em dashes or en dashes. Use a comma, period, colon, or parentheses. Keep hyphens inside compound words. The one exception is a range between full dates, which keeps a spaced en dash: (October 10, 1924 – December 10, 1978).",
   "Arrange paragraphs in a logical reading order. Cover EVERY uncovered claim, listing all its refs in claims. Never touch lines with rewrite:false.",
   "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
   "For topic sections, explain the topic coherently. Avoid boilerplate, unsupported context, invented links, or citation numbers; the interface adds real links and references.",
+  "Never put internal claim labels such as (C1, C2) or [C3] in text. Put them only in the structured claims array; the interface renders their citations.",
   'Answer with JSON only: {"revise":[{"line":"L1","text":"...","claims":["C1"]}],"retire":["L2"],"add":[{"text":"...","claims":["C3"]}]}.',
 ].join(" ");
 
 // REAL WRITER: one chat completion per section that needs work
 export class TokenFactorySectionWriter {
   readonly name = "token-factory";
-  get promptVersion() { return skillTrace("article-writing-v5",["write_articles"],this.settings.skills); }
+  get promptVersion() { return skillTrace("article-writing-v7-editorial-coverage",["write_articles"],this.settings.skills); }
 
   constructor(private readonly settings: TokenFactorySettings) {}
 
@@ -74,8 +81,12 @@ export class TokenFactorySectionWriter {
   // and streams the paragraphs to `progress` as they are written.
   // The answer is fact-checked; failed lines get one fix, and lines still failing are dropped.
   async reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision> {
+    const selection = await selectEditorialClaims(this.settings, input);
+    const omitted = new Set(selection.omittedUnitIds);
+    input = { ...input, units: input.units.filter((unit) => !omitted.has(unit.unitId)), uncoveredUnitIds: input.uncoveredUnitIds.filter((id) => !omitted.has(id)) };
     const refs = buildRefs(input);
     const messages = buildMessages(input, refs, this.settings.skills);
+    if (omitted.size) messages.push({ role: "system", content: "Editorial selection removed source-document metadata and facts fully stated elsewhere from the claims. Retire any rewriteable line that now has no claims. Remove those omitted facts from mixed lines, preserving all remaining evidence. Do not invent replacement filler or attach unrelated citations." });
     const claims = refClaims(input, refs);
     const write = (prompt: ChatMessage[]) => chatJson(this.settings, {
       outputStyle: "wiki_article",
@@ -88,23 +99,47 @@ export class TokenFactorySectionWriter {
       ...(progress ? { onStream: ({ content, reasoning }: StreamedSoFar) => streamToProgress(content, reasoning, refs, progress) } : {}),
     });
     const first = await write(messages);
-    let usage: TokenUsage = addUsage({ tokensIn: 0, tokensOut: 0 }, first);
-    let answer = first.value;
+    let usage: TokenUsage = addUsage(selection, first);
+    let answer = withoutInlineClaimAnnotations(first.value, claims);
     progress?.step("Checking each paragraph against its claims…");
-    const check = (draft: SectionAnswer) => checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: linesToCheck(draft, claims), sectionClaims: sectionClaims(claims) });
+    const check = async (draft: SectionAnswer) => {
+      const checked = await checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: linesToCheck(draft, claims), sectionClaims: sectionClaims(claims) });
+      const editorial = input.pageContext?.length || omitted.size
+        ? await checkEditorialDraft(this.settings, input, linesToCheck(draft, claims))
+        : { verdicts: [], tokensIn: 0, tokensOut: 0 };
+      // Match the final commit's numeric check before the repair attempt, so a
+      // missed citation is repaired instead of silently losing the paragraph.
+      const verdicts = withNumericSupportVerdicts(withCitations(draft, checked.verdicts), claims, [input.pageTitle, input.sectionTitle], checked.verdicts);
+      return { ...addUsage(checked, editorial), editorialProblems: editorial.verdicts, verdicts: [...verdicts, ...editorial.verdicts] };
+    };
     let checked = await check(answer);
     answer = withCitations(answer, checked.verdicts);
     usage = addUsage(usage, checked);
     const failed = failedLines(checked.verdicts);
-    if (failed.length) {
-      progress?.step(`Fixing ${failed.length} paragraph${failed.length === 1 ? "" : "s"} the claims do not support…`);
-      const fixed = await write([...messages, { role: "user", content: repairRequest(answer, failed) }]);
+    const missing = input.lines.every((line) => line.needsRewrite) ? missingDraftClaims(input, answer) : [];
+    if (failed.length || missing.length) {
+      progress?.step("Repairing evidence coverage, repetition and wording…");
+      const fixed = await write([...messages, { role: "user", content: `${repairRequest(answer, failed)}${missing.length ? ` Your draft also omitted required claims ${missing.join(", ")}. Cover each with a supported citation. For a partially overlapping claim, state its new detail only; do not repeat facts already in otherSections. These claims were retained by editorial selection and cannot be dropped. You may revise otherwise supported lines to incorporate the missing details.` : ""}` }]);
       usage = addUsage(usage, fixed);
-      answer = fixed.value;
+      answer = withoutInlineClaimAnnotations(fixed.value, claims);
       checked = await check(answer);
       answer = withCitations(answer, checked.verdicts);
       usage = addUsage(usage, checked);
+      // A fact repair can reintroduce a source's redundant wording. Give the
+      // editor one focused pass over the current draft, without the old prose.
+      for (let editorialAttempt = 0; editorialAttempt < 2 && (checked.editorialProblems.length || (input.lines.every((line) => line.needsRewrite) && missingDraftClaims(input, answer).length)); editorialAttempt++) {
+        const edited = await write([
+          { role: "system", content: `${SYSTEM_PROMPT} Fix each listed editorial issue by changing the text, not by explaining it. Remove a repeated clause even when factually supported. Keep new detail and concise attribution. A citation does NOT require repeating the entire source claim. For example, if the lead already calls the subject an engineering services company, a claim 'presents itself as an engineering consultancy serving utility and infrastructure projects in Edmonton' must become 'says it serves utility and infrastructure projects in Edmonton', retaining that claim's citation. Do not reintroduce 'engineering consultancy' to satisfy coverage. Return the same complete JSON revision shape and preserve line references.` },
+          { role: "user", content: JSON.stringify({ page: input.pageTitle, section: input.sectionTitle, claims, otherSections: input.pageContext, draft: answer, issues: checked.editorialProblems, requiredUncoveredClaims: input.lines.every((line) => line.needsRewrite) ? missingDraftClaims(input, answer) : [], coverageInstruction: "Every requiredUncoveredClaims ref must be represented by its NEW factual detail and cited. Retain distinct project scope and service location. Remove subclauses already stated elsewhere, even when they occur inside a retained compound claim. Covering a claim does not mean restating all its words or propositions." }) },
+        ]);
+        usage = addUsage(usage, edited);
+        answer = withoutInlineClaimAnnotations(edited.value, claims);
+        checked = await check(answer);
+        answer = withCitations(answer, checked.verdicts);
+        usage = addUsage(usage, checked);
+      }
       const stillFailing = failedLines(checked.verdicts);
+      if (checked.editorialProblems.length) throw new Error(`The section was not changed because editorial review still found: ${checked.editorialProblems.map((problem) => problem.problem).join(" ")}`, { cause: { draft: answer } });
       const lineOf = new Map(linesToCheck(answer, claims).map((line) => [line.ref, line]));
       for (const verdict of stillFailing) {
         const line = lineOf.get(verdict.line);
@@ -112,8 +147,34 @@ export class TokenFactorySectionWriter {
       }
       answer = withoutLines(answer, new Set(stillFailing.map((verdict) => verdict.line)));
     }
-    return { ...answerToRevision(answer, refs), modelVersion: first.model, ...usage };
+    return { ...answerToRevision(answer, refs), omittedUnitIds: selection.omittedUnitIds, modelVersion: first.model, ...usage };
   }
+}
+
+// Internal C refs belong in the structured citations, never in rendered prose.
+// Remove only known refs cited by that line and absent from the actual source text:
+// real engineering labels such as C1/C2 and unsupported numbers stay protected.
+export function withoutInlineClaimAnnotations(answer: SectionAnswer, claims: { ref: string; claim: string }[]): SectionAnswer {
+  const known = new Set(claims.map((claim) => claim.ref));
+  const sourceLabels = new Set(claims.flatMap((claim) => claim.claim.match(/\bC[1-9]\d*\b/g) ?? []));
+  const clean = <T extends { text: string; claims: string[] }>(line: T): T => ({ ...line,
+    text: line.text.replace(/[ \t]*\((C[1-9]\d*(?:\s*[,;]\s*C[1-9]\d*)*)\)|[ \t]*\[(C[1-9]\d*(?:\s*[,;]\s*C[1-9]\d*)*)\]/g, (annotation, round: string | undefined, square: string | undefined) => {
+      const labels = (round ?? square ?? "").split(/\s*[,;]\s*/);
+      return labels.every((ref) => known.has(ref) && line.claims.includes(ref) && !sourceLabels.has(ref)) ? "" : annotation;
+    }),
+  });
+  return { ...answer, revise: answer.revise.map(clean), add: answer.add.map(clean) };
+}
+
+export function withNumericSupportVerdicts(answer: SectionAnswer, claims: { ref: string; claim: string }[], titles: string[], verdicts: LineVerdict[]): LineVerdict[] {
+  const byLine = new Map(verdicts.map((verdict) => [verdict.line, verdict]));
+  for (const line of linesToCheck(answer, claims)) {
+    const cited = line.claims.map((claim) => claim.claim);
+    const numbers = unsupportedProseNumbers(withSupportedCharts(line.text, cited), [...cited, ...titles]);
+    if (numbers.length) byLine.set(line.ref, { ...byLine.get(line.ref), line: line.ref, supported: false,
+      problem: `The numbers ${numbers.join(", ")} are not supported by this paragraph's cited claims. Cite the supplied claim that actually states them, or remove the unsupported numbers. Never cite an unrelated claim merely because it shares a number.` });
+  }
+  return [...byLine.values()];
 }
 
 // =====================================================================
@@ -122,7 +183,7 @@ export class TokenFactorySectionWriter {
 // =====================================================================
 
 // The checker sees each claim exactly as the writer saw it
-function linesToCheck(answer: SectionAnswer, claims: ReturnType<typeof refClaims>): LineToCheck[] {
+function linesToCheck(answer: SectionAnswer, claims: CheckedClaim[]): LineToCheck[] {
   const claimOf = new Map(claims.map((claim) => [claim.ref, claim]));
   const cited = (claims: string[]) => [...new Set(claims.map((ref) => ref.trim()))].flatMap((ref) => {
     const claim = claimOf.get(ref);
@@ -215,6 +276,24 @@ export function buildRefs(input: SectionReviseInput): Refs {
     lineRef: new Map(linePairs),
     lineId: new Map(linePairs.map(([id, ref]) => [ref, id])),
   };
+}
+
+// Check effective actions, not raw model citations: invalid/protected edits do
+// not count as coverage. Used for one repair before Update's final coverage guard.
+export function missingDraftClaims(input: SectionReviseInput, answer: SectionAnswer): string[] {
+  const refs = buildRefs(input);
+  const revision = { ...answerToRevision(answer, refs), modelVersion: "preview" };
+  const actions = revisionToActions(revision, { ...input, title: input.sectionTitle, sectionId: "preview" });
+  const changed = new Set(actions.filter((action) => action.type === "revise_line" || action.type === "retire_line").map((action) => action.targetId));
+  const covered = new Set(input.lines.filter((line) => !changed.has(line.lineId)).flatMap((line) => line.unitIds));
+  const byRevision = new Map(input.units.map((unit) => [unit.revisionId, unit.unitId]));
+  for (const action of actions) if (action.type === "write_line" || action.type === "revise_line") {
+    for (const id of action.input.unitRevisionIds) {
+      const unitId = byRevision.get(id);
+      if (unitId) covered.add(unitId);
+    }
+  }
+  return input.units.filter((unit) => !covered.has(unit.unitId)).map((unit) => refs.unitRef.get(unit.unitId)!);
 }
 
 // The section's claims as the writer sees them (C1, C2, ...); the fact-check reads the same ones

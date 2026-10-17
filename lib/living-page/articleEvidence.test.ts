@@ -27,6 +27,16 @@ describe("article citations", () => {
 });
 
 describe("internal article links", () => {
+  it("matches hyphen and whitespace variants without changing paragraph wording", () => {
+    const text = "The modified-work program uses Safety  data sheets. Modified–work program.";
+    const chunks = linkArticleText(text, [{ label: "modified work program", href: "/p/safety#return" }, { label: "Safety data sheets", href: "/p/safety#chemicals" }]);
+    expect(chunks.filter((chunk) => chunk.href)).toEqual([{ text: "modified-work program", href: "/p/safety#return" }, { text: "Safety  data sheets", href: "/p/safety#chemicals" }]);
+    expect(chunks.map((chunk) => chunk.text).join("")).toBe(text);
+  });
+
+  it("keeps explicit article links ahead of inferred aliases", () => {
+    expect(linkArticleText("Modified-work program", [{ label: "Modified work program", href: "/p/explicit" }, { label: "Modified-work program", href: "/p/inferred#section" }])[0]?.href).toBe("/p/explicit");
+  });
   it("links actual known subjects and avoids repeated links in one paragraph", () => {
     const chunks = linkArticleText("Acme requires PPE. Acme reports incidents.", [{ label: "Acme", href: "/entities/acme" }]);
     expect(chunks.filter((chunk) => chunk.href)).toEqual([{ text: "Acme", href: "/entities/acme" }]);

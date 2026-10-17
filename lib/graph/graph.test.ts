@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, shortLabel } from "./build";
 import { hierarchyOpacity, labelOpacity, pinchStep, REVEAL_AT, revealOpacity, toWorld, zoomAt, zoomBy } from "./camera";
-import { clusterCircles, clusterTree, separateRootDomains } from "./clusters";
+import { clusterCircles, clusterTree, forceClusters, separateRootDomains } from "./clusters";
 import type { SimLink, SimNode } from "./physics";
 import { applyFilters, createdBy } from "./filters";
 import { groupColorLookup, groupCounts, groupSuggestions, joinGroupQuery, parseGroupQuery, splitGroupQuery } from "./groups";
@@ -279,6 +279,27 @@ describe("claims sharing a topic label", () => {
 
 describe("domain clusters", () => {
   const dot = (id: string, domainPaths: string[], x = 0, y = 0): SimNode => ({ ...({} as GraphNode), id, domainPaths, degree: 0, x, y });
+  it("gathers sparse members around their own group even far from the layout target", () => {
+    const nodes = [dot("a", ["Co/Safety"], 900), dot("b", ["Co/Safety"], 1100)];
+    const force = forceClusters(0.5);
+    force.initialize!(nodes, Math.random);
+    force(1);
+    // Translation toward the global target must not prevent local contraction.
+    expect(nodes[1]!.vx! - nodes[0]!.vx!).toBeLessThan(-60);
+    const disabled = forceClusters(0);
+    const resting = [dot("a", ["Co"], -100), dot("b", ["Co"], 100)];
+    disabled.initialize!(resting, Math.random);
+    disabled(1);
+    expect(resting.every((node) => !node.vx && !node.vy)).toBe(true);
+  });
+  it("fits an uneven cluster tightly while containing every dot", () => {
+    const nodes = [dot("a", ["Co"], 0), dot("b", ["Co"], 1), dot("c", ["Co"], 2), dot("outlier", ["Co"], 200)];
+    const [circle] = clusterCircles(nodes, 1);
+    expect(circle!.r).toBeLessThan(120);
+    for (const node of nodes) {
+      expect(Math.hypot(node.x! - circle!.x, node.y! - circle!.y) + 3).toBeLessThanOrEqual(circle!.r);
+    }
+  });
   it("separates root bounds without spreading their nested members", () => {
     const nodes = [dot("a", ["A/Child"], 0, 0), dot("b", ["A/Child"], 20, 10), dot("c", ["B/Child"], 5, 0), dot("d", ["B/Child"], 25, 10)];
     separateRootDomains(nodes, 1);
@@ -296,6 +317,57 @@ describe("domain clusters", () => {
     };
     expect(distance("similar")).toBeLessThan(distance());
     expect(distance("supports")).toBeLessThan(distance("similar"));
+  });
+
+  it("expands a parent around separated sibling bubbles", () => {
+    const nodes = [dot("a", ["Co/Safety/PPE"], 0, 0), dot("b", ["Co/Safety/Training"], 1, 0), dot("c", ["Co/Safety/Inspections"], 2, 0)];
+    for (let tick = 0; tick < 20; tick++) separateRootDomains(nodes, 1);
+    const circles = clusterCircles(nodes, 1);
+    const parent = circles.find((circle) => circle.key === "Co/Safety")!;
+    const children = circles.filter((circle) => circle.depth === 2);
+    for (const child of children) {
+      expect(Math.hypot(child.x - parent.x, child.y - parent.y) + child.r).toBeLessThan(parent.r);
+      for (const other of children) {
+        if (child === other) continue;
+        expect(Math.hypot(child.x - other.x, child.y - other.y)).toBeGreaterThanOrEqual(child.r + other.r + 31.9);
+      }
+    }
+  });
+
+  it("keeps parent summary dots outside child circles without changing memberships", () => {
+    const nodes = [
+      dot("summary", ["Co/Procedure"], 0, 0),
+      dot("scope", ["Co/Procedure"], 8, 5),
+      dot("test-a", ["Co/Procedure/Testing"], -40, 0),
+      dot("test-b", ["Co/Procedure/Testing"], 40, 0),
+      dot("equipment", ["Co/Procedure/Equipment"], 0, 10),
+    ];
+    const assignments = nodes.map(node => [...node.domainPaths]);
+    separateRootDomains(nodes, 1);
+    const circles = clusterCircles(nodes, 1);
+    for (const child of circles.filter(circle => circle.depth === 2)) {
+      for (const parent of nodes.slice(0, 2)) {
+        expect(Math.hypot(parent.x! - child.x, parent.y! - child.y)).toBeGreaterThan(child.r + 3);
+      }
+    }
+    expect(nodes.map(node => node.domainPaths)).toEqual(assignments);
+    expect(nodes[1]!.x! - nodes[0]!.x!).toBeCloseTo(8);
+    expect(nodes[3]!.x! - nodes[2]!.x!).toBeCloseTo(80);
+  });
+
+  it("clears a large bubble from crowded siblings in one layout update", () => {
+    const nodes = [
+      dot("ppe-a", ["Co/Safety/PPE"], -130, 0),
+      dot("ppe-b", ["Co/Safety/PPE"], 130, 0),
+      ...Array.from({ length: 9 }, (_, i) => dot(`small-${i}`, [`Co/Safety/Topic ${i}`], i * 12 - 48, 20)),
+    ];
+    separateRootDomains(nodes, 1);
+    const children = clusterCircles(nodes, 1).filter((circle) => circle.depth === 2);
+    for (let i = 0; i < children.length; i++) for (let j = i + 1; j < children.length; j++) {
+      const a = children[i]!, b = children[j]!;
+      expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(a.r + b.r + 31.8);
+    }
+    expect(nodes[1]!.x! - nodes[0]!.x!).toBeCloseTo(260);
   });
 
   it("nests a group for every level of each dot's first domain path", () => {

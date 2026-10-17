@@ -39,7 +39,7 @@ export const SECONDARY_NAV: readonly NavItem[] = [
   { label: "Assets", href: "/assets", icon: Images },
   { label: "Entities", href: "/entities", icon: EntityIcon },
   { label: "Domains", href: "/domains", icon: DomainIcon },
-  { label: "Workflow", href: "/skills", icon: SkillIcon },
+  { label: "Workflow", href: "/workflow", icon: SkillIcon },
   { label: "Agent Roles", href: "/roles", icon: Bot },
 ];
 

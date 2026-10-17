@@ -15,6 +15,8 @@ import {
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import { workflowStep } from "./workflowContext";
+import { reuseFuzzyDomainPaths } from "@/lib/knowledge/nameDuplicates";
+import { nameDuplicateJudge } from "@/lib/ai/nameDuplicateJudge";
 
 // =====================================================================
 // THE TOPIC STEP AS THE APP RUNS IT ("place" in the upload workflow):
@@ -46,7 +48,11 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
       }));
       usage = addUsage(usage, answer);
       model = answer.model;
-      for (const [unitId, paths] of readPlacements(answer.value, input)) {
+      const placements = readPlacements(answer.value, input);
+      const resolved = await reuseFuzzyDomainPaths([...new Set([...placements.values()].flat())], [...known],
+        nameDuplicateJudge(settings, "domain", { claims: input.claims, domainTabs }, (call) => { usage = addUsage(usage, call); }));
+      for (const [unitId, proposedPaths] of placements) {
+        const paths = [...new Set(proposedPaths.map((path) => resolved.get(path) ?? path))];
         placed.set(unitId, paths);
         for (const path of paths) path.split("/").forEach((_, i, parts) => known.add(parts.slice(0, i + 1).join("/")));
       }
@@ -58,6 +64,7 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
       actions,
       trace: { modelVersion: model, promptVersion: PLACE_TOPICS_PROMPT_VERSION, ...usage },
     });
-    await commitChangeSet(db, changeSetId);
+    const result = await commitChangeSet(db, changeSetId);
+    if (result.status === "rejected" || result.rejected > 0) throw new Error(`Topic placement was not fully applied. Review change set ${changeSetId} in Changes.`);
   };
 }

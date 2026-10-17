@@ -13,10 +13,14 @@ import { organizeExistingEntityContext } from "@/lib/living-page/organizeHierarc
 import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { requireUser } from "@/lib/auth/requireUser";
-import { type CommitResult, commitPersonEdit, submitChangeSet, commitChangeSet } from "@/lib/change-control";
+import { type CommitResult, commitPersonEdit, submitChangeSet, commitChangeSet, revertChangeSet } from "@/lib/change-control";
 import { rebuildPage, rebuildSection, type SectionRef, type SectionState } from "@/lib/living-page";
 import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
+import { refreshOrganizationOverviews } from "@/lib/living-page/refreshOrganizationOverviews";
+import { pruneEmptySections } from "@/lib/living-page/pruneEmptySections";
+import { restructureUpdate, updateNeedsStructure } from "@/lib/living-page/restructureUpdate";
 import { discoverArticleUpdates, repairEmptyIntroductions } from "@/lib/living-page/discoverArticleUpdates";
+import { emptyArticleCandidates } from "@/lib/living-page/emptyArticleCandidates";
 import { pageAndDescendants } from "@/lib/living-page/pageHierarchy";
 import { articleUpdateSchema, type ArticleUpdateRequest } from "@/lib/living-page/updateRequest";
 import { after } from "next/server";
@@ -223,33 +227,77 @@ export async function expandRelatedArticles(pageId: string): Promise<ActionResul
 
 // Explicit refresh reads current query results and current skill assignments on every run.
 // scope "tree" refreshes the page and every page nested under it.
-export async function updateArticle(input: ArticleUpdateRequest): Promise<ActionResult<{ sections: number }>> {
+export async function updateArticle(input: ArticleUpdateRequest): Promise<ActionResult<{ sections: number; message?: string }>> {
   return toActionResult(async () => {
     await requireUser();
     const request = articleUpdateSchema.parse(input);
     const admin = getAdminSupabase();
     const { db, writer } = await getServerDeps();
     if (writer.name === "fake") throw new Error("Configure an AI provider in Settings before updating an article.");
+    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
+    if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
+    settings.skills = await loadStageSkills(db);
+    const restructure = await updateNeedsStructure(settings, request.note);
     if (request.scope === "section") {
-      const { error } = await admin.from("sections").select("id").eq("id", request.id).is("retired_at", null).single();
+      const { data: section, error } = await admin.from("sections").select("id, page_id").eq("id", request.id).is("retired_at", null).single();
       if (error) throw new Error("This article or section is no longer available. Reload the page and try again.");
+      if (restructure) {
+        const sections = await restructureUpdate(db, admin, settings, section.page_id, request.note, request.id);
+        // Build only the new sections; unrelated sections keep their text.
+        try {
+          for (const target of sections) await refreshSectionStyle(db, writer, target.sectionId, request.note);
+        } finally {
+          await pruneEmptySections(db, sections.map((target) => target.sectionId));
+        }
+        const remaining = await db.call<SectionRef[]>("list_page_sections", { p_page_id: section.page_id });
+        const createdIds = new Set(sections.map((target) => target.sectionId));
+        fillFromWebLater(remaining.filter((target) => createdIds.has(target.sectionId)).map((target) => target.sectionId), request.note);
+        return { sections: sections.length };
+      }
       await refreshSectionStyle(db, writer, request.id, request.note);
       fillFromWebLater([request.id], request.note);
       return { sections: 1 };
     }
-    const { data: pages, error } = await admin.from("pages").select("id, parent_page_id").is("retired_at", null);
+    const { data: pages, error } = await admin.from("pages").select("id,parent_page_id,title,scope,entity_id,context_entity_id").is("retired_at", null);
     if (error) throw new Error(error.message);
     if (!(pages ?? []).some((page) => page.id === request.id)) throw new Error("This article or section is no longer available. Reload the page and try again.");
     const pageIds = request.scope === "tree" ? pageAndDescendants(pages ?? [], request.id) : [request.id];
-    const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
-    if (!settings) throw new Error("Configure an AI provider in Settings before updating an article.");
-    settings.skills = await loadStageSkills(db);
     let completed = 0;
     const webFillIds: string[] = [];
     try {
       for (const pageId of pageIds) {
+        // Parent overviews must select evidence before rewriting. Generic discovery
+        // would otherwise add the child process's claims straight back to the parent.
+        if (pages!.some((page) => page.parent_page_id === pageId)) {
+          const outcomes = await refreshOrganizationOverviews({ db, client: admin, settings }, null, { pageIds: [pageId] });
+          const overview = outcomes.find((outcome) => outcome.pageId === pageId);
+          if (overview?.status === "failed") throw new Error(overview.detail ?? "Could not update the article overview.");
+          if (overview?.status === "applied") {
+            const completedBeforePage = completed;
+            try {
+              const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
+              for (const section of sections) {
+                await refreshSectionStyle(db, writer, section.sectionId, request.note);
+                completed++;
+              }
+            } catch (error) {
+              // Restore the old outline and its text when a replacement writer
+              // fails. A failed Update must not leave a formerly complete page empty.
+              if (overview.changeSetId) {
+                await revertChangeSet(db, overview.changeSetId);
+                completed = completedBeforePage;
+              }
+              throw error;
+            }
+            continue;
+          }
+        }
+        const existing = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
+        const candidates = existing.length ? [] : await emptyArticleCandidates(db, admin, pages!.find((page) => page.id === pageId)!, pages!,
+          embedderFromEnv(process.env, (call) => db.call("log_ai_call", { p_call: { ...call, purpose: "empty_article_retrieval" } })));
+        if (restructure && existing.length) await restructureUpdate(db, admin, settings, pageId, request.note);
         const repairs = await repairEmptyIntroductions(db, admin, pageId);
-        const { sections: additions, tokensIn, tokensOut } = await discoverArticleUpdates(db, admin, settings, pageId, request.note);
+        const { sections: additions, tokensIn, tokensOut } = await discoverArticleUpdates(db, admin, settings, pageId, request.note, candidates);
         if (additions.length || repairs.length) {
           const actions: DraftAction[] = [...repairs, ...additions.map((section): DraftAction => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId, ...section } }))];
           const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
@@ -260,18 +308,22 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
           if (result.status !== "applied") throw new Error("New sections were not fully applied. Review Changes before retrying.");
         }
         const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
-        if (!sections.length && pageIds.length === 1) throw new Error("Add a generated section before updating this article.");
-        for (const section of sections) {
-          await refreshSectionStyle(db, writer, section.sectionId, request.note);
-          completed++;
+        try {
+          for (const section of sections) {
+            await refreshSectionStyle(db, writer, section.sectionId, request.note);
+            completed++;
+          }
+        } finally {
+          await pruneEmptySections(db, sections.map((section) => section.sectionId));
         }
-        webFillIds.push(...sections.map((section) => section.sectionId));
+        const remaining = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
+        webFillIds.push(...remaining.map((section) => section.sectionId));
       }
     } catch (error) {
       const detail = error instanceof Error ? error.message : "The AI update failed.";
       throw new Error(`${completed ? `${completed} section(s) updated before the update stopped. ` : ""}${detail}`);
     }
-    if (!completed) throw new Error("Add a generated section before updating this article.");
+    if (!completed) return { sections: 0, message: "No saved knowledge fits this article yet. Add a relevant source, then try Update again." };
     fillFromWebLater(webFillIds, request.note);
     return { sections: completed };
   });
@@ -317,10 +369,13 @@ async function rewriteStaleSections(sectionIds: string[]): Promise<number> {
     rebuildingSections.add(sectionId);
     try {
       const state = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
-      const stale = state.lines.some((line) => line.needsRewrite);
+      const { data: section, error } = await getAdminSupabase().from("sections").select("status,build_cancelled").eq("id", sectionId).maybeSingle();
+      if (error) throw new Error(error.message);
+      if (!section || section.build_cancelled || section.status === "building") continue;
+      const stale = section.status === "stale" || state.lines.some((line) => line.needsRewrite);
       if (!stale) continue;
-      await rebuildSection(db, writer, sectionId, null);
-      completed += 1;
+      const finished = await rebuildSection(db, writer, sectionId, null);
+      if (finished && !finished.rebuildRequested) completed += 1;
     } finally {
       rebuildingSections.delete(sectionId);
     }

@@ -8,13 +8,13 @@ import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import type { DraftAction, SectionDraft } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
-import { workflowStep } from "@/lib/ingest/workflowContext";
+import { uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { similarUnits } from "@/lib/knowledge/embeddingStore";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { planArticle, topicSections } from "./articlePlanner";
 import { ARTICLE_PROPOSER_PROMPT, ARTICLE_PROPOSER_PROMPT_VERSION, articleProposalsJsonSchema, articleProposalsSchema, buildProposerMessages, type PlannedArticle, type ProposerClaim, type ProposerEntity, readProposals } from "./articleProposer";
-import { type ArticleIndexEntry, type ArticleProposal, type ArticleReviewDecision, MIN_ARTICLE_CLAIMS, nextStep, type RelatedKnowledge } from "./articleReview";
+import { type ArticleIndexEntry, type ArticleProposal, type ArticleReviewDecision, nextStep, type RelatedKnowledge } from "./articleReview";
 import { groupClaimsForArticle } from "./discoverArticleUpdates";
 import { ARTICLE_REVIEW_PROMPT_VERSION, reviewArticleProposal } from "./runArticleReview";
 
@@ -191,8 +191,10 @@ async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: Pl
     });
     changeSetId = submitted.changeSetId;
     const result = await commitChangeSet(deps.db, changeSetId);
-    if (step.kind === "create_article" && result.status !== "rejected") {
-      const { data } = await deps.client.from("actions").select("target_id").eq("change_set_id", changeSetId).eq("type", "create_page").eq("outcome", "applied").maybeSingle();
+    if (result.status === "rejected" || result.rejected > 0) throw new Error(`Article proposal was not fully applied. Review change set ${changeSetId} in Changes.`);
+    if (step.kind === "create_article") {
+      const { data, error } = await deps.client.from("actions").select("target_id").eq("change_set_id", changeSetId).eq("type", "create_page").eq("outcome", "applied").maybeSingle();
+      if (error) throw new Error(error.message);
       pageId = data?.target_id ?? null;
     }
   }
@@ -202,14 +204,18 @@ async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: Pl
     target_page_id: review.targetPageId, section_title: review.sectionTitle, result_page_id: pageId, change_set_id: changeSetId,
     model: review.model, prompt_version: review.promptVersion, tokens_in: review.tokensIn, tokens_out: review.tokensOut,
   });
-  if (error) console.error("Article review record:", error.message);
+  if (error) throw new Error(`Article review could not be recorded: ${error.message}`);
   return { verdict: review.verdict, pageId };
 }
 
-// One failed proposal never stops the others: it is recorded, and its claims stay in the store
+// Try every independent proposal. Upload failures remain retryable checkpoints;
+// manual runs record failures while leaving the claims in the store.
 async function carryOutSafely(deps: OrchestratorDeps, eventId: string | null, item: PlannedArticle, key: string): Promise<Outcome> {
   try { return await carryOut(deps, eventId, item, key); }
   catch (error) {
+    // A failed upload proposal is unfinished work, not a reviewer rejection.
+    // Let its workflow checkpoint fail so resume can retry it.
+    if (eventId || uploadExecution.getStore()) throw error;
     const reason = `Nothing was written because this step failed: ${error instanceof Error ? error.message : String(error)}`;
     const { error: recordError } = await deps.client.from("article_reviews").insert({
       event_id: eventId, proposal: { action: item.action, title: item.action === "create" ? item.title : "", claimIds: item.claims.map((claim) => claim.unitId) },
@@ -224,23 +230,37 @@ async function carryOutSafely(deps: OrchestratorDeps, eventId: string | null, it
 async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope: string, unitIds: string[]): Promise<OrchestratorResult> {
   const result: OrchestratorResult = { created: 0, updated: 0, sections: 0, rejected: 0, pageIds: [] };
   const { claims, entities } = await loadClaims(deps.client, unitIds);
-  if (claims.length < MIN_ARTICLE_CLAIMS) return result;
+  // Small updates can still belong in an existing article. The independent
+  // reviewer's minimum-claim rule continues to guard creation of new articles.
+  if (!claims.length) return result;
   const { planned } = await workflowStep(`article-proposals:${scope}`, () => propose(deps, claims, entities));
+  // jsonb reorders object keys. Save the operation keys before executing any
+  // proposal, rather than recomputing hashes from a resumed JSON representation.
+  const keys = await workflowStep(`article-keys:${scope}`, async () => planned.map((item, index) =>
+    `article:${scope}:${index}:${createHash("sha256").update(JSON.stringify(item)).digest("hex").slice(0, 16)}`));
+  let failed = false;
+  let failure: unknown;
   for (const [index, item] of planned.entries()) {
-    const key = `article:${scope}:${index}:${createHash("sha256").update(JSON.stringify(item)).digest("hex").slice(0, 16)}`;
-    const outcome = await workflowStep(key, () => carryOutSafely(deps, eventId, item, key));
+    const key = keys[index]!;
+    let outcome: Outcome;
+    try { outcome = await workflowStep(key, () => carryOutSafely(deps, eventId, item, key)); }
+    catch (error) {
+      if (!failed) { failed = true; failure = error; }
+      continue;
+    }
     if (outcome.verdict === "approve") result.created++;
     else if (outcome.verdict === "update_existing") result.updated++;
     else if (outcome.verdict === "section_of") result.sections++;
     else result.rejected++;
     if (outcome.pageId && !result.pageIds.includes(outcome.pageId)) result.pageIds.push(outcome.pageId);
   }
+  if (failed) throw failure;
   return result;
 }
 
 // After an upload: the claims it added or changed
-export async function orchestrateEventArticles(deps: OrchestratorDeps, eventId: string): Promise<OrchestratorResult> {
-  return orchestrate(deps, eventId, eventId, await eventUnitIds(deps.db, eventId));
+export async function orchestrateEventArticles(deps: OrchestratorDeps, eventId: string, scope = eventId, unitIds?: string[]): Promise<OrchestratorResult> {
+  return orchestrate(deps, eventId, scope, unitIds ?? await eventUnitIds(deps.db, eventId));
 }
 
 // For the Curator: stored claims no article cites that fit no page (keyed by the claims, so the same set is never proposed twice in one upload)

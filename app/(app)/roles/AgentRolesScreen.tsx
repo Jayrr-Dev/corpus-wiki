@@ -6,7 +6,7 @@ import { readAiSkills } from "@/lib/server-actions/skills";
 import type { ModelSettings } from "../settings/loadModelSettings";
 import { RolesTab } from "./RolesTab";
 
-// AGENT ROLES: the roster of AI roles, read from the same skill library as /skills
+// AGENT ROLES: the roster of AI roles, read from the same skill library as /workflow
 export function AgentRolesScreen({modelSettings}:{modelSettings:ModelSettings}) {
   const library=useQuery({queryKey:["table","ai_skills","library"],queryFn:async()=>{
     const result=await readAiSkills(); if (!result.ok) throw new Error(result.error); return result;

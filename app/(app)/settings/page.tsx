@@ -5,9 +5,10 @@ import { CostTable } from "@/components/usage/CostTable";
 import { UsagePanel } from "@/components/usage/UsagePanel";
 import { AiSpeed } from "./AiSpeed";
 import { ArticleCharterForm } from "./ArticleCharterForm";
+import { AutoDecide } from "./AutoDecide";
 import { AutoUpdateStale } from "./AutoUpdateStale";
 import { ExternalKnowledge } from "./ExternalKnowledge";
-import { loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile, loadSpeedTests } from "./loadModelSettings";
+import { loadGlossaryAutoDecide, loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile, loadSpeedTests } from "./loadModelSettings";
 import { ModelPicker } from "./ModelPicker";
 import { NameForm } from "./NameForm";
 import { RoleModels } from "./RoleModels";
@@ -48,7 +49,7 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
 }
 
 export default async function SettingsPage() {
-  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests()]);
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide()]);
   const panels: Record<string, ReactNode> = {
     preferences: (
       <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
@@ -61,6 +62,13 @@ export default async function SettingsPage() {
         <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">AI model</h3><SettingHint>Used for uploads, line edits, and page builds.</SettingHint></div>
         <ModelPicker settings={modelSettings} />
         <div className="mt-6 border-t pt-6">
+          <h3 className="font-medium">OpenRouter</h3>
+          <p className="mt-2 text-panel text-muted-foreground">Composer automatically assesses settled article changes, remembers completed assessments, and preserves suitable images. Use a section’s Illustrate action to request a new image with optional guidance.</p>
+          <p className="mt-2 text-panel text-muted-foreground">{process.env.OPENROUTER_API_KEY ? "Connected. OpenRouter text and vision models are available in the model pickers." : "Add OPENROUTER_API_KEY to the server environment to connect."}</p>
+          <p className="mt-1 text-panel text-muted-foreground">Composer image model: {process.env.OPENROUTER_IMAGE_MODEL || "qwen/qwen-image-2.1-turbo"}.</p>
+          <p className="mt-1 text-panel text-muted-foreground">Composer vector model: {process.env.OPENROUTER_VECTOR_MODEL || "recraft/recraft-v4.1-pro-vector"}.</p>
+        </div>
+        <div className="mt-6 border-t pt-6">
           <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">Model by role</h3><SettingHint>Run a role on its own model: a fast one to write, a smart one to decide and review, a cheap one for routine work. Roles left on Active model follow the pick above.</SettingHint></div>
           <RoleModels settings={modelSettings} />
         </div>
@@ -72,7 +80,8 @@ export default async function SettingsPage() {
     ),
     features: (
       <SettingsCard id="features" title="Features" description="Choose what your second brain does on its own." icon={ToggleRight}>
-        <AutoUpdateStale enabled={autoUpdateStale} />
+        <AutoDecide enabled={glossaryAutoDecide} />
+        <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
       </SettingsCard>
     ),

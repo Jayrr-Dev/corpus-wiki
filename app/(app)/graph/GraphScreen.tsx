@@ -5,6 +5,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { GraphView } from "@/components/graph";
 import { GraphIcon } from "@/components/icons";
 import { useGraphData } from "@/lib/graph";
+import { GraphHistoryControls } from "./GraphHistoryControls";
+import { UpdateDomainsButton } from "./UpdateDomainsButton";
 import { CleanDuplicatesButton } from "./CleanDuplicatesButton";
 import { AutoDescribeEntities } from "./AutoDescribeEntities";
 import { LinkExistingButton } from "./LinkExistingButton";
@@ -27,7 +29,7 @@ export function GraphScreen() {
         {isEmpty ? (
           <EmptyState icon={GraphIcon} title="Nothing to graph yet" hint="Upload a file and its knowledge units appear here." />
         ) : query.data ? (
-          <GraphView data={query.data} actions={<div className="flex flex-col gap-2"><LinkExistingButton /><AutoDescribeEntities /><CleanDuplicatesButton /></div>} />
+          <GraphView data={query.data} actions={(settings, focusedDomain) => <div className="flex flex-col gap-2"><GraphHistoryControls /><UpdateDomainsButton focusedDomain={focusedDomain} relatedness={settings.filters.relatedness} showRelated={settings.filters.showRelated} /><LinkExistingButton /><AutoDescribeEntities /><CleanDuplicatesButton /></div>} />
         ) : null}
       </QueryState>
       </div>

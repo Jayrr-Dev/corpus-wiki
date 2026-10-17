@@ -36,7 +36,7 @@ export interface ClusterCircle {
 }
 
 // SPACING in world units: room between dots and a leaf ring, and around child rings (with space for their names)
-const LEAF_PAD = 10;
+const LEAF_PAD = 14;
 const BRANCH_PAD = 26;
 // SPOT LAYOUT: rough size per dot, and the smallest ring child spots sit on
 const RING_PER_DOT = 18;
@@ -122,6 +122,7 @@ function spotsAround(center: { x: number; y: number }, groups: readonly ClusterG
 // FORCE: each dot toward its deepest domain's spot. Strength 0 turns it off.
 export function forceClusters(strength: number): Force<SimNode, undefined> {
   let targets = new Map<SimNode, { x: number; y: number }>();
+  let memberGroups: SimNode[][] = [];
 
   const force = (alpha: number) => {
     if (strength <= 0) return;
@@ -132,12 +133,28 @@ export function forceClusters(strength: number): Force<SimNode, undefined> {
       node.vx = (node.vx ?? 0) + (spot.x - (node.x ?? 0)) * weighted;
       node.vy = (node.vy ?? 0) + (spot.y - (node.y ?? 0)) * weighted;
     }
+    // Keep each domain's own dots together, even when sparse or unlinked.
+    // Global targets and weak orphan pull alone let outliers inflate the rings.
+    for (const members of memberGroups) {
+      const middle = centroid(members);
+      const room = 14 * Math.sqrt(members.length);
+      for (const node of members) {
+        const dx = middle.x - (node.x ?? 0), dy = middle.y - (node.y ?? 0);
+        const distance = Math.hypot(dx, dy);
+        if (distance <= room) continue;
+        const cohesion = strength * alpha * 0.8 * (1 - room / distance);
+        node.vx = (node.vx ?? 0) + dx * cohesion;
+        node.vy = (node.vy ?? 0) + dy * cohesion;
+      }
+    }
   };
 
   force.initialize = (nodes: SimNode[]) => {
     targets = new Map();
+    memberGroups = [];
     // Children round their parent's spot, clear of the parent's own dots at the center
     const place = (group: ClusterGroup, spot: { x: number; y: number }) => {
+      if (group.members.length > 1) memberGroups.push(group.members);
       for (const node of group.members) targets.set(node, spot);
       if (group.children.length === 0) return;
       const spots = spotsAround(spot, group.children, group.members.length > 0 ? groupSize(group.members.length) : 0);
@@ -161,10 +178,38 @@ export function clusterCircles(nodes: readonly SimNode[], nodeSize: number): Clu
   const build = (group: ClusterGroup, index: number): { circle: ClusterCircle; all: ClusterCircle[]; dots: SimNode[] } => {
     const inner = group.children.map((child) => build(child, index));
     const dots = [...group.members, ...inner.flatMap((child) => child.dots)];
-    const middle = centroid(dots);
+    let middle = centroid(dots);
     const isBranch = group.children.length > 0;
     const children = inner.map((child) => child.circle);
-    const r = ringAround(middle, group.members, children, nodeSize, isBranch ? BRANCH_PAD : LEAF_PAD);
+    const pad = isBranch ? BRANCH_PAD : LEAF_PAD;
+    let r = ringAround(middle, group.members, children, nodeSize, pad);
+    // A centroid favors dense pockets: one distant dot can double the ring's
+    // empty area. Fit the actual discs instead, including complete child rings.
+    const discs = [
+      ...group.members.map((node) => ({ x: node.x ?? 0, y: node.y ?? 0, r: nodeRadius(node, nodeSize) })),
+      ...children,
+    ];
+    if (discs.length > 0) {
+      const fitted = { ...discs[0]! };
+      for (const disc of discs.slice(1)) {
+        const dx = disc.x - fitted.x, dy = disc.y - fitted.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance + disc.r <= fitted.r) continue;
+        if (distance + fitted.r <= disc.r) {
+          Object.assign(fitted, { x: disc.x, y: disc.y, r: disc.r });
+          continue;
+        }
+        const nextRadius = (fitted.r + distance + disc.r) / 2;
+        const shift = (nextRadius - fitted.r) / distance;
+        fitted.x += dx * shift;
+        fitted.y += dy * shift;
+        fitted.r = nextRadius;
+      }
+      if (fitted.r + pad < r) {
+        middle = { x: fitted.x, y: fitted.y };
+        r = fitted.r + pad;
+      }
+    }
     const circle = { key: group.path, label: group.label, depth: group.depth, isBranch, ...middle, r, index };
     return { circle, all: [circle, ...inner.flatMap((child) => child.all)], dots };
   };
@@ -174,11 +219,31 @@ export function clusterCircles(nodes: readonly SimNode[], nodeSize: number): Clu
 // Move whole root groups apart using their actual drawn bounds. Moving every
 // member equally preserves the compact arrangement inside each root.
 export function separateRootDomains(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = []): void {
-  const roots = clusterCircles(nodes, nodeSize).filter((circle) => circle.depth === 0);
+  const depth = Math.max(0, ...nodes.map((node) => primarySegments(node).length - 1));
+  // Separate children first, then recompute their parents' expanded bounds.
+  for (let level = depth; level >= 0; level--) separateDomainsAtDepth(nodes, nodeSize, links, level);
+}
+
+function separateDomainsAtDepth(nodes: SimNode[], nodeSize: number, links: readonly SimLink[], depth: number): void {
+  const roots = clusterCircles(nodes, nodeSize).filter((circle) => circle.depth === depth);
   const groups = roots.map((circle) => ({
     circle,
-    nodes: nodes.filter((node) => primarySegments(node)[0] === circle.key),
+    parentPath: circle.key.split("/").slice(0, -1).join("/"),
+    nodes: nodes.filter((node) => {
+      const path = primarySegments(node).join("/");
+      return path === circle.key || path.startsWith(`${circle.key}/`);
+    }),
   }));
+  // Parent-level claims are not members of any child. Reserve their actual
+  // bounds alongside the child circles so a summary hub cannot appear inside
+  // a subject it does not belong to. This obstacle is never drawn as a domain.
+  for (const parentPath of new Set(groups.map(group => group.parentPath))) {
+    if (!parentPath) continue;
+    const members = nodes.filter(node => primarySegments(node).join("/") === parentPath);
+    if (!members.length) continue;
+    const circle = clusterCircles(members, nodeSize).find(group => group.key === parentPath)!;
+    groups.push({ circle, parentPath, nodes: members });
+  }
   const rootByNode = new Map(nodes.map((node) => [node.id, primarySegments(node)[0]]));
   const connectionWeight = new Map<string, number>();
   const pairKey = (a: string, b: string) => JSON.stringify([a, b].sort());
@@ -197,15 +262,18 @@ export function separateRootDomains(nodes: SimNode[], nodeSize: number, links: r
       node.y = (node.y ?? 0) + dy;
     }
   };
-  for (let pass = 0; pass < 4; pass++) {
+  for (let pass = 0; pass < 32; pass++) {
+    let largestOverlap = 0;
     for (let i = 0; i < groups.length; i++) for (let j = i + 1; j < groups.length; j++) {
       const a = groups[i]!, b = groups[j]!;
+      // Only siblings share a container; cousins are handled by their parents.
+      if (a.parentPath !== b.parentPath) continue;
       const dx = b.circle.x - a.circle.x, dy = b.circle.y - a.circle.y;
       const distance = Math.hypot(dx, dy);
       // Many cross-domain connections relax the boundary; similarity links
       // count less than explicit relationships. Internal link forces can
       // still stretch each group toward its neighbors.
-      const weight = connectionWeight.get(pairKey(a.circle.key, b.circle.key)) ?? 0;
+      const weight = depth === 0 ? connectionWeight.get(pairKey(a.circle.key, b.circle.key)) ?? 0 : 0;
       const affinity = Math.min(1, weight / Math.max(1, Math.min(a.nodes.length, b.nodes.length)));
       const gap = 32 * (1 - affinity);
       const sharedSpace = Math.min(a.circle.r, b.circle.r) * 0.35 * affinity;
@@ -214,12 +282,14 @@ export function separateRootDomains(nodes: SimNode[], nodeSize: number, links: r
       const pinnedA = a.nodes.some((node) => node.fx != null || node.fy != null);
       const pinnedB = b.nodes.some((node) => node.fx != null || node.fy != null);
       if (pinnedA && pinnedB) continue;
+      largestOverlap = Math.max(largestOverlap, overlap);
       const ux = distance > 0 ? dx / distance : 1;
       const uy = distance > 0 ? dy / distance : 0;
       const shareA = pinnedA ? 0 : pinnedB ? 1 : 0.5;
       move(a, -ux * overlap * shareA, -uy * overlap * shareA);
       move(b, ux * overlap * (1 - shareA), uy * overlap * (1 - shareA));
     }
+    if (largestOverlap < 0.1) break;
   }
 }
 

@@ -1,5 +1,5 @@
 import "server-only";
-import { assertActiveUpload, workflowStep } from "@/lib/ingest/workflowContext";
+import { assertActiveUpload, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import {
@@ -12,6 +12,7 @@ import {
 import { supabaseRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { fetchDescribableEntityIds } from "./describableEntities";
+import { mapConcurrent } from "@/lib/processing/concurrency";
 
 // =====================================================================
 // ENTITY DESCRIPTIONS (server side): after an upload, the entities it
@@ -45,10 +46,14 @@ export async function planDescribeBatches(client: AdminSupabase): Promise<string
 export async function describeEventEntities(deps: Deps, eventId: string): Promise<void> {
   const ids = [...await supabaseRpc(deps.client).call<string[]>("event_touched_entities", { p_event_id: eventId })];
   ids.sort();
-  for (let index = 0; index < ids.length; index += DESCRIBE_BATCH_SIZE) {
-    const batch = ids.slice(index, index + DESCRIBE_BATCH_SIZE);
+  const batches: string[][] = [];
+  for (let index = 0; index < ids.length; index += DESCRIBE_BATCH_SIZE) batches.push(ids.slice(index, index + DESCRIBE_BATCH_SIZE));
+  // Each batch owns different entities. Drain active calls before returning so
+  // the upload keeps its lease and cards cannot read half-finished descriptions.
+  await mapConcurrent(batches, 3, async (batch) => {
+    await assertActiveUpload();
     await workflowStep(`describe:${batch.join(":")}`, () => describeEntityBatch(deps, batch));
-  }
+  }, uploadExecution.getStore()?.signal);
 }
 
 // ONE BATCH: load the evidence, ask the model, write what it answered
@@ -64,6 +69,7 @@ export async function describeEntityBatch(deps: Deps, entityIds: string[]): Prom
   const rows = describeAnswerToRows(answer.value, evidence);
   const now = new Date().toISOString();
   for (const row of rows) {
+    uploadExecution.getStore()?.signal?.throwIfAborted();
     await assertActiveUpload();
     const { error } = await deps.client.from("entities").update({ description: row.description, description_updated_at: now, description_model: answer.model }).eq("id", row.entityId);
     if (error) throw error;

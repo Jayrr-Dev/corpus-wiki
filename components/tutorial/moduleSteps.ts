@@ -154,11 +154,11 @@ const MODULES: Record<string, ModuleTutorial> = {
       step("Maintain the hierarchy", "New domain adds a root to the current group. Domain menus support available operations such as adding children, renaming, and retiring.", "Use New domain or a branch’s menu after checking its scope."),
     ],
   },
-  skills: {
-    id: "skills", label: "Workflow",
+  workflow: {
+    id: "workflow", label: "Workflow",
     steps: [
-      step("Understand the workflow views", "Stage assignments chooses instructions for each AI stage. Skill library holds reusable instructions; Flows and AI flow show how the work is organized.", "Switch among the Workflow tabs.", "workflow-tabs"),
-      step("Assign instructions to a stage", "Choose a skill for a stage and save the change. App rules only removes the added skill instructions; Reset to default restores the default assignment.", "Review a stage’s description before changing its assigned skill."),
+      step("Understand the workflow views", "Workflow overview shows the complete system, its triggers and instruction controls. Skill assignments configures reusable instructions; Skill library stores them. Pipeline diagrams and AI handoffs provide detailed maps.", "Switch among the Workflow tabs.", "workflow-tabs"),
+      step("Assign reusable instructions", "Choose a skill for a stage and save the change. App rules only removes the added skill instructions; Reset to default restores the default assignment.", "Open Skill assignments and review the capability before changing its skill."),
       step("Create and reuse skills", "New skill creates custom instructions. Duplicate a built-in skill to adapt it; changes apply to future runs. Assigned skills must be unassigned before archiving.", "Use New skill or open Skill library to inspect existing instructions."),
     ],
   },

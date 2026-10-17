@@ -9,7 +9,7 @@ import { MODEL_ROLES, type ModelRole, ROLE_INPUTS, roleName } from "@/lib/ai/rol
 import { describeTypes, missingTypes, readsAll } from "@/lib/ai/modelInputs";
 import type { ReasoningEffort } from "@/lib/ai/chat";
 import { chooseRoleEffort, chooseRoleModel } from "@/lib/server-actions/settings";
-import { ROLE_ICONS } from "@/app/(app)/skills/roleIcons";
+import { ROLE_ICONS } from "@/app/(app)/workflow/roleIcons";
 import { usesEffort } from "@/lib/ai/effortSupport";
 import { cn } from "@/lib/utils";
 import { EFFORTS } from "./AiEffort";

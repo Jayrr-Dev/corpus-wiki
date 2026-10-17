@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { ChatMessage } from "@/lib/ai/chat";
 import { ARTICLE_TYPES, type ArticleCharter, type ArticleType } from "./articleCharter";
+import { articleDuplicateCandidates } from "./articleDuplicates";
 
 // =====================================================================
 // ARTICLE REVIEWER: before a new article is created, an independent model
@@ -36,17 +37,13 @@ export const articleReviewJsonSchema = z.toJSONSchema(articleReviewSchema);
 // The decision the pipeline acts on; `decidedBy` says whether a rule or the model made it
 export type ArticleReviewDecision = { verdict: ArticleVerdict; targetPageId: string | null; sectionTitle: string | null; failed: ArticleCheck[]; reason: string; decidedBy: "rule" | "model" };
 
-const normalize = (title: string) => title.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-
-// DECIDED WITHOUT THE MODEL: too few claims, or a title an existing article already has (update that one)
+// Structural checks only: identical titles still need a scope/meaning check by the reviewer.
 export function ruleDecision(input: ArticleReviewInput): ArticleReviewDecision | null {
-  const { proposal, articles } = input;
+  const { proposal } = input;
   if (!ARTICLE_TYPES.includes(proposal.type)) return { verdict: "reject", targetPageId: null, sectionTitle: null, failed: ["typeFits"], reason: `“${proposal.type}” is not an article type.`, decidedBy: "rule" };
   if (proposal.claims.length < MIN_ARTICLE_CLAIMS) {
     return { verdict: "reject", targetPageId: null, sectionTitle: null, failed: ["substantive"], reason: `Only ${proposal.claims.length} claim${proposal.claims.length === 1 ? "" : "s"}; an article needs at least ${MIN_ARTICLE_CLAIMS}.`, decidedBy: "rule" };
   }
-  const same = articles.find((article) => normalize(article.title) === normalize(proposal.title));
-  if (same) return { verdict: "update_existing", targetPageId: same.id, sectionTitle: null, failed: ["distinct"], reason: `“${same.title}” already exists.`, decidedBy: "rule" };
   return null;
 }
 
@@ -55,7 +52,7 @@ export function buildArticleReviewMessages(instructions: string, input: ArticleR
   const { charter, articles, proposal, related } = input;
   return [
     { role: "system", content: instructions },
-    { role: "user", content: JSON.stringify({ charter, articles, proposal, relatedKnowledge: related }) },
+    { role: "user", content: JSON.stringify({ charter, articles, proposal, duplicateCandidates: articleDuplicateCandidates(input), relatedKnowledge: related }) },
   ];
 }
 

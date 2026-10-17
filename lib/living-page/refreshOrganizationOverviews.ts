@@ -1,17 +1,19 @@
 import "server-only";
 import { z } from "zod";
-import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
+import { addUsage, ANSWER_TOKEN_BUDGET, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { CuratorSnapshot } from "@/lib/curator/curate";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
-import { loadArticleKnowledge } from "./articlePlanner";
+import { loadArticleKnowledge, NoArticleClaimsError } from "./articlePlanner";
 import type { ArticleKnowledge } from "./articlePlan";
 import { descendantClaimIds, isDetailClaim, placeholderPageHealth, OVERVIEW_PROMPT, overviewActions, overviewMessages, overviewPlanSchema, overviewSections, organizationPageHealth, type OrganizationPageHealth, type OverviewInput } from "./organizationOverview";
 import { rebuildPage, type SectionWriter } from "./index";
 import type { SectionDraft } from "@/lib/ai/types";
 import { CONTEXT_OWNER_TYPES } from "@/lib/knowledge/entityTypes";
+import { affectedPageIds } from "@/lib/curator/scope";
+import { uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 
 // =====================================================================
 // REFRESH ORGANIZATION OVERVIEWS: after an upload, a Curator run, or an
@@ -21,12 +23,12 @@ import { CONTEXT_OWNER_TYPES } from "@/lib/knowledge/entityTypes";
 // alone. Nothing happens, and no AI is called, when no page needs it.
 // =====================================================================
 
-export const OVERVIEW_PROMPT_VERSION = "organization-overview-v2";
+export const OVERVIEW_PROMPT_VERSION = "organization-overview-v3-partitioned-evidence";
 // The opening chooses from at most this many of the children's claims
 const BORROWED_CHOICES = 20;
 
 export type OverviewDeps = { settings: TokenFactorySettings; client: AdminSupabase; db: DbRpc; writer?: SectionWriter };
-export type OverviewOutcome = OrganizationPageHealth & { status: "planned" | "applied" | "skipped" | "failed"; detail: string | null; sections: SectionDraft[] };
+export type OverviewOutcome = OrganizationPageHealth & { status: "planned" | "applied" | "skipped" | "failed"; detail: string | null; sections: SectionDraft[]; changeSetId?: string };
 
 // Claims by id, in the shape the planner reads
 async function loadUnits(client: AdminSupabase, unitIds: string[]): Promise<ArticleKnowledge["units"]> {
@@ -59,7 +61,7 @@ export async function planOverview(settings: TokenFactorySettings, input: Overvi
   ];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   for (let attempt = 0; ; attempt++) {
-    const answer = await chatJson(settings, { name: "article_outline", subject: input.organization.name, schema: overviewPlanSchema, jsonSchema: z.toJSONSchema(overviewPlanSchema), maxTokens: 4000, messages });
+    const answer = await chatJson(settings, { name: "article_outline", subject: input.organization.name, schema: overviewPlanSchema, jsonSchema: z.toJSONSchema(overviewPlanSchema), maxTokens: ANSWER_TOKEN_BUDGET, messages });
     usage = addUsage(usage, answer);
     try { return { sections: overviewSections(answer.value, input), ...usage }; }
     catch (error) {
@@ -77,7 +79,10 @@ export async function overviewInput(client: AdminSupabase, snapshot: CuratorSnap
   if (!organization) return "No organization entity matches the page title.";
   const below = descendantClaimIds(snapshot.pages, page.id);
   let about: ArticleKnowledge["units"] = [];
-  if (organization.id) try { about = (await loadArticleKnowledge(client, organization.id)).units; } catch { /* an organization with no claims of its own */ }
+  if (organization.id) {
+    try { about = (await loadArticleKnowledge(client, organization.id)).units; }
+    catch (error) { if (!(error instanceof NoArticleClaimsError)) throw error; }
+  }
   // Its own: claims about it, and claims the page cites today, that no page under it cites
   const ownIds = new Set([...about.map((unit) => unit.unitId), ...page.claimIds].filter((id) => !below.has(id)));
   const aboutById = new Map(about.map((unit) => [unit.unitId, unit]));
@@ -119,42 +124,44 @@ async function replaceableSections(client: AdminSupabase, pageId: string): Promi
 
 // RUN: every organization page that repeats its children; dryRun plans without saving
 // pageIds: re-plan these organization pages even when they already pass (after a prompt change)
-export async function refreshOrganizationOverviews(deps: OverviewDeps, eventId: string | null, options: { dryRun?: boolean; pageIds?: string[] } = {}): Promise<OverviewOutcome[]> {
-  const snapshot = await deps.db.call<CuratorSnapshot>("curator_snapshot");
+export async function refreshOrganizationOverviews(deps: OverviewDeps, eventId: string | null, options: { dryRun?: boolean; pageIds?: string[]; affectedPageIds?: string[] } = {}): Promise<OverviewOutcome[]> {
+  const scope = `${eventId ?? "manual"}:${[...(options.pageIds ?? [])].sort().join(",")}`;
+  // Retain the original candidates if a page's outline was committed before its
+  // writer failed. The new tree may no longer flag that page as needing repair.
+  const snapshot = await workflowStep(`overview:snapshot:${scope}`, () => deps.db.call<CuratorSnapshot>("curator_snapshot"));
   const outcomes: OverviewOutcome[] = [];
-  const chosen = (page: OrganizationPageHealth) => (options.pageIds ? options.pageIds.includes(page.pageId) : page.needsOverview);
-  // Organization pages that repeat their children, and placeholder pages waiting for an overview
+  const affected = options.affectedPageIds ? affectedPageIds(snapshot.pages, { pageIds: options.affectedPageIds, unitIds: [] }) : null;
+  const chosen = (page: OrganizationPageHealth) => options.pageIds ? options.pageIds.includes(page.pageId) : page.needsOverview && (!affected || affected.has(page.pageId));
   for (const health of [...organizationPageHealth(snapshot.pages), ...placeholderPageHealth(snapshot.pages)].filter(chosen)) {
     const outcome = (status: OverviewOutcome["status"], detail: string | null, sections: SectionDraft[] = []): OverviewOutcome => ({ ...health, status, detail, sections });
+    const key = `overview:${scope}:${health.pageId}`;
     try {
-      const replace = await replaceableSections(deps.client, health.pageId);
-      if (!replace) { outcomes.push(outcome("skipped", "A person wrote lines on this page; it is left as it is.")); continue; }
-      const input = await overviewInput(deps.client, snapshot, health);
-      if (typeof input === "string") { outcomes.push(outcome("skipped", input)); continue; }
-      // No claim says what the topic is: the page's scope introduces it (no AI call), and an
-      // older overview that only repeated its children's details is taken out
-      if (!input.own.length && !input.borrowed.length) {
-        if (!replace.length || options.dryRun) { outcomes.push(outcome(options.dryRun && replace.length ? "planned" : "skipped", "No general claim fits; the page's scope introduces it.")); continue; }
-        const { changeSetId } = await submitChangeSet(deps.db, { eventId, cause: eventId ? "upload" : "edit", actor: "ai", operationKey: `overview:${eventId ?? "manual"}:${health.pageId}:${crypto.randomUUID()}` }, {
-          summary: `Planner: “${health.title}” is introduced by its scope; removed an opening that repeated its pages' details`,
-          actions: overviewActions(health.pageId, [], replace),
-          trace: { modelVersion: null, promptVersion: OVERVIEW_PROMPT_VERSION, tokensIn: 0, tokensOut: 0 },
+      outcomes.push(await workflowStep(key, async () => {
+        const prepared = await workflowStep(`${key}:plan`, async () => {
+          const replace = await replaceableSections(deps.client, health.pageId);
+          if (!replace) return { skip: "A person wrote lines on this page; it is left as it is." };
+          const input = await overviewInput(deps.client, snapshot, health);
+          if (typeof input === "string") return { skip: input };
+          if (!input.own.length && !input.borrowed.length) return { replace, sections: [] as SectionDraft[], tokensIn: 0, tokensOut: 0, scopeOnly: true };
+          return { replace, ...await planOverview(deps.settings, input), scopeOnly: false };
+        });
+        if ("skip" in prepared) return outcome("skipped", prepared.skip ?? null);
+        const { replace, sections, tokensIn, tokensOut, scopeOnly } = prepared;
+        if (options.dryRun) return outcome("planned", null, sections);
+        if (scopeOnly && !replace.length) return outcome("skipped", "No general claim fits; the page's scope introduces it.");
+        const { changeSetId } = await submitChangeSet(deps.db, {
+          eventId, cause: eventId ? "upload" : "edit", actor: "ai",
+          operationKey: uploadExecution.getStore() ? `${key}:submit` : `${key}:${crypto.randomUUID()}`,
+        }, {
+          summary: scopeOnly ? `Planner: removed an opening that repeated the pages under "${health.title}"` : `Planner: made "${health.title}" an overview of its pages`,
+          actions: overviewActions(health.pageId, sections, replace),
+          trace: { modelVersion: scopeOnly ? null : deps.settings.model ?? null, promptVersion: skillTrace(OVERVIEW_PROMPT_VERSION, ["plan_articles"], deps.settings.skills), tokensIn, tokensOut },
         });
         const result = await commitChangeSet(deps.db, changeSetId);
-        outcomes.push(outcome(result.status === "rejected" ? "failed" : "applied", "The page's scope introduces it; its pages are listed under it."));
-        continue;
-      }
-      const { sections, ...usage } = await planOverview(deps.settings, input);
-      if (options.dryRun) { outcomes.push(outcome("planned", null, sections)); continue; }
-      const { changeSetId } = await submitChangeSet(deps.db, { eventId, cause: eventId ? "upload" : "edit", actor: "ai", operationKey: `overview:${eventId ?? "manual"}:${health.pageId}:${crypto.randomUUID()}` }, {
-        summary: `Planner: made “${health.title}” an overview of its pages`,
-        actions: overviewActions(health.pageId, sections, replace),
-        trace: { modelVersion: deps.settings.model ?? null, promptVersion: skillTrace(OVERVIEW_PROMPT_VERSION, ["plan_articles"], deps.settings.skills), tokensIn: usage.tokensIn, tokensOut: usage.tokensOut },
-      });
-      const result = await commitChangeSet(deps.db, changeSetId);
-      if (result.status === "rejected") { outcomes.push(outcome("failed", "Change control rejected the new outline.", sections)); continue; }
-      if (deps.writer) await rebuildPage(deps.db, deps.writer, health.pageId);
-      outcomes.push(outcome("applied", null, sections));
+        if (result.status === "rejected" || result.rejected > 0) throw new Error("Change control rejected the new outline.");
+        if (!scopeOnly && deps.writer) await rebuildPage(deps.db, deps.writer, health.pageId);
+        return { ...outcome("applied", scopeOnly ? "The page's scope introduces it; its pages are listed under it." : null, sections), changeSetId };
+      }));
     } catch (error) {
       outcomes.push(outcome("failed", error instanceof Error ? error.message : String(error)));
     }

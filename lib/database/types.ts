@@ -43,6 +43,10 @@ export type Database = {
       }
       glossary_state: {
         Row: {
+          review_cache: Json
+          pending_entries: Json
+          identity_registry: Json
+          definition_overrides: Json
           batches: Json
           completed_batches: number
           entries: Json
@@ -57,6 +61,10 @@ export type Database = {
           total_batches: number
         }
         Insert: {
+          review_cache?: Json
+          pending_entries?: Json
+          identity_registry?: Json
+          definition_overrides?: Json
           batches?: Json
           completed_batches?: number
           entries?: Json
@@ -71,6 +79,10 @@ export type Database = {
           total_batches?: number
         }
         Update: {
+          review_cache?: Json
+          pending_entries?: Json
+          identity_registry?: Json
+          definition_overrides?: Json
           batches?: Json
           completed_batches?: number
           entries?: Json
@@ -104,18 +116,25 @@ export type Database = {
       }
       assets: {
         Row: {
-          id: string; source_id: string; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number: number | null;
+          media_url: string | null; attribution: string | null; license: string | null; entity_id: string | null;
+          deleted_at: string | null;
+          id: string; source_id: string | null; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number: number | null;
+          origin: "source" | "generated" | "external"; generated_by: string | null; generated_page_id: string | null; content_hash: string | null;
           passage_ids: string[]; title: string | null; description: string | null; tags: string[]; input_hash: string | null;
           described_at: string | null; model: string | null; created_at: string;
           asset_type: "photo" | "diagram" | "chart" | "flowchart" | "map" | "screenshot" | "table" | "logo" | "drawing" | "document scan" | "recording" | "other" | null; edited_fields: ("title" | "description" | "tags" | "asset_type")[];
         }
         Insert: {
-          id?: string; source_id: string; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number?: number | null;
+          media_url?: string | null; attribution?: string | null; license?: string | null; entity_id?: string | null;
+          deleted_at?: string | null;
+          id?: string; source_id?: string | null; kind: "image" | "video" | "audio"; storage_path: string; mime_type: string; figure_number?: number | null;
+          origin?: "source" | "generated" | "external"; generated_by?: string | null; generated_page_id?: string | null; content_hash?: string | null;
           passage_ids?: string[]; title?: string | null; description?: string | null; tags?: string[]; input_hash?: string | null;
           described_at?: string | null; model?: string | null; created_at?: string;
           asset_type?: "photo" | "diagram" | "chart" | "flowchart" | "map" | "screenshot" | "table" | "logo" | "drawing" | "document scan" | "recording" | "other" | null; edited_fields?: ("title" | "description" | "tags" | "asset_type")[];
         }
         Update: {
+          deleted_at?: string | null;
           figure_number?: number | null; passage_ids?: string[]; title?: string | null; description?: string | null; tags?: string[];
           input_hash?: string | null; described_at?: string | null; model?: string | null;
           asset_type?: "photo" | "diagram" | "chart" | "flowchart" | "map" | "screenshot" | "table" | "logo" | "drawing" | "document scan" | "recording" | "other" | null; edited_fields?: ("title" | "description" | "tags" | "asset_type")[];
@@ -877,6 +896,7 @@ export type Database = {
       sections: {
         Row: {
           body: string
+          build_cancelled: boolean
           built_at: string | null
           built_with_model_version: string | null
           created_at: string
@@ -891,6 +911,7 @@ export type Database = {
         }
         Insert: {
           body?: string
+          build_cancelled?: boolean
           built_at?: string | null
           built_with_model_version?: string | null
           created_at?: string
@@ -905,6 +926,7 @@ export type Database = {
         }
         Update: {
           body?: string
+          build_cancelled?: boolean
           built_at?: string | null
           built_with_model_version?: string | null
           created_at?: string
@@ -1166,6 +1188,7 @@ export type Database = {
       }
     }
     Functions: {
+      change_set_contexts: { Args: { p_change_set_ids: string[] }; Returns: Json };
       read_upload_workflows: { Args: { p_event_ids: string[] }; Returns: Json };
       sync_assets: { Args: Record<string, never>; Returns: number };
       rename_asset_tag: { Args: { p_from: string; p_to: string }; Returns: number };

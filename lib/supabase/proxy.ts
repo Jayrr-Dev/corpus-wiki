@@ -4,9 +4,10 @@ import type { Database } from "@/lib/database/types";
 import { getPublicSupabaseEnv } from "./env";
 
 // ROUTES THE PROXY LETS THROUGH WITHOUT A SESSION. /api/capture checks the
-// caller itself (session or API key), since scripts have no cookie to redirect;
+// caller itself (session or API key); /api/processing/recover requires its own
+// worker key. Scripts and schedulers have no cookie to redirect;
 // every other route, future /api routes included, stays behind sign-in
-export const PUBLIC_PATHS = ["/login", "/api/capture"] as const;
+export const PUBLIC_PATHS = ["/login", "/api/capture", "/api/processing/recover"] as const;
 
 // True when the path is a public route (or below one)
 export function isPublicPath(pathname: string): boolean {

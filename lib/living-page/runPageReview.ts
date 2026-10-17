@@ -1,5 +1,5 @@
 import { reviewMap } from "./reviewConcurrency";
-import { workflowWrite } from "@/lib/ingest/workflowContext";
+import { workflowStep, workflowWrite } from "@/lib/ingest/workflowContext";
 import { autoAcceptHeld } from "@/lib/change-control";
 import { createHash } from "node:crypto";
 import "server-only";
@@ -149,7 +149,7 @@ The Curator asked for this review with a focus (guidance on where to look, not e
   return { ...saved, exceptions: saved.exceptions - accepted.length };
 }
 
-export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null) {
+export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string) {
   const pages = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-  for (const pageId of pages) await runPageReview(db, settings, pageId, embedder);
+  for (const pageId of pages) await workflowStep(`editorial-review:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}`, () => runPageReview(db, settings, pageId, embedder));
 }

@@ -17,6 +17,7 @@ import { sourceState } from "@/lib/knowledge/evidence";
 import { queryKeys } from "@/lib/queries";
 import {
   archiveSourceAction,
+  applySourceKnowledge,
   purgeSourceAction,
   removeSource,
   replaceSource,
@@ -46,6 +47,7 @@ export function SourceRowMenu({ source }: { source: Source }) {
       items={[
         { label: "Open", href: `/sources/${source.id}` },
         { label: "Preview", isWide: true, body: () => <PreviewDialogBody source={source} /> },
+        { label: "Apply knowledge", isAccent: true, isDisabled: isArchived, separatorBefore: true, body: (close) => <ApplyKnowledgeForm source={source} onDone={close} /> },
         { label: "Re-run", separatorBefore: true, isDisabled: isArchived, body: (close) => <RerunForm source={source} onDone={close} /> },
         { label: "Replace", isAccent: true, body: (close) => <ReplaceForm source={source} onDone={close} /> },
         isArchived
@@ -59,6 +61,18 @@ export function SourceRowMenu({ source }: { source: Source }) {
 }
 
 type FormProps = { source: Source; onDone: () => void };
+
+function ApplyKnowledgeForm({ source, onDone }: FormProps) {
+  const apply = useServerAction(applySourceKnowledge, { progress: { title: `Applying knowledge from “${source.title}”`, detail: "Reviewing article updates and writing approved changes…" } });
+  return <DialogForm
+    title="Apply knowledge"
+    description="Use this source's saved knowledge to propose and review article updates. Approved changes are written to the articles."
+    submitLabel="Apply knowledge"
+    isPending={apply.isPending}
+    error={apply.error}
+    onSubmit={async () => { const result = await apply.run(source.id); if (result.ok) onDone(); }}
+  />;
+}
 
 // PREVIEW: the original file in a wide dialog, drawn by its type
 function PreviewDialogBody({ source }: { source: Source }) {

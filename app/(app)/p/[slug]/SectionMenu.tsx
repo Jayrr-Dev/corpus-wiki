@@ -6,10 +6,16 @@ import type { Tables } from "@/lib/database/types";
 import { removeSection, renameSection } from "@/lib/server-actions/pages";
 import { ForceCreateForm } from "./ForceCreateDialog";
 import { UpdateArticleForm } from "./UpdateArticleDialog";
+import { IllustrateSectionForm } from "./IllustrateSectionDialog";
 
 // SECTION MENU: "…" beside a section title with Update, Force Create, Rename, and Remove (shown on hover unless `className` says otherwise)
 export function SectionMenu({ section, className = "invisible group-focus-within:visible group-hover:visible" }: { section: Tables<"sections">; className?: string }) {
   const items = [
+    {
+      label: "Illustrate",
+      hint: "Ask Composer to create or replace this section’s illustration. Optional guidance lets you steer the drawing.",
+      render: (close: () => void) => <IllustrateSectionForm sectionId={section.id} title={section.title} onClose={close} />,
+    },
     {
       label: "Update",
       hint: "Rewrites this section from the latest saved knowledge and AI skills. You can add a note to steer it.",

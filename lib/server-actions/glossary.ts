@@ -12,7 +12,7 @@ import { embedMissingGlossary, similarGlossary } from "@/lib/glossary/embeddingS
 import { glossaryClient } from "@/lib/glossary/storage";
 import { toActionResult } from "./result";
 import { z } from "zod";
-import { glossaryEntryKey, type GlossaryEntry } from "@/lib/glossary/entries";
+import { glossaryHistoryKeys, type GlossaryEntry } from "@/lib/glossary/entries";
 
 export async function changeGlossaryDefinition(original: GlossaryEntry, definition: string | null) {
   return toActionResult(async () => {
@@ -54,10 +54,10 @@ export type GlossaryDefinitionVersion = {
 // EVERY VERSION OF ONE DEFINITION, newest first. Each glossary change is audited as a
 // whole-dictionary snapshot; this follows the entry (same headword, expansion and scope)
 // through those snapshots and keeps the points where its text changed.
-export async function glossaryDefinitionHistory(entry: Pick<GlossaryEntry, "term" | "expansion" | "scopeKey">) {
+export async function glossaryDefinitionHistory(entry: GlossaryEntry) {
   return toActionResult(async () => {
     await requireUser();
-    const key = glossaryEntryKey(entry);
+    const keys = new Set(glossaryHistoryKeys(entry));
     const { data, error } = await getAdminSupabase().from("actions")
       .select("id, applied_at, created_at, entries:input->snapshot->entries, change_sets(proposed_by, author_id, model_version)")
       .eq("type", "glossary_update").order("applied_at", { ascending: true });
@@ -65,12 +65,23 @@ export async function glossaryDefinitionHistory(entry: Pick<GlossaryEntry, "term
     const versions: GlossaryDefinitionVersion[] = [];
     for (const row of data ?? []) {
       const entries = (row.entries ?? []) as unknown as GlossaryEntry[];
-      const definition = entries.find((candidate) => glossaryEntryKey(candidate) === key)?.definition;
-      if (!definition || definition === versions.at(-1)?.definition) continue;
       const set = row.change_sets as unknown as { proposed_by: "ai" | "person"; author_id: string | null; model_version: string | null } | null;
-      versions.push({ id: row.id, definition, createdAt: row.applied_at ?? row.created_at, actor: set?.proposed_by ?? "ai", authorId: set?.author_id ?? null, model: set?.model_version ?? null });
+      for (const [index, candidate] of entries.entries()) {
+        const matches = candidate.meaningId ? keys.has(candidate.meaningId) : glossaryHistoryKeys(candidate).some((key) => keys.has(key));
+        if (!matches || candidate.definition === versions.at(-1)?.definition) continue;
+        versions.push({ id: `${row.id}:${index}`, definition: candidate.definition, createdAt: row.applied_at ?? row.created_at, actor: set?.proposed_by ?? "ai", authorId: set?.author_id ?? null, model: set?.model_version ?? null });
+      }
     }
     return { versions: versions.reverse() };
+  });
+}
+
+export async function resolvePendingGlossary(input: { id: string; decision: "keep" | "dismiss" | "merge"; target?: string; definition?: string; expected?: string }) {
+  return toActionResult(async () => {
+    await requireUser();
+    const parsed = z.object({ id: z.string().uuid(), decision: z.enum(["keep", "dismiss", "merge"]), target: z.string().uuid().optional(), definition: z.string().trim().min(10).max(1000).optional(), expected: z.string().min(1).max(1000).optional() }).parse(input);
+    await supabaseRpc(getAdminSupabase()).call("resolve_glossary_pending", { p_id: parsed.id, p_decision: parsed.decision, p_target: parsed.target ?? null, p_definition: parsed.definition ?? null, p_expected: parsed.expected ?? null });
+    return {};
   });
 }
 

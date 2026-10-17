@@ -7,6 +7,16 @@ const entity = (id: string, name: string, extra: Partial<CleanupEntity> = {}): C
 });
 
 describe("entity cleanup candidates", () => {
+  it("shortlists qualified role names but leaves uncertain specializations unmerged", () => {
+    const groups = duplicateCandidates([entity("a", "Designer", { type: "role" }), entity("b", "Distribution Designer", { type: "role" })], null);
+    expect(groups).toHaveLength(1);
+    expect(readMerges({ groups: [{ ref: "G1", same: [], reason: "Scope is uncertain" }] }, groups)).toEqual([]);
+  });
+  it("shortlists fuzzy spellings for AI review without choosing a merge", () => {
+    const groups = duplicateCandidates([entity("a", "Utilitek Solutions"), entity("b", "Utiltek Solutions"), entity("c", "EPCOR")], null);
+    expect(groups.map((group) => group.map((item) => item.id))).toEqual([["a", "b"]]);
+    expect(readMerges({ groups: [{ ref: "G1", same: [], reason: "Uncertain identity" }] }, groups)).toEqual([]);
+  });
   it("normalizes legal suffixes, a leading article and punctuation", () => {
     expect(normalizeName("Utilitek Solutions Inc.")).toBe("utilitek solutions");
     expect(normalizeName("The City of Edmonton")).toBe("city of edmonton");

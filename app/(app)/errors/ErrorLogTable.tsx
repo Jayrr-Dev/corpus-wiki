@@ -131,7 +131,7 @@ function facts(items: [string, string | null][]): [string, ReactNode][] {
 // CLEAR LOG: asks first, then removes every entry
 function ClearLogButton() {
   const [open, setOpen] = useState(false);
-  const clear = useServerAction(clearErrorLog, { progress: false });
+  const clear = useServerAction(clearErrorLog, { progress: false, refreshTables: ["error_log"] });
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild><Button variant="outline" size="sm">Clear log</Button></DialogTrigger>

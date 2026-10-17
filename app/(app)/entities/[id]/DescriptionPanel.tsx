@@ -69,7 +69,7 @@ export function DescriptionPanel({ entity, previewId, onPreview }: DescriptionPa
 
 // RESTORE: confirms, then saves the older text as the newest version
 function RestoreForm({ version, onDone }: { version: Version; onDone: () => void }) {
-  const restore = useServerAction(restoreEntityDescription, { progress: false });
+  const restore = useServerAction(restoreEntityDescription, { progress: false, refreshTables: ["entities", "entity_description_revisions"] });
   return (
     <DialogForm
       title={`Restore the version from ${historyDate.format(new Date(version.created_at))}?`}

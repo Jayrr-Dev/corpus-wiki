@@ -1,4 +1,5 @@
 import { roleForPurpose } from "./roles";
+import { processingMetric } from "@/lib/processing/metrics";
 
 // =====================================================================
 // AI CALL LOG: what one call to the AI provider cost and how it went.
@@ -43,6 +44,7 @@ export function usageTokens(usage: CompletionUsage | undefined): Pick<AiCallReco
 
 // Writes a record without ever failing the AI call (a lost log line beats a lost upload)
 export async function logSafely(logger: AiCallLogger | undefined, call: AiCallRecord): Promise<void> {
+  processingMetric(`ai.${call.purpose}`, call.durationMs, { failed: call.status !== "ok", tokensIn: call.promptTokens, tokensOut: call.completionTokens });
   if (!logger) return;
   try {
     await logger({ ...call, role: call.role ?? roleForPurpose(call.purpose) });

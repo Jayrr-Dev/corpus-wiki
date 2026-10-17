@@ -19,6 +19,12 @@ export type ListOptions<T extends TableName> = {
 };
 
 type Client = SupabaseClient<Database>;
+const PAGE_SIZE = 500;
+const COMPOSITE_KEYS: Partial<Record<TableName, string[]>> = {
+  unit_entities: ["unit_id", "entity_id", "role"], unit_domains: ["unit_id", "domain_id"],
+  section_inputs: ["section_id", "unit_id"], entity_profiles: ["entity_id"],
+  unit_embeddings: ["model", "revision_id"], glossary_embeddings: ["model", "entry_hash"], asset_tag_aliases: ["alias"],
+};
 
 // Reads rows of one table; throws the PostgREST error so TanStack Query shows it
 export async function fetchRows<T extends TableName>(
@@ -26,17 +32,29 @@ export async function fetchRows<T extends TableName>(
   table: T,
   options: ListOptions<T> = {},
 ): Promise<Row<T>[]> {
-  // The generic `from(table)` loses the row type, so the result is narrowed once here
+  if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 0)) throw new Error("List limit must be a nonnegative integer.");
+  if (options.limit === 0) return [];
+  const rows: Row<T>[] = [];
+  // Read below the API row cap with stable tie breakers. Existing list callers
+  // expect complete collections, including joins used for counts and filters.
+  for (;;) {
   let query = client.from(table).select("*");
   const filters = Object.entries(options.filters ?? {});
   const equal = Object.fromEntries(filters.filter(([, value]) => value !== null));
   if (filters.length > 0) query = query.match(equal as Record<string, string>);
   for (const [column] of filters.filter(([, value]) => value === null)) query = query.filter(column, "is", null);
   if (options.orderBy) query = query.order(options.orderBy, { ascending: options.ascending ?? true });
-  if (options.limit) query = query.limit(options.limit);
+  for (const column of COMPOSITE_KEYS[table] ?? ["id"]) {
+    if (column !== options.orderBy) query = query.order(column, { ascending: true });
+  }
+  const size = Math.min(PAGE_SIZE, (options.limit ?? Infinity) - rows.length);
+  query = query.range(rows.length, rows.length + size - 1);
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []) as unknown as Row<T>[];
+  const page = (data ?? []) as unknown as Row<T>[];
+  rows.push(...page);
+  if (page.length < size || rows.length === options.limit) return rows;
+  }
 }
 
 // Reads one row by id; null when it does not exist (or RLS hides it)

@@ -24,7 +24,7 @@ export function DefinitionPanel({ entry, queryKey, preview, onPreview, onRemoved
   const history = useQuery({
     queryKey: ["glossary", "history", glossaryEntryKey(entry), entry.definition],
     queryFn: async () => {
-      const result = await glossaryDefinitionHistory({ term: entry.term, expansion: entry.expansion, scopeKey: entry.scopeKey });
+      const result = await glossaryDefinitionHistory(entry);
       if (!result.ok) throw new Error(result.error);
       return result.versions;
     },
@@ -133,7 +133,7 @@ function RestoreForm({ entry, version, queryKey, onDone }: { entry: GlossaryEntr
   return (
     <DialogForm
       title={`Restore the version from ${historyDate.format(new Date(version.createdAt))}?`}
-      description="The definition goes back to this text as a new edit on top of its history. Earlier versions stay in History. Regenerating the glossary may replace it."
+      description="The definition goes back to this text as a new edit on top of its history. Earlier versions stay in History, and this edit is preserved when the glossary updates."
       submitLabel="Restore"
       isDestructive
       isPending={restore.isPending}

@@ -50,7 +50,7 @@ export type ReconciliationInput = {
   // An upload's claims are filed into topics after they are saved (lib/ai/tokenFactory/placeTopics.ts):
   // extraction leaves domainPaths empty and is not shown the topic tree
   fileTopicsLater?: boolean;
-  externalScope?: { article: string; section: string; note: string; referenceDomainPaths: string[] };
+  externalScope?: { article: string; section: string; note: string; referenceDomainPaths: string[]; fallbackDomainPath?: string };
   source: { id: string; title: string; sourceDate: string };
   passages: ReconciliationPassage[];
   existingUnits: ExistingUnit[];

@@ -6,7 +6,7 @@ const groupSchema = z.object({ title: z.string().min(1), claims: z.array(z.strin
 export const articlePlanSchema = z.object({
   title: z.string().min(1).max(150),
   introduction: z.array(z.string()).min(1).max(6),
-  sections: z.array(groupSchema).min(1).max(12),
+  sections: z.array(groupSchema).min(1),
 });
 export type ArticlePlan = z.infer<typeof articlePlanSchema>;
 export type ArticleKnowledge = { entity: { id: string; type: string; key: string; name: string }; units: SectionUnit[] };

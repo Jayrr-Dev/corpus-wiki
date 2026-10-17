@@ -1,6 +1,9 @@
 "use client";
+import { ComposerFigure } from "./ComposerFigure";
 
 import Link from "next/link";
+import { LoaderCircle, X } from "lucide-react";
+import { useServerAction } from "@/components/actions/useServerAction";
 import { Fragment, type ReactNode, useMemo } from "react";
 import { diffPhrases } from "@/components/diff/diffWords";
 import { Tooltip } from "@/components/standard/tooltip";
@@ -11,6 +14,7 @@ import { isBlock } from "@/lib/living-page/blocks";
 import { type SectionBuild, useSectionBuild } from "@/lib/realtime/useSectionBuild";
 import { cn } from "@/lib/utils";
 import { submitLineEdit } from "@/lib/server-actions/knowledge";
+import type { ActionResult } from "@/lib/server-actions/result";
 import { ArticleFigure } from "./ArticleFigure";
 import { EDIT_REFRESHES } from "./LinePanel";
 import { LineBlock } from "./LineBlock";
@@ -20,10 +24,17 @@ import { TextEditor } from "./TextEditor";
 const noteDate = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 const previewDate = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" });
 
+// A route can interrupt a rewrite while its Server Action is still running.
+async function cancelSectionBuild(sectionId: string): Promise<ActionResult> {
+  const response = await fetch(`/api/sections/${encodeURIComponent(sectionId)}/cancel`, { method: "POST" });
+  return response.json();
+}
+
 // An older version of one line, shown on the page in place of the current text (nothing is saved)
 export type LinePreview = { lineId: string; revisionId: string; content: string; createdAt: string };
 
 type LiveSectionProps = {
+  composerFigures?: import("@/lib/composer/types").ShownIllustration[];
   section: Tables<"sections">;
   lines: ShownLine[];
   selectedLineId: string | null;
@@ -42,11 +53,16 @@ type LiveSectionProps = {
 };
 
 // Each stored line is a real paragraph, with source refs and links outside the evidence button.
-export function LiveSection({ section, lines, selectedLineId, onSelect, isSectionSelected = false, onSelectSection, menu, evidence, links = [], hideHeading = false, preview = null, onExitPreview, editingLineId = null, onEndEdit }: LiveSectionProps) {
+export function LiveSection({ section, lines, selectedLineId, onSelect, isSectionSelected = false, onSelectSection, menu, evidence, links = [], hideHeading = false, preview = null, onExitPreview, editingLineId = null, onEndEdit, composerFigures = [] }: LiveSectionProps) {
   const isStale = section.status !== "current";
+  const cancel = useServerAction(cancelSectionBuild, { progress: false, refreshTables: ["sections"] });
   const updatedAt = sectionUpdatedAt(section, lines);
   // While the section is rewritten: the step the server is on and the paragraphs written so far
-  const build = useSectionBuild(section.id, isStale);
+  const build = useSectionBuild(section.id, section.status === "building");
+  // The server only returns illustrations whose snapshot matches the saved text.
+  // A pending update alone does not invalidate them; drafts and previews do.
+  const showComposerFigures = !preview && section.status !== "building" && !build.step;
+  const hasComposerFigure = showComposerFigures && composerFigures.some((f) => lines.some((l) => l.lineId === f.after));
   const revisedDraft = build.draft?.revised ?? {};
   const addedDraft = build.draft?.added ?? [];
   const caretLineId = addedDraft.length ? null : lines.findLast((line) => line.lineId in revisedDraft)?.lineId;
@@ -98,7 +114,19 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
   };
   return (
     <section id={`section-${section.id}`} aria-label={section.title} aria-busy={section.status === "building"} className={cn("scroll-mt-6", isStale && "relative pl-3")}>
-      {isStale ? <span aria-hidden="true" className="sb-stale-line" /> : null}
+      {isStale ? (
+        <div className="group/gold absolute inset-y-0 left-0 w-3">
+          <span aria-hidden="true" className="sb-stale-line" />
+          <Tooltip content={cancel.isPending ? "Cancelling update…" : "Cancel section update"}>
+            <button type="button" aria-label={`Cancel update for ${section.title}`} disabled={cancel.isPending}
+              onClick={() => void cancel.run(section.id)}
+              className="absolute top-0 -left-3 z-10 flex size-6 items-center justify-center rounded-full border border-stale bg-background text-stale opacity-0 transition-opacity group-hover/gold:opacity-100 group-focus-within/gold:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait [@media(hover:none)]:opacity-100">
+              {cancel.isPending ? <LoaderCircle aria-hidden="true" className="size-3.5 animate-spin" /> : <X aria-hidden="true" className="size-3.5" />}
+            </button>
+          </Tooltip>
+        </div>
+      ) : null}
+      {cancel.error ? <p role="alert" className="mb-2 text-panel text-destructive">{cancel.error}</p> : null}
       {!hideHeading ? (
         <header className="group mb-4 flex items-end justify-between gap-2 border-b pb-2">
           <div className="min-w-0">
@@ -113,13 +141,15 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
         </header>
       ) : null}
       {isStale && (build.step || build.thinking) ? <BuildStatus build={build} /> : null}
+      {section.status === "stale" && lines.length > 0 ? <p role="status" className="mb-2 text-xs text-muted-foreground">{section.build_cancelled ? "Updates are paused for this section. Use Update to resume." : "This section is awaiting an update."}</p> : null}
       {lines.length === 0 && addedDraft.length === 0 ? (
         build.step ? null : <p className="text-body text-faint">{section.status === "building" ? "Writing this section…" : isStale ? "Waiting to be rewritten." : "Nothing known yet."}</p>
       ) : (
         <div className="flow-root space-y-4">
           {lines.map((line) => (
             <Fragment key={line.lineId}>
-              {(evidence?.figuresByLine.get(line.lineId) ?? []).map((figure) => <ArticleFigure key={figure.key} figure={figure} />)}
+              {(hasComposerFigure ? [] : evidence?.figuresByLine.get(line.lineId) ?? []).map((figure) => <ArticleFigure key={figure.key} figure={figure} />)}
+              {showComposerFigures ? composerFigures.filter((f) => f.after === line.lineId).map((figure) => <ComposerFigure key={figure.id} figure={figure} />) : null}
               {renderLine(line)}
             </Fragment>
           ))}

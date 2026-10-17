@@ -17,8 +17,10 @@ describe("ruleDecision", () => {
   it("rejects a proposal with too few claims without asking the model", () => {
     expect(ruleDecision(input({ claims: claims(2) }))).toMatchObject({ verdict: "reject", failed: ["substantive"], decidedBy: "rule" });
   });
-  it("sends a proposal whose title already exists to that article", () => {
-    expect(ruleDecision(input({ title: "utility line assignment" }))).toMatchObject({ verdict: "update_existing", targetPageId: ULA });
+  it("leaves identical titles to the model to check their scope before redirecting", () => {
+    expect(ruleDecision(input({ title: "utility line assignment" }))).toBeNull();
+    const data = JSON.parse(buildArticleReviewMessages("RULES", input({ title: "utility line assignment" }))[1]!.content);
+    expect(data.duplicateCandidates[0].article.id).toBe(ULA);
   });
   it("leaves everything else to the model", () => {
     expect(ruleDecision(input())).toBeNull();

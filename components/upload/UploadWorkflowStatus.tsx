@@ -9,7 +9,7 @@ import { EVENT_TONE, type Tone } from "@/app/(app)/_lib/tone";
 import { RetryUploadButton } from "@/app/(app)/upload/RetryUploadButton";
 import { Button } from "@/components/ui/button";
 import { getBrowserSupabase } from "@/lib/supabase/client";
-import { ARTICLE_STAGES, KNOWLEDGE_STAGES, canCancelUpload, canResumeUpload, isRunning, workflowLabel, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, canCancelUpload, canResumeUpload, isRunning, workflowLabel, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
 import { cn } from "@/lib/utils";
 
 // How often the status is read while a run works, and while it waits for a resume
@@ -36,19 +36,22 @@ export function useUploadWorkflows(eventIds: string[]) {
 }
 
 const LABELS: Record<string, string> = {
+  "embeddings-cleaned": "Indexing cleaned knowledge", "embeddings-enrichment": "Indexing new definitions",
   reconcile: "Saving knowledge", "reconciliation-input": "Reading evidence", extraction: "Extracting knowledge",
   "duplicate-guard": "Comparing existing claims", embeddings: "Indexing knowledge", describe: "Describing subjects", tidy: "Tidying entities", profiles: "Writing stakeholder cards",
   expand: "Expanding definitions", plan: "Planning pages", pages: "Updating and reviewing pages", curate: "Tidying the page tree",
   hierarchy: "Organizing topics", place: "Filing into topics", duplicates: "Merging repeated claims", "settle-pages": "Checking final page updates", glossary: "Writing dictionary entries",
+  "hierarchy-enrichment": "Organizing new definitions", "plan-enrichment": "Planning updates from new knowledge", "pages-enrichment": "Writing updates from new knowledge",
 };
 
 // What the live counts are counting, per role that reports them
-const PROGRESS_UNITS: Record<string, string> = { extraction: "batches", pages: "sections" };
+const PROGRESS_UNITS: Record<string, string> = { extraction: "batches", pages: "sections completed", "pages-enrichment": "sections completed" };
 
 // THE STAGES IN ORDER: the knowledge commit is two steps inside "reconcile", then its cleanup; then the articles
 const STAGES = [
   { title: "Knowledge", keys: ["reconciliation-input", "extraction", "reconcile", ...KNOWLEDGE_STAGES] },
   { title: "Articles", keys: [...ARTICLE_STAGES] },
+  { title: "Background updates", keys: [...ENRICHMENT_STAGES] },
 ];
 const RECONCILE_PARTS = ["reconciliation-input", "extraction"];
 
@@ -85,7 +88,8 @@ function currentActivity(workflow: UploadWorkflow): string | null {
 function progressText(workflow: UploadWorkflow, key: string): string {
   const progress = workflow.progress;
   if (!progress || progress.step !== key || !progress.total) return "";
-  return ` · ${Math.min(progress.done + 1, progress.total)} of ${progress.total} ${PROGRESS_UNITS[key] ?? ""}`.trimEnd();
+  const count = key === "pages" || key === "pages-enrichment" ? progress.done : progress.done + 1;
+  return ` · ${Math.min(count, progress.total)} of ${progress.total} ${PROGRESS_UNITS[key] ?? ""}`.trimEnd();
 }
 
 const ICONS: Record<StageState, React.ReactNode> = {

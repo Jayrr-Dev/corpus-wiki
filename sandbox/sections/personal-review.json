@@ -1,0 +1,301 @@
+{
+  "reviewer": "Codex primary agent, directly inspecting headings, reading order and all assigned knowledge units",
+  "rubric": "The same six 0-4 dimensions as the AI review. These are separate editorial judgments, not objective measurements or a claim of human review.",
+  "articles": {
+    "tablet": [
+      {
+        "iteration": "iteration-4 (v3)",
+        "runLabel": "Existing Planner baseline",
+        "scores": {
+          "grounding": 3,
+          "cohesion": 2,
+          "flow": 3,
+          "headings": 3,
+          "balance": 3,
+          "introduction": 4
+        },
+        "verdict": "Needs revision: 18/24",
+        "reason": "All refs are covered, and the introduction defines the magazine. However, C14 describes paid commenting and does not fit 'Print edition, lists, and books'. C34 is a hiring event under 'Controversies'. Those are concrete claim-to-heading problems. Several journalism stories can legitimately share 'Notable reporting'; their variety alone is not a defect.",
+        "requiredChanges": [
+          "Give paid commenting a heading that includes monetization.",
+          "Place the hiring unit with staff rather than treating its background dispute as its main subject."
+        ]
+      },
+      {
+        "iteration": "iteration-4 (v3)",
+        "runLabel": "Candidate from knowledge units",
+        "scores": {
+          "grounding": 3,
+          "cohesion": 2,
+          "flow": 2,
+          "headings": 3,
+          "balance": 3,
+          "introduction": 3
+        },
+        "verdict": "Needs revision: 16/24 (AI: 20/24)",
+        "reason": "C34's hiring is still under 'Notable reporting and controversies'. C8-C9 describe a proposed blog move and resulting personal dispute, which 'Editorial stance and criticism' does not explain well. That section moves from 2011 to 2016 back to 2014 without clear thematic boundaries. The introduction's C1 and C4 repeat the founding date and Nextbook support while the founding body is reduced to C3. Section count itself receives no penalty.",
+        "requiredChanges": [
+          "Move whole C34 to staff.",
+          "Give the whole C8-C9 thread an accurate home, with related responses kept adjacent.",
+          "Make the introduction compact and use the founding section to develop its history.",
+          "Keep business changes distinct from editorial list/book output when their shared heading would be a catch-all."
+        ]
+      },
+      {
+        "iteration": "v4, before direct editorial revision",
+        "runLabel": "Candidate from knowledge units",
+        "scores": {
+          "grounding": 3,
+          "cohesion": 3,
+          "flow": 3,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Structurally sound with editorial changes requested: 20/24",
+        "reason": "The staffing and compound-unit problems are corrected: C34 is with editors, and C2 is in the introduction. Lists/books are separated from business developments. A business section may fairly contain both paid commenting and the print launch, so I disagree with the automated criticism that they must be split. However, 'political drift' adopts an evaluative description that should remain attributed. The C8-C9 recruitment thread is coherent when kept adjacent, even though its outcome date is later than the next separate dispute; I do not demand mechanical date sorting across complete narrative threads.",
+        "requiredChanges": [
+          "Use a neutral heading for attributed editorial/political characterizations instead of adopting 'political drift' as the article's own judgment.",
+          "Replace a generic 'Controversies' heading with a descriptive label matching the actual disputes about recruitment and published commentary.",
+          "Keep related story-and-response pairs adjacent; do not break C8-C9 apart solely to sort every event date.",
+          "A business-development section can contain paid commenting and the print edition; do not overfragment it just to satisfy the AI reviewer's inconsistent preference.",
+          "Keep every whole claim exactly once, including the easily omitted C14. Keep C2's awards and political-characterization facts together in a suitable location."
+        ]
+      },
+      {
+        "iteration": "v4 recovery, before direct repair audit",
+        "runLabel": "Repair misleading headings and broken reading order",
+        "scores": {
+          "grounding": 2,
+          "cohesion": 3,
+          "flow": 3,
+          "headings": 2,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Needs revision: 18/24 (AI: 21/24)",
+        "reason": "The repair fixes the severe shuffled assignments and gives staff and business their own homes. However, 'Origins and founding' includes C7's awards extending to 2022, which the heading does not cover. The outline also interrupts related editorial output and reception topics with staff/business blocks. This is a useful recovery, but the AI's acceptance is too generous on the origins heading.",
+        "requiredChanges": [
+          "Do not put awards extending to 2022 under 'Origins and founding'. Move the whole C7 to reception/recognition, or choose a supported broader heading that accurately includes it.",
+          "Use neutral descriptive headings, and keep related editorial-output sections and editorial-reception sections together where that improves continuity.",
+          "Keep whole compound units intact; a broad reception section can include both awards and attributed characterizations in C2.",
+          "Keep the C8-C9 narrative pair together, and retain C34 under staff and C14 in a heading that includes business or monetization."
+        ]
+      },
+      {
+        "iteration": "v4 final baseline",
+        "runLabel": "Existing Planner baseline",
+        "scores": {
+          "grounding": 3,
+          "cohesion": 2,
+          "flow": 3,
+          "headings": 2,
+          "balance": 3,
+          "introduction": 4
+        },
+        "verdict": "Needs revision: 17/24",
+        "reason": "Staff and monetization now have appropriate homes, but the baseline joins investigative reporting, Pittsburgh coverage and cultural lists/books into one section without a clear organizing purpose. The survey methodology in C29-C30 is also an awkward fit for 'Political coverage and criticism'. The broad controversies label gives little guidance. These are scope problems, not section-count problems.",
+        "requiredChanges": [
+          "Separate reporting from editorial lists/books or establish a genuinely explanatory shared scope.",
+          "Give the antisemitism reporting and study methodology an accurate topical home."
+        ],
+        "planHash": "9734412986e6e085a91f9098b5ae42600db121e50e982d76d458784b567ecb92"
+      },
+      {
+        "iteration": "v4 final generic-bucket recovery",
+        "runLabel": "Repair vague headings and mixed buckets",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 3,
+          "flow": 3,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Sound recovery: 21/24",
+        "reason": "The arbitrary buckets are replaced with coherent history, reception, positioning, disputes, reporting, staff, audio, business, and books sections. C34 is correctly with staff, C14 has a monetization home, and whole C2 is kept in the introduction. All refs are used once. The disputes heading could be more descriptive and the internal order could be explained better, but the structure is followable and needs no material repair.",
+        "requiredChanges": [],
+        "planHash": "a037731171c4e241e9e339693221f1feeff92e37e0597ac884cdfcdd2bc7b09a"
+      },
+      {
+        "iteration": "Final, after direct editorial revision",
+        "runLabel": "Primary-agent editorial revision",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 4,
+          "flow": 3,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Approved by my direct review: 22/24 (AI: 20/24)",
+        "reason": "The outline now introduces the magazine, establishes its founding, develops reception and attributed political characterization, then explains publication disputes, reporting, people, audio and publishing/business. C2 fits broad reception as a whole unit; C34 belongs to staff; C14 is retained under monetization. 'Political drift' is gone, and the dispute heading describes its actual scope. Keeping the C8-C9 story-response pair intact is more coherent than splitting it for mechanical chronology. Paid comments and the print launch can share a business-development section. Minor weaknesses remain: the dispute and political-characterization headings are wordy, and the final audio/business/books sequence could be smoother. None prevents a reader from following it.",
+        "requiredChanges": [],
+        "planHash": "6c3c8612a4a4b5b69b0d5515524b6613c12a88a7c53ba75bdc23703a49ea7e69"
+      },
+      {
+        "iteration": "Final, after direct repair audit",
+        "runLabel": "Primary-agent repair audit: Repair misleading headings and broken reading order",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 3,
+          "flow": 3,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Sound recovery after my audit: 21/24",
+        "reason": "C7's later awards now sit under the explicit reception/awards heading, not origins. C34 remains with staff and C14 with monetization; all refs are assigned once. The reporting and identity sections lead coherently into disputes, and audio and books stay adjacent. Broad reception appropriately accommodates compound C2. The reception section is broad and 'Controversies' could be more descriptive, but those are refinements rather than a remaining material mismatch.",
+        "requiredChanges": [],
+        "planHash": "c4fec16dbcbfd5c30c61d3e9591f3ab2309fbb6ab14158ecda97195805f43b06"
+      }
+    ],
+    "school-colors": [
+      {
+        "iteration": "iteration-4 (v3)",
+        "runLabel": "Existing Planner baseline",
+        "scores": {
+          "grounding": 2,
+          "cohesion": 3,
+          "flow": 2,
+          "headings": 2,
+          "balance": 3,
+          "introduction": 3
+        },
+        "verdict": "Needs revision: 15/24",
+        "reason": "'Awards and team nicknames' contains only C20 about awards. C21 supplies nicknames but appears in the introduction, so the body heading overpromises. It also separates related sports discussion. 'Popular colors in the united states' incorrectly lowercases a proper name, and putting that selection information after academic dress weakens the progression from origins to choices to uses.",
+        "requiredChanges": [
+          "Place nickname evidence under the relevant body heading.",
+          "Keep sports-related sections together.",
+          "Preserve proper-name capitalization."
+        ]
+      },
+      {
+        "iteration": "iteration-4 (v3)",
+        "runLabel": "Candidate from knowledge units",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 3,
+          "flow": 2,
+          "headings": 3,
+          "balance": 3,
+          "introduction": 4
+        },
+        "verdict": "Needs revision: 19/24 (AI: 22/24)",
+        "reason": "The introduction defines the subject, all refs are covered, and the origin section sensibly keeps C4 with C11. However, 'Color awards and team nicknames' follows academic dress rather than the sports section, forcing a return to the same use case. Awards are also a distinct sense of 'colors' and should not be casually equated with branded colors. C12-C14 fit a sports-versus-institutional-brand discussion; they are not intrinsically misplaced just because uniform rules follow.",
+        "requiredChanges": [
+          "Keep team nicknames adjacent to the sports uses they name.",
+          "Clearly distinguish achievement awards from institutional brand colors.",
+          "Do not fragment coherent sports examples merely to make sections smaller."
+        ]
+      },
+      {
+        "iteration": "v4, before direct editorial revision",
+        "runLabel": "Candidate from knowledge units",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 3,
+          "flow": 3,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Sound with refinements requested: 21/24 (AI: 22/24)",
+        "reason": "The sports-related sections are now contiguous, and the introduction is clean. All refs are used once. Two refinements remain: C4 and C11 describe the same 1836 Boat Race in separated origins/sports sections; keeping them adjacent would reduce retracing. 'Divergence between athletics and university branding' overstates a one-way difference because C14 is an example of alignment. Awards and nicknames are both related to sports identity, but achievement honors are a distinct sense of colors and should be labeled clearly.",
+        "requiredChanges": [
+          "Keep C4 and C11 together near origins so the 1836 Boat Race is not retold in separated sections.",
+          "Use a heading such as 'Athletics and institutional branding' that accommodates both different palettes (C12-C13) and alignment (C14), rather than promising divergence alone.",
+          "Keep sports uses and team nicknames adjacent. Make achievement awards a clearly distinguished sense of colors, rather than conflating honors with brand identity.",
+          "Do not impose a section-count target or split coherent material simply to make sections the same size."
+        ]
+      },
+      {
+        "iteration": "v4 recovery, before direct repair audit",
+        "runLabel": "Repair misleading headings and broken reading order",
+        "scores": {
+          "grounding": 3,
+          "cohesion": 3,
+          "flow": 3,
+          "headings": 2,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Needs revision: 19/24 (AI: 21/24)",
+        "reason": "The original severe mismatch is repaired and C4/C11 are now adjacent. The remaining heading 'Divergence between athletics and university branding' predicts only difference, while C14 is about unifying colors. The team nicknames and awards label also obscures that sporting honors are a distinct sense of colors. These are narrower defects than the original damage but worth correcting.",
+        "requiredChanges": [
+          "Use an athletics/institutional-branding heading covering both differing palettes in C12-C13 and alignment in C14.",
+          "Keep general branding distinctions before detailed uniform practices, with team nicknames next to the sports discussion.",
+          "Clearly distinguish colors awarded for achievement from colors used as institutional brand identity.",
+          "Keep C4 and C11 adjacent in the origins section. Preserve every claim exactly once and do not impose a preferred section count."
+        ]
+      },
+      {
+        "iteration": "v4 final baseline",
+        "runLabel": "Existing Planner baseline",
+        "scores": {
+          "grounding": 1,
+          "cohesion": 3,
+          "flow": 3,
+          "headings": 2,
+          "balance": 3,
+          "introduction": 3
+        },
+        "verdict": "Rejected blueprint: 15/24; duplicate C21",
+        "reason": "C21 appears in both the introduction and the awards/nicknames body section. The production converter silently removes the second assignment; that leaves the body heading promising nickname evidence that it no longer owns. The sandbox correctly rejects the raw duplicate. The heading also lowercases 'United States'. The overall historical-to-application progression is understandable, but those concrete defects require correction.",
+        "requiredChanges": [
+          "Assign C21 exactly once in the appropriate body location.",
+          "Preserve United States capitalization."
+        ],
+        "planHash": "bdfd0c9e548577fd0489cec1f376768cdd25e6e76b742dc1a3b1e9df98a74492"
+      },
+      {
+        "iteration": "v4 final generic-bucket recovery",
+        "runLabel": "Repair vague headings and mixed buckets",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 4,
+          "flow": 4,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Sound recovery: 23/24",
+        "reason": "The repair progresses from origins, with C4/C11 together, through American adoption, institutional palettes, athletics, sporting honors and academic dress. Nicknames stay with athletics, while awards are clearly distinguished. Every claim has one appropriate home. The adoption heading could name color choices as well as adoption because it also includes the later popularity statistics; that is a minor scope refinement.",
+        "requiredChanges": [],
+        "planHash": "7ffb0c4836e0c8e819e11fa34e51776395a7329022579e76b2d8459e5a244683"
+      },
+      {
+        "iteration": "Final, after direct editorial revision",
+        "runLabel": "Primary-agent editorial revision",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 4,
+          "flow": 4,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Approved by my direct review: 23/24 (AI: 24/24)",
+        "reason": "A compact definition leads into English origins, American adoption, athletics/branding, team nicknames, the separate sporting-honors meaning, and academic dress. C4/C11 are adjacent, and 'Athletics and institutional branding' accommodates both difference and alignment in C12-C14. Nicknames remain next to sports; awards are explicitly a separate sense. Brief sections have real distinct scope, so I do not penalize their size. I withhold a perfect score because 'Adoption by American colleges' also houses later popularity statistics: a heading mentioning adoption and color choices would predict that material more precisely.",
+        "requiredChanges": [],
+        "planHash": "fbc463c12acf317e704eec18be2c9371556568fab51306cd6fbf05bf80f68df9"
+      },
+      {
+        "iteration": "Final, after direct repair audit",
+        "runLabel": "Primary-agent repair audit: Repair misleading headings and broken reading order",
+        "scores": {
+          "grounding": 4,
+          "cohesion": 4,
+          "flow": 4,
+          "headings": 3,
+          "balance": 4,
+          "introduction": 4
+        },
+        "verdict": "Sound recovery after my audit: 23/24",
+        "reason": "The repair keeps C4/C11 adjacent in origins, introduces institutional/athletics branding before uniform and nickname examples, distinguishes achievement awards, and then turns to academic dress. The misleading divergence heading is gone. I disagree with the automated reviewer that rebranding is out of place in a section about athletics/institutional branding, or that a single self-contained award claim must be merged solely because its section is short. 'Adoption by American colleges' could more precisely mention later color-choice statistics, but the progression is logical.",
+        "requiredChanges": [],
+        "planHash": "3612031600b06af004763dd7a25d9eb9858b00c987414a16e46c5ded4a6ea9a3"
+      }
+    ]
+  }
+}

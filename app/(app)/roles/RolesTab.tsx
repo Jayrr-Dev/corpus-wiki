@@ -16,11 +16,11 @@ import { AI_STAGES, type SkillLibrary } from "@/lib/ai/skills/types";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { AUTO_ROLES, type AutoRole, FIXED_ROLES, MODEL_ROLES, type ModelRole, STAGE_ROLES } from "@/lib/ai/roles";
 import { UndoIcon } from "@/components/icons";
-import { ROLE_ICONS } from "../skills/roleIcons";
+import { ROLE_ICONS } from "../workflow/roleIcons";
 import { RoleMemoryPanel } from "./RoleMemoryPanel";
 import { RoleModelControls, RoleSends } from "../settings/RoleModels";
 import type { ModelSettings } from "../settings/loadModelSettings";
-import { ACTION_HINTS, AI_FLOW_LANES } from "../skills/aiFlowModel";
+import { ACTION_HINTS, AI_FLOW_LANES } from "../workflow/aiFlowModel";
 
 // THE EXCEPTION KINDS EACH ROLE CAN RAISE, read from the AI flow so the cards and the flow agree
 const ROLE_EXCEPTIONS = new Map<string, string[]>();

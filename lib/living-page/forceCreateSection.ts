@@ -14,6 +14,7 @@ import { externalProjectContext, externalReviewRecorder } from "@/lib/knowledge/
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { discoveryQueries } from "./discoverArticleUpdates";
 import { rebuildSection, type SectionState, type SectionWriter } from "./index";
+import { workflowStep } from "@/lib/ingest/workflowContext";
 
 // =====================================================================
 // FORCE CREATE: builds out one section from everything that fits its
@@ -35,7 +36,18 @@ const pickSchema = z.object({ claims: z.array(z.string()) });
 
 type Candidate = { unitId: string; content: string; external: boolean };
 
+export class NoSectionKnowledgeError extends Error {}
+
 export async function forceCreateSection(deps: ForceCreateDeps, sectionId: string, note: string, useWeb: boolean, automatic = false): Promise<ForceCreateResult> {
+  // Save the replacement identity before writing. If the writer fails, the old
+  // section is already retired and cannot be used to rediscover the new one.
+  const replacement = await workflowStep(`force-create:${sectionId}`, () => replaceSection(deps, sectionId, note, useWeb, automatic));
+  const built = await rebuildSection(deps.db, deps.writer, replacement.sectionId, null);
+  if (!built) throw new Error("The section was filled but is still being written. Reload the page in a moment.");
+  return replacement;
+}
+
+async function replaceSection(deps: ForceCreateDeps, sectionId: string, note: string, useWeb: boolean, automatic: boolean): Promise<ForceCreateResult> {
   const { db, client } = deps;
   const { data: section, error } = await client.from("sections").select("id, page_id, position, title, query, mode").eq("id", sectionId).is("retired_at", null).single();
   if (error) throw new Error("This section is no longer available. Reload the page and try again.");
@@ -78,7 +90,7 @@ export async function forceCreateSection(deps: ForceCreateDeps, sectionId: strin
   const candidates = [...internal.filter((unit) => !unit.external), ...external];
   const picked = await pickClaims(deps.settings, page.title, section.title, note, candidates);
   if (!picked.length && !current.size) {
-    throw new Error(useWeb ? "Nothing found, saved or on the web, fits this section. Try a note that says what it should cover." : "No saved knowledge fits this section yet. Turn on Search the web to look further.");
+    throw new NoSectionKnowledgeError(useWeb ? "Nothing found, saved or on the web, fits this section. Try a note that says what it should cover." : "No saved knowledge fits this section yet. Turn on Search the web to look further.");
   }
 
   const unitIds = [...new Set([...current, ...picked.map((unit) => unit.unitId)])];
@@ -87,7 +99,7 @@ export async function forceCreateSection(deps: ForceCreateDeps, sectionId: strin
     { ...NO_PERSON, type: "retire_section", targetId: section.id, input: {} },
     { ...NO_PERSON, type: "create_section", targetId: null, input: { pageId: page.id, title: section.title, query, position: section.position } },
   ];
-  const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
+  const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai", operationKey: `force-create:${sectionId}:submit` }, {
     summary: `Force created “${section.title}”`, actions,
     trace: { modelVersion: deps.settings.model ?? null, promptVersion: "force-create-section-v1", tokensIn: null, tokensOut: null },
   });
@@ -95,9 +107,6 @@ export async function forceCreateSection(deps: ForceCreateDeps, sectionId: strin
   if (result.status !== "applied") throw new Error("The section could not be replaced. Review Changes before retrying.");
   const { data: created, error: createdError } = await client.from("actions").select("target_id").eq("change_set_id", changeSetId).eq("type", "create_section").single();
   if (createdError || !created.target_id) throw new Error(createdError?.message ?? "The new section was not recorded.");
-  const built = await rebuildSection(db, deps.writer, created.target_id, null);
-  if (!built) throw new Error("The section was filled but is still being written. Reload the page in a moment.");
-
   const pickedIds = new Set(picked.map((unit) => unit.unitId));
   return { sectionId: created.target_id, internal: candidates.filter((unit) => pickedIds.has(unit.unitId) && !unit.external).length, external: candidates.filter((unit) => pickedIds.has(unit.unitId) && unit.external).length, sources };
 }

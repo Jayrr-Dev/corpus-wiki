@@ -1,0 +1,41 @@
+{
+  "Apple": {
+    "attempt": 11,
+    "total": 17,
+    "scores": {
+      "usefulness": 4,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3
+    },
+    "verdict": "Pass as a clear 2D explanatory schematic. The organic canopy, tapered trunk and roots improve on the oval-and-dots icon. Three labels explain grafting without clutter. It is still a schematic rather than semi-realistic editorial art; at 360px the embedded labels are small, while the caption remains readable.",
+    "method": "Primary agent inspected the rendered article in the in-app browser at the normal viewport and 360px width, and checked the supporting source paragraphs. This is an editorial judgment, not a botanical expert certification.",
+    "earlierReview": {
+      "attempt": 10,
+      "total": 16,
+      "reason": "Rejected for insufficient visual polish: one oval canopy, dots for apples, rectangular trunk. Requested believable foliage masses, branching, material shading and tapered roots."
+    },
+    "remainingImprovements": [
+      "A raster illustration path is needed to evaluate the requested semi-realistic 3D style.",
+      "An image viewer or responsive external labels would improve narrow-screen reading."
+    ]
+  },
+  "Utility pole": {
+    "attempt": 8,
+    "total": 17,
+    "scores": {
+      "usefulness": 4,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3
+    },
+    "verdict": "Pass as a restrained engineering schematic. Supply space, worker safety zone and communications cables are clearly separated, with short labels and a matching caption. Material shading gives the pole volume. The wire stubs are intentionally schematic; this is not a construction drawing or a universal pole layout. A narrow-screen check lowered the initial 18/20 grade to 17/20 because embedded labels become small at 360px, although the caption remains readable.",
+    "method": "Primary agent inspected the rendered article in the in-app browser at the normal viewport and 360px width, and checked the broad vertical relationships against the source paragraphs. This is an editorial judgment, not an electrical engineering safety review.",
+    "remainingImprovements": [
+      "Continuous perspective-consistent cable spans would look more natural than short stubs.",
+      "Raster and online asset paths are not tested."
+    ]
+  }
+}

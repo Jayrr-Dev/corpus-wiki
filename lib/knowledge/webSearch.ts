@@ -1,4 +1,17 @@
 import "server-only";
+import { fetchWithRetry, withRequestSlot } from "@/lib/processing/requests";
+import { processingSpan } from "@/lib/processing/metrics";
+import { uploadExecution } from "@/lib/ingest/workflowContext";
+
+async function webJson<T>(url: string, init: RequestInit): Promise<T> {
+  const signal = uploadExecution.getStore()?.signal;
+  const credential = new Headers(init.headers).get("authorization") ?? "public";
+  return withRequestSlot("search", new URL(url).host, credential, (requestSignal) => processingSpan("request.search", async () => {
+    const response = await fetchWithRetry(url, { ...init, signal: requestSignal ? AbortSignal.any([requestSignal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000) });
+    if (!response.ok) throw new Error(`Web request failed (${response.status}).`);
+    return await response.json() as T;
+  }), signal);
+}
 
 // =====================================================================
 // WEB SEARCH: where external knowledge comes from. Tavily searches the
@@ -35,6 +48,7 @@ export async function searchWeb(apiKey: string | null, query: string, maxResults
       const pages = await searchTavily(apiKey, query, maxResults);
       if (pages.length) return pages;
     } catch (error) {
+      uploadExecution.getStore()?.signal?.throwIfAborted();
       console.warn("Tavily search failed, using Wikipedia:", error instanceof Error ? error.message : error);
     }
   }
@@ -43,14 +57,12 @@ export async function searchWeb(apiKey: string | null, query: string, maxResults
 
 // Each page with its full text (or Tavily's summary when the page text is missing)
 async function searchTavily(apiKey: string, query: string, maxResults: number): Promise<WebPage[]> {
-  const response = await fetch(TAVILY_SEARCH_URL, {
+  const body = await webJson<TavilyResponse>(TAVILY_SEARCH_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({ query, max_results: maxResults, search_depth: "basic", include_raw_content: "markdown" }),
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`Web search failed (Tavily ${response.status}): ${(await response.text()).slice(0, 300)}`);
-  const body = (await response.json()) as TavilyResponse;
   return (body.results ?? []).flatMap((result) => {
     const text = (result.raw_content || result.content || "").trim();
     if (!result.url || !text) return [];
@@ -75,9 +87,7 @@ async function searchWikipedia(query: string, maxResults: number): Promise<WebPa
 
 async function wikipedia<T>(params: Record<string, string>): Promise<T> {
   const url = `${WIKIPEDIA_API_URL}?${new URLSearchParams({ action: "query", format: "json", formatversion: "2", ...params })}`;
-  const response = await fetch(url, { headers: { "User-Agent": WIKIPEDIA_USER_AGENT }, cache: "no-store" });
-  if (!response.ok) throw new Error(`Web search failed (Wikipedia ${response.status}).`);
-  return (await response.json()) as T;
+  return webJson<T>(url, { headers: { "User-Agent": WIKIPEDIA_USER_AGENT }, cache: "no-store" });
 }
 
 // SNIPPETS: short text per result (no full pages), for checking who a result is about.
@@ -88,18 +98,17 @@ export type WebSnippet = { title: string; url: string; content: string };
 export async function searchSnippets(apiKey: string | null, query: string, maxResults = 5): Promise<WebSnippet[]> {
   if (apiKey) {
     try {
-      const response = await fetch(TAVILY_SEARCH_URL, {
+      const body = await webJson<TavilyResponse>(TAVILY_SEARCH_URL, {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({ query, max_results: maxResults, search_depth: "basic" }),
         cache: "no-store",
       });
-      if (!response.ok) throw new Error(`Tavily ${response.status}`);
-      const body = (await response.json()) as TavilyResponse;
       const results = (body.results ?? []).flatMap((result) => result.url && result.content?.trim()
         ? [{ title: result.title?.trim() || result.url, url: result.url, content: result.content.trim().slice(0, SNIPPET_CHARS) }] : []);
       if (results.length) return results;
     } catch (error) {
+      uploadExecution.getStore()?.signal?.throwIfAborted();
       console.warn("Tavily snippet search failed, using Wikipedia:", error instanceof Error ? error.message : error);
     }
   }
@@ -119,9 +128,10 @@ export async function wikipediaOfficialSite(pageUrl: string): Promise<string | n
   const props = await wikipedia<PagePropsResponse>({ prop: "pageprops", ppprop: "wikibase_item", titles: title, redirects: "1" });
   const item = props.query?.pages?.[0]?.pageprops?.wikibase_item;
   if (!item || !/^Q\d+$/.test(item)) return null;
-  const response = await fetch(`https://www.wikidata.org/w/api.php?${new URLSearchParams({ action: "wbgetclaims", entity: item, property: "P856", format: "json" })}`, { headers: { "User-Agent": WIKIPEDIA_USER_AGENT }, cache: "no-store" });
-  if (!response.ok) return null;
-  const claims = ((await response.json()) as WikidataClaims).claims?.P856 ?? [];
+  let body: WikidataClaims;
+  try { body = await webJson<WikidataClaims>(`https://www.wikidata.org/w/api.php?${new URLSearchParams({ action: "wbgetclaims", entity: item, property: "P856", format: "json" })}`, { headers: { "User-Agent": WIKIPEDIA_USER_AGENT }, cache: "no-store" }); }
+  catch { uploadExecution.getStore()?.signal?.throwIfAborted(); return null; }
+  const claims = body.claims?.P856 ?? [];
   const preferred = claims.find((claim) => claim.rank === "preferred") ?? claims.find((claim) => claim.rank !== "deprecated");
   return preferred?.mainsnak?.datavalue?.value ?? null;
 }
@@ -140,13 +150,13 @@ export async function readWebPage(apiKey: string | null, pageUrl: string): Promi
     return text ? text.slice(0, MAX_PAGE_CHARS) : null;
   }
   if (!apiKey) return null;
-  const response = await fetch(TAVILY_EXTRACT_URL, {
+  let body: TavilyExtractResponse;
+  try { body = await webJson<TavilyExtractResponse>(TAVILY_EXTRACT_URL, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({ urls: [pageUrl], format: "markdown" }),
     cache: "no-store",
-  });
-  if (!response.ok) return null;
-  const text = ((await response.json()) as TavilyExtractResponse).results?.[0]?.raw_content?.trim();
+  }); } catch { uploadExecution.getStore()?.signal?.throwIfAborted(); return null; }
+  const text = body.results?.[0]?.raw_content?.trim();
   return text ? text.slice(0, MAX_PAGE_CHARS) : null;
 }

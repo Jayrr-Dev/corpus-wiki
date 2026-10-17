@@ -92,17 +92,21 @@ export function formatReferencePages(pages: number[]): string {
 }
 
 export type ArticleLink = { label: string; href: string };
+const linkLabelKey = (text: string) => text.trim().toLowerCase().replace(/[\s\p{Pd}]+/gu, " ");
 export function linkArticleText(text: string, links: ArticleLink[]): { text: string; href?: string }[] {
-  const candidates = links.filter((link) => link.label.trim().length > 2).sort((a, b) => b.label.length - a.label.length);
+  // Keep explicit article destinations ahead of inferred section destinations.
+  const unique = new Map<string, ArticleLink>();
+  for (const link of links) if (link.label.trim().length > 2 && !unique.has(linkLabelKey(link.label))) unique.set(linkLabelKey(link.label), link);
+  const candidates = [...unique.values()].sort((a, b) => b.label.length - a.label.length);
   const used = new Set<string>();
   const result: { text: string; href?: string }[] = [];
-  const escaped = candidates.map((link) => link.label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const escaped = candidates.map((link) => link.label.trim().split(/[\s\p{Pd}]+/u).map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s\\p{Pd}]+"));
   if (!escaped.length) return [{ text }];
   const pattern = new RegExp(`(?<![\\p{L}\\p{N}])(?:${escaped.join("|")})(?![\\p{L}\\p{N}])`, "giu");
   let cursor = 0;
   for (const match of text.matchAll(pattern)) {
     if (match.index > cursor) result.push({ text: text.slice(cursor, match.index) });
-    const target = candidates.find((link) => link.label.toLocaleLowerCase() === match[0].toLocaleLowerCase());
+    const target = unique.get(linkLabelKey(match[0]));
     result.push({ text: match[0], href: target && !used.has(target.href) ? target.href : undefined });
     if (target) used.add(target.href);
     cursor = match.index + match[0].length;

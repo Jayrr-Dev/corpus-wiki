@@ -19,8 +19,8 @@ let running = false;
 // mention it. Uploads describe the entities they create, so this backfills the older
 // ones (and any whose upload call failed). Renders only a failed batch's error.
 export function AutoDescribeEntities() {
-  const plan = useServerAction(planDescribePass, { progress: false });
-  const describe = useServerAction(describeBatch, { progress: false });
+  const plan = useServerAction(planDescribePass, { progress: false, refreshTables: [] });
+  const describe = useServerAction(describeBatch, { progress: false, refreshTables: ["entities", "entity_description_revisions"] });
   const [batchError, setBatchError] = useState<string | null>(null);
   const undescribed = useUndescribedEntityCount();
 

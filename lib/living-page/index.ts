@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
-import { assertActiveUpload, reportUploadProgress, uploadExecution } from "@/lib/ingest/workflowContext";
+import { processingSpan } from "@/lib/processing/metrics";
+import { setTimeout as delay } from "node:timers/promises";
+import { assertActiveUpload, reportUploadProgress, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { type ModelChoice, tokenFactoryFromEnv } from "@/lib/ai/chat";
@@ -9,6 +11,7 @@ import type { SectionProgress } from "./buildProgress";
 import { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
 import type { FinishedSectionBuild, PageContextSection, SectionRef, SectionReviseInput, SectionRevision, SectionState } from "./types";
 import { FakeSectionWriter } from "./writers/fake";
+import { cancellableBuildDb, SectionBuildCancelled } from "./cancelBuild";
 import { TokenFactorySectionWriter } from "./writers/tokenFactory";
 
 export type * from "./types";
@@ -34,7 +37,7 @@ export interface SectionWriter {
   reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision>;
   prepareSection?(state: SectionState): Promise<SectionState>;
   progress?: (sectionId: string) => SectionProgress;
-  reviewSections?: (sectionIds: string[]) => Promise<void>;
+  reviewSections?: (sectionIds: string[], checkpointScope?: string) => Promise<void>;
 }
 
 // Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
@@ -47,15 +50,79 @@ export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenMod
 // REBUILDS
 // =====================================================================
 
-// Rebuilds every section the event touched (or that has stale lines), with a change note each
-export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string): Promise<void> {
-  const sections = await db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId });
-  for (const [index, section] of sections.entries()) {
-    await reportUploadProgress({ step: "pages", done: index, total: sections.length });
-    const built = await rebuildSection(db, writer, section.sectionId, eventId, false);
-    if (uploadExecution.getStore() && (!built || built.rebuildRequested)) throw new Error("A page section is still being updated. Resume after its current build finishes.");
+// Different pages can build together; siblings stay in order because each reads
+// the rest of its page. Stop scheduling on failure and drain active builds before
+// returning, so the upload never releases its lease while a worker still writes.
+export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string, checkpointScope = eventId): Promise<void> {
+  const sections = await workflowStep(`affected-sections:${checkpointScope}`, () => db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId }));
+  const byPage = new Map<string, SectionRef[]>();
+  for (const section of sections) {
+    const siblings = byPage.get(section.pageId) ?? [];
+    siblings.push(section);
+    byPage.set(section.pageId, siblings);
   }
-  if (sections.length) await writer.reviewSections?.(sections.map((section) => section.sectionId));
+  const pages = [...byPage.values()];
+  let next = 0;
+  let completed = 0;
+  let failed = false;
+  let failure: unknown;
+  const progressStep = checkpointScope === eventId ? "pages" : "pages-enrichment";
+  // Serialize progress writes so slower replies cannot overwrite a newer count.
+  let progress = reportUploadProgress({ step: progressStep, done: 0, total: sections.length });
+  await progress;
+  await Promise.all(Array.from({ length: Math.min(3, pages.length) }, async () => {
+    try {
+      while (!failed && next < pages.length) {
+        const page = pages[next++]!;
+        const startedAt = performance.now();
+        let status = "incomplete";
+        let pageCompleted = 0;
+        try {
+          for (const section of page) {
+            if (failed) return;
+            uploadExecution.getStore()?.signal?.throwIfAborted();
+            await assertActiveUpload();
+            await workflowStep(`rebuild-section:${checkpointScope}:${section.sectionId}`, () =>
+              rebuildUploadSection(db, writer, section.sectionId, eventId));
+            pageCompleted++;
+            const done = ++completed;
+            progress = progress.then(() => reportUploadProgress({ step: progressStep, done, total: sections.length }));
+            await progress;
+          }
+          status = "succeeded";
+        } catch (error) {
+          status = "failed";
+          throw error;
+        } finally {
+          console.info("Upload page build timing", { eventId, pageId: page[0]!.pageId, status, completed: pageCompleted, total: page.length, durationMs: Math.round(performance.now() - startedAt) });
+        }
+      }
+    } catch (error) {
+      if (!failed) { failed = true; failure = error; }
+    }
+  }));
+  if (failed) throw failure;
+  uploadExecution.getStore()?.signal?.throwIfAborted();
+  await assertActiveUpload();
+  if (sections.length) await processingSpan("stage.editorial-review", async () => {
+    const ids = sections.map((section) => section.sectionId);
+    if (checkpointScope === eventId) await writer.reviewSections?.(ids);
+    else await writer.reviewSections?.(ids, checkpointScope);
+  });
+}
+
+// Another page update can own the section briefly. Keep the upload lease alive
+// and wait for that owner instead of making the person repeatedly press Resume.
+export async function rebuildUploadSection(db: DbRpc, writer: SectionWriter, sectionId: string, eventId: string): Promise<FinishedSectionBuild | null> {
+  const execution = uploadExecution.getStore();
+  const deadline = Date.now() + 180_000;
+  for (;;) {
+    const built = await rebuildSection(db, writer, sectionId, eventId, false);
+    if (!execution || (built && !built.rebuildRequested)) return built;
+    if (Date.now() >= deadline) throw new Error("This section's other update has not finished after three minutes. Completed sections are saved; resume to continue waiting.");
+    await assertActiveUpload();
+    await delay(5_000, undefined, { signal: execution.signal });
+  }
 }
 
 // Builds every generated section of one page (used after a page is created); no change notes
@@ -80,9 +147,15 @@ export async function rebuildSection(
   let finished: FinishedSectionBuild | null = null;
   for (let pass = 0; pass < 3; pass++) {
     await assertActiveUpload();
-    const claim = await db.call<{ claimed: boolean }>("claim_section_build", { p_section_id: sectionId, p_event_id: causeId });
+    const claim = await db.call<{ claimed: boolean; buildToken?: string }>("claim_section_build", { p_section_id: sectionId, p_event_id: causeId });
     if (!claim.claimed) return finished;
-    finished = await buildClaimedSection(db, writer, sectionId, causeId);
+    const buildDb = claim.buildToken ? cancellableBuildDb(db, sectionId, claim.buildToken) : db;
+    try {
+      finished = await buildClaimedSection(buildDb, writer, sectionId, causeId, Boolean(claim.buildToken));
+    } catch (error) {
+      if (error instanceof SectionBuildCancelled) return finished;
+      throw error;
+    }
     if (!finished.rebuildRequested) {
       if (review) await writer.reviewSections?.([sectionId]);
       return finished;
@@ -98,13 +171,14 @@ async function buildClaimedSection(
   writer: SectionWriter,
   sectionId: string,
   eventId: string | null,
+  cancellable = false,
 ): Promise<FinishedSectionBuild> {
   const progress = writer.progress?.(sectionId);
   try {
     progress?.step("Reading the claims this section cites…");
     const loaded = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
     const state = writer.prepareSection ? await writer.prepareSection(loaded) : loaded;
-    const written = needsRewrite(state) ? await rewriteLines(db, writer, state, eventId, progress) : null;
+    const written = needsRewrite(state) ? await rewriteLines(db, writer, state, eventId, progress, cancellable) : null;
     progress?.step("Finishing up…");
     await assertActiveUpload();
     return await db.call<FinishedSectionBuild>("finish_section_build", {
@@ -114,8 +188,13 @@ async function buildClaimedSection(
       p_changed: (written?.applied ?? 0) > 0,
     });
   } catch (error) {
-    await assertActiveUpload();
-    await db.call("mark_section_stale", { p_section_id: sectionId });
+    if (error instanceof SectionBuildCancelled) throw error;
+    // Release this section even when the enclosing upload was cancelled. The
+    // section token fences cleanup separately from permission to write content.
+    // A replaced build's token cannot mark its newer owner's section stale.
+    if (!cancellable) await assertActiveUpload();
+    try { await db.call("mark_section_stale", { p_section_id: sectionId }); }
+    catch (cleanupError) { if (!(cleanupError instanceof SectionBuildCancelled)) throw cleanupError; }
     throw error;
   } finally {
     progress?.done();
@@ -130,12 +209,14 @@ async function rewriteLines(
   state: SectionState,
   eventId: string | null,
   progress: SectionProgress | undefined,
+  cancellable = false,
 ): Promise<{ applied: number; modelVersion: string }> {
   const pageContext = await readPageContext(db, state.sectionId);
   const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}) };
   const flagged = state.lines.filter((line) => line.needsRewrite).length;
   progress?.step(writingStep(flagged, input.uncoveredUnitIds.length));
   const revision = progress ? await writer.reviseSection(input, progress) : await writer.reviseSection(input);
+  if (cancellable) await db.call("assert_section_build");
   const actions = revisionToActions(revision, state, ({ text, numbers }) =>
     console.warn("Writer line dropped for unsupported numbers", { sectionId: state.sectionId, page: state.pageTitle, section: state.title, numbers, text: text.slice(0, 160) }));
   if (actions.length === 0) return { applied: 0, modelVersion: revision.modelVersion };

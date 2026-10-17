@@ -48,9 +48,12 @@ const HALF_PULL_DEGREE = 3;
 // Each sqrt(link) adds this much repulsion, so hubs clear room around their neighbors
 const HUB_REPEL = 0.5;
 
-// Dot radius in world units: grows with the square root of link count, like Obsidian
+// Dot radius in world units: emphasize connected hubs while keeping growth sublinear.
 export function nodeRadius(node: Pick<GraphNode, "degree">, nodeSize: number): number {
-  return nodeSize * (3 + 1.5 * Math.sqrt(node.degree));
+  if (node.degree === 1) return nodeSize * 2;
+  // Keep lightly connected satellites small without reducing established hubs.
+  const connectionScale = Math.min(1, node.degree / 6);
+  return nodeSize * (3 + 4 * Math.pow(node.degree, 0.65) * connectionScale);
 }
 
 // Share of the center and domain pull a dot feels: weak for orphans, near full for hubs

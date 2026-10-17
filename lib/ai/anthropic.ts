@@ -1,6 +1,9 @@
 import "server-only";
+import { withAiActivity } from "./inactivityTimeout";
+import { withRequestSlot } from "@/lib/processing/requests";
 
 import Anthropic from "@anthropic-ai/sdk";
+import { jsonSchemaOutputFormat } from "@anthropic-ai/sdk/helpers/json-schema";
 import type { ChatContentPart, ChatMediaMessage, ChatMessage, ChatTool, CompletionResponse, ReasoningEffort, StreamedSoFar } from "./chat";
 import type { CompletionUsage } from "./callLog";
 import { addCompletionUsage, MAX_TOOL_ROUNDS, ProviderTimeoutError, runToolCalls } from "./chat";
@@ -39,12 +42,19 @@ type ClaudeRequest = {
 // Thinking is adaptive (Claude decides how much); the reasoning effort becomes output_config.effort.
 export async function requestClaudeCompletion(request: ClaudeRequest): Promise<CompletionResponse> {
   const client = new Anthropic({ apiKey: request.apiKey, timeout: REQUEST_TIMEOUT_MS });
+  // The SDK moves unsupported constraints into descriptions; parseContent still
+  // validates the answer against the original Zod schema.
+  const transformedFormat = jsonSchemaOutputFormat(request.jsonSchema as { type: "object" });
+  // Keep the provider's schema transformation, but leave parsing to parseContent.
+  // The SDK's helper parser runs before we can inspect max_tokens and throws on
+  // truncated JSON, bypassing our normal cut-off retry and losing usage details.
+  const format = { type: transformedFormat.type, schema: transformedFormat.schema };
   const system = request.messages.flatMap((message) => (message.role === "system" ? [message.content] : [])).join("\n\n");
   const messages: Anthropic.MessageParam[] = request.messages.flatMap((message) => (message.role === "user" ? [toClaudeMessage(message)] : []));
   let tools = request.tools?.length ? request.tools : undefined;
   let usage: CompletionUsage | undefined;
   let reasoning = "";
-  const send = (round: number) => {
+  const send = (round: number) => withRequestSlot("chat", "api.anthropic.com", request.apiKey, (slotSignal) => withAiActivity(async (signal, activity) => {
     // Each round streams a fresh answer; the thinking so far stays visible
     let content = "";
     const stream = client.messages.stream(
@@ -55,12 +65,15 @@ export async function requestClaudeCompletion(request: ClaudeRequest): Promise<C
         messages,
         // Summarized thinking only when someone is watching the stream
         thinking: request.onStream ? { type: "adaptive", display: "summarized" } : { type: "adaptive" },
-        output_config: { effort: request.effort, format: { type: "json_schema", schema: request.jsonSchema as Record<string, unknown> } },
+        output_config: { effort: request.effort, format },
         // After the last tool round the tools stay listed (earlier rounds used them) but cannot be called
         ...(tools ? { tools: tools.map((tool) => ({ name: tool.name, description: tool.description, input_schema: tool.parameters as Anthropic.Tool.InputSchema })), tool_choice: round < MAX_TOOL_ROUNDS ? { type: "auto" as const } : { type: "none" as const } } : {}),
       },
-      { signal: request.signal },
+      { signal },
     );
+    stream.on("streamEvent", (event) => {
+      if (event.type === "content_block_delta") activity();
+    });
     if (request.onStream) {
       const onStream = request.onStream;
       stream.on("text", (delta) => {
@@ -73,7 +86,7 @@ export async function requestClaudeCompletion(request: ClaudeRequest): Promise<C
       });
     }
     return stream.finalMessage();
-  };
+  }, slotSignal), request.signal);
   try {
     for (let round = 0; ; round++) {
       let message: Anthropic.Message;

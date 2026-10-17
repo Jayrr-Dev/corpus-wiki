@@ -49,7 +49,7 @@ describe("fragment review through the real AI response parser", () => {
     expect(result.tokensIn).toBe(requests.length * 10);
   });
   it.each([
-    ["fabricated", "unverified quotation"], ["bad-reference", "unavailable evidence"], ["bad-schema", "expected shape"], ["failure", "Token Factory 503"],
+    ["fabricated", "unverified quotation"], ["bad-reference", "unavailable evidence"], ["bad-schema", "invalid claim fields"], ["failure", "Token Factory 503"],
   ] as const)("fails closed for %s provider output", async (mode, error) => {
     provider(mode);
     await expect(reviewFragments({ apiKey: "fixture" }, batches(), 3000, 1000)).rejects.toThrow(error);

@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { useAssets, useSources } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { ASSET_TYPE_LABEL, ASSET_TYPES, type AssetType, normalizeTag, tagKey } from "@/lib/assets/tags";
-import { describeAssets, renameAssetTag } from "@/lib/server-actions/assets";
+import { describeAssets, renameAssetTag, setAssetDeleted } from "@/lib/server-actions/assets";
 import { cn } from "@/lib/utils";
 import { type Asset, ASSET_KIND_LABEL, AssetThumbnail, assetTitle, TagChip } from "./AssetMedia";
 
@@ -33,12 +33,14 @@ export function AssetsScreen() {
   const sources = useSources();
   const sourceById = useMemo(() => new Map((sources.data ?? []).map((source) => [source.id, source])), [sources.data]);
   const [search, setSearch] = useState("");
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [origin, setOrigin] = useState<Asset["origin"] | null>(null);
   const [kind, setKind] = useState<Asset["kind"] | null>(null);
   const [type, setType] = useState<AssetType | null>(null);
   const [tags, setTags] = useState<string[]>([]);
 
   // Assets of archived sources stay with their source, off this page
-  const all = useMemo(() => (assets.data ?? []).filter((asset) => !sourceById.get(asset.source_id)?.archived_at), [assets.data, sourceById]);
+  const all = useMemo(() => (assets.data ?? []).filter((asset) => Boolean(asset.deleted_at) === showDeleted && !sourceById.get(asset.source_id ?? "")?.archived_at), [assets.data, sourceById, showDeleted]);
   const kinds = (["image", "video", "audio"] as const).map((name) => [name, all.filter((asset) => asset.kind === name).length] as const).filter(([, count]) => count > 0);
   const types = ASSET_TYPES.map((name) => [name, all.filter((asset) => asset.asset_type === name).length] as const).filter(([, count]) => count > 0);
   const tagCounts = useMemo(() => {
@@ -52,20 +54,28 @@ export function AssetsScreen() {
   const renamed = (from: string, to: string) => setTags((selected) => selected.includes(from) ? [...new Set(selected.map((tag) => (tag === from ? to : tag)))] : selected);
 
   const needle = normalize(search.trim());
-  const shown = all.filter((asset) => (!kind || asset.kind === kind)
+  const shown = all.filter((asset) => Boolean(asset.deleted_at) === showDeleted && (!kind || asset.kind === kind)
+    && (!origin || asset.origin === origin)
     && (!type || asset.asset_type === type)
     && tags.every((tag) => asset.tags.includes(tag))
-    && (!needle || normalize([asset.title ?? "", asset.description ?? "", asset.asset_type ?? "", ...asset.tags, sourceById.get(asset.source_id)?.title ?? ""].join(" ")).includes(needle)));
+    && (!needle || normalize([asset.title ?? "", asset.description ?? "", asset.asset_type ?? "", asset.origin, asset.generated_by ?? "", ...asset.tags, sourceById.get(asset.source_id ?? "")?.title ?? ""].join(" ")).includes(needle)));
   const undescribed = all.filter((asset) => !asset.described_at).length;
 
   return (
     <div className="space-y-5 pb-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-panel text-muted-foreground">Pictures, videos and recordings from your sources, described and tagged by the AI and linked back to where they came from.</p>
+        <p className="text-panel text-muted-foreground">Media from your sources and generated illustrations, described, tagged and available across your workspace.</p>
         <DescribeButton undescribed={undescribed} />
       </div>
 
       <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap gap-1" aria-label="Asset origin">
+          <FilterChip active={showDeleted} onClick={() => setShowDeleted(!showDeleted)}>Deleted</FilterChip>
+          <FilterChip active={origin === null} onClick={() => setOrigin(null)}>All origins</FilterChip>
+          <FilterChip active={origin === "source"} onClick={() => setOrigin("source")}>From sources</FilterChip>
+          <FilterChip active={origin === "external"} onClick={() => setOrigin("external")}>External</FilterChip>
+          <FilterChip active={origin === "generated"} onClick={() => setOrigin("generated")}>Generated <span className="text-faint">{all.filter((a) => a.origin === "generated").length}</span></FilterChip>
+        </div>
         <div className="relative w-full max-w-sm [&_input]:pl-8">
           <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input type="search" aria-label="Search assets" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search titles, descriptions, tags, sources…" />
@@ -101,6 +111,7 @@ export function AssetsScreen() {
       </div>
 
       <ErrorNote error={assets.error?.message ?? sources.error?.message} />
+      {showDeleted ? <p className="text-xs text-muted-foreground">Deleted from the library. Images already used in articles stay in place. Use an asset’s ⋯ menu to restore it.</p> : null}
       {assets.isPending ? <div className="py-10"><Loader /></div> : null}
       {!assets.isPending && shown.length === 0 ? (
         <div className="py-16 text-center">
@@ -109,14 +120,14 @@ export function AssetsScreen() {
           <p className="mt-2 text-sm text-muted-foreground">
             {all.length ? "Try another word, or clear the filters." : "Upload images, videos, or Word documents with pictures; their media shows up here."}
           </p>
-          {all.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setKind(null); setType(null); setTags([]); }}>Clear filters</Button>}
+          {all.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setOrigin(null); setKind(null); setType(null); setTags([]); }}>Clear filters</Button>}
         </div>
       ) : null}
 
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
         {shown.map((asset) => (
           <li key={asset.id}>
-            <AssetCard asset={asset} sourceTitle={sourceById.get(asset.source_id)?.title} activeTags={tags} onTag={toggleTag} />
+            <AssetCard asset={asset} sourceTitle={asset.origin === "generated" ? "Generated by Composer" : asset.origin === "external" ? "External image" : sourceById.get(asset.source_id ?? "")?.title} activeTags={tags} onTag={toggleTag} />
           </li>
         ))}
       </ul>
@@ -127,13 +138,27 @@ export function AssetsScreen() {
 // ONE ASSET: thumbnail, title, where it came from, its tags (each one filters the page)
 function AssetCard({ asset, sourceTitle, activeTags, onTag }: { asset: Asset; sourceTitle: string | undefined; activeTags: string[]; onTag: (tag: string) => void }) {
   const title = assetTitle(asset, sourceTitle);
+  const deletion = useServerAction(setAssetDeleted, { refreshTables: ["assets"] });
   return (
     <article className="relative flex h-full flex-col overflow-hidden rounded-md border transition-colors hover:border-link/40">
       <AssetThumbnail asset={asset} alt={title} />
       <div className="flex flex-1 flex-col gap-1.5 p-3">
-        <Link href={`/assets/${asset.id}`} className="line-clamp-2 text-panel font-medium after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none">
-          {title}
-        </Link>
+        {deletion.error ? <p role="alert" className="relative z-10 text-xs text-destructive">{deletion.error}</p> : null}
+        <div className="flex items-start justify-between gap-2">
+          <Link href={`/assets/${asset.id}`} className="min-w-0 line-clamp-2 text-panel font-medium after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none">
+            {title}
+          </Link>
+      <div className="relative z-10 shrink-0">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button type="button" aria-label={`Actions for ${title}`} disabled={deletion.isPending} className="flex size-5 items-center justify-center text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"><MoreIcon className="size-3.5" /></button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => void deletion.run(asset.id, !asset.deleted_at)} variant={asset.deleted_at ? "default" : "destructive"}>{asset.deleted_at ? "Restore" : "Delete"}</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+        </div>
         <p className="truncate text-xs text-faint">
           {asset.asset_type ? ASSET_TYPE_LABEL[asset.asset_type] : ASSET_KIND_LABEL[asset.kind]}{asset.figure_number ? ` · Figure ${asset.figure_number}` : ""}{sourceTitle ? ` · ${sourceTitle}` : ""}
         </p>

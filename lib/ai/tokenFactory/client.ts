@@ -9,6 +9,8 @@ import type { DraftChangeSet, ReconciliationClient, ReconciliationInput } from "
 import { buildReconciliationMessages, claimRef, earlierClaimRef, passageRef, type EarlierComposite } from "./prompt";
 import { reconciliationAnswerSchema, reconciliationJsonSchema, type AnswerClaim, type AnswerLink } from "./schema";
 import { answerToActions } from "./toDraft";
+import { reuseEntities, reuseFuzzyDomainPaths } from "@/lib/knowledge/nameDuplicates";
+import { nameDuplicateJudge, NAME_DUPLICATE_PROMPT_VERSION } from "@/lib/ai/nameDuplicateJudge";
 
 // Bound output growth for long documents without discarding any source passages; every
 // batch is checkpointed, so a resume only re-reads the batches that never finished.
@@ -40,6 +42,7 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
     const extract = async (passages: ReconciliationInput["passages"]): Promise<void> => {
       const answer = await workflowStep(`extract:${passages.map((p) => p.id).join(":")}`, () => chatJson(this.settings, {
         name: "reconciliation",
+        retryInvalidOutput: true,
         subject: input.source.title,
         schema: reconciliationAnswerSchema,
         jsonSchema: reconciliationJsonSchema,
@@ -72,11 +75,18 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       // Truncation and timeouts retry in smaller batches; one passage is the hard stop.
       await splitOnCutOff(passages, extract, (error) => { if (error instanceof CompletionLengthError) countUsage(error.tokensIn, error.tokensOut); });
     }
+    const countReview = (usage: { tokensIn: number | null; tokensOut: number | null }) => countUsage(usage.tokensIn, usage.tokensOut);
+    const resolvedClaims = await reuseEntities(claims, input.entities, nameDuplicateJudge(this.settings, "entity", {
+      source: input.source.title, existingKnowledge: input.existingUnits.slice(0, 12).map((unit) => ({ content: unit.content, context: unit.context })),
+    }, countReview));
+    const domainPaths = await reuseFuzzyDomainPaths([...new Set(resolvedClaims.flatMap((claim) => claim.domainPaths))], input.domainPaths,
+      nameDuplicateJudge(this.settings, "domain", { source: input.source.title, claims: resolvedClaims.slice(0, 12).map((claim) => ({ content: claim.content, entities: claim.entities })) }, countReview));
+    const canonicalClaims = resolvedClaims.map((claim) => ({ ...claim, domainPaths: claim.domainPaths.map((path) => domainPaths.get(path) ?? path) }));
     return {
       summary: [...new Set(summaries)].join(" ") || `Read ${input.source.title}`,
       // Convert together so entities, domains and updates to the same unit are deduplicated.
-      actions: answerToActions({ summary: "", claims, links }, input),
-      trace: { modelVersion, promptVersion: skillTrace(PROMPT_VERSION,["extract_knowledge","identify_entities","link_knowledge","organize_topics","define_concepts"],this.settings.skills), tokensIn, tokensOut },
+      actions: answerToActions({ summary: "", claims: canonicalClaims, links }, input),
+      trace: { modelVersion, promptVersion: skillTrace(`${PROMPT_VERSION}+${NAME_DUPLICATE_PROMPT_VERSION}`,["extract_knowledge","identify_entities","link_knowledge","organize_topics","define_concepts"],this.settings.skills), tokensIn, tokensOut },
     };
   }
 }

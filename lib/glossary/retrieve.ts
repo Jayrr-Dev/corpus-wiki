@@ -29,6 +29,6 @@ export async function glossaryReferences(client: SupabaseClient<Database>, match
   })).slice(0, 6).map(({ entry }, index) => ({
     id: `G${index + 1}`, title: entry.expansion ? `${entry.term} — ${entry.expansion}` : entry.term,
     href: `/glossary#${encodeURIComponent(glossaryAnchor(entry.term))}`, kind: "Glossary",
-    text: `AI-generated dictionary meaning, supported by saved sources. ${entry.context ? `Scope: ${entry.context}.` : "Do not infer organizational applicability from a term definition."}\n${entry.definition}\nSources: ${[...new Set(entry.citations.map((cite) => cite.sourceTitle))].join("; ")}`,
+    text: `AI-generated dictionary meaning, supported by saved sources. ${entry.usageNotes !== undefined ? "Local practices apply only to the explicitly attributed usage notes." : entry.context ? `Scope: ${entry.context}.` : "Do not infer organizational applicability from a term definition."}\n${entry.definition}\n${entry.usageNotes?.map((note) => `Usage (${note.context}): ${note.text}`).join("\n") ?? ""}\nSources: ${[...new Set(entry.citations.map((cite) => cite.sourceTitle))].join("; ")}`,
   }));
 }

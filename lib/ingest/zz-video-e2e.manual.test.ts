@@ -1,10 +1,11 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { it } from "vitest";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { processUploadEvent, startDirectUpload, startUploadFromStorage } from "./index";
-it("uploads a short mp4 the way the browser does", async () => {
-  const bytes = readFileSync("C:/Users/Work/AppData/Local/Temp/claude/G--OneDrive-Agentic-Workspace-second-brain-engine/81fd6d4f-1be4-487e-8a20-e1ca7071edf7/scratchpad/acme-update.mp4");
+it.runIf(Boolean(process.env.MANUAL_VIDEO_FILE))("uploads a short mp4 the way the browser does", async () => {
+  const bytes = readFileSync(process.env.MANUAL_VIDEO_FILE!);
   const prepared = await startDirectUpload({ fileName: "acme-update.mp4", browserType: "video/mp4", byteSize: bytes.byteLength });
   const browser = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!);
   const put = await browser.storage.from("sources").uploadToSignedUrl(prepared.path, prepared.token, new Blob([bytes], { type: "video/mp4" }), { contentType: "video/mp4" });
@@ -16,5 +17,7 @@ it("uploads a short mp4 the way the browser does", async () => {
   out.leftover = (await admin.storage.from("sources").list("uploads")).data?.map((f) => f.name);
   out.source = (await admin.from("sources").select("id, title, mime_type, storage_path, byte_size").eq("id", started.sourceId).single()).data;
   out.passages = (await admin.from("passages").select("position, text, location").eq("source_id", started.sourceId).order("position")).data;
-  writeFileSync("C:/Users/Work/AppData/Local/Temp/claude/G--OneDrive-Agentic-Workspace-second-brain-engine/81fd6d4f-1be4-487e-8a20-e1ca7071edf7/scratchpad/e2e.json", JSON.stringify(out, null, 1));
+  const report = process.env.MANUAL_VIDEO_REPORT ?? "artifacts/manual-video/e2e.json";
+  mkdirSync(dirname(report), { recursive: true });
+  writeFileSync(report, JSON.stringify(out, null, 1));
 }, 900_000);

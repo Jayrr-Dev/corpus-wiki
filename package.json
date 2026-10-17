@@ -14,6 +14,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "perf:processing": "node scripts/performance/run.mjs",
+    "test:synthetic": "node scripts/performance/run.mjs --synthetic",
+    "test:live:utilitek": "node --env-file-if-exists=.env.local scripts/performance/live-utilitek.mjs",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/db/migrate.ts",
     "db:types": "echo 'Regenerate lib/database/types.ts with: npx supabase gen types typescript --project-id qeuvxnvwommyjdzxoodd --schema public > lib/database/types.ts (needs supabase login; keep the Constants block and helpers at the bottom)'"
   },
@@ -28,6 +31,7 @@
     "clsx": "2.1.1",
     "d3-force": "^3.0.0",
     "ffmpeg-static": "5.3.0",
+    "fuse.js": "^7.5.0",
     "linkedom": "^0.18.13",
     "lucide-react": "1.57.0",
     "mammoth": "1.13.0",
@@ -36,10 +40,19 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "0.0.1",
+    "sharp": "0.35.5",
     "sonner": "^2.0.8",
     "tailwind-merge": "3.7.0",
     "unpdf": "1.8.1",
     "zod": "4.6.7"
+  },
+  "overrides": {
+    "mammoth": {
+      "argparse": "2.0.1"
+    },
+    "@next/eslint-plugin-next": {
+      "fast-glob": "$fast-glob"
+    }
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.10",
@@ -53,6 +66,7 @@
     "@types/react-dom": "19.3.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.1",
+    "fast-glob": "file:vendor/next-root-glob",
     "pg": "8.23.0",
     "tailwindcss": "4.3.3",
     "typescript": "6.0.3",

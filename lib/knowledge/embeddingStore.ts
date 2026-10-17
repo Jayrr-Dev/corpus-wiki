@@ -1,5 +1,7 @@
 import type { Embedder } from "@/lib/ai/embeddings";
 import type { DbRpc } from "@/lib/db/rpc";
+import { mapConcurrent } from "@/lib/processing/concurrency";
+import { assertActiveUpload, uploadExecution } from "@/lib/ingest/workflowContext";
 
 // =====================================================================
 // CLAIM VECTORS IN THE DATABASE (public.unit_embeddings): saving the
@@ -22,11 +24,19 @@ export async function embedMissingUnits(db: DbRpc, embedder: Embedder, pageSize 
   for (;;) {
     const missing = await db.call<MissingRow[]>("missing_unit_embeddings", { p_model: embedder.model, p_limit: pageSize });
     if (!missing.length) return saved;
-    const vectors = await embedder.embed(missing.map((row) => row.content));
-    saved += await db.call<number>("save_unit_embeddings", {
-      p_rows: missing.map((row, index) => ({ revisionId: row.revision_id, unitId: row.unit_id, model: embedder.model, embedding: vectors[index] })),
-    });
-    if (missing.length < pageSize) return saved;
+    const chunks: MissingRow[][] = [];
+    for (let start = 0; start < missing.length; start += 64) chunks.push(missing.slice(start, start + 64));
+    const counts = await mapConcurrent(chunks, 2, async (rows) => {
+      await assertActiveUpload();
+      const vectors = await embedder.embed(rows.map((row) => row.content));
+      await assertActiveUpload();
+      return db.call<number>("save_unit_embeddings", {
+        p_rows: rows.map((row, index) => ({ revisionId: row.revision_id, unitId: row.unit_id, model: embedder.model, embedding: vectors[index] })),
+      });
+    }, uploadExecution.getStore()?.signal);
+    const count = counts.reduce((sum, value) => sum + value, 0);
+    saved += count;
+    if (!count || missing.length < pageSize) return saved;
   }
 }
 
@@ -61,10 +71,17 @@ export async function embedMissingPassages(db: DbRpc, embedder: Embedder, pageSi
   for (;;) {
     const missing = await db.call<MissingPassageRow[]>("missing_passage_embeddings", { p_model: embedder.model, p_limit: pageSize });
     if (!missing.length) return saved;
-    const vectors = await embedder.embed(missing.map((row) => row.text));
-    const count = await db.call<number>("save_passage_embeddings", {
-      p_rows: missing.map((row, index) => ({ passageId: row.passage_id, model: embedder.model, embedding: vectors[index] })),
-    });
+    const chunks: MissingPassageRow[][] = [];
+    for (let start = 0; start < missing.length; start += 64) chunks.push(missing.slice(start, start + 64));
+    const counts = await mapConcurrent(chunks, 2, async (rows) => {
+      await assertActiveUpload();
+      const vectors = await embedder.embed(rows.map((row) => row.text));
+      await assertActiveUpload();
+      return db.call<number>("save_passage_embeddings", {
+        p_rows: rows.map((row, index) => ({ passageId: row.passage_id, model: embedder.model, embedding: vectors[index] })),
+      });
+    }, uploadExecution.getStore()?.signal);
+    const count = counts.reduce((sum, value) => sum + value, 0);
     saved += count;
     // A passage deleted mid-batch is skipped; stop rather than ask for the same rows again
     if (!count || missing.length < pageSize) return saved;

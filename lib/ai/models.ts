@@ -1,4 +1,5 @@
 import "server-only";
+import { OPENROUTER_BASE_URL, OPENROUTER_MODEL_PREFIX } from "./openrouterConfig";
 
 import type { DbRpc } from "@/lib/db/rpc";
 import { type ArticleCharter, readCharter } from "@/lib/living-page/articleCharter";
@@ -16,7 +17,7 @@ import { ANTHROPIC_MODEL_PREFIX, CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN
 
 type ModelsResponse = { data?: { id?: string; architecture?: { modality?: string } }[] };
 
-type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; aiRoleAuto?: string[]; autoUpdateStale?: boolean; allowExternalKnowledge?: boolean; articleCharter?: unknown };
+type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; aiRoleAuto?: string[]; autoUpdateStale?: boolean; glossaryAutoDecide?: boolean; allowExternalKnowledge?: boolean; articleCharter?: unknown };
 
 // The model picked on /settings, or null when none is picked
 export async function readChosenModel(db: DbRpc): Promise<string | null> {
@@ -105,15 +106,17 @@ export async function listTokenFactoryModels(apiKey: string): Promise<string[]> 
 export async function listAvailableModels(nebiusKey: string, env: NodeJS.ProcessEnv = process.env): Promise<OfferedModel[]> {
   const cerebrasKey = env.CEREBRAS_API_KEY;
   const anthropicKey = env.ANTHROPIC_API_KEY;
-  const [tokenFactory, cerebras, claude] = await Promise.all([
-    listModels("Token Factory", TOKEN_FACTORY_BASE_URL, nebiusKey, true),
+  const [tokenFactory, cerebras, claude, openrouter] = await Promise.all([
+    nebiusKey ? listModels("Token Factory", TOKEN_FACTORY_BASE_URL, nebiusKey, true) : Promise.resolve([]),
     cerebrasKey ? listModels("Cerebras", CEREBRAS_BASE_URL, cerebrasKey) : Promise.resolve([]),
     anthropicKey ? listClaudeModels(anthropicKey) : Promise.resolve([]),
+    env.OPENROUTER_API_KEY ? listModels("OpenRouter", OPENROUTER_BASE_URL, env.OPENROUTER_API_KEY) : Promise.resolve([]),
   ]);
   return sortModels([
     ...tokenFactory,
     ...cerebras.map((model) => ({ ...model, id: CEREBRAS_MODEL_PREFIX + model.id })),
     ...claude.map((model) => ({ ...model, id: ANTHROPIC_MODEL_PREFIX + model.id })),
+    ...openrouter.map((model) => ({ ...model, id: OPENROUTER_MODEL_PREFIX + model.id })),
   ]);
 }
 
@@ -134,3 +137,7 @@ async function listModels(provider: string, baseUrl: string, apiKey: string, ver
 }
 
 const sortModels = (models: OfferedModel[]) => models.sort((a, b) => a.id.localeCompare(b.id, undefined, { sensitivity: "base" }));
+
+export async function readGlossaryAutoDecide(db: DbRpc): Promise<boolean> {
+  return (await db.call<WorkspaceSettings>("get_workspace_settings")).glossaryAutoDecide === true;
+}

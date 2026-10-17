@@ -1,0 +1,1050 @@
+{
+  "source": {
+    "key": "school-colors",
+    "name": "School colors",
+    "url": "https://en.wikipedia.org/wiki/School_colors"
+  },
+  "model": "zai-org/GLM-5.3-Flash",
+  "capturedAt": "2026-10-17T08:00:01.762Z",
+  "hash": "b3947a5f8bde157adb860f286837bc80aa14b08e861571aa2a1fe6069807a680",
+  "passages": [
+    "School colors, also known as university colors or college colors, are the colors chosen by a school, academy, college, university or institute as part of its brand identity, used on building signage, web pages, branded apparel, and the uniforms of sports teams. They can promote connection to the school, known as \"school spirit\", and help differentiate it from other institutions.",
+    "The tradition of school colors appears to have started in England in the 1830s. The University of Cambridge chose Cambridge blue for the Boat Race against the University of Oxford in 1836, Westminster School have used pink as their color since a boat race against Eton School in 1837, and Durham University adopted palatinate purple for its MA hood some time before that degree was first awarded in 1838.",
+    "Many US colleges adopted school colors between 1890 and 1910. These were generally chosen to be distinctive, something that grew harder as more colors and color combinations were taken, although many Presbyterian colleges chose to imitate Princeton University's black and orange. Some American schools have adopted one or more of the colors of red, white or blue from the national flag.",
+    "The most popular colors among US colleges ranked in the 2012 Forbes Top 50 or in the 2012–13 NCAA basketball or cross-country rankings were white, blue, red, black, and gold. These same five colors were the most popular five colors among colleges in each of the three rankings individually.",
+    "The use of colors to identify university sports teams dates back at least to the second Boat Race between Oxford and Cambridge in 1836. While most universities use the same color(s) for their sports and other university branding, Cambridge Blue is only one of twelve colors in the supporting palette for the university, not one of their six core colors. The University of Nottingham uses green and gold for its sports, but the rest of the university uses blue as its brand color. Roger Williams University changed its athletics colors in 2018 to match the university colors, in order to \"foster a strong, unified visual identity for RWU Athletics that is more cohesive with the overall University\", stating that \"this combination will be powerful in strengthening RWU's brand identity and awareness\".",
+    "Most competitive teams keep two sets of uniforms in different colors so the two teams in a match can be distinguished. In some sports, such as American football, a darker color, often the school's main color is emphasized on home uniforms, with the away team wearing a lighter color or white, while in other sports, such as basketball, a lighter color is used for the home team and a darker color for the away team. A third option used for some sports, such as association football, is that the home team gets to choose their color and the away team plays in a contrasting strip.",
+    "In addition, various groups that generate support for athletic teams, including cheerleaders and marching bands, wear uniforms with the colors of their school. At many private schools, or more traditional state schools, \"colors\" are awards presented for achievement in a sport.",
+    "The university color can sometimes become a nickname for the sports program. For example, the Palatinate (Durham) and the African Violet (Loughborough) in the UK, and the Harvard Crimson and Cornell Big Red in the US.",
+    "School colors are also used in the academic dress of many institutions. The first school color adopted by a university for its academic dress was palatinate purple at Durham University, England, some time between 1835 and 1838. Schools in the US that award an academic hood to their students and abide by the American Council on Education guidelines use hoods lined with their school colors and trimmed with velvet in a color indicating the discipline of the degree. Some US doctoral robes will also be in the colors of the university which granted the degree, departing from the Academic Costume Code color of black.",
+    "Many British, Irish and Commonwealth universities and some American universities have an academic scarf in the university's colors, usually long, woollen and patterned only with lengthwise stripes of varying widths. At collegiate universities such as the universities of Oxford, Cambridge, Durham, and Lancaster, each college has its own colors and scarf. Other non-collegiate universities such as Glasgow and Newcastle have scarf colors for each faculty."
+  ],
+  "knowledge": {
+    "entity": {
+      "id": "school-colors",
+      "key": "school-colors",
+      "name": "School colors",
+      "type": "concept"
+    },
+    "units": [
+      {
+        "unitId": "school-colors-1",
+        "revisionId": "snapshot-1",
+        "content": "School colors, also called university or college colors, are colors chosen by an educational institution as part of its brand identity, used on signage, web pages, apparel, and sports uniforms.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-2",
+        "revisionId": "snapshot-2",
+        "content": "School colors can promote connection to the school, known as school spirit, and help differentiate it from other institutions.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-3",
+        "revisionId": "snapshot-3",
+        "content": "The tradition of school colors appears to have started in England in the 1830s.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-4",
+        "revisionId": "snapshot-4",
+        "content": "The University of Cambridge chose Cambridge blue for the Boat Race against Oxford in 1836.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-5",
+        "revisionId": "snapshot-5",
+        "content": "Westminster School has used pink since a boat race against Eton School in 1837.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-6",
+        "revisionId": "snapshot-6",
+        "content": "Durham University adopted palatinate purple for its MA hood some time before that degree was first awarded in 1838.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-7",
+        "revisionId": "snapshot-7",
+        "content": "Many US colleges adopted school colors between 1890 and 1910, generally choosing distinctive combinations, though many Presbyterian colleges imitated Princeton University's black and orange.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-8",
+        "revisionId": "snapshot-8",
+        "content": "Some American schools have adopted red, white, or blue from the national flag as school colors.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-9",
+        "revisionId": "snapshot-9",
+        "content": "Among US colleges ranked in the 2012 Forbes Top 50 or the 2012–13 NCAA basketball or cross-country rankings, the most popular colors were white, blue, red, black, and gold.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-10",
+        "revisionId": "snapshot-10",
+        "content": "The same five colors—white, blue, red, black, and gold—were the most popular in each of the three rankings individually.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-11",
+        "revisionId": "snapshot-11",
+        "content": "Using colors to identify university sports teams dates back at least to the second Oxford–Cambridge Boat Race in 1836.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-12",
+        "revisionId": "snapshot-12",
+        "content": "Cambridge Blue is only one of twelve colors in the university's supporting palette, not one of its six core colors.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-13",
+        "revisionId": "snapshot-13",
+        "content": "The University of Nottingham uses green and gold for its sports, but blue as its overall university brand color.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-14",
+        "revisionId": "snapshot-14",
+        "content": "Roger Williams University changed its athletics colors in 2018 to match the university colors, aiming to foster a strong, unified visual identity for RWU Athletics.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-15",
+        "revisionId": "snapshot-15",
+        "content": "Most competitive teams keep two sets of uniforms in different colors so the two teams in a match can be distinguished.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-16",
+        "revisionId": "snapshot-16",
+        "content": "In American football, a darker color, often the school's main color, is emphasized on home uniforms, with the away team wearing a lighter color or white.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-17",
+        "revisionId": "snapshot-17",
+        "content": "In basketball, a lighter color is used for the home team and a darker color for the away team.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-18",
+        "revisionId": "snapshot-18",
+        "content": "In some sports such as association football, the home team chooses its color and the away team plays in a contrasting strip.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-19",
+        "revisionId": "snapshot-19",
+        "content": "Support groups for athletic teams, including cheerleaders and marching bands, wear uniforms in their school's colors.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-20",
+        "revisionId": "snapshot-20",
+        "content": "At many private schools and some traditional state schools, 'colors' are awards presented for achievement in a sport.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-21",
+        "revisionId": "snapshot-21",
+        "content": "University colors can become nicknames for sports programs, such as the Palatinate (Durham) and the African Violet (Loughborough) in the UK, and the Harvard Crimson and Cornell Big Red in the US.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-22",
+        "revisionId": "snapshot-22",
+        "content": "School colors are used in the academic dress of many institutions.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-23",
+        "revisionId": "snapshot-23",
+        "content": "The first school color adopted by a university for academic dress was palatinate purple at Durham University, England, some time between 1835 and 1838.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-24",
+        "revisionId": "snapshot-24",
+        "content": "US schools that award academic hoods and follow American Council on Education guidelines use hoods lined with school colors and trimmed with velvet indicating the degree's discipline.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-25",
+        "revisionId": "snapshot-25",
+        "content": "Some US doctoral robes are in the granting university's colors, departing from the Academic Costume Code color of black.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-26",
+        "revisionId": "snapshot-26",
+        "content": "Many British, Irish and Commonwealth universities and some American universities have an academic scarf in the university's colors, usually long, woollen, and patterned only with lengthwise stripes of varying widths.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-27",
+        "revisionId": "snapshot-27",
+        "content": "At collegiate universities such as Oxford, Cambridge, Durham, and Lancaster, each college has its own colors and scarf.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "school-colors-28",
+        "revisionId": "snapshot-28",
+        "content": "Non-collegiate universities such as Glasgow and Newcastle have scarf colors for each faculty.",
+        "kind": "fact",
+        "epistemicStatus": "supported"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "content": "School colors, also called university or college colors, are colors chosen by an educational institution as part of its brand identity, used on signage, web pages, apparel, and sports uniforms.",
+      "passage": 1,
+      "quote": "School colors, also known as university colors or college colors, are the colors chosen by a school, academy, college, university or institute as part of its brand identity, used on building signage, web pages, branded apparel, and the uniforms of sports teams. They can promote connection to the school, known as \"school spirit\", and help differentiate it from other institutions."
+    },
+    {
+      "content": "School colors can promote connection to the school, known as school spirit, and help differentiate it from other institutions.",
+      "passage": 1,
+      "quote": "School colors, also known as university colors or college colors, are the colors chosen by a school, academy, college, university or institute as part of its brand identity, used on building signage, web pages, branded apparel, and the uniforms of sports teams. They can promote connection to the school, known as \"school spirit\", and help differentiate it from other institutions."
+    },
+    {
+      "content": "The tradition of school colors appears to have started in England in the 1830s.",
+      "passage": 2,
+      "quote": "The tradition of school colors appears to have started in England in the 1830s. The University of Cambridge chose Cambridge blue for the Boat Race against the University of Oxford in 1836, Westminster School have used pink as their color since a boat race against Eton School in 1837, and Durham University adopted palatinate purple for its MA hood some time before that degree was first awarded in 1838."
+    },
+    {
+      "content": "The University of Cambridge chose Cambridge blue for the Boat Race against Oxford in 1836.",
+      "passage": 2,
+      "quote": "The tradition of school colors appears to have started in England in the 1830s. The University of Cambridge chose Cambridge blue for the Boat Race against the University of Oxford in 1836, Westminster School have used pink as their color since a boat race against Eton School in 1837, and Durham University adopted palatinate purple for its MA hood some time before that degree was first awarded in 1838."
+    },
+    {
+      "content": "Westminster School has used pink since a boat race against Eton School in 1837.",
+      "passage": 2,
+      "quote": "The tradition of school colors appears to have started in England in the 1830s. The University of Cambridge chose Cambridge blue for the Boat Race against the University of Oxford in 1836, Westminster School have used pink as their color since a boat race against Eton School in 1837, and Durham University adopted palatinate purple for its MA hood some time before that degree was first awarded in 1838."
+    },
+    {
+      "content": "Durham University adopted palatinate purple for its MA hood some time before that degree was first awarded in 1838.",
+      "passage": 2,
+      "quote": "The tradition of school colors appears to have started in England in the 1830s. The University of Cambridge chose Cambridge blue for the Boat Race against the University of Oxford in 1836, Westminster School have used pink as their color since a boat race against Eton School in 1837, and Durham University adopted palatinate purple for its MA hood some time before that degree was first awarded in 1838."
+    },
+    {
+      "content": "Many US colleges adopted school colors between 1890 and 1910, generally choosing distinctive combinations, though many Presbyterian colleges imitated Princeton University's black and orange.",
+      "passage": 3,
+      "quote": "Many US colleges adopted school colors between 1890 and 1910. These were generally chosen to be distinctive, something that grew harder as more colors and color combinations were taken, although many Presbyterian colleges chose to imitate Princeton University's black and orange. Some American schools have adopted one or more of the colors of red, white or blue from the national flag."
+    },
+    {
+      "content": "Some American schools have adopted red, white, or blue from the national flag as school colors.",
+      "passage": 3,
+      "quote": "Many US colleges adopted school colors between 1890 and 1910. These were generally chosen to be distinctive, something that grew harder as more colors and color combinations were taken, although many Presbyterian colleges chose to imitate Princeton University's black and orange. Some American schools have adopted one or more of the colors of red, white or blue from the national flag."
+    },
+    {
+      "content": "Among US colleges ranked in the 2012 Forbes Top 50 or the 2012–13 NCAA basketball or cross-country rankings, the most popular colors were white, blue, red, black, and gold.",
+      "passage": 4,
+      "quote": "The most popular colors among US colleges ranked in the 2012 Forbes Top 50 or in the 2012–13 NCAA basketball or cross-country rankings were white, blue, red, black, and gold. These same five colors were the most popular five colors among colleges in each of the three rankings individually."
+    },
+    {
+      "content": "The same five colors—white, blue, red, black, and gold—were the most popular in each of the three rankings individually.",
+      "passage": 4,
+      "quote": "The most popular colors among US colleges ranked in the 2012 Forbes Top 50 or in the 2012–13 NCAA basketball or cross-country rankings were white, blue, red, black, and gold. These same five colors were the most popular five colors among colleges in each of the three rankings individually."
+    },
+    {
+      "content": "Using colors to identify university sports teams dates back at least to the second Oxford–Cambridge Boat Race in 1836.",
+      "passage": 5,
+      "quote": "The use of colors to identify university sports teams dates back at least to the second Boat Race between Oxford and Cambridge in 1836. While most universities use the same color(s) for their sports and other university branding, Cambridge Blue is only one of twelve colors in the supporting palette for the university, not one of their six core colors. The University of Nottingham uses green and gold for its sports, but the rest of the university uses blue as its brand color. Roger Williams University changed its athletics colors in 2018 to match the university colors, in order to \"foster a strong, unified visual identity for RWU Athletics that is more cohesive with the overall University\", stating that \"this combination will be powerful in strengthening RWU's brand identity and awareness\"."
+    },
+    {
+      "content": "Cambridge Blue is only one of twelve colors in the university's supporting palette, not one of its six core colors.",
+      "passage": 5,
+      "quote": "The use of colors to identify university sports teams dates back at least to the second Boat Race between Oxford and Cambridge in 1836. While most universities use the same color(s) for their sports and other university branding, Cambridge Blue is only one of twelve colors in the supporting palette for the university, not one of their six core colors. The University of Nottingham uses green and gold for its sports, but the rest of the university uses blue as its brand color. Roger Williams University changed its athletics colors in 2018 to match the university colors, in order to \"foster a strong, unified visual identity for RWU Athletics that is more cohesive with the overall University\", stating that \"this combination will be powerful in strengthening RWU's brand identity and awareness\"."
+    },
+    {
+      "content": "The University of Nottingham uses green and gold for its sports, but blue as its overall university brand color.",
+      "passage": 5,
+      "quote": "The use of colors to identify university sports teams dates back at least to the second Boat Race between Oxford and Cambridge in 1836. While most universities use the same color(s) for their sports and other university branding, Cambridge Blue is only one of twelve colors in the supporting palette for the university, not one of their six core colors. The University of Nottingham uses green and gold for its sports, but the rest of the university uses blue as its brand color. Roger Williams University changed its athletics colors in 2018 to match the university colors, in order to \"foster a strong, unified visual identity for RWU Athletics that is more cohesive with the overall University\", stating that \"this combination will be powerful in strengthening RWU's brand identity and awareness\"."
+    },
+    {
+      "content": "Roger Williams University changed its athletics colors in 2018 to match the university colors, aiming to foster a strong, unified visual identity for RWU Athletics.",
+      "passage": 5,
+      "quote": "The use of colors to identify university sports teams dates back at least to the second Boat Race between Oxford and Cambridge in 1836. While most universities use the same color(s) for their sports and other university branding, Cambridge Blue is only one of twelve colors in the supporting palette for the university, not one of their six core colors. The University of Nottingham uses green and gold for its sports, but the rest of the university uses blue as its brand color. Roger Williams University changed its athletics colors in 2018 to match the university colors, in order to \"foster a strong, unified visual identity for RWU Athletics that is more cohesive with the overall University\", stating that \"this combination will be powerful in strengthening RWU's brand identity and awareness\"."
+    },
+    {
+      "content": "Most competitive teams keep two sets of uniforms in different colors so the two teams in a match can be distinguished.",
+      "passage": 6,
+      "quote": "Most competitive teams keep two sets of uniforms in different colors so the two teams in a match can be distinguished. In some sports, such as American football, a darker color, often the school's main color is emphasized on home uniforms, with the away team wearing a lighter color or white, while in other sports, such as basketball, a lighter color is used for the home team and a darker color for the away team. A third option used for some sports, such as association football, is that the home team gets to choose their color and the away team plays in a contrasting strip."
+    },
+    {
+      "content": "In American football, a darker color, often the school's main color, is emphasized on home uniforms, with the away team wearing a lighter color or white.",
+      "passage": 6,
+      "quote": "Most competitive teams keep two sets of uniforms in different colors so the two teams in a match can be distinguished. In some sports, such as American football, a darker color, often the school's main color is emphasized on home uniforms, with the away team wearing a lighter color or white, while in other sports, such as basketball, a lighter color is used for the home team and a darker color for the away team. A third option used for some sports, such as association football, is that the home team gets to choose their color and the away team plays in a contrasting strip."
+    },
+    {
+      "content": "In basketball, a lighter color is used for the home team and a darker color for the away team.",
+      "passage": 6,
+      "quote": "Most competitive teams keep two sets of uniforms in different colors so the two teams in a match can be distinguished. In some sports, such as American football, a darker color, often the school's main color is emphasized on home uniforms, with the away team wearing a lighter color or white, while in other sports, such as basketball, a lighter color is used for the home team and a darker color for the away team. A third option used for some sports, such as association football, is that the home team gets to choose their color and the away team plays in a contrasting strip."
+    },
+    {
+      "content": "In some sports such as association football, the home team chooses its color and the away team plays in a contrasting strip.",
+      "passage": 6,
+      "quote": "Most competitive teams keep two sets of uniforms in different colors so the two teams in a match can be distinguished. In some sports, such as American football, a darker color, often the school's main color is emphasized on home uniforms, with the away team wearing a lighter color or white, while in other sports, such as basketball, a lighter color is used for the home team and a darker color for the away team. A third option used for some sports, such as association football, is that the home team gets to choose their color and the away team plays in a contrasting strip."
+    },
+    {
+      "content": "Support groups for athletic teams, including cheerleaders and marching bands, wear uniforms in their school's colors.",
+      "passage": 7,
+      "quote": "In addition, various groups that generate support for athletic teams, including cheerleaders and marching bands, wear uniforms with the colors of their school. At many private schools, or more traditional state schools, \"colors\" are awards presented for achievement in a sport."
+    },
+    {
+      "content": "At many private schools and some traditional state schools, 'colors' are awards presented for achievement in a sport.",
+      "passage": 7,
+      "quote": "In addition, various groups that generate support for athletic teams, including cheerleaders and marching bands, wear uniforms with the colors of their school. At many private schools, or more traditional state schools, \"colors\" are awards presented for achievement in a sport."
+    },
+    {
+      "content": "University colors can become nicknames for sports programs, such as the Palatinate (Durham) and the African Violet (Loughborough) in the UK, and the Harvard Crimson and Cornell Big Red in the US.",
+      "passage": 8,
+      "quote": "The university color can sometimes become a nickname for the sports program. For example, the Palatinate (Durham) and the African Violet (Loughborough) in the UK, and the Harvard Crimson and Cornell Big Red in the US."
+    },
+    {
+      "content": "School colors are used in the academic dress of many institutions.",
+      "passage": 9,
+      "quote": "School colors are also used in the academic dress of many institutions. The first school color adopted by a university for its academic dress was palatinate purple at Durham University, England, some time between 1835 and 1838. Schools in the US that award an academic hood to their students and abide by the American Council on Education guidelines use hoods lined with their school colors and trimmed with velvet in a color indicating the discipline of the degree. Some US doctoral robes will also be in the colors of the university which granted the degree, departing from the Academic Costume Code color of black."
+    },
+    {
+      "content": "The first school color adopted by a university for academic dress was palatinate purple at Durham University, England, some time between 1835 and 1838.",
+      "passage": 9,
+      "quote": "School colors are also used in the academic dress of many institutions. The first school color adopted by a university for its academic dress was palatinate purple at Durham University, England, some time between 1835 and 1838. Schools in the US that award an academic hood to their students and abide by the American Council on Education guidelines use hoods lined with their school colors and trimmed with velvet in a color indicating the discipline of the degree. Some US doctoral robes will also be in the colors of the university which granted the degree, departing from the Academic Costume Code color of black."
+    },
+    {
+      "content": "US schools that award academic hoods and follow American Council on Education guidelines use hoods lined with school colors and trimmed with velvet indicating the degree's discipline.",
+      "passage": 9,
+      "quote": "School colors are also used in the academic dress of many institutions. The first school color adopted by a university for its academic dress was palatinate purple at Durham University, England, some time between 1835 and 1838. Schools in the US that award an academic hood to their students and abide by the American Council on Education guidelines use hoods lined with their school colors and trimmed with velvet in a color indicating the discipline of the degree. Some US doctoral robes will also be in the colors of the university which granted the degree, departing from the Academic Costume Code color of black."
+    },
+    {
+      "content": "Some US doctoral robes are in the granting university's colors, departing from the Academic Costume Code color of black.",
+      "passage": 9,
+      "quote": "School colors are also used in the academic dress of many institutions. The first school color adopted by a university for its academic dress was palatinate purple at Durham University, England, some time between 1835 and 1838. Schools in the US that award an academic hood to their students and abide by the American Council on Education guidelines use hoods lined with their school colors and trimmed with velvet in a color indicating the discipline of the degree. Some US doctoral robes will also be in the colors of the university which granted the degree, departing from the Academic Costume Code color of black."
+    },
+    {
+      "content": "Many British, Irish and Commonwealth universities and some American universities have an academic scarf in the university's colors, usually long, woollen, and patterned only with lengthwise stripes of varying widths.",
+      "passage": 10,
+      "quote": "Many British, Irish and Commonwealth universities and some American universities have an academic scarf in the university's colors, usually long, woollen and patterned only with lengthwise stripes of varying widths. At collegiate universities such as the universities of Oxford, Cambridge, Durham, and Lancaster, each college has its own colors and scarf. Other non-collegiate universities such as Glasgow and Newcastle have scarf colors for each faculty."
+    },
+    {
+      "content": "At collegiate universities such as Oxford, Cambridge, Durham, and Lancaster, each college has its own colors and scarf.",
+      "passage": 10,
+      "quote": "Many British, Irish and Commonwealth universities and some American universities have an academic scarf in the university's colors, usually long, woollen and patterned only with lengthwise stripes of varying widths. At collegiate universities such as the universities of Oxford, Cambridge, Durham, and Lancaster, each college has its own colors and scarf. Other non-collegiate universities such as Glasgow and Newcastle have scarf colors for each faculty."
+    },
+    {
+      "content": "Non-collegiate universities such as Glasgow and Newcastle have scarf colors for each faculty.",
+      "passage": 10,
+      "quote": "Many British, Irish and Commonwealth universities and some American universities have an academic scarf in the university's colors, usually long, woollen and patterned only with lengthwise stripes of varying widths. At collegiate universities such as the universities of Oxford, Cambridge, Durham, and Lancaster, each college has its own colors and scarf. Other non-collegiate universities such as Glasgow and Newcastle have scarf colors for each faculty."
+    }
+  ],
+  "runs": [
+    {
+      "label": "Existing Planner baseline",
+      "attempts": [
+        {
+          "plan": {
+            "title": "School colors",
+            "introduction": [
+              "C1",
+              "C2",
+              "C3",
+              "C21"
+            ],
+            "sections": [
+              {
+                "title": "Origins",
+                "claims": [
+                  "C11",
+                  "C4",
+                  "C5",
+                  "C6",
+                  "C7",
+                  "C8"
+                ]
+              },
+              {
+                "title": "Use in sports",
+                "claims": [
+                  "C15",
+                  "C16",
+                  "C17",
+                  "C18",
+                  "C19",
+                  "C14",
+                  "C13",
+                  "C12"
+                ]
+              },
+              {
+                "title": "Awards and team nicknames",
+                "claims": [
+                  "C20"
+                ]
+              },
+              {
+                "title": "Academic dress",
+                "claims": [
+                  "C22",
+                  "C23",
+                  "C24",
+                  "C25",
+                  "C26",
+                  "C27",
+                  "C28"
+                ]
+              },
+              {
+                "title": "Popular colors in the united states",
+                "claims": [
+                  "C9",
+                  "C10"
+                ]
+              }
+            ]
+          },
+          "centralMessage": null,
+          "readingOrderRationale": null,
+          "problems": [],
+          "review": {
+            "grounding": {
+              "score": 3,
+              "reason": "All claims are used once and headings are supported, but C21 (team nickname examples) sits in the introduction while the 'Awards and team nicknames' heading has only C20, leaving the nicknames half of that heading without body support."
+            },
+            "cohesion": {
+              "score": 3,
+              "reason": "Sections are coherent; Origins, Use in sports, and Academic dress each cover one topic. The awards/nicknames section is thin because its nickname evidence (C21) is stranded in the introduction."
+            },
+            "flow": {
+              "score": 3,
+              "reason": "Origins correctly orders C11/C4 (1836), C5 (1837), C6 (1838), then C7 (1890–1910) and C8. The introduction front-loads C21's specific examples before Origins establishes the tradition, forcing readers ahead of the narrative."
+            },
+            "headings": {
+              "score": 3,
+              "reason": "Headings are descriptive and distinct, though 'Popular colors in the united states' needs capitalization, and 'Awards and team nicknames' overpromises relative to its single claim."
+            },
+            "balance": {
+              "score": 3,
+              "reason": "Scope is evidence-led with no padding; the small Awards and Popular colors sections have distinct scopes and are acceptable, but the awards/nicknames section is underweight because its nickname claim is misplaced."
+            },
+            "introduction": {
+              "score": 3,
+              "reason": "C1 and C2 define the subject well and C3 sets up Origins, but C21's detailed nickname examples belong in the body, making the introduction slightly disproportionate."
+            },
+            "blockingIssues": [
+              "The 'Awards and team nicknames' heading is only supported by C20; its nickname claim C21 is placed in the introduction instead of that section."
+            ],
+            "fixes": [
+              "Move C21 from the introduction into 'Awards and team nicknames' so the Durham, Loughborough, Harvard, and Cornell examples support the heading directly.",
+              "Capitalize the heading to 'Popular colors in the United States'."
+            ]
+          },
+          "accepted": false
+        }
+      ],
+      "tokensIn": 6266,
+      "tokensOut": 1314
+    },
+    {
+      "label": "Candidate from knowledge units",
+      "attempts": [
+        {
+          "plan": {
+            "title": "School colors",
+            "introduction": [
+              "C1",
+              "C2"
+            ],
+            "sections": [
+              {
+                "title": "Origins and adoption of school colors",
+                "claims": [
+                  "C3",
+                  "C4",
+                  "C5",
+                  "C6",
+                  "C7",
+                  "C8",
+                  "C9",
+                  "C10"
+                ]
+              },
+              {
+                "title": "School colors in sports",
+                "claims": [
+                  "C11",
+                  "C12",
+                  "C13",
+                  "C14",
+                  "C15",
+                  "C16",
+                  "C17",
+                  "C18",
+                  "C19"
+                ]
+              },
+              {
+                "title": "School colors in academic dress",
+                "claims": [
+                  "C22",
+                  "C23",
+                  "C24",
+                  "C25",
+                  "C26",
+                  "C27",
+                  "C28"
+                ]
+              },
+              {
+                "title": "Color awards and team nicknames",
+                "claims": [
+                  "C20",
+                  "C21"
+                ]
+              }
+            ]
+          },
+          "centralMessage": "School colors are an institution's chosen brand identity, originating in 1830s England, that now distinguish teams, build school spirit, and appear in uniforms, apparel, and academic dress.",
+          "readingOrderRationale": "The introduction defines school colors and their purpose. Origins come next chronologically, from 1830s England to American adoption and popular color choices. Sports use follows as the earliest and most visible application, then academic dress, and finally awards and nicknames that grew out of color traditions.",
+          "problems": [],
+          "review": {
+            "grounding": {
+              "score": 4,
+              "reason": "The title and all four headings are supported by the claims, and each claim C1–C28 is used exactly once with no unsupported additions."
+            },
+            "cohesion": {
+              "score": 2,
+              "reason": "C9 and C10 are popularity statistics, not origins or adoption history, so they sit awkwardly in 'Origins and adoption of school colors'. C11 (the 1836 Boat Race) is an origin claim placed in the sports section while C4 covers the same event under Origins, splitting one topic across sections."
+            },
+            "flow": {
+              "score": 3,
+              "reason": "Origins precede later uses, and definitions come first. But C11 repeats the 1836 Boat Race origin inside 'School colors in sports' after the reader already met it via C4, forcing a backtrack to understand the timeline."
+            },
+            "headings": {
+              "score": 3,
+              "reason": "'School colors in sports' and 'School colors in academic dress' are descriptive and distinct. 'Color awards and team nicknames' is clear. 'Origins and adoption of school colors' overpromises because it also holds popularity rankings (C9, C10)."
+            },
+            "balance": {
+              "score": 3,
+              "reason": "Section sizes are proportionate to their claims and the small 'Color awards and team nicknames' section has a distinct scope, which is acceptable. The only strain is the Origins section carrying unrelated ranking data."
+            },
+            "introduction": {
+              "score": 4,
+              "reason": "C1 defines the subject and C2 states its purpose (school spirit, differentiation); the body develops uses and history without repeating the introduction."
+            },
+            "blockingIssues": [
+              "C9 and C10 (color popularity rankings) are misplaced under 'Origins and adoption of school colors', breaking that section's topic.",
+              "C11 duplicates the 1836 Boat Race origin already covered by C4 but appears in a later section, creating a chronology split."
+            ],
+            "fixes": [
+              "Move C9 and C10 out of 'Origins and adoption of school colors' into a small section such as 'Popularity of colors' or fold them into the introduction of the sports section if context allows.",
+              "Move C11 into 'Origins and adoption of school colors' beside C4 so both 1836 Boat Race claims appear together in chronological order.",
+              "Retitle 'Origins and adoption of school colors' if it retains only C3–C8 and C11, or keep the title once the ranking claims are removed."
+            ]
+          },
+          "accepted": false
+        },
+        {
+          "plan": {
+            "title": "School colors",
+            "introduction": [
+              "C1",
+              "C2"
+            ],
+            "sections": [
+              {
+                "title": "Origins and early adoption",
+                "claims": [
+                  "C3",
+                  "C4",
+                  "C11",
+                  "C5",
+                  "C6",
+                  "C7",
+                  "C8"
+                ]
+              },
+              {
+                "title": "Popularity of color choices",
+                "claims": [
+                  "C9",
+                  "C10"
+                ]
+              },
+              {
+                "title": "School colors in sports",
+                "claims": [
+                  "C12",
+                  "C13",
+                  "C14",
+                  "C15",
+                  "C16",
+                  "C17",
+                  "C18",
+                  "C19"
+                ]
+              },
+              {
+                "title": "School colors in academic dress",
+                "claims": [
+                  "C22",
+                  "C23",
+                  "C24",
+                  "C25",
+                  "C26",
+                  "C27",
+                  "C28"
+                ]
+              },
+              {
+                "title": "Color awards and team nicknames",
+                "claims": [
+                  "C20",
+                  "C21"
+                ]
+              }
+            ]
+          },
+          "centralMessage": "School colors are chosen brand colors that identify an institution, originated in 1830s England, and now appear in sports, academic dress, awards, and team nicknames.",
+          "readingOrderRationale": "Define the subject first, then trace origins chronologically (1830s England through US adoption), then cover how colors function today: popularity patterns, sports use, academic dress, and finally awards and nicknames as derived traditions.",
+          "problems": [],
+          "review": {
+            "grounding": {
+              "score": 4,
+              "reason": "Title and all five headings are supported by the claims; each of C1–C28 is used exactly once, and hedged claims (C3 'appears to have started', C6 'some time before') keep their attribution."
+            },
+            "cohesion": {
+              "score": 3,
+              "reason": "Sections are mostly single-topic, but C12 and C13 concern the distinction between university brand colors and athletics colors, so they sit awkwardly inside 'School colors in sports' alongside uniform rules (C15–C18)."
+            },
+            "flow": {
+              "score": 4,
+              "reason": "Definition and purpose lead, origins (C3–C6, C11) precede later US adoption (C7–C8), and statistics, sports use, academic dress, and awards follow in readable order without backtracking."
+            },
+            "headings": {
+              "score": 4,
+              "reason": "All H2 labels are descriptive and distinct—'Origins and early adoption', 'Popularity of color choices', 'School colors in sports', 'School colors in academic dress', 'Color awards and team nicknames'—and each predicts its contents."
+            },
+            "balance": {
+              "score": 3,
+              "reason": "Scope is evidence-led with no padding, but 'Color awards and team nicknames' holds only two loosely related claims (C20 awards, C21 nicknames), a slight grab-bag; the sports section is dense by comparison."
+            },
+            "introduction": {
+              "score": 4,
+              "reason": "C1 defines school colors and C2 states their purpose (spirit, differentiation); the body develops uses and history rather than repeating the lead."
+            },
+            "blockingIssues": [],
+            "fixes": [
+              "Move C12 and C13 out of 'School colors in sports' into a short passage on the distinction between institutional brand colors and athletics colors, or fold them into the introduction's development of C1.",
+              "Consider renaming 'Color awards and team nicknames' to something like 'Awards and team nicknames derived from colors' and, if sourcing allows, note the two topics' shared link to color-based identity; otherwise merge C21 into the sports section and keep C20 standalone."
+            ]
+          },
+          "accepted": true
+        }
+      ],
+      "tokensIn": 9815,
+      "tokensOut": 1824
+    },
+    {
+      "label": "Repair vague headings and mixed buckets",
+      "attempts": [
+        {
+          "plan": {
+            "title": "School colors",
+            "introduction": [
+              "C1"
+            ],
+            "sections": [
+              {
+                "title": "Step one",
+                "claims": [
+                  "C2",
+                  "C5",
+                  "C8",
+                  "C11",
+                  "C14",
+                  "C17",
+                  "C20",
+                  "C23",
+                  "C26"
+                ]
+              },
+              {
+                "title": "Background",
+                "claims": [
+                  "C3",
+                  "C6",
+                  "C9",
+                  "C12",
+                  "C15",
+                  "C18",
+                  "C21",
+                  "C24",
+                  "C27"
+                ]
+              },
+              {
+                "title": "Other",
+                "claims": [
+                  "C4",
+                  "C7",
+                  "C10",
+                  "C13",
+                  "C16",
+                  "C19",
+                  "C22",
+                  "C25",
+                  "C28"
+                ]
+              }
+            ]
+          },
+          "centralMessage": null,
+          "readingOrderRationale": null,
+          "problems": [
+            "\"Step one\" is a vague or introductory heading; name its actual topic.",
+            "\"Background\" is a vague or introductory heading; name its actual topic.",
+            "\"Other\" is a vague or introductory heading; name its actual topic."
+          ],
+          "review": null,
+          "accepted": false
+        },
+        {
+          "plan": {
+            "title": "School colors",
+            "introduction": [
+              "C1",
+              "C2"
+            ],
+            "sections": [
+              {
+                "title": "Origins in nineteenth-century England and america",
+                "claims": [
+                  "C3",
+                  "C4",
+                  "C5",
+                  "C6",
+                  "C7"
+                ]
+              },
+              {
+                "title": "How colors are chosen and used across a school's identity",
+                "claims": [
+                  "C8",
+                  "C9",
+                  "C10",
+                  "C12",
+                  "C13",
+                  "C14"
+                ]
+              },
+              {
+                "title": "School colors in sports",
+                "claims": [
+                  "C11",
+                  "C15",
+                  "C16",
+                  "C17",
+                  "C18",
+                  "C19",
+                  "C21"
+                ]
+              },
+              {
+                "title": "Academic dress",
+                "claims": [
+                  "C22",
+                  "C23",
+                  "C24",
+                  "C25",
+                  "C26",
+                  "C27",
+                  "C28"
+                ]
+              },
+              {
+                "title": "Colors as achievement awards",
+                "claims": [
+                  "C20"
+                ]
+              }
+            ]
+          },
+          "centralMessage": "School colors are an institution's chosen brand colors, originating in 1830s England, that now identify schools and their sports teams and appear throughout academic dress.",
+          "readingOrderRationale": "Define the subject and its purpose first, then trace origins chronologically, explain how colors are chosen and vary across a school's identity, cover their use in sports, and end with academic dress and awards as extended ceremonial uses.",
+          "problems": [],
+          "review": {
+            "grounding": {
+              "score": 4,
+              "reason": "Title and all headings are supported by the claims; each of C1–C28 is used exactly once with no duplication or unsupported material."
+            },
+            "cohesion": {
+              "score": 3,
+              "reason": "Sections are mostly coherent, but C4 (Cambridge blue, 1836 Boat Race) in Origins and C11 (colors identifying teams since the 1836 Boat Race) in Sports cover the same event, creating overlap across sections."
+            },
+            "flow": {
+              "score": 3,
+              "reason": "Origins precede usage and sports detail, and Academic dress is well ordered (C22 general, then C23–C28 specifics). Minor issue: C11 restates the 1836 Boat Race origin already covered by C4, forcing a reader to reconcile the two."
+            },
+            "headings": {
+              "score": 3,
+              "reason": "Headings are descriptive and distinct, but 'Origins in nineteenth-century England and america' has a lowercase 'america', and 'How colors are chosen and used across a school's identity' is wordy for what is largely selection and branding examples."
+            },
+            "balance": {
+              "score": 3,
+              "reason": "Scope is evidence-led and the one-claim 'Colors as achievement awards' section has a distinct scope, which is acceptable. The identity section mixes selection (C8–C10) with brand-palette distinctions (C12–C14), slightly diluting its focus."
+            },
+            "introduction": {
+              "score": 4,
+              "reason": "C1 defines school colors and C2 adds purpose (school spirit, differentiation); the body develops usage, history, sports, and dress without repeating the lead."
+            },
+            "blockingIssues": [],
+            "fixes": [
+              "Merge C11 into the Origins section beside C4 so the 1836 Boat Race is covered once, or reword the sports section's opening to reference the origin without restating it.",
+              "Capitalize 'America' in the first heading and consider shortening it to 'Origins in the nineteenth century'.",
+              "Consider renaming the identity section to something like 'Selection and branding' to match its C8–C14 content."
+            ]
+          },
+          "accepted": true
+        }
+      ],
+      "tokensIn": 4794,
+      "tokensOut": 1040
+    },
+    {
+      "label": "Repair misleading headings and broken reading order",
+      "attempts": [
+        {
+          "plan": {
+            "title": "School colors",
+            "introduction": [
+              "C1",
+              "C2"
+            ],
+            "sections": [
+              {
+                "title": "Color awards and team nicknames",
+                "claims": [
+                  "C3",
+                  "C4",
+                  "C11",
+                  "C5",
+                  "C6",
+                  "C7",
+                  "C8"
+                ]
+              },
+              {
+                "title": "School colors in academic dress",
+                "claims": [
+                  "C20",
+                  "C21"
+                ]
+              },
+              {
+                "title": "School colors in sports",
+                "claims": [
+                  "C22",
+                  "C23",
+                  "C24",
+                  "C25",
+                  "C26",
+                  "C27",
+                  "C28"
+                ]
+              },
+              {
+                "title": "Popularity of color choices",
+                "claims": [
+                  "C12",
+                  "C13",
+                  "C14",
+                  "C15",
+                  "C16",
+                  "C17",
+                  "C18",
+                  "C19"
+                ]
+              },
+              {
+                "title": "Origins and early adoption",
+                "claims": [
+                  "C9",
+                  "C10"
+                ]
+              }
+            ]
+          },
+          "centralMessage": null,
+          "readingOrderRationale": null,
+          "problems": [],
+          "review": {
+            "grounding": {
+              "score": 2,
+              "reason": "All 28 claims are used once and the title is supported, but nearly every claim sits under a heading it does not match: C3–C8 and C11 (origins) sit under 'Color awards and team nicknames', C20–C21 (awards/nicknames) under 'School colors in academic dress', C22–C28 (academic dress) under 'School colors in sports', and C9–C10 (popularity) under 'Origins and early adoption'."
+            },
+            "cohesion": {
+              "score": 1,
+              "reason": "Sections are grab bags as labeled: the origins claims (C3–C8, C11) share no topic with awards or nicknames, and the sports section contains only academic-dress claims (C22–C28). Each claim set is coherent, but the heading-to-content mapping is wrong throughout."
+            },
+            "flow": {
+              "score": 1,
+              "reason": "Origins claims (C3–C8, C11) appear first under a mislabeled heading while the actual 'Origins and early adoption' section holds popularity statistics (C9–C10), so definitions and history never precede usage in a readable order; readers cannot follow the sequence without re-mapping headings themselves."
+            },
+            "headings": {
+              "score": 1,
+              "reason": "Four of five headings ('Color awards and team nicknames', 'School colors in academic dress', 'School colors in sports', 'Origins and early adoption') describe content that actually appears in a different section; only the introduction matches its claims."
+            },
+            "balance": {
+              "score": 2,
+              "reason": "Claim groupings are sensible in size once relabeled, but the current split fragments related material: C20–C21 belong with C3–C8's awards/nickname material, and C12–C19 (brand and uniform usage) are lumped under 'Popularity' despite covering distinct topics."
+            },
+            "introduction": {
+              "score": 4,
+              "reason": "C1 defines school colors and C2 adds purpose (school spirit, differentiation); the body develops usage, history, and statistics without repeating the introduction."
+            },
+            "blockingIssues": [
+              "Claims are rotated one section off: origins claims (C3–C8, C11) sit under 'Color awards and team nicknames', awards/nickname claims (C20–C21) under 'School colors in academic dress', academic-dress claims (C22–C28) under 'School colors in sports', and popularity statistics (C9–C10) under 'Origins and early adoption'."
+            ],
+            "fixes": [
+              "Move C3, C4, C5, C6, C7, C8, and C11 into 'Origins and early adoption'; they form a coherent 1830s England through 1890–1910 US adoption narrative.",
+              "Move C20 and C21 into 'Color awards and team nicknames'; C20 defines color awards and C21 gives nickname examples (Palatinate, African Violet, Harvard Crimson, Cornell Big Red).",
+              "Move C22–C28 into 'School colors in academic dress'; they cover hoods, robes, and scarves including Durham (C23) and collegiate vs faculty scarves (C27–C28).",
+              "Move C9 and C10 into 'Popularity of color choices'; they report the 2012 Forbes and NCAA ranking color frequencies.",
+              "Reassign C12–C19 (brand palettes, Roger Williams 2018, uniform conventions, support groups) to a section such as 'Use in branding and sports uniforms', possibly splitting brand identity (C12–C14) from uniform practice (C15–C19)."
+            ]
+          },
+          "accepted": false
+        },
+        {
+          "plan": {
+            "title": "School colors",
+            "introduction": [
+              "C1",
+              "C2"
+            ],
+            "sections": [
+              {
+                "title": "Origins and early adoption",
+                "claims": [
+                  "C3",
+                  "C4",
+                  "C5",
+                  "C6",
+                  "C11",
+                  "C7",
+                  "C8"
+                ]
+              },
+              {
+                "title": "Use in branding and sports uniforms",
+                "claims": [
+                  "C12",
+                  "C13",
+                  "C14",
+                  "C15",
+                  "C16",
+                  "C17",
+                  "C18",
+                  "C19"
+                ]
+              },
+              {
+                "title": "Color awards and team nicknames",
+                "claims": [
+                  "C20",
+                  "C21"
+                ]
+              },
+              {
+                "title": "School colors in academic dress",
+                "claims": [
+                  "C22",
+                  "C23",
+                  "C24",
+                  "C25",
+                  "C26",
+                  "C27",
+                  "C28"
+                ]
+              },
+              {
+                "title": "Popularity of color choices",
+                "claims": [
+                  "C9",
+                  "C10"
+                ]
+              }
+            ]
+          },
+          "centralMessage": "School colors are the colors an institution adopts as its identity, with origins in 1830s England, and they now shape branding, sports uniforms, awards, nicknames, and academic dress.",
+          "readingOrderRationale": "The introduction defines the subject, then origins come first chronologically, followed by how colors are used in branding and sports, then awards and nicknames, and finally academic dress, keeping each topic's claims together.",
+          "problems": [],
+          "review": {
+            "grounding": {
+              "score": 4,
+              "reason": "Title and all five headings are supported by the claims; each of C1–C28 is used exactly once, and hedged claims (C3 'appears to have started', C6 'some time before') retain their attribution."
+            },
+            "cohesion": {
+              "score": 4,
+              "reason": "Each section covers one topic: origins, branding/uniform use, awards and nicknames, academic dress, and popularity. C12–C14 branding and C15–C19 uniforms cohere under one heading because both concern how colors are applied."
+            },
+            "flow": {
+              "score": 3,
+              "reason": "Definitions (C1–C2) precede history, which precedes applications; chronology within Origins runs 1830s to 1890–1910 correctly. Minor weakness: C11 (sports-team identification from 1836) sits in Origins while C15–C19 uniform practice sits in the later section, so a reader meets sports use twice."
+            },
+            "headings": {
+              "score": 4,
+              "reason": "All five H2 labels are descriptive and distinct, each predicting its contents; none uses vague placeholders like 'Background' or 'Other'."
+            },
+            "balance": {
+              "score": 3,
+              "reason": "Scope is evidence-led with no padding. 'Popularity of color choices' holds only C9–C10, but its scope (survey rankings) is distinct from adoption history, so the small size is acceptable rather than fragmented."
+            },
+            "introduction": {
+              "score": 4,
+              "reason": "C1 defines the subject and C2 states its purpose (school spirit, differentiation); the body develops applications and history without repeating the lead."
+            },
+            "blockingIssues": [],
+            "fixes": [
+              "Move C11 from 'Origins and early adoption' to 'Use in branding and sports uniforms' so the 1836 Boat Race identification claim sits beside the uniform practices it introduces, keeping C3–C8 as the adoption narrative.",
+              "Optionally fold C9–C10 into the end of 'Origins and early adoption' as modern adoption patterns, or keep the separate section; either is workable, but if kept, expand the heading context in prose to avoid a two-claim section."
+            ]
+          },
+          "accepted": true
+        }
+      ],
+      "tokensIn": 7942,
+      "tokensOut": 1668
+    }
+  ]
+}

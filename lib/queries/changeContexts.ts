@@ -1,6 +1,5 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import type { Enums } from "@/lib/database/types";
-import { supabaseRpc } from "@/lib/db/rpc";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { queryKeys } from "./keys";
 
@@ -27,7 +26,10 @@ export type ChangeContext = {
 
 async function fetchChangeContexts(ids: string[]): Promise<Map<string, ChangeContext>> {
   if (ids.length === 0) return new Map();
-  const rows = await supabaseRpc(getBrowserSupabase()).call<ChangeContext[]>("change_set_contexts", { p_change_set_ids: ids });
+  // Browser reads must not import the server adapter's request-local metrics.
+  const { data, error } = await getBrowserSupabase().rpc("change_set_contexts", { p_change_set_ids: ids });
+  if (error) throw error;
+  const rows = data as unknown as ChangeContext[];
   return new Map((rows ?? []).map((row) => [row.change_set_id, row]));
 }
 

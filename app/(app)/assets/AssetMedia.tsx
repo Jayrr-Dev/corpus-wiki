@@ -9,8 +9,10 @@ import { cn } from "@/lib/utils";
 export type Asset = Tables<"assets">;
 
 // WHERE THE BYTES ARE SERVED: a picture inside a document through the figure route, else the source's own file
-export function assetSrc(asset: Pick<Asset, "source_id" | "storage_path">): string {
-  return asset.storage_path.startsWith("figures/") ? embeddedFigureSrc(asset.source_id, asset.storage_path) : sourceFileSrc(asset.source_id);
+export function assetSrc(asset: Pick<Asset, "id" | "origin" | "source_id" | "storage_path" | "media_url">): string {
+  if (asset.media_url) return asset.media_url;
+  if (asset.origin === "generated") return `/api/assets/${asset.id}/generated`;
+  return asset.storage_path.startsWith("figures/") ? embeddedFigureSrc(asset.source_id!, asset.storage_path) : sourceFileSrc(asset.source_id!);
 }
 
 // A NAME FOR AN ASSET NOT YET DESCRIBED: "Figure 2 of report.docx", or the file's own name
@@ -28,7 +30,7 @@ export function AssetThumbnail({ asset, alt, className }: { asset: Asset; alt: s
   const box = cn("flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-muted", className);
   if (asset.kind === "image") {
     // eslint-disable-next-line @next/next/no-img-element -- a signed redirect, not an optimizable asset
-    return <div className={box}><img src={src} alt={alt} loading="lazy" className="size-full object-cover" /></div>;
+    return <div className={cn(box, asset.origin !== "source" && "bg-white")}><img src={src} alt={alt} loading="lazy" className={asset.asset_type === "logo" ? "max-h-24 max-w-24 object-contain" : cn("size-full", asset.origin !== "source" ? "object-contain p-3" : "object-cover")} /></div>;
   }
   if (asset.kind === "video") {
     return (

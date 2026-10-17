@@ -36,7 +36,7 @@ export const stakeholderScope = (name: string) => ({
   note: `Extract who ${name} is as a whole, as claims about ${name}: what it is, its main business or mandate, ownership or parent, headquarters, founding, size, and where it operates. File them under the "${STAKEHOLDERS_TOPIC}" topic. Skip procedures, rules, products and news.`,
 });
 
-async function ensureStakeholdersTopic(client: AdminSupabase): Promise<void> {
+export async function ensureStakeholdersTopic(client: AdminSupabase): Promise<void> {
   const { data, error } = await client.from("domains").select("id").eq("path", STAKEHOLDERS_TOPIC).is("retired_at", null).maybeSingle();
   if (error) throw error;
   if (data) return;

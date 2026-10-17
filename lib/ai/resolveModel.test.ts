@@ -4,6 +4,11 @@ import { CEREBRAS_BASE_URL, DEFAULT_AI_MODEL } from "./config";
 
 // MODEL ORDER: the pick on /settings, then AI_MODEL, then the Nemotron default
 describe("resolveModel", () => {
+  it("routes OpenRouter models with their own key without requiring Nebius", () => {
+    const settings = tokenFactoryFromEnv({ NODE_ENV: "test", OPENROUTER_API_KEY: "router" } as NodeJS.ProcessEnv, "openrouter/anthropic/claude-sonnet-4");
+    expect(settings).toMatchObject({ apiKey: "router", model: "openrouter/anthropic/claude-sonnet-4", baseUrl: "https://openrouter.ai/api/v1/" });
+    expect(() => tokenFactoryFromEnv({ NODE_ENV: "test", NEBIUS_API_KEY: "n" } as NodeJS.ProcessEnv, "openrouter/example/model")).toThrow("OPENROUTER_API_KEY");
+  });
   const env = { AI_MODEL: "zai-org/GLM-5.3" } as unknown as NodeJS.ProcessEnv;
 
   it("uses the model picked on /settings first", () => {

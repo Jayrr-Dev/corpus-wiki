@@ -29,6 +29,7 @@ export interface DrawInput {
   focusIds: ReadonlySet<string>;
   // While hovering, show only the hovered dot's text (no neighbor or circle names); its links and neighbors still light up
   hoverLabelOnly: boolean;
+  domainLabelBoxes?: {path:string;x:number;y:number;width:number;height:number}[];
   focusedDomain?: string | null;
   labelBoxes?: { x: number; y: number; w: number; h: number }[];
 }
@@ -323,6 +324,7 @@ function drawCircleLabels(input: DrawInput): void {
     const width = ctx.measureText(circle.label).width * camera.k;
     const height = CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"];
     if (!reserveLabel(input, circle.x - width / camera.k / 2, y - (place === "top" ? height : height / 2) / camera.k, width, height)) return;
+    input.domainLabelBoxes?.push({path:circle.key,x:circle.x*camera.k+camera.x-width/2,y:y*camera.k+camera.y-(place==="top"?height:height/2),width,height});
     ctx.strokeText(circle.label, circle.x, y);
     ctx.fillText(circle.label, circle.x, y);
   };

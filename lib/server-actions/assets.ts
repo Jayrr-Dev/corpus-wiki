@@ -12,6 +12,17 @@ import { toActionResult } from "./result";
 
 const ASSETS_PER_CALL = 16;
 
+export async function setAssetDeleted(id: string, deleted: boolean) {
+  return toActionResult(async () => {
+    await requireUser();
+    const assetId = z.string().uuid().parse(id);
+    const shouldDelete = z.boolean().parse(deleted);
+    const { error } = await getAdminSupabase().from("assets").update({ deleted_at: shouldDelete ? new Date().toISOString() : null }).eq("id", assetId).select("id").single();
+    if (error) throw new Error(error.message);
+    return {};
+  });
+}
+
 // ASSETS (called by /assets): find new media in the sources, then have the Media analyst
 // describe and tag them, a few batches per call (the screen calls again while some remain).
 // `ids` describes just those assets again.

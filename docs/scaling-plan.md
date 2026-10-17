@@ -1,5 +1,7 @@
 # Scaling plan
 
+> Historical assessment. Follow [Processing optimization roadmap](processing-optimization-plan.md) for the current execution order and completed work. The database now uses OrioleDB; non-B-tree index recommendations below must not be implemented under the current repository rules.
+
 What breaks or slows down as the store grows, and the order to fix it in.
 Written 2026-10-15 from a read-only sweep of `lib/queries`, `app/(app)`, `components`,
 `lib/ingest`, `lib/living-page`, `lib/ai`, `lib/server-actions` and `supabase/migrations`,

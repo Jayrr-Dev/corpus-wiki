@@ -1,6 +1,5 @@
-import { ReadingPane } from "@/components/shell";
-import { SkillsScreen } from "./SkillsScreen";
+import { permanentRedirect } from "next/navigation";
 
 export default function SkillsPage() {
-  return <ReadingPane title="Workflow"><SkillsScreen /></ReadingPane>;
+  permanentRedirect("/workflow");
 }

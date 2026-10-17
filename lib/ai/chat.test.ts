@@ -50,6 +50,26 @@ describe("chatJson", () => {
   };
   const request = { name: "t", schema: SCHEMA, jsonSchema: {}, messages: [] };
 
+  it("regenerates an invalid extraction once with enum feedback and counts both attempts", async () => {
+    const schema = z.object({ epistemicStatus: z.enum(["supported", "unknown"]) });
+    const bodies: { messages: { content: string }[] }[] = [];
+    vi.stubGlobal("fetch", async (_url: URL, init: { body: string }) => {
+      bodies.push(JSON.parse(init.body));
+      return new Response(JSON.stringify(completion(JSON.stringify({ epistemicStatus: bodies.length === 1 ? "fact" : "supported" }), "stop")));
+    });
+    const answer = await chatJson({ apiKey: "k", model: "other/model" }, { ...request, schema, jsonSchema: z.toJSONSchema(schema), retryInvalidOutput: true });
+    expect(answer).toMatchObject({ value: { epistemicStatus: "supported" }, tokensIn: 37360, tokensOut: 200 });
+    expect(bodies).toHaveLength(2);
+    expect(bodies[1]?.messages.at(-1)?.content).toContain("supported");
+    expect(bodies[1]?.messages.at(-1)?.content).toContain("epistemicStatus");
+  });
+
+  it("stops after one corrective retry and never coerces invalid fields", async () => {
+    const efforts = stubCompletions(completion('{"summary":42}', "stop"), completion('{"summary":42}', "stop"));
+    await expect(chatJson({ apiKey: "k", model: "other/model" }, { ...request, retryInvalidOutput: true })).rejects.toThrow("invalid claim fields");
+    expect(efforts).toHaveLength(2);
+  });
+
   it("asks again at low effort when the answer is cut off", async () => {
     const efforts = stubCompletions(completion("", "length", 32_000), completion('{"summary": "ok"}', "stop"));
     await expect(chatJson({ apiKey: "k", model: "other/model" }, request)).resolves.toMatchObject({ value: { summary: "ok" } });
@@ -178,7 +198,7 @@ describe("chatJson request options", () => {
 
   it("keeps schema validation for completed answers", async () => {
     vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValue(okCompletion('{"ok":"wrong"}')));
-    await expect(chatJson({ apiKey: "test" }, okRequest)).rejects.toThrow("expected shape");
+    await expect(chatJson({ apiKey: "test" }, okRequest)).rejects.toThrow("invalid claim fields");
   });
 
   it("does not treat authentication errors as truncation", async () => {

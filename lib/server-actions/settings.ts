@@ -1,5 +1,9 @@
 "use server";
 
+import { after } from "next/server";
+import { autoDecideGlossary } from "@/lib/glossary/autoDecide";
+import { readModelChoice } from "@/lib/ai/models";
+import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { currentActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listAvailableModels, saveAiEffort, saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel, saveRoleAuto, saveRoleEffort, saveRoleModel } from "@/lib/ai/models";
@@ -132,8 +136,8 @@ export async function setArticleCharter(charter: ArticleCharter): Promise<Action
 // Refuses a model id the live list does not have (a typo would fail every upload)
 async function requireOfferedModel(model: string): Promise<OfferedModel> {
   const nebiusKey = process.env.NEBIUS_API_KEY;
-  if (!nebiusKey) throw new Error("NEBIUS_API_KEY is not set, so there is no model list to pick from.");
-  const offered = (await listAvailableModels(nebiusKey)).find((entry) => entry.id === model);
+
+  const offered = (await listAvailableModels(nebiusKey ?? "")).find((entry) => entry.id === model);
   if (!offered) throw new Error(`No connected AI provider offers "${model}".`);
   return offered;
 }
@@ -149,5 +153,25 @@ export async function testModelSpeed(model: string, effort: ReasoningEffort): Pr
     const db = supabaseRpc(getAdminSupabase());
     const logCall: AiCallLogger = (call) => db.call("log_ai_call", { p_call: call });
     return { test: await runAndRecordSpeedTest(db, model, effort, logCall) };
+  });
+}
+
+export async function setGlossaryAutoDecide(enabled: boolean): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    if (typeof enabled !== "boolean") throw new Error("Choose on or off.");
+    const client = getAdminSupabase();
+    const db = supabaseRpc(client);
+    const settings = enabled ? tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call })) : null;
+    if (enabled && !settings) throw new Error("Set up an AI model before turning on Auto Decide.");
+    await db.call("set_glossary_auto_decide", { p_enabled: enabled });
+    if (settings) after(async () => {
+      try { await autoDecideGlossary(db, settings); }
+      catch (error) {
+        console.error("Glossary Auto Decide failed", error);
+        await client.from("glossary_state").update({ error: "Auto Decide stopped. Retry the glossary check to continue." }).eq("id", true).is("lease_token", null);
+      }
+    });
+    return {};
   });
 }

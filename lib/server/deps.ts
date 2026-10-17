@@ -1,5 +1,6 @@
 import "server-only";
 import { topicPlacerFor } from "@/lib/ingest/placeTopicsServer";
+import { refreshOrganizationOverviews } from "@/lib/living-page/refreshOrganizationOverviews";
 import { generateGlossary } from "@/lib/glossary/generate";
 import { embedMissingGlossary } from "@/lib/glossary/embeddingStore";
 
@@ -37,9 +38,11 @@ import { requireContextStorage } from "./contextReadiness";
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
 // Every AI call is logged to public.ai_calls (token usage on /settings).
 // Server actions take them from here; tests build their own (pg + fakes).
-export type ServerDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string | null, options?: { curate?: boolean; dispatches?: import("@/lib/curator/plan").Dispatch[] }) => Promise<unknown>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
+export type ServerDeps = { refreshAppliedOverviews?: (eventId: string, pageIds: string[]) => Promise<import("@/lib/living-page/refreshOrganizationOverviews").OverviewOutcome[]>; db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<import("@/lib/living-page/articleOrchestrator").OrchestratorResult>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string | null, options?: { curate?: boolean; dispatches?: import("@/lib/curator/plan").Dispatch[] }) => Promise<unknown>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
 
 export async function getServerDeps(): Promise<ServerDeps> {
+  const { startComposerWorker } = await import("@/lib/composer/worker");
+  startComposerWorker();
   const admin = getAdminSupabase();
   await requireContextStorage(admin);
   const db = supabaseRpc(admin);
@@ -51,8 +54,9 @@ export async function getServerDeps(): Promise<ServerDeps> {
   // Section builds tell open pages what they are doing and stream their draft
   writer.progress = broadcastSectionProgress(admin);
   const embedder = embedderFromEnv(process.env, logCall);
-  if (settings) writer.reviewSections = (sectionIds) => reviewRebuiltSections(db, settings, sectionIds, embedder);
+  if (settings) writer.reviewSections = (sectionIds, scope) => reviewRebuiltSections(db, settings, sectionIds, embedder, scope);
   return {
+    refreshAppliedOverviews: settings ? (eventId: string, pageIds: string[]) => refreshOrganizationOverviews({ settings, client: admin, db, writer }, eventId, { pageIds }) : undefined,
     db,
     glossaryGenerator: settings ? async () => {
       await generateGlossary(admin, settings);
@@ -73,7 +77,7 @@ export async function getServerDeps(): Promise<ServerDeps> {
     imageDescriber: imageDescriberFrom(settings),
     knowledgeExpander: settings ? (eventId) => expandEventKnowledge({ settings, client: admin, db, writer }, eventId) : undefined,
     pagePlanner: settings ? createArticlePlanner(settings, admin) : undefined,
-    articleOrchestrator: settings ? (eventId) => orchestrateEventArticles({ settings, client: admin, db, embedder }, eventId) : undefined,
+    articleOrchestrator: settings ? (eventId, scope, unitIds) => orchestrateEventArticles({ settings, client: admin, db, embedder }, eventId, scope, unitIds) : undefined,
     pageMaintainer: settings ? (eventId, options) => maintainPageTree({ settings, client: admin, db, writer, embedder }, eventId, options) : undefined,
     reconciler: getReconciliationClient(process.env, chosenModel, skills, logCall),
     videoReader: videoReaderFrom(settings),

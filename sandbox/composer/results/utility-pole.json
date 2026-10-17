@@ -1,0 +1,575 @@
+{
+  "article": {
+    "title": "Utility pole",
+    "sourceUrl": "https://en.wikipedia.org/wiki/Utility_pole",
+    "paragraphs": [
+      {
+        "id": "P1",
+        "text": "A utility pole, commonly referred to as a transmission pole, telephone pole, telecommunication pole, power pole, hydro pole, telegraph pole, or telegraph post, is a column or post used to support overhead power lines and various other public utilities, such as electrical cable, fiber optic cable, and related equipment such as transformers and street lights while depending on its application. They are used for two different types of power lines: sub transmission lines, which carry higher voltage power between substations, and distribution lines, which distribute lower voltage power to customers."
+      },
+      {
+        "id": "P2",
+        "text": "Electrical wires and cables are routed overhead on utility poles as an inexpensive way to keep them insulated from the ground and out of the way of people and vehicles. Utility poles are usually made out of wood, aluminum alloy, metal, concrete, or composites like fiberglass. A Stobie pole is a multi-purpose pole made of two steel joists held apart by a slab of concrete in the middle, generally found in South Australia."
+      },
+      {
+        "id": "P3",
+        "text": "The first poles were used in 1843 by telegraph pioneer William Fothergill Cooke, who used them on a line along the Great Western Railway. Utility poles were first used in the mid-19th century in America with telegraph systems, starting with Samuel Morse, who attempted to bury a line between Baltimore and Washington, D.C., but moved it above ground when this system proved faulty. Today, underground distribution lines are increasingly used as an alternative to utility poles in residential neighborhoods, due to poles' perceived ugliness, as well as safety concerns in areas with large amounts of snow or ice build up. They have also been suggested in areas prone to hurricanes and blizzards as a way to reduce power outages."
+      },
+      {
+        "id": "P4",
+        "text": "Utility poles are commonly used to carry two types of electric power lines: distribution lines (or \"feeders\") and sub transmission lines. Distribution lines carry power from local substations to customers. They generally carry voltages from 4.6 to 33 kilovolts (kV) for distances up to 30 mi (50 km), and include transformers to step the voltage down from the primary voltage to the lower secondary voltage used by the customer. A service drop carries this lower voltage to the customer's premises."
+      },
+      {
+        "id": "P5",
+        "text": "Subtransmission lines carry higher voltage power from regional substations to local substations. They usually carry 46 kV, 69 kV, or 115 kV for distances up to 60 mi (100 km). 230 kV lines are often supported on H-shaped towers made with two or three poles. Transmission lines carrying voltages of above 230 kV are usually not supported by poles, but by metal pylons (known as transmission towers in the US)."
+      },
+      {
+        "id": "P6",
+        "text": "For economic or practical reasons, such as to save space in urban areas, a distribution line is often carried on the same poles as a sub transmission line but mounted under the higher voltage lines; a practice called \"underbuild\". Telecommunication cables are usually carried on the same poles that support power lines; poles shared in this fashion are known as joint-use poles, but may have their own dedicated poles."
+      },
+      {
+        "id": "P7",
+        "text": "The standard utility pole in the United States is about 35 ft (10 m) tall and is buried about 6 ft (2 m) in the ground. In order to meet clearance regulations, poles can, however, reach heights of at least 120 feet (40 meters). They are typically spaced about 125 ft (40 m) apart in urban areas, or about 300 ft (100 m) in rural areas, but distances vary widely based on terrain. Joint-use poles are usually owned by one utility, which leases space on it for other cables. In the United States, the National Electrical Safety Code, published by the Institute of Electrical and Electronics Engineers (IEEE) (not to be confused with the National Electrical Code published by the National Fire Protection Association [NFPA]), sets the standards for construction and maintenance of utility poles and their equipment."
+      },
+      {
+        "id": "P8",
+        "text": "Most utility poles are made of wood, pressure-treated with some type of preservative for protection against rot, fungi and insects. Southern yellow pine is the most widely used species in the United States; however, many species of long straight trees are used to make utility poles, including Douglas fir, jack pine, lodgepole pine, western red cedar, and Pacific silver fir."
+      },
+      {
+        "id": "P9",
+        "text": "Traditionally, the preservative used was creosote, but due to environmental concerns, alternatives such as pentachlorophenol, copper naphthenate and borates are becoming widespread in the United States. In the United States, standards for wood preservative materials and wood preservation processes, along with test criteria, are set by ANSI, ASTM, and American Wood Protection Association (AWPA) specifications. Despite the preservatives, wood poles decay and have a life of approximately 25 to 50 years depending on climate and soil conditions, therefore requiring regular inspection and remedial preservative treatments. Woodpecker damage to wood poles is the most significant cause of pole deterioration in some parts of the U.S."
+      },
+      {
+        "id": "P10",
+        "text": "Other common utility pole materials are aluminum, steel and concrete, with composites (such as fiberglass) also becoming more prevalent. One particular patented utility pole variant used in Australia is the Stobie pole, made up of two vertical steel posts with a slab of concrete between them."
+      },
+      {
+        "id": "P11",
+        "text": "On poles carrying both electrical and communications wiring, the electric power distribution lines and associated equipment are mounted at the top of the pole above the communication cables, for safety. The vertical space on the pole reserved for this equipment is called the supply space. The wires themselves are usually uninsulated, and supported by insulators, commonly mounted on a horizontal beam (crossarm). Power is transmitted using the three-phase system, with three wires, or phases, labeled \"A\", \"B\", and \"C\"."
+      },
+      {
+        "id": "P12",
+        "text": "Sub transmission lines comprise only these 3 wires, plus sometimes an overhead ground wire (OGW), also called a \"static line\" or a \"neutral\", suspended above them. The OGW acts like a lightning rod, providing a low resistance path to ground thus protecting the phase conductors from lightning."
+      },
+      {
+        "id": "P13",
+        "text": "Distribution lines use two systems, either grounded-wye (\"Y\" on electrical schematics) or delta (Greek letter \"Δ\" on electrical schematics). A delta system requires only a conductor for each of the three phases. A grounded-wye system requires a fourth conductor, the neutral, whose source is the center of the \"Y\" and is grounded. However, \"spur lines\" branching off the main line to provide power to side streets often carry only one or two phase wires, plus the neutral. A wide range of standard distribution voltages are used, from 2,400 V to 34,500 V. On poles near a service drop, there is a pole-mounted step-down distribution transformer to transform the high distribution voltage to the lower secondary voltage provided to the customer. In North America, service drops provide 240/120 V split-phase power for residential and light commercial service, using cylindrical single-phase transformers. In Europe and most other countries, 230 V three phase (230Y400) service drops are used. The transformer's primary is connected to the distribution line through protective devices called fuse cutouts. In the event of an overload, the fuse melts and the device pivots open to provide a visual indication of the problem. They can also be opened manually, usually by linemen using a long insulated rod called a hot stick to disconnect the transformer from the line."
+      },
+      {
+        "id": "P14",
+        "text": "The pole may be grounded with a heavy bare copper or copper-clad steel wire running down the pole, attached to the metal pin supporting each insulator, and at the bottom connected to a metal rod driven into the ground. Some countries ground every pole while others only ground every fifth pole and any pole with a transformer on it. This provides a path for leakage currents across the surface of the insulators to get to ground, preventing the current from flowing through the wooden pole which could cause a fire or shock hazard. It provides similar protection in case of flashovers and lightning strikes. A surge arrester or lightning arrester may also be installed between the line (ahead of the cutout) and the ground wire for lightning protection. The purpose of the device is to conduct extremely high voltages present on the line directly to ground."
+      },
+      {
+        "id": "P15",
+        "text": "If uninsulated conductors touch each other due to wind or fallen trees, the resultant sparks can start wildfires. To reduce this problem, aerial bundled conductors are being introduced."
+      },
+      {
+        "id": "P16",
+        "text": "The communications cables are attached below the electric power lines, in a vertical space along the pole designated the communications space. The communications space is separated from the lowest electrical conductor by the communication worker safety zone, which provides room for workers to maneuver safely while servicing the communication cables, avoiding contact with the power lines."
+      },
+      {
+        "id": "P17",
+        "text": "The most common communication cables found on utility poles are copper or fibre-optic cable (FOC) for telephone lines and coaxial cable for cable television (CATV). Coaxial or optical fibre cables linking computer networks are also increasingly found on poles in urban areas. The cable linking the telephone exchange to local customers is a thick cable lashed to a thin supporting cable, containing hundreds of twisted pair subscriber lines. Each twisted pair line provides a single telephone circuit or local loop to a customer. There may also be FOCs interconnecting telephone exchanges. Like electrical distribution lines, communication cables connect to service drops when used to provide local service to customers."
+      },
+      {
+        "id": "P18",
+        "text": "Utility poles may also carry other equipment such as street lights, supports for traffic lights and overhead wires for electric trolleys, and cellular network antennas. They can also carry fixtures and decorations specific for certain holidays or events specific to the city where they are located."
+      },
+      {
+        "id": "P19",
+        "text": "Solar panels mounted on utility poles may power auxiliary equipment where the expense of a power line connection is unwanted."
+      },
+      {
+        "id": "P20",
+        "text": "The primary purpose of pole attachment hardware is to secure the cable and associated aerial plant facilities to poles and to help facilitate necessary plant rearrangements. An aerial plant network requires high-quality reliable hardware to"
+      },
+      {
+        "id": "P21",
+        "text": "Functional performance requirements common to pole line hardware for utility poles made of wood, steel, concrete, or Fiber-Reinforced Composite (FRC) materials are contained in Telcordia GR-3174, Generic Requirements for Hardware Attachments for Utility Poles."
+      },
+      {
+        "id": "P22",
+        "text": "In some countries, such as the United Kingdom, utility poles have sets of brackets arranged in a standard pattern up the pole to act as hand and foot holds so that maintenance and repair workers can climb the pole to work on the lines. In the United States, such steps have been determined to be a public hazard and are no longer allowed on new poles. Linemen may use climbing spikes called gaffs to ascend wooden poles without steps on them. In the UK, boots fitted with steel loops that go around the pole (known as \"Scandinavian Climbers\") are also used for climbing poles. In the US, linemen use bucket trucks for the vast majority of poles that are accessible by vehicle."
+      },
+      {
+        "id": "P23",
+        "text": "The poles at the end of a straight section of utility line where the line ends or angles off in another direction are called dead-end poles in the United States. Elsewhere they may be referred to as anchor or termination poles. These must carry the lateral tension of the long straight sections of wire. They are usually made with heavier construction. The power lines are attached to the pole by horizontal strain insulators, either placed on crossarms (which are either doubled, tripled, or replaced with a steel crossarm, to provide more resistance to the tension forces) or attached directly to the pole itself."
+      },
+      {
+        "id": "P24",
+        "text": "Dead-end and other poles that support lateral loads have guy-wires to support them. The guys always have strain insulators inserted in their length to prevent any high voltages caused by electrical faults from reaching the lower portion of the cable that is accessible by the public. In populated areas, guy wires are often encased in a yellow plastic or wood tube with reflectors attached to their lower end, so that they can be seen more easily, reducing the chance of people and animals walking into them or vehicles crashing into them."
+      },
+      {
+        "id": "P25",
+        "text": "Another means of providing support for lateral loads is a push brace pole, a second shorter pole that is attached to the side of the first and runs at an angle to the ground. If there is no space for a lateral support, a stronger pole, e.g. a construction of concrete or iron, is used."
+      },
+      {
+        "id": "P26",
+        "text": "The system of suspending telegraph wires from poles with ceramic insulators was invented and patented by British telegraph pioneer William Fothergill Cooke. Cooke was the driving force in establishing the electrical telegraph on a commercial basis. With Charles Wheatstone he invented the Cooke and Wheatstone telegraph and founded the world's first telegraph company, the Electric Telegraph Company. Telegraph poles were first used on the Great Western Railway in 1843 when the Cooke and Wheatstone telegraph line was extended to Slough. The line had previously used buried cables but that system had proved troublesome with failing insulation. In Britain, the trees used for telegraph poles were either native larch or pine from Sweden and Norway. Poles in early installations were treated with tar, but these were found to last only around seven years. Later poles were treated instead with creosote or copper sulphate for the preservative."
+      },
+      {
+        "id": "P27",
+        "text": "Utility poles were first used in the mid-19th century in America with telegraph systems. In 1844, the United States Congress granted Samuel Morse $30,000 (equivalent to $1,036,600 in 2025) to build a 40-mile telegraph line between Baltimore, Maryland and Washington, D.C. Morse began by having a lead-sheathed cable made. After laying seven miles (11 km) underground, he tested it. He found so many faults with this system that he dug up his cable, stripped off its sheath, bought poles and strung his wires overhead. On February 7, 1844, Morse inserted the following advertisement in the Washington newspaper: \"Sealed proposals will be received by the undersigned for furnishing 700 straight and sound chestnut posts with the bark on and of the following dimensions to wit: 'Each post must not be less than eight inches in diameter at the butt and tapering to five or six inches at the top. Six hundred and eighty of said posts to be 24 feet in length, and 20 of them 30 feet in length.'\""
+      },
+      {
+        "id": "P28",
+        "text": "In some parts of Australia, wooden poles are rapidly destroyed by termites, so metal poles must be used instead and in much of the interior wooden poles are vulnerable to fire. The Oppenheimer pole is a collapsible wrought iron pole in three sections. It is named after Oppenheimer and Company in Germany, but they were mostly manufactured in England under license. They were used on the Australian Overland Telegraph Line built in 1872 which connected the continent north to south directly through the centre and linked to the rest of the world through a submarine cable at Darwin. The Stobie pole was invented in 1924 by James Cyril Stobie of the Adelaide Electric Supply Company and first used in South Terrace, Adelaide."
+      },
+      {
+        "id": "P29",
+        "text": "One of the early Bell System lines was the Washington DC–Norfolk line which was, for the most part, square-sawn tapered poles of yellow pine probably treated to refusal with creosote. \"Treated to refusal\" means that the manufacturer forces preservatives into the wood, until it refuses to accept more, but performance is not guaranteed. Some of these were still in service after 80 years. The building of pole lines was resisted in some urban areas in the late 19th century, and political pressure for undergrounding remains powerful in many countries."
+      },
+      {
+        "id": "P30",
+        "text": "In Eastern Europe, Russia, and third-world countries, many utility poles still carry bare communication wires mounted on insulators not only along railway lines, but also along roads and sometimes even in urban areas. Errant traffic being uncommon on railways, their poles are usually less tall. In the United States electricity is predominately carried on unshielded aluminum conductors wound around a solid steel core and affixed to rated insulators made from glass, ceramic, or poly. Telephone, CATV, and FOCs are generally attached directly to the pole without insulators."
+      },
+      {
+        "id": "P31",
+        "text": "In the United Kingdom, much of the rural electricity distribution system is carried on wooden poles. These normally carry electricity at 11 or 33 kV (three phases) from 132 kV substations supplied from pylons to distribution substations or pole-mounted transformers. Wooden poles have been used for 132 kV for a number of years from the early 1980s one is called the trident they are usually used on short sections, though the line from Melbourne, Cambs to near Buntingford, Herts is quite long. The conductors on these are bare metal connected to the posts by insulators. Wood poles can also be used for low voltage distribution to customers."
+      },
+      {
+        "id": "P32",
+        "text": "Today, utility poles may hold much more than the uninsulated copper wire that they originally supported. Thicker cables holding many twisted pair, coaxial cable, or even fibre-optic, may be carried. Simple analogue repeaters or other outside plant equipment have long been mounted against poles, and often new digital equipment for multiplexing/demultiplexing or digital repeaters may now be seen. In many places, as seen in the illustration, providers of electricity, television, telephone, street light, traffic signal and other services share poles, either in joint ownership or by renting space to each other. In the United States, ANSI standard 05.1.2008 governs wood pole sizes and strength loading. Utilities that fall under the Rural Electrification Act must also follow the guidelines set forth in RUS Bulletin 1724E-150 (from the US Department of Agriculture) for pole strength and loading."
+      },
+      {
+        "id": "P33",
+        "text": "Steel utility poles are becoming more prevalent in the United States thanks to improvements in engineering and corrosion prevention coupled with lowered production costs. However, premature failure due to corrosion is a concern when compared to wood. The National Association of Corrosion Engineers Archived 2010-06-19 at the Wayback Machine or NACE is developing inspection, maintenance, and prevention procedures similar to those used on wood utility poles to identify and prevent decay."
+      },
+      {
+        "id": "P34",
+        "text": "The date on the pole is applied by the manufacturer and refers to the date the pole was \"preserved\" (treated to withstand the elements)."
+      },
+      {
+        "id": "P35",
+        "text": "In the United States, utility poles are marked with information concerning the manufacturer, pole height, ANSI strength class, wood species, original preservative, and year manufactured (vintage) in accordance with ANSI standard O5.1.2008. This is called branding, as it is usually burned into the surface; the resulting mark is sometimes called the \"birth mark\". Although the position of the brand is determined by ANSI specification, it is essentially just below \"eye level\" after installation. A rule of thumb for understanding a pole's brand is the manufacturer's name or logo at the top with a two-digit date beneath (sometimes preceded by a month)."
+      },
+      {
+        "id": "P36",
+        "text": "Below the date is a two-character wood species abbreviation and one- to three-character preservative. Some wood species may be marked \"SP\" for southern pine, \"WC\" for western cedar, or \"DF\" for Douglas fir. Common preservative abbreviations are \"C\" for creosote, \"P\" for pentachlorophenol, and \"SK\" for chromated copper arsenate (originally referred to salts type K). The next line of the brand is usually the pole's ANSI class, used to determine maximum load; this number ranges from 10 to H6 with a smaller number meaning higher strength. The pole's height (from butt to top) in 5-foot increments is usually to the right of the class separated by a hyphen, although it is not uncommon for older brands to have the height on a separate line. The pole brand is sometimes an aluminum tag nailed in place."
+      },
+      {
+        "id": "P37",
+        "text": "Before the practice of branding, many utilities would set a 2- to 4-digit date nail into the pole upon installation. The use of date nails went out of favor during World War II due to war shortages but is still used by a few utilities. These nails are considered valuable to collectors, with older dates being more valuable, and unique markings such as the utilities' name also increasing the value. However, regardless of the value to collectors, all attachments on a utility pole are the property of the utility company, and unauthorized removal is a misdemeanor or felony."
+      },
+      {
+        "id": "P38",
+        "text": "A practice in some areas is to place poles on coordinates upon a grid. The pole at right is a Delmarva Power pole located in a rural area of the state of Maryland in the United States. The lower two tags are the \"X\" and \"Y\" coordinates along said grid. Just as in a coordinate plane used in geometry, X increases as one travels east and Y increases as one travels north. The upper two tags are specific to the sub transmission section of the pole; the first refers to the route number, the second to the specific pole along the route."
+      },
+      {
+        "id": "P39",
+        "text": "However, not all power lines follow the road. In the British region of East Anglia, EDF Energy Networks often add the Ordnance Survey Grid Reference coordinates of the pole or substation to the name sign."
+      },
+      {
+        "id": "P40",
+        "text": "In some areas, utility pole name plates may provide valuable coordinate information: a poor man's GPS."
+      },
+      {
+        "id": "P41",
+        "text": "A pole route (or pole line in the US) is a telephone link or electrical power line between two or more locations by way of multiple uninsulated wires suspended between wooden utility poles. This method of link is common especially in rural areas where burying the cables would be expensive. Another situation in which pole routes were extensively used were on the railways to link signal boxes. Traditionally, prior to around 1965, pole routes were built with open wires along non-electrical operated railways; this necessitated insulation when the wire passed over the pole, thus preventing the signal from becoming attenuated."
+      },
+      {
+        "id": "P42",
+        "text": "At electrical operated railways, pole routes were usually not built as too much jamming from the overhead wire would occur. To accomplish this, cables were separated using spars with insulators spaced along them; in general four insulators were used per spar. Only one such pole route still exists on the UK rail network, in the highlands of Scotland. There was also a long section in place between Wymondham, Norfolk and Brandon in Suffolk, United Kingdom; however, this was de-wired and removed during March in 2009."
+      },
+      {
+        "id": "P43",
+        "text": "Utility poles are used by birds for nesting and to rest on. Utility poles and related structures are regarded by some to be a form of visual pollution. Many lines are placed underground for this reason, in places of high population density or scenic beauty that justify the expense. Architects design some pylons to be pretty, thus avoiding visual pollution."
+      },
+      {
+        "id": "P44",
+        "text": "Some chemicals used to preserve wood poles including creosote and pentachlorophenol are toxic and have been found in the environment."
+      },
+      {
+        "id": "P45",
+        "text": "The considerable improvement in weathering resistance offered by creosote infusion has long-term drawbacks. In recent years, concerns have been raised about the toxicity of creosote-treated wood waste, such as utility poles. Specifically, their biodegradation can release phenolic compounds in soil, which are considered toxic. Research continues to explore methods to render this waste safe for disposal."
+      },
+      {
+        "id": "P46",
+        "text": "Historically, pole-mounted transformers were filled with a polychlorinated biphenyl (PCB) liquid. PCBs persist in the environment and have adverse effects on animals."
+      }
+    ],
+    "existingFigures": []
+  },
+  "capturedAt": "2026-10-17T08:15:43.031Z",
+  "hash": "ee2071542208b706755595e0816e556b7e471029ff69ada4624c5b7d7e9405a4",
+  "model": "zai-org/GLM-5.3-Flash",
+  "attempts": [
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P11",
+              "P12",
+              "P13",
+              "P16",
+              "P6",
+              "P7",
+              "P14"
+            ],
+            "learningGoal": "Shows the vertical zoning of a joint-use pole — supply space on top, safety zone, communications space below — plus crossarm phases, transformer, ground wire, and typical dimensions.",
+            "caption": "Anatomy of a joint-use utility pole (schematic, one example layout). Power equipment occupies the top supply space; a safety zone separates it from communication cables below. A ground wire runs down the pole to a rod in the soil.",
+            "alt": "Diagram of a wooden utility pole showing, from top to bottom: an overhead ground wire, three phase wires A, B and C on a crossarm, a cylindrical transformer with fuse cutout, a communication worker safety zone, and telephone and coaxial cables lower on the pole. A ground wire runs down the pole to a buried ground rod. Labels note the supply space, communications space, about 35 ft pole height and 6 ft burial depth.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><desc>Schematic cross-section of a joint-use utility pole showing supply space, safety zone, and communications space.</desc><rect width='800' height='520' fill='#f7f8f6'/><line x1='60' y1='470' x2='740' y2='470' stroke='#c9c9c2' stroke-width='2'/><rect x='388' y='470' width='24' height='34' fill='#8a7a5c'/><rect x='392' y='60' width='16' height='410' fill='#a98f63'/><rect x='392' y='60' width='5' height='410' fill='#bd9f74'/><rect x='300' y='95' width='200' height='10' rx='3' fill='#7a6a4e'/><line x1='320' y1='95' x2='320' y2='70' stroke='#444' stroke-width='3'/><line x1='400' y1='95' x2='400' y2='70' stroke='#444' stroke-width='3'/><line x1='480' y1='95' x2='480' y2='70' stroke='#444' stroke-width='3'/><circle cx='320' cy='66' r='6' fill='#9aa7b5'/><circle cx='400' cy='66' r='6' fill='#9aa7b5'/><circle cx='480' cy='66' r='6' fill='#9aa7b5'/><text x='540' y='72' font-family='sans-serif' font-size='20' fill='#333'>Phase wires A, B, C</text><text x='540' y='94' font-family='sans-serif' font-size='16' fill='#666'>on crossarm, uninsulated</text><line x1='400' y1='60' x2='400' y2='38' stroke='#777' stroke-width='2'/><text x='540' y='42' font-family='sans-serif' font-size='18' fill='#333'>Overhead ground wire</text><text x='540' y='62' font-family='sans-serif' font-size='16' fill='#666'>(lightning protection)</text><rect x='372' y='150' width='56' height='80' rx='8' fill='#5b6b78'/><rect x='372' y='150' width='56' height='80' rx='8' fill='none' stroke='#46545f' stroke-width='2'/><text x='540' y='180' font-family='sans-serif' font-size='20' fill='#333'>Pole-mounted transformer</text><text x='540' y='202' font-family='sans-serif' font-size='16' fill='#666'>steps voltage down for service drop</text><circle cx='372' cy='140' r='7' fill='#c9a13b'/><text x='540' y='240' font-family='sans-serif' font-size='18' fill='#333'>Fuse cutout (opens on overload)</text><line x1='400' y1='230' x2='400' y2='250' stroke='#444' stroke-width='2'/><rect x='300' y='262' width='200' height='8' fill='#7a6a4e'/><line x1='330' y1='262' x2='330' y2='282' stroke='#555' stroke-width='2'/><line x1='400' y1='262' x2='400' y2='282' stroke='#555' stroke-width='2'/><line x1='470' y1='262' x2='470' y2='282' stroke='#555' stroke-width='2'/><circle cx='330' cy='286' r='5' fill='#8b6f9e'/><circle cx='400' cy='286' r='5' fill='#8b6f9e'/><circle cx='470' cy='286' r='5' fill='#8b6f9e'/><text x='540' y='290' font-family='sans-serif' font-size='20' fill='#333'>Telephone / coax / fibre cables</text><rect x='250' y='108' width='120' height='150' fill='#3f7d4f' opacity='0.10'/><rect x='250' y='258' width='120' height='60' fill='#3b6ea5' opacity='0.10'/><line x1='250' y1='108' x2='250' y2='318' stroke='#999' stroke-width='1' stroke-dasharray='4 4'/><line x1='370' y1='108' x2='370' y2='318' stroke='#999' stroke-width='1' stroke-dasharray='4 4'/><line x1='370' y1='258' x2='370' y2='318' stroke='#999' stroke-width='1' stroke-dasharray='4 4'/><text x='120' y='170' font-family='sans-serif' font-size='20' fill='#2e6b3e' text-anchor='end'>Supply space</text><text x='120' y='192' font-family='sans-serif' font-size='15' fill='#2e6b3e' text-anchor='end'>power equipment only</text><text x='120' y='285' font-family='sans-serif' font-size='20' fill='#2e5d8a' text-anchor='end'>Communications space</text><line x1='126' y1='165' x2='246' y2='165' stroke='#2e6b3e' stroke-width='1.5'/><line x1='126' y1='280' x2='246' y2='280' stroke='#2e5d8a' stroke-width='1.5'/><text x='120' y='240' font-family='sans-serif' font-size='17' fill='#555' text-anchor='end'>Safety zone</text><text x='120' y='258' font-family='sans-serif' font-size='15' fill='#555' text-anchor='end'>separates the two</text><path d='M408 130 L470 130 L470 470' fill='none' stroke='#b0632e' stroke-width='3'/><text x='486' y='400' font-family='sans-serif' font-size='18' fill='#b0632e'>Ground wire to rod</text><line x1='470' y1='470' x2='470' y2='498' stroke='#b0632e' stroke-width='3'/><line x1='340' y1='504' x2='560' y2='504' stroke='#8a7a5c' stroke-width='2' stroke-dasharray='6 4'/><text x='570' y='509' font-family='sans-serif' font-size='16' fill='#666'>ground line</text><text x='60' y='90' font-family='sans-serif' font-size='18' fill='#555'>Typical US pole:</text><text x='60' y='112' font-family='sans-serif' font-size='18' fill='#555'>~35 ft (10 m) tall,</text><text x='60' y='134' font-family='sans-serif' font-size='18' fill='#555'>~6 ft (2 m) buried.</text><text x='60' y='160' font-family='sans-serif' font-size='15' fill='#888'>Layouts vary by utility</text><text x='60' y='178' font-family='sans-serif' font-size='15' fill='#888'>and region.</text></svg>"
+          }
+        ],
+        "omitted": "No photo or second diagram: the article has no supplied image assets, and other topics (pole brands, dead-end guys, history) are well conveyed by text alone; one clear schematic covers the core mechanism."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 2,
+        "restraint": 4,
+        "visualDesign": 2,
+        "accessibility": 3,
+        "problems": [
+          "The fuse cutout leader is wrong: the cutout is drawn as a circle at (372,140) atop the transformer, but the leader line runs from (400,230) to (400,250), pointing at empty pole below the transformer, not at the cutout.",
+          "The ground wire path starts at (408,130) on the transformer body; per P14 it should attach to the metal pins supporting each insulator on the crossarm, then run down the pole.",
+          "The buried ground rod (line from y=470 to y=498) ends above the ground line at y=504, so the rod does not actually reach into the soil as the caption and P14 describe.",
+          "The 'Safety zone' label (y=240–258) sits inside the green supply-space rectangle (y=108–258), not in the gap between the supply and communications zones; the actual gap (y=258 boundary) is where the communications crossarm is drawn, so the zone boundaries are misleading.",
+          "The lower crossarm at y=262 with purple insulator circles carries the communication cables, but P30 states that in the US, telephone/CATV/FOC cables are generally attached directly to the pole without insulators; drawing them on an insulator crossarm contradicts the cited text.",
+          "Several labels use font-size 15–16, below the 20-unit legibility threshold, and will be hard to read at 360px width.",
+          "The validation flags stroke-dasharray as a forbidden attribute, yet it is used on four elements (zone guides and ground line).",
+          "The gray annotation text (#888 on #f7f8f6) has low contrast for the 'Layouts vary' notes."
+        ],
+        "fixes": [
+          "Move the fuse cutout drawing next to the transformer primary connection and run its leader to the cutout itself, per P13.",
+          "Reroute the ground wire to touch the crossarm insulator pins, then down the pole, and extend the ground rod below the y=504 ground line into the soil.",
+          "Shift the safety-zone label and its zone band into the actual gap between supply and communications spaces, and move the communications crossarm/cables fully below it.",
+          "Replace the insulator-mounted communication cables with cables lashed directly to the pole (or a supporting messenger), matching P17 and P30.",
+          "Raise all label text to at least 20 SVG units and darken the gray annotations to at least #666.",
+          "Remove stroke-dasharray (use solid thin lines or reduced opacity) to satisfy the validation rules."
+        ]
+      },
+      "total": 14,
+      "validation": [
+        "Small label: below 20 SVG units",
+        "Forbidden SVG attribute: stroke-dasharray"
+      ],
+      "accepted": false
+    },
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P11",
+              "P12",
+              "P13",
+              "P16",
+              "P6",
+              "P7",
+              "P14",
+              "P17"
+            ],
+            "learningGoal": "Shows the vertical zoning of a joint-use pole — supply space on top, safety zone, communications space below — plus crossarm phases, transformer with fuse cutout at its primary, ground wire from insulator pins to a rod in the soil, and typical dimensions.",
+            "caption": "Anatomy of a joint-use utility pole (schematic, one example layout). Power equipment occupies the top supply space; a safety zone separates it from communication cables below. A ground wire runs from the insulator pins down the pole to a rod in the soil.",
+            "alt": "Diagram of a wooden utility pole showing, from top to bottom: an overhead ground wire, three phase wires A, B and C on a crossarm, a cylindrical transformer with a fuse cutout beside its primary connection, a communication worker safety zone, and telephone and coaxial cables lashed directly to the pole below. A ground wire runs from the crossarm insulator pins down the pole to a ground rod buried below the ground line. Labels note the supply space, communications space, about 35 ft pole height and 6 ft burial depth.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><desc>Schematic of a joint-use utility pole showing supply space, safety zone, and communications space.</desc><rect width='800' height='520' fill='#f7f8f6'/><line x1='60' y1='470' x2='740' y2='470' stroke='#8a8a82' stroke-width='2'/><text x='744' y='476' font-family='sans-serif' font-size='20' fill='#666'>ground line</text><rect x='388' y='470' width='24' height='34' fill='#8a7a5c'/><rect x='392' y='60' width='16' height='410' fill='#a98f63'/><rect x='392' y='60' width='5' height='410' fill='#bd9f74'/><rect x='300' y='95' width='200' height='10' rx='3' fill='#7a6a4e'/><line x1='320' y1='95' x2='320' y2='70' stroke='#444' stroke-width='3'/><line x1='400' y1='95' x2='400' y2='70' stroke='#444' stroke-width='3'/><line x1='480' y1='95' x2='480' y2='70' stroke='#444' stroke-width='3'/><circle cx='320' cy='66' r='6' fill='#9aa7b5'/><circle cx='400' cy='66' r='6' fill='#9aa7b5'/><circle cx='480' cy='66' r='6' fill='#9aa7b5'/><text x='540' y='72' font-family='sans-serif' font-size='20' fill='#333'>Phase wires A, B, C</text><text x='540' y='96' font-family='sans-serif' font-size='20' fill='#666'>on crossarm, uninsulated</text><line x1='400' y1='60' x2='400' y2='38' stroke='#777' stroke-width='2'/><text x='540' y='44' font-family='sans-serif' font-size='20' fill='#333'>Overhead ground wire</text><text x='540' y='68' font-family='sans-serif' font-size='20' fill='#666'>(lightning protection)</text><rect x='372' y='150' width='56' height='80' rx='8' fill='#5b6b78'/><rect x='372' y='150' width='56' height='80' rx='8' fill='none' stroke='#46545f' stroke-width='2'/><text x='540' y='180' font-family='sans-serif' font-size='20' fill='#333'>Pole-mounted transformer</text><text x='540' y='204' font-family='sans-serif' font-size='20' fill='#666'>steps voltage down for service drop</text><line x1='372' y1='170' x2='340' y2='170' stroke='#444' stroke-width='2'/><circle cx='332' cy='170' r='8' fill='#c9a13b' stroke='#8a6d1e' stroke-width='2'/><line x1='332' y1='178' x2='332' y2='196' stroke='#444' stroke-width='2'/><line x1='326' y1='196' x2='338' y2='196' stroke='#444' stroke-width='2'/><line x1='324' y1='170' x2='300' y2='170' stroke='#444' stroke-width='2'/><line x1='316' y1='152' x2='348' y2='152' stroke='#666' stroke-width='1.5'/><text x='540' y='236' font-family='sans-serif' font-size='20' fill='#333'>Fuse cutout at transformer primary</text><text x='540' y='260' font-family='sans-serif' font-size='20' fill='#666'>pivots open on overload</text><line x1='536' y1='230' x2='344' y2='176' stroke='#666' stroke-width='1.5'/><rect x='300' y='300' width='200' height='8' fill='#7a6a4e'/><line x1='330' y1='308' x2='330' y2='330' stroke='#555' stroke-width='2'/><line x1='400' y1='308' x2='400' y2='330' stroke='#555' stroke-width='2'/><line x1='470' y1='308' x2='470' y2='330' stroke='#555' stroke-width='2'/><circle cx='330' cy='334' r='5' fill='#8b6f9e'/><circle cx='400' cy='334' r='5' fill='#8b6f9e'/><circle cx='470' cy='334' r='5' fill='#8b6f9e'/><text x='540' y='330' font-family='sans-serif' font-size='20' fill='#333'>Telephone / coax / fibre cables</text><text x='540' y='354' font-family='sans-serif' font-size='20' fill='#666'>lashed to pole or messenger</text><rect x='250' y='108' width='120' height='140' fill='#3f7d4f' opacity='0.10'/><rect x='250' y='248' width='120' height='52' fill='#3b6ea5' opacity='0.10'/><line x1='250' y1='108' x2='250' y2='300' stroke='#999' stroke-width='1'/><line x1='370' y1='108' x2='370' y2='300' stroke='#999' stroke-width='1'/><text x='120' y='170' font-family='sans-serif' font-size='20' fill='#2e6b3e' text-anchor='end'>Supply space</text><text x='120' y='194' font-family='sans-serif' font-size='20' fill='#2e6b3e' text-anchor='end'>power equipment only</text><text x='120' y='280' font-family='sans-serif' font-size='20' fill='#2e5d8a' text-anchor='end'>Communications space</text><line x1='126' y1='165' x2='246' y2='165' stroke='#2e6b3e' stroke-width='1.5'/><line x1='126' y1='275' x2='246' y2='275' stroke='#2e5d8a' stroke-width='1.5'/><text x='120' y='238' font-family='sans-serif' font-size='20' fill='#555' text-anchor='end'>Safety zone</text><text x='120' y='262' font-family='sans-serif' font-size='20' fill='#555' text-anchor='end'>separates the two</text><path d='M320 72 L320 95 M400 72 L400 95 M480 72 L480 95' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M400 95 L400 470' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M400 470 L400 505' fill='none' stroke='#b0632e' stroke-width='3'/><line x1='388' y1='505' x2='412' y2='505' stroke='#b0632e' stroke-width='3'/><text x='430' y='420' font-family='sans-serif' font-size='20' fill='#b0632e'>Ground wire from insulator</text><text x='430' y='444' font-family='sans-serif' font-size='20' fill='#b0632e'>pins to rod in soil</text><text x='60' y='90' font-family='sans-serif' font-size='20' fill='#555'>Typical US pole:</text><text x='60' y='116' font-family='sans-serif' font-size='20' fill='#555'>~35 ft (10 m) tall,</text><text x='60' y='142' font-family='sans-serif' font-size='20' fill='#555'>~6 ft (2 m) buried.</text><text x='60' y='172' font-family='sans-serif' font-size='20' fill='#666'>Layouts vary by utility</text><text x='60' y='196' font-family='sans-serif' font-size='20' fill='#666'>and region.</text></svg>"
+          }
+        ],
+        "omitted": "No photo or second diagram: the article supplies no image assets, and other topics (pole brands, dead-end guys, history) are conveyed well by text alone; one clear schematic covers the core mechanism."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 2,
+        "restraint": 4,
+        "visualDesign": 2,
+        "accessibility": 3,
+        "problems": [
+          "The blue rectangle (y248-300) is labeled 'Communications space', but the communication cables are drawn at y330-334, outside that rectangle; the safety-zone label (y238-262) sits inside the green supply-space rectangle (y108-248). The zone boundaries do not match their labels or P11/P16.",
+          "The ground wire path runs down x=400, the pole centerline, passing straight through the transformer body (rect x372-428, y150-230). Per P14 the ground wire runs down the pole and connects to insulator pins; drawing it through the transformer is misleading.",
+          "A second crossarm with insulators is drawn for the communication cables (y300-334), but P17 and P30 say telephone/CATV/FOC cables are generally lashed directly to the pole or a supporting messenger without insulators. The drawing contradicts the cited text.",
+          "The leader line from 'Fuse cutout at transformer primary' ends at (344,176), on the transformer body edge, not at the cutout symbol at (332,170).",
+          "Right-side labels start at x=540 with ~20px font; 'Fuse cutout at transformer primary' and similar strings extend past the 800-unit viewBox and will be clipped.",
+          "At 360px width the 20px labels scale to roughly 9px, marginal for legibility, and the dense right-column label stack compounds this."
+        ],
+        "fixes": [
+          "Move the communications-space rectangle to enclose the cables (roughly y310-360) and place the safety-zone band between the lowest phase/transformer hardware and the top communication cable, matching P11 and P16.",
+          "Reroute the ground wire down the pole's side (e.g. x=410) so it clears the transformer, and keep its top ends at the insulator pins.",
+          "Replace the communication crossarm with a messenger line and lashed cable per P17/P30, or note in the caption that some layouts use spacers.",
+          "Extend the fuse-cutout leader to terminate at the cutout circle (332,170).",
+          "Shorten or wrap right-side labels and reduce the label column width so all text stays inside the viewBox; consider 22-24px font for 360px legibility."
+        ]
+      },
+      "total": 14,
+      "validation": [],
+      "accepted": false
+    },
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P11",
+              "P12",
+              "P13",
+              "P16",
+              "P6",
+              "P7",
+              "P14",
+              "P17"
+            ],
+            "learningGoal": "Shows the vertical zoning of a joint-use pole — supply space on top, safety zone, communications space below — plus crossarm phases, transformer with fuse cutout at its primary, ground wire from insulator pins down the pole side to a rod in the soil, and typical dimensions.",
+            "caption": "Anatomy of a joint-use utility pole (schematic, one example layout). Power equipment occupies the top supply space; a safety zone separates it from communication cables below. A ground wire runs from the insulator pins down the pole side to a rod in the soil. Communication cable is lashed to a thin messenger line; some layouts use spacers instead.",
+            "alt": "Diagram of a wooden utility pole showing, from top to bottom: an overhead ground wire, three phase wires A, B and C on a crossarm, a cylindrical transformer with a fuse cutout beside its primary connection, a communication worker safety zone, and a messenger line with lashed telephone and coaxial cables below. A ground wire runs from the crossarm insulator pins down the side of the pole to a ground rod buried below the ground line. Labels note the supply space, communications space, about 35 ft pole height and 6 ft burial depth.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><desc>Schematic of a joint-use utility pole showing supply space, safety zone, and communications space.</desc><rect width='800' height='520' fill='#f7f8f6'/><line x1='60' y1='470' x2='740' y2='470' stroke='#8a8a82' stroke-width='2'/><text x='744' y='476' font-family='sans-serif' font-size='20' fill='#666'>ground line</text><rect x='388' y='470' width='24' height='34' fill='#8a7a5c'/><rect x='392' y='60' width='16' height='410' fill='#a98f63'/><rect x='392' y='60' width='5' height='410' fill='#bd9f74'/><rect x='300' y='95' width='200' height='10' rx='3' fill='#7a6a4e'/><line x1='320' y1='95' x2='320' y2='70' stroke='#444' stroke-width='3'/><line x1='400' y1='95' x2='400' y2='70' stroke='#444' stroke-width='3'/><line x1='480' y1='95' x2='480' y2='70' stroke='#444' stroke-width='3'/><circle cx='320' cy='66' r='6' fill='#9aa7b5'/><circle cx='400' cy='66' r='6' fill='#9aa7b5'/><circle cx='480' cy='66' r='6' fill='#9aa7b5'/><text x='540' y='72' font-family='sans-serif' font-size='22' fill='#333'>Phase wires A, B, C</text><text x='540' y='98' font-family='sans-serif' font-size='20' fill='#666'>on crossarm, uninsulated</text><line x1='400' y1='60' x2='400' y2='38' stroke='#777' stroke-width='2'/><text x='540' y='44' font-family='sans-serif' font-size='22' fill='#333'>Overhead ground wire</text><text x='540' y='70' font-family='sans-serif' font-size='20' fill='#666'>(lightning protection)</text><rect x='372' y='150' width='56' height='80' rx='8' fill='#5b6b78'/><rect x='372' y='150' width='56' height='80' rx='8' fill='none' stroke='#46545f' stroke-width='2'/><text x='540' y='180' font-family='sans-serif' font-size='22' fill='#333'>Pole-mounted transformer</text><text x='540' y='206' font-family='sans-serif' font-size='20' fill='#666'>steps voltage down</text><line x1='372' y1='170' x2='340' y2='170' stroke='#444' stroke-width='2'/><circle cx='332' cy='170' r='8' fill='#c9a13b' stroke='#8a6d1e' stroke-width='2'/><line x1='332' y1='178' x2='332' y2='196' stroke='#444' stroke-width='2'/><line x1='326' y1='196' x2='338' y2='196' stroke='#444' stroke-width='2'/><line x1='324' y1='170' x2='300' y2='170' stroke='#444' stroke-width='2'/><line x1='316' y1='152' x2='348' y2='152' stroke='#666' stroke-width='1.5'/><text x='540' y='238' font-family='sans-serif' font-size='22' fill='#333'>Fuse cutout at primary</text><text x='540' y='264' font-family='sans-serif' font-size='20' fill='#666'>pivots open on overload</text><line x1='536' y1='232' x2='341' y2='171' stroke='#666' stroke-width='1.5'/><rect x='250' y='108' width='120' height='122' fill='#3f7d4f' opacity='0.10'/><rect x='250' y='230' width='120' height='80' fill='#c98a2e' opacity='0.12'/><rect x='250' y='310' width='120' height='52' fill='#3b6ea5' opacity='0.10'/><line x1='250' y1='108' x2='250' y2='362' stroke='#999' stroke-width='1'/><line x1='370' y1='108' x2='370' y2='362' stroke='#999' stroke-width='1'/><text x='120' y='160' font-family='sans-serif' font-size='22' fill='#2e6b3e' text-anchor='end'>Supply space</text><text x='120' y='186' font-family='sans-serif' font-size='20' fill='#2e6b3e' text-anchor='end'>power equipment only</text><text x='120' y='262' font-family='sans-serif' font-size='22' fill='#8a5a14' text-anchor='end'>Safety zone</text><text x='120' y='288' font-family='sans-serif' font-size='20' fill='#8a5a14' text-anchor='end'>separates the two</text><text x='120' y='330' font-family='sans-serif' font-size='22' fill='#2e5d8a' text-anchor='end'>Communications</text><text x='120' y='356' font-family='sans-serif' font-size='22' fill='#2e5d8a' text-anchor='end'>space</text><line x1='126' y1='155' x2='246' y2='155' stroke='#2e6b3e' stroke-width='1.5'/><line x1='126' y1='257' x2='246' y2='257' stroke='#8a5a14' stroke-width='1.5'/><line x1='126' y1='325' x2='246' y2='325' stroke='#2e5d8a' stroke-width='1.5'/><line x1='300' y1='316' x2='500' y2='312' stroke='#555' stroke-width='2'/><line x1='330' y1='316' x2='330' y2='334' stroke='#555' stroke-width='2'/><line x1='400' y1='316' x2='400' y2='334' stroke='#555' stroke-width='2'/><line x1='470' y1='316' x2='470' y2='334' stroke='#555' stroke-width='2'/><circle cx='330' cy='338' r='5' fill='#8b6f9e'/><circle cx='400' cy='338' r='5' fill='#8b6f9e'/><circle cx='470' cy='338' r='5' fill='#8b6f9e'/><text x='540' y='322' font-family='sans-serif' font-size='22' fill='#333'>Messenger line with</text><text x='540' y='348' font-family='sans-serif' font-size='22' fill='#333'>lashed cables</text><text x='540' y='374' font-family='sans-serif' font-size='20' fill='#666'>telephone, coax, fibre</text><path d='M320 72 L320 95 M400 72 L400 95 M480 72 L480 95' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M410 95 L410 470' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M410 470 L410 505' fill='none' stroke='#b0632e' stroke-width='3'/><line x1='398' y1='505' x2='422' y2='505' stroke='#b0632e' stroke-width='3'/><text x='430' y='410' font-family='sans-serif' font-size='22' fill='#b0632e'>Ground wire from insulator</text><text x='430' y='436' font-family='sans-serif' font-size='22' fill='#b0632e'>pins to rod in soil</text><text x='60' y='90' font-family='sans-serif' font-size='22' fill='#555'>Typical US pole:</text><text x='60' y='118' font-family='sans-serif' font-size='22' fill='#555'>~35 ft (10 m) tall,</text><text x='60' y='146' font-family='sans-serif' font-size='22' fill='#555'>~6 ft (2 m) buried.</text><text x='60' y='178' font-family='sans-serif' font-size='20' fill='#666'>Layouts vary by utility</text><text x='60' y='202' font-family='sans-serif' font-size='20' fill='#666'>and region.</text></svg>"
+          }
+        ],
+        "omitted": "No photo or second diagram: the article supplies no image assets, and other topics (pole brands, dead-end guys, history) are conveyed well by text alone; one clear schematic covers the core mechanism."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 3,
+        "restraint": 4,
+        "visualDesign": 3,
+        "accessibility": 4,
+        "problems": [
+          "The ground wire is drawn as a single vertical line at x=410 starting at y=95, but the label and alt text claim it runs 'from the insulator pins' (P14). It does not touch any of the three pins at x=320/400/480, y=66, so the depicted relationship contradicts the cited paragraph.",
+          "The leader line from the 'Fuse cutout at primary' label (536,232 to 341,171) crosses the transformer body and the pole, creating a misleading visual association and clutter.",
+          "The three phase conductors are drawn only as short vertical stubs between insulators and crossarm; no horizontal conductor spans between phases, so the 'three wires' of P11 read as three disconnected drops rather than a line.",
+          "The safety zone band (y=230–310) is empty by design, but the transformer bottom edge sits exactly at y=230 with no visual gap, making the zone boundary ambiguous at small sizes.",
+          "At 360px width the 800-unit viewBox scales text to roughly 9px effective size for the 20px secondary labels, which is marginal for legibility."
+        ],
+        "fixes": [
+          "Route the ground wire from each insulator pin (add short connectors from x=320/400/480, y=66 converging to a single descent line) before it runs down the pole to the rod, matching P14.",
+          "Reroute the fuse-cutout leader to approach from the left or above so it does not cross the transformer rectangle; or label the cutout directly beside the symbol.",
+          "Draw a continuous horizontal conductor across the three insulator tops (or between crossarm points) so the phases read as wires, per P11.",
+          "Shift the transformer up a few units or add a visible gap above the safety zone boundary, and consider increasing minimum font sizes to 24px for 360px legibility."
+        ]
+      },
+      "total": 17,
+      "validation": [],
+      "accepted": false
+    },
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P11",
+              "P12",
+              "P13",
+              "P14",
+              "P16",
+              "P6",
+              "P7"
+            ],
+            "learningGoal": "Shows the vertical zoning of a joint-use pole — supply space on top, safety zone, communications space below — with the ground wire running from the insulator pins down the pole to a rod in the soil.",
+            "caption": "Anatomy of a joint-use utility pole (schematic, one example layout). Power equipment occupies the top supply space; a safety zone separates it from communication cables below. Three phase wires run on the crossarm, with a fuse cutout protecting the transformer's primary, and a ground wire runs from the insulator pins down the pole side to a rod in the soil. Layouts vary by utility and region.",
+            "alt": "Diagram of a wooden utility pole showing, from top to bottom: three phase wires A, B and C joined by a continuous conductor on a crossarm, a cylindrical transformer with a fuse cutout beside its primary connection, a communication worker safety zone, and lashed telephone and coaxial cables below. A ground wire runs from each crossarm insulator pin, converges on the pole side, and continues down to a ground rod below the ground line. Labels mark the supply space, safety zone, communications space and ground wire.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><desc>Schematic of a joint-use utility pole showing supply space, safety zone, communications space, and ground wire.</desc><rect width='800' height='520' fill='#f7f8f6'/><line x1='60' y1='470' x2='740' y2='470' stroke='#8a8a82' stroke-width='2'/><rect x='388' y='470' width='24' height='34' fill='#8a7a5c'/><rect x='392' y='60' width='16' height='410' fill='#a98f63'/><rect x='392' y='60' width='5' height='410' fill='#bd9f74'/><rect x='300' y='95' width='200' height='10' rx='3' fill='#7a6a4e'/><line x1='320' y1='95' x2='320' y2='72' stroke='#444' stroke-width='3'/><line x1='400' y1='95' x2='400' y2='72' stroke='#444' stroke-width='3'/><line x1='480' y1='95' x2='480' y2='72' stroke='#444' stroke-width='3'/><circle cx='320' cy='68' r='6' fill='#9aa7b5'/><circle cx='400' cy='68' r='6' fill='#9aa7b5'/><circle cx='480' cy='68' r='6' fill='#9aa7b5'/><line x1='320' y1='62' x2='480' y2='62' stroke='#b0632e' stroke-width='3'/><rect x='372' y='140' width='56' height='80' rx='8' fill='#5b6b78'/><rect x='372' y='140' width='56' height='80' rx='8' fill='none' stroke='#46545f' stroke-width='2'/><line x1='428' y1='160' x2='460' y2='160' stroke='#444' stroke-width='2'/><circle cx='468' cy='160' r='8' fill='#c9a13b' stroke='#8a6d1e' stroke-width='2'/><line x1='468' y1='168' x2='468' y2='186' stroke='#444' stroke-width='2'/><line x1='462' y1='186' x2='474' y2='186' stroke='#444' stroke-width='2'/><text x='540' y='168' font-family='sans-serif' font-size='28' fill='#333'>Fuse cutout</text><rect x='250' y='100' width='110' height='130' fill='#3f7d4f' opacity='0.10'/><rect x='250' y='240' width='110' height='60' fill='#c98a2e' opacity='0.12'/><rect x='250' y='310' width='110' height='60' fill='#3b6ea5' opacity='0.10'/><line x1='250' y1='100' x2='250' y2='370' stroke='#999' stroke-width='1'/><line x1='360' y1='100' x2='360' y2='370' stroke='#999' stroke-width='1'/><text x='120' y='160' font-family='sans-serif' font-size='28' fill='#2e6b3e' text-anchor='end'>Supply space</text><line x1='126' y1='152' x2='246' y2='152' stroke='#2e6b3e' stroke-width='1.5'/><text x='120' y='275' font-family='sans-serif' font-size='28' fill='#8a5a14' text-anchor='end'>Safety zone</text><line x1='126' y1='267' x2='246' y2='267' stroke='#8a5a14' stroke-width='1.5'/><text x='120' y='345' font-family='sans-serif' font-size='28' fill='#2e5d8a' text-anchor='end'>Communications</text><text x='120' y='378' font-family='sans-serif' font-size='28' fill='#2e5d8a' text-anchor='end'>space</text><line x1='126' y1='337' x2='246' y2='337' stroke='#2e5d8a' stroke-width='1.5'/><line x1='300' y1='316' x2='500' y2='312' stroke='#555' stroke-width='2'/><line x1='330' y1='316' x2='330' y2='334' stroke='#555' stroke-width='2'/><line x1='400' y1='316' x2='400' y2='334' stroke='#555' stroke-width='2'/><line x1='470' y1='316' x2='470' y2='334' stroke='#555' stroke-width='2'/><circle cx='330' cy='338' r='5' fill='#8b6f9e'/><circle cx='400' cy='338' r='5' fill='#8b6f9e'/><circle cx='470' cy='338' r='5' fill='#8b6f9e'/><path d='M320 74 L320 88 Q320 96 330 96 L408 96 Q410 96 410 100' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M400 74 L400 88 Q400 96 408 96' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M480 74 L480 88 Q480 96 470 96 L412 96' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M410 100 L410 470 L410 505' fill='none' stroke='#b0632e' stroke-width='3'/><line x1='398' y1='505' x2='422' y2='505' stroke='#b0632e' stroke-width='3'/><text x='540' y='440' font-family='sans-serif' font-size='28' fill='#b0632e'>Ground wire</text><text x='540' y='474' font-family='sans-serif' font-size='28' fill='#b0632e'>to rod in soil</text></svg>"
+          }
+        ],
+        "omitted": "I dropped the secondary labels for phase wires, overhead ground wire, transformer and messenger line to keep the figure to four labels; these are named in the caption and alt text. No second figure: other topics such as pole brands, dead-end guys and history are conveyed well by text alone."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 2,
+        "restraint": 4,
+        "visualDesign": 2,
+        "accessibility": 3,
+        "problems": [
+          "The supply/safety/communications zone highlight rectangles (x=250–360) sit entirely to the left of the pole (pole at x=392–408), so the zones appear detached from the pole they describe; the leader lines end at the empty rect edge, not at the pole.",
+          "The ground wire paths are geometrically wrong: they drop from the insulator pins (y≈74) only to y≈96, then run horizontally across the crossarm region before converging at x=410, reading as extra conductors rather than a wire down the pole.",
+          "The vertical ground wire at x=410 passes straight through the transformer body (x=372–428, y=140–220), implying the wire penetrates the transformer.",
+          "The 'Ground wire to rod in soil' labels at x=540 have no leader line connecting them to the wire at x=410, so the association is ambiguous.",
+          "The transformer is drawn unconnected to any phase wire; only the fuse cutout stub exists, so the primary connection described in P13 is not shown.",
+          "The orange pin-to-bus paths visually duplicate the phase conductor (also orange, y=62), inviting misreading."
+        ],
+        "fixes": [
+          "Move the zone rectangles to span the pole (e.g., x=360–440) or shade full-width bands behind the pole, and end leader lines on the pole.",
+          "Redraw the ground wire as a single path from each pin curving directly to the pole side above the crossarm, then down at an x offset clear of the transformer (e.g., x=436), keeping it visually distinct from phase conductors by color and dash style.",
+          "Add a short leader from the ground-wire label to the wire, and draw a visible primary conductor from a phase wire or cutout to the transformer."
+        ]
+      },
+      "total": 14,
+      "validation": [],
+      "accepted": false
+    },
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P11",
+              "P12",
+              "P13",
+              "P14",
+              "P16",
+              "P6"
+            ],
+            "learningGoal": "Shows the vertical zoning of a joint-use pole — supply space on top, safety zone, communications space below — with the ground wire running from the insulator pins down the pole to a rod in the soil.",
+            "caption": "Anatomy of a joint-use utility pole (schematic, one example layout). Power equipment occupies the top supply space; a safety zone separates it from communication cables below. A fuse cutout connects the transformer's primary to the phase line, and a ground wire runs from the insulator pins down the pole to a rod in the soil. Layouts vary by utility and region.",
+            "alt": "Diagram of a wooden utility pole showing, from top to bottom: three phase wires on a crossarm, a cylindrical transformer with a fuse cutout connecting its primary to the phase line, a communication worker safety zone, and lashed communication cables below. A dashed ground wire runs from the crossarm insulator pins down the pole side to a ground rod below the ground line. Shaded bands label the supply space, safety zone and communications space.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><desc>Schematic of a joint-use utility pole showing supply space, safety zone, communications space, and ground wire.</desc><rect width='800' height='520' fill='#f7f8f6'/><rect x='0' y='90' width='800' height='150' fill='#3f7d4f' opacity='0.08'/><rect x='0' y='240' width='800' height='60' fill='#c98a2e' opacity='0.10'/><rect x='0' y='300' width='800' height='70' fill='#3b6ea5' opacity='0.08'/><line x1='60' y1='470' x2='740' y2='470' stroke='#8a8a82' stroke-width='2'/><rect x='386' y='470' width='28' height='34' fill='#8a7a5c'/><rect x='392' y='60' width='16' height='410' fill='#a98f63'/><rect x='392' y='60' width='5' height='410' fill='#bd9f74'/><rect x='300' y='95' width='200' height='10' rx='3' fill='#7a6a4e'/><line x1='320' y1='95' x2='320' y2='72' stroke='#444' stroke-width='3'/><line x1='400' y1='95' x2='400' y2='72' stroke='#444' stroke-width='3'/><line x1='480' y1='95' x2='480' y2='72' stroke='#444' stroke-width='3'/><circle cx='320' cy='68' r='6' fill='#9aa7b5'/><circle cx='400' cy='68' r='6' fill='#9aa7b5'/><circle cx='480' cy='68' r='6' fill='#9aa7b5'/><line x1='320' y1='62' x2='480' y2='62' stroke='#b0632e' stroke-width='3'/><rect x='372' y='150' width='56' height='80' rx='8' fill='#5b6b78'/><rect x='372' y='150' width='56' height='80' rx='8' fill='none' stroke='#46545f' stroke-width='2'/><line x1='428' y1='170' x2='460' y2='170' stroke='#444' stroke-width='2'/><circle cx='468' cy='170' r='8' fill='#c9a13b' stroke='#8a6d1e' stroke-width='2'/><line x1='468' y1='178' x2='468' y2='196' stroke='#444' stroke-width='2'/><line x1='462' y1='196' x2='474' y2='196' stroke='#444' stroke-width='2'/><line x1='468' y1='162' x2='468' y2='62' stroke='#b0632e' stroke-width='3'/><line x1='468' y1='62' x2='480' y2='62' stroke='#b0632e' stroke-width='3'/><line x1='300' y1='316' x2='500' y2='312' stroke='#555' stroke-width='2'/><line x1='330' y1='316' x2='330' y2='334' stroke='#555' stroke-width='2'/><line x1='400' y1='316' x2='400' y2='334' stroke='#555' stroke-width='2'/><line x1='470' y1='316' x2='470' y2='334' stroke='#555' stroke-width='2'/><circle cx='330' cy='338' r='5' fill='#8b6f9e'/><circle cx='400' cy='338' r='5' fill='#8b6f9e'/><circle cx='470' cy='338' r='5' fill='#8b6f9e'/><path d='M320 74 Q320 84 336 84 L408 84 Q412 84 412 88' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M400 74 Q400 84 408 84' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M480 74 Q480 84 464 84 L416 84' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M320 74 Q324 92 408 92 Q436 92 436 110 L436 470 L436 505' fill='none' stroke='#2e6b3e' stroke-width='3' stroke-dasharray='8 5'/><path d='M400 74 Q404 92 412 92 Q436 92 436 110' fill='none' stroke='#2e6b3e' stroke-width='3' stroke-dasharray='8 5'/><path d='M480 74 Q476 92 468 92 Q436 92 436 110' fill='none' stroke='#2e6b3e' stroke-width='3' stroke-dasharray='8 5'/><line x1='424' y1='505' x2='448' y2='505' stroke='#2e6b3e' stroke-width='3'/><text x='60' y='160' font-family='sans-serif' font-size='28' fill='#2e6b3e'>Supply space</text><line x1='230' y1='152' x2='392' y2='152' stroke='#2e6b3e' stroke-width='1.5'/><text x='60' y='275' font-family='sans-serif' font-size='28' fill='#8a5a14'>Safety zone</text><line x1='200' y1='267' x2='392' y2='267' stroke='#8a5a14' stroke-width='1.5'/><text x='60' y='345' font-family='sans-serif' font-size='28' fill='#2e5d8a'>Communications space</text><line x1='290' y1='337' x2='392' y2='337' stroke='#2e5d8a' stroke-width='1.5'/><text x='560' y='440' font-family='sans-serif' font-size='28' fill='#2e6b3e'>Ground wire</text><line x1='556' y1='432' x2='440' y2='432' stroke='#2e6b3e' stroke-width='1.5'/></svg>"
+          }
+        ],
+        "omitted": "I kept only the one figure; pole brands, dead-end guys and history are conveyed well by text alone. Secondary labels (phase wires, transformer, cutout, ground rod) are named in the caption and alt text to stay within four labels."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 4,
+        "restraint": 4,
+        "visualDesign": 3,
+        "accessibility": 4,
+        "problems": [
+          "The validation flag is correct: the SVG uses the forbidden stroke-dasharray attribute on all three ground-wire paths, so the figure fails the output constraints as written.",
+          "The ground-wire path from the left insulator pin (M320 74 Q324 92 408 92 ...) runs horizontally through the pole body (x 392–408) before turning down at x 436; the middle and right paths also cross the pole face, making the wire appear to pass through the wood rather than down its side.",
+          "The 'Supply space' leader ends at (392,152), which lands on the transformer body rather than the zone band, slightly misattributing the zone label to the transformer.",
+          "The fuse cutout is drawn hanging from the phase wire at (468,170) with its drop line to y196, but the transformer primary connection line runs from (428,170) to (460,170) — the cutout sits between them correctly, yet the cutout's lower stub (y178–196) connects to nothing, leaving the transformer secondary/service-drop side visually unconnected."
+        ],
+        "fixes": [
+          "Replace stroke-dasharray with a solid stroke or a compliant dotted pattern (e.g., short line segments) for the ground wire.",
+          "Reroute the three ground-wire paths to run just outside the pole edge (x ≥ 410) from each pin down to the common riser at x 436, avoiding the pole body.",
+          "Move the 'Supply space' leader endpoint to an empty spot in the zone band (e.g., x 392, y 110) or point it at the crossarm region instead of the transformer.",
+          "Add a short secondary line from the cutout stub down to the transformer or a labeled service-drop stub so the cutout's lower terminal is not floating."
+        ]
+      },
+      "total": 18,
+      "validation": [
+        "Forbidden SVG attribute: stroke-dasharray"
+      ],
+      "accepted": false
+    },
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P11",
+              "P12",
+              "P13",
+              "P14",
+              "P16",
+              "P6"
+            ],
+            "learningGoal": "Shows the vertical zoning of a joint-use pole — supply space on top, safety zone, communications space below — with the ground wire running outside the pole from the insulator pins down to a rod in the soil.",
+            "caption": "Anatomy of a joint-use utility pole (schematic, one example layout). Power equipment occupies the top supply space; a safety zone separates it from communication cables below. A fuse cutout connects the transformer's primary to the phase line, and a ground wire runs from the insulator pins down the pole side to a rod in the soil. Layouts vary by utility and region.",
+            "alt": "Diagram of a wooden utility pole showing, from top to bottom: three phase wires on a crossarm, a cylindrical transformer with a fuse cutout connecting its primary to the phase line, a communication worker safety zone, and lashed communication cables below. A solid green ground wire runs just outside the pole edge from the crossarm insulator pins down to a ground rod below the ground line. Shaded bands label the supply space, safety zone and communications space.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><desc>Schematic of a joint-use utility pole showing supply space, safety zone, communications space, and ground wire.</desc><rect width='800' height='520' fill='#f7f8f6'/><rect x='0' y='90' width='800' height='150' fill='#3f7d4f' opacity='0.08'/><rect x='0' y='240' width='800' height='60' fill='#c98a2e' opacity='0.10'/><rect x='0' y='300' width='800' height='70' fill='#3b6ea5' opacity='0.08'/><line x1='60' y1='470' x2='740' y2='470' stroke='#8a8a82' stroke-width='2'/><rect x='386' y='470' width='28' height='34' fill='#8a7a5c'/><rect x='392' y='60' width='16' height='410' fill='#a98f63'/><rect x='392' y='60' width='5' height='410' fill='#bd9f74'/><rect x='300' y='95' width='200' height='10' rx='3' fill='#7a6a4e'/><line x1='320' y1='95' x2='320' y2='72' stroke='#444' stroke-width='3'/><line x1='400' y1='95' x2='400' y2='72' stroke='#444' stroke-width='3'/><line x1='480' y1='95' x2='480' y2='72' stroke='#444' stroke-width='3'/><circle cx='320' cy='68' r='6' fill='#9aa7b5'/><circle cx='400' cy='68' r='6' fill='#9aa7b5'/><circle cx='480' cy='68' r='6' fill='#9aa7b5'/><line x1='320' y1='62' x2='480' y2='62' stroke='#b0632e' stroke-width='3'/><rect x='372' y='150' width='56' height='80' rx='8' fill='#5b6b78'/><rect x='372' y='150' width='56' height='80' rx='8' fill='none' stroke='#46545f' stroke-width='2'/><line x1='428' y1='170' x2='460' y2='170' stroke='#444' stroke-width='2'/><circle cx='468' cy='170' r='8' fill='#c9a13b' stroke='#8a6d1e' stroke-width='2'/><line x1='468' y1='178' x2='468' y2='196' stroke='#444' stroke-width='2'/><line x1='462' y1='196' x2='474' y2='196' stroke='#444' stroke-width='2'/><line x1='468' y1='162' x2='468' y2='62' stroke='#b0632e' stroke-width='3'/><line x1='468' y1='62' x2='480' y2='62' stroke='#b0632e' stroke-width='3'/><line x1='468' y1='196' x2='468' y2='210' stroke='#444' stroke-width='2'/><line x1='468' y1='210' x2='428' y2='210' stroke='#444' stroke-width='2'/><line x1='300' y1='316' x2='500' y2='312' stroke='#555' stroke-width='2'/><line x1='330' y1='316' x2='330' y2='334' stroke='#555' stroke-width='2'/><line x1='400' y1='316' x2='400' y2='334' stroke='#555' stroke-width='2'/><line x1='470' y1='316' x2='470' y2='334' stroke='#555' stroke-width='2'/><circle cx='330' cy='338' r='5' fill='#8b6f9e'/><circle cx='400' cy='338' r='5' fill='#8b6f9e'/><circle cx='470' cy='338' r='5' fill='#8b6f9e'/><path d='M320 74 Q320 84 336 84 L408 84 Q412 84 412 88' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M400 74 Q400 84 408 84' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M480 74 Q480 84 464 84 L416 84' fill='none' stroke='#b0632e' stroke-width='3'/><path d='M320 74 Q322 90 340 90 L414 90 L414 470 L414 505' fill='none' stroke='#2e6b3e' stroke-width='3'/><path d='M400 74 Q402 88 414 88' fill='none' stroke='#2e6b3e' stroke-width='3'/><path d='M480 74 Q478 88 414 88' fill='none' stroke='#2e6b3e' stroke-width='3'/><line x1='402' y1='505' x2='426' y2='505' stroke='#2e6b3e' stroke-width='3'/><text x='60' y='120' font-family='sans-serif' font-size='28' fill='#2e6b3e'>Supply space</text><line x1='240' y1='112' x2='392' y2='112' stroke='#2e6b3e' stroke-width='1.5'/><text x='60' y='275' font-family='sans-serif' font-size='28' fill='#8a5a14'>Safety zone</text><line x1='200' y1='267' x2='392' y2='267' stroke='#8a5a14' stroke-width='1.5'/><text x='60' y='345' font-family='sans-serif' font-size='28' fill='#2e5d8a'>Communications space</text><line x1='290' y1='337' x2='392' y2='337' stroke='#2e5d8a' stroke-width='1.5'/><text x='560' y='440' font-family='sans-serif' font-size='28' fill='#2e6b3e'>Ground wire</text><line x1='556' y1='432' x2='418' y2='432' stroke='#2e6b3e' stroke-width='1.5'/></svg>"
+          }
+        ],
+        "omitted": "I kept only the one figure; pole brands, dead-end guys and history are conveyed well by text alone. Secondary components (phase wires, transformer, cutout, ground rod) are named in the caption and alt text to stay within four labels. The ground wire is now a solid stroke routed just outside the pole edge, the supply-space leader ends in an empty part of the zone band, and the cutout's lower terminal connects to the transformer via a short secondary line."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 3,
+        "restraint": 4,
+        "visualDesign": 2,
+        "accessibility": 3,
+        "problems": [
+          "The green ground wire path runs at x=414 straight through the transformer body (rect x372-428, y150-230) and through the crossarm (x300-500, y95-105), contradicting the alt text claim that it runs 'just outside the pole edge' and misrepresenting P14's mounting on the pole side.",
+          "Two nearly parallel wire runs collide near the top: the orange curves (e.g., 'M320 74 Q320 84 336 84 L408 84...') and the green ground-wire curves ('M320 74 Q322 90 340 90 L414 90') overlap between x≈336-414 at y≈84-90, and the orange curves' purpose is unexplained — the phases are already joined by the line at y=62, so these read as a duplicate or erroneous connection.",
+          "The ground rod is a bare 24px horizontal line at y=505 with no label or distinct shape; it does not read as a rod driven into the soil as the caption and P14 describe.",
+          "The 'Supply space' leader ends at the bare pole edge (392,112) rather than pointing at the equipment that defines the zone, weakening the label's teaching value.",
+          "The green wire also crosses the communication cable span (line y≈312-316, x300-500), which is visually acceptable for a full-length ground wire but compounds the routing confusion given the transformer overlap."
+        ],
+        "fixes": [
+          "Reroute the ground wire to a clear x offset (e.g., x=436) so it passes beside, not through, the transformer and crossarm, and keep it consistently outside the pole per the alt text.",
+          "Delete the redundant orange curves near the insulator pins or relabel them; keep only the y=62 phase line and the cutout tap to phase C.",
+          "Replace the ground-rod line with a small vertical rod shape below the ground line and add a short 'Ground rod' label or include it in the caption.",
+          "Extend the supply-space leader to touch the crossarm or transformer instead of stopping at the pole edge."
+        ]
+      },
+      "total": 15,
+      "validation": [],
+      "accepted": false
+    },
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P6",
+              "P11",
+              "P16",
+              "P17"
+            ],
+            "learningGoal": "Shows how a joint-use pole stacks power equipment above a worker safety zone and communication cables, making the vertical order easy to see.",
+            "caption": "One example joint-use pole layout: power supply space at the top, the communication worker safety zone below it, and communication cables below that. Simplified schematic, not to scale; arrangements vary by region and operator.",
+            "alt": "A simplified wooden utility pole. At the top, a crossarm holds three insulators with power conductors in a shaded band labeled Supply space. Below it, an empty dashed band is labeled Worker safety zone. Below that, two cables clamp to the pole in a band labeled Telecom cables.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>Vertical spaces on a joint-use utility pole</title><desc>Simplified schematic showing supply space above the worker safety zone, with communication cables below.</desc><defs><linearGradient id='w' x1='0' x2='1' y1='0' y2='0'><stop offset='0' stop-color='#6b4a2e'/><stop offset='0.45' stop-color='#a07650'/><stop offset='1' stop-color='#5a3d25'/></linearGradient><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#8a9a6e'/><stop offset='1' stop-color='#5f6b4a'/></linearGradient><radialGradient id='c' cx='0.35' cy='0.35' r='0.7'><stop offset='0' stop-color='#d8e6ef'/><stop offset='1' stop-color='#6f8796'/></radialGradient></defs><rect width='800' height='520' fill='#f7f6f2'/><rect x='270' y='50' width='260' height='92' fill='#f3dfc4' stroke='#b9875a' stroke-width='2'/><rect x='270' y='142' width='260' height='122' fill='#ffffff' stroke='#7a7a7a' stroke-width='2' stroke-dasharray='10 8'/><rect x='270' y='264' width='260' height='80' fill='#dde7ee' stroke='#5d7889' stroke-width='2'/><rect x='0' y='470' width='800' height='50' fill='url(#g)'/><rect x='386' y='36' width='28' height='444' rx='6' fill='url(#w)' stroke='#4a3220' stroke-width='2'/><rect x='290' y='94' width='220' height='14' rx='3' fill='#7d5a3a' stroke='#4a3220' stroke-width='2'/><g fill='#e9edf0' stroke='#55656f' stroke-width='2'><rect x='302' y='70' width='16' height='24' rx='4'/><rect x='352' y='70' width='16' height='24' rx='4'/><rect x='482' y='70' width='16' height='24' rx='4'/></g><g fill='#3a3f44'><circle cx='310' cy='64' r='7'/><circle cx='360' cy='64' r='7'/><circle cx='490' cy='64' r='7'/></g><rect x='414' y='280' width='12' height='10' fill='#55656f'/><rect x='414' y='313' width='12' height='10' fill='#55656f'/><circle cx='436' cy='285' r='11' fill='url(#c)' stroke='#2f4553' stroke-width='2'/><circle cx='436' cy='318' r='9' fill='url(#c)' stroke='#2f4553' stroke-width='2'/><g stroke='#333' stroke-width='2' fill='none'><line x1='572' y1='92' x2='500' y2='68'/><line x1='572' y1='200' x2='532' y2='200'/><line x1='572' y1='300' x2='449' y2='287'/></g><g font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#222'><text x='580' y='92'><tspan x='580'>Supply</tspan><tspan x='580' dy='32'>space</tspan></text><text x='580' y='196'><tspan x='580'>Worker</tspan><tspan x='580' dy='32'>safety zone</tspan></text><text x='580' y='300'><tspan x='580'>Telecom</tspan><tspan x='580' dy='32'>cables</tspan></text></g></svg>"
+          }
+        ],
+        "omitted": "No transformer, fuse cutout, ground wire, guy wire, phase labels or dimensions, as requested; these need checked topology and are not the learning goal. No photographs, because no image search tool is connected. Other topics, such as pole branding and materials, are clear in text."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 3,
+        "restraint": 4,
+        "visualDesign": 2,
+        "accessibility": 3,
+        "problems": [
+          "Validation failed: the safety-zone rectangle uses the forbidden attribute stroke-dasharray, so the SVG cannot ship as written.",
+          "The supply-space leader points to the insulator at x=500,y=68, so it labels one insulator instead of the shaded band.",
+          "The three insulators sit at x=310, 360 and 490, leaving a large gap on the right. This uneven spacing looks like a drawing error rather than a deliberate layout.",
+          "No conductor lines run through the insulator tops. The circles read as caps, so the claim of 'power conductors' is not clearly shown.",
+          "The alt text calls the safety zone a 'dashed band'. That will be wrong once the dash is removed to pass validation."
+        ],
+        "fixes": [
+          "Remove stroke-dasharray and mark the safety zone another way, such as a lighter fill or a solid gray outline. Update the alt text to match.",
+          "End the supply-space leader on the band edge, around x=530,y=80, rather than on an insulator.",
+          "Space the insulators evenly, for example at x=302, 352 and 452 to match the crossarm. Add short horizontal conductor lines through their tops.",
+          "Optionally draw short horizontal lines from the two telecom clamps so they read as cables running along the line."
+        ]
+      },
+      "total": 15,
+      "validation": [
+        "Forbidden SVG attribute: stroke-dasharray"
+      ],
+      "accepted": false,
+      "model": "anthropic/claude-opus-5-5",
+      "policyHash": "62cbf2e96304314f2237217c2cf83b9e48e3abeb99eca4db2a313978cd9b73e5",
+      "feedback": "Start fresh, do not patch the old electrical drawing. Deliver ONE simple, polished schematic showing only the broad vertical arrangement on one example joint-use pole: supply space at top, a clear worker safety zone below, and communication cables below that. Use no electrical wiring topology, transformer, fuse, ground wire, dimensions or phase labels. Show volume and material with restrained shading, keep at most three large labels. The caption must say one example layout, not to scale, arrangements vary. Distinct phase wires must never be joined together.\nThe green ground wire path runs at x=414 straight through the transformer body (rect x372-428, y150-230) and through the crossarm (x300-500, y95-105), contradicting the alt text claim that it runs 'just outside the pole edge' and misrepresenting P14's mounting on the pole side.\nTwo nearly parallel wire runs collide near the top: the orange curves (e.g., 'M320 74 Q320 84 336 84 L408 84...') and the green ground-wire curves ('M320 74 Q322 90 340 90 L414 90') overlap between x≈336-414 at y≈84-90, and the orange curves' purpose is unexplained — the phases are already joined by the line at y=62, so these read as a duplicate or erroneous connection.\nThe ground rod is a bare 24px horizontal line at y=505 with no label or distinct shape; it does not read as a rod driven into the soil as the caption and P14 describe.\nThe 'Supply space' leader ends at the bare pole edge (392,112) rather than pointing at the equipment that defines the zone, weakening the label's teaching value.\nThe green wire also crosses the communication cable span (line y≈312-316, x300-500), which is visually acceptable for a full-length ground wire but compounds the routing confusion given the transformer overlap.",
+      "tokensIn": 23306,
+      "tokensOut": 2917
+    },
+    {
+      "composition": {
+        "figures": [
+          {
+            "after": "P16",
+            "evidence": [
+              "P6",
+              "P11",
+              "P16"
+            ],
+            "learningGoal": "Shows the broad vertical order on a joint-use pole, with power at the top, a worker safety zone below, and communication cables lower down.",
+            "caption": "One example joint-use pole layout: power supply space at the top, the communication worker safety zone below it, and communication cables below that. Simplified schematic, not to scale; arrangements vary by region and operator.",
+            "alt": "A simplified wooden utility pole with three vertical bands. The top tan band, labeled Supply space, holds a crossarm and three insulators, each carrying its own separate power conductor. Below it, an empty white band is labeled Worker safety zone. The bottom blue band holds two cables clamped to the pole and is labeled Telecom cables.",
+            "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>Vertical spaces on a joint-use utility pole</title><desc>Simplified schematic: supply space at top, worker safety zone below, communication cables below that.</desc><defs><linearGradient id='w' x1='0' x2='1' y1='0' y2='0'><stop offset='0' stop-color='#5e4128'/><stop offset='0.45' stop-color='#a07650'/><stop offset='1' stop-color='#55391f'/></linearGradient><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='#8a9a6e'/><stop offset='1' stop-color='#5f6b4a'/></linearGradient><linearGradient id='ins' x1='0' x2='1' y1='0' y2='0'><stop offset='0' stop-color='#c9d3da'/><stop offset='0.5' stop-color='#f4f7f9'/><stop offset='1' stop-color='#9aa8b2'/></linearGradient></defs><rect width='800' height='520' fill='#f7f6f2'/><rect x='250' y='30' width='300' height='120' fill='#f3dfc4' stroke='#b9875a' stroke-width='3'/><rect x='250' y='150' width='300' height='120' fill='#ffffff' stroke='#9a9a9a' stroke-width='2'/><rect x='250' y='270' width='300' height='90' fill='#dde7ee' stroke='#5d7889' stroke-width='3'/><rect x='0' y='470' width='800' height='50' fill='url(#g)'/><rect x='386' y='80' width='28' height='400' rx='6' fill='url(#w)' stroke='#4a3220' stroke-width='2'/><rect x='290' y='110' width='220' height='14' rx='3' fill='#7d5a3a' stroke='#4a3220' stroke-width='2'/><g fill='url(#ins)' stroke='#55656f' stroke-width='2'><rect x='312' y='86' width='16' height='24' rx='4'/><rect x='392' y='56' width='16' height='24' rx='4'/><rect x='472' y='86' width='16' height='24' rx='4'/></g><g stroke='#2b2f33' stroke-width='4' stroke-linecap='round'><line x1='290' y1='97' x2='350' y2='75'/><line x1='370' y1='67' x2='430' y2='45'/><line x1='450' y1='97' x2='510' y2='75'/></g><g stroke='#2f4553' stroke-linecap='round'><line x1='340' y1='322' x2='470' y2='280' stroke-width='10'/><line x1='340' y1='352' x2='470' y2='310' stroke-width='8'/></g><g fill='#55656f'><rect x='412' y='292' width='14' height='10'/><rect x='412' y='321' width='14' height='10'/></g><g stroke='#333' stroke-width='2'><line x1='552' y1='90' x2='572' y2='90'/><line x1='552' y1='210' x2='572' y2='210'/><line x1='552' y1='315' x2='572' y2='315'/></g><g font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#222'><text x='580' y='88'><tspan x='580'>Supply</tspan><tspan x='580' dy='32'>space</tspan></text><text x='580' y='206'><tspan x='580'>Worker</tspan><tspan x='580' dy='32'>safety zone</tspan></text><text x='580' y='310'><tspan x='580'>Telecom</tspan><tspan x='580' dy='32'>cables</tspan></text></g></svg>"
+          }
+        ],
+        "omitted": "No transformer, fuse cutout, ground wire, guy wire, phase labels or dimensions; they need checked topology and are not the learning goal. No photographs, because no image search tool is connected. Other topics, such as branding and materials, are clear in the text."
+      },
+      "grade": {
+        "usefulness": 3,
+        "grounding": 4,
+        "restraint": 4,
+        "visualDesign": 3,
+        "accessibility": 4,
+        "problems": [],
+        "fixes": [
+          "Draw the power conductors and telecom cables as horizontal lines or clear end-on dots. The short diagonal strokes can look like loose wire pieces rather than lines running along the route.",
+          "Center the telecom cable clamps on the pole. At x=412–426 they mostly sit outside the pole edge at x=414.",
+          "Add a small gap or dashed boundary between the supply space and the worker safety zone. This makes clear that the zone separates the lowest power conductor from the communication cables."
+        ]
+      },
+      "total": 18,
+      "validation": [],
+      "accepted": true,
+      "model": "anthropic/claude-opus-5-5",
+      "policyHash": "62cbf2e96304314f2237217c2cf83b9e48e3abeb99eca4db2a313978cd9b73e5",
+      "feedback": "Start fresh, do not patch the old electrical drawing. Deliver ONE simple, polished schematic showing only the broad vertical arrangement on one example joint-use pole: supply space at top, a clear worker safety zone below, and communication cables below that. Use no electrical wiring topology, transformer, fuse, ground wire, dimensions or phase labels. Show volume and material with restrained shading, keep at most three large labels. The caption must say one example layout, not to scale, arrangements vary. Distinct phase wires must never be joined together.\nValidation failed: the safety-zone rectangle uses the forbidden attribute stroke-dasharray, so the SVG cannot ship as written.\nThe supply-space leader points to the insulator at x=500,y=68, so it labels one insulator instead of the shaded band.\nThe three insulators sit at x=310, 360 and 490, leaving a large gap on the right. This uneven spacing looks like a drawing error rather than a deliberate layout.\nNo conductor lines run through the insulator tops. The circles read as caps, so the claim of 'power conductors' is not clearly shown.\nThe alt text calls the safety zone a 'dashed band'. That will be wrong once the dash is removed to pass validation.\nForbidden SVG attribute: stroke-dasharray",
+      "tokensIn": 24779,
+      "tokensOut": 4201
+    }
+  ]
+}

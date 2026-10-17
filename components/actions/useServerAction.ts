@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { startProgress } from "@/components/toast";
 import type { ProgressHandle } from "@/components/toast/ProgressToast";
+import type { TableName } from "@/lib/queries/fetchers";
 import { type ActionResult, describeCallError } from "@/lib/server-actions/result";
 
 export type ServerActionState<A extends unknown[], R extends object> = {
@@ -27,7 +28,7 @@ const UNNAMED_PROGRESS: ActionProgress = { title: "Still working…", detail: "S
 // `{ ok: false }` error for the screen, and refreshes every table read on success
 export function useServerAction<A extends unknown[], R extends object>(
   action: (...args: A) => Promise<ActionResult<R>>,
-  options: { progress?: ActionProgress | false } = {},
+  options: { progress?: ActionProgress | false; refreshTables?: readonly TableName[] } = {},
 ): ServerActionState<A, R> {
   const queryClient = useQueryClient();
   const [isPending, setIsPending] = useState(false);
@@ -42,7 +43,8 @@ export function useServerAction<A extends unknown[], R extends object>(
     const result = await callSafely(action, args);
     if (result.ok) {
       progress?.update("Refreshing the page…");
-      await queryClient.invalidateQueries({ queryKey: ["table"] });
+      if (options.refreshTables) await Promise.all(options.refreshTables.map((table) => queryClient.invalidateQueries({ queryKey: ["table", table] })));
+      else await queryClient.invalidateQueries({ queryKey: ["table"] });
       progress?.done();
     } else {
       progress?.fail();

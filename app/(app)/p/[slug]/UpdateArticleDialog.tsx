@@ -37,6 +37,7 @@ export function UpdateArticleForm({ id, title, scope, onClose, onBusy }: { id: s
       onClose();
       const result = await pending;
       if (!result.ok) toast.error(result.error);
+      else if (result.message) toast.info(result.message);
     } finally { onBusy?.(false); }
   };
   return <form onSubmit={submit} className="flex flex-col gap-4">
@@ -51,7 +52,8 @@ export function UpdateArticleForm({ id, title, scope, onClose, onBusy }: { id: s
           <Switch id={toggleId} checked={addNote} onCheckedChange={setAddNote} disabled={update.isPending} aria-controls={addNote ? noteId : undefined} />
         </div>
         {addNote ? <FormRow htmlFor={noteId} label="Note for this update">
-          <Textarea id={noteId} value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} disabled={update.isPending} placeholder="e.g. Keep the introduction short." rows={3} className="min-h-20 resize-y" />
+          <Textarea id={noteId} value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} disabled={update.isPending} placeholder="e.g. Split this into separate sections by topic." rows={3} className="min-h-20 resize-y" />
+          <p className="text-xs text-muted-foreground">Ask for a split or reorganization to involve the article planner. Sections with handwritten text stay intact.</p>
         </FormRow> : null}
       </>
       {update.error ? <p role="alert">{update.error}</p> : null}

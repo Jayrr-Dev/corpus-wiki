@@ -5,7 +5,8 @@ import type { DbRpc } from "@/lib/db/rpc";
 import type { GlossaryEntry } from "./entries";
 
 export function glossaryEmbeddingText(entry: GlossaryEntry): string {
-  return [entry.term, entry.expansion, entry.aliases.join("; "), entry.definition, entry.context].filter(Boolean).join("\n");
+  return [entry.term, entry.expansion, entry.aliases.join("; "), entry.definition, entry.context,
+    ...entry.usageNotes?.map((note) => `${note.context}: ${note.text}`) ?? []].filter(Boolean).join("\n");
 }
 
 export async function embedMissingGlossary(db: DbRpc, embedder: Embedder): Promise<number> {

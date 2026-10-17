@@ -8,7 +8,7 @@ import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { MODEL_ROLES, type ModelRole, roleName } from "@/lib/ai/roles";
 import { clearRoleMemory, readRoleMemory } from "@/lib/server-actions/skills";
-import { ROLE_ICONS } from "../skills/roleIcons";
+import { ROLE_ICONS } from "../workflow/roleIcons";
 
 // =====================================================================
 // ROLE MEMORY: the notes each role saved for its future runs (lib/ai/memory.ts),

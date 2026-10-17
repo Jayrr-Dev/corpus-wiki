@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useId } from "react";
 import { queryKeys, type TableName } from "@/lib/queries";
 import { getBrowserSupabase } from "@/lib/supabase/client";
+import { coalesceInvalidation } from "./coalesce";
 
 // =====================================================================
 // REALTIME -> TANSTACK QUERY: when a row of `table` changes (optionally
@@ -25,11 +26,13 @@ export function useRealtimeInvalidation(table: TableName, { filter, enabled = tr
     if (!enabled) return;
     const supabase = getBrowserSupabase();
     const invalidate = () => void queryClient.invalidateQueries({ queryKey: queryKeys.table(table) });
+    const updates = coalesceInvalidation(queryClient, table, invalidate);
     const channel = supabase
       .channel(`invalidate:${table}:${filter ?? "all"}:${instanceId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table, ...(filter ? { filter } : {}) }, invalidate)
+      .on("postgres_changes", { event: "*", schema: "public", table, ...(filter ? { filter } : {}) }, updates.trigger)
       .subscribe();
     return () => {
+      updates.dispose();
       void supabase.removeChannel(channel);
     };
   }, [queryClient, table, filter, enabled, instanceId]);

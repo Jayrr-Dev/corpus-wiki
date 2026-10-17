@@ -16,10 +16,11 @@ import { useRealtimeInvalidation } from "@/lib/realtime";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { glossaryClient, type GlossaryState } from "@/lib/glossary/storage";
 import { RightPanelSlot } from "@/components/shell";
-import { glossaryAnchor, glossaryEntryKey, glossaryLetter, glossarySentenceCase, type GlossaryEntry } from "@/lib/glossary/entries";
+import { glossaryAnchor, glossaryEntryKey, glossaryLetter, glossaryRedirectAnchors, glossarySentenceCase, type GlossaryEntry } from "@/lib/glossary/entries";
 import { changeGlossaryDefinition, regenerateGlossaryDefinition, requestGlossaryGeneration, searchGlossaryMeaning } from "@/lib/server-actions/glossary";
 import { cn } from "@/lib/utils";
 import { DefinitionPanel, type DefinitionPreview } from "./DefinitionPanel";
+import { PendingDefinitions } from "./PendingDefinitions";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat("#");
 const CATEGORIES = ["All terms", "general term", "acronym", "technical term", "jargon", "uncommon word"] as const;
@@ -41,6 +42,7 @@ export function GlossaryScreen() {
   const units = useUnits({ filters: { retired_at: null } });
   const client = useQueryClient();
   const checked = useRef("");
+  const recoveredLease = useRef("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("All terms");
   const [letter, setLetter] = useState<string | null>(null);
@@ -73,9 +75,9 @@ export function GlossaryScreen() {
     queryKey: QUERY_KEY,
     queryFn: async () => {
       const { data, error } = await glossaryClient(getBrowserSupabase()).from("glossary_state")
-        .select("entries, generated_at, status, completed_batches, total_batches, error, lease_until").eq("id", true).single();
+        .select("entries, pending_entries, generated_at, status, completed_batches, total_batches, error, lease_until, review_progress:review_cache->review_progress").eq("id", true).single();
       if (error) throw new Error(error.message);
-      const state = data as unknown as Pick<GlossaryState, "entries" | "generated_at" | "status" | "completed_batches" | "total_batches" | "error" | "lease_until">;
+      const state = data as unknown as Pick<GlossaryState, "entries" | "pending_entries" | "generated_at" | "status" | "completed_batches" | "total_batches" | "error" | "lease_until"> & { review_progress?: { phase: "normalizing" | "comparing"; completed: number; total: number } | null };
       return { ...state, active: state.status === "generating" && !!state.lease_until && Date.parse(state.lease_until) > Date.now() };
     },
     refetchInterval: (current) => current.state.data?.status === "generating" || current.state.data?.status === "idle" ? 2000 : 15000,
@@ -83,16 +85,25 @@ export function GlossaryScreen() {
   });
   const state = query.data;
   useEffect(() => {
+    if (state?.status !== "generating" || state.active || !state.lease_until || recoveredLease.current === state.lease_until) return;
+    recoveredLease.current = state.lease_until;
+    generate(false);
+  }, [state?.status, state?.active, state?.lease_until, generate]);
+  useEffect(() => {
     if (!state?.generated_at || !window.location.hash.startsWith("#term-")) return;
     document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView({ block: "start" });
   }, [state?.generated_at]);
   const entries = state?.entries ?? EMPTY_ENTRIES;
+  const redirects = glossaryRedirectAnchors(entries);
   const busy = generation.isPending || state?.active;
+  const progress = state?.review_progress;
+  const reviewLabel = progress ? progress.phase === "normalizing" ? `Preparing definitions: ${progress.completed} of ${progress.total}`
+    : progress.completed === progress.total ? "Saving glossary…" : `Checking meanings: ${progress.completed} of ${progress.total}` : "Checking meanings and usage…";
   const semanticEntries = meaning.data?.query === search.trim() ? meaning.data.entries : null;
   const available = useMemo(() => (semanticEntries ?? entries).filter((entry) => {
     const needle = normalize(search.trim());
     return (category === "All terms" || entry.category === category) && (semanticEntries || !needle ||
-      normalize([entry.term, entry.expansion, ...entry.aliases, entry.definition, entry.context].filter(Boolean).join(" ")).includes(needle));
+      normalize([entry.term, entry.expansion, ...entry.aliases, entry.definition, entry.context, ...entry.usageNotes?.map((note) => `${note.context} ${note.text}`) ?? []].filter(Boolean).join(" ")).includes(needle));
   }), [entries, search, category, semanticEntries]);
   const letters = new Set(available.map((entry) => glossaryLetter(entry.term)));
   const shown = available.filter((entry) => !letter || glossaryLetter(entry.term) === letter);
@@ -140,7 +151,8 @@ export function GlossaryScreen() {
       </div>
 
       {error && <div role="alert" className="mb-5 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"><p>Dictionary generation needs attention: {error}</p><Button className="mt-3" variant="outline" disabled={busy} onClick={() => generate(false)}>Retry generation</Button></div>}
-      {busy && <div role="status" className="flex items-center gap-3 text-panel text-muted-foreground"><Loader inline /><span>Updating glossary…{state?.total_batches ? ` ${state.completed_batches} of ${state.total_batches} groups complete.` : ""}</span></div>}
+      {busy && <div role="status" className="flex items-center gap-3 text-panel text-muted-foreground"><Loader inline /><span>{state?.total_batches && state.completed_batches === state.total_batches ? reviewLabel : `Updating glossary…${state?.total_batches ? ` ${state.completed_batches} of ${state.total_batches} groups complete.` : ""}`}</span></div>}
+      <PendingDefinitions pending={state?.pending_entries ?? []} entries={entries} busy={!!busy} />
 
       {!shown.length && !error && (busy || query.isPending || state?.status === "idle") ? <div className="space-y-8 py-10" aria-label="Dictionary loading">{[1, 2, 3].map((value) => <div key={value} className="animate-pulse space-y-3"><div className="h-6 w-44 rounded bg-muted" /><div className="h-3 w-full rounded bg-muted" /><div className="h-3 w-2/3 rounded bg-muted" /></div>)}</div> : null}
       {!shown.length && state?.status === "ready" && !busy ? <div className="py-16 text-center"><BookOpen className="mx-auto mb-4 size-7 text-muted-foreground" /><p className="text-panel font-medium">{entries.length ? "No matching terms" : "No terms yet"}</p><p className="mt-2 text-sm text-muted-foreground">{entries.length ? "Try another spelling, meaning, or type of term." : "Add sources that explain technical terms, acronyms, or unfamiliar words."}</p>{entries.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setCategory("All terms"); setLetter(null); }}>Clear filters</Button>}</div> : null}
@@ -148,7 +160,7 @@ export function GlossaryScreen() {
       {[...groups].sort(([a], [b]) => ALPHABET.indexOf(a) - ALPHABET.indexOf(b)).map(([initial, terms]) => <section key={initial} aria-label={`Letter ${initial}`} className="grid grid-cols-[2rem_1fr] gap-4 border-b py-8 sm:grid-cols-[3.5rem_1fr] sm:gap-6">
         <h3 className="sticky top-14 flex size-10 items-center justify-center rounded-md bg-link/10 text-xl font-semibold text-link">{initial}</h3>
         <dl className="min-w-0 divide-y divide-border">
-          {[...terms.values()].map((senses) => <DictionaryWord key={normalize(senses[0]!.term)} senses={senses} sourceNumbers={sourceNumbers} selectedKey={selected ? selectedKey : null} preview={preview} onSelect={select} />)}
+          {[...terms.values()].map((senses) => <DictionaryWord key={normalize(senses[0]!.term)} senses={senses} redirects={redirects.get(glossaryAnchor(senses[0]!.term)) ?? []} sourceNumbers={sourceNumbers} selectedKey={selected ? selectedKey : null} preview={preview} onSelect={select} />)}
         </dl>
       </section>)}
       {shown.length > 0 && <section aria-labelledby="glossary-references-title" className="border-t pt-8">
@@ -164,8 +176,8 @@ export function GlossaryScreen() {
   );
 }
 
-type DictionaryWordProps = { senses: GlossaryEntry[]; sourceNumbers: Map<string, DictionarySource>; selectedKey: string | null; preview: DefinitionPreview | null; onSelect: (key: string | null) => void };
-function DictionaryWord({ senses, sourceNumbers, selectedKey, preview, onSelect }: DictionaryWordProps) {
+type DictionaryWordProps = { senses: GlossaryEntry[]; redirects: string[]; sourceNumbers: Map<string, DictionarySource>; selectedKey: string | null; preview: DefinitionPreview | null; onSelect: (key: string | null) => void };
+function DictionaryWord({ senses, redirects, sourceNumbers, selectedKey, preview, onSelect }: DictionaryWordProps) {
   const head = senses[0]!;
   const client = useQueryClient();
   // Rewrites one definition from the current claims it cites; the rest of the glossary is untouched
@@ -179,7 +191,7 @@ function DictionaryWord({ senses, sourceNumbers, selectedKey, preview, onSelect 
   const regenerating = regeneration.isPending ? glossaryEntryKey(regeneration.variables) : null;
   const failed = regeneration.isError ? glossaryEntryKey(regeneration.variables) : null;
   return <div className="py-8 first:pt-0 last:pb-0">
-    <dt id={glossaryAnchor(head.term)} className="flex scroll-mt-20 flex-wrap items-baseline gap-x-3 gap-y-1"><span className="text-lg font-semibold tracking-tight text-foreground">{glossarySentenceCase(head.term)}</span><span className={cn("rounded px-2 py-0.5 text-xs font-medium", CATEGORY_COLORS[head.category])}>{glossarySentenceCase(head.category)}</span></dt>
+    <dt id={glossaryAnchor(head.term)} className="flex scroll-mt-20 flex-wrap items-baseline gap-x-3 gap-y-1">{redirects.map((anchor) => <span key={anchor} id={anchor} aria-hidden="true" className="sr-only scroll-mt-20" />)}<span className="text-lg font-semibold tracking-tight text-foreground">{glossarySentenceCase(head.term)}</span><span className={cn("rounded px-2 py-0.5 text-xs font-medium", CATEGORY_COLORS[head.category])}>{glossarySentenceCase(head.category)}</span></dt>
     {head.expansion && <dd className="mt-2 text-panel font-medium text-muted-foreground">{glossarySentenceCase(head.expansion)}</dd>}
     {senses.map((entry, index) => {
       const sources = [...new Map(entry.citations.map((cite) => [cite.sourceId, cite])).values()].sort((a, b) => (sourceNumbers.get(a.sourceId)?.number ?? 0) - (sourceNumbers.get(b.sourceId)?.number ?? 0));
@@ -203,7 +215,13 @@ function DictionaryWord({ senses, sourceNumbers, selectedKey, preview, onSelect 
         </div>
         {isRegenerating && <p role="status" className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Loader inline /><span>Regenerating definition…</span></p>}
         {failed === key && <p role="alert" className="mt-2 text-xs text-destructive">{regeneration.error?.message}</p>}
-        {entry.context && <p className="mt-2 text-xs text-muted-foreground">In context: {glossarySentenceCase(entry.context)}</p>}
+        {!!entry.usageNotes?.length && <details className="group mt-2 max-w-2xl">
+          <summary className="cursor-pointer rounded-sm py-1 text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"><span className="group-open:hidden">Show usage</span><span className="hidden group-open:inline">Hide usage</span> ({entry.usageNotes.length})</summary>
+        {entry.usageNotes.map((note, i) => <div key={i} className="mt-3 max-w-2xl border-l-2 pl-3 text-sm leading-6"><p className="text-xs font-medium text-muted-foreground">Usage · {glossarySentenceCase(note.context)}</p><p>{note.text}{[...new Set(note.citations.map((cite) => cite.sourceId))].map((id) => {
+          const source = sourceNumbers.get(id); return source ? <sup key={id} className="ml-1 text-xs"><Tooltip content={source.sourceTitle}><a href={`#glossary-reference-${source.number}`} aria-label={`Reference ${source.number}: ${source.sourceTitle}`}>[{source.number}]</a></Tooltip></sup> : null;
+        })}</p></div>)}
+        </details>}
+        {entry.context && entry.usageNotes === undefined && <p className="mt-2 text-xs text-muted-foreground">In context: {glossarySentenceCase(entry.context)}</p>}
         {entry.aliases.length > 0 && <p className="mt-2 text-xs text-muted-foreground">Also: {entry.aliases.map(glossarySentenceCase).join(" · ")}</p>}
       </dd>;
     })}
@@ -222,7 +240,7 @@ function DefinitionForm({ entry, close, deleting = false }: { entry: GlossaryEnt
   });
   return <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
     <DialogTitle>{deleting ? "Delete definition" : "Edit definition"}</DialogTitle>
-    <DialogDescription>{entry.term}. Changes to its sources may replace manual edits when the glossary updates.</DialogDescription>
+    <DialogDescription>{entry.term}. Your edit is preserved when the glossary updates. Evidence and usage notes stay attached.</DialogDescription>
     {deleting ? <p className="text-panel">Delete this definition from the glossary?</p> : <label className="block space-y-2 text-panel"><span>Definition</span><Textarea value={definition} onChange={(event) => setDefinition(event.target.value)} required maxLength={1000} rows={5} /></label>}
     {mutation.error && <p role="alert" className="text-panel text-destructive">{mutation.error.message}</p>}
     <div className="flex justify-end gap-2">

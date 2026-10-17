@@ -1,9 +1,10 @@
 import "server-only";
 import { chatJson, type ChatJsonResult, type TokenFactorySettings } from "@/lib/ai/chat";
 import { ARTICLE_REVIEWER_INSTRUCTIONS } from "@/lib/ai/rolePolicies";
+import { ARTICLE_DUPLICATE_INSTRUCTIONS } from "./articleDuplicates";
 import { type ArticleReviewAnswer, type ArticleReviewDecision, type ArticleReviewInput, articleReviewJsonSchema, articleReviewSchema, buildArticleReviewMessages, readArticleReview, ruleDecision, validateArticleReview } from "./articleReview";
 
-export const ARTICLE_REVIEW_PROMPT_VERSION = "article-review-v1";
+export const ARTICLE_REVIEW_PROMPT_VERSION = "article-review-title-dedupe-v2";
 
 export type ArticleReviewResult = ArticleReviewDecision & { model: string | null; promptVersion: string; tokensIn: number | null; tokensOut: number | null };
 
@@ -18,7 +19,7 @@ export async function reviewArticleProposal(settings: TokenFactorySettings, inpu
   const base = { model: null, promptVersion: ARTICLE_REVIEW_PROMPT_VERSION, tokensIn: null, tokensOut: null };
   const rule = ruleDecision(input);
   if (rule) return { ...rule, ...base, tokensIn: 0, tokensOut: 0 };
-  const instructions = settings.roleInstructions?.find((row) => row.role === "article_reviewer")?.instructions ?? ARTICLE_REVIEWER_INSTRUCTIONS;
+  const instructions = `${settings.roleInstructions?.find((row) => row.role === "article_reviewer")?.instructions ?? ARTICLE_REVIEWER_INSTRUCTIONS}\n\n${ARTICLE_DUPLICATE_INSTRUCTIONS}`;
   const request = { name: "independent_article_review", subject: input.proposal.title, schema: articleReviewSchema, jsonSchema: articleReviewJsonSchema, maxTokens: 2500, messages: buildArticleReviewMessages(instructions, input) };
   const calls: ChatJsonResult<ArticleReviewAnswer>[] = [];
   const usage = () => ({

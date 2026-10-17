@@ -11,6 +11,12 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   const { captureConsole } = await import("@/lib/errors/errorLog");
   captureConsole();
+  const { startComposerWorker } = await import("@/lib/composer/worker");
+  startComposerWorker();
+  if (process.env.PROCESSING_RECOVERY_ENABLED === "true") {
+    const { startUploadRecoveryWorker } = await import("@/lib/processing/recovery");
+    startUploadRecoveryWorker();
+  }
 }
 
 export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {

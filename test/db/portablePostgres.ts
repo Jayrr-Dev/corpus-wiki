@@ -22,7 +22,9 @@ export async function portablePostgres() {
     const parameters = named.map((arg) => `${arg.name} => a.${arg.name}`).join(",");
     const from = named.length ? ` from jsonb_to_record($1) as a(${named.map((arg) => `${arg.name} ${arg.type}`).join(",")})` : "";
     const result = await pg.query<{ result: T }>(`select public.${fn}(${parameters}) as result${from}`, named.length ? [JSON.stringify(args)] : []);
-    return result.rows[0]!.result;
+    const signature = await pg.query<{ returns_set: boolean }>(`select p.proretset returns_set from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname=$1`, [fn]);
+    // PostgREST returns SETOF functions as arrays, including empty results.
+    return (signature.rows[0]?.returns_set ? result.rows.map((row) => row.result) : result.rows[0]?.result) as T;
   } };
   return { pg, db };
 }

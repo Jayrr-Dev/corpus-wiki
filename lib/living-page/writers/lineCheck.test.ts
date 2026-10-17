@@ -3,6 +3,12 @@ import { roleForPurpose } from "@/lib/ai/roles";
 import type { SectionReviseInput } from "../types";
 import { TokenFactorySectionWriter } from "./tokenFactory";
 
+// These tests isolate citation checking; editorial selection/review has its own suite.
+vi.mock("./editorialSelection", () => ({
+  selectEditorialClaims: async () => ({ omittedUnitIds: [], tokensIn: 0, tokensOut: 0 }),
+  checkEditorialDraft: async () => ({ verdicts: [], tokensIn: 0, tokensOut: 0 }),
+}));
+
 // The model is a queue of answers per call name (section_lines, line_fact_check); every request is kept
 function fakeModel(answers: Record<string, unknown[]>) {
   const requests: { name: string; body: { messages: { role: string; content: string }[] } }[] = [];

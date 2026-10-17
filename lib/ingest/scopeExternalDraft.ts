@@ -1,11 +1,15 @@
 import type { DraftChangeSet } from "@/lib/ai/types";
 
 // External enrichment cannot grow the taxonomy or leave unused entities behind.
-export function scopeExternalDraft(draft: DraftChangeSet, existingPaths: string[]): DraftChangeSet {
+export function scopeExternalDraft(draft: DraftChangeSet, existingPaths: string[], fallbackDomainPath?: string): DraftChangeSet {
   const known = new Map(existingPaths.map((path) => [path.toLowerCase(), path]));
   const claims = draft.actions.flatMap((action) => {
     if (action.type !== "add_claim") return [];
     const domainPaths = [...new Set(action.input.domainPaths.flatMap((path) => known.get(path.toLowerCase()) ?? []))];
+    // Approved company overviews remain reference facts even when the model files them
+    // under the company's protected organization branch. Never create a topic here.
+    const fallback = fallbackDomainPath && known.get(fallbackDomainPath.toLowerCase());
+    if (!domainPaths.length && fallback) domainPaths.push(fallback);
     return domainPaths.length ? [{ ...action, input: { ...action.input, domainPaths } }] : [];
   });
   const used = new Set(claims.flatMap((action) => {

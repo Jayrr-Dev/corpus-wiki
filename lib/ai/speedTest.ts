@@ -1,3 +1,4 @@
+import { isOpenRouterModel, openRouterModelId } from "./openrouterConfig";
 import "server-only";
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -123,16 +124,16 @@ async function streamOpenAiCompatible(apiKey: string, model: string, baseUrl: st
     signal: AbortSignal.timeout(SPEED_TEST_TIMEOUT_MS),
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: cerebras ? model.slice(CEREBRAS_MODEL_PREFIX.length) : model,
+      model: isOpenRouterModel(model) ? openRouterModelId(model) : cerebras ? model.slice(CEREBRAS_MODEL_PREFIX.length) : model,
       messages: [{ role: "user", content: SPEED_TEST_PROMPT }],
       temperature: 0,
-      ...reasoningFields(model, effort),
+      ...(isOpenRouterModel(model) ? { reasoning: { effort } } : reasoningFields(model, effort)),
       max_tokens: SPEED_TEST_MAX_TOKENS,
       stream: true,
       ...(cerebras ? {} : { stream_options: { include_usage: true } }),
     }),
   });
-  if (!response.ok) throw new Error(`${cerebras ? "Cerebras" : "Token Factory"} ${response.status}: ${(await response.text()).slice(0, 300)}`);
+  if (!response.ok) throw new Error(`${isOpenRouterModel(model) ? "OpenRouter" : cerebras ? "Cerebras" : "Token Factory"} ${response.status}: ${(await response.text()).slice(0, 300)}`);
   if (!response.body) throw new Error("The AI provider sent an empty stream.");
   const timing: Timing = { firstTokenAt: null, text: "", usage: undefined };
   const decoder = new TextDecoder();

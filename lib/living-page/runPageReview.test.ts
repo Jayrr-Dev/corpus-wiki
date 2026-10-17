@@ -11,6 +11,7 @@ const line = "22222222-2222-4222-8222-222222222222";
 const snapshot = { page: { id: page, title: "Inspections", slug: "inspections" }, pages: [], sections: [], lines: [{ line_id: line, content: "Inspections occur weekly.", author: "ai" }] };
 beforeEach(() => {
   vi.clearAllMocks();
+  chat.mockReset();
   chat.mockResolvedValue({ value: { summary: "Reviewed", edits: [], findings: [] }, model: "test", tokensIn: 1, tokensOut: 1 });
   similar.mockResolvedValue([{ revisionId: line, content: "Related claim" }]);
 });
@@ -37,13 +38,12 @@ describe("review workflow", () => {
     expect(call.mock.calls.filter(([name]) => name === "complete_page_review")).toHaveLength(1);
   });
 
-  it("corrects an invalid same-page destination and saves the validated rewrite", async () => {
+  it("settles a same-page destination without another model call and saves the validated rewrite", async () => {
     const { db, call } = database();
     const edit = { type: "revise_line", targetId: line, text: "Inspections follow a weekly schedule.", reason: "Shorten the repeated lead." };
-    chat.mockResolvedValueOnce({ value: { summary: "Consolidate", edits: [], findings: [{ operation: "consolidate", quote: "Inspections occur weekly.", guideline: "Repetition", reason: "Repeated", recommendation: "Shorten the lead", destinationId: page, decisionKind: null, decisionQuestion: null }] }, model: "test" });
-    chat.mockResolvedValueOnce({ value: { summary: "Shortened the repeated lead.", edits: [edit], findings: [] }, model: "test" });
+    chat.mockResolvedValueOnce({ value: { summary: "Consolidate", edits: [edit], findings: [{ operation: "consolidate", quote: "Inspections occur weekly.", guideline: "Repetition", reason: "Repeated", recommendation: "Shorten the lead", destinationId: page, decisionKind: null, decisionQuestion: null }] }, model: "test" });
     await runPageReview(db, { apiKey: "test" }, page);
-    expect(chat).toHaveBeenCalledTimes(2);
+    expect(chat).toHaveBeenCalledTimes(1);
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [edit], p_snapshot: snapshot, p_trace: expect.objectContaining({ timingsMs: expect.objectContaining({ snapshot: expect.any(Number), editorial: expect.any(Number) }) }) }));
   });
 

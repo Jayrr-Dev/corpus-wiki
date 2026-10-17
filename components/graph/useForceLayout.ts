@@ -3,6 +3,7 @@
 import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import type { GraphData, GraphForces } from "@/lib/graph";
 import { applyForces, createSimulation, type GraphSimulation, type SimLink, type SimNode, toSimGraph } from "@/lib/graph/physics";
+import { separateRootDomains } from "@/lib/graph/clusters";
 
 // =====================================================================
 // FORCE LAYOUT: runs the d3 simulation for the visible graph. A new
@@ -35,7 +36,12 @@ export function useForceLayout(graph: GraphData, forces: GraphForces, nodeSize: 
     const previous = new Map(layout.current.nodes.map((node) => [node.id, node]));
     const { nodes, links } = toSimGraph(graph, previous);
     const simulation = createSimulation(nodes, links, settings.current.forces, settings.current.nodeSize);
-    simulation.on("tick", () => onTick.current());
+    simulation.on("tick", () => {
+      // d3 integrates velocities after its forces. Resolve ring collisions after
+      // that movement as well, so the rendered (and final) frame stays separated.
+      if (settings.current.forces.cluster > 0) separateRootDomains(nodes, settings.current.nodeSize, links);
+      onTick.current();
+    });
     simulation.alpha(previous.size === 0 ? FIRST_ALPHA : NUDGE_ALPHA).restart();
     layout.current = { nodes, links, simulation };
     onTick.current();

@@ -11,6 +11,18 @@ const entity = (key: string): DraftAction => ({ ...base, type: "create_entity", 
 const draft = (...actions: DraftAction[]): DraftChangeSet => ({ summary: "Web enrichment", actions, trace: { modelVersion: null, promptVersion: null, tokensIn: null, tokensOut: null } });
 
 describe("external taxonomy boundary", () => {
+  it("files approved company facts in an established reference topic when organization paths are blocked", () => {
+    const result = scopeExternalDraft(draft(entity("utilitek"), claim(["Utilitek Solutions Inc."], "utilitek")), ["Stakeholders"], "Stakeholders");
+    expect(result.actions.map((action) => action.type)).toEqual(["create_entity", "add_claim"]);
+    expect(result.actions[1]?.input).toMatchObject({ domainPaths: ["Stakeholders"] });
+  });
+
+  it("never invents a fallback topic or overrides a valid reference placement", () => {
+    expect(scopeExternalDraft(draft(claim(["Blocked"])), ["Health & Safety"], "Stakeholders").actions).toEqual([]);
+    expect(scopeExternalDraft(draft(claim(["Health & Safety"])), ["Health & Safety", "Stakeholders"], "Stakeholders").actions[0]?.input)
+      .toMatchObject({ domainPaths: ["Health & Safety"] });
+  });
+
   it("rejects new roots and removes entities belonging only to dropped claims", () => {
     const result = scopeExternalDraft(draft(
       { ...base, type: "create_domain", input: { name: "COR414", path: "COR414", parentPath: null } },

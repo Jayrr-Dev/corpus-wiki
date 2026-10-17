@@ -1,4 +1,5 @@
 import { z } from "zod";
+import Fuse from "fuse.js";
 import type { ChatMessage } from "@/lib/ai/chat";
 
 // =====================================================================
@@ -12,7 +13,16 @@ import type { ChatMessage } from "@/lib/ai/chat";
 // groups it is sure of are merged.
 // =====================================================================
 
-export const ENTITY_CLEANUP_PROMPT_VERSION = "entity-cleanup-v2";
+export const ENTITY_CLEANUP_PROMPT_VERSION = "entity-cleanup-fuzzy-v4";
+
+// Short and qualified role names need review in either arrival order.
+// This widens retrieval only: a shared job title never proves shared scope.
+export function roleNameVariant(a: { type: string; name: string }, b: { type: string; name: string }): boolean {
+  if (a.type !== "role" || b.type !== "role") return false;
+  const left = singularOf(normalizeName(a.name));
+  const right = singularOf(normalizeName(b.name));
+  return !!left && !!right && (` ${left} `.includes(` ${right} `) || ` ${right} `.includes(` ${left} `));
+}
 
 // WHAT THE CLEANUP READS PER LIVE ENTITY (public.entity_cleanup_input)
 export type CleanupEntity = {
@@ -86,7 +96,19 @@ export function duplicateCandidates(entities: CleanupEntity[], focus: ReadonlySe
     const other = byName.get(acronym);
     if (other && other !== id) union(other, id);
   }
+  // Fuzzy names only widen the shortlist; the existing AI judge still confirms identity.
+  const fuzzy = new Fuse(entities.map((entity) => ({ id: entity.id, names: namesOf(entity) })), {
+    keys: ["names"], threshold: 0.25, ignoreLocation: true,
+  });
+  for (const entity of entities) for (const name of namesOf(entity)) {
+    for (const match of fuzzy.search(name, { limit: 6 })) {
+      if (match.item.id !== entity.id) union(entity.id, match.item.id);
+    }
+  }
   const groups = new Map<string, CleanupEntity[]>();
+  for (let i = 0; i < entities.length; i++) for (let j = i + 1; j < entities.length; j++) {
+    if (roleNameVariant(entities[i]!, entities[j]!)) union(entities[i]!.id, entities[j]!.id);
+  }
   for (const entity of entities) groups.set(find(entity.id), [...(groups.get(find(entity.id)) ?? []), entity]);
   return [...groups.values()].filter((group) => group.length > 1 && (!focus || group.some((entity) => focus.has(entity.id))));
 }
@@ -115,6 +137,7 @@ Answer with JSON only: { "groups": [{ "ref": "G1", "same": [["G1.1", "G1.3"]], "
 - "same" lists sets of entity refs you are SURE are one thing. Leave an entity out when unsure. An empty list means none are the same.
 - Same name is not enough: two people can share a name; a company and its product, a law and the agency that enforces it, a parent company and its subsidiary, or a thing and a course, training, policy or document about it (fire extinguishers and a fire extinguisher course) are different things.
 - An acronym and its full name are the same thing only when the descriptions agree.
+- A short role title and a qualified title can be the same role when evidence establishes the same organization, process and responsibilities. A broader role and a specialization, or matching roles at different organizations, must stay separate. If scope is unclear, do not merge.
 - reason: one short sentence.`;
 
 // Refs: G1 for a group, G1.2 for its second entity

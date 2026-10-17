@@ -16,13 +16,18 @@ describe("organization page health", () => {
 
 describe("overview sections", () => {
   it("keeps every own claim and lets only the opening borrow from children", () => {
-    const sections = overviewSections({ introduction: ["O1", "K1"], sections: [{ title: "Ownership", claims: ["O1", "O2"] }] }, input);
-    expect(sections.map((s) => [s.title, s.query.unitIds])).toEqual([["Overview", ["o1", "k1"]], ["Ownership", ["o1", "o2"]]]);
+    const sections = overviewSections({ introduction: ["O1", "K1"], sections: [{ title: "Ownership", claims: ["O2"] }] }, input);
+    expect(sections.map((s) => [s.title, s.query.unitIds])).toEqual([["Overview", ["o1", "k1"]], ["Ownership", ["o2"]]]);
   });
   it("refuses a child claim in a section, a missing own claim, or more than three borrowed", () => {
     expect(() => overviewSections({ introduction: ["O1"], sections: [{ title: "PPE", claims: ["O1", "O2", "K1"] }] }, input)).toThrow(/not one of the organization's own claims/);
-    expect(() => overviewSections({ introduction: ["O1"], sections: [{ title: "A", claims: ["O1"] }] }, input)).toThrow(/left out the organization's own claims O2/);
+    expect(() => overviewSections({ introduction: ["O1"], sections: [] }, input)).toThrow(/left out the organization's own claims O2/);
     expect(() => overviewSections({ introduction: ["K1", "K2", "K3", "K4"], sections: [{ title: "A", claims: ["O1", "O2"] }] }, input)).toThrow(/at most 3/);
+  });
+  it("rejects repeated introductory evidence and allows justified metadata omission without a history section", () => {
+    expect(() => overviewSections({ introduction: ["O1"], sections: [{ title: "Profile", claims: ["O1", "O2"] }] }, input)).toThrow(/repeats a claim/);
+    expect(overviewSections({ introduction: ["O1"], sections: [], omitted: [{ ref: "O2", reason: "source_metadata", explanation: "Describes the test snapshot only" }] }, input).map((section) => section.title)).toEqual(["Overview"]);
+    expect(() => overviewSections({ introduction: ["O1"], sections: [], omitted: [{ ref: "O9", reason: "duplicate", explanation: "Duplicate" }] }, input)).toThrow(/not one/);
   });
 });
 

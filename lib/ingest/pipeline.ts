@@ -27,7 +27,7 @@ import { uploadExecution, workflowStep } from "./workflowContext";
 // submitted (lib/ingest/duplicateGuard.ts); uploads save first and leave repeats to `deduper`,
 // which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote,
 // and of source passages not yet embedded
-export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string) => Promise<unknown> };
+export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string) => Promise<unknown> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
 export type UploadRecord = {
@@ -39,13 +39,14 @@ export type UploadRecord = {
   passages: PassageDraft[];
   byteSize?: number;
   pageCount?: number | null; // null for formats without pages
+  rejectSameName?: boolean;
 };
 
 type IngestResult = { skipped: true; sourceId: string } | { skipped: false; sourceId: string; eventId: string };
 
 // STEP 1: records the file; an identical file uploaded before is skipped
 export async function recordUpload(db: DbRpc, record: UploadRecord): Promise<StartUploadResult> {
-  const result = await db.call<IngestResult>("ingest_source", {
+  const result = await db.call<IngestResult>(record.rejectSameName ? "ingest_uploaded_file" : "ingest_source", {
     p_title: record.title,
     p_mime_type: record.mimeType,
     p_source_date: record.sourceDate,
@@ -73,7 +74,13 @@ export async function reconcileExternalUpload(deps: PipelineDeps, eventId: strin
   // Article research has its own source approval and must never reuse its parent's checkpoints.
   return uploadExecution.exit(async () => {
   try {
-    const { eventStatus, applied } = await draftAndCommit(deps, eventId, (draft, input) => scopeExternalDraft(draft, input.domainPaths), { reviseStored: false }, scope);
+    const { eventStatus, applied } = await draftAndCommit(deps, eventId, (draft, input) => {
+      const scoped = scopeExternalDraft(draft, input.domainPaths, scope.fallbackDomainPath);
+      if (!scoped.actions.some((action) => action.type === "add_claim")) {
+        throw new Error("No knowledge was extracted into an allowed reference topic. The external source has not generated knowledge; check its approved scope and topics before retrying.");
+      }
+      return scoped;
+    }, { reviseStored: false }, scope);
     try { await deps.entityDescriber?.(eventId); } catch { /* descriptions are a nicety; the claims are saved */ }
     try { await deps.profileWriter?.(eventId); } catch { /* so are stakeholder cards */ }
     return { status: eventStatus, added: applied };

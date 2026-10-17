@@ -15,11 +15,13 @@ import { DataTable } from "@/components/data-table";
 import { UploadIcon } from "@/components/icons";
 import type { Tables } from "@/lib/database/types";
 import { sourceState } from "@/lib/knowledge/evidence";
+import { latestUploads } from "@/lib/ingest/latestUploads";
 import { cn } from "@/lib/utils";
 import { useChangeSets, useShiftEvents } from "@/lib/queries";
 import { useRowsByIds } from "@/lib/queries/screens";
 import { SourceRowMenu } from "@/app/(app)/sources/SourceRowMenu";
 import { UploadWorkflowActions, UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
+import { RetryUploadButton } from "./RetryUploadButton";
 
 // ONE ROW: the upload event with its source and change set
 type UploadRow = Tables<"shift_events"> & { sourceTitle: string; source: Tables<"sources"> | null; changeSetId: string | null };
@@ -48,7 +50,9 @@ const COLUMNS = [
           busy={row.status === "received" || row.status === "extracting" || row.status === "reconciling" || row.status === "checking"}
           className="font-medium"
         />
-        {row.error ? <ErrorNote error={row.error} /> : null}
+        {row.error ? <ErrorNote error={row.error.startsWith("The model's answer did not match the expected shape:")
+          ? "The AI returned invalid claim fields. Resume processing to try again; no knowledge from this answer was saved."
+          : row.error} /> : null}
       </div>
     )
   )), meta: { cellClassName: "w-2/5 max-w-0 min-w-40 py-3 align-top" } },
@@ -66,13 +70,14 @@ const COLUMNS = [
     cell: ({ row }) => (
       <div className="flex items-start justify-end gap-2">
         {row.original.source?.origin === "internal" ? <UploadWorkflowActions eventId={row.original.id} allowRetry={!row.original.source.archived_at} legacyStatus={row.original.status} /> : null}
+        {row.original.source?.origin === "external" && !row.original.source.archived_at && row.original.status === "failed" ? <RetryUploadButton eventId={row.original.id} /> : null}
         {row.original.source ? <SourceRowMenu source={row.original.source} /> : null}
       </div>
     ),
   },
 ] satisfies ColumnDef<UploadRow, unknown>[];
 
-// RECENT UPLOADS: shift events caused by an upload whose file still exists, newest first
+// RECENT UPLOADS: one row per stored file, showing its latest run, newest first
 export function RecentUploads() {
   const [origin, setOrigin] = useState("internal");
   const query = useUploadRows();
@@ -115,7 +120,7 @@ function useUploadRows() {
     const sourceById = new Map((sources.data ?? []).map((source) => [source.id, source]));
     const changeByEvent = new Map((changeSets.data ?? []).map((changeSet) => [changeSet.event_id, changeSet.id]));
     // An upload whose file was deleted or purged is history, not an upload: Changes keeps it
-    return (events.data ?? []).filter((event) => event.source_id).map((event) => ({
+    return latestUploads(events.data ?? []).map((event) => ({
       ...event,
       sourceTitle: sourceById.get(event.source_id ?? "")?.title ?? "—",
       source: sourceById.get(event.source_id ?? "") ?? null,

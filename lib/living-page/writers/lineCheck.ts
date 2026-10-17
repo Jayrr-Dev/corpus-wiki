@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { KnowledgeContext } from "@/lib/knowledge/context";
+import { SOURCE_ATTRIBUTION_POLICY } from "../articleStyle";
 
 // =====================================================================
 // LINE FACT-CHECK: a second, independent call that reads each line the
@@ -30,6 +31,7 @@ const verdictSchema = z.object({ ref: z.string(), problem: z.string(), missingCi
 const checkSchema = z.object({ lines: z.array(verdictSchema) });
 
 const CHECK_PROMPT = [
+  SOURCE_ATTRIBUTION_POLICY,
   "You fact-check lines written for an internal wiki page. Each line lists the claims it cites; sectionClaims holds every claim of the section.",
   "For each line, decide whether its cited claims support everything the line states. Judge each line only against its own cited claims, never against claims it does not cite.",
   "A line is unsupported when it:",

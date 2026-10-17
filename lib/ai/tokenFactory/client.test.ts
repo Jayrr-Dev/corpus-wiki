@@ -24,6 +24,36 @@ const response = (options: RequestInit) => new Response(JSON.stringify({
 afterEach(() => vi.unstubAllGlobals());
 
 describe("batched reconciliation", () => {
+  it("checks entity and domain variants before assigning action positions", async () => {
+    const source = input(2);
+    source.entities = [{ type: "company", key: "acme-industries", name: "Acme Industries" }];
+    source.domainPaths = ["Acme", "Acme/Inspection"];
+    const fetchMock = vi.fn(async (_url: unknown, options: RequestInit) => {
+      const body = bodyOf(options);
+      if (body.response_format.json_schema.name !== "reconciliation") {
+        return new Response(JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ duplicateOf: 0, reason: "Same identity and scope." }) } }] }));
+      }
+      const payload = await response(options).json();
+      const answer = JSON.parse(payload.choices[0].message.content);
+      for (const claim of answer.claims) {
+        claim.entities = [{ type: "company", key: "acme-industry", name: "Acme Industry", role: "subject" }];
+        claim.applicability = { status: "scoped", entities: [{ type: "company", key: "acme-industry", name: "Acme Industry" }], conditions: "On site" };
+        claim.domainPaths = ["Acme/Inspections"];
+      }
+      payload.choices[0].message.content = JSON.stringify(answer);
+      return new Response(JSON.stringify(payload));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const draft = await client().draftChangeSet(source);
+    expect(fetchMock.mock.calls.map(([, options]) => bodyOf(options).response_format.json_schema.name))
+      .toEqual(["reconciliation", "entity_duplicate_review", "domain_duplicate_review"]);
+    expect(draft.actions.map((action) => action.type)).toEqual(["add_claim", "add_claim", "link"]);
+    expect(draft.actions[0]?.input).toMatchObject({ domainPaths: ["Acme/Inspection"], context: {
+      entities: [{ type: "company", key: "acme-industries", role: "subject" }],
+      applicability: { entities: [{ type: "company", key: "acme-industries" }], conditions: "On site" },
+    } });
+    expect(draft.actions[2]?.input).toMatchObject({ fromPosition: 1, toPosition: 0 });
+  });
   it("does not erase invalid citations while translating batch references", async () => {
     vi.stubGlobal("fetch", vi.fn(async (_url: unknown, options: RequestInit) => {
       const payload = await response(options).json();
@@ -69,7 +99,7 @@ describe("batched reconciliation", () => {
     expect(claims.map((action) => action.passageIds)).toEqual(input(81).passages.map((passage) => [passage.id]));
     expect(draft.actions.filter((action) => action.type === "create_entity")).toHaveLength(1);
     expect(draft.actions.filter((action) => action.type === "create_domain")).toHaveLength(1);
-    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v13-entity-types" });
+    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v13-entity-types+name-duplicate-v2" });
   });
 
   it("lets a later batch continue a procedure an earlier batch started", async () => {
@@ -149,9 +179,9 @@ describe("batched reconciliation", () => {
   });
 
   it("does not retry unrelated provider errors", async () => {
-    const fetchMock = vi.fn(async () => new Response("Unavailable", { status: 503 }));
+    const fetchMock = vi.fn(async () => new Response("Bad request", { status: 400 }));
     vi.stubGlobal("fetch", fetchMock);
-    await expect(client().draftChangeSet(input(4))).rejects.toThrow("503");
+    await expect(client().draftChangeSet(input(4))).rejects.toThrow("400");
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });

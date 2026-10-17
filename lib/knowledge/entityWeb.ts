@@ -23,7 +23,8 @@ import {
   webQueryAnswerSchema,
 } from "@/lib/ai/tokenFactory/entityWeb";
 import { supabaseRpc } from "@/lib/db/rpc";
-import { assertActiveUpload, workflowStep } from "@/lib/ingest/workflowContext";
+import { assertActiveUpload, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
+import { mapConcurrent } from "@/lib/processing/concurrency";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { fetchLogo } from "./logoFetch";
 import { searchSnippets, webSearchKey, wikipediaOfficialSite } from "./webSearch";
@@ -76,16 +77,23 @@ export async function planWebBatches(client: AdminSupabase, all = false): Promis
 // AFTER AN UPLOAD WROTE CARDS: look up the new stakeholders among these entities
 export async function lookUpNewStakeholders(deps: Deps, entityIds: string[]): Promise<void> {
   if (!entityIds.length || !(await webLookupAllowed(deps.client))) return;
-  const ids = (await readSubjects(deps.client, entityIds)).filter((subject) => subject.hash !== subject.checkedHash).map((subject) => subject.entityId);
-  for (let index = 0; index < ids.length; index += WEB_BATCH_SIZE) {
-    const batch = ids.slice(index, index + WEB_BATCH_SIZE);
+  const plan = await workflowStep("web:plan", async () => {
+    await assertActiveUpload();
+    const ids = (await readSubjects(deps.client, entityIds)).filter((subject) => subject.hash !== subject.checkedHash).map((subject) => subject.entityId);
+    const batches: string[][] = [];
+    for (let index = 0; index < ids.length; index += WEB_BATCH_SIZE) batches.push(ids.slice(index, index + WEB_BATCH_SIZE));
+    return { ids, batches };
+  });
+  await mapConcurrent(plan.batches, 2, async (batch) => {
+    await assertActiveUpload();
     await workflowStep(`web:${batch.join(":")}`, () => lookUpWebBatch(deps, batch));
-  }
+  }, uploadExecution.getStore()?.signal);
   // A confirmed page becomes external knowledge (approved, stored, reconciled) like any other
   const { saveStakeholderPage } = await import("./stakeholderExternal");
-  for (const entityId of ids) {
+  for (const entityId of plan.ids) {
+    await assertActiveUpload();
     try { await workflowStep(`web-save:${entityId}`, () => saveStakeholderPage(deps, entityId)); }
-    catch (error) { console.warn("Stakeholder page not saved:", error instanceof Error ? error.message : error); }
+    catch (error) { await assertActiveUpload(); console.warn("Stakeholder page not saved:", error instanceof Error ? error.message : error); }
   }
 }
 
@@ -102,11 +110,11 @@ export async function lookUpWebBatch(deps: Deps, entityIds: string[], force = fa
   })).value, subjects);
   const key = webSearchKey();
   const results = new Map<string, WebResult[]>();
-  await Promise.all(subjects.map(async (subject) => {
+  await mapConcurrent(subjects, WEB_BATCH_SIZE, async (subject) => {
     const query = queries.get(subject.entityId);
     if (!query) return;
-    try { results.set(subject.entityId, await searchSnippets(key, query)); } catch { /* no results: nothing kept */ }
-  }));
+    try { results.set(subject.entityId, await searchSnippets(key, query)); } catch { await assertActiveUpload(); /* no results: nothing kept */ }
+  }, uploadExecution.getStore()?.signal);
   const searched = subjects.filter((subject) => (results.get(subject.entityId) ?? []).length > 0);
   const answer = searched.length ? await chatJson(deps.settings, {
     name: "entity_web_profiles", schema: webProfileAnswerSchema, jsonSchema: webProfileAnswerJsonSchema,
@@ -116,7 +124,7 @@ export async function lookUpWebBatch(deps: Deps, entityIds: string[], force = fa
   // Overview pages (encyclopedias, maps) rarely are the party's own site. For a sure match without
   // one: first the official website its confirmed Wikipedia page records (Wikidata), then a search
   // for the site, from whose results the model picks the party's own site (or none)
-  await Promise.all(subjects.map(async (subject) => {
+  await mapConcurrent(subjects, WEB_BATCH_SIZE, async (subject) => {
     const profile = profiles.get(subject.entityId);
     const page = profile && !profile.website ? profile.sources.find((source) => /wikipedia\.org\/wiki\//.test(source.url)) : undefined;
     if (!page) return;
@@ -124,13 +132,13 @@ export async function lookUpWebBatch(deps: Deps, entityIds: string[], force = fa
       const recorded = await wikipediaOfficialSite(page.url);
       const site = recorded ? officialSite(recorded, [{ title: "", url: recorded, content: "" }]) : null;
       if (site && siteNamesParty(site, subject)) profile!.website = site;
-    } catch { /* fall through to the search */ }
-  }));
+    } catch { await assertActiveUpload(); /* fall through to the search */ }
+  }, uploadExecution.getStore()?.signal);
   const siteless = subjects.filter((subject) => profiles.get(subject.entityId) && !profiles.get(subject.entityId)!.website);
   const siteResults = new Map<string, WebResult[]>();
-  await Promise.all(siteless.map(async (subject) => {
-    try { siteResults.set(subject.entityId, await searchSnippets(key, `${subject.name} ${subject.kind} official website`, 5)); } catch { /* no site: no logo */ }
-  }));
+  await mapConcurrent(siteless, WEB_BATCH_SIZE, async (subject) => {
+    try { siteResults.set(subject.entityId, await searchSnippets(key, `${subject.name} ${subject.kind} official website`, 5)); } catch { await assertActiveUpload(); /* no site: no logo */ }
+  }, uploadExecution.getStore()?.signal);
   const withResults = siteless.filter((subject) => (siteResults.get(subject.entityId) ?? []).length > 0);
   if (withResults.length) {
     const summaries = new Map(withResults.map((subject) => [subject.entityId, profiles.get(subject.entityId)!.summary]));
@@ -144,6 +152,7 @@ export async function lookUpWebBatch(deps: Deps, entityIds: string[], force = fa
   let logos = 0;
   const now = new Date().toISOString();
   for (const subject of subjects) {
+    await assertActiveUpload();
     const profile = profiles.get(subject.entityId) ?? null;
     let logoUrl: string | null | undefined;
     if (profile?.website && (force || !subject.logoUrl)) {
@@ -169,10 +178,12 @@ async function storeLogo(client: AdminSupabase, entityId: string, website: strin
     const logo = await fetchLogo(website);
     if (!logo) return null;
     const path = `${entityId}.${logo.extension}`;
+    await assertActiveUpload();
     const { error } = await client.storage.from(LOGO_BUCKET).upload(path, logo.bytes, { contentType: logo.contentType, upsert: true });
     if (error) throw error;
     return `${client.storage.from(LOGO_BUCKET).getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
   } catch (error) {
+    await assertActiveUpload();
     console.warn("Stakeholder logo not stored:", error instanceof Error ? error.message : error);
     return null;
   }

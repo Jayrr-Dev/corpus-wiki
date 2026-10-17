@@ -7,10 +7,11 @@ import { skillInstructions } from "@/lib/ai/skills/prompt";
 import type { DraftAction, SectionDraft, SectionQuery } from "@/lib/ai/types";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
+import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import type { SectionUnit } from "./types";
 
-const schema = z.object({ sections: z.array(z.object({ title: z.string().trim().min(1).max(100), claims: z.array(z.string()).min(1) })).max(8) });
-export type UpdateDiscovery = z.infer<typeof schema>;
+const sectionSchema = z.object({ title: z.string().trim().min(1).max(100), claims: z.array(z.string()).min(1) });
+export type UpdateDiscovery = { sections: z.infer<typeof sectionSchema>[] };
 
 // Existing section selections bound the search. Never search the entire knowledge base
 // for an unscoped page, or reuse explicit IDs as though they were a general topic.
@@ -32,9 +33,10 @@ export function discoverySections(answer: UpdateDiscovery, candidates: SectionUn
     if (titles.has(section.title.toLowerCase())) throw new Error("The update repeated a new section heading. Retry the update.");
     titles.add(section.title.toLowerCase());
     const unitIds = section.claims.map((ref) => {
-      const match = /^C([1-9]\d*)$/.exec(ref);
+      const match = /^C([1-9]\d*)$/.exec(ref.trim().toUpperCase());
       const unit = match ? candidates[Number(match[1]) - 1] : undefined;
-      if (!unit || used.has(unit.unitId)) throw new Error("The update cited an unknown or repeated claim. No new sections were added.");
+      if (!unit) throw new Error(`The update cited an unknown claim (${JSON.stringify(ref)}). Use C1 through C${candidates.length}. No new sections were added.`);
+      if (used.has(unit.unitId)) throw new Error(`The update repeated claim ${JSON.stringify(ref)}. Each claim may appear only once. No new sections were added.`);
       used.add(unit.unitId);
       return unit.unitId;
     });
@@ -46,7 +48,7 @@ export function discoverySections(answer: UpdateDiscovery, candidates: SectionUn
 // extraUnitIds: claims outside the page's scope worth offering too (the Curator's
 // pick of stored claims no page cites); they are judged like the rest.
 export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, pageId: string, note: string, extraUnitIds: readonly string[] = []): Promise<TokenUsage & { sections: SectionDraft[] }> {
-  const { data: page, error: pageError } = await client.from("pages").select("title").eq("id", pageId).single();
+  const { data: page, error: pageError } = await client.from("pages").select("title,scope").eq("id", pageId).single();
   if (pageError) throw new Error(pageError.message);
   const { data: sections, error } = await client.from("sections").select("id, title, query, mode").eq("page_id", pageId).is("retired_at", null);
   if (error) throw new Error(error.message);
@@ -60,27 +62,33 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
   const { data: units, error: unitError } = await client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", [...candidateIds]).is("retired_at", null).order("id");
   if (unitError) throw new Error(unitError.message);
   if (!units?.length) return { sections: [], tokensIn: 0, tokensOut: 0 };
-  const { data: revisions, error: revisionError } = await client.from("revisions").select("id, content").in("id", units.map((unit) => unit.current_revision_id));
+  const { data: revisions, error: revisionError } = await client.from("revisions").select("id,content,knowledge_context").in("id", units.map((unit) => unit.current_revision_id));
   if (revisionError) throw new Error(revisionError.message);
-  const contents = new Map((revisions ?? []).map((revision) => [revision.id, revision.content]));
-  const candidates: SectionUnit[] = units.map((unit) => ({ unitId: unit.id, revisionId: unit.current_revision_id, kind: unit.kind, epistemicStatus: unit.epistemic_status, content: contents.get(unit.current_revision_id) ?? "" }));
-  return groupClaimsForArticle(settings, page.title, (sections ?? []).map((section) => section.title), candidates, note);
+  const contents = new Map((revisions ?? []).map((revision) => [revision.id, revision]));
+  const candidates: SectionUnit[] = units.map((unit) => ({ unitId: unit.id, revisionId: unit.current_revision_id, kind: unit.kind, epistemicStatus: unit.epistemic_status,
+    content: contents.get(unit.current_revision_id)?.content ?? "", context: parseKnowledgeContext(contents.get(unit.current_revision_id)?.knowledge_context) }));
+  return groupClaimsForArticle(settings, page.title, (sections ?? []).map((section) => section.title), candidates, note, page.scope);
 }
 
 // GROUPS CLAIMS INTO NEW SECTIONS of an existing article, 40 at a time (a batch whose answer is
 // cut off runs again as two halves); claims that do not belong are left out.
 // Also used when the Article Reviewer sends new claims to an existing article.
-export async function groupClaimsForArticle(settings: TokenFactorySettings, article: string, existingSections: string[], candidates: SectionUnit[], note: string): Promise<TokenUsage & { sections: SectionDraft[] }> {
+export async function groupClaimsForArticle(settings: TokenFactorySettings, article: string, existingSections: string[], candidates: SectionUnit[], note: string, scope?: string | null): Promise<TokenUsage & { sections: SectionDraft[] }> {
   const added: SectionDraft[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   // Bound each discovery call, including for very large contexts.
   const groupBatch = async (batch: SectionUnit[]): Promise<void> => {
+    // An unrestricted string let the model return prose with inline citations
+    // instead of references. Constrain this answer to this batch's actual refs.
+    const batchSchema = z.object({ sections: z.array(sectionSchema.extend({
+      claims: z.array(z.enum(batch.map((_, index) => `C${index + 1}`) as [string, ...string[]])).min(1),
+    })).max(8) });
     const request = {
-      name: "article_update_discovery", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: ANSWER_TOKEN_BUDGET,
+      name: "article_update_discovery", schema: batchSchema, jsonSchema: z.toJSONSchema(batchSchema), maxTokens: ANSWER_TOKEN_BUDGET, retryInvalidOutput: true,
       messages: [
         { role: "system" as const, content: `${skillInstructions(["plan_articles"], settings.skills)}
-Identify NEW relevant knowledge for this existing article. The candidates are current verified claims from its existing entity/topic scope, or stored claims no article cites yet that sit close to it, not yet selected by any section. Select only claims that belong to the article's actual subject. Group them into concise new topic sections. Return sections:[] when none belong. Never change the subject, invent facts, repeat existing material, or create an empty section. Use only supplied C refs, each at most once. The optional user note is editorial guidance, not evidence. Existing handwritten text is protected.` },
-        { role: "user" as const, content: JSON.stringify({ article, existingSections: [...existingSections, ...added.map((section) => section.title)], note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus })) }) },
+Identify NEW relevant knowledge for this existing article. Candidates come from scoped selections or bounded semantic retrieval and may be irrelevant. Select only claims that belong to the article's actual subject and scope, respecting any exclusions. When the article has no sections, build a concise opening and useful topic sections from the supported claims. The scope describes intended coverage; it is not factual evidence. Group relevant claims into concise new topic sections. Return sections:[] when none belong. Never change the subject, invent facts, repeat existing material, or create an empty section. Use only supplied C refs, each at most once. Each claims item is ONLY a reference such as "C1", never a sentence or inline citation. Example: {"sections":[{"title":"Tools","claims":["C1","C3"]}]}. The optional user note is editorial guidance, not evidence. Existing handwritten text is protected.` },
+        { role: "user" as const, content: JSON.stringify({ article, scope, existingSections: [...existingSections, ...added.map((section) => section.title)], note, claims: batch.map((unit, index) => ({ ref: `C${index + 1}`, content: unit.content, status: unit.epistemicStatus, ...(unit.context ? { context: unit.context } : {}) })) }) },
       ],
     };
     let answer = await chatJson(settings, request);

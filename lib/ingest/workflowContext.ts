@@ -1,5 +1,8 @@
+import "server-only";
+
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
+import { processingMetric, processingSpan } from "@/lib/processing/metrics";
 
 // Request-local: other uploads and manual page edits never inherit this run.
 // `signal` aborts when the run loses its lease or is cancelled; AI calls made inside the run listen to it.
@@ -15,6 +18,7 @@ export async function reportUploadProgress(progress: UploadProgress): Promise<vo
 
 export async function assertActiveUpload(): Promise<void> {
   const execution = uploadExecution.getStore();
+  execution?.signal?.throwIfAborted();
   if (execution) await execution.db.call("assert_upload_lease", { p_event_id: execution.eventId, p_token: execution.token });
 }
 
@@ -23,7 +27,7 @@ export async function assertActiveUpload(): Promise<void> {
 export async function workflowWrite<T>(db: DbRpc, key: string, fn: string, args: RpcArgs): Promise<T> {
   const execution = uploadExecution.getStore();
   if (!execution) return db.call<T>(fn, args);
-  return execution.db.call<T>("upload_workflow_write", {
+  return db.call<T>("upload_workflow_write", {
     p_event_id: execution.eventId, p_token: execution.token,
     p_key: key, p_function: fn, p_args: args,
   });
@@ -34,9 +38,9 @@ export async function workflowStep<T>(key: string, run: () => Promise<T>): Promi
   if (!execution) return run();
   const args = { p_event_id: execution.eventId, p_token: execution.token, p_key: key };
   const saved = await execution.db.call<{ done: boolean; output: T }>("start_upload_step", args);
-  if (saved.done) return saved.output;
+  if (saved.done) { processingMetric(`checkpoint.hit.${key.split(":")[0]}`); return saved.output; }
   try {
-    const result = await run();
+    const result = await processingSpan(`step.${key.split(":")[0]}`, run);
     await execution.db.call("finish_upload_step", { ...args, p_output: result ?? null, p_error: null });
     return result;
   } catch (error) {

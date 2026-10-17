@@ -57,6 +57,8 @@ export type PageContextSection = { section: string; text: string };
 // WRITER OUTPUT: lines to rewrite, lines to remove, lines to add (each citing the units it states)
 export type LineText = { text: string; unitIds: string[] };
 export type SectionRevision = {
+  // Reviewed omissions: source-document metadata or facts already stated elsewhere.
+  omittedUnitIds?: string[];
   revise: (LineText & { lineId: string })[];
   retire: string[];
   add: LineText[];

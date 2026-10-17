@@ -1,0 +1,3 @@
+import {targetFromEnvironment} from './db/targets.ts';
+const db=await targetFromEnvironment(process.env);
+try { console.log(JSON.stringify(await db.query(`select u.id,r.content,array_agg(d.path order by d.path) domains from public.units u join public.revisions r on r.id=u.current_revision_id join public.unit_domains ud on ud.unit_id=u.id join public.domains d on d.id=ud.domain_id where u.retired_at is null and u.id in(select unit_id from public.unit_domains join public.domains on domains.id=domain_id where path='EPCOR/Utility Line Assignment/ULA Application Process') group by u.id,r.content order by u.id`),null,2)); }finally{await db.close();}

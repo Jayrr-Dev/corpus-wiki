@@ -1,4 +1,6 @@
 import "server-only";
+import { withRequestSlot } from "@/lib/processing/requests";
+import { uploadExecution } from "@/lib/ingest/workflowContext";
 
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
@@ -43,7 +45,9 @@ export function isPrivateAddress(address: string): boolean {
 async function capped(url: string, maxBytes: number): Promise<{ bytes: Uint8Array; contentType: string } | null> {
   const parsed = new URL(url);
   if (!/^https?:$/.test(parsed.protocol) || !(await isPublicHost(parsed.hostname))) return null;
-  const response = await fetch(parsed, { headers: { "User-Agent": USER_AGENT }, redirect: "follow", signal: AbortSignal.timeout(TIMEOUT_MS), cache: "no-store" });
+  const signal = uploadExecution.getStore()?.signal;
+  return withRequestSlot("web", "logos", "public", async (requestSignal) => {
+  const response = await fetch(parsed, { headers: { "User-Agent": USER_AGENT }, redirect: "follow", signal: requestSignal ? AbortSignal.any([requestSignal, AbortSignal.timeout(TIMEOUT_MS)]) : AbortSignal.timeout(TIMEOUT_MS), cache: "no-store" });
   if (!response.ok || !response.body) return null;
   // A redirect may land elsewhere: check where it ended
   if (response.url && !(await isPublicHost(new URL(response.url).hostname))) return null;
@@ -61,6 +65,7 @@ async function capped(url: string, maxBytes: number): Promise<{ bytes: Uint8Arra
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
   return { bytes, contentType: (response.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase() };
+  }, signal);
 }
 
 // The icon links a page declares, best first: apple-touch-icon, then icons by declared size, svg last
@@ -92,7 +97,7 @@ export async function fetchLogo(website: string): Promise<Logo | null> {
   try {
     const page = await capped(base.toString(), MAX_HTML_BYTES);
     if (page?.contentType.includes("html")) candidates.push(...iconCandidates(new TextDecoder().decode(page.bytes), base.toString()));
-  } catch { /* an unreachable home page still leaves /favicon.ico */ }
+  } catch { uploadExecution.getStore()?.signal?.throwIfAborted(); /* an unreachable home page still leaves /favicon.ico */ }
   candidates.push(new URL("/favicon.ico", base).toString());
   for (const url of candidates.slice(0, 5)) {
     try {
@@ -100,7 +105,7 @@ export async function fetchLogo(website: string): Promise<Logo | null> {
       const extension = image ? EXTENSIONS[image.contentType] : undefined;
       // SVG can carry script; only raster images are kept
       if (image && extension && extension !== "svg" && image.bytes.byteLength >= MIN_IMAGE_BYTES) return { bytes: image.bytes, contentType: image.contentType, extension };
-    } catch { /* try the next one */ }
+    } catch { uploadExecution.getStore()?.signal?.throwIfAborted(); /* try the next one */ }
   }
   return null;
 }

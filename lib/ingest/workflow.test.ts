@@ -3,12 +3,12 @@ import { portablePostgres } from "@/test/db/portablePostgres";
 import { commitChangeSet, resolveException, revertChangeSet, submitChangeSet } from "@/lib/change-control";
 import { placementActions } from "@/lib/ai/tokenFactory/placeTopics";
 import type { DraftAction, DraftChangeSet, ReconciliationInput } from "@/lib/ai/types";
-import { FakeSectionWriter } from "@/lib/living-page";
+import { FakeSectionWriter, proposePages, type SectionRef } from "@/lib/living-page";
 import { reconcileUpload, recordUpload, finishApprovedUpload, type PipelineDeps } from "./pipeline";
 import { reportUploadProgress, uploadExecution, workflowWrite } from "./workflowContext";
 import { splitIntoPassages } from "./passages";
 import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
-import { articlesPending, canResumeUpload, workflowLabel, type UploadWorkflow } from "./workflowTypes";
+import { articlesPending, articlesReady, canResumeUpload, workflowLabel, type UploadWorkflow } from "./workflowTypes";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -60,11 +60,27 @@ describe("persistent upload pipeline with real change control and pages", () => 
   }
   async function count(table: string) { return (await store.pg.query<{ count: number }>(`select count(*)::integer count from public.${table}`)).rows[0]!.count; }
 
+  it("automatically checks stakeholder duplicates and retries a failed check before generating articles", async () => {
+    const source = await upload();
+    const checker = vi.fn(async (_eventId: string) => {}).mockRejectedValueOnce(new Error("Stakeholder checker unavailable"));
+    const pipeline = { ...deps(), entityTidier: checker };
+    const first = await reconcileUpload(pipeline, source.eventId, "knowledge");
+    expect(checker).toHaveBeenCalledWith(source.eventId);
+    expect(first.workflow?.state).toBe("incomplete");
+    expect(first.workflow?.steps).toEqual(expect.arrayContaining([expect.objectContaining({ key: "tidy", state: "failed" })]));
+    expect(first.workflow?.steps.some((step) => step.key === "plan" || step.key === "pages")).toBe(false);
+    const resumed = await reconcileUpload(pipeline, source.eventId, "knowledge");
+    expect(checker).toHaveBeenCalledTimes(2);
+    expect(resumed.error).toBeNull();
+    expect(resumed.workflow?.steps).toEqual(expect.arrayContaining([expect.objectContaining({ key: "tidy", state: "succeeded" })]));
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
+  });
+
   it("runs extraction through committed claims and real generated page lines; a second call does nothing", async () => {
     const source = await upload(); const pipeline = deps();
-    // The glossary is knowledge: it is written before any page, so pages are built once
+    // Optional dictionary work starts only after the first articles are ready.
     const dictionary = vi.fn(async () => {
-      expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 0);
+      expect(await store.pg.query("select id from public.pages where title='Workflow team'")).toHaveProperty("rows.length", 1);
     });
     pipeline.glossaryGenerator = dictionary;
     const result = await reconcileUpload(pipeline, source.eventId);
@@ -94,6 +110,112 @@ describe("persistent upload pipeline with real change control and pages", () => 
     expect(pipeline.deduper).toHaveBeenCalledTimes(1);
   });
 
+  it("makes reviewed articles available before optional work, and resumes background cancellation without rebuilding them", async () => {
+    const source = await upload(); const pipeline = { ...deps(), db: savepointDb() };
+    let lineCount = 0;
+    pipeline.entityDescriber = vi.fn(async () => {}).mockImplementationOnce(async () => {
+      const [workflow] = await pipeline.db.call<UploadWorkflow[]>("read_upload_workflows", { p_event_ids: [source.eventId] });
+      expect(articlesReady(workflow!)).toBe(true);
+      expect(workflowLabel(workflow!)).toBe("Articles ready; background updates running");
+      lineCount = await count("line_revisions");
+      expect(lineCount).toBeGreaterThan(0);
+      expect(await pipeline.db.call("cancel_upload_workflow", { p_event_id: source.eventId })).toBe("cancelling");
+    });
+    const cancelled = await reconcileUpload(pipeline, source.eventId);
+    expect(articlesReady(cancelled.workflow!)).toBe(true);
+    expect(cancelled.workflow?.cancel_requested).toBe(true);
+    expect((await reconcileUpload(pipeline, source.eventId, "articles", true)).workflow?.cancel_requested).toBe(true);
+    const resumed = await reconcileUpload(pipeline, source.eventId);
+    expect(resumed.workflow?.state).toBe("complete");
+    expect(resumed.error).toBeNull();
+    expect(await count("line_revisions")).toBe(lineCount);
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
+    expect(pipeline.entityDescriber).toHaveBeenCalledTimes(2);
+  });
+
+  it("writes new enrichment facts in a separately checkpointed page pass and resumes only that pass after failure", async () => {
+    const source = await upload(); const pipeline = deps();
+    const indexed = new Set<string>();
+    pipeline.claimEmbedder = vi.fn(async () => {
+      const inputs = await store.db.call<{ revisionId: string }[]>("upload_article_inputs", { p_event_id: source.eventId });
+      inputs.forEach((unit) => indexed.add(unit.revisionId));
+    });
+    const real = pipeline.writer.reviseSection.bind(pipeline.writer);
+    let written = 0;
+    pipeline.writer.reviseSection = vi.fn(async (...args: Parameters<typeof real>) => {
+      expect(args[0].units.every((unit) => indexed.has(unit.revisionId))).toBe(true);
+      if (++written === 2) throw new Error("Background writer interrupted");
+      return real(...args);
+    });
+    pipeline.writer.reviewSections = vi.fn(async () => {});
+    pipeline.knowledgeExpander = vi.fn(async (eventId) => {
+      expect((await store.pg.query("select l.id from lines l join sections s on s.id=l.section_id join pages p on p.id=s.page_id where p.title='Workflow team' and l.retired_at is null")).rows).toHaveLength(2);
+      const passage = (await store.pg.query<{ id: string }>("select id from passages where source_id=$1 limit 1", [source.sourceId])).rows[0]!;
+      const { changeSetId } = await submitChangeSet(store.db, { eventId, cause: "upload", actor: "ai", operationKey: "fixture:expansion" }, {
+        summary: "Added a source-backed fact", trace: { modelVersion: "fixture", promptVersion: "v1", tokensIn: 0, tokensOut: 0 },
+        actions: [{ type: "add_claim", targetId: null, expectedRevisionId: null, speechAct: "stated", passageIds: [passage.id],
+          input: { content: "Workflow team keeps its training records.", kind: "fact", epistemicStatus: "supported", validFrom: "2026-10-17",
+            entities: [{ type: "team", key: "workflow-team", role: "subject" }], domainPaths: [] } }],
+      });
+      await commitChangeSet(store.db, changeSetId);
+    });
+    pipeline.glossaryGenerator = vi.fn(async () => {
+      const [workflow] = await store.db.call<UploadWorkflow[]>("read_upload_workflows", { p_event_ids: [source.eventId] });
+      expect(workflow?.steps.find((step) => step.key === "pages-enrichment")?.state).toBe("succeeded");
+    });
+    const first = await reconcileUpload(pipeline, source.eventId);
+    expect(first.error).toContain("Background writer interrupted");
+    expect(articlesReady(first.workflow!)).toBe(true);
+    expect(pipeline.glossaryGenerator).not.toHaveBeenCalled();
+    const resumed = await reconcileUpload(pipeline, source.eventId);
+    expect(resumed.error).toBeNull();
+    expect(resumed.workflow?.state).toBe("complete");
+    expect((await store.pg.query("select l.id from lines l join sections s on s.id=l.section_id join pages p on p.id=s.page_id where p.title='Workflow team' and l.retired_at is null")).rows).toHaveLength(3);
+    expect(pipeline.knowledgeExpander).toHaveBeenCalledTimes(1);
+    expect(pipeline.claimEmbedder).toHaveBeenCalledTimes(3);
+    expect(pipeline.glossaryGenerator).toHaveBeenCalledTimes(1);
+    expect(pipeline.writer.reviseSection).toHaveBeenCalledTimes(3);
+    const inputs = await store.db.call<{ unitId: string; revisionId: string }[]>("upload_article_inputs", { p_event_id: source.eventId });
+    expect(inputs).toHaveLength(3);
+    expect(pipeline.writer.reviewSections).toHaveBeenLastCalledWith(expect.any(Array), `enrichment:${source.eventId}`);
+  });
+
+  it("retries indexing after cleanup before planning articles without repeating extraction or cleanup", async () => {
+    const source = await upload(); const pipeline = deps();
+    pipeline.claimEmbedder = vi.fn().mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error("Cleaned claim indexing unavailable")).mockResolvedValue(undefined);
+    const first = await reconcileUpload(pipeline, source.eventId);
+    expect(first.error).toContain("Cleaned claim indexing unavailable");
+    expect(first.workflow?.steps.some((step) => step.key === "plan")).toBe(false);
+    const resumed = await reconcileUpload(pipeline, source.eventId);
+    expect(resumed.error).toBeNull();
+    expect(resumed.workflow?.state).toBe("complete");
+    expect(pipeline.claimEmbedder).toHaveBeenCalledTimes(3);
+    expect(pipeline.deduper).toHaveBeenCalledTimes(1);
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns affected sections in stored page order after context matching", async () => {
+    const source = await upload(); const pipeline = deps();
+    const draftChangeSet = pipeline.reconciler.draftChangeSet;
+    pipeline.reconciler = { name: "fixture", async draftChangeSet(input) {
+      const result = await draftChangeSet(input);
+      const claim = result.actions.find((action) => action.type === "add_claim")!;
+      if (claim.type !== "add_claim") throw new Error("Expected a claim fixture");
+      return { ...result, actions: [...result.actions,
+        { ...claim, input: { ...claim.input, kind: "decision", content: "Workflow team chose its training schedule." } },
+        { ...claim, input: { ...claim.input, kind: "procedure", content: "Workflow team records each completed training session." } },
+      ] };
+    } };
+    expect((await reconcileUpload(pipeline, source.eventId, "knowledge")).error).toBeNull();
+    await proposePages(store.db, source.eventId);
+    const sections = (await store.pg.query<{ id: string }>("select s.id from public.sections s join public.pages p on p.id=s.page_id where p.title='Workflow team' order by s.id desc")).rows;
+    expect(sections).toHaveLength(3);
+    // Force page order to differ from UUID order, which the old UNION restored.
+    for (const [position, section] of sections.entries()) await store.pg.query("update public.sections set position=$1 where id=$2", [position + 10, section.id]);
+    const affected = await store.db.call<SectionRef[]>("list_affected_sections", { p_event_id: source.eventId });
+    expect(affected.map((section) => section.sectionId)).toEqual(sections.map((section) => section.id));
+  });
+
   it("holds new roots before enrichment and resumes through the existing approval function", async () => {
     const source = await upload(); const pipeline = deps(true);
     const first = await reconcileUpload(pipeline, source.eventId);
@@ -106,6 +228,21 @@ describe("persistent upload pipeline with real change control and pages", () => 
     expect(final.workflow?.state).toBe("complete");
     expect(pipeline.draft).toHaveBeenCalledTimes(1);
     expect(pipeline.entityDescriber).toHaveBeenCalledTimes(1);
+  });
+
+  it("durably wakes an approved upload even when the approval callback never runs", async () => {
+    const source = await upload(); const pipeline = deps(true);
+    expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("waiting");
+    expect((await store.pg.query("select * from public.upload_recovery_jobs where event_id=$1", [source.eventId])).rows).toHaveLength(0);
+    const exception = (await store.pg.query<{ id: string }>("select x.id from public.exceptions x join public.actions a on a.id=x.action_id join public.change_sets c on c.id=a.change_set_id where c.event_id=$1 and x.reason='root_domain_approval'", [source.eventId])).rows[0]!;
+    await resolveException(store.db, { exceptionId: exception.id, accept: true, note: null });
+    await store.pg.query("update public.upload_recovery_jobs set available_at=now()-interval '1 second' where event_id=$1", [source.eventId]);
+    const dispatch = await store.db.call<{ eventId: string; token: string }>("claim_upload_recovery");
+    expect(dispatch.eventId).toBe(source.eventId);
+    expect((await reconcileUpload(pipeline, source.eventId, "articles", true)).workflow?.state).toBe("complete");
+    await store.db.call("finish_upload_recovery", { p_event_id: source.eventId, p_token: dispatch.token });
+    expect((await store.pg.query("select * from public.upload_recovery_jobs where event_id=$1", [source.eventId])).rows).toHaveLength(0);
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
   });
 
   it("keeps a topic the upload placed under an approved root where it is when the context is organized", async () => {
@@ -253,12 +390,14 @@ describe("persistent upload pipeline with real change control and pages", () => 
     await store.pg.exec("reset role");
   });
 
-  it("stops dependent roles after expansion failure, then resumes them after expansion succeeds", async () => {
+  it("keeps the first articles ready after expansion failure, then resumes background work", async () => {
     const source = await upload(); const pipeline = deps();
     pipeline.knowledgeExpander = vi.fn().mockRejectedValueOnce(new Error("Expansion interrupted")).mockResolvedValue(undefined);
     const first = await reconcileUpload(pipeline, source.eventId);
     expect(first.workflow?.state).toBe("incomplete");
-    expect(first.workflow?.steps.some((step) => step.key === "pages")).toBe(false);
+    expect(first.workflow?.steps.find((step) => step.key === "pages")?.state).toBe("succeeded");
+    expect(first.workflow?.steps.find((step) => step.key === "articles-ready")?.state).toBe("succeeded");
+    expect(workflowLabel(first.workflow!)).toBe("Articles ready; background updates unfinished");
     // Knowledge cleanup finished before the articles started, so it is not repeated
     expect(pipeline.deduper).toHaveBeenCalledTimes(1);
     const second = await reconcileUpload(pipeline, source.eventId);
@@ -312,7 +451,7 @@ describe("persistent upload pipeline with real change control and pages", () => 
 
   it("cancels at the next check, keeps what was saved, refuses the automatic articles run and resumes on request", async () => {
     const source = await upload(); const pipeline = { ...deps(), db: savepointDb() };
-    pipeline.entityDescriber = vi.fn(async () => {}).mockImplementationOnce(async () => {
+    pipeline.entityTidier = vi.fn(async () => {}).mockImplementationOnce(async () => {
       expect(await pipeline.db.call("cancel_upload_workflow", { p_event_id: source.eventId })).toBe("cancelling");
     });
     const cancelled = await reconcileUpload(pipeline, source.eventId, "knowledge");
@@ -329,7 +468,7 @@ describe("persistent upload pipeline with real change control and pages", () => 
     expect(resumed.workflow).toMatchObject({ state: "complete", error: null, cancel_requested: false });
     expect(pipeline.draft).toHaveBeenCalledTimes(1);
     // The interrupted role runs again; the committed knowledge is not extracted again
-    expect(pipeline.entityDescriber).toHaveBeenCalledTimes(2);
+    expect(pipeline.entityTidier).toHaveBeenCalledTimes(2);
     expect(pipeline.deduper).toHaveBeenCalledTimes(1);
   });
 
@@ -352,17 +491,35 @@ describe("persistent upload pipeline with real change control and pages", () => 
     expect(result.workflow?.progress).toBeNull();
   });
 
+  it("resumes a failed upkeep pass without repeating extraction or page writing", async () => {
+    const source = await upload(); const pipeline = deps();
+    pipeline.pageMaintainer = vi.fn().mockRejectedValueOnce(new Error("Upkeep read timed out")).mockResolvedValue(undefined);
+    const first = await reconcileUpload(pipeline, source.eventId);
+    expect(first.workflow?.state).toBe("incomplete");
+    expect(first.error).toContain("Upkeep read timed out");
+    const before = await count("line_revisions");
+    const second = await reconcileUpload(pipeline, source.eventId);
+    expect(second.workflow?.state).toBe("complete");
+    expect(second.error).toBeNull();
+    expect(await count("line_revisions")).toBe(before);
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
+    expect(pipeline.pageMaintainer).toHaveBeenCalledTimes(2);
+  });
+
   it("resumes a failed editorial reviewer without rewriting already saved page lines", async () => {
     const source = await upload(); const pipeline = deps();
     pipeline.writer.reviewSections = vi.fn().mockRejectedValueOnce(new Error("Reviewer unavailable")).mockResolvedValue(undefined);
     const first = await reconcileUpload(pipeline, source.eventId);
     expect(first.error).toContain("Reviewer unavailable");
     const before = await count("line_revisions");
+    const calls = vi.spyOn(store.db, "call");
     const second = await reconcileUpload(pipeline, source.eventId);
     expect(second.workflow?.state).toBe("complete");
     expect(await count("line_revisions")).toBe(before);
     expect(pipeline.draft).toHaveBeenCalledTimes(1);
     expect(pipeline.writer.reviewSections).toHaveBeenCalled();
+    expect(calls.mock.calls.filter(([name]) => name === "claim_section_build")).toHaveLength(0);
+    calls.mockRestore();
   });
 
   it("does not lose the approval wakeup when it races with the original request pausing", async () => {

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { pageAncestors } from "@/lib/living-page/pageHierarchy";
 import { articleNavigation } from "@/lib/living-page/articleNavigation";
+import { useRelatedArticles } from "@/lib/queries/relatedArticles";
+import { useArticleTopicLinks } from "@/lib/queries/articleTopicLinks";
 import { useEffect, useRef, useState } from "react";
 import { PageIcon } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
@@ -14,6 +16,8 @@ import { useServerAction } from "@/components/actions/useServerAction";
 import type { Tables } from "@/lib/database/types";
 import { useEntities, usePages, useSectionLines, useSections, type ShownLine } from "@/lib/queries";
 import { useArticleEvidence } from "@/lib/queries/articleEvidence";
+import { useComposerFigures } from "@/lib/queries/composer";
+import { illustrateArticle, removeArticleIllustrations, restoreArticleIllustrations } from "@/lib/server-actions/composer";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { expandRelatedArticles, improveArticle, refreshStaleSections } from "@/lib/server-actions/pages";
 import { PageMenu } from "@/app/(app)/_pages/PageMenu";
@@ -44,14 +48,20 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const sections = sectionsQuery.data ?? [];
   const linesQuery = useSectionLines(page.id);
   const lines = sections.flatMap((section) => (linesQuery.data ?? []).filter((line) => line.sectionId === section.id));
-  const staleRefresh = useAutoRefreshStale(lines, !linesQuery.isPending);
+  const staleRefresh = useAutoRefreshStale(lines, sections, !linesQuery.isPending && !sectionsQuery.isPending);
   const evidence = useArticleEvidence(lines);
+  const composer = useComposerFigures(page.id, lines, JSON.stringify([page.title, sections.map((s) => [s.id, s.title, s.status, s.position])]));
   const allPages = usePages();
   const ancestors = pageAncestors(allPages.data ?? [], page);
   const children = (allPages.data ?? []).filter((other) => other.parent_page_id === page.id);
   const entities = useEntities();
   const allSections = useSections();
-  const { links, related } = articleNavigation(allPages.data ?? [], entities.data ?? [], allSections.data ?? [], page.id, lines.map((line) => line.content).join(" "));
+  const { links: titleLinks, related: fallbackRelated } = articleNavigation(allPages.data ?? [], entities.data ?? [], allSections.data ?? [], page.id, lines.map((line) => line.content).join(" "));
+  const topicLinks = useArticleTopicLinks(page.id, JSON.stringify([allPages.dataUpdatedAt, allSections.dataUpdatedAt, entities.dataUpdatedAt]));
+  const links = [...titleLinks, ...(topicLinks.data ?? [])];
+  const recommendations = useRelatedArticles(page.id, JSON.stringify([allPages.dataUpdatedAt, allSections.dataUpdatedAt]));
+  const related = recommendations.data ?? fallbackRelated;
+  const showRelated = related.length > 0 || recommendations.isPending || !!recommendations.error;
   useRealtimeInvalidation("sections", { filter: `page_id=eq.${page.id}` });
   useRealtimeInvalidation("lines");
   useRealtimeInvalidation("change_notes");
@@ -86,7 +96,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const error = sectionsQuery.error?.message ?? linesQuery.error?.message;
   const renderSection = (section: Tables<"sections">, hideHeading = false) => (
     <ErrorBoundary key={section.id} where={`The section "${section.title}"`}>
-      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={selectLine} isSectionSelected={section.id === selectedSectionId} onSelectSection={() => selectSection(section)} preview={shownPreview} onExitPreview={() => setPreview(null)} editingLineId={editingLineId} onEndEdit={() => setEditingLineId(null)} evidence={evidence.loading ? undefined : evidence} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} />} />
+      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={selectLine} isSectionSelected={section.id === selectedSectionId} onSelectSection={() => selectSection(section)} preview={shownPreview} onExitPreview={() => setPreview(null)} editingLineId={editingLineId} onEndEdit={() => setEditingLineId(null)} evidence={evidence.loading ? undefined : evidence} composerFigures={composer.data} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} />} />
     </ErrorBoundary>
   );
   return (
@@ -103,6 +113,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
         </div>
       </header>
       {error ? <p role="alert" className="mb-4 text-panel">Could not load this article: {error}</p> : null}
+      {composer.error ? <p role="alert" className="mb-4 text-panel">Could not load Composer illustrations: {composer.error.message}</p> : null}
       {staleRefresh.error ? <p role="alert" className="mb-4 text-panel">{staleRefresh.error}</p> : null}
       {staleRefresh.isPending ? <p className="mb-4 text-panel text-faint">Updating stale lines…</p> : null}
       {sectionsQuery.isPending || linesQuery.isPending ? <Loader label="Loading article…" /> : null}
@@ -115,7 +126,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           <ol className="space-y-2 border-l pl-3">
             {introduction ? <li><a className="text-link hover:underline" href={`#section-${introduction.id}`}>Introduction</a></li> : null}
             {topics.map((section, index) => <li key={section.id}><a className="text-link hover:underline" href={`#section-${section.id}`}>{index + 1}. {section.title}</a></li>)}
-            {related.length ? <li><a className="text-link hover:underline" href="#article-see-also">See also</a></li> : null}
+            {showRelated ? <li><a className="text-link hover:underline" href="#article-see-also">See also</a></li> : null}
             <li><a className="text-link hover:underline" href="#article-sources">References</a></li>
           </ol>
         </nav> : null}
@@ -124,8 +135,10 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
           {introduction ? renderSection(introduction, true) : null}
           {topics.map((section) => renderSection(section))}
           {emptyCount ? <button type="button" onClick={() => setShowEmpty((shown) => !shown)} className="text-panel text-faint hover:text-link">{showEmpty ? "Hide" : "Show"} {emptyCount} empty {emptyCount === 1 ? "section" : "sections"}</button> : null}
-          {related.length ? <section id="article-see-also" className="scroll-mt-6 border-t pt-5">
+          {showRelated ? <section id="article-see-also" className="scroll-mt-6 border-t pt-5">
             <h2 className="mb-3 font-serif text-2xl">See also</h2>
+            {recommendations.isPending && !related.length ? <p role="status" className="text-panel text-faint">Finding related articles…</p> : null}
+            {recommendations.error ? <p className="mb-2 text-panel text-faint">Related articles are temporarily unavailable. <button type="button" className="text-link hover:underline" onClick={() => void recommendations.refetch()}>Retry</button></p> : null}
             <ul className="list-disc space-y-1 pl-5 text-body">{related.map((other) => <li key={other.id}><Link href={`/p/${other.slug}`} className="text-link hover:underline">{other.title}</Link></li>)}</ul>
           </section> : null}
           <ArticleSources references={evidence.references} loading={evidence.loading} error={evidence.error} />
@@ -139,30 +152,40 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
 
 // Opens an article that still cites an old claim and rewrites those sections once.
 // A failed or unchanged line is not sent again until the page is opened again.
-function useAutoRefreshStale(lines: ShownLine[], ready: boolean) {
+function useAutoRefreshStale(lines: ShownLine[], sections: Tables<"sections">[], ready: boolean) {
   const refresh = useServerAction(refreshStaleSections, { progress: { title: "Updating stale lines", detail: "Rewriting sections that cite old claims…" } });
   const sent = useRef(new Set<string>());
   const refreshRef = useRef(refresh);
-  const staleKey = lines.filter((line) => line.isStale).map((line) => `${line.sectionId}:${line.lineId}`).sort().join("\n");
+  const staleKey = [...sections.filter((section) => section.status === "stale").map((section) => `${section.id}:status`), ...lines.filter((line) => line.isStale).map((line) => `${line.sectionId}:${line.lineId}`)].sort().join("\n");
+  const currentKey = sections.filter((section) => section.status === "current" && !lines.some((line) => line.sectionId === section.id && line.isStale)).map((section) => section.id).sort().join("\n");
   useEffect(() => {
     refreshRef.current = refresh;
   });
   useEffect(() => {
     if (!ready) return;
+    const currentIds = new Set(currentKey.split("\n"));
+    for (const key of sent.current) {
+      if (currentIds.has(key.slice(0, key.indexOf(":")))) sent.current.delete(key);
+    }
     if (!staleKey) return;
     const pending = staleKey.split("\n").filter((key) => !sent.current.has(key));
     if (!pending.length) return;
-    const sectionIds = [...new Set(pending.map((key) => key.slice(0, key.indexOf(":"))))];
+    const sectionIds = [...new Set(pending.map((key) => key.slice(0, key.indexOf(":"))))].slice(0, 30);
     const timer = window.setTimeout(() => {
-      for (const key of pending) sent.current.add(key);
+      for (const key of pending) if (sectionIds.includes(key.slice(0, key.indexOf(":")))) sent.current.add(key);
       void refreshRef.current.run(sectionIds);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [ready, staleKey]);
+  }, [ready, staleKey, currentKey]);
   return refresh;
 }
 
 function PageActions({ page }: { page: Tables<"pages"> }) {
+  const [composerMessage, setComposerMessage] = useState("");
+  const [removedRunId, setRemovedRunId] = useState<string | null>(null);
+  const restoreFigures = useServerAction(restoreArticleIllustrations, { refreshTables: ["lines"] });
+  const compose = useServerAction(illustrateArticle, { refreshTables: ["lines", "assets"], progress: { title: `Illustrating “${page.title}”`, detail: "Composer is choosing, drawing and reviewing useful illustrations…" } });
+  const removeFigures = useServerAction(removeArticleIllustrations, { refreshTables: ["lines"] });
   const improve = useServerAction(improveArticle, { progress: { title: `Improving “${page.title}”`, detail: "Restructuring the article with AI…" } });
   const expand = useServerAction(expandRelatedArticles, { progress: { title: `Expanding “${page.title}”`, detail: "Writing related articles with AI…" } });
   return (
@@ -171,6 +194,8 @@ function PageActions({ page }: { page: Tables<"pages"> }) {
         <ReviewPageButton pageId={page.id} disabled={improve.isPending || expand.isPending} />
         <UpdateArticleDialog id={page.id} title={page.title} scope="page" disabled={improve.isPending || expand.isPending} />
         <PageMenu page={page} extraItems={[
+          { label: compose.isPending ? "Illustrating article…" : "Illustrate article", disabled: compose.isPending || removeFigures.isPending || restoreFigures.isPending || improve.isPending || expand.isPending, onSelect: () => { void compose.run(page.id).then((result) => { if (result.ok) { setRemovedRunId(null); setComposerMessage(result.figures ? `Composer added ${result.figures} illustration${result.figures === 1 ? "" : "s"}.` : result.message ?? "No additional illustrations needed."); } }); } },
+          { label: "Remove Composer illustrations", disabled: compose.isPending || removeFigures.isPending || restoreFigures.isPending, onSelect: () => { void removeFigures.run(page.id).then((result) => { if (result.ok) { setComposerMessage("Composer illustrations removed."); setRemovedRunId(result.previousRunId); } }); } },
           ...(page.entity_id ? [{ label: improve.isPending ? "Structuring article…" : "Improve article", disabled: improve.isPending || expand.isPending, onSelect: () => { void improve.run(page.id); } }] : []),
           ...((page.context_entity_id ?? page.entity_id) ? [{ label: expand.isPending ? "Expanding knowledge…" : "Expand knowledge", disabled: expand.isPending || improve.isPending, onSelect: () => { void expand.run(page.id); } }] : []),
           { label: "Add section", render: (close) => <AddSectionForm page={page} onDone={close} /> },
@@ -178,6 +203,9 @@ function PageActions({ page }: { page: Tables<"pages"> }) {
       </div>
       {expand.error ? <p role="alert" className="mt-2 max-w-sm text-panel">{expand.error}</p> : null}
       {improve.error ? <p role="alert" className="mt-2 max-w-sm text-panel">{improve.error}</p> : null}
+      {compose.error || removeFigures.error || restoreFigures.error ? <p role="alert" className="mt-2 max-w-sm text-panel">{compose.error ?? removeFigures.error ?? restoreFigures.error}</p> : null}
+      {composerMessage ? <p role="status" className="mt-2 max-w-sm text-panel">{composerMessage}</p> : null}
+      {removedRunId ? <button type="button" className="text-sm text-link hover:underline" disabled={restoreFigures.isPending || compose.isPending} onClick={() => { void restoreFigures.run(page.id, removedRunId).then((result) => { if (result.ok) { setRemovedRunId(null); setComposerMessage("Composer illustrations restored."); } }); }}>Undo removal</button> : null}
     </div>
   );
 }

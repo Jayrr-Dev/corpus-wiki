@@ -1,4 +1,9 @@
 import "server-only";
+import { OPENROUTER_BASE_URL, isOpenRouterModel, openRouterModelId } from "./openrouterConfig";
+import { withAiActivity } from "./inactivityTimeout";
+import { withRequestSlot } from "@/lib/processing/requests";
+import { setTimeout as delay } from "node:timers/promises";
+import { processingMetric } from "@/lib/processing/metrics";
 
 import type { z } from "zod";
 import { type AiCallLogger, type AiCallStatus, type CompletionUsage, logSafely, usageTokens } from "./callLog";
@@ -67,6 +72,13 @@ export type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
 // AN ANSWER CUT OFF BY THE TOKEN BUDGET: the one failure a lower reasoning effort can fix
 export class AnswerCutOffError extends Error {}
 
+export class InvalidStructuredAnswerError extends Error {
+  constructor(readonly details: string, readonly tokensIn: number | null, readonly tokensOut: number | null) {
+    super("The AI returned invalid claim fields. Retry processing; no knowledge from this answer was saved.");
+    this.name = "InvalidStructuredAnswerError";
+  }
+}
+
 // A truncated response must never be accepted, even if its JSON happens to parse. Carries
 // the usage so a caller that splits its input (reconciliation batches) can still count it.
 export class CompletionLengthError extends AnswerCutOffError {
@@ -131,7 +143,7 @@ export function addCompletionUsage(total: CompletionUsage | undefined, round: Co
 
 // The model AI calls use: the one picked on /settings, else AI_MODEL, else the Nemotron default
 export function resolveModel(chosenModel: string | null | undefined, env: NodeJS.ProcessEnv = process.env): string {
-  return chosenModel || env.AI_MODEL || DEFAULT_AI_MODEL;
+  return chosenModel || env.AI_MODEL || (!env.NEBIUS_API_KEY && env.OPENROUTER_API_KEY ? "openrouter/openai/gpt-oss-120b" : DEFAULT_AI_MODEL);
 }
 
 // True for a "cerebras/<id>" pick, which runs on Cerebras instead of Token Factory
@@ -145,7 +157,7 @@ export function tokenFactoryFromEnv(
   chosen: string | null | ModelChoice = null,
   logCall?: AiCallLogger,
 ): TokenFactorySettings | null {
-  if (!env.NEBIUS_API_KEY) return null;
+  if (!env.NEBIUS_API_KEY && !env.OPENROUTER_API_KEY && !env.ANTHROPIC_API_KEY && !env.CEREBRAS_API_KEY) return null;
   const choice = typeof chosen === "object" && chosen !== null ? chosen : { model: chosen, roleModels: {} };
   const roles = Object.entries(choice.roleModels).filter(([, model]) => model);
   const roleRoutes = roles.length ? Object.fromEntries(roles.map(([role, model]) => [role, routeModel(env, model)])) : undefined;
@@ -156,11 +168,18 @@ export function tokenFactoryFromEnv(
 }
 
 export function routeModel(env: NodeJS.ProcessEnv, model: string): ModelRoute {
+  if (isOpenRouterModel(model)) {
+    if (!env.OPENROUTER_API_KEY) throw new Error(`${model} is picked in Settings, but OPENROUTER_API_KEY is not set in the server env.`);
+    return { apiKey: env.OPENROUTER_API_KEY, model, baseUrl: OPENROUTER_BASE_URL };
+  }
   if (isAnthropicModel(model)) {
     if (!env.ANTHROPIC_API_KEY) throw new Error(`${model} is picked in Settings, but ANTHROPIC_API_KEY is not set in the server env.`);
     return { apiKey: env.ANTHROPIC_API_KEY, model };
   }
-  if (!isCerebrasModel(model)) return { apiKey: env.NEBIUS_API_KEY!, model };
+  if (!isCerebrasModel(model)) {
+    if (!env.NEBIUS_API_KEY) throw new Error(`${model} needs NEBIUS_API_KEY. Choose a connected provider's model in Settings.`);
+    return { apiKey: env.NEBIUS_API_KEY, model };
+  }
   if (!env.CEREBRAS_API_KEY) throw new Error(`${model} is picked in Settings, but CEREBRAS_API_KEY is not set in the server env.`);
   return { apiKey: env.CEREBRAS_API_KEY, model, baseUrl: CEREBRAS_BASE_URL };
 }
@@ -176,6 +195,8 @@ export function settingsForCall(settings: TokenFactorySettings, name: string): T
 
 // `subject` names what the call is about (a file title, a section) for the usage log
 type ChatJsonRequest<S extends z.ZodType> = {
+  // Extraction may regenerate one invalid draft, before any changes are committed.
+  retryInvalidOutput?: boolean;
   signal?: AbortSignal;
   name: string;
   subject?: string;
@@ -215,9 +236,19 @@ async function chatJsonAnswer<S extends z.ZodType>(settings: TokenFactorySetting
   const startingEfforts = REASONING_EFFORTS.slice(REASONING_EFFORTS.indexOf(start));
   const efforts = isNemotron3(settings.model || DEFAULT_AI_MODEL) ? startingEfforts.slice(0, 1) : startingEfforts;
   let cutOff: AnswerCutOffError | null = null;
+  let invalid: InvalidStructuredAnswerError | null = null;
   for (const effort of efforts) {
     try {
-      return await chatJsonOnce(settings, request, effort);
+      let answer: ChatJsonResult<z.infer<S>>;
+      try {
+        answer = await chatJsonOnce(settings, request, effort);
+      } catch (error) {
+        if (!(error instanceof InvalidStructuredAnswerError) || !request.retryInvalidOutput || invalid || request.tools?.length) throw error;
+        invalid = error;
+        request = { ...request, messages: [...request.messages, { role: "user", content: `Your previous answer failed schema validation. Generate the complete answer again from the original evidence. Use only the exact enum values in the schema; do not invent or translate them. Validation errors: ${error.details}` }] };
+        answer = await chatJsonOnce(settings, request, effort);
+      }
+      return invalid ? { ...answer, ...addUsage(answer, invalid) } : answer;
     } catch (error) {
       if (!(error instanceof AnswerCutOffError)) throw error;
       cutOff = error;
@@ -253,7 +284,7 @@ async function chatJsonOnce<S extends z.ZodType>(
     await log("ok", null);
     return { value, model: body.model ?? model, tokensIn: body.usage?.prompt_tokens ?? null, tokensOut: body.usage?.completion_tokens ?? null };
   } catch (error) {
-    await log(error instanceof AnswerCutOffError ? "cut_off" : "error", error instanceof Error ? error.message : String(error));
+    await log(error instanceof AnswerCutOffError ? "cut_off" : "error", error instanceof InvalidStructuredAnswerError ? `${error.message} ${error.details}` : error instanceof Error ? error.message : String(error));
     throw error;
   }
 }
@@ -285,7 +316,7 @@ async function requestCompletion(
   if (isAnthropicModel(model)) {
     return requestClaudeCompletion({ apiKey: settings.apiKey, model, messages, jsonSchema: request.jsonSchema, maxTokens, effort, signal, onStream: request.onStream, tools: request.tools });
   }
-  const provider = cerebras ? "Cerebras" : "Token Factory";
+  const provider = isOpenRouterModel(model) ? "OpenRouter" : cerebras ? "Cerebras" : "Token Factory";
   let tools = request.tools?.length ? request.tools : undefined;
   let conversation: WireMessage[] = cerebras ? oneLeadingSystemMessage(messages) : messages;
   let usage: CompletionUsage | undefined;
@@ -293,16 +324,16 @@ async function requestCompletion(
   // (measured on GLM-5.3-Flash: same request, tool call only without it). So a round that offers
   // tools runs unconstrained, with the schema in the system message; an answer that misses the
   // schema is asked once more with the format on and the tools closed.
-  const post = (toolChoice: "auto" | "none" | null) => postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
+  const post = (toolChoice: "auto" | "none" | null, requestSignal = signal) => postCompletion(new URL("chat/completions", settings.baseUrl ?? TOKEN_FACTORY_BASE_URL), {
     method: "POST",
-    signal,
+    signal: requestSignal,
     headers: { Authorization: `Bearer ${settings.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       // Cerebras knows its models without the "cerebras/" prefix the picker adds
-      model: cerebras ? model.slice(CEREBRAS_MODEL_PREFIX.length) : model,
+      model: isOpenRouterModel(model) ? openRouterModelId(model) : cerebras ? model.slice(CEREBRAS_MODEL_PREFIX.length) : model,
       messages: conversation,
       temperature: 0,
-      ...reasoningFields(model, effort),
+      ...(isOpenRouterModel(model) ? { reasoning: { effort } } : reasoningFields(model, effort)),
       max_tokens: maxTokens,
       ...(toolChoice === "auto" ? {} : { response_format: { type: "json_schema", json_schema: { name: request.name, schema: request.jsonSchema, strict: true } } }),
       ...(tools && toolChoice ? { tools: tools.map((tool) => ({ type: "function", function: { name: tool.name, description: tool.description, parameters: tool.parameters } })), tool_choice: toolChoice } : {}),
@@ -316,16 +347,18 @@ async function requestCompletion(
     let offering = !!tools && !toolsClosed && toolRounds < MAX_TOOL_ROUNDS;
     // Once tools were used they stay listed (the history refers to them) but cannot be called
     const toolChoice = offering ? "auto" : tools && toolRounds > 0 ? "none" : null;
-    let response = await post(toolChoice);
+    const body = await withRequestSlot("chat", new URL(settings.baseUrl ?? TOKEN_FACTORY_BASE_URL).host, settings.apiKey, (slotSignal) => withAiActivity(async (requestSignal, activity) => {
+    let response = await post(toolChoice, requestSignal);
     // A model or provider without tool calling answers without the tools instead of failing the call
     if (!response.ok && offering && toolRounds === 0 && (response.status === 400 || response.status === 422)) {
       console.warn(`${provider} rejected tools for ${model}; answering without them: ${(await response.text()).slice(0, 200)}`);
       tools = undefined;
       offering = false;
-      response = await post(null);
+      response = await post(null, requestSignal);
     }
     if (!response.ok) throw new Error(`${provider} ${response.status}: ${(await response.text()).slice(0, 300)}`);
-    const body = request.onStream ? await readCompletionStream(response, request.onStream) : ((await response.json()) as CompletionResponse);
+    return request.onStream ? await readCompletionStream(response, request.onStream, activity) : ((await response.json()) as CompletionResponse);
+    }, slotSignal), signal);
     usage = addCompletionUsage(usage, body.usage);
     const choice = body.choices?.[0];
     const calls = choice?.message?.tool_calls ?? [];
@@ -378,7 +411,7 @@ type StreamChunk = {
 
 // STREAMED ANSWER: reads the server-sent events into the same shape a plain completion has,
 // so parseContent checks a streamed answer exactly like any other
-export async function readCompletionStream(response: Response, onStream: (partial: StreamedSoFar) => void): Promise<CompletionResponse> {
+export async function readCompletionStream(response: Response, onStream: (partial: StreamedSoFar) => void, activity?: () => void): Promise<CompletionResponse> {
   if (!response.body) throw new Error("The AI provider sent an empty stream.");
   const decoder = new TextDecoder();
   const reader = response.body.getReader();
@@ -402,6 +435,7 @@ export async function readCompletionStream(response: Response, onStream: (partia
     if (choice.finish_reason) finishReason = choice.finish_reason;
     const delta = choice.delta;
     if (!delta) return;
+    if (delta.content || delta.reasoning_content || delta.reasoning || delta.refusal || delta.tool_calls?.length) activity?.();
     refusal += delta.refusal ?? "";
     for (const piece of delta.tool_calls ?? []) {
       const call = (toolCalls[piece.index] ??= { id: "", type: "function", function: { name: "", arguments: "" } });
@@ -438,7 +472,7 @@ export function parseContent<S extends z.ZodType>(body: CompletionResponse, sche
   const content = choice?.message?.content?.trim();
   if (!content) throw new Error(`The model returned no answer (finish reason: ${choice?.finish_reason ?? "unknown"}).`);
   const parsed = schema.safeParse(parseJson(content));
-  if (!parsed.success) throw new Error(`The model's answer did not match the expected shape: ${parsed.error.message}`);
+  if (!parsed.success) throw new InvalidStructuredAnswerError(parsed.error.message, body.usage?.prompt_tokens ?? null, body.usage?.completion_tokens ?? null);
   return parsed.data;
 }
 
@@ -461,7 +495,10 @@ const MAX_THROTTLE_WAIT_S = 60;
 // reset (x-ratelimit-reset-*-minute), else a backoff long enough to cross a minute window
 export function throttleWaitSeconds(headers: Headers, attempt: number): number {
   const retryAfter = headers.get("retry-after");
-  if (retryAfter !== null) return Number(retryAfter);
+  if (retryAfter !== null) {
+    const seconds = Number(retryAfter);
+    return Number.isFinite(seconds) ? seconds : Math.ceil((Date.parse(retryAfter) - Date.now()) / 1000);
+  }
   const resets = ["x-ratelimit-reset-tokens-minute", "x-ratelimit-reset-requests-minute"]
     .map((name) => Number.parseFloat(headers.get(name) ?? ""))
     .filter((seconds) => Number.isFinite(seconds) && seconds >= 0);
@@ -480,11 +517,13 @@ async function postCompletion(url: URL, init: RequestInit): Promise<Response> {
       }
       throw error;
     }
-    if (response.status !== 429 || attempt >= THROTTLE_RETRIES) return response;
-    const seconds = throttleWaitSeconds(response.headers, attempt);
+    const throttled = response.status === 429;
+    if ((!throttled && ![502, 503, 504].includes(response.status)) || attempt >= (throttled ? THROTTLE_RETRIES : 2)) return response;
+    const seconds = throttled ? throttleWaitSeconds(response.headers, attempt) : 0.25 * 2 ** attempt;
     // Longer or unsupported delays are reported instead of tying up a server action.
     if (!Number.isFinite(seconds) || seconds < 0 || seconds > MAX_THROTTLE_WAIT_S) return response;
     await response.body?.cancel();
-    await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+    processingMetric(throttled ? "provider.throttled" : "provider.retry");
+    await delay(seconds * 1000, undefined, { signal: init.signal ?? undefined });
   }
 }

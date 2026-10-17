@@ -21,7 +21,8 @@ export function assertStyleCoverage(input: SectionReviseInput, revision: Section
       if (id) covered.add(id);
     }
   }
-  const missing = input.units.filter((unit) => !covered.has(unit.unitId));
+  const omitted = new Set(revision.omittedUnitIds ?? []);
+  const missing = input.units.filter((unit) => !covered.has(unit.unitId) && !omitted.has(unit.unitId));
   if (missing.length) throw new Error(`Style rewrite omitted ${missing.length} claims; this section was not changed.`);
 }
 
@@ -36,6 +37,7 @@ export async function refreshSectionStyle(db: DbRpc, writer: SectionWriter, sect
     },
   };
   // A build already running ignores this note, so say so instead of reporting an update
+  await db.call("resume_section_build", { p_section_id: sectionId });
   const finished = await rebuildSection(db, refreshWriter, sectionId, null);
   if (!finished) throw new Error("This section is being rewritten right now. Try the update again when it finishes.");
 }

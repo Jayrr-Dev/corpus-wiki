@@ -60,7 +60,7 @@ export function DecisionsTable() {
     const actionByChange = new Map([...(reviews.data ?? []), ...(archives.data ?? [])].map((action) => [action.change_set_id, action]));
     const decisions: DecisionRow[] = (changes.data ?? []).flatMap((change) => {
       const description = describeChange(contexts.data?.get(change.id) ?? EMPTY_CONTEXT(change.id), change.summary);
-      const isDomainReview = jsonObject(jsonObject(change.actor_attribution).proposedBy).role === "domain_steward";
+      const isDomainReview = ["domain_steward", "domain_decider"].includes(String(jsonObject(jsonObject(change.actor_attribution).proposedBy).role));
       if (description.type !== "source_review" && description.type !== "source_lifecycle" && !isDomainReview) return [];
       const recorded = jsonObject(change.actor_attribution);
       const decisionAction = actionByChange.get(change.id);

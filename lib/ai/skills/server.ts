@@ -25,7 +25,7 @@ export function resolveStageSkills(library:SkillLibrary):StageSkills {
     if (!assignment) return [id,defaultSkill(id)];
     if (!assignment.skill_id) return [id,null];
     const skill=byId.get(assignment.skill_id);
-    if (!skill) throw new Error(`The assigned skill for ${id} is unavailable. Choose another skill in Skills.`);
+    if (!skill) throw new Error(`The assigned skill for ${id} is unavailable. Choose another skill in Workflow.`);
     return [id,{id:skill.id,name:skill.name,instructions:skill.instructions,version:skill.version}];
   }));
 }

@@ -38,7 +38,7 @@ export async function startUploadFromFile(input: { file: File; sourceDate: strin
 }
 
 // STEP 1 FOR ANY BYTES: a form's file, or a file the browser put in Storage itself
-async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string; browserType: string; sourceDate: string }): Promise<StartUploadResult> {
+async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string; browserType: string; sourceDate: string; replacement?: boolean }): Promise<StartUploadResult> {
   const { bytes, fileName, sourceDate } = input;
   const format = requireFormat(fileName, input.browserType);
   if (!DATE_ONLY.test(sourceDate)) throw new Error("Give the file's date as YYYY-MM-DD.");
@@ -47,13 +47,17 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
   // A file seen before is skipped before an image or video costs a model call to read
   const known = await findSourceByHash(hash);
   if (known) return { kind: "skipped", sourceId: known };
+  if (!input.replacement) {
+    const existing = await db.call<string | null>("find_uploaded_file", { p_title: fileName });
+    if (existing) return { kind: "skipped", sourceId: existing };
+  }
   const mimeType = storedMimeType(format, fileName, input.browserType);
   const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, storeFigure: storeSourceFile });
   const passages = splitIntoPassages(pages);
   if (passages.length === 0) throw new Error(NOTHING_READ[format.id] ?? "No text was found in this file (is it a scan?).");
   const storagePath = await storeSourceFile(`${hash}${extensionOf(fileName, format)}`, bytes, mimeType);
   const pageCount = pages.some((page) => page.page !== null) ? pages.length : null;
-  const started = await recordUpload(db, { title: fileName, mimeType, sourceDate: `${sourceDate}T00:00:00Z`, hash, storagePath, passages, byteSize: bytes.byteLength, pageCount });
+  const started = await recordUpload(db, { title: fileName, mimeType, sourceDate: `${sourceDate}T00:00:00Z`, hash, storagePath, passages, byteSize: bytes.byteLength, pageCount, rejectSameName: !input.replacement });
   // Media the file brought in (the file itself, or pictures inside it) goes on the Assets page
   if (mediaKindOf(mimeType) || pages.some((page) => page.figure)) after(() => describeNewAssets(db));
   return started;
@@ -145,11 +149,25 @@ export async function processExternalEvent(eventId: string, scope: { article: st
   if (approval.reverted_at || approval.outcome !== "approved" || approval.stage !== "source" || !approval.source_id || approval.source_id !== event.source_id || context.article !== scope.article || context.section !== scope.section) {
     throw new Error("This external source has not been independently approved for this article and section.");
   }
-  const { data: domains, error } = await getAdminSupabase().from("domains").select("path,context_entity_id").is("retired_at", null);
+  // A company Overview can be approved from its article as well as its stakeholder
+  // card. Both need the same reference home, outside the organization's policies.
+  let fallbackDomainPath: string | undefined;
+  if (["overview", "history"].includes(scope.section.toLowerCase())) {
+    const name = scope.article.replace(/^Stakeholder: /, "");
+    const { data: entity, error: entityError } = await client.from("entities").select("id").eq("name", name).is("retired_at", null).limit(1).maybeSingle();
+    if (entityError) throw new Error(entityError.message);
+    if (entity) {
+      const { ensureStakeholdersTopic, STAKEHOLDERS_TOPIC } = await import("@/lib/knowledge/stakeholderExternal");
+      await ensureStakeholdersTopic(client);
+      fallbackDomainPath = STAKEHOLDERS_TOPIC;
+      scope = { ...scope, note: `${scope.note}\nFile approved company overview facts under the existing "${STAKEHOLDERS_TOPIC}" reference topic, never under the organization's policy topics.` };
+    }
+  }
+  const { data: domains, error } = await client.from("domains").select("path,context_entity_id").is("retired_at", null);
   if (error) throw new Error(error.message);
   const organizationPaths = (domains ?? []).filter((domain) => domain.context_entity_id).map((domain) => domain.path);
   const referenceDomainPaths = (domains ?? []).filter((domain) => !domain.context_entity_id && !organizationPaths.some((path) => domain.path === path || domain.path.startsWith(`${path}/`))).map((domain) => domain.path);
-  return reconcileExternalUpload(await getServerDeps(), eventId, { ...scope, referenceDomainPaths });
+  return reconcileExternalUpload(await getServerDeps(), eventId, { ...scope, referenceDomainPaths, fallbackDomainPath });
 }
 
 // The file's format, or a clear message naming the formats that work
@@ -223,7 +241,7 @@ export async function startSourceRerun(sourceId: string): Promise<Extract<StartU
 // REPLACE STEP 1: the newer file is stored like any upload and the old one is archived,
 // pointing at it; processUploadEvent runs on the returned event next
 export async function replaceSourceWithFile(input: { sourceId: string; file: File; sourceDate: string }): Promise<Extract<StartUploadResult, { kind: "started" }>> {
-  const started = await startUploadFromFile(input);
+  const started = await startUploadFromBytes({ bytes: new Uint8Array(await input.file.arrayBuffer()), fileName: input.file.name, browserType: input.file.type, sourceDate: input.sourceDate, replacement: true });
   if (started.kind === "skipped") {
     throw new Error(started.sourceId === input.sourceId ? "That is the same file that is already stored." : "That exact file is already stored as another source.");
   }

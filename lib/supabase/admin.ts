@@ -3,6 +3,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { currentActor } from "@/lib/auth/currentPerson";
 import type { Database } from "@/lib/database/types";
+import { fetchDatabaseRead } from "@/lib/db/readFetch";
 
 // ADMIN CLIENT (SECRET KEY): bypasses RLS. Server code only: the `server-only`
 // import makes any client-side import fail the build, so the key never reaches a browser.
@@ -39,7 +40,7 @@ async function fetchAsPerson(input: RequestInfo | URL, init?: RequestInit): Prom
   const url = String(input instanceof Request ? input.url : input);
   const timeout = url.includes("/storage/v1/") ? null : AbortSignal.timeout(DATABASE_CALL_TIMEOUT_MS);
   const signal = timeout && init?.signal ? AbortSignal.any([init.signal, timeout]) : (timeout ?? init?.signal);
-  return fetch(input, { ...init, headers, ...(signal ? { signal } : {}) });
+  return fetchDatabaseRead(input, { ...init, headers, ...(signal ? { signal } : {}) });
 }
 
 // HOW LONG ONE DATABASE CALL MAY TAKE (the slowest functions, a commit or a hierarchy pass, take seconds)

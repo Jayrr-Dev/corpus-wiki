@@ -17,7 +17,7 @@ import { reuseDomainPaths } from "@/lib/domains/reusePaths";
 // =====================================================================
 
 // PROMPT VERSION: recorded on the ChangeSet
-export const PLACE_TOPICS_PROMPT_VERSION = "place-topics-v1";
+export const PLACE_TOPICS_PROMPT_VERSION = "place-topics-fuzzy-v2";
 
 // CLAIMS PER CALL: a long file is filed in slices; each slice sees the paths the earlier ones chose
 export const PLACE_TOPICS_BATCH = 80;

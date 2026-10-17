@@ -46,7 +46,7 @@ export function UploadStatus({ phase }: { phase: UploadPhase }) {
   if (phase.kind === "skipped") {
     return (
       <p className="text-panel text-muted-foreground">
-        Already uploaded. <TextLink href={`/sources/${phase.sourceId}`}>Open the source</TextLink>
+        This file or a file with the same name is already uploaded. <TextLink href={`/sources/${phase.sourceId}`}>Open the source</TextLink> to resume unfinished work or replace it with an updated version.
       </p>
     );
   }

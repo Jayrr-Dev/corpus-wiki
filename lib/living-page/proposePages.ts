@@ -36,7 +36,7 @@ export type PageCandidate = {
 };
 
 // Proposes and commits the pages and sections an event calls for; returns how many actions applied
-export async function proposePages(db: DbRpc, eventId: string, planner?: PagePlanner): Promise<number> {
+export async function proposePages(db: DbRpc, eventId: string, planner?: PagePlanner, operationKey = "pages:propose"): Promise<number> {
   const candidates = await db.call<PageCandidate[]>("page_candidates", { p_event_id: eventId });
   const { actions, tokensIn, tokensOut } = planner ? await planner(candidates) : { actions: pageProposalActions(candidates), tokensIn: null, tokensOut: null };
   if (actions.length === 0) return 0;
@@ -45,8 +45,10 @@ export async function proposePages(db: DbRpc, eventId: string, planner?: PagePla
     actions,
     trace: { modelVersion: planner?.model ?? null, promptVersion: planner?.promptVersion ?? null, tokensIn, tokensOut },
   };
-  const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai", operationKey: "pages:propose" }, draft);
-  return (await commitChangeSet(db, changeSetId)).applied;
+  const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai", operationKey }, draft);
+  const result = await commitChangeSet(db, changeSetId);
+  if (result.status === "rejected" || result.rejected > 0) throw new Error(`Page planning was not fully applied. Review change set ${changeSetId} in Changes.`);
+  return result.applied;
 }
 
 // PURE: the create_page / create_section actions for a list of candidates

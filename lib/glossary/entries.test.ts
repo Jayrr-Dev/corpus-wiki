@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { dictionaryAnswerSchema, glossaryLetter, glossaryScopeKey, mergeGlossaryEntries, type GlossaryEntry } from "./entries";
+import { dictionaryAnswerSchema, dictionaryResponseSchema, glossaryLetter, glossaryScopeKey, mergeGlossaryEntries, type GlossaryEntry } from "./entries";
+import { parseContent } from "../ai/chat";
+import { z } from "zod";
 
 function entry(values: Partial<GlossaryEntry> = {}): GlossaryEntry {
   return { term: "PPE", expansion: "Personal Protective Equipment", aliases: [], category: "acronym",
@@ -8,6 +10,24 @@ function entry(values: Partial<GlossaryEntry> = {}): GlossaryEntry {
 }
 
 describe("generated dictionary entries", () => {
+  it("accepts category label variations and preserves the whole batch through response validation", () => {
+    const labels = ["general term", "ACRONYM", "technical_term", "uncommon-word", "jargon", "regulatory term"];
+    const entries = labels.map((category, i) => ({ ...entry({ term: `Term ${i}` }), category, citations: ["K1"] }));
+    const result = parseContent({ choices: [{ message: { content: JSON.stringify({ entries }) }, finish_reason: "stop" }] }, dictionaryResponseSchema);
+    expect(result.entries.map((item) => item.category)).toEqual(["general term", "acronym", "technical term", "uncommon word", "jargon", "general term"]);
+    expect(result.entries.map((item) => item.definition)).toEqual(entries.map((item) => item.definition));
+    expect(result.entries.every((item) => item.citations[0] === "K1")).toBe(true);
+    const wireSchema = z.toJSONSchema(dictionaryAnswerSchema);
+    expect(JSON.stringify(wireSchema)).toContain('"enum":["general term","acronym","technical term","jargon","uncommon word"]');
+    expect(dictionaryAnswerSchema.safeParse({ entries }).success).toBe(false);
+  });
+  it("still rejects missing categories, malformed fields, and unsupported entries", () => {
+    for (const category of [undefined, null, 42, {}, "", "   "]) {
+      expect(dictionaryResponseSchema.safeParse({ entries: [{ ...entry(), category, citations: ["K1"] }] }).success).toBe(false);
+    }
+    expect(dictionaryResponseSchema.safeParse({ entries: [{ ...entry(), category: "regulatory term", citations: [] }] }).success).toBe(false);
+    expect(dictionaryResponseSchema.safeParse({ entries: [{ ...entry(), category: "regulatory term", definition: "", citations: ["K1"] }] }).success).toBe(false);
+  });
   it("unifies an evidenced acronym and full name while preserving their provenance", () => {
     const result = mergeGlossaryEntries([entry(), entry({ term: "personal protective equipment", expansion: null,
       citations: [{ unitId: "u2", revisionId: "r2", sourceId: "s2", sourceTitle: "Training guide" }] })]);
