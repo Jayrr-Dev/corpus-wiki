@@ -9,7 +9,7 @@ import { isAnthropicModel, requestClaudeCompletion } from "./anthropic";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
 import { roleForPurpose } from "./roles";
 import { isNemotron3 } from "./effortSupport";
-import { memoryHint, memoryTools, openRoleMemory } from "./memory";
+import { memoryNotes, openRoleMemory } from "./memory";
 import type { DbRpc } from "@/lib/db/rpc";
 
 // =====================================================================
@@ -201,16 +201,13 @@ export { isNemotron3 } from "./effortSupport";
 // Sends the messages and returns the parsed, validated JSON answer. An answer cut off by
 // the token budget is asked again at the next lower reasoning effort (for models that
 // reason; for the rest a retry would only repeat the cut-off); other errors stop at once.
-// A call with a role is offered that role's memory as optional tools (lib/ai/memory.ts)
+// A call with a role sees that role's notes in its system message (lib/ai/memory.ts), so it stays one request
 export async function chatJson<S extends z.ZodType>(workspace: TokenFactorySettings, request: ChatJsonRequest<S>): Promise<ChatJsonResult<z.infer<S>>> {
   const settings = settingsForCall(workspace, request.name);
   const memory = await openRoleMemory(settings.memoryDb, request.name);
-  if (!memory) return chatJsonAnswer(settings, request);
-  return chatJsonAnswer(settings, {
-    ...request,
-    tools: [...(request.tools ?? []), ...memoryTools(memory, request.name)],
-    messages: [{ role: "system", content: memoryHint(memory) }, ...request.messages],
-  });
+  const notes = memory ? memoryNotes(memory) : null;
+  if (!notes) return chatJsonAnswer(settings, request);
+  return chatJsonAnswer(settings, { ...request, messages: [{ role: "system", content: notes }, ...request.messages] });
 }
 
 async function chatJsonAnswer<S extends z.ZodType>(settings: TokenFactorySettings, request: ChatJsonRequest<S>): Promise<ChatJsonResult<z.infer<S>>> {
@@ -454,8 +451,24 @@ function parseJson(content: string): unknown {
   }
 }
 
-// Nebius documents Retry-After for throttling. Never retry malformed requests,
-// authentication failures, truncation or validation failures at this layer.
+// THROTTLING: Cerebras limits tokens per minute (150K), so a page review's parallel parts can
+// trip it for up to a minute; earlier retries after 1s and 2s always failed again
+const THROTTLE_RETRIES = 4;
+const THROTTLE_BACKOFF_S = [5, 15, 30, 60];
+const MAX_THROTTLE_WAIT_S = 60;
+
+// Seconds to wait before retrying a 429: Retry-After (Nebius), else the provider's per-minute
+// reset (x-ratelimit-reset-*-minute), else a backoff long enough to cross a minute window
+export function throttleWaitSeconds(headers: Headers, attempt: number): number {
+  const retryAfter = headers.get("retry-after");
+  if (retryAfter !== null) return Number(retryAfter);
+  const resets = ["x-ratelimit-reset-tokens-minute", "x-ratelimit-reset-requests-minute"]
+    .map((name) => Number.parseFloat(headers.get(name) ?? ""))
+    .filter((seconds) => Number.isFinite(seconds) && seconds >= 0);
+  return resets.length ? Math.ceil(Math.max(...resets)) : THROTTLE_BACKOFF_S[Math.min(attempt, THROTTLE_BACKOFF_S.length - 1)]!;
+}
+
+// Never retry malformed requests, authentication failures, truncation or validation failures at this layer.
 async function postCompletion(url: URL, init: RequestInit): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     let response: Response;
@@ -467,11 +480,10 @@ async function postCompletion(url: URL, init: RequestInit): Promise<Response> {
       }
       throw error;
     }
-    if (response.status !== 429 || attempt >= 2) return response;
-    const retryAfter = response.headers.get("retry-after");
-    const seconds = retryAfter === null ? 2 ** attempt : Number(retryAfter);
-    // Long or unsupported delays are reported instead of tying up a server action.
-    if (!Number.isFinite(seconds) || seconds < 0 || seconds > 30) return response;
+    if (response.status !== 429 || attempt >= THROTTLE_RETRIES) return response;
+    const seconds = throttleWaitSeconds(response.headers, attempt);
+    // Longer or unsupported delays are reported instead of tying up a server action.
+    if (!Number.isFinite(seconds) || seconds < 0 || seconds > MAX_THROTTLE_WAIT_S) return response;
     await response.body?.cancel();
     await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
   }
