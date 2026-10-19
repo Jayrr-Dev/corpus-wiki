@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
 const synthetic = process.argv.includes("--synthetic");
-const files = ["test/performance/processing.bench.test.ts", ...(synthetic ? [
+const files = ["test/performance/processing.bench.test.ts", "test/performance/domainFiling.bench.test.ts", ...(synthetic ? [
   "test/performance/syntheticUpload.test.ts", "lib/living-page/rebuildAfterEvent.test.ts", "lib/living-page/rebuildSection.test.ts", "lib/ingest/workflow.test.ts", "lib/glossary/generate.test.ts",
   "lib/knowledge/entityProfiles.test.ts", "lib/knowledge/entityWeb.test.ts", "lib/knowledge/embeddingStore.test.ts",
   "lib/ai/embeddings.test.ts", "lib/processing/concurrency.test.ts", "lib/processing/recovery.test.ts", "test/db/processingRecovery.test.ts",

@@ -45,7 +45,8 @@ it("packs unfinished small groups without repeating an older accepted review or 
    expect(payload.claims.some((c:{ref:string})=>c.ref==="C1")).toBe(false);
    expect(payload.context.sourceEvidence).toHaveLength(payload.claims.length);
    expect(payload.filePlan.groups).toHaveLength(84);
-   expect(payload.previousPlacements.some((c:{ref:string})=>c.ref==="C1")).toBe(true);
+   expect(payload.previousPlacements).toBeUndefined();
+   expect(payload.filedDestinations).toEqual([expect.objectContaining({path:"Upload test/Permits"})]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[payload.scopePath==="Upload test"?"Upload test/Permits":payload.scopePath]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
@@ -264,9 +265,9 @@ it("keeps whole-file context and stable references across an 81-unit group",asyn
    value={groups:[{scopePath:"Upload test",subject:"Permit rules",reason:"Permit conditions",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
    const payload=JSON.parse(request.messages[1]!.content as string);
-   expect(payload.filePlan.overview).toHaveLength(81);
+   expect(payload.filePlan.groups).toEqual([{scopePath:"Upload test",subject:"Permit rules",reason:"Permit conditions",claims:81}]);
    batchRefs.push(payload.claims.map((c:{ref:string})=>c.ref));
-   if(batchRefs.length===2)expect(payload.previousPlacements).toHaveLength(80);
+   if(batchRefs.length===2)expect(payload.filedDestinations).toEqual([expect.objectContaining({path:"Upload test/Permits",claims:80})]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
@@ -295,7 +296,7 @@ it("checkpoints bounded planning steps and resumes without repeating a completed
    value={groups:[{scopePath:"Upload test",subject:"Permit conditions",reason:"Permit conditions in the source",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
    const payload=JSON.parse(request.messages[1]!.content as string);
-   expect(payload.filePlan.overview).toHaveLength(161);
+   expect(payload.filePlan.groups.reduce((n:number,g:{claims:number})=>n+g.claims,0)).toBe(161);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
@@ -326,8 +327,7 @@ it("resumes independently reviewed batches with full current and cumulative dest
    placements.push(payload.claims.length);
    expect(payload.claims.every((c:{content:string})=>c.content.includes("Permit condition"))).toBe(true);
    expect(payload.context.sourceEvidence).toHaveLength(payload.claims.length);
-   expect(payload.filePlan.overview).toHaveLength(81);
-   expect(payload.filePlan.overview.every((c:object)=>!Object.hasOwn(c,"content"))).toBe(true);
+   expect(payload.filePlan.groups.every((g:object)=>!Object.hasOwn(g,"refs"))).toBe(true);
    if(payload.claims.length===1&&fail){fail=false;throw new Error("Placement connection interrupted");}
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
@@ -336,7 +336,8 @@ it("resumes independently reviewed batches with full current and cumulative dest
    expect(typeof payload.input).toBe("object");
    if(payload.proposal.length===1) {
     expect(payload.parents[0].refs).toEqual(["C81"]);
-    expect(payload.previousDestinationClaims).toHaveLength(80);
+    expect(payload.previousDestinationClaims).toHaveLength(6);
+    expect(payload.input.filedDestinations).toEqual([expect.objectContaining({path:"Upload test/Permits",claims:80})]);
     expect(payload.previousDestinationClaims.every((c:{content:string})=>c.content.includes("Permit condition"))).toBe(true);
    }
    value={approved:true,issues:[],parents:payload.parents.map((p:object)=>({...p,reason:"Permit conditions fit this destination."}))};

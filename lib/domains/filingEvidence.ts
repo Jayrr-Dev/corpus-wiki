@@ -40,3 +40,24 @@ export function compactPreviousPlacements(placements: { ref: string; domainPaths
   const compact={previousPlacements,previousDomains:[...paths].map(([path,ref])=>({ref,path}))};
   return JSON.stringify(compact).length<JSON.stringify({previousPlacements:placements}).length ? compact : {previousPlacements:placements};
 }
+
+// EARLIER BATCHES' FILING, one entry per destination: its path, how many claims went there and
+// a few of their titles. Listing every earlier claim grew each request by the whole upload.
+export function filedDestinations(placements: { title: string; domainPaths: string[] }[], examples = 3) {
+  const titles = new Map<string, string[]>();
+  for (const placement of placements) for (const path of placement.domainPaths) titles.set(path, [...titles.get(path) ?? [], placement.title]);
+  return [...titles].sort(([a], [b]) => a.localeCompare(b)).map(([path, list]) => ({ path, claims: list.length, examples: list.slice(-examples) }));
+}
+
+// At most `cap` earlier claims per current destination, the latest filed first kept, in filing order
+export function sampleDestinationClaims<T extends { domainPaths?: string[] }>(claims: T[], destinations: ReadonlySet<string>, cap: number): T[] {
+  const counts = new Map<string, number>();
+  const kept = new Set<T>();
+  for (const claim of [...claims].reverse()) {
+    const paths = (claim.domainPaths ?? []).filter(path => destinations.has(path) && (counts.get(path) ?? 0) < cap);
+    if (!paths.length) continue;
+    kept.add(claim);
+    for (const path of paths) counts.set(path, (counts.get(path) ?? 0) + 1);
+  }
+  return claims.filter(claim => kept.has(claim));
+}

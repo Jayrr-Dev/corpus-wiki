@@ -11,14 +11,15 @@ import { TAB_FILING_RULES } from "@/lib/domains/tabOrganization";
 // longer names topics: each batch of a long file used to invent its own
 // ("Utility Right of Way/Process" next to "Right of Way/URW Application
 // Process" for one procedure). Each scoped call now sees the whole-file
-// overview, previous placements, source evidence, neighbors and typed links.
+// plan outline, earlier destinations, and its own claims' source evidence,
+// neighbors and typed links.
 // The answer becomes create_domain actions for new paths (parents first;
 // a new root waits for a person's approval as before) and one place_claim
 // per claim, all in one audited ChangeSet.
 // =====================================================================
 
 // PROMPT VERSION: recorded on the ChangeSet
-export const PLACE_TOPICS_PROMPT_VERSION = "place-topics-evidence-v4";
+export const PLACE_TOPICS_PROMPT_VERSION = "place-topics-evidence-v5";
 
 // Claims per scoped call; groups come from the whole-file assignment plan.
 export const PLACE_TOPICS_BATCH = 80;
@@ -34,7 +35,10 @@ export type PlaceTopicsInput = {
   scopePath?: string;
   context?: unknown;
   filePlan?: unknown;
+  // This batch's claims already proposed (a corrective retry re-files only the flagged ones)
   previousPlacements?: { ref: string; domainPaths: string[] }[];
+  // Where earlier batches of this upload filed their claims: path, count and example titles
+  filedDestinations?: { path: string; claims: number; examples: string[] }[];
 };
 
 const answerSchema = z.object({ placements: z.array(z.object({ ref: z.string(), domainPaths: z.array(z.string()) })) });
@@ -46,8 +50,8 @@ const SYSTEM_PROMPT = `You are the Domain Decider assigning knowledge units from
 
 Answer with JSON only: { "placements": [{ "ref": "C1", "domainPaths": ["ROOT/TOPIC/SUBTOPIC"] }] }, one item per claim.
 - domainPaths: 1 or 2 paths per claim, ROOT / TOPIC / SUBTOPIC, at most 4 levels.
-- Follow the whole-file plan and previous placements consistently. A procedure can have meaningful subject children for requirements, responsibilities, equipment or review, while its steps remain connected. Do not force all claims from one file or procedure into one broad parent. Conversely, do not create tiny children merely because two claims share words. Reuse the same branch across batches.
-- When previousPlacements use domainRefs, resolve them through previousDomains. When sourceEvidence uses passageRef, resolve it through sourcePassages. These shared dictionaries preserve the full paths and evidence without repeating them. Your answer must use full domain paths, never D or P refs.
+- Follow the whole-file plan and filedDestinations (where earlier batches of this upload went, with counts and example titles) consistently. A procedure can have meaningful subject children for requirements, responsibilities, equipment or review, while its steps remain connected. Do not force all claims from one file or procedure into one broad parent. Conversely, do not create tiny children merely because two claims share words. Reuse the same branch across batches.
+- previousPlacements are this batch's claims already proposed; when they use domainRefs, resolve them through previousDomains. When sourceEvidence uses passageRef, resolve it through sourcePassages. Domain profiles name their example neighbors by exampleRefs. These shared dictionaries preserve the full paths and evidence without repeating them. Your answer must use full domain paths, never D, E or P refs.
 - Every supplied claim must appear exactly once. Give each a primary path within scopePath (itself or a child). A second path is allowed when genuinely useful; outside scopePath it must already exist. Never move or rename existing domains or edit neighboring claims.
 - For substantial groups left directly in a broad parent, consider whether an existing child or a meaningful new subdomain fits better. Distinguish process summaries from detailed requirements and steps.
 - Reuse existing paths exactly, spelling included, whenever one fits. Create a new topic only when no existing one fits, and never a synonym of an existing one.
@@ -65,7 +69,7 @@ export function buildPlaceTopicsMessages(input: PlaceTopicsInput): ChatMessage[]
     file: input.sourceTitle,
     existingPaths: input.existingPaths,
     domainTabs: input.domainTabs,
-    scopePath: input.scopePath, context: compactFilingEvidence(input.context), filePlan: input.filePlan, ...compactPreviousPlacements(input.previousPlacements),
+    scopePath: input.scopePath, context: compactFilingEvidence(input.context), filePlan: input.filePlan, filedDestinations: input.filedDestinations, ...compactPreviousPlacements(input.previousPlacements),
     claims: input.claims.map((claim, index) => ({ ref: claim.ref ?? topicClaimRef(index), title: claim.title, content: claim.content, about: claim.entities })),
   };
   return [
