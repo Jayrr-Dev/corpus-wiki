@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DbRpc } from "@/lib/db/rpc";
-import { runPageReview, reviewRebuiltSections } from "./runPageReview";
+import { pageReviewMessages, runPageReview, reviewRebuiltSections } from "./runPageReview";
 
 const chat = vi.hoisted(() => vi.fn());
 const similar = vi.hoisted(() => vi.fn());
@@ -151,7 +151,7 @@ describe("review workflow", () => {
     const embed = vi.fn().mockResolvedValue([[0.1, 0.2]]);
     await runPageReview(db, { apiKey: "test" }, page, { model: "embedding", embed });
     expect(similar).toHaveBeenCalledWith(db, "embedding", [0.1, 0.2], 12, 0.65);
-    expect(chat.mock.calls[0]![1].messages[1].content).toContain("Supporting evidence");
+    expect(chat.mock.calls[0]![1].messages[2].content).toContain("Supporting evidence");
     expect(chat.mock.calls[0]![1].reasoningEffort).toBe("low");
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [], p_review: expect.objectContaining({ findings: [] }) }));
   });
@@ -247,5 +247,33 @@ describe("approval noise control", () => {
     const { db, call } = database();
     await runPageReview(db, { apiKey: "test" }, page);
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_review: expect.objectContaining({ findings: [] }) }));
+  });
+  it("keeps the system message identical with a Curator focus and caches the cited evidence before the page", async () => {
+    const { db } = database();
+    chat.mockResolvedValueOnce({ value: { summary: "Bad", findings: [], edits: [{ type: "revise_line", targetId: page, patches: [], reason: "test" }] }, model: "test", tokensIn: 1, tokensOut: 1 });
+    await runPageReview(db, { apiKey: "test" }, page, undefined, undefined, "Check the inspection schedule");
+    await runPageReview(db, { apiKey: "test" }, page);
+    const [first, retry, plain] = chat.mock.calls.map((call) => call[1].messages as { role: string; content: string; cache?: boolean }[]);
+    expect(first!.map((message) => [message.role, message.cache === true])).toEqual([["system", false], ["user", true], ["user", false], ["user", false]]);
+    expect(first![0]!.content).toBe(plain![0]!.content);
+    expect(first![0]!.content).not.toContain("Curator");
+    expect(first![1]!.content).toBe(plain![1]!.content);
+    expect(JSON.parse(first![1]!.content)).toEqual({ claims: snapshot.claims, passages: [], sources: [] });
+    expect(JSON.parse(first![2]!.content).lines).toHaveLength(1);
+    expect(first![3]!.content).toContain("Check the inspection schedule");
+    // The validation retry repeats the same prefix and adds the correction last.
+    expect(retry!.slice(0, 4)).toEqual(first);
+    expect(retry![4]!.content).toContain("failed validation");
+    expect(plain).toHaveLength(3);
+  });
+});
+
+describe("page review messages", () => {
+  it("puts the cited evidence after the system message and before the page, and skips empty parts", () => {
+    const batch = { snapshot: snapshot as never, evidence: "{\"lines\":[]}", citedEvidence: "{\"claims\":[]}" };
+    expect(pageReviewMessages("rules", batch, "focus")).toEqual([
+      { role: "system", content: "rules" }, { role: "user", content: batch.citedEvidence, cache: true }, { role: "user", content: batch.evidence }, { role: "user", content: "focus" },
+    ]);
+    expect(pageReviewMessages("rules", { snapshot: snapshot as never, evidence: "{}" })).toEqual([{ role: "system", content: "rules" }, { role: "user", content: "{}" }]);
   });
 });

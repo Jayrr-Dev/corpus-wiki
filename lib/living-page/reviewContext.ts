@@ -8,7 +8,10 @@ const strings = (value: unknown): string[] => Array.isArray(value) ? value.filte
 // An estimate, not a model tokenizer. UTF-8 bytes avoid undercounting non-Latin text.
 export const estimateReviewTokens = (text: string) => Math.ceil(Buffer.byteLength(text, "utf8") / 3);
 
-export type ReviewBatch = { snapshot: PageReviewSnapshot; evidence: string; readOnly?: boolean };
+// citedEvidence holds the batch's claims, passages and sources, which stay the same while the
+// page's lines are retried or reviewed again; it is sent first so the provider can cache it.
+// evidence holds the rest (page, sections, lines, repairs, scope, related context).
+export type ReviewBatch = { snapshot: PageReviewSnapshot; evidence: string; citedEvidence?: string; readOnly?: boolean };
 
 // Lossless fallback for a bundle too large to review as a whole. Each record is
 // serialized independently, with offsets so even a huge text/metadata field can
@@ -135,7 +138,9 @@ export function buildReviewBatches(snapshot: PageReviewSnapshot, related: unknow
       else { payload.scope.relatedContextLimited = true; limitedRelated = true; }
     }
     const batchSnapshot = { ...snapshot, lines, sections: (snapshot.sections ?? []).filter((section) => lines.some((line) => line.section_id === section.id)), pages: payload.pages };
-    return [{ snapshot: batchSnapshot, evidence: JSON.stringify(payload) }];
+    const { claims: cited, passages: citedPassages, sources: citedSources, ...rest } = payload;
+    const citedEvidence = cited.length || citedPassages.length || citedSources.length ? JSON.stringify({ claims: cited, passages: citedPassages, sources: citedSources }) : undefined;
+    return [{ snapshot: batchSnapshot, evidence: JSON.stringify(rest), ...(citedEvidence ? { citedEvidence } : {}) }];
   });
   return { batches, limitedRelated };
 }

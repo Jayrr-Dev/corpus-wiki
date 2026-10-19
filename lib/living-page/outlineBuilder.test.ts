@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ANSWER_TOKEN_BUDGET, chatJson, CompletionLengthError } from "@/lib/ai/chat";
+import { ANSWER_TOKEN_BUDGET, chatJson, CompletionLengthError, type ChatMessage } from "@/lib/ai/chat";
 import type { ArticleKnowledge, ArticlePlan } from "@/lib/living-page/articlePlan";
 import { roleForPurpose } from "@/lib/ai/roles";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
@@ -56,7 +56,7 @@ describe("durable outline continuation", () => {
     expect(built.attempts.at(-1)?.accepted).toBe(true);
     expect(chatJson).toHaveBeenCalledTimes(2);
     const finalReview = vi.mocked(chatJson).mock.calls[1]![1];
-    expect(JSON.parse(String(finalReview.messages[1]!.content)).priorReviewFindings).toHaveLength(4);
+    expect(JSON.parse(String(finalReview.messages[2]!.content)).priorReviewFindings).toHaveLength(4);
     vi.mocked(chatJson).mockClear();
     expect((await resume()).attempts.at(-1)?.accepted).toBe(true);
     expect(chatJson).not.toHaveBeenCalled();
@@ -129,7 +129,7 @@ describe("durable outline continuation", () => {
     expect(built.attempts.map(attempt => attempt.accepted)).toEqual([false, true]);
     expect(chatJson).toHaveBeenCalledTimes(2);
     expect(JSON.stringify(vi.mocked(chatJson).mock.calls[0]?.[1].messages)).toContain("Put origins before uses");
-    const reviewInput = JSON.parse(String(vi.mocked(chatJson).mock.calls[1]?.[1].messages[1]?.content));
+    const reviewInput = JSON.parse(String(vi.mocked(chatJson).mock.calls[1]?.[1].messages[2]?.content));
     expect(reviewInput.priorReviewFindings).toEqual([{ blockingIssues: critique.blockingIssues, fixes: critique.fixes }]);
     expect(reviewInput.priorReviewFindings[0]).not.toHaveProperty("flow");
   });
@@ -207,8 +207,8 @@ describe("outline review and repair", () => {
     const built = await buildOutline({ apiKey: "test" }, knowledge);
     expect(built.attempts.map(attempt => attempt.accepted)).toEqual([false, false, true]);
     const requests = vi.mocked(chatJson).mock.calls.filter(call => call[1].name === "article_outline_review").map(call => call[1]);
-    expect(JSON.parse(String(requests[0]?.messages[1]?.content))).not.toHaveProperty("priorReviewFindings");
-    expect(JSON.parse(String(requests[2]?.messages[1]?.content)).priorReviewFindings).toEqual([first, second].map(({ blockingIssues, fixes }) => ({ blockingIssues, fixes })));
+    expect(JSON.parse(String(requests[0]?.messages[2]?.content))).not.toHaveProperty("priorReviewFindings");
+    expect(JSON.parse(String(requests[2]?.messages[2]?.content)).priorReviewFindings).toEqual([first, second].map(({ blockingIssues, fixes }) => ({ blockingIssues, fixes })));
     expect(String(requests[2]?.messages[0]?.content)).toContain("prior review never entitles a plan to approval");
   });
   it("repairs valid but semantically bad structure using specific reviewer feedback", async () => {
@@ -220,7 +220,7 @@ describe("outline review and repair", () => {
     expect(built.tokensIn).toBe(30);
     expect(built.tokensOut).toBe(60);
     expect(JSON.stringify(vi.mocked(chatJson).mock.calls[1]?.[1].messages)).toContain("Move C2 before C3");
-    const reviewInput = JSON.parse(String(vi.mocked(chatJson).mock.calls[2]?.[1].messages[1]?.content));
+    const reviewInput = JSON.parse(String(vi.mocked(chatJson).mock.calls[2]?.[1].messages[2]?.content));
     expect(reviewInput).not.toHaveProperty("centralMessage");
     expect(reviewInput).not.toHaveProperty("readingOrderRationale");
   });
@@ -263,7 +263,8 @@ describe("outline review and repair", () => {
     const subject = "School colors. Scope: recorded origins and sporting uses only.";
     await buildOutline({ apiKey: "test" }, knowledge, { subject });
     const request = vi.mocked(chatJson).mock.calls[1]![1];
-    expect(JSON.parse(String(request.messages[1]!.content))).toMatchObject({ articleSubject: subject, plan: good });
+    expect(JSON.parse(String(request.messages[1]!.content))).toMatchObject({ articleSubject: subject });
+    expect(JSON.parse(String(request.messages[2]!.content))).toEqual({ plan: good });
     expect(String(request.messages[0]!.content)).toContain("Do not demand definitions");
     expect(String(request.messages[0]!.content)).toContain("must NOT be repeated");
   });
@@ -290,3 +291,42 @@ describe("outline review and repair", () => {
     expect(chatJson).not.toHaveBeenCalled();
   });
 });
+
+describe("outline prompt caching", () => {
+  it("sends the unchanged claims first and cached in every draft and review attempt", async () => {
+    const critique = { ...review(2), blockingIssues: ["Move C2 to origins"], fixes: ["Keep C3 in sports"] };
+    const replies = [draft(), critique, draft(), review()];
+    // The draft's message list grows after each call, so keep each request as it was sent.
+    const requests: { name: string; messages: ChatMessage[] }[] = [];
+    vi.mocked(chatJson).mockImplementation(async (_settings, request) => {
+      requests.push({ name: request.name, messages: request.messages.map(message => ({ ...message }) as ChatMessage) });
+      return answer(replies.shift());
+    });
+    await buildOutline({ apiKey: "test" }, knowledge, { subject: "School colors" });
+    const drafts = requests.filter(request => request.name === "article_outline");
+    const reviews = requests.filter(request => request.name === "article_outline_review");
+    // Drafts: the repair is appended after the cached claims, which stay word for word the same.
+    expect(drafts[0]!.messages.map(message => [message.role, message.cache === true])).toEqual([["system", false], ["user", true]]);
+    expect(drafts[1]!.messages.map(message => [message.role, message.cache === true])).toEqual([["system", false], ["user", true], ["user", false]]);
+    expect(drafts[1]!.messages[1]).toEqual(drafts[0]!.messages[1]);
+    // Reviews: cached claims and subject, then the plan and earlier findings.
+    for (const request of reviews) {
+      expect(request.messages.map(message => [message.role, message.cache === true])).toEqual([["system", false], ["user", true], ["user", false]]);
+      expect(Object.keys(JSON.parse(String(request.messages[1]!.content)))).toEqual(["subject", "claims", "articleSubject"]);
+    }
+    expect(reviews[1]!.messages[1]).toEqual(reviews[0]!.messages[1]);
+    expect(Object.keys(JSON.parse(String(reviews[1]!.messages[2]!.content)))).toEqual(["plan", "priorReviewFindings"]);
+  });
+  it("keeps the saved attempt keys of uploads planned before caching", async () => {
+    const keys: string[] = [];
+    const db: DbRpc = { async call<T>(name: string, args: RpcArgs = {}) {
+      if (name === "start_upload_step") keys.push(String(args.p_key));
+      return (name === "start_upload_step" ? { done: false } : undefined) as T;
+    } };
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    await uploadExecution.run({ eventId: "upload", token: "lease", db }, () => buildOutline({ apiKey: "test" }, knowledge, { subject: "School colors" }));
+    expect(keys.map(key => key.replace(/:\d+:.*$/, ""))).toEqual([PRE_CACHE_CHECKPOINT, PRE_CACHE_CHECKPOINT]);
+  });
+});
+// The checkpoint this input produced before messages carried a cache flag.
+const PRE_CACHE_CHECKPOINT = "outline-v1:bce9d257f03ff3f81ae364b4b74f6ab8e1e625e5f64b06f42c0d6cfd3cf99667";

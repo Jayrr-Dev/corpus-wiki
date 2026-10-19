@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { workflowStep } from "@/lib/ingest/workflowContext";
-import { addUsage, ANSWER_TOKEN_BUDGET, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
+import { addUsage, ANSWER_TOKEN_BUDGET, chatJson, type ChatMessage, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import { articlePlanSchema, articleSections, type ArticleKnowledge, type ArticlePlan } from "@/lib/living-page/articlePlan";
 
 // Promoted from the source-grounded sandbox after direct editorial review.
@@ -108,9 +108,12 @@ export function structuralProblems(plan: ArticlePlan, knowledge: ArticleKnowledg
 
 export async function gradeOutline(settings: TokenFactorySettings, knowledge: ArticleKnowledge, plan: ArticlePlan, subject?: string, priorReviews: OutlineReview[] = []) {
   return chatJson(settings, { name: "article_outline_review", subject: knowledge.entity.name, schema: reviewSchema, jsonSchema: z.toJSONSchema(reviewSchema), maxTokens: ANSWER_TOKEN_BUDGET,
-    messages: [{ role: "system", content: REVIEW_POLICY }, { role: "user", content: JSON.stringify({ ...claimInput(knowledge), ...(subject ? { articleSubject: subject } : {}), plan,
-      ...(priorReviews.length ? { priorReviewFindings: priorReviews.map(review => ({ blockingIssues: review.blockingIssues, fixes: review.fixes })) } : {}),
-    }) }],
+    // The claims and subject repeat word for word in every attempt's review, so they come first
+    // and are cached; the plan under review and earlier findings change each round.
+    messages: [{ role: "system", content: REVIEW_POLICY }, { role: "user", cache: true, content: JSON.stringify({ ...claimInput(knowledge), ...(subject ? { articleSubject: subject } : {}) }) },
+      { role: "user", content: JSON.stringify({ plan,
+        ...(priorReviews.length ? { priorReviewFindings: priorReviews.map(review => ({ blockingIssues: review.blockingIssues, fixes: review.fixes })) } : {}),
+      }) }],
   });
 }
 
@@ -125,9 +128,10 @@ export async function buildOutline(settings: TokenFactorySettings, knowledge: Ar
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 6) throw new Error("maxAttempts must be 1-6.");
   const attempts: Attempt[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
-  const messages: { role: "system" | "user"; content: string }[] = [
+  // The claims message is identical in every attempt (repairs are appended after it), so it ends the cached prefix.
+  const messages: ChatMessage[] = [
     { role: "system", content: `${options.systemInstructions ?? ""}\n${PLANNER_POLICY}` },
-    { role: "user", content: JSON.stringify({ ...claimInput(knowledge), entity: knowledge.entity.name, ...(options.subject ? { subject: options.subject, guidance: "Plan only this article's subject from the supplied scoped claims. Never broaden its scope or use a generic template." } : {}) }) },
+    { role: "user", cache: true, content: JSON.stringify({ ...claimInput(knowledge), entity: knowledge.entity.name, ...(options.subject ? { subject: options.subject, guidance: "Plan only this article's subject from the supplied scoped claims. Never broaden its scope or use a generic template." } : {}) }) },
   ];
   if (options.editorialNote) messages.push({ role: "user", content: `Editorial audit guidance, not additional factual evidence: ${options.editorialNote}` });
   // JSONB changes object key order on replay. Canonicalize the full planning
@@ -135,7 +139,8 @@ export async function buildOutline(settings: TokenFactorySettings, knowledge: Ar
   const canonical = (value: unknown): unknown => Array.isArray(value) ? value.map(canonical)
     : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, canonical(item)])) : value;
   const checkpoint = `outline-v1:${createHash("sha256").update(JSON.stringify(canonical({
-    policy: OUTLINE_POLICY_VERSION, reviewPolicy: REVIEW_POLICY, messages, seed: options.seed,
+    // The cache flag only steers the provider's prompt cache; leave it out so saved attempts still resume.
+    policy: OUTLINE_POLICY_VERSION, reviewPolicy: REVIEW_POLICY, messages: messages.map(({ role, content }) => ({ role, content })), seed: options.seed,
     revisions: knowledge.units.map(unit => [unit.unitId, unit.revisionId]),
     model: settings.model, routes: Object.entries(settings.roleRoutes ?? {}).sort(([a], [b]) => a.localeCompare(b)).map(([role, route]) => [role, route.model]),
     effort: settings.effort, roleEfforts: settings.roleEfforts, instructions: settings.roleInstructions,

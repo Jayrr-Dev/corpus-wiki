@@ -1,4 +1,4 @@
-import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import { chatJson, type ChatMessage, type TokenFactorySettings } from "@/lib/ai/chat";
 import { reviewContextWindow } from "@/lib/ai/contextWindow";
 import { type Embedder } from "@/lib/ai/embeddings";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "@/lib/ai/outputStyle";
@@ -13,13 +13,25 @@ import { expandArticleCoverage, type CoverageDeps } from "./articleCoverage";
 import { reviewFragments } from "./fragmentReview";
 import { duplicateSectionRepairs, needsPageReviewDecision, PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, settleUnplacedFindings, validatePageReview, type PageReviewSnapshot } from "./pageReview";
 import { reviewMap } from "./reviewConcurrency";
-import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
+import { buildReviewBatches, estimateReviewTokens, type ReviewBatch } from "./reviewContext";
 import { checkReviewEdits, ReviewEditsRejected } from "./reviewEditCheck";
 import { materializeReviewPatches, pagePatchReviewSchema } from "./reviewPatches";
 import { reviewStreamDetail } from "./reviewProgress";
 
 export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null; coverageComplete?: boolean };
 export type PageReviewStatus = { latest: { summary: string; edits: number; exceptions: number; change_set_id: string | null; created_at: string } | null; openExceptions: number };
+
+// Stable before volatile: the shared instructions, then the batch's cited evidence (cached, so a
+// validation retry or a second pass over the same claims reads it back), then the page's lines,
+// repairs and scope, then any Curator focus.
+export function pageReviewMessages(instructions: string, batch: ReviewBatch, focus = ""): ChatMessage[] {
+  return [
+    { role: "system", content: instructions },
+    ...(batch.citedEvidence ? [{ role: "user" as const, content: batch.citedEvidence, cache: true }] : []),
+    { role: "user", content: batch.evidence },
+    ...(focus ? [{ role: "user" as const, content: focus }] : []),
+  ];
+}
 
 // note: what to focus on, when another role (the Curator) asks for the review
 export async function runPageReview(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void, note?: string, coverage?: CoverageDeps): Promise<PageReviewResult> {
@@ -70,14 +82,16 @@ async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, page
       console.error("Page reviewer vector search:", error);
     }
   }
-  const instructions = `${PAGE_REVIEW_INSTRUCTIONS}\nThe automaticRepairs are already planned; do not duplicate those findings or edit their surviving introduction. Related knowledge was retrieved by vector similarity, which is not proof of equivalence. Related page text is stored once in relatedPages; relatedKnowledge.pageIds references it. Use actual evidence to identify overlap or conflicts; do not add uncited related claims into this article.\nWhen scope.completeArticle is false, review only the supplied lines and their evidence. Do not infer missing content, rename sections, judge the whole article's structure, or claim a complete cross-section review. Missing optional related context is a limitation, never an approval request.${note?.trim() ? `
-The Curator asked for this review with a focus (guidance on where to look, not evidence and not an order to change anything the evidence does not support): ${note.trim().slice(0, 1000)}` : ""}`;
+  const instructions = `${PAGE_REVIEW_INSTRUCTIONS}\nThe automaticRepairs are already planned; do not duplicate those findings or edit their surviving introduction. Related knowledge was retrieved by vector similarity, which is not proof of equivalence. Related page text is stored once in relatedPages; relatedKnowledge.pageIds references it. Use actual evidence to identify overlap or conflicts; do not add uncited related claims into this article.\nWhen scope.completeArticle is false, review only the supplied lines and their evidence. Do not infer missing content, rename sections, judge the whole article's structure, or claim a complete cross-section review. Missing optional related context is a limitation, never an approval request.`;
+  // The Curator's focus goes after the evidence, so the system message and cited evidence
+  // stay identical across pages and passes and can be read from the provider's cache.
+  const focus = note?.trim() ? `The Curator asked for this review with a focus (guidance on where to look, not evidence and not an order to change anything the evidence does not support): ${note.trim().slice(0, 1000)}` : "";
   const jsonSchema = z.toJSONSchema(pagePatchReviewSchema);
   // Reserve output, system/schema instructions (schema is transmitted twice), and padding.
   // Provider metadata is not always available; use a conservative 64K planning window.
   const maxTokens = Math.min(16000, Math.floor((settings.contextWindowTokens ?? 65536) / 4));
   const tokenBudget = Math.floor(settings.contextWindowTokens ?? 65536) - maxTokens - 2048
-    - estimateReviewTokens(instructions + CONCISE_OUTPUT_INSTRUCTIONS + JSON.stringify(jsonSchema).repeat(2));
+    - estimateReviewTokens(instructions + focus + CONCISE_OUTPUT_INSTRUCTIONS + JSON.stringify(jsonSchema).repeat(2));
   const { batches, limitedRelated } = await measure("packing", async () => buildReviewBatches(snapshot, relatedKnowledge, repairs, tokenBudget));
   progress?.("Checking structure, repetition, and claims against the evidence…");
   let lastSent = 0;
@@ -97,7 +111,7 @@ The Curator asked for this review with a focus (guidance on where to look, not e
           lastSent = Date.now(); lastDetail = detail; progress(detail);
         }
       } : undefined,
-      messages: [{ role: "system" as const, content: instructions }, { role: "user" as const, content: batch.evidence }] };
+      messages: pageReviewMessages(instructions, batch, focus) };
     let raw = await chatJson(settings, request);
     const normalize = () => {
       const value = settleUnplacedFindings(materializeReviewPatches(pagePatchReviewSchema.parse(raw.value), batch.snapshot), batch.snapshot);

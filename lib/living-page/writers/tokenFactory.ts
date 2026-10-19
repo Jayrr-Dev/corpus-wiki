@@ -373,7 +373,8 @@ export function buildMessages(input: SectionReviseInput, refs: Refs, skills?: St
 Preserve each claim's explicit context and conditions. General reference knowledge does not establish an organization's policy or a person's preferences. Unspecified applicability means unknown. Mentioned entities do not own the claim.
 ${skillInstructions(["write_articles"],skills)}` },
     { role: "system", content: input.lines.length ? PATCH_RULE : 'Answer with JSON only: {"revise":[],"retire":[],"add":[{"text":"...","claims":["C1"]}]}.' },
-    { role: "user", content: JSON.stringify(request) },
+    // Every repair round resends these messages first, so the section request ends the cached prefix.
+    { role: "user", content: JSON.stringify(request), cache: true },
   ];
 }
 
