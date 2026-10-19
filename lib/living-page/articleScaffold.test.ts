@@ -2,7 +2,8 @@ import type { DbRpc } from "@/lib/db/rpc";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { beforeEach, expect, it, vi } from "vitest";
-import { applyArticleScaffold, articleAdditionActions, scaffoldChanges, type ExistingScaffoldSection } from "./articleScaffold";
+import { applyArticleScaffold, articleAdditionActions, SCAFFOLD_OUTLINE_ATTEMPTS, scaffoldChanges, type ExistingScaffoldSection } from "./articleScaffold";
+import { OutlineRejectedError } from "./outlineBuilder";
 import type { SectionUnit } from "./types";
 
 const planner = vi.hoisted(() => vi.fn());
@@ -10,11 +11,12 @@ const submit = vi.hoisted(() => vi.fn());
 const commit = vi.hoisted(() => vi.fn());
 const revert = vi.hoisted(() => vi.fn());
 const rebuild = vi.hoisted(() => vi.fn());
+const autoAccept = vi.hoisted(() => vi.fn());
 const scope = vi.hoisted(() => vi.fn());
 vi.mock("./articleScope", () => ({ selectArticleScope: scope }));
 vi.mock("./articlePlanner", async original => ({ ...await original<object>(), planArticle: planner }));
 vi.mock("./index", () => ({ rebuildUploadSection: rebuild }));
-vi.mock("@/lib/change-control", () => ({ submitChangeSet: submit, commitChangeSet: commit, revertChangeSet: revert }));
+vi.mock("@/lib/change-control", () => ({ submitChangeSet: submit, commitChangeSet: commit, revertChangeSet: revert, autoAcceptHeld: autoAccept }));
 
 const unit = (id: string): SectionUnit => ({ unitId: id, revisionId: `r-${id}`, content: `Fact ${id}.`, kind: "fact", epistemicStatus: "established" });
 function old(id: string, title: string, units: string[], position: number, protectedSection = false): ExistingScaffoldSection {
@@ -293,4 +295,29 @@ it("still plans with no additions when a person's note asks for it, a section is
   call.mockImplementationOnce(async () => ({ planned: { id: "unfinished" }, applied: null, current: [] }) as never);
   await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", []);
   expect(planner).toHaveBeenCalledTimes(3);
+});
+it("keeps the structure, raises one recommendation and stops re-planning when the outline review keeps objecting", async () => {
+  const { db, client, call } = context();
+  const original = call.getMockImplementation()!;
+  let judgments: object[] = [];
+  call.mockImplementation(async (name, args) => {
+    if (name === "read_article_judgments") return judgments as never;
+    if (name === "save_article_judgments") { judgments = [...judgments, ...(args!.p_judgments as object[]).map(item => ({ ...item, stage: args!.p_stage }))]; return 1 as never; }
+    if (name === "record_outline_hold") return { exceptions: 1, changeSetId: "hold" } as never;
+    return original(name, args);
+  });
+  const attempt = { plan: { title: "Subject", introduction: ["C1"], sections: [] }, centralMessage: null, readingOrderRationale: null, problems: [],
+    review: { blockingIssues: ["C3 belongs with Details."], fixes: ["Move C3 into Details."] } as never, accepted: false };
+  planner.mockRejectedValue(new OutlineRejectedError([attempt, attempt, attempt], { tokensIn: 9, tokensOut: 3 }));
+  const additions = [draft("Details", ["u3"]), draft("Unmatched topic", ["u4"])];
+  expect(await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", additions)).toMatchObject({ sectionIds: ["details"] });
+  expect(planner.mock.calls[0]![4]).toEqual({ maxAttempts: SCAFFOLD_OUTLINE_ATTEMPTS });
+  expect(call).toHaveBeenCalledWith("record_outline_hold", expect.objectContaining({ p_page_id: "page", p_finding: expect.objectContaining({ reason: "C3 belongs with Details.", guideline: "Move C3 into Details." }) }));
+  expect(autoAccept).toHaveBeenCalledWith(db, "reviewer", "hold", 1);
+  // The addition whose topic already exists joins it in place; nothing is retired or created.
+  expect(submit.mock.calls.flatMap(args => args[2].actions)).toEqual([expect.objectContaining({ type: "update_section_query", targetId: "details", input: expect.objectContaining({ query: { article: true, unitIds: ["u2", "u3"] } }) })]);
+  submit.mockClear();
+  await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", additions);
+  expect(planner).toHaveBeenCalledTimes(1);
+  expect(call.mock.calls.filter(([name]) => name === "record_outline_hold")).toHaveLength(1);
 });
