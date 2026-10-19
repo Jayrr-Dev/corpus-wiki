@@ -26,7 +26,7 @@ export const MODEL_ROLES = ["media_analyst", "reconciler", "deduplicator", "iden
 export type ModelRole = (typeof MODEL_ROLES)[number];
 // ROLES THAT CAN HOLD CHANGES IN EXCEPTIONS, so they can run in full auto (Agent Roles): what they hold is
 // accepted at once. Keep in step with set_ai_role_auto in the database.
-export const AUTO_ROLES = ["reconciler", "deduplicator", "write_articles", "reviewer", "domain_steward", "curator"] as const;
+export const AUTO_ROLES = ["reconciler", "deduplicator", "write_articles", "reviewer", "domain_steward", "curator", "domain_decider"] as const;
 export type AutoRole = (typeof AUTO_ROLES)[number];
 // THE DATA EACH ROLE SENDS ITS MODEL, so a role is only offered models that can read it. The Media analyst
 // and Composer send images (video arrives as frames beside a transcript); other roles send text.

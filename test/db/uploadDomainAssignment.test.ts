@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { beforeAll, afterAll, beforeEach, afterEach, expect, it, vi } from "vitest";
 import { portablePostgres } from "./portablePostgres";
 import { recordUpload } from "@/lib/ingest/pipeline";
@@ -11,6 +12,8 @@ import { uploadExecution } from "@/lib/ingest/workflowContext";
 import type { DbRpc } from "@/lib/db/rpc";
 
 vi.mock("@/lib/ai/chat",async original=>({...await original<typeof import("@/lib/ai/chat")>(),chatJson:vi.fn()}));
+// The shared (cached) block and the batch's block, read as one request payload
+const payloadOf=(request:{messages:{role:string;content:unknown}[]})=>Object.assign({},...request.messages.filter(m=>m.role==="user"&&typeof m.content==="string"&&m.content.startsWith("{")).map(m=>JSON.parse(m.content as string)));
 let store: Awaited<ReturnType<typeof portablePostgres>>;
 beforeAll(async()=>{store=await portablePostgres();});
 afterAll(async()=>{await store.pg.close();});
@@ -37,15 +40,16 @@ it("packs unfinished small groups without repeating an older accepted review or 
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:payload.claims.map((c:{ref:string},i:number)=>({scopePath:i===83?"Upload test/Responsibilities":"Upload test",subject:`Subject ${c.ref}`,reason:`Reason ${c.ref}`,refs:[c.ref]}))};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    batches.push(payload.claims.map((c:{ref:string})=>c.ref));
    expect(payload.claims.some((c:{ref:string})=>c.ref==="C1")).toBe(false);
    expect(payload.context.sourceEvidence).toHaveLength(payload.claims.length);
    expect(payload.filePlan.groups).toHaveLength(84);
-   expect(payload.previousPlacements.some((c:{ref:string})=>c.ref==="C1")).toBe(true);
+   expect(payload.previousPlacements).toBeUndefined();
+   expect(payload.filedDestinations).toEqual([expect.objectContaining({path:"Upload test/Permits"})]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[payload.scopePath==="Upload test"?"Upload test/Permits":payload.scopePath]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
@@ -103,11 +107,17 @@ it("supplies real source context, repairs missing assignments, files every unit 
  await store.db.call("revert_change_set",{p_change_set_id:writes.rows[0]!.id});
  expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
 });
-it("saves no assignments when independent review rejects every attempt",async()=>{
- const event=await setup();model({rejectAll:true});
- await expect(topicPlacerFor(store.db,{apiKey:"test"})(event)).rejects.toThrow("no assignments were saved");
- expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
- expect((await store.pg.query("select id from change_sets where event_id=$1 and summary like 'Assigned %'",[event])).rows).toHaveLength(0);
+it("holds a still-disputed batch in Exceptions instead of pausing the upload",async()=>{
+ const event=await setup();const proposals=model({rejectAll:true});
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(proposals()).toBe(3);
+ // The objection names no refs, so every claim of the batch waits for a person
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ const held=await store.pg.query<{reason:string;detail:string}>("select e.reason,e.evidence->>'detail' detail from exceptions e join actions a on a.id=e.action_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and e.status='open'",[event]);
+ expect(held.rows).toHaveLength(3);
+ expect(held.rows.every(r=>r.reason==="low_confidence"&&r.detail.includes("The group needs correction"))).toBe(true);
+ expect((await store.pg.query("select summary from change_sets where event_id=$1 and summary like 'Assigned %'",[event])).rows).toEqual([{summary:"Assigned 0 knowledge units to reviewed domains; 3 held for review"}]);
+ expect(await store.db.call<{claims:unknown[]}>("upload_topic_context",{p_event_id:event})).toMatchObject({claims:[]});
 });
 it("identifies an invented planning child scope and requires a valid anchor on retry",async()=>{
  const event=await setup();model();
@@ -117,7 +127,7 @@ it("identifies an invented planning child scope and requires a valid anchor on r
   if(request.name!=="upload_domain_plan")return original(settings,request);
   attempts++;
   if(attempts>1) {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    expect(payload.feedback).toContain('Invalid scopePath: "Upload test/Invented child"');
    expect(payload.feedback).toContain("ONE root name with no slash");
   }
@@ -137,7 +147,7 @@ it("requires a corrected proposal after concrete independent review feedback",as
   else if(request.name==="place_topics") {
    const feedback=request.messages.at(-1)?.content;
    corrected=typeof feedback==="string"&&feedback.includes("C3 is an employer responsibility");
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(corrected?["C3"]:["C1","C2","C3"]);
    if(corrected)expect(payload.previousPlacements.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2"]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[corrected&&c.ref==="C3"?"Upload test/Responsibilities":"Upload test/Permits"]}))};
@@ -145,8 +155,12 @@ it("requires a corrected proposal after concrete independent review feedback",as
    expect(request.messages.some(m=>typeof m.content==="string"&&m.content.includes("Do not require a book-named"))).toBe(true);
    reviews++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
-   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2","C3"]);
+   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(corrected?["C3"]:["C1","C2","C3"]);
+   if(corrected)expect(payload.input.previousPlacements.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2"]);
    value={approved:corrected,issues:corrected?[]:["C3 is an employer responsibility and belongs under Responsibilities."],parents:payload.parents.map((p:object)=>({...p,reason:"Claims fit the destination subject."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -163,7 +177,7 @@ it("retains subject corrections and identifies omitted refs during a corrective 
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    const feedback=request.messages.at(-1)!.content as string;
    if(proposals>1)expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C2","C3"]);
    if(proposals===3) {
@@ -175,8 +189,11 @@ it("retains subject corrections and identifies omitted refs during a corrective 
   } else if(request.name==="independent_upload_domain_review") {
    reviews++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
-   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2","C3"]);
+   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(reviews===1?["C1","C2","C3"]:["C2","C3"]);
    value={approved:reviews===2,issues:reviews===1?["C2 and C3 need Responsibilities"]:[],parents:payload.parents.map((p:object)=>({...p,reason:"The complete corrected proposal fits."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -191,7 +208,7 @@ it("repairs all current members of a flagged destination alongside individually 
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    // The parent-level issue names no refs. C1 and C2 must still be repairable.
    expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2","C3"]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[proposals>1?"Upload test/Responsibilities":c.ref==="C3"?"Upload test":"Upload test/Permits"]}))};
@@ -200,6 +217,9 @@ it("repairs all current members of a flagged destination alongside individually 
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    const corrected=payload.proposal.every((c:{domainPaths:string[]})=>c.domainPaths[0]==="Upload test/Responsibilities");
    value={approved:corrected,issues:corrected?[]:["Upload test/Permits holds responsibility claims; move its current members to Responsibilities.","C3 also belongs under Responsibilities."],parents:payload.parents.map((p:object)=>({...p,reason:"The corrected group is coherent."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -260,13 +280,13 @@ it("keeps whole-file context and stable references across an 81-unit group",asyn
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:[{scopePath:"Upload test",subject:"Permit rules",reason:"Permit conditions",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
-   expect(payload.filePlan.overview).toHaveLength(81);
+   const payload=payloadOf(request);
+   expect(payload.filePlan.groups).toEqual([{scopePath:"Upload test",subject:"Permit rules",reason:"Permit conditions",claims:81}]);
    batchRefs.push(payload.claims.map((c:{ref:string})=>c.ref));
-   if(batchRefs.length===2)expect(payload.previousPlacements).toHaveLength(80);
+   if(batchRefs.length===2)expect(payload.filedDestinations).toEqual([expect.objectContaining({path:"Upload test/Permits",claims:80})]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
@@ -287,15 +307,15 @@ it("checkpoints bounded planning steps and resumes without repeating a completed
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    planned.push(payload.claims.length);
    expect(payload.overview).toHaveLength(161);
    expect(payload.claims.every((c:{content:string})=>c.content.includes("Permit condition"))).toBe(true);
    if(payload.claims.length===1&&fail){fail=false;throw new Error("Planning connection interrupted");}
    value={groups:[{scopePath:"Upload test",subject:"Permit conditions",reason:"Permit conditions in the source",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
-   expect(payload.filePlan.overview).toHaveLength(161);
+   const payload=payloadOf(request);
+   expect(payload.filePlan.groups.reduce((n:number,g:{claims:number})=>n+g.claims,0)).toBe(161);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
@@ -319,15 +339,14 @@ it("resumes independently reviewed batches with full current and cumulative dest
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:[{scopePath:"Upload test",subject:"Permits",reason:"Permit conditions",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    placements.push(payload.claims.length);
    expect(payload.claims.every((c:{content:string})=>c.content.includes("Permit condition"))).toBe(true);
    expect(payload.context.sourceEvidence).toHaveLength(payload.claims.length);
-   expect(payload.filePlan.overview).toHaveLength(81);
-   expect(payload.filePlan.overview.every((c:object)=>!Object.hasOwn(c,"content"))).toBe(true);
+   expect(payload.filePlan.groups.every((g:object)=>!Object.hasOwn(g,"refs"))).toBe(true);
    if(payload.claims.length===1&&fail){fail=false;throw new Error("Placement connection interrupted");}
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
@@ -336,7 +355,8 @@ it("resumes independently reviewed batches with full current and cumulative dest
    expect(typeof payload.input).toBe("object");
    if(payload.proposal.length===1) {
     expect(payload.parents[0].refs).toEqual(["C81"]);
-    expect(payload.previousDestinationClaims).toHaveLength(80);
+    expect(payload.previousDestinationClaims).toHaveLength(6);
+    expect(payload.input.filedDestinations).toEqual([expect.objectContaining({path:"Upload test/Permits",claims:80})]);
     expect(payload.previousDestinationClaims.every((c:{content:string})=>c.content.includes("Permit condition"))).toBe(true);
    }
    value={approved:true,issues:[],parents:payload.parents.map((p:object)=>({...p,reason:"Permit conditions fit this destination."}))};
@@ -361,7 +381,7 @@ it("resumes saved review corrections after interruption without regenerating rej
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    if(proposals>1) {
     expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C3"]);
     expect(request.messages.at(-1)!.content).toContain("C3 belongs under Responsibilities");
@@ -374,6 +394,9 @@ it("resumes saved review corrections after interruption without regenerating rej
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    if(reviews>1)expect(payload.priorReviewIssues).toEqual([["C3 belongs under Responsibilities"]]);
    value={approved:reviews>1,issues:reviews===1?["C3 belongs under Responsibilities"]:[],parents:payload.parents.map((p:object)=>({...p,reason:"Claims belong together."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -385,37 +408,49 @@ it("resumes saved review corrections after interruption without regenerating rej
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
-it("retains corrections after the retry budget and allows a later resume to finish",async()=>{
+it("files the undisputed claims after the retry budget and applies a held claim once accepted",async()=>{
  const event=await setup();
  const owner=await store.db.call<{token:string}>("claim_upload_workflow",{p_event_id:event});
- let proposals=0,reviews=0,approve=false;
+ let proposals=0,reviews=0;
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    if(proposals>1)expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C3"]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[c.ref==="C3"?"Upload test/Responsibilities":"Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    reviews++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    expect(payload.priorReviewIssues).toHaveLength(reviews-1);
-   value={approved:approve,issues:approve?[]:["C3 needs a supported responsibility assignment"],parents:payload.parents.map((p:object)=>({...p,reason:"Subject coherence assessed."}))};
+   value={approved:false,issues:["C3 needs a supported responsibility assignment"],parents:payload.parents.map((p:object)=>({...p,reason:"Subject coherence assessed."}))};
   } else if(request.name==="independent_upload_domain_issue_check") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
- const run=()=>uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
- await expect(run()).rejects.toThrow("Resume to continue from the saved corrections");
- expect(proposals).toBe(6);
- expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
- approve=true;
- await run();
- expect(proposals).toBe(7);expect(reviews).toBe(7);
+ await uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
+ expect(proposals).toBe(3);expect(reviews).toBe(3);
+ expect(await store.db.call("upload_workflow_waiting",{p_event_id:event})).toBe(false);
+ const context=await store.db.call<UploadTopicContext>("upload_topic_context",{p_event_id:event});
+ expect(context.claims).toEqual([]);
+ const exception=(await store.pg.query<{id:string}>("select e.id from exceptions e join actions a on a.id=e.action_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and e.status='open' and e.reason='low_confidence'",[event])).rows;
+ expect(exception).toHaveLength(1);
+ const paths=()=>store.pg.query<{path:string}>("select d.path from unit_domains m join domains d on d.id=m.domain_id join actions a on a.target_id=m.unit_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and a.type='add_claim' order by d.path",[event]);
+ expect((await paths()).rows.map(r=>r.path)).toEqual(["Upload test/Permits","Upload test/Permits"]);
+ await store.db.call("resolve_exception",{p_exception_id:exception[0]!.id,p_accept:true,p_note:null});
+ expect((await paths()).rows.map(r=>r.path)).toEqual(["Upload test/Permits","Upload test/Permits","Upload test/Responsibilities"]);
+});
+
+it("accepts held placements at once when the Domain Decider is in full auto",async()=>{
+ const event=await setup();model({rejectAll:true});
+ await store.db.call("set_ai_role_auto",{p_role:"domain_decider",p_on:true});
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect((await store.pg.query("select e.status from exceptions e join actions a on a.id=e.action_id join change_sets c on c.id=a.change_set_id where c.event_id=$1",[event])).rows).toEqual([{status:"accepted"},{status:"accepted"},{status:"accepted"}]);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ expect((await store.pg.query("select count(*)::int n from unit_domains m join actions a on a.target_id=m.unit_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and a.type='add_claim'",[event])).rows).toEqual([{n:3}]);
 });
 
 it("finishes corrected filing when a fresh evidence check dismisses a repeated optional objection",async()=>{
@@ -425,7 +460,7 @@ it("finishes corrected filing when a fresh evidence check dismisses a repeated o
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[proposals>1&&c.ref==="C3"?"Upload test/Responsibilities":"Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    reviews++;
@@ -434,6 +469,7 @@ it("finishes corrected filing when a fresh evidence check dismisses a repeated o
   } else if(request.name==="independent_upload_domain_issue_check") {
    confirmations++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   if(confirmations===1){value={verdicts:[{issue:1,blocking:true,reason:"C3 states an employer responsibility."}]};return {value,model:"test",tokensIn:10,tokensOut:10} as never;}
    expect(payload.evidence.claims.find((c:{ref:string})=>c.ref==="C3").domainPaths).toEqual(["Upload test/Responsibilities"]);
    expect(payload.evidence.priorReviewIssues).toEqual([["C3 belongs under Responsibilities"]]);
    value={verdicts:[{issue:1,blocking:false,reason:"Responsibilities accurately names the employer responsibility; the parent is an optional alternative."}]};
@@ -441,7 +477,7 @@ it("finishes corrected filing when a fresh evidence check dismisses a repeated o
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
  await topicPlacerFor(store.db,{apiKey:"test"})(event);
- expect(proposals).toBe(2);expect(reviews).toBe(2);expect(confirmations).toBe(1);
+ expect(proposals).toBe(2);expect(reviews).toBe(2);expect(confirmations).toBe(2);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
@@ -451,10 +487,10 @@ it("atomically files a book-sized upload without dropping claims beyond API row 
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:[{scopePath:"Upload test",subject:"Permit conditions",reason:"Source-backed permit policy",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
@@ -467,3 +503,71 @@ it("atomically files a book-sized upload without dropping claims beyond API row 
  const saved=await store.pg.query<{count:number}>("select count(*)::int as count from actions a join change_sets c on c.id=a.change_set_id where c.event_id=$1 and a.type='place_claim' and a.outcome='applied'",[event]);
  expect(saved.rows[0]!.count).toBe(1843);
 },60000);
+
+it("asks again only for destinations a review approved without assessing, without re-placing the batch",async()=>{
+ const event=await setup();let proposals=0;const reviews:{parents:{path:string}[];request?:string}[]=[];
+ vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
+  let value:unknown;
+  if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
+  else if(request.name==="place_topics") {proposals++;value={placements:[{ref:"C1",domainPaths:["Upload test/Permits"]},{ref:"C2",domainPaths:["Upload test/Permits"]},{ref:"C3",domainPaths:["Upload test/Responsibilities"]}]};}
+  else if(request.name==="independent_upload_domain_review") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   reviews.push(payload);
+   const parents=payload.parents.map((p:{path:string;refs:string[]})=>({...p,reason:"Coherent."}));
+   value={approved:true,issues:[],parents:reviews.length===1?parents.filter((p:{path:string})=>p.path==="Upload test/Permits"):parents};
+  } else throw new Error(request.name);
+  return {value,model:"test",tokensIn:10,tokensOut:10} as never;
+ });
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(proposals).toBe(1);
+ expect(reviews.map(r=>r.parents.map(p=>p.path).sort())).toEqual([["Upload test/Permits","Upload test/Responsibilities"],["Upload test/Responsibilities"]]);
+ expect(reviews[1]!.request).toContain("did not assess");
+ expect((reviews[1] as unknown as {proposal:{ref:string}[]}).proposal.map(c=>c.ref)).toEqual(["C3"]);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+});
+
+it("keeps finished plan steps and reviewed batches when the upload context changes before a resume",async()=>{
+ const event=await setup(Array.from({length:81},(_,i)=>`Permit condition ${i+1} applies to the site.`));
+ const owner=await store.db.call<{token:string}>("claim_upload_workflow",{p_event_id:event});
+ let plans=0,fail=true;const placements:number[]=[];
+ vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
+  let value:unknown;
+  const payload=payloadOf(request);
+  if(request.name==="upload_domain_plan") {plans++;value={groups:[{scopePath:"Upload test",subject:"Permits",reason:"Permit conditions",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};}
+  else if(request.name==="place_topics") {
+   placements.push(payload.claims.length);
+   if(payload.claims.length===1&&fail){fail=false;throw new Error("Placement connection interrupted");}
+   value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
+  } else if(request.name==="independent_upload_domain_review") {
+   const review=JSON.parse(request.messages.at(-1)!.content as string);
+   value={approved:true,issues:[],parents:review.parents.map((p:object)=>({...p,reason:"Permit conditions fit."}))};
+  } else throw new Error(request.name);
+  return {value,model:"test",tokensIn:10,tokensOut:10} as never;
+ });
+ const run=()=>uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
+ await expect(run()).rejects.toThrow("Placement connection interrupted");
+ // Another upload adds a domain meanwhile: the old whole-context keys would all miss now
+ await store.pg.exec("insert into domains(name,path,proposed_by) values ('Elsewhere','Elsewhere','person')");
+ await run();
+ expect(plans).toBe(1);
+ expect(placements).toEqual([80,1,1]);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+});
+
+it("reuses a plan step saved under the place-v4 key of an upload already in flight",async()=>{
+ const event=await setup();model();
+ const owner=await store.db.call<{token:string}>("claim_upload_workflow",{p_event_id:event});
+ const context=await store.db.call<UploadTopicContext>("upload_topic_context",{p_event_id:event});
+ const key=`place-v4:${createHash("sha256").update(JSON.stringify(context)).digest("hex").slice(0,24)}:plan:0`;
+ const args={p_event_id:event,p_token:owner.token,p_key:key};
+ await store.db.call("start_upload_step",args);
+ await store.db.call("finish_upload_step",{...args,p_error:null,p_output:{groups:[{scopePath:"Upload test",subject:"Saved plan",reason:"Planned before the update",refs:["C1","C2","C3"]}],tokensIn:5,tokensOut:5,model:"test"}});
+ const original=vi.mocked(chatJson).getMockImplementation()!;
+ vi.mocked(chatJson).mockImplementation(async(settings,request)=>{
+  if(request.name==="upload_domain_plan")throw new Error("The saved plan should be reused");
+  return original(settings,request);
+ });
+ await uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ expect((await store.pg.query("select count(*)::int n from upload_steps where event_id=$1 and key like 'place-v5:plan:0:%' and state='succeeded'",[event])).rows).toEqual([{n:1}]);
+});

@@ -77,3 +77,19 @@ export function validateUploadPlacements(placed: Map<string,string[]>, input: Pl
     if (scope && paths.some(path => !(path === scope || path.startsWith(scope+"/")) && !input.existingPaths.includes(path))) throw new Error("Secondary assignments outside the scope must use existing domains.");
   }
 }
+
+// ONE REQUEST'S SHARE of the upload's evidence: the neighbors its claims nominate or link to,
+// those neighbors' domain profiles (examples by neighbor ref, since neighbors carry the text),
+// and its own links, candidates and source passages. The whole upload's evidence made a
+// book's filing requests grow past 200k tokens.
+export function scopedFilingEvidence(evidence: ReturnType<typeof uploadAssignmentEvidence>, refs: ReadonlySet<string>) {
+  const candidates = evidence.candidates.filter(c => refs.has(c.ref));
+  const links = evidence.links.filter(l => refs.has(l.from) || refs.has(l.to));
+  const shown = new Set([...candidates.flatMap(c => c.neighbors.map(n => n.ref)), ...links.flatMap(l => [l.from, l.to])]);
+  const neighbors = evidence.neighbors.filter(n => shown.has(n.ref));
+  const profiles = evidence.domainProfiles.flatMap(p => {
+    const exampleRefs = p.examples.filter(e => shown.has(e.ref)).map(e => e.ref);
+    return exampleRefs.length ? [{ path: p.path, totalClaims: p.totalClaims, exampleRefs }] : [];
+  });
+  return { neighbors, candidates, links, profiles, sourceEvidence: evidence.evidence.filter(e => refs.has(e.ref)) };
+}

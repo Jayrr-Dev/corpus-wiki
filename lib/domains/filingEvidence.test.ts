@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { compactFilingEvidence, compactPreviousPlacements } from "./filingEvidence";
+import { compactFilingEvidence, compactPreviousPlacements, filedDestinations, sampleDestinationClaims } from "./filingEvidence";
 
 it("sends shared evidence once while preserving full text, locations and every citation", () => {
   const passage = { text: "Full source evidence ".repeat(1000), location: { page: 17 } };
@@ -32,4 +32,18 @@ it("leaves absent and unrelated context intact", () => {
   expect(compactFilingEvidence(context)).toBe(context);
   const small = { sourceEvidence: [{ ref: "C1", passages: [{ location: null, text: "Short distinct source." }] }] };
   expect(compactFilingEvidence(small)).toBe(small);
+});
+
+it("summarizes earlier filing per destination with counts and the latest example titles",()=>{
+  const placements=Array.from({length:500},(_,index)=>({title:`Claim ${index}`,domainPaths:index%2?["B/Child"]:["A","B/Child"]}));
+  const summary=filedDestinations(placements);
+  expect(summary).toEqual([{path:"A",claims:250,examples:["Claim 494","Claim 496","Claim 498"]},{path:"B/Child",claims:500,examples:["Claim 497","Claim 498","Claim 499"]}]);
+  expect(JSON.stringify(summary).length).toBeLessThan(JSON.stringify(placements).length/50);
+});
+
+it("samples at most a few recent earlier claims per current destination, keeping filing order",()=>{
+  const claims=Array.from({length:20},(_,index)=>({ref:`C${index+1}`,domainPaths:[index<10?"A":"B"]}));
+  expect(sampleDestinationClaims(claims,new Set(["A"]),3).map(c=>c.ref)).toEqual(["C8","C9","C10"]);
+  expect(sampleDestinationClaims(claims,new Set(["A","B"]),2).map(c=>c.ref)).toEqual(["C9","C10","C19","C20"]);
+  expect(sampleDestinationClaims(claims,new Set(["Other"]),2)).toEqual([]);
 });

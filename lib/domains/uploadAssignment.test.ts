@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "./uploadAssignment";
+import { scopedFilingEvidence, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "./uploadAssignment";
 
 export const context: UploadTopicContext = {
  sourceTitle:"ULA requirements.docx",sourceSections:[{position:0,location:{heading:"Permit thresholds"}}],domainPaths:["EPCOR","EPCOR/Requirements"],domainTabs:[],
@@ -28,4 +28,13 @@ it("rejects incomplete and duplicate plans, missing assignments and out-of-scope
  expect(()=>validateUploadPlacements(new Map([["new",["EPCOR/Requirements"]]]),input)).toThrow("no domain");
  expect(()=>validateUploadPlacements(new Map([["new",["Elsewhere"]],["new2",["EPCOR"]]]),input)).toThrow("primary");
  expect(()=>validateUploadPlacements(new Map([["new",["EPCOR/Requirements","Unknown/Child"]],["new2",["EPCOR"]]]),input)).toThrow("Secondary");
+});
+it("scopes neighbors, profiles and links to one request's claims",()=>{
+ const evidence=uploadAssignmentEvidence(context);
+ const own=scopedFilingEvidence(evidence,new Set(["C1"]));
+ expect(own.neighbors.map(n=>n.ref)).toEqual(["E1"]);
+ expect(own.profiles).toEqual([{path:"EPCOR/Requirements",totalClaims:1,exampleRefs:["E1"]}]);
+ expect(own.links).toEqual([{from:"C1",to:"E1",type:"related_to"}]);
+ const other=scopedFilingEvidence(evidence,new Set(["C2"]));
+ expect(other).toMatchObject({neighbors:[],profiles:[],links:[],candidates:[{ref:"C2"}],sourceEvidence:[{ref:"C2",passages:[]}]});
 });
