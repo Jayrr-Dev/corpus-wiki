@@ -11,6 +11,8 @@ import { uploadExecution } from "@/lib/ingest/workflowContext";
 import type { DbRpc } from "@/lib/db/rpc";
 
 vi.mock("@/lib/ai/chat",async original=>({...await original<typeof import("@/lib/ai/chat")>(),chatJson:vi.fn()}));
+// The shared (cached) block and the batch's block, read as one request payload
+const payloadOf=(request:{messages:{role:string;content:unknown}[]})=>Object.assign({},...request.messages.filter(m=>m.role==="user"&&typeof m.content==="string"&&m.content.startsWith("{")).map(m=>JSON.parse(m.content as string)));
 let store: Awaited<ReturnType<typeof portablePostgres>>;
 beforeAll(async()=>{store=await portablePostgres();});
 afterAll(async()=>{await store.pg.close();});
@@ -37,10 +39,10 @@ it("packs unfinished small groups without repeating an older accepted review or 
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:payload.claims.map((c:{ref:string},i:number)=>({scopePath:i===83?"Upload test/Responsibilities":"Upload test",subject:`Subject ${c.ref}`,reason:`Reason ${c.ref}`,refs:[c.ref]}))};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    batches.push(payload.claims.map((c:{ref:string})=>c.ref));
    expect(payload.claims.some((c:{ref:string})=>c.ref==="C1")).toBe(false);
    expect(payload.context.sourceEvidence).toHaveLength(payload.claims.length);
@@ -118,7 +120,7 @@ it("identifies an invented planning child scope and requires a valid anchor on r
   if(request.name!=="upload_domain_plan")return original(settings,request);
   attempts++;
   if(attempts>1) {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    expect(payload.feedback).toContain('Invalid scopePath: "Upload test/Invented child"');
    expect(payload.feedback).toContain("ONE root name with no slash");
   }
@@ -138,7 +140,7 @@ it("requires a corrected proposal after concrete independent review feedback",as
   else if(request.name==="place_topics") {
    const feedback=request.messages.at(-1)?.content;
    corrected=typeof feedback==="string"&&feedback.includes("C3 is an employer responsibility");
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(corrected?["C3"]:["C1","C2","C3"]);
    if(corrected)expect(payload.previousPlacements.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2"]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[corrected&&c.ref==="C3"?"Upload test/Responsibilities":"Upload test/Permits"]}))};
@@ -164,7 +166,7 @@ it("retains subject corrections and identifies omitted refs during a corrective 
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    const feedback=request.messages.at(-1)!.content as string;
    if(proposals>1)expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C2","C3"]);
    if(proposals===3) {
@@ -192,7 +194,7 @@ it("repairs all current members of a flagged destination alongside individually 
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    // The parent-level issue names no refs. C1 and C2 must still be repairable.
    expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2","C3"]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[proposals>1?"Upload test/Responsibilities":c.ref==="C3"?"Upload test":"Upload test/Permits"]}))};
@@ -261,10 +263,10 @@ it("keeps whole-file context and stable references across an 81-unit group",asyn
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:[{scopePath:"Upload test",subject:"Permit rules",reason:"Permit conditions",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    expect(payload.filePlan.groups).toEqual([{scopePath:"Upload test",subject:"Permit rules",reason:"Permit conditions",claims:81}]);
    batchRefs.push(payload.claims.map((c:{ref:string})=>c.ref));
    if(batchRefs.length===2)expect(payload.filedDestinations).toEqual([expect.objectContaining({path:"Upload test/Permits",claims:80})]);
@@ -288,14 +290,14 @@ it("checkpoints bounded planning steps and resumes without repeating a completed
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    planned.push(payload.claims.length);
    expect(payload.overview).toHaveLength(161);
    expect(payload.claims.every((c:{content:string})=>c.content.includes("Permit condition"))).toBe(true);
    if(payload.claims.length===1&&fail){fail=false;throw new Error("Planning connection interrupted");}
    value={groups:[{scopePath:"Upload test",subject:"Permit conditions",reason:"Permit conditions in the source",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    expect(payload.filePlan.groups.reduce((n:number,g:{claims:number})=>n+g.claims,0)).toBe(161);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
@@ -320,10 +322,10 @@ it("resumes independently reviewed batches with full current and cumulative dest
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:[{scopePath:"Upload test",subject:"Permits",reason:"Permit conditions",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    placements.push(payload.claims.length);
    expect(payload.claims.every((c:{content:string})=>c.content.includes("Permit condition"))).toBe(true);
    expect(payload.context.sourceEvidence).toHaveLength(payload.claims.length);
@@ -362,7 +364,7 @@ it("resumes saved review corrections after interruption without regenerating rej
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    if(proposals>1) {
     expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C3"]);
     expect(request.messages.at(-1)!.content).toContain("C3 belongs under Responsibilities");
@@ -395,7 +397,7 @@ it("retains corrections after the retry budget and allows a later resume to fini
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    if(proposals>1)expect(payload.claims.map((c:{ref:string})=>c.ref)).toEqual(["C3"]);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[c.ref==="C3"?"Upload test/Responsibilities":"Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
@@ -426,7 +428,7 @@ it("finishes corrected filing when a fresh evidence check dismisses a repeated o
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
   else if(request.name==="place_topics") {
    proposals++;
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:[proposals>1&&c.ref==="C3"?"Upload test/Responsibilities":"Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    reviews++;
@@ -452,10 +454,10 @@ it("atomically files a book-sized upload without dropping claims beyond API row 
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={groups:[{scopePath:"Upload test",subject:"Permit conditions",reason:"Source-backed permit policy",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
   } else if(request.name==="place_topics") {
-   const payload=JSON.parse(request.messages[1]!.content as string);
+   const payload=payloadOf(request);
    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
   } else if(request.name==="independent_upload_domain_review") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);

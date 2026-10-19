@@ -31,8 +31,11 @@ export type PlaceTopicsInput = {
   sourceTitle: string;
   claims: TopicClaim[];
   existingPaths: string[];
+  // The domain tree when the upload started; existingPaths beyond it were created by earlier batches
+  basePaths?: string[];
   domainTabs?: ReconciliationInput["domainTabs"];
   scopePath?: string;
+  // Evidence for this batch's claims; `sections` (the source outline) is shared by every batch
   context?: unknown;
   filePlan?: unknown;
   // This batch's claims already proposed (a corrective retry re-files only the flagged ones)
@@ -46,7 +49,7 @@ export const placeTopicsAnswerSchema = answerSchema;
 export type PlaceTopicsAnswer = z.infer<typeof answerSchema>;
 export const placeTopicsJsonSchema = z.toJSONSchema(answerSchema);
 
-const SYSTEM_PROMPT = `You are the Domain Decider assigning knowledge units from an upload. You get the source context, a whole-file assignment plan, this scoped group, existing domain examples, semantic neighbors and typed connections. Neighbor claims are read-only evidence. Similarity and graph proximity suggest candidates; judge the actual meaning and ownership before deciding.
+const SYSTEM_PROMPT = `You are the Domain Decider assigning knowledge units from an upload. You get the source context, a whole-file assignment plan, this scoped group, existing domain examples, semantic neighbors and typed connections. The first message is shared by every batch of the file; the second is this batch. newPaths were created by earlier batches and exist like existingPaths. Neighbor claims are read-only evidence. Similarity and graph proximity suggest candidates; judge the actual meaning and ownership before deciding.
 
 Answer with JSON only: { "placements": [{ "ref": "C1", "domainPaths": ["ROOT/TOPIC/SUBTOPIC"] }] }, one item per claim.
 - domainPaths: 1 or 2 paths per claim, ROOT / TOPIC / SUBTOPIC, at most 4 levels.
@@ -64,17 +67,27 @@ Answer with JSON only: { "placements": [{ "ref": "C1", "domainPaths": ["ROOT/TOP
 // Short refs (C1, C2...) instead of ids
 export const topicClaimRef = (index: number) => `C${index + 1}`;
 
-export function buildPlaceTopicsMessages(input: PlaceTopicsInput): ChatMessage[] {
-  const payload = {
-    file: input.sourceTitle,
-    existingPaths: input.existingPaths,
-    domainTabs: input.domainTabs,
-    scopePath: input.scopePath, context: compactFilingEvidence(input.context), filePlan: input.filePlan, filedDestinations: input.filedDestinations, ...compactPreviousPlacements(input.previousPlacements),
+// WHAT ONE REQUEST SENDS: `shared` is word for word the same for every batch of an upload (the
+// file, its outline, the starting tree and the plan), so it is cached once; `batch` is this batch's.
+export function placeTopicsPayload(input: PlaceTopicsInput) {
+  const base = input.basePaths ? new Set(input.basePaths) : null;
+  const { sections, ...evidence } = (input.context && typeof input.context === "object" && !Array.isArray(input.context) ? input.context : {}) as Record<string, unknown>;
+  const shared = { file: input.sourceTitle, existingPaths: input.basePaths ?? input.existingPaths, domainTabs: input.domainTabs, sections, filePlan: input.filePlan };
+  const batch = {
+    scopePath: input.scopePath, ...(base ? { newPaths: input.existingPaths.filter((path) => !base.has(path)) } : {}),
+    filedDestinations: input.filedDestinations, ...compactPreviousPlacements(input.previousPlacements),
+    context: input.context === undefined ? undefined : compactFilingEvidence(evidence),
     claims: input.claims.map((claim, index) => ({ ref: claim.ref ?? topicClaimRef(index), title: claim.title, content: claim.content, about: claim.entities })),
   };
+  return { shared, batch };
+}
+
+export function buildPlaceTopicsMessages(input: PlaceTopicsInput): ChatMessage[] {
+  const { shared, batch } = placeTopicsPayload(input);
   return [
     { role: "system", content: SYSTEM_PROMPT + "\n" + TAB_FILING_RULES },
-    { role: "user", content: JSON.stringify(payload) },
+    { role: "user", content: JSON.stringify(shared), cache: true },
+    { role: "user", content: JSON.stringify(batch) },
   ];
 }
 
