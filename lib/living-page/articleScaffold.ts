@@ -166,8 +166,22 @@ export async function articleAdditionActions(db: DbRpc, client: AdminSupabase, s
   ];
 }
 
+// NO-OP GUARD: with no new evidence, no guidance and nothing stale, re-planning the
+// article would only re-outline what it already says (and reshuffle sections).
+// An unfinished saved plan still resumes, so a half-applied scaffold is completed.
+async function hasPendingStructureWork(db: DbRpc, client: AdminSupabase, pageId: string): Promise<boolean> {
+  if ((await readArticleStructure(db, pageId)).planned) return true;
+  const { data: rows, error } = await client.from("sections").select("id,mode").eq("page_id", pageId).is("retired_at", null);
+  if (error) throw new Error(error.message);
+  for (const row of rows ?? []) {
+    if (row.mode === "generated" && needsRewrite(await db.call<SectionState>("read_section_state", { p_section_id: row.id }))) return true;
+  }
+  return false;
+}
+
 export async function applyArticleScaffold(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, writer: SectionWriter,
   pageId: string, additions: SectionDraft[], note = "", progress?: (detail: string) => void): Promise<{ changed: number; sectionIds: string[] }> {
+  if (!additions.length && !note.trim() && !await hasPendingStructureWork(db, client, pageId)) return { changed: 0, sectionIds: [] };
   const intent = createHash("sha256").update(JSON.stringify(canonical({ pageId, note, units: additions.flatMap(section => section.query.unitIds ?? []).sort() }))).digest("hex");
   const { changes, rationale, tokensIn, tokensOut } = await workflowStep(`article-scaffold:${intent}:plan-v5-claims`, () => prepareArticleScaffold(db, client, settings, pageId, additions, note, progress));
   const snapshot = createHash("sha256").update(JSON.stringify(canonical(changes))).digest("hex");

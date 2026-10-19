@@ -274,3 +274,23 @@ it("does not rewrite a retained section merely because its cached plan snapshot 
   expect(introReads).toBe(2);
   expect(rebuild.mock.calls.map(args => args[2])).toEqual(["details"]);
 });
+it("skips scope, outline and writing when nothing new arrived and nothing is stale", async () => {
+  const { db, client, call } = context();
+  expect(await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", [])).toEqual({ changed: 0, sectionIds: [] });
+  expect(scope).not.toHaveBeenCalled();
+  expect(planner).not.toHaveBeenCalled();
+  expect(call.mock.calls.map(([name]) => name)).not.toContain("save_article_structure_plan");
+});
+it("still plans with no additions when a person's note asks for it, a section is stale, or a saved plan is unfinished", async () => {
+  const { db, client, call } = context();
+  planner.mockResolvedValue({ plan: { title: "Subject", introduction: ["C1"], sections: [{ title: "Details", claims: ["C2"] }] }, tokensIn: 1, tokensOut: 1 });
+  await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", [], "Merge the short sections.");
+  expect(planner).toHaveBeenCalledTimes(1);
+  existing[1]!.state.lines[0]!.needsRewrite = true;
+  try { await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", []); }
+  finally { existing[1]!.state.lines[0]!.needsRewrite = false; }
+  expect(planner).toHaveBeenCalledTimes(2);
+  call.mockImplementationOnce(async () => ({ planned: { id: "unfinished" }, applied: null, current: [] }) as never);
+  await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", []);
+  expect(planner).toHaveBeenCalledTimes(3);
+});
