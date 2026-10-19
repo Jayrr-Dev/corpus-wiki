@@ -1,9 +1,9 @@
 import { withSettledActor } from "@/lib/auth/currentPerson";
-import { processingMetric, withProcessingReport } from "@/lib/processing/metrics";
-import { processingCancellation } from "@/lib/processing/cancellation";
 import type { CommitResult } from "@/lib/change-control";
 import { commitAsRole } from "@/lib/change-control";
 import { proposePages, rebuildAfterEvent } from "@/lib/living-page";
+import { processingCancellation } from "@/lib/processing/cancellation";
+import { processingMetric, withProcessingReport } from "@/lib/processing/metrics";
 import type { PipelineDeps } from "./pipeline";
 import type { ProcessUploadResult } from "./types";
 import { uploadExecution, workflowStep } from "./workflowContext";
@@ -61,28 +61,16 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
         await release("waiting");
         return;
       }
-      type ArticleInput = { unitId: string; revisionId: string };
-      const articleInputs = () => db.call<ArticleInput[]>("upload_article_inputs", { p_event_id: eventId });
-      const enrichmentUnits = () => workflowStep("enrichment-input", async () => {
-        const before = new Map((await workflowStep("articles-input", articleInputs)).map((unit) => [unit.unitId, unit.revisionId]));
-        return (await articleInputs()).filter((unit) => before.get(unit.unitId) !== unit.revisionId).map((unit) => unit.unitId);
-      });
+      const articleInputs = () => db.call<{ unitId: string; revisionId: string }[]>("upload_article_inputs", { p_event_id: eventId });
       const run: Record<(typeof KNOWLEDGE_STAGES)[number] | (typeof ARTICLE_STAGES)[number] | (typeof ENRICHMENT_STAGES)[number] | "articles-ready", () => Promise<unknown>> = {
-        embeddings: async () => deps.claimEmbedder?.(),
-        // Cleanup can revise the surviving claim. Its original vector describes
-        // an old revision; refresh before article review searches for evidence.
-        "embeddings-cleaned": async () => deps.claimEmbedder?.(),
-        tidy: async () => deps.entityTidier?.(eventId),
-        describe: async () => deps.entityDescriber?.(eventId),
-        profiles: async () => deps.profileWriter?.(eventId),
         duplicates: async () => deps.deduper?.(eventId),
+        tidy: async () => deps.entityTidier?.(eventId),
         place: async () => deps.topicPlacer?.(eventId),
         hierarchy: async () => deps.hierarchyOrganizer?.(eventId),
-        glossary: async () => deps.glossaryGenerator?.(),
+        // Definitions are claims. They are saved before the index, so the one
+        // article pass can cite them.
         expand: async () => deps.knowledgeExpander?.(eventId),
-        "embeddings-enrichment": async () => {
-          if ((await enrichmentUnits()).length) await deps.claimEmbedder?.();
-        },
+        embeddings: async () => deps.claimEmbedder?.(),
         plan: async () => {
           const refreshed = await proposePages(db, eventId, deps.pagePlanner);
           await deps.articleOrchestrator?.(eventId);
@@ -97,29 +85,16 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           await workflowStep("articles-input", articleInputs);
           return { readyAt: new Date().toISOString() };
         },
-        "hierarchy-enrichment": async () => {
-          if ((await enrichmentUnits()).length) await deps.hierarchyOrganizer?.(eventId);
-        },
-        "plan-enrichment": async () => {
-          const added = await enrichmentUnits();
-          if (!added.length) return;
-          await proposePages(db, eventId, deps.pagePlanner, "pages:propose:enrichment");
-          await deps.articleOrchestrator?.(eventId, `enrichment:${eventId}`, added);
-        },
-        "pages-enrichment": async () => {
-          const added = await enrichmentUnits();
-          if (!added.length) return;
-          await rebuildAfterEvent(db, deps.writer, eventId, `enrichment:${eventId}`, added);
-          if (deps.articleOrchestrator) await deps.hierarchyOrganizer?.(eventId);
-        },
+        describe: async () => deps.entityDescriber?.(eventId),
+        profiles: async () => deps.profileWriter?.(eventId),
+        glossary: async () => deps.glossaryGenerator?.(),
         // A failed upkeep read is unfinished work. Keep its checkpoint resumable
         // instead of showing a completed stage after only logging the failure.
         curate: async () => deps.pageMaintainer?.(eventId),
       };
       // Completed roles are not repeated on resume.
-      // The first reviewed articles are usable before optional enrichment begins.
-      // The existing post-response continuation and durable recovery queue finish
-      // background stages; their checkpoints retain the same cancel/resume fencing.
+      // Articles are written once the knowledge, definitions and index are saved.
+      // Descriptions, profiles, the glossary and the curator run after that and add no claims.
       const stages = job === "knowledge" ? KNOWLEDGE_STAGES : [...KNOWLEDGE_STAGES, ...ARTICLE_STAGES, "articles-ready" as const, ...ENRICHMENT_STAGES];
       let failed = false;
       for (const key of stages) {
@@ -129,8 +104,6 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           // Announce only after the durable checkpoint succeeded, including on resume.
           if (key === "articles-ready") console.info("Upload articles ready", { eventId, ...(result as { readyAt: string }) });
         }
-        // Each pass waits for its own prerequisites. Expanded knowledge has a
-        // separate page pass, so it cannot reuse the first pass's checkpoints.
         catch { failed = true; break; }
         // Filing may propose a new root: the rest waits for that approval, as after the save
         if (key === "place" && await db.call<boolean>("upload_workflow_waiting", { p_event_id: eventId })) {

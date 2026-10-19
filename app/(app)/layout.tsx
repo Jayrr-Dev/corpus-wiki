@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
-import { PendingStaleRefresh } from "@/components/living-page/PendingStaleRefresh";
 import { BrowserErrorReporter } from "@/components/error/BrowserErrorReporter";
 import { ExceptionNotifications } from "@/components/toast/ExceptionNotifications";
 import { AppShell } from "@/components/shell";
@@ -25,7 +24,6 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <SpaceProvider space={activeSpace}>
         <TimeZoneProvider timeZone={timeZone}>
           <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email}>
-            <PendingStaleRefresh />
             <ExceptionNotifications />
             <BrowserErrorReporter />
             {children}

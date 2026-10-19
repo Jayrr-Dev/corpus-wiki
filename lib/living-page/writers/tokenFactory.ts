@@ -1,20 +1,20 @@
-import { TOPIC_FIRST_PROSE, SOURCE_ATTRIBUTION_POLICY } from "../articleStyle";
-import { checkEditorialDraft, selectEditorialClaims } from "./editorialSelection";
-import { revisionToActions } from "../plan";
 import "server-only";
+import { SOURCE_ATTRIBUTION_POLICY, TOPIC_FIRST_PROSE } from "../articleStyle";
+import { revisionToActions } from "../plan";
+import { checkEditorialDraft, selectEditorialClaims } from "./editorialSelection";
 
-import { z } from "zod";
-import { addUsage, type ChatMessage, chatJson, type StreamedSoFar, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
-import type { SectionReviseInput, SectionRevision } from "../types";
-import { partialSectionAnswer, type SectionProgress } from "../buildProgress";
+import { addUsage, chatJson, type ChatMessage, type StreamedSoFar, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
-import { withoutEditorialDashes } from "../punctuation";
-import { unsupportedProseNumbers, withSupportedCharts } from "../blocks";
 import type { StageSkills } from "@/lib/ai/skills/types";
-import { checkLines, failedLines, type CheckedClaim, type LineToCheck, type LineVerdict } from "./lineCheck";
-import { TEXT_PATCH_INSTRUCTIONS, TextPatchError } from "../textPatch";
-import { materializePatchAnswer, patchAnswerSchema } from "./patchAnswer";
+import { z } from "zod";
+import { unsupportedProseNumbers, withSupportedCharts } from "../blocks";
+import { partialSectionAnswer, type SectionProgress } from "../buildProgress";
 import { IncompleteSectionEvidence } from "../draftEvidence";
+import { withoutEditorialDashes } from "../punctuation";
+import { TEXT_PATCH_INSTRUCTIONS, TextPatchError } from "../textPatch";
+import type { SectionReviseInput, SectionRevision } from "../types";
+import { checkLines, failedLines, type CheckedClaim, type LineToCheck, type LineVerdict } from "./lineCheck";
+import { materializePatchAnswer, patchAnswerSchema } from "./patchAnswer";
 
 // =====================================================================
 // TOKEN FACTORY WRITER: Nemotron rewrites only the lines whose claims
@@ -85,7 +85,9 @@ export class TokenFactorySectionWriter {
   // and streams the paragraphs to `progress` as they are written.
   // The answer is fact-checked; failed lines get one fix, and lines still failing are dropped.
   async reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision> {
-    const selection = await selectEditorialClaims(this.settings, input);
+    const selection = input.skipEditorialReview
+      ? { omittedUnitIds: [] as string[], tokensIn: 0, tokensOut: 0 }
+      : await selectEditorialClaims(this.settings, input);
     const omitted = new Set(selection.omittedUnitIds);
     input = { ...input, units: input.units.filter((unit) => !omitted.has(unit.unitId)), uncoveredUnitIds: input.uncoveredUnitIds.filter((id) => !omitted.has(id)) };
     const refs = buildRefs(input);
@@ -132,7 +134,7 @@ export class TokenFactorySectionWriter {
     const check = async (draft: SectionAnswer) => {
       const checked = await checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: linesToCheck(draft, claims), sectionClaims: sectionClaims(claims) });
       if (patchMode && linesToCheck(draft, claims).some((line) => !checked.verdicts.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
-      const editorial = input.pageContext?.length || omitted.size
+      const editorial = !input.skipEditorialReview && (input.pageContext?.length || omitted.size)
         ? await checkEditorialDraft(this.settings, input, linesToCheck(draft, claims))
         : { verdicts: [], tokensIn: 0, tokensOut: 0 };
       // Match the final commit's numeric check before the repair attempt, so a

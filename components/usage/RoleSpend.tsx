@@ -41,7 +41,7 @@ export function RoleSpendPanel({ calls }: { calls: Calls }) {
           <p>The Extractor, Organizer and other roles that only guide the Reconciler’s request are billed to the Reconciler.</p>
         </InfoPopover>
       </div>
-      <p className="text-panel text-muted-foreground">{calls.isPending ? "Loading…" : <>All time <span className="font-mono text-foreground">{formatUsd(spent)}</span></>}</p>
+      <p className="text-panel text-muted-foreground">{calls.isPending ? "Loading…" : <>This space <span className="font-mono text-foreground">{formatUsd(spent)}</span></>}</p>
     </div>
     {calls.error ? <p role="alert" className="mt-3 text-panel text-failed">Could not load AI calls: {calls.error.message}</p>
       : !calls.isPending && totals.length === 0 ? <p className="mt-3 text-panel text-faint">No AI calls yet.</p>

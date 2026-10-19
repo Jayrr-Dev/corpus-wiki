@@ -1,35 +1,35 @@
 "use server";
 
-import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
-import { loadStageSkills } from "@/lib/ai/skills/server";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { readAllowExternalKnowledge, readAutoUpdateStale, readModelChoice } from "@/lib/ai/models";
-import { webSearchKey } from "@/lib/knowledge/webSearch";
-import { type ForceCreateResult, fillThinSectionsFromWeb, forceCreateSection as runForceCreate } from "@/lib/living-page/forceCreateSection";
-import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
-import { orchestrateEntityArticles } from "@/lib/living-page/articleOrchestrator";
-import { organizeExistingEntityContext } from "@/lib/living-page/organizeHierarchy";
 import { embedderFromEnv } from "@/lib/ai/embeddings";
-import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
+import { readAllowExternalKnowledge, readAutoUpdateStale, readModelChoice } from "@/lib/ai/models";
+import { loadStageSkills } from "@/lib/ai/skills/server";
+import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { requireUser } from "@/lib/auth/requireUser";
-import { type CommitResult, commitPersonEdit, revertChangeSet } from "@/lib/change-control";
+import { commitPersonEdit, revertChangeSet, type CommitResult } from "@/lib/change-control";
+import { isRunning, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { rebuildPage, rebuildSection, type SectionRef, type SectionState } from "@/lib/living-page";
-import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
-import { refreshOrganizationOverviews } from "@/lib/living-page/refreshOrganizationOverviews";
-import { pruneEmptySections } from "@/lib/living-page/pruneEmptySections";
-import { restructureUpdate, updateNeedsStructure } from "@/lib/living-page/restructureUpdate";
-import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
+import { orchestrateEntityArticles } from "@/lib/living-page/articleOrchestrator";
+import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { applyArticleScaffold } from "@/lib/living-page/articleScaffold";
+import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
 import { emptyArticleCandidates } from "@/lib/living-page/emptyArticleCandidates";
+import { fillThinSectionsFromWeb, forceCreateSection as runForceCreate, type ForceCreateResult } from "@/lib/living-page/forceCreateSection";
+import { expandEntityKnowledge } from "@/lib/living-page/knowledgeExpansion";
+import { organizeExistingEntityContext } from "@/lib/living-page/organizeHierarchy";
 import { pageAndDescendants } from "@/lib/living-page/pageHierarchy";
+import { pruneEmptySections } from "@/lib/living-page/pruneEmptySections";
+import { refreshOrganizationOverviews } from "@/lib/living-page/refreshOrganizationOverviews";
+import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
+import { restructureUpdate, updateNeedsStructure } from "@/lib/living-page/restructureUpdate";
 import { articleUpdateSchema, type ArticleUpdateRequest } from "@/lib/living-page/updateRequest";
-import { after } from "next/server";
-import { z } from "zod";
+import { readPages } from "@/lib/queries/batched";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
-import { readPages } from "@/lib/queries/batched";
-import { isRunning, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
-import { type ActionResult, toActionResult } from "./result";
+import { after } from "next/server";
+import { z } from "zod";
+import { toActionResult, type ActionResult } from "./result";
 
 // =====================================================================
 // PAGE ACTIONS (sidebar menu, Pages list, the page itself). Every edit
@@ -381,6 +381,7 @@ async function rewriteStaleSections(sectionIds: string[]): Promise<number> {
   const uploads = events.length ? await db.call<UploadWorkflow[]>("read_upload_workflows", { p_event_ids: events.map(event => event.id) }) : [];
   if (uploads.some(isRunning)) return 0;
   let completed = 0;
+  const reviewed: string[] = [];
   for (const sectionId of sectionIds) {
     if (rebuildingSections.has(sectionId)) continue;
     rebuildingSections.add(sectionId);
@@ -391,12 +392,13 @@ async function rewriteStaleSections(sectionIds: string[]): Promise<number> {
       if (!section || section.build_cancelled || section.status === "building") continue;
       const stale = section.status === "stale" || state.lines.some((line) => line.needsRewrite);
       if (!stale) continue;
-      const finished = await rebuildSection(db, writer, sectionId, null);
-      if (finished && !finished.rebuildRequested) completed += 1;
+      const finished = await rebuildSection(db, writer, sectionId, null, false, { skipEditorialReview: true });
+      if (finished && !finished.rebuildRequested) { completed += 1; reviewed.push(sectionId); }
     } finally {
       rebuildingSections.delete(sectionId);
     }
   }
+  if (reviewed.length) await writer.reviewSections?.(reviewed);
   return completed;
 }
 
@@ -406,17 +408,6 @@ export async function refreshStaleSections(sectionIds: string[]): Promise<Action
   return toActionResult(async () => {
     await requireUser();
     const ids = z.array(z.uuid()).max(30).parse(sectionIds);
-    return { sections: await rewriteStaleSections(ids) };
-  });
-}
-
-// BACKGROUND: any signed-in page can start the pending rewrites. The article does not have to be open.
-export async function refreshPendingStaleSections(): Promise<ActionResult<{ sections: number }>> {
-  return toActionResult(async () => {
-    await requireUser();
-    const { data, error } = await getAdminSupabase().from("stale_lines").select("section_id");
-    if (error) throw new Error(error.message);
-    const ids = [...new Set((data ?? []).flatMap((row) => row.section_id ? [row.section_id] : []))].slice(0, 30);
     return { sections: await rewriteStaleSections(ids) };
   });
 }

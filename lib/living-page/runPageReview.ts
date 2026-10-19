@@ -1,22 +1,22 @@
-import { reviewMap } from "./reviewConcurrency";
-import { workflowStep, workflowWrite, uploadExecution, reportUploadProgress } from "@/lib/ingest/workflowContext";
+import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import { reviewContextWindow } from "@/lib/ai/contextWindow";
+import { type Embedder } from "@/lib/ai/embeddings";
+import { CONCISE_OUTPUT_INSTRUCTIONS } from "@/lib/ai/outputStyle";
 import { autoAcceptHeld } from "@/lib/change-control";
+import type { DbRpc } from "@/lib/db/rpc";
+import { reportUploadProgress, uploadExecution, workflowStep, workflowWrite } from "@/lib/ingest/workflowContext";
+import { similarUnits } from "@/lib/knowledge/embeddingStore";
 import { createHash } from "node:crypto";
 import "server-only";
 import { z } from "zod";
-import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
-import { type Embedder } from "@/lib/ai/embeddings";
-import { similarUnits } from "@/lib/knowledge/embeddingStore";
-import type { DbRpc } from "@/lib/db/rpc";
-import { PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, validatePageReview, settleUnplacedFindings, duplicateSectionRepairs, needsPageReviewDecision, type PageReviewSnapshot } from "./pageReview";
-import { reviewStreamDetail } from "./reviewProgress";
-import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
-import { CONCISE_OUTPUT_INSTRUCTIONS } from "@/lib/ai/outputStyle";
+import { expandArticleCoverage, type CoverageDeps } from "./articleCoverage";
 import { reviewFragments } from "./fragmentReview";
+import { duplicateSectionRepairs, needsPageReviewDecision, PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, settleUnplacedFindings, validatePageReview, type PageReviewSnapshot } from "./pageReview";
+import { reviewMap } from "./reviewConcurrency";
+import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
 import { checkReviewEdits, ReviewEditsRejected } from "./reviewEditCheck";
 import { materializeReviewPatches, pagePatchReviewSchema } from "./reviewPatches";
-import { expandArticleCoverage, type CoverageDeps } from "./articleCoverage";
+import { reviewStreamDetail } from "./reviewProgress";
 
 export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null; coverageComplete?: boolean };
 export type PageReviewStatus = { latest: { summary: string; edits: number; exceptions: number; change_set_id: string | null; created_at: string } | null; openExceptions: number };
@@ -180,7 +180,7 @@ export async function verifyEventArticleReviews(db: DbRpc, settings: TokenFactor
 
 export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string, coverage?: CoverageDeps) {
   const pages = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-  const reviewedProgress = (done: number) => reportUploadProgress({ step: checkpointScope ? "pages-enrichment" : "pages", done, total: pages.length, phase: "review" });
+  const reviewedProgress = (done: number) => reportUploadProgress({ step: "pages", done, total: pages.length, phase: "review" });
   if (pages.length) await reviewedProgress(0);
   for (const [index, pageId] of pages.entries()) {
     await workflowStep(`editorial-review:v2:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}`, () => runPageReview(db, settings, pageId, embedder, undefined, undefined, coverage));

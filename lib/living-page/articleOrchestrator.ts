@@ -1,27 +1,27 @@
-import "server-only";
-import { createHash } from "node:crypto";
 import { addUsage, ANSWER_TOKEN_BUDGET, chatJson, CompletionLengthError, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { Embedder } from "@/lib/ai/embeddings";
 import { readArticleCharter } from "@/lib/ai/models";
-import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
+import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
 import type { DraftAction, SectionDraft } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import { reportUploadProgress, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { similarUnits } from "@/lib/knowledge/embeddingStore";
-import type { AdminSupabase } from "@/lib/supabase/admin";
 import { readIdBatches, readPages } from "@/lib/queries/batched";
+import type { AdminSupabase } from "@/lib/supabase/admin";
+import { createHash } from "node:crypto";
+import "server-only";
+import { articleKnowledgeCandidates } from "./articleKnowledgeCandidates";
 import { planArticle, topicSections } from "./articlePlanner";
-import { OutlineRejectedError, OUTLINE_POLICY_VERSION } from "./outlineBuilder";
-import { articleAdditionActions } from "./articleScaffold";
 import { ARTICLE_PROPOSER_PROMPT, ARTICLE_PROPOSER_PROMPT_VERSION, articleProposalsJsonSchema, articleProposalsSchema, buildProposerMessages, type PlannedArticle, type ProposerClaim, type ProposerEntity, readProposals } from "./articleProposer";
 import { type ArticleIndexEntry, type ArticleProposal, type ArticleReviewDecision, nextStep, type RelatedKnowledge } from "./articleReview";
-import { groupClaimsForArticle } from "./discoverArticleUpdates";
-import { ARTICLE_REVIEW_PROMPT_VERSION, reviewArticleProposal } from "./runArticleReview";
-import { articleKnowledgeCandidates } from "./articleKnowledgeCandidates";
+import { articleAdditionActions } from "./articleScaffold";
 import { readArticleStructure, saveArticleStructure } from "./articleStructureMemory";
+import { groupClaimsForArticle } from "./discoverArticleUpdates";
+import { OUTLINE_POLICY_VERSION, OutlineRejectedError } from "./outlineBuilder";
+import { ARTICLE_REVIEW_PROMPT_VERSION, reviewArticleProposal } from "./runArticleReview";
 
 // =====================================================================
 // ARTICLE ORCHESTRATOR: the one place new articles come from.
@@ -294,8 +294,7 @@ async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope
     `article:${scope}:${index}:${createHash("sha256").update(JSON.stringify(item)).digest("hex").slice(0, 16)}`));
   let failed = false;
   let failure: unknown;
-  const progressStep = eventId && scope === eventId ? "plan"
-    : eventId && scope === `enrichment:${eventId}` ? "plan-enrichment" : null;
+  const progressStep = eventId && (scope === eventId || scope === `enrichment:${eventId}`) ? "plan" : null;
   let completed = 0;
   if (progressStep) await reportUploadProgress({ step: progressStep, done: completed, total: planned.length });
   for (const [index, item] of planned.entries()) {

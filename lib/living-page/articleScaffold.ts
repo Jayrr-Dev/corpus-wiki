@@ -1,40 +1,51 @@
-import "server-only";
-import { createHash } from "node:crypto";
 import { addUsage, type TokenFactorySettings } from "@/lib/ai/chat";
 import type { DraftAction, SectionDraft } from "@/lib/ai/types";
 import { commitChangeSet, revertChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
-import type { AdminSupabase } from "@/lib/supabase/admin";
-import { readIdBatches, readPages } from "@/lib/queries/batched";
+import { uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
-import { planArticle, topicSections } from "./articlePlanner";
+import { readIdBatches, readPages } from "@/lib/queries/batched";
+import type { AdminSupabase } from "@/lib/supabase/admin";
+import { createHash } from "node:crypto";
+import "server-only";
 import { articleSections } from "./articlePlan";
+import { planArticle, topicSections } from "./articlePlanner";
+import { selectArticleScope } from "./articleScope";
+import { finishArticleStructure, readArticleStructure, saveArticleStructure, type ArticleStructureSection } from "./articleStructureMemory";
 import { rebuildUploadSection, type SectionWriter } from "./index";
 import { needsRewrite } from "./plan";
-import { selectArticleScope } from "./articleScope";
 import type { SectionState, SectionUnit } from "./types";
-import { uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
-import { finishArticleStructure, readArticleStructure, saveArticleStructure, type ArticleStructureSection } from "./articleStructureMemory";
 
-export type ExistingScaffoldSection = { state: SectionState; position: number; protected: boolean };
-export type ScaffoldChanges = { keep: ExistingScaffoldSection[]; replace: ExistingScaffoldSection[]; create: (SectionDraft & { position: number })[] };
+export type ExistingScaffoldSection = { state: SectionState; position: number; protected: boolean; query?: unknown };
+export type KeptScaffoldSection = ExistingScaffoldSection & { plannedUnitIds: string[] };
+export type ScaffoldChanges = { keep: KeptScaffoldSection[]; replace: ExistingScaffoldSection[]; create: (SectionDraft & { position: number })[] };
 const sameIds = (a: string[], b: string[]) => JSON.stringify([...new Set(a)].sort()) === JSON.stringify([...new Set(b)].sort());
+// Same subject: at least half of what the section cites stays in the plan.
+const sameSubject = (current: string[], planned: string[]) => {
+  if (sameIds(current, planned)) return true;
+  const ids = new Set(planned);
+  const unique = [...new Set(current)];
+  return unique.length > 0 && unique.filter(id => ids.has(id)).length * 2 >= unique.length;
+};
 function canonical(value: unknown): unknown {
   return Array.isArray(value) ? value.map(canonical) : value && typeof value === "object"
     ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, canonical(item)])) : value;
 }
 
-// Diff the reviewed whole-article plan against what exists. Preserve exact
-// matches, including their text, history and IDs. Reordered sections are targeted
-// replacements, not a reason to rewrite every other section.
+// Diff the reviewed whole-article plan against what exists. A same-title section
+// stays when at least half its claims stay: added claims are uncovered and
+// removed claims flag the lines that cite them. Retire it only when the heading
+// is gone or the claims are a different subject. Reordered sections are targeted replacements.
 export function scaffoldChanges(existing: ExistingScaffoldSection[], planned: SectionDraft[]): ScaffoldChanges {
   const kept = new Set<string>();
+  const plannedIds = new Map<string, string[]>();
   let previousPosition = -Infinity;
   const matches = planned.map(section => {
+    const nextIds = section.query.unitIds ?? [];
     const match = existing.find(old => !old.protected && !kept.has(old.state.sectionId)
       && old.position > previousPosition && old.state.title === section.title
-      && sameIds(old.state.units.map(unit => unit.unitId), section.query.unitIds ?? []));
-    if (match) { kept.add(match.state.sectionId); previousPosition = match.position; }
+      && sameSubject(old.state.units.map(unit => unit.unitId), nextIds));
+    if (match) { kept.add(match.state.sectionId); plannedIds.set(match.state.sectionId, nextIds); previousPosition = match.position; }
     return match;
   });
   let inserted = 0;
@@ -44,8 +55,9 @@ export function scaffoldChanges(existing: ExistingScaffoldSection[], planned: Se
     const next = matches.slice(index + 1).find(Boolean);
     return [{ ...section, position: (next?.position ?? end) + inserted++ }];
   });
-  return { keep: existing.filter(section => section.protected || kept.has(section.state.sectionId)),
-    replace: existing.filter(section => !section.protected && !kept.has(section.state.sectionId)), create };
+  return { keep: existing.filter(section => section.protected || kept.has(section.state.sectionId)).map(section => ({
+    ...section, plannedUnitIds: plannedIds.get(section.state.sectionId) ?? section.state.units.map(unit => unit.unitId),
+  })), replace: existing.filter(section => !section.protected && !kept.has(section.state.sectionId)), create };
 }
 
 export async function loadScaffoldUnits(client: AdminSupabase, ids: string[]): Promise<SectionUnit[]> {
@@ -85,7 +97,7 @@ export async function prepareArticleScaffold(db: DbRpc, client: AdminSupabase, s
   pageId: string, additions: SectionDraft[], note: string, progress?: (detail: string) => void) {
   const { data: page, error: pageError } = await client.from("pages").select("title,scope").eq("id", pageId).single();
   if (pageError) throw new Error(pageError.message);
-  const { data: rows, error } = await client.from("sections").select("id,mode,position").eq("page_id", pageId).is("retired_at", null).order("position");
+  const { data: rows, error } = await client.from("sections").select("id,mode,position,query").eq("page_id", pageId).is("retired_at", null).order("position");
   if (error) throw new Error(error.message);
   let existing: ExistingScaffoldSection[] = [];
   for (const row of rows ?? []) {
@@ -93,7 +105,7 @@ export async function prepareArticleScaffold(db: DbRpc, client: AdminSupabase, s
     const protectedSection = row.mode !== "generated" || state.lines.some(line => line.author === "person")
       || (!state.units.length && state.lines.some(line => line.content.trim()))
       || await db.call<boolean>("composer_section_has_images", { p_section_id: row.id });
-    existing.push({ state, position: row.position, protected: protectedSection });
+    existing.push({ state, position: row.position, protected: protectedSection, query: row.query ?? null });
   }
   const editable = existing.filter(section => !section.protected);
   const extra = await loadScaffoldUnits(client, additions.flatMap(section => section.query.unitIds ?? []));
@@ -105,7 +117,7 @@ export async function prepareArticleScaffold(db: DbRpc, client: AdminSupabase, s
   existing = existing.map(section => section.state.units.some(unit => excluded.has(unit.unitId)) ? { ...section, protected: true } : section);
   const frozenUnits = new Set(existing.filter(section => section.protected).flatMap(section => section.state.units.map(unit => unit.unitId)));
   units = units.filter(unit => !excluded.has(unit.unitId) && !frozenUnits.has(unit.unitId));
-  if (!units.length) return { changes: { keep: existing, replace: [], create: [] } as ScaffoldChanges, rationale: "Keep saved sections; no selected evidence remains within this scope.", tokensIn: scoped.tokensIn, tokensOut: scoped.tokensOut };
+  if (!units.length) return { changes: { keep: existing.map(section => ({ ...section, plannedUnitIds: section.state.units.map(unit => unit.unitId) })), replace: [], create: [] }, rationale: "Keep saved sections; no selected evidence remains within this scope.", tokensIn: scoped.tokensIn, tokensOut: scoped.tokensOut };
   progress?.("Planning what to keep, update, add, merge, or remove before writing…");
   const knowledge = { entity: { id: "", type: "topic", key: "", name: page.title }, units };
   const refOf = new Map(units.map((unit, index) => [unit.unitId, `C${index + 1}`]));
@@ -129,6 +141,13 @@ export async function prepareArticleScaffold(db: DbRpc, client: AdminSupabase, s
   return { changes, rationale: rationale ?? "Organize the current article and newly selected evidence into coherent sections.", ...addUsage(scoped, { tokensIn, tokensOut }) };
 }
 
+// New claims become uncovered once the section query includes them. Removed
+// claims leave the query, so the lines that still cite them need a rewrite.
+export function keptClaimActions(changes: ScaffoldChanges): DraftAction[] {
+  return changes.keep.flatMap((section): DraftAction[] => section.protected || sameIds(section.state.units.map(unit => unit.unitId), section.plannedUnitIds) ? []
+    : [{ ...base, type: "update_section_query", targetId: section.state.sectionId, input: { query: { article: true, unitIds: section.plannedUnitIds }, fromQuery: section.query ?? null } }]);
+}
+
 // Incremental discovery groups select evidence. Review the whole article before
 // turning them into actions, so every upload does not append another tiny H2.
 export async function articleAdditionActions(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings,
@@ -136,6 +155,7 @@ export async function articleAdditionActions(db: DbRpc, client: AdminSupabase, s
   if (!additions.length) return [];
   const { changes } = await prepareArticleScaffold(db, client, settings, pageId, additions, note);
   return [
+    ...keptClaimActions(changes),
     ...changes.replace.map((section): DraftAction => ({ ...base, type: "retire_section", targetId: section.state.sectionId, input: {} })),
     ...changes.create.map((section): DraftAction => ({ ...base, type: "create_section", targetId: null, input: { pageId, ...section } })),
   ];
@@ -144,12 +164,13 @@ export async function articleAdditionActions(db: DbRpc, client: AdminSupabase, s
 export async function applyArticleScaffold(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, writer: SectionWriter,
   pageId: string, additions: SectionDraft[], note = "", progress?: (detail: string) => void): Promise<{ changed: number; sectionIds: string[] }> {
   const intent = createHash("sha256").update(JSON.stringify(canonical({ pageId, note, units: additions.flatMap(section => section.query.unitIds ?? []).sort() }))).digest("hex");
-  const { changes, rationale, tokensIn, tokensOut } = await workflowStep(`article-scaffold:${intent}:plan-v3-composites`, () => prepareArticleScaffold(db, client, settings, pageId, additions, note, progress));
+  const { changes, rationale, tokensIn, tokensOut } = await workflowStep(`article-scaffold:${intent}:plan-v5-claims`, () => prepareArticleScaffold(db, client, settings, pageId, additions, note, progress));
   const snapshot = createHash("sha256").update(JSON.stringify(canonical(changes))).digest("hex");
   const articleScaffold = { keepSectionIds: changes.keep.map(section => section.state.sectionId), replaceSectionIds: changes.replace.map(section => section.state.sectionId),
     sections: changes.create.map(section => ({ title: section.title, unitIds: section.query.unitIds ?? [], position: section.position })) };
   progress?.(`Structure planned: keep ${changes.keep.length} sections, replace or merge ${changes.replace.length}, and write ${changes.create.length}.`);
-  const projected: ArticleStructureSection[] = [...changes.keep, ...changes.replace].map(section => ({ sectionId: section.state.sectionId, title: section.state.title, position: section.position, unitIds: section.state.units.map(unit => unit.unitId), protected: section.protected }));
+  const projected: ArticleStructureSection[] = [...changes.keep.map(section => ({ section, unitIds: section.plannedUnitIds })), ...changes.replace.map(section => ({ section, unitIds: section.state.units.map(unit => unit.unitId) }))]
+    .map(({ section, unitIds }) => ({ sectionId: section.state.sectionId, title: section.state.title, position: section.position, unitIds, protected: section.protected }));
   for (const section of changes.create) {
     for (const old of projected) if (old.position >= section.position) old.position++;
     projected.push({ sectionId: null, title: section.title, position: section.position, unitIds: section.query.unitIds ?? [] });
@@ -158,27 +179,58 @@ export async function applyArticleScaffold(db: DbRpc, client: AdminSupabase, set
   const structure = projected.filter(section => !section.sectionId || !replacedIds.has(section.sectionId)).sort((a, b) => a.position - b.position);
   const savedPlanId = await saveArticleStructure(db, { pageId, key: snapshot, structure, changes: articleScaffold, rationale, model: settings.model ?? null });
   const finishSavedPlan = async () => finishArticleStructure(db, savedPlanId, "applied", (await readArticleStructure(db, pageId)).current);
+  // Kept sections take their planned claims before anything is created or retired,
+  // so a claim moving out of a replaced section always has a live home.
+  const claimActions = keptClaimActions(changes);
+  const assignKeptClaims = () => claimActions.length ? workflowStep(`article-scaffold:${pageId}:${snapshot}:claims`, async () => {
+    for (const action of claimActions) {
+      const planned = changes.keep.find(section => section.state.sectionId === action.targetId)!;
+      const latest = await db.call<SectionState>("read_section_state", { p_section_id: planned.state.sectionId });
+      if (JSON.stringify(canonical(latest)) !== JSON.stringify(canonical(planned.state))) throw new Error("The article changed during planning. The edited section was kept; run the update again.");
+    }
+    const draft = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai", operationKey: `article-scaffold:${pageId}:${snapshot}:claims` }, {
+      summary: "Updated the claims of sections the reviewed scaffold keeps",
+      actions: claimActions,
+      trace: { modelVersion: settings.model ?? null, promptVersion: "article-scaffold-v3-keep", tokensIn: 0, tokensOut: 0, articleScaffold },
+    });
+    const committed = await commitChangeSet(db, draft.changeSetId);
+    if (committed.status !== "applied" || committed.rejected > 0 || committed.exceptions > 0) throw new Error("The kept sections' claims could not be updated. The previous article was kept.");
+    return draft.changeSetId;
+  }) : Promise.resolve(null);
+  const replacedTitles = new Set(changes.replace.map(section => section.state.title));
+  // Replaced sections are about to go; the writer must not omit a moved claim because an old section still states it.
+  const contextWriter: SectionWriter = { ...writer, name: writer.name, promptVersion: writer.promptVersion,
+    reviseSection: (input, reporter) => writer.reviseSection({ ...input, ...(note.trim() ? { updateNote: note } : {}), pageContext: input.pageContext?.filter(section => !replacedTitles.has(section.section)) }, reporter) };
+  let claimsId: string | null = null;
+  const keptBuilt: string[] = [];
   const finishKept = async () => {
-    const builtIds: string[] = [];
     for (const section of changes.keep) if (!section.protected) {
       const rewritten = await workflowStep(`article-scaffold:${pageId}:${snapshot}:kept:${section.state.sectionId}`, async () => {
         const current = await db.call<SectionState>("read_section_state", { p_section_id: section.state.sectionId });
         if (!needsRewrite(current)) return false;
-        const built = await rebuildUploadSection(db, writer, section.state.sectionId, null);
+        const built = await rebuildUploadSection(db, contextWriter, section.state.sectionId, null);
         if (!built || built.rebuildRequested) throw new Error("An existing section is still being updated. Retry after writing finishes.");
         return true;
       });
-      if (rewritten) builtIds.push(section.state.sectionId);
+      if (rewritten) keptBuilt.push(section.state.sectionId);
     }
-    return builtIds;
+    return keptBuilt;
+  };
+  // Outside an upload nothing resumes, so claims nobody has written yet go back to their old sections.
+  const undoClaims = async (errors: unknown[]) => {
+    if (claimsId && !keptBuilt.length && !uploadExecution.getStore()) await revertChangeSet(db, claimsId).catch(failure => errors.push(failure));
   };
   if (!changes.create.length && !changes.replace.length) {
     try {
+      claimsId = await assignKeptClaims();
       const built = await finishKept();
       await finishSavedPlan();
       return { changed: built.length, sectionIds: built };
     } catch (error) {
-      if (!uploadExecution.getStore()) await finishArticleStructure(db, savedPlanId, "failed");
+      const rollbackErrors: unknown[] = [];
+      await undoClaims(rollbackErrors);
+      if (!uploadExecution.getStore()) await finishArticleStructure(db, savedPlanId, "failed").catch(failure => rollbackErrors.push(failure));
+      if (rollbackErrors.length) throw new AggregateError([error, ...rollbackErrors], "The scaffold update failed and could not be fully undone. Review its changes before retrying.");
       throw error;
     }
   }
@@ -214,6 +266,7 @@ export async function applyArticleScaffold(db: DbRpc, client: AdminSupabase, set
     }
   };
   try {
+    claimsId = await assignKeptClaims();
     if (changes.create.length) {
       const draft = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai", operationKey: `article-scaffold:${pageId}:${snapshot}:create` }, {
         summary: "Prepared targeted sections from the reviewed article scaffold",
@@ -227,13 +280,10 @@ export async function applyArticleScaffold(db: DbRpc, client: AdminSupabase, set
       if (createdError) throw new Error(createdError.message);
       newIds.push(...(created ?? []).flatMap(action => action.target_id ? [action.target_id] : []));
       if (newIds.length !== changes.create.length) throw new Error("The planned section list is incomplete. The previous article was kept.");
-      const replacedTitles = new Set(changes.replace.map(section => section.state.title));
-      const replacementWriter: SectionWriter = { ...writer, name: writer.name, promptVersion: writer.promptVersion,
-        reviseSection: (input, reporter) => writer.reviseSection({ ...input, ...(note.trim() ? { updateNote: note } : {}), pageContext: input.pageContext?.filter(section => !replacedTitles.has(section.section)) }, reporter) };
       for (const sectionId of newIds) {
         progress?.(`Publishing section ${published.size + 1} of ${newIds.length} as it finishes…`);
         const saved = await workflowStep(`article-scaffold:${pageId}:${snapshot}:written:${sectionId}`, async () => {
-          const built = await rebuildUploadSection(db, replacementWriter, sectionId, null);
+          const built = await rebuildUploadSection(db, contextWriter, sectionId, null);
           if (!built || built.rebuildRequested) throw new Error("A planned section is still being written. Completed sections are saved.");
           const state = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
           if (!state.lines.some(line => line.content.trim())) throw new Error("A planned section has no text. Completed sections are saved.");
@@ -245,8 +295,9 @@ export async function applyArticleScaffold(db: DbRpc, client: AdminSupabase, set
         progress?.(`Published ${published.size} of ${newIds.length} sections.`);
       }
     }
-    await retireCovered(true);
+    // Kept sections write their moved-in claims before the sections they came from retire.
     const builtKept = await finishKept();
+    await retireCovered(true);
     await finishSavedPlan();
     return { changed: changes.create.length + changes.replace.length + builtKept.length, sectionIds: [...newIds, ...builtKept] };
   } catch (error) {
@@ -254,6 +305,7 @@ export async function applyArticleScaffold(db: DbRpc, client: AdminSupabase, set
     // Published sections remain durable even when later writing fails. Upload
     // retries also keep unfinished drafts under the original operation key.
     if (creationId && !published.size && !uploadExecution.getStore()) await revertChangeSet(db, creationId).catch(failure => rollbackErrors.push(failure));
+    if (!published.size) await undoClaims(rollbackErrors);
     if (!uploadExecution.getStore()) await finishArticleStructure(db, savedPlanId, "failed").catch(failure => rollbackErrors.push(failure));
     if (rollbackErrors.length) throw new AggregateError([error, ...rollbackErrors], "The scaffold update failed and could not be fully undone. Review its changes before retrying.");
     throw error;

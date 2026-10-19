@@ -51,6 +51,8 @@ export type SectionReviseInput = {
   lines: SectionLine[];
   uncoveredUnitIds: string[];
   updateNote?: string;
+  // Automatic stale-line rewrites keep the fact-check and skip both editorial passes; the page review follows.
+  skipEditorialReview?: boolean;
   // What the page's other sections already say, in page order, so the writer builds on it instead of repeating it
   pageContext?: PageContextSection[];
 };

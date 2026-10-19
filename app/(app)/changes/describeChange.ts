@@ -62,7 +62,7 @@ export type ChangeDescription = {
 };
 
 const LINE_TYPES: ActionType[] = ["write_line", "revise_line", "retire_line", "move_line"];
-const ARTICLE_TYPES: ActionType[] = ["rename_page", "retire_page", "update_page", "create_section", "rename_section", "retire_section"];
+const ARTICLE_TYPES: ActionType[] = ["rename_page", "retire_page", "update_page", "create_section", "rename_section", "retire_section", "update_section_query"];
 const CLAIM_TYPES: ActionType[] = ["add_claim", "revise_claim", "retire_claim", "set_epistemic_status"];
 const LINE_TYPE: Partial<Record<ActionType, ChangeType>> = { revise_line: "line_rewrite", write_line: "line_add", retire_line: "line_remove", move_line: "line_move" };
 

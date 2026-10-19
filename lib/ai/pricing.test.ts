@@ -30,6 +30,8 @@ it("preserves usage through logging and prices tool rounds separately", () => {
 
 it("does not show missing usage, unknown pricing or invalid counts as free calls", () => {
   expect(estimateCallCost({ model: "anthropic/claude-haiku-5-5", prompt_tokens: null, completion_tokens: null })).toBeNull();
+  expect(estimateCost("Qwen/Qwen3-Embedding-8B", 1_000_000, 0)).toBeCloseTo(0.01);
+  expect(estimateCallCost({ model: "Qwen/Qwen3-Embedding-8B", prompt_tokens: null, completion_tokens: 0 })).toBeNull();
   expect(estimateCost("unknown", 100, 200)).toBeNull();
   expect(estimateCost("claude-haiku-5-5", -1, 200)).toBeNull();
   expect(estimateCost("claude-haiku-5-5", 100, 200, { cache_read_input_tokens: 200 })).toBeNull();

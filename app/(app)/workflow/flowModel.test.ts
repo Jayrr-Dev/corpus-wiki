@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
-import { flowRole } from "./flowModel";
 import type { SkillLibrary } from "@/lib/ai/skills/types";
+import { describe, expect, it } from "vitest";
+import { flowRole } from "./flowModel";
 
 const library: SkillLibrary = { skills: [], assignments: [] };
 describe("workflow role labels reflect effective instructions", () => {
@@ -29,14 +29,14 @@ describe("workflow role labels reflect effective instructions", () => {
   });
 });
 
-// The displayed handoffs must follow the processing contract, including the
-// first-articles milestone before optional enrichment.
+// The displayed handoffs must follow the processing contract: definitions and
+// the index finish before the one article pass.
 describe("workflow diagrams match upload stage order", () => {
   it("keeps the detailed upload handoffs in runtime order", async () => {
     const { AI_FLOW } = await import("./aiFlowCanvas");
     const { KNOWLEDGE_STAGES, ARTICLE_STAGES, ENRICHMENT_STAGES } = await import("@/lib/ingest/workflowTypes");
     const ids: Record<string, string> = { duplicates: "deduplicator", glossary: "dictionary", expand: "definer", plan: "planner", pages: "writer" };
-    const visible = [...KNOWLEDGE_STAGES, ...ARTICLE_STAGES, ...ENRICHMENT_STAGES].filter((stage) => !["embeddings-cleaned", "embeddings-enrichment", "hierarchy-enrichment", "plan-enrichment", "pages-enrichment", "curate"].includes(stage));
+    const visible = [...KNOWLEDGE_STAGES, ...ARTICLE_STAGES, ...ENRICHMENT_STAGES].filter((stage) => stage !== "curate");
     const x = (id: string) => AI_FLOW.nodes.find((node) => node.id === (ids[id] ?? id))!.x;
     for (let i = 1; i < visible.length; i++) expect(x(visible[i]!)).toBeGreaterThan(x(visible[i - 1]!));
     const reviewer = AI_FLOW.nodes.find((node) => node.id === "reviewer")!;

@@ -1232,6 +1232,7 @@ export type Database = {
         | "create_section"
         | "rename_section"
         | "retire_section"
+        | "update_section_query"
         | "update_entity"
         | "retire_entity"
         | "merge_entity"
@@ -1335,6 +1336,7 @@ export const Constants = {
         "create_section",
         "rename_section",
         "retire_section",
+        "update_section_query",
         "update_entity",
         "retire_entity",
         "merge_entity",
@@ -1391,4 +1393,3 @@ export const Constants = {
     },
   },
 } as const
-

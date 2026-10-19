@@ -1,9 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { roleForPurpose } from "@/lib/ai/roles";
 import { InvalidStructuredAnswerError } from "@/lib/ai/chat";
+import { roleForPurpose } from "@/lib/ai/roles";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { SectionReviseInput } from "../types";
-import { TokenFactorySectionWriter } from "./tokenFactory";
 import { checkEditorialDraft } from "./editorialSelection";
+import { TokenFactorySectionWriter } from "./tokenFactory";
 
 // These tests isolate citation checking; editorial selection/review has its own suite.
 vi.mock("./editorialSelection", () => ({
@@ -55,6 +55,14 @@ describe("line fact-check", () => {
     expect(result.add).toHaveLength(2);
     expect(warning).toHaveBeenCalledWith("Section kept supported detail for page editorial review", expect.objectContaining({ section: INPUT.sectionTitle }));
     warning.mockRestore();
+  });
+
+  it("skips the draft editorial check on automatic stale rewrites", async () => {
+    const requests = fakeModel({ section_lines: [writerAnswer(GOOD, FIXED)], line_fact_check: [verdicts(["A1", true], ["A2", true])] });
+    const result = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection({ ...INPUT, skipEditorialReview: true, pageContext: [{ section: "Overview", text: "Hearing protection is required." }] });
+    expect(result.add).toHaveLength(2);
+    expect(checkEditorialDraft).not.toHaveBeenCalled();
+    expect(requests.map(request => request.name)).toEqual(["section_lines", "line_fact_check"]);
   });
 
   it("runs on the Reviewer's model", () => {

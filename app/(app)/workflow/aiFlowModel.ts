@@ -42,12 +42,12 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
     ],
   },
   {
-    id: "clean", title: "Upload · clean and file the knowledge", trigger: "Indexing, duplicates, entity clean-up, placement and hierarchy run before the first articles. Descriptions, profiles and glossary run later as background enrichment.", toChangeControl: true,
+    id: "clean", title: "Upload · clean and file the knowledge", trigger: "Duplicates, entity clean-up, placement, hierarchy and definitions run before one index. Descriptions, profiles and glossary run after the articles and add no claims.", toChangeControl: true,
     nodes: [
       { id: "embeddings", step: "Index", kind: "system", name: "Claim vectors", does: "Indexes the new claims by meaning for matching.", submits: [], direct: true,
         facts: [
-          { label: "Receives", text: "Claims that have no vector yet." },
-          { label: "Hands on", text: "Vectors used by the Duplicate reviewer, the Article reviewer and the Reviewer to find related knowledge." },
+          { label: "Receives", text: "The cleaned claims and the definitions added for this upload." },
+          { label: "Hands on", text: "Vectors used by the Article reviewer and the Reviewer to find related knowledge. The Duplicate reviewer indexes any claims it still needs while comparing them." },
           { label: "Submits", text: "Nothing. Vectors are saved directly." },
         ] },
       { id: "deduplicator", step: "Duplicates", kind: "role", roleId: "deduplicator", name: "Duplicate reviewer", does: "Merges repeats of claims this upload added or revised.", submits: ["revise_claim", "merge_duplicates"], exceptions: ["deletion"], receivesShort: "similar claims",
@@ -70,7 +70,7 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
       { id: "describe", step: "Describe", kind: "role", roleId: "identify_entities", name: "Entity analyst", roles: ["identify_entities"], does: "Writes short descriptions of new entities.", submits: [], direct: true,
         facts: [
           { label: "Receives", text: "New entities and the claims about them." },
-          { label: "Hands on", text: "Entity descriptions on entity pages and available to later planning; the first article pass is already ready." },
+          { label: "Hands on", text: "Entity descriptions on entity pages. The articles are already written." },
           { label: "Submits", text: "Nothing to Change control. Descriptions are saved directly on the entity." },
         ] },
       { id: "profiles", step: "Profiles", kind: "unnamed", name: "Stakeholder cards", does: "Builds stakeholder cards and, if allowed, looks each one up on the web.", submits: [], direct: true,
@@ -93,12 +93,12 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
     ],
   },
   {
-    id: "articles", title: "Upload · write the articles", trigger: "Planner, Article reviewer, Writer and Reviewer produce the first articles after filing. The Definer runs later; changed claims trigger a separate article pass.", toChangeControl: true,
+    id: "articles", title: "Upload · write the articles", trigger: "Planner, Article reviewer, Writer and Reviewer write the articles once, after definitions are saved and indexed.", toChangeControl: true,
     nodes: [
       { id: "definer", step: "Expand", kind: "role", roleId: "define_concepts", name: "Definer", roles: ["define_concepts"], does: "Defines terms for key entities from their evidence.", submits: ["create_entity", "add_claim"],
         facts: [
           { label: "Receives", text: "For each company, organization, project, person, team or product: its claims, source passages, entities, topics and definitions." },
-          { label: "Hands on", text: "Up to 12 defined terms per entity after the first articles are ready. Added or revised claims trigger a separate hierarchy, planning and writing pass before glossary generation." },
+          { label: "Hands on", text: "Up to 12 defined terms per entity, saved before the index and the article pass." },
           { label: "Submits", text: "One ChangeSet per entity, committed straight away and reversible in Changes." },
         ] },
       { id: "planner", step: "Plan", kind: "role", roleId: "plan_articles", name: "Planner", roles: ["plan_articles"], receivesShort: "claims", does: "Outlines pages and proposes new or updated articles.", submits: ["rename_page", "create_section", "retire_section"],
@@ -164,7 +164,7 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
     ],
   },
   {
-    id: "request", title: "On request", trigger: "Domain review and linking run on request. The Curator also runs after upload enrichment.", toChangeControl: true,
+    id: "request", title: "On request", trigger: "Domain review and linking run on request. The Curator also runs after the glossary.", toChangeControl: true,
     nodes: [
       { id: "domain_decider", step: "Update domains", kind: "role", roleId: "domain_decider", name: "Domain Decider", roles: ["domain_decider"], does: "Uses embeddings, graph connections and saved knowledge to organize domains.", submits: ["update_domain"], exceptions: ["domain_tree_review"],
         facts: [
@@ -207,9 +207,9 @@ export const AI_FLOW_LANES: AiFlowLane[] = [
     ] },
   ] },
   FLOW_SOURCE_LANES[0]!,
-  { id: "clean", title: "Upload · clean and file the knowledge", trigger: "Runs after saving and before the first articles.", toChangeControl: true, nodes: ["embeddings", "deduplicator", "tidy", "place", "hierarchy"].map(uploadNode) },
-  { id: "articles", title: "Upload · write the first articles", trigger: "Runs after filing. Reviewed articles are ready before enrichment begins.", toChangeControl: true, nodes: ["planner", "article_reviewer", "writer", "reviewer"].map(uploadNode) },
-  { id: "enrichment", title: "Upload · background enrichment", trigger: "After articles are ready: describe entities, build profiles and expand terms. Changed claims trigger a separate hierarchy, planning and writing pass; glossary and Curator finish the run.", toChangeControl: true, nodes: ["describe", "profiles", "definer", "dictionary"].map(uploadNode) },
+  { id: "clean", title: "Upload · clean, file and define", trigger: "Runs after saving and before the articles.", toChangeControl: true, nodes: ["deduplicator", "tidy", "place", "hierarchy", "definer", "embeddings"].map(uploadNode) },
+  { id: "articles", title: "Upload · write the articles", trigger: "Runs once after definitions are indexed.", toChangeControl: true, nodes: ["planner", "article_reviewer", "writer", "reviewer"].map(uploadNode) },
+  { id: "enrichment", title: "Upload · background finish", trigger: "After the articles are written. Descriptions, profiles and the glossary add no claims. The Curator finishes the run.", toChangeControl: true, nodes: ["describe", "profiles", "dictionary"].map(uploadNode) },
   FLOW_SOURCE_LANES[3]!,
   FLOW_SOURCE_LANES[4]!,
   { id: "illustrations", title: "Article illustrations and reusable assets", trigger: "Automatic article assessment or a manual illustration request; separate from upload evidence.", toChangeControl: false, nodes: [

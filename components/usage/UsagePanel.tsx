@@ -10,7 +10,7 @@ import { DataTable } from "@/components/data-table";
 import { ChangeIcon } from "@/components/icons";
 import type { Tables } from "@/lib/database/types";
 import { estimateCallCost, formatUsd } from "@/lib/ai/pricing";
-import { useAiCalls } from "@/lib/queries";
+import { useAllAiCalls } from "./RoleSpend";
 import { grandTotal, totalsByDayAndModel, type UsageTotal } from "./summarizeUsage";
 
 // =====================================================================
@@ -73,7 +73,7 @@ function toStatus(status: string): CallStatus {
 
 // USAGE PANEL
 export function UsagePanel() {
-  const calls = useAiCalls();
+  const calls = useAllAiCalls();
   const totals = useMemo(() => totalsByDayAndModel(calls.data ?? []), [calls.data]);
   const total = useMemo(() => grandTotal(calls.data ?? []), [calls.data]);
   const empty = <EmptyState icon={ChangeIcon} title="No AI calls yet" hint="Every upload and page rebuild is logged here." />;
@@ -84,7 +84,7 @@ export function UsagePanel() {
           { label: "Total calls", value: total.calls, detail: `${formatCount(total.failed)} cut off or failed` },
           { label: "Tokens in", value: total.promptTokens, detail: "Input tokens processed" },
           { label: "Tokens out", value: total.completionTokens, detail: `${formatCount(total.reasoningTokens)} reasoning tokens` },
-          { label: "Estimated cost", value: total.calls > 0 && total.unknownCostCalls === total.calls ? null : total.costUsd, detail: total.unknownCostCalls ? `${formatCount(total.unknownCostCalls)} calls have unknown cost; total is partial` : "Per-request provider list prices", usd: true },
+          { label: "This space", value: total.calls > 0 && total.unknownCostCalls === total.calls ? null : total.costUsd, detail: total.unknownCostCalls ? `${formatCount(total.unknownCostCalls)} calls have unknown cost; total is partial` : "Estimated cost at list prices", usd: true },
         ].map(({ label, value, detail, usd }) => (
           <div key={label} className="min-w-0 rounded-xl border bg-sidebar/50 p-4">
             <p className="text-xs font-medium text-muted-foreground">{label}</p>

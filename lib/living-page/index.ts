@@ -1,26 +1,26 @@
-import { createHash } from "node:crypto";
-import { processingSpan } from "@/lib/processing/metrics";
-import { setTimeout as delay } from "node:timers/promises";
-import { assertActiveUpload, reportUploadProgress, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import type { AiCallLogger } from "@/lib/ai/callLog";
-import type { StageSkills } from "@/lib/ai/skills/types";
 import { type ModelChoice, tokenFactoryFromEnv } from "@/lib/ai/chat";
+import type { StageSkills } from "@/lib/ai/skills/types";
 import { commitAsRole, commitTextPatchSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
+import { assertActiveUpload, reportUploadProgress, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
+import type { UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { processingSpan } from "@/lib/processing/metrics";
+import { createHash } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
+import type { ArticleStructureMemory } from "./articleStructureMemory";
 import type { SectionProgress } from "./buildProgress";
+import { cancellableBuildDb, SectionBuildCancelled } from "./cancelBuild";
+import { IncompleteSectionEvidence } from "./draftEvidence";
 import { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
 import type { FinishedSectionBuild, PageContextSection, SectionRef, SectionReviseInput, SectionRevision, SectionState } from "./types";
 import { FakeSectionWriter } from "./writers/fake";
-import { cancellableBuildDb, SectionBuildCancelled } from "./cancelBuild";
 import { TokenFactorySectionWriter } from "./writers/tokenFactory";
-import type { ArticleStructureMemory } from "./articleStructureMemory";
-import { IncompleteSectionEvidence } from "./draftEvidence";
-import type { UploadWorkflow } from "@/lib/ingest/workflowTypes";
 
-export type * from "./types";
 export { commitLineEdit } from "./editLine";
 export { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
-export { MIN_CLAIMS_FOR_PAGE, type PageCandidate, pageProposalActions, proposePages } from "./proposePages";
+export { MIN_CLAIMS_FOR_PAGE, pageProposalActions, proposePages, type PageCandidate } from "./proposePages";
+export type * from "./types";
 export { FakeSectionWriter } from "./writers/fake";
 export { TokenFactorySectionWriter } from "./writers/tokenFactory";
 
@@ -69,7 +69,7 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
     }
     return affected;
   });
-  const progressStep = checkpointScope === eventId ? "pages" : "pages-enrichment";
+  const progressStep = "pages";
   const review = async () => {
     if (!sections.length) return;
     await processingSpan("stage.editorial-review", async () => {
@@ -185,6 +185,7 @@ export async function rebuildSection(
   sectionId: string,
   eventId: string | null,
   review = true,
+  options?: { skipEditorialReview?: boolean },
 ): Promise<FinishedSectionBuild | null> {
   let causeId = eventId;
   let finished: FinishedSectionBuild | null = null;
@@ -194,7 +195,7 @@ export async function rebuildSection(
     if (!claim.claimed) return finished;
     const buildDb = claim.buildToken ? cancellableBuildDb(db, sectionId, claim.buildToken) : db;
     try {
-      finished = await buildClaimedSection(buildDb, writer, sectionId, causeId, Boolean(claim.buildToken));
+      finished = await buildClaimedSection(buildDb, writer, sectionId, causeId, Boolean(claim.buildToken), options);
     } catch (error) {
       if (error instanceof SectionBuildCancelled) return finished;
       throw error;
@@ -215,13 +216,14 @@ async function buildClaimedSection(
   sectionId: string,
   eventId: string | null,
   cancellable = false,
+  options?: { skipEditorialReview?: boolean },
 ): Promise<FinishedSectionBuild> {
   const progress = writer.progress?.(sectionId);
   try {
     progress?.step("Reading the claims this section cites…");
     const loaded = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
     const state = writer.prepareSection ? await writer.prepareSection(loaded) : loaded;
-    const written = needsRewrite(state) ? await rewriteLines(db, writer, state, eventId, progress, cancellable) : null;
+    const written = needsRewrite(state) ? await rewriteLines(db, writer, state, eventId, progress, cancellable, options) : null;
     progress?.step("Finishing up…");
     await assertActiveUpload();
     return await db.call<FinishedSectionBuild>("finish_section_build", {
@@ -253,9 +255,10 @@ async function rewriteLines(
   eventId: string | null,
   progress: SectionProgress | undefined,
   cancellable = false,
+  options?: { skipEditorialReview?: boolean },
 ): Promise<{ applied: number; modelVersion: string }> {
   const [pageContext, articleStructure] = await Promise.all([readPageContext(db, state.sectionId), readStructureContext(db, state.sectionId)]);
-  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}), ...(articleStructure ? { articleStructure } : {}) };
+  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}), ...(articleStructure ? { articleStructure } : {}), ...(options?.skipEditorialReview ? { skipEditorialReview: true } : {}) };
   const flagged = state.lines.filter((line) => line.needsRewrite).length;
   progress?.step(writingStep(flagged, input.uncoveredUnitIds.length));
   const revision = progress ? await writer.reviseSection(input, progress) : await writer.reviseSection(input);

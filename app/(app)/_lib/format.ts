@@ -270,6 +270,8 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return object.curator === true ? describeCuratorChange(object) : text("reason");
     case "retire_section":
       return "section removed";
+    case "update_section_query":
+      return `claims updated (${readStrings(asObject(object.query), "unitIds").length} cited)`;
     case "update_entity":
       return `renamed to “${text("name")}”`;
     case "update_domain":

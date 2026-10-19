@@ -40,6 +40,7 @@ const APP_ROLES = {
   dictionary_editor: { id: "dictionary_editor", name: "Dictionary editor", description: "Writes cited glossary entries from live claims." },
 } as const;
 const appRole = (role: (typeof APP_ROLES)[keyof typeof APP_ROLES]) => ({ ...role, instructions: null, source: "Managed by the app", version: undefined });
+const GUIDES_RECONCILER = new Set(["extract_knowledge", "link_knowledge", "organize_topics"]);
 
 export function RolesTab({ library, modelSettings }: { library: SkillLibrary; modelSettings: ModelSettings }) {
   const calls = useAllAiCalls();
@@ -80,7 +81,9 @@ export function RolesTab({ library, modelSettings }: { library: SkillLibrary; mo
                 {exceptions ? <Tooltip content={<div className="space-y-0.5"><p className="font-medium">Can hold changes for you in Exceptions</p>{exceptions.map((kind) => <p key={kind}>{ACTION_HINTS[kind]?.replace(/^Exception: (.)/, (_, first: string) => first.toUpperCase()) ?? kind}</p>)}</div>}>
                   <span><Badge variant="outline">Exceptions</Badge></span>
                 </Tooltip> : null}
-                {spent ? <Tooltip content={`Estimated all-time spend · ${spent.calls.toLocaleString("en-US")} calls`}>
+                {GUIDES_RECONCILER.has(role.id) ? <Tooltip content="These calls run inside the Reconciler request, so this card stays at zero.">
+                  <span className="font-mono text-xs text-muted-foreground">{formatUsd(0)}</span>
+                </Tooltip> : spent ? <Tooltip content={`Estimated all-time spend in this space · ${spent.calls.toLocaleString("en-US")} calls`}>
                   <span className="font-mono text-xs text-muted-foreground">{formatUsd(spent.costUsd)}</span>
                 </Tooltip> : null}
                 <span className="font-mono text-xs text-faint">{String(index + 1).padStart(2, "0")}</span>

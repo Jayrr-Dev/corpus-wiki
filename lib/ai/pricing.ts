@@ -5,7 +5,7 @@
 // Source: Nebius Token Factory pricing, checked 2026-10-15; Claude rows: Anthropic API list prices, checked 2026-10-16.
 // =====================================================================
 
-export const PRICES_CHECKED_ON = "2026-10-18 (Claude); 2026-10-15 (Token Factory)";
+export const PRICES_CHECKED_ON = "2026-10-19 (Claude and embeddings); 2026-10-15 (Token Factory chat)";
 
 export type ModelPrice = { model: string; inputPerM: number; outputPerM: number; cacheReadMultiplier?: number; longContext?: { above: number; inputPerM: number; outputPerM: number } };
 
@@ -31,6 +31,19 @@ export const MODEL_PRICES: readonly ModelPrice[] = [
   { model: "Qwen3-235B-A22B-Instruct-2507", inputPerM: 0.2, outputPerM: 0.6 },
   { model: "gpt-oss-120b", inputPerM: 0.15, outputPerM: 0.6 },
   { model: "Llama-3.3-70B-Instruct", inputPerM: 0.13, outputPerM: 0.4 },
+  // https://tokenfactory.nebius.com/model-catalog.md, checked 2026-10-19.
+  { model: "Qwen3-Embedding-8B", inputPerM: 0.01, outputPerM: 0 },
+  { model: "Qwen3-30B-A3B-Instruct-2507", inputPerM: 0.1, outputPerM: 0.3 },
+  { model: "Qwen3.8-27B", inputPerM: 0.45, outputPerM: 3 },
+  { model: "DeepSeek-V4-Flash-0731", inputPerM: 0.14, outputPerM: 0.28 },
+  { model: "DeepSeek-V4-Pro-0813", inputPerM: 1.32, outputPerM: 3.96 },
+  { model: "gemma-3-27b-it", inputPerM: 0.1, outputPerM: 0.3 },
+  { model: "muse-spark-open", inputPerM: 1.25, outputPerM: 4.25 },
+  { model: "Hermes-4-405B", inputPerM: 1, outputPerM: 3 },
+  { model: "Nemotron-3.5-Super-VL", inputPerM: 0.3, outputPerM: 0.9 },
+  { model: "MiniCPM-V-4_5", inputPerM: 0.658, outputPerM: 1.11 },
+  { model: "Kimi-K2.7-Code", inputPerM: 0.95, outputPerM: 4 },
+  { model: "beam", inputPerM: 0.25, outputPerM: 1 },
   // https://platform.claude.com/docs/en/about-claude/pricing
   { model: "claude-fable-5-1", inputPerM: 10.0, outputPerM: 50.0, cacheReadMultiplier: 0.025 },
   { model: "claude-opus-5-5", inputPerM: 4.0, outputPerM: 20.0, cacheReadMultiplier: 0.05 },

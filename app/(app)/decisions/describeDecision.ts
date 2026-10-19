@@ -1,5 +1,5 @@
-import type { Json, Tables } from "@/lib/database/types";
 import { roleName } from "@/lib/ai/roles";
+import type { Json, Tables } from "@/lib/database/types";
 import { modelName } from "../_lib/format";
 
 export function jsonObject(value: Json | undefined): Record<string, Json | undefined> {
@@ -25,7 +25,7 @@ export function decisionOutcome(change: Pick<Tables<"change_sets">, "status">, i
 export function roleForAction(type: string | undefined): string | null {
   if (!type) return null;
   if (["write_line", "revise_line", "retire_line", "move_line"].includes(type)) return "write_articles";
-  if (["create_page", "create_section", "rename_section", "rename_page"].includes(type)) return "plan_articles";
+  if (["create_page", "create_section", "rename_section", "rename_page", "update_section_query"].includes(type)) return "plan_articles";
   if (["add_claim", "revise_claim"].includes(type)) return "extract_knowledge";
   if (type === "review_page") return "reviewer";
   if (type === "merge_duplicates") return "deduplicator";

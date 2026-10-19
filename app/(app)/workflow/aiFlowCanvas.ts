@@ -1,6 +1,6 @@
 import { AI_FLOW_LANES, CHANGE_CONTROL, PERSON_STEPS } from "./aiFlowModel";
-import { STEP_ICONS } from "./roleIcons";
 import type { CanvasDiagram, CanvasEdge, CanvasGroup, CanvasNode } from "./canvasTypes";
+import { STEP_ICONS } from "./roleIcons";
 
 // AI FLOW CANVAS: the AI roles placed left to right. The canvas shows a short label only; the
 // facts in aiFlowModel fill the details panel.
@@ -21,27 +21,27 @@ export const CANVAS_NODES: CanvasNode[] = [
   placed("sourcer", 1800, 1460, { short: "User-preapproved sources and new knowledge" }),
   placed("composer", 600, 1460, { short: "Selects and reviews article images" }),
   placed("asset-lifecycle", 1000, 1460, { short: "Usage, Unlink and seven-day cleanup" }),
-  { id: "upload", shape: "pill", variant: "person", x: 120, y: M, title: "You upload a file", facts: [{ label: "Starts", text: "An upload runs groups 1 to 3 in order: save the evidence, clean and file it, then write and review the first articles. Background enrichment and a conditional article refresh follow; glossary and Curator finish the run." }] },
+  { id: "upload", shape: "pill", variant: "person", x: 120, y: M, title: "You upload a file", facts: [{ label: "Starts", text: "An upload saves the evidence, cleans and files it, defines terms, indexes them, then writes the articles once. Descriptions, profiles, the glossary and the Curator follow. They do not add claims." }] },
   placed("media", 370, M, { short: "Reads images and video" }),
   placed("reconciler", 620, M, { short: "Turns passages into claims", sends: "claims, links, entities", needsYou: true }),
-  placed("embeddings", 900, M, { title: "Indexing", short: "Indexes claims by meaning", store: "vectors" }),
-  placed("deduplicator", 1150, M, { short: "Merges repeated claims", sends: "merges", needsYou: true }),
-  placed("tidy", 1400, M, { short: "Merges and retires entities", sends: "entity merges" }),
-  placed("place", 1650, M, { short: "Files claims into topics", sends: "topics", needsYou: true }),
-  placed("describe", 3150, M, { short: "Describes new entities", store: "entities" }),
-  placed("profiles", 3400, M, { short: "Builds stakeholder cards", store: "cards" }),
-  placed("hierarchy", 1900, M, { title: "Hierarchy", short: "Orders topic contexts" }),
-  placed("dictionary", 3930, M, { short: "Writes the glossary", store: "glossary" }),
-  placed("definer", 3650, M, { short: "Defines key terms", sends: "terms" }),
-  placed("planner", 2150, M, { short: "Proposes articles", sends: "outlines" }),
-  placed("article_reviewer", 2400, M, { short: "Approves new articles", sends: "new pages" }),
-  placed("writer", 2650, M, { short: "Writes the sections", sends: "lines", needsYou: true }),
-  placed("reviewer", 2900, M, { short: "Polishes rebuilt pages", sends: "page edits", needsYou: true }),
+  placed("deduplicator", 900, M, { short: "Merges repeated claims", sends: "merges", needsYou: true }),
+  placed("tidy", 1150, M, { short: "Merges and retires entities", sends: "entity merges" }),
+  placed("place", 1400, M, { short: "Files claims into topics", sends: "topics", needsYou: true }),
+  placed("hierarchy", 1650, M, { title: "Hierarchy", short: "Orders topic contexts" }),
+  placed("definer", 1900, M, { short: "Defines key terms", sends: "terms" }),
+  placed("embeddings", 2150, M, { title: "Indexing", short: "Indexes the finished claims", store: "vectors" }),
+  placed("planner", 2400, M, { short: "Proposes articles", sends: "outlines" }),
+  placed("article_reviewer", 2650, M, { short: "Approves new articles", sends: "new pages" }),
+  placed("writer", 2900, M, { short: "Writes the sections", sends: "lines", needsYou: true }),
+  placed("reviewer", 3150, M, { short: "Polishes rebuilt pages", sends: "page edits", needsYou: true }),
+  placed("describe", 3400, M, { short: "Describes new entities", store: "entities" }),
+  placed("profiles", 3650, M, { short: "Builds stakeholder cards", store: "cards" }),
+  placed("dictionary", 3900, M, { short: "Writes the glossary", store: "glossary" }),
 
-  { id: "vectors", shape: "cylinder", variant: "store", x: 900, y: 165, title: "Vectors", facts: [{ label: "Saved here", text: "Claim vectors, written directly. Later roles use them to find related knowledge." }] },
-  { id: "entities", shape: "cylinder", variant: "store", x: 3150, y: 165, title: "Entities", facts: [{ label: "Saved here", text: "Entity descriptions, written directly on each entity." }] },
-  { id: "cards", shape: "cylinder", variant: "store", x: 3400, y: 165, title: "Cards", facts: [{ label: "Saved here", text: "Stakeholder cards and web profiles, written directly with no approval. Your contacts and hidden cards are never overwritten." }] },
-  { id: "glossary", shape: "cylinder", variant: "store", x: 3930, y: 165, title: "Glossary", facts: [{ label: "Saved here", text: "Cited glossary entries, written directly." }] },
+  { id: "vectors", shape: "cylinder", variant: "store", x: 2150, y: 165, title: "Vectors", facts: [{ label: "Saved here", text: "Claim vectors, written once after definitions. Article review uses them to find related knowledge." }] },
+  { id: "entities", shape: "cylinder", variant: "store", x: 3400, y: 165, title: "Entities", facts: [{ label: "Saved here", text: "Entity descriptions, written directly on each entity." }] },
+  { id: "cards", shape: "cylinder", variant: "store", x: 3650, y: 165, title: "Cards", facts: [{ label: "Saved here", text: "Stakeholder cards and web profiles, written directly with no approval. Your contacts and hidden cards are never overwritten." }] },
+  { id: "glossary", shape: "cylinder", variant: "store", x: 3900, y: 165, title: "Glossary", facts: [{ label: "Saved here", text: "Cited glossary entries, written directly." }] },
 
   placed("domain_decider", 1400, L, { short: "Updates domains from clusters", sends: "domain update", needsYou: true }),
   placed("domain_steward", 500, L, { short: "Reviews the topic tree", sends: "topic change", needsYou: true }),
@@ -65,7 +65,7 @@ export const CANVAS_NODES: CanvasNode[] = [
 
 const B = CANVAS.busY, BB = CANVAS.busY + CANVAS.busH;
 const HANDOFFS: [string, string, string?][] = [
-  ["upload", "media", "file"], ["media", "reconciler", "passages"], ["reconciler", "embeddings", "saved claims"], ["embeddings", "deduplicator"], ["deduplicator", "tidy"], ["tidy", "place"], ["place", "hierarchy"], ["hierarchy", "planner", "filed claims"], ["planner", "article_reviewer", "proposals"], ["article_reviewer", "writer", "verdicts"], ["writer", "reviewer", "sections"], ["reviewer", "describe", "articles ready"], ["describe", "profiles"], ["profiles", "definer"], ["definer", "dictionary", "after article refresh"],
+  ["upload", "media", "file"], ["media", "reconciler", "passages"], ["reconciler", "deduplicator", "saved claims"], ["deduplicator", "tidy"], ["tidy", "place"], ["place", "hierarchy"], ["hierarchy", "definer", "filed claims"], ["definer", "embeddings", "terms"], ["embeddings", "planner", "indexed claims"], ["planner", "article_reviewer", "proposals"], ["article_reviewer", "writer", "verdicts"], ["writer", "reviewer", "sections"], ["reviewer", "describe", "articles ready"], ["describe", "profiles"], ["profiles", "dictionary"],
   ["start-section", "researcher-search", "context"], ["researcher-search", "reviewer-search", "proposal"], ["reviewer-search", "web-search", "yes"], ["web-search", "researcher-source", "pages"], ["researcher-source", "reviewer-source", "excerpts"], ["reviewer-source", "reconciler-external", "yes"],
 ];
 export const CANVAS_EDGES: CanvasEdge[] = [
@@ -84,9 +84,9 @@ export const CANVAS_GROUPS: CanvasGroup[] = [
   { id: "sourcer", title: "Add External Info · Sourcer", note: "Your article-menu request preapproves search and import; evidence checks and reconciliation still apply", x: 1580, y: 1300, w: 1500, h: 360 },
   { id: "illustrations", title: "Illustrations and asset lifecycle", note: "Separate from evidence admission and Change control; see the dedicated flows for each step", x: 300, y: 1300, w: 1250, h: 360 },
   { id: "save", title: "1 · Save the evidence", note: "When you upload a file", x: 20, y: 20, w: 740, h: 520 },
-  { id: "clean", title: "2 · Clean and file the knowledge", note: "Right after the save, in order", x: 780, y: 20, w: 1250, h: 520 },
-  { id: "articles", title: "3 · Write the articles", note: "Once the knowledge is filed", x: 2050, y: 20, w: 980, h: 520 },
-  { id: "enrich", title: "4 · Background enrichment", note: "Articles ready; expanded claims trigger a separate article pass, then glossary and Curator", x: 3050, y: 20, w: 1080, h: 520 },
+  { id: "clean", title: "2 · Clean, file and define", note: "Duplicates, filing, definitions, then one index", x: 780, y: 20, w: 1520, h: 520 },
+  { id: "articles", title: "3 · Write the articles", note: "Once, from the indexed knowledge", x: 2320, y: 20, w: 980, h: 520 },
+  { id: "enrich", title: "4 · Background finish", note: "Descriptions, profiles and the glossary. They do not add claims", x: 3320, y: 20, w: 760, h: 520 },
   { id: "request", title: "4 · On request", note: "Only when you start it", x: 300, y: 760, w: 1250, h: 400 },
   { id: "research", title: "5 · Outside research", note: "Two independent approvals", x: 2280, y: 760, w: 1840, h: 500 },
   { id: "decide", title: "You and your data", note: "Where changes land", x: 4290, y: 300, w: 560, h: 680, tone: "person" },

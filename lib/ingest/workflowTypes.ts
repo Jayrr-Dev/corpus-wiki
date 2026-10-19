@@ -35,10 +35,10 @@ export function canCancelUpload(workflow: UploadWorkflow): boolean {
 // slow page write never takes the saved knowledge down with it.
 export type UploadJob = "knowledge" | "articles";
 
-// Only identity, duplication and filing checks block the first reviewed articles.
-export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "tidy", "embeddings-cleaned", "place", "hierarchy"] as const;
+// Claims are cleaned, filed and defined before one index. Articles wait for that index.
+export const KNOWLEDGE_STAGES = ["duplicates", "tidy", "place", "hierarchy", "expand", "embeddings"] as const;
 export const ARTICLE_STAGES = ["plan", "pages"] as const;
-export const ENRICHMENT_STAGES = ["describe", "profiles", "expand", "embeddings-enrichment", "hierarchy-enrichment", "plan-enrichment", "pages-enrichment", "glossary", "curate"] as const;
+export const ENRICHMENT_STAGES = ["describe", "profiles", "glossary", "curate"] as const;
 
 // Child checkpoints are an audit trail, not the current stage result. A retry
 // can succeed with a different evidence key while an old child remains failed.

@@ -1,16 +1,16 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Circle, LoaderCircle, Minus, X } from "lucide-react";
-import { useState } from "react";
 import { ErrorNote as RawErrorNote, TextLink } from "@/app/(app)/_components/bits";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { EVENT_TONE, type Tone } from "@/app/(app)/_lib/tone";
 import { RetryUploadButton } from "@/app/(app)/upload/RetryUploadButton";
 import { Button } from "@/components/ui/button";
-import { getBrowserSupabase } from "@/lib/supabase/client";
 import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, canCancelUpload, canResumeUpload, failedWorkflowStages, isRunning, uploadErrorMessage, workflowLabel, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Check, Circle, LoaderCircle, Minus, X } from "lucide-react";
+import { useState } from "react";
 
 // How often the status is read while a run works, and while it waits for a resume
 const RUNNING_POLL_MS = 1500;
@@ -40,16 +40,14 @@ export function useUploadWorkflows(eventIds: string[]) {
 }
 
 const LABELS: Record<string, string> = {
-  "embeddings-cleaned": "Indexing cleaned knowledge", "embeddings-enrichment": "Indexing new definitions",
   reconcile: "Finalizing knowledge links", "reconciliation-input": "Reading evidence", extraction: "Extracting and saving knowledge",
   "duplicate-guard": "Comparing existing claims", embeddings: "Indexing knowledge", describe: "Describing subjects", tidy: "Tidying entities", profiles: "Writing stakeholder cards",
   expand: "Expanding definitions", plan: "Planning article structures", pages: "Writing and reviewing articles", curate: "Tidying the page tree",
   hierarchy: "Organizing topics", place: "Filing into topics", duplicates: "Merging repeated claims", "settle-pages": "Checking final page updates", glossary: "Writing dictionary entries",
-  "hierarchy-enrichment": "Organizing new definitions", "plan-enrichment": "Planning updates from new knowledge", "pages-enrichment": "Writing updates from new knowledge",
 };
 
 // What the live counts are counting, per role that reports them
-const PROGRESS_UNITS: Record<string, string> = { extraction: "batches", plan: "proposals reviewed", "plan-enrichment": "proposals reviewed", pages: "sections completed", "pages-enrichment": "sections completed" };
+const PROGRESS_UNITS: Record<string, string> = { extraction: "batches", plan: "proposals reviewed", pages: "sections completed" };
 
 // THE STAGES IN ORDER: the knowledge commit is two steps inside "reconcile", then its cleanup; then the articles
 const STAGES = [
@@ -93,8 +91,8 @@ function progressText(workflow: UploadWorkflow, key: string): string {
   const progress = workflow.progress;
   if (!progress || progress.step !== key || !progress.total) return "";
   if (progress.phase === "review") return ` · ${Math.min(progress.done, progress.total)} of ${progress.total} articles reviewed`;
-  if ((key === "pages" || key === "pages-enrichment") && progress.done >= progress.total) return " · Checking article structure and final edits";
-  const count = key === "pages" || key === "pages-enrichment" || key === "plan" || key === "plan-enrichment" ? progress.done : progress.done + 1;
+  if (key === "pages" && progress.done >= progress.total) return " · Checking article structure and final edits";
+  const count = key === "pages" || key === "plan" ? progress.done : progress.done + 1;
   return ` · ${Math.min(count, progress.total)} of ${progress.total} ${PROGRESS_UNITS[key] ?? ""}`.trimEnd();
 }
 

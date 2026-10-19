@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { textColumn } from "@/app/(app)/_components/columns";
 import { DataTable } from "@/components/data-table";
 import { estimateCallCost, formatUsd, MODEL_PRICES, PRICES_CHECKED_ON, priceFor, type ModelPrice } from "@/lib/ai/pricing";
-import { useAiCalls } from "@/lib/queries";
+import { useAllAiCalls } from "./RoleSpend";
 
 // =====================================================================
 // COST TABLE: Token Factory list prices per model, with what this
@@ -31,7 +31,7 @@ const COLUMNS: ColumnDef<CostRow, unknown>[] = [
 ];
 
 export function CostTable({ activeModel }: { activeModel: string }) {
-  const calls = useAiCalls();
+  const calls = useAllAiCalls();
   const activeName = priceFor(activeModel)?.model;
   const rows = useMemo<CostRow[]>(() => {
     const usage = new Map<string, { calls: number; pricedCalls: number; spent: number }>();

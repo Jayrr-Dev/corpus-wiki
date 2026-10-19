@@ -54,7 +54,7 @@ export async function getServerDeps(): Promise<ServerDeps> {
   // Section builds tell open pages what they are doing and stream their draft
   writer.progress = broadcastSectionProgress(admin);
   const embedder = embedderFromEnv(process.env, logCall);
-  if (settings) writer.reviewSections = (sectionIds, scope) => reviewRebuiltSections(db, settings, sectionIds, embedder, scope, { client: admin, writer });
+  if (settings) writer.reviewSections = (sectionIds, scope) => reviewRebuiltSections(db, settings, sectionIds, embedder, scope);
   return {
     refreshAppliedOverviews: settings ? (eventId: string, pageIds: string[]) => refreshOrganizationOverviews({ settings, client: admin, db, writer }, eventId, { pageIds }) : undefined,
     db,

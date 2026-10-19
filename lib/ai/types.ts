@@ -1,5 +1,5 @@
-import type { KnowledgeContext } from "@/lib/knowledge/context";
 import type { Enums } from "@/lib/database/types";
+import type { KnowledgeContext } from "@/lib/knowledge/context";
 
 // =====================================================================
 // RECONCILIATION SEAM: what the model is given and what it must return.
@@ -115,6 +115,8 @@ export type ActionInputByType = {
   create_section: { pageId: string; position?: number } & SectionDraft; // position: where it goes (default: last)
   rename_section: { title: string };
   retire_section: Record<string, never>;
+  // The section keeps its id and lines; added claims become uncovered, removed claims flag their lines.
+  update_section_query: { query: SectionQuery; fromQuery: unknown };
   // CATALOG EDITS (a person's, from the Entities and Domains screens). target = the entity or domain.
   // Type and key never change: they are the natural key earlier actions use.
   update_entity: { name: string; aliases: string[] };

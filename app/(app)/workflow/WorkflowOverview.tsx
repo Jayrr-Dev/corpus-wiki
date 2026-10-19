@@ -1,9 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { OTHER_PHASES, UPLOAD_PHASES, WORKFLOW_SAFEGUARDS, type OverviewPhase } from "./workflowOverviewModel";
 
 const CONTROLS = { skills: "Skill instructions", roles: "Role instructions", builtin: "Built-in AI policy", system: "App rules" };
@@ -11,7 +11,7 @@ const CONTROLS = { skills: "Skill instructions", roles: "Role instructions", bui
 const PHASE_SUMMARIES: Record<string, string> = {
   knowledge: "Save your source, extract the key facts, and organize them by topic.",
   articles: "Turn those facts into articles, with citations and a review for accuracy.",
-  enrichment: "Add profiles and definitions, then update articles when new knowledge is added.",
+  enrichment: "Describe subjects, build profiles, write the glossary, and tidy the page tree.",
   research: "Find and review outside sources to fill gaps in your knowledge.",
   "on-request": "Start a review, refresh profiles, or tidy up your topics when needed.",
   illustrations: "Choose, review and save useful images without turning illustrations into evidence.",
@@ -104,4 +104,3 @@ function Phase({ phase, number, selectedId, onSelect }: { phase: OverviewPhase; 
     </ol>
   </section>;
 }
-

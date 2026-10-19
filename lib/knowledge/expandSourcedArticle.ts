@@ -1,11 +1,11 @@
-import "server-only";
-import type { DbRpc } from "@/lib/db/rpc";
 import type { TokenFactorySettings } from "@/lib/ai/chat";
-import type { AdminSupabase } from "@/lib/supabase/admin";
-import { articleAdditionActions } from "@/lib/living-page/articleScaffold";
 import { commitPersonEdit } from "@/lib/change-control";
-import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
+import type { DbRpc } from "@/lib/db/rpc";
 import { rebuildSection, type SectionWriter } from "@/lib/living-page";
+import { articleAdditionActions } from "@/lib/living-page/articleScaffold";
+import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
+import type { AdminSupabase } from "@/lib/supabase/admin";
+import "server-only";
 
 export async function expandSourcedArticle(deps: { db: DbRpc; client: AdminSupabase; settings: TokenFactorySettings; writer: SectionWriter }, pageId: string, unitIds: string[], note: string, sectionTitle?: string) {
   if (!unitIds.length) return 0;
@@ -16,7 +16,7 @@ export async function expandSourcedArticle(deps: { db: DbRpc; client: AdminSupab
   if (!actions.length) return 0;
   const committed = await commitPersonEdit(deps.db, "Expanded article with user-requested external information", actions);
   if (committed.status !== "applied") throw new Error("Sources were saved, but article expansion could not be applied. Review Changes.");
-  const { data, error } = await deps.client.from("actions").select("target_id").eq("change_set_id", committed.changeSetId).eq("type", "create_section");
+  const { data, error } = await deps.client.from("actions").select("target_id").eq("change_set_id", committed.changeSetId).in("type", ["create_section", "update_section_query"]);
   if (error) throw new Error(error.message);
   const sections = (data ?? []).flatMap((action) => action.target_id ? [action.target_id] : []);
   for (const id of sections) {
