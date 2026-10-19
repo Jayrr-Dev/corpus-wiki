@@ -21,7 +21,15 @@ export interface CanvasPalette {
 // Reads the current token values from the element's computed style
 export function readCanvasPalette(element: Element): CanvasPalette {
   const style = getComputedStyle(element);
-  const token = (name: string) => style.getPropertyValue(`--sb-${name}`).trim();
+  const colors = new Map<string, string>();
+  const token = (name: string) => {
+    let value = colors.get(name);
+    if (value === undefined) {
+      value = style.getPropertyValue(`--sb-${name}`).trim();
+      colors.set(name, value);
+    }
+    return value;
+  };
   return {
     background: token("background"),
     border: token("border"),

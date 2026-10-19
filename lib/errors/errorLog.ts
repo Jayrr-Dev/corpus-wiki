@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { inspect } from "node:util";
 import { componentFromStack } from "./componentFromStack";
 import { ACTION_FAILED } from "@/lib/server-actions/result";
+import { currentActor } from "@/lib/auth/currentPerson";
 
 // =====================================================================
 // ERROR LOG (server): writes one row to public.error_log per error, so
@@ -38,7 +39,13 @@ function logClient(): SupabaseClient | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SECRET_KEY;
   client = url && key
-    ? createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(10_000) }) } })
+    ? createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: async (input, init) => {
+      const actor = await currentActor();
+      const headers = new Headers(init?.headers);
+      if (actor.personId) headers.set("x-person-id", actor.personId);
+      if (actor.spaceId) headers.set("x-space-id", actor.spaceId);
+      return fetch(input, { ...init, headers, signal: AbortSignal.timeout(10_000) });
+    } } })
     : null;
   return client;
 }

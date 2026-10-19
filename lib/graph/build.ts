@@ -127,23 +127,42 @@ export function countDegrees(links: readonly GraphLink[]): Map<string, number> {
 
 // BUILD: rows -> the full graph (every layer; filters decide what shows)
 export function buildGraph(rows: GraphRows): GraphData {
-  const domains = new Map(rows.domains.map((domain) => [domain.id, domain]));
-  const scopeByPath = new Map(rows.domains.map((domain) => {
-    let root = domain;
-    const visited = new Set<string>();
-    while (root.parent_id && domains.has(root.parent_id) && !visited.has(root.id)) {
-      visited.add(root.id);
-      root = domains.get(root.parent_id)!;
-    }
-    return [domain.path, root.context_entity_id === null ? "external" : "internal"] as const;
-  }));
-  const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)].map((node) => ({
-    ...node,
-    domainScopePaths: {
-      internal: node.domainPaths.filter((path) => scopeByPath.get(path) === "internal"),
-      external: node.domainPaths.filter((path) => scopeByPath.get(path) === "external"),
-    },
-  }));
+  // Origin comes from evidence, never from the domain's organization context.
+  // Match the knowledge list: a unit backed by an upload remains Internal even
+  // when external sources also support it. Unsourced/manual units are Internal.
+  const externalSources = new Set(rows.sources.filter((source) => source.origin === "external").map((source) => source.id));
+  const externalUnits = new Set<string>();
+  const internalUnits = new Set<string>();
+  for (const link of rows.sourceUnits) {
+    if (!link.unit_id || !link.source_id) continue;
+    (externalSources.has(link.source_id) ? externalUnits : internalUnits).add(link.unit_id);
+  }
+  type Scope = "internal" | "external";
+  const unitScopes = new Map(rows.units.map((unit) => [unit.id,
+    externalUnits.has(unit.id) && !internalUnits.has(unit.id) ? "external" as const : "internal" as const,
+  ]));
+  const pageBySection = new Map(rows.sections.map((section) => [section.id, section.page_id]));
+  const pageScopes = new Map<string, Set<Scope>>();
+  for (const input of rows.sectionInputs) {
+    const pageId = pageBySection.get(input.section_id);
+    const scope = unitScopes.get(input.unit_id);
+    if (!pageId || !scope) continue;
+    const scopes = pageScopes.get(pageId) ?? new Set<Scope>();
+    scopes.add(scope);
+    pageScopes.set(pageId, scopes);
+  }
+  const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)].map((node) => {
+    const sourceScopes: Scope[] = node.kind === "unit" ? [unitScopes.get(node.id)!]
+      : node.kind === "page" ? [...(pageScopes.get(node.id) ?? new Set<Scope>(["internal"]))] : [];
+    return {
+      ...node,
+      sourceScopes,
+      domainScopePaths: {
+        internal: sourceScopes.includes("internal") ? node.domainPaths : [],
+        external: sourceScopes.includes("external") ? node.domainPaths : [],
+      },
+    };
+  });
   // A stored title already tells its claim apart; only derived labels are made specific
   const titledRevisions = new Set(rows.revisions.filter((revision) => revision.title?.trim()).map((revision) => revision.id));
   const titled = new Set(rows.units.filter((unit) => titledRevisions.has(unit.current_revision_id)).map((unit) => unit.id));

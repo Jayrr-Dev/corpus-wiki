@@ -3,6 +3,8 @@ import "server-only";
 import { z } from "zod";
 import type { DbRpc } from "@/lib/db/rpc";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
+import { currentActor } from "@/lib/auth/currentPerson";
+import { LEGACY_SPACE_ID } from "@/lib/spaces/shared";
 import { MODEL_ROLES, type ModelRole, roleForPurpose, roleName } from "./roles";
 
 // =====================================================================
@@ -20,7 +22,7 @@ import { MODEL_ROLES, type ModelRole, roleForPurpose, roleName } from "./roles";
 
 export type MemoryEntry = { key: string; value: string; source: string | null; updatedAt: string; expiresAt: string | null };
 export type RememberItem = z.infer<typeof rememberItemSchema>;
-export type RoleMemory = { role: ModelRole; saved: MemoryEntry[]; db: DbRpc };
+export type RoleMemory = { role: ModelRole; saved: MemoryEntry[]; db: DbRpc; spaceId?: string };
 
 // LIMITS: notes a call is shown, note sizes, how long the in-process copies live, and how much run memory holds
 const PROMPT_NOTES = 40;
@@ -42,13 +44,13 @@ export const rememberItemSchema = z.object({
 });
 
 // IN-PROCESS DICTIONARIES. `saved` mirrors the table per role; `run` is keyed "<run>:<role>"
-const savedCache = new Map<ModelRole, { entries: MemoryEntry[]; loadedAt: number }>();
+const savedCache = new Map<string, { entries: MemoryEntry[]; loadedAt: number }>();
 const runStore = new Map<string, { expiresAt: number; notes: Map<string, string> }>();
 
 // The role whose memory a call uses, or null. Independent reviewers decide in a fresh
 // context by policy, so their calls (independent_*) and the Article reviewer get none.
 export function memoryRoleFor(purpose: string): ModelRole | null {
-  if (purpose.startsWith("independent_")) return null;
+  if (purpose.startsWith("independent_") || purpose === "article_outline_review") return null;
   const role = roleForPurpose(purpose);
   if (!role || role === "article_reviewer") return null;
   return (MODEL_ROLES as readonly string[]).includes(role) ? (role as ModelRole) : null;
@@ -60,25 +62,28 @@ export async function openRoleMemory(db: DbRpc | undefined, purpose: string): Pr
   const role = memoryRoleFor(purpose);
   if (!db || !role) return null;
   try {
-    return { role, saved: await savedEntries(db, role), db };
+    const { spaceId: selected, personId } = await currentActor();
+    const spaceId = selected ?? personId ?? LEGACY_SPACE_ID;
+    return { role, saved: await savedEntries(db, role, spaceId), db, spaceId };
   } catch (error) {
     console.warn(`Could not read the ${roleName(role)} memory:`, error);
     return null;
   }
 }
 
-async function savedEntries(db: DbRpc, role: ModelRole): Promise<MemoryEntry[]> {
-  const cached = savedCache.get(role);
+async function savedEntries(db: DbRpc, role: ModelRole, spaceId = LEGACY_SPACE_ID): Promise<MemoryEntry[]> {
+  const key = `${spaceId}:${role}`;
+  const cached = savedCache.get(key);
   if (cached && Date.now() - cached.loadedAt < SAVED_CACHE_MS) return cached.entries;
   const entries = await db.call<MemoryEntry[]>("get_role_memory", { p_role: role, p_limit: 200 });
-  savedCache.set(role, { entries, loadedAt: Date.now() });
+  savedCache.set(key, { entries, loadedAt: Date.now() });
   return entries;
 }
 
 // The run's notes for a role (created when `create`); stale scopes are dropped as they are met
-function runNotes(role: ModelRole, create = false) {
+function runNotes(role: ModelRole, create = false, spaceId = LEGACY_SPACE_ID) {
   const execution = uploadExecution.getStore();
-  const scope = `${execution?.eventId ?? "ambient"}:${role}`;
+  const scope = `${spaceId}:${execution?.eventId ?? "ambient"}:${role}`;
   const now = Date.now();
   const existing = runStore.get(scope);
   if (existing && existing.expiresAt > now) return existing;
@@ -100,7 +105,7 @@ export async function saveRoleMemory(memory: RoleMemory, remember: RememberItem[
   const runItems = remember.filter((item) => item.scope === "run");
   const savedItems = remember.filter((item) => item.scope === "saved");
   if (runItems.length || dropped.length) {
-    const notes = runNotes(memory.role, runItems.length > 0)?.notes;
+    const notes = runNotes(memory.role, runItems.length > 0, memory.spaceId)?.notes;
     for (const key of dropped) notes?.delete(key);
     for (const item of runItems) {
       notes?.delete(item.key); // re-insert, so the newest note is last and the oldest is evicted first
@@ -117,20 +122,20 @@ export async function saveRoleMemory(memory: RoleMemory, remember: RememberItem[
       p_source: source,
     });
   } finally {
-    savedCache.delete(memory.role);
-    memory.saved = await savedEntries(memory.db, memory.role).catch(() => memory.saved);
+    savedCache.delete(`${memory.spaceId ?? LEGACY_SPACE_ID}:${memory.role}`);
+    memory.saved = await savedEntries(memory.db, memory.role, memory.spaceId).catch(() => memory.saved);
   }
 }
 
 // A person cleared memory on /roles: the in-process copies must not bring it back
 export function forgetCachedMemory(role: ModelRole): void {
-  savedCache.delete(role);
+  for (const key of savedCache.keys()) if (key.endsWith(`:${role}`)) savedCache.delete(key);
   for (const scope of runStore.keys()) if (scope.endsWith(`:${role}`)) runStore.delete(scope);
 }
 
 // Every live note a role has, run notes first (they are the most recent context)
 function allNotes(memory: RoleMemory): { key: string; value: string; scope: "run" | "saved" }[] {
-  const run = [...(runNotes(memory.role)?.notes ?? [])].reverse().map(([key, value]) => ({ key, value, scope: "run" as const }));
+  const run = [...(runNotes(memory.role, false, memory.spaceId)?.notes ?? [])].reverse().map(([key, value]) => ({ key, value, scope: "run" as const }));
   return [...run, ...memory.saved.map((entry) => ({ key: entry.key, value: entry.value, scope: "saved" as const }))];
 }
 

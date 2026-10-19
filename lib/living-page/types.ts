@@ -34,6 +34,9 @@ export type SectionLine = {
   author: Enums<"actor_kind">;
   unitIds: string[];
   needsRewrite: boolean;
+  unitRevisionIds?: string[];
+  // An explicit Update makes lines editable; this retains their actual staleness.
+  needsCitationRefresh?: boolean;
 };
 
 // DB: read_section_state
@@ -41,6 +44,7 @@ export type SectionState = { sectionId: string; title: string; pageTitle: string
 
 // WRITER INPUT: the section's claims and lines; only flagged lines and uncovered claims are its job
 export type SectionReviseInput = {
+  articleStructure?: { status: "planned" | "applied" | "current"; outOfDate: boolean; rationale: string; sections: { title: string; position: number; claimCount: number }[]; currentSectionTitles: string[] };
   pageTitle: string;
   sectionTitle: string;
   units: SectionUnit[];
@@ -57,6 +61,8 @@ export type PageContextSection = { section: string; text: string };
 // WRITER OUTPUT: lines to rewrite, lines to remove, lines to add (each citing the units it states)
 export type LineText = { text: string; unitIds: string[] };
 export type SectionRevision = {
+  // Exact patches must not be silently normalized or partly discarded by planning.
+  textPatches?: boolean;
   // Reviewed omissions: source-document metadata or facts already stated elsewhere.
   omittedUnitIds?: string[];
   revise: (LineText & { lineId: string })[];

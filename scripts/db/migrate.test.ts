@@ -67,6 +67,11 @@ describe("management API target", () => {
 });
 
 describe("readMigrationFiles", () => {
+  it("rejects version collisions instead of silently treating a different migration as applied", () => {
+    const dir = writeMigrations({ "20261118195000_first.sql": "select 1", "20261118195000_second.sql": "select 2" });
+    try { expect(() => readMigrationFiles(dir)).toThrow("Duplicate migration version 20261118195000"); }
+    finally { rmSync(dir, {recursive:true,force:true}); }
+  });
   it("lists the repo migrations in version order", () => {
     const versions = readMigrationFiles().map((file) => file.version);
     expect(versions.length).toBeGreaterThan(0);

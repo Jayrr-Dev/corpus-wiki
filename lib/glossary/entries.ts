@@ -130,6 +130,16 @@ export const glossaryEntryKey = (entry: Pick<GlossaryEntry, "term" | "expansion"
 export const glossaryOriginKey = (entry: GlossaryEntry) => `${glossaryLegacyKey(entry)}|${[...new Set(entry.citations.map((cite) => cite.unitId))].sort().join(",")}`;
 export const glossaryHistoryKeys = (entry: GlossaryEntry) => [...new Set([glossaryEntryKey(entry), glossaryLegacyKey(entry), ...entry.historyKeys ?? [], ...entry.redirectIds ?? []])];
 
+// Keep the published dictionary usable while reviewed meanings stream in.
+// Stable identities and merge redirects replace older senses without hiding
+// unrelated senses of the same word.
+export function visibleGlossaryEntries(published: GlossaryEntry[], live: GlossaryEntry[] = []): GlossaryEntry[] {
+  if (!live.length) return published;
+  const replaced = new Set(live.flatMap((entry) => [glossaryEntryKey(entry), ...entry.redirectIds ?? []]));
+  return [...published.filter((entry) => !replaced.has(glossaryEntryKey(entry))), ...live]
+    .sort((a, b) => a.term.localeCompare(b.term, "en", { sensitivity: "base" }));
+}
+
 export const glossaryAnchor = (term: string) => `term-${normalized(term).replaceAll(" ", "-")}`;
 
 export function glossaryRedirectAnchors(entries: GlossaryEntry[]): Map<string, string[]> {

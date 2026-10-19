@@ -1,6 +1,7 @@
 import "server-only";
 import { REVIEWER_INSTRUCTIONS, RESEARCH_SEARCH_INSTRUCTIONS, RESEARCH_SOURCE_INSTRUCTIONS } from "@/lib/ai/rolePolicies";
 import { z } from "zod";
+import { SOURCER_INSTRUCTIONS, SOURCER_SOURCE_CHECK_INSTRUCTIONS } from "@/lib/ai/sourcerPolicy";
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 
 export type ExternalProjectContext = {
@@ -10,6 +11,7 @@ export type ExternalProjectContext = {
   sourceTitles: string[];
   projectFacts: string[];
   existingKnowledge: string[];
+  articleText?: string;
 };
 export type ResearchProposal = { needed: boolean; gap: string; justification: string; query: string };
 export type ExternalReview = {
@@ -91,15 +93,15 @@ export async function approveExternalSearch(settings: TokenFactorySettings, cont
   }
 }
 
-export async function approveExternalSource(settings: TokenFactorySettings, context: ExternalProjectContext, research: ResearchProposal, source: { title: string; url: string; text: string }, record: ReviewRecorder): Promise<{ text: string; reviewId: string } | null> {
-  const researcherInstructions = settings.roleInstructions?.find((row) => row.role === "researcher")?.instructions;
-  const reviewerInstructions = settings.roleInstructions?.find((row) => row.role === "reviewer")?.instructions ?? REVIEWER_INSTRUCTIONS;
+export async function approveExternalSource(settings: TokenFactorySettings, context: ExternalProjectContext, research: ResearchProposal, source: { title: string; url: string; text: string }, record: ReviewRecorder, proposerRole: "researcher" | "sourcer" = "researcher"): Promise<{ text: string; reviewId: string } | null> {
+  const researcherInstructions = settings.roleInstructions?.find((row) => row.role === proposerRole)?.instructions ?? (proposerRole === "sourcer" ? SOURCER_INSTRUCTIONS : undefined);
+  const reviewerInstructions = proposerRole === "sourcer" ? SOURCER_SOURCE_CHECK_INSTRUCTIONS : settings.roleInstructions?.find((row) => row.role === "reviewer")?.instructions ?? REVIEWER_INSTRUCTIONS;
   const tracked = trackUsage(settings);
   settings = tracked.settings;
   const usage = { tokensIn: 0 as number | null, tokensOut: 0 as number | null };
   let proposerModel: string | null = null;
   const save: ReviewRecorder = (review) => record({ ...review, ...(tracked.calls ? tracked.total : usage), attribution: {
-    proposedBy: { role: "researcher", model: proposerModel }, decidedBy: { role: "reviewer", model: review.model },
+    proposedBy: { role: proposerRole, model: proposerModel }, decidedBy: { role: "reviewer", model: review.model },
     instructions: { proposer: researcherInstructions ?? (review.stage === "search" ? RESEARCH_SEARCH_INSTRUCTIONS : RESEARCH_SOURCE_INSTRUCTIONS), reviewer: reviewerInstructions }, version: 1,
   } });
   let proposal: object = research;
@@ -107,7 +109,7 @@ export async function approveExternalSource(settings: TokenFactorySettings, cont
   const review = { stage: "source" as const, context, url: source.url, sourceTitle: source.title };
   try {
     const proposed = await chatJson(settings, {
-      name: "external_source_justification", subject: source.title, schema: sourceProposalSchema, jsonSchema: z.toJSONSchema(sourceProposalSchema), maxTokens: 5000,
+      name: proposerRole === "sourcer" ? "sourcer_source_justification" : "external_source_justification", subject: source.title, schema: sourceProposalSchema, jsonSchema: z.toJSONSchema(sourceProposalSchema), maxTokens: 5000,
       messages: [{ role: "system", content: researcherInstructions ?? RESEARCH_SOURCE_INSTRUCTIONS }, { role: "user", content: JSON.stringify({ context, research, source }) }],
     });
     proposerModel = proposed.model;

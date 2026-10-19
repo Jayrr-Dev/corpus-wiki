@@ -1,4 +1,6 @@
 "use client";
+import { MediaImage } from "@/components/preview/MediaImage";
+
 
 import { Note, QueryState, Quote, Section, TextLink } from "@/app/(app)/_components/bits";
 import { formatDate, formatLocation } from "@/app/(app)/_lib/format";
@@ -87,8 +89,7 @@ function PassagePicture({ picture }: { picture: PassagePictureInfo }) {
   return (
     <ImageViewer src={picture.src} title={picture.title}>
       <button type="button" aria-label={`View ${picture.title}`} className="shrink-0 cursor-zoom-in self-start overflow-hidden rounded border bg-white">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a signed redirect, not an optimizable asset */}
-        <img src={picture.src} alt={picture.title} loading="lazy" className="h-20 w-28 object-contain" />
+        <MediaImage src={picture.src} alt={picture.title} loading="lazy" className="h-20 w-28 object-contain" />
       </button>
     </ImageViewer>
   );

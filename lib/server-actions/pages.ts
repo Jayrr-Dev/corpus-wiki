@@ -2,7 +2,6 @@
 
 import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { loadStageSkills } from "@/lib/ai/skills/server";
-import { skillTrace } from "@/lib/ai/skills/prompt";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readAllowExternalKnowledge, readAutoUpdateStale, readModelChoice } from "@/lib/ai/models";
 import { webSearchKey } from "@/lib/knowledge/webSearch";
@@ -13,13 +12,14 @@ import { organizeExistingEntityContext } from "@/lib/living-page/organizeHierarc
 import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { createArticlePlanner } from "@/lib/living-page/articlePlanner";
 import { requireUser } from "@/lib/auth/requireUser";
-import { type CommitResult, commitPersonEdit, submitChangeSet, commitChangeSet, revertChangeSet } from "@/lib/change-control";
+import { type CommitResult, commitPersonEdit, revertChangeSet } from "@/lib/change-control";
 import { rebuildPage, rebuildSection, type SectionRef, type SectionState } from "@/lib/living-page";
 import { refreshSectionStyle } from "@/lib/living-page/refreshStyle";
 import { refreshOrganizationOverviews } from "@/lib/living-page/refreshOrganizationOverviews";
 import { pruneEmptySections } from "@/lib/living-page/pruneEmptySections";
 import { restructureUpdate, updateNeedsStructure } from "@/lib/living-page/restructureUpdate";
-import { discoverArticleUpdates, repairEmptyIntroductions } from "@/lib/living-page/discoverArticleUpdates";
+import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
+import { applyArticleScaffold } from "@/lib/living-page/articleScaffold";
 import { emptyArticleCandidates } from "@/lib/living-page/emptyArticleCandidates";
 import { pageAndDescendants } from "@/lib/living-page/pageHierarchy";
 import { articleUpdateSchema, type ArticleUpdateRequest } from "@/lib/living-page/updateRequest";
@@ -27,6 +27,8 @@ import { after } from "next/server";
 import { z } from "zod";
 import { getServerDeps } from "@/lib/server/deps";
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { readPages } from "@/lib/queries/batched";
+import { isRunning, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
 import { type ActionResult, toActionResult } from "./result";
 
 // =====================================================================
@@ -263,12 +265,21 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
     if (!(pages ?? []).some((page) => page.id === request.id)) throw new Error("This article or section is no longer available. Reload the page and try again.");
     const pageIds = request.scope === "tree" ? pageAndDescendants(pages ?? [], request.id) : [request.id];
     let completed = 0;
+    let plannedExistingArticle = false;
     const webFillIds: string[] = [];
     try {
       for (const pageId of pageIds) {
         // Parent overviews must select evidence before rewriting. Generic discovery
         // would otherwise add the child process's claims straight back to the parent.
         if (pages!.some((page) => page.parent_page_id === pageId)) {
+          const existingOverview = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
+          if (existingOverview.length && !restructure) {
+            for (const section of existingOverview) {
+              await refreshSectionStyle(db, writer, section.sectionId, request.note);
+              completed++;
+            }
+            continue;
+          }
           const outcomes = await refreshOrganizationOverviews({ db, client: admin, settings }, null, { pageIds: [pageId] });
           const overview = outcomes.find((outcome) => outcome.pageId === pageId);
           if (overview?.status === "failed") throw new Error(overview.detail ?? "Could not update the article overview.");
@@ -293,23 +304,19 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
           }
         }
         const existing = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
+        plannedExistingArticle ||= existing.length > 0;
         const candidates = existing.length ? [] : await emptyArticleCandidates(db, admin, pages!.find((page) => page.id === pageId)!, pages!,
           embedderFromEnv(process.env, (call) => db.call("log_ai_call", { p_call: { ...call, purpose: "empty_article_retrieval" } })));
-        if (restructure && existing.length) await restructureUpdate(db, admin, settings, pageId, request.note);
-        const repairs = await repairEmptyIntroductions(db, admin, pageId);
-        const { sections: additions, tokensIn, tokensOut } = await discoverArticleUpdates(db, admin, settings, pageId, request.note, candidates);
-        if (additions.length || repairs.length) {
-          const actions: DraftAction[] = [...repairs, ...additions.map((section): DraftAction => ({ ...PERSON_ACTION, type: "create_section", targetId: null, input: { pageId, ...section } }))];
-          const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {
-            summary: "Updated article knowledge selections and introduction", actions,
-            trace: { modelVersion: settings.model ?? null, promptVersion: skillTrace("article-update-discovery-v1", ["plan_articles"], settings.skills), tokensIn, tokensOut },
-          });
-          const result = await commitChangeSet(db, changeSetId);
-          if (result.status !== "applied") throw new Error("New sections were not fully applied. Review Changes before retrying.");
-        }
+        const { sections: additions } = await discoverArticleUpdates(db, admin, settings, pageId, request.note, candidates,
+          embedderFromEnv(process.env, (call) => db.call("log_ai_call", { p_call: { ...call, purpose: "article_coverage_retrieval" } })));
+        const scaffoldBuilt = new Set<string>();
+        const scaffold = await applyArticleScaffold(db, admin, settings, writer, pageId, additions, request.note);
+        for (const id of scaffold.sectionIds) scaffoldBuilt.add(id);
+        completed += scaffold.changed;
         const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
         try {
           for (const section of sections) {
+            if (scaffoldBuilt.has(section.sectionId) || !request.note.trim()) continue;
             await refreshSectionStyle(db, writer, section.sectionId, request.note);
             completed++;
           }
@@ -323,7 +330,7 @@ export async function updateArticle(input: ArticleUpdateRequest): Promise<Action
       const detail = error instanceof Error ? error.message : "The AI update failed.";
       throw new Error(`${completed ? `${completed} section(s) updated before the update stopped. ` : ""}${detail}`);
     }
-    if (!completed) return { sections: 0, message: "No saved knowledge fits this article yet. Add a relevant source, then try Update again." };
+    if (!completed) return { sections: 0, message: plannedExistingArticle ? "No changes were needed to the article's planned structure or saved knowledge." : "No saved knowledge fits this article yet. Add a relevant source, then try Update again." };
     fillFromWebLater(webFillIds, request.note);
     return { sections: completed };
   });
@@ -363,6 +370,16 @@ async function rewriteStaleSections(sectionIds: string[]): Promise<number> {
   const { db, writer } = await getServerDeps();
   const enabled = await readAutoUpdateStale(db);
   if (!enabled) return 0;
+  // Uploads own their section writing and final page reviews. Automatic UI
+  // sweeps must not start competing rewrites in the same RLS-scoped space.
+  const events = await readPages(async (from, to) => {
+    const result = await getAdminSupabase().from("shift_events")
+      .select("id").eq("cause", "upload").order("id").range(from, to);
+    if (result.error) throw new Error(result.error.message);
+    return result;
+  });
+  const uploads = events.length ? await db.call<UploadWorkflow[]>("read_upload_workflows", { p_event_ids: events.map(event => event.id) }) : [];
+  if (uploads.some(isRunning)) return 0;
   let completed = 0;
   for (const sectionId of sectionIds) {
     if (rebuildingSections.has(sectionId)) continue;

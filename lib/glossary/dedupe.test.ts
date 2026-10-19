@@ -8,6 +8,27 @@ const entry = (term: string, values: Partial<GlossaryEntry> = {}): GlossaryEntry
   context: null, scopeKey: "[null]", citations: [{ unitId: "u1", revisionId: "r1", sourceId: "s1", sourceTitle: "Handbook" }], ...values,
 });
 
+it("checkpoints accepted definitions before a later comparison fails", async () => {
+  const snapshots: GlossaryEntry[][] = [];
+  const first = entry("Valve", { meaningId: "first" });
+  await expect(dedupeGlossaryEntries([first, entry("Valve")], async () => { throw new Error("Connection interrupted"); },
+    async (_progress, reviewed) => { if (reviewed) snapshots.push(structuredClone([...reviewed])); })).rejects.toThrow("Connection interrupted");
+  expect(snapshots.at(-1)).toEqual([first]);
+});
+
+it("streams merged definitions and excludes uncertain meanings", async () => {
+  const pending: import("./entries").PendingGlossaryEntry[] = [];
+  const snapshots: GlossaryEntry[][] = [];
+  const judge = vi.fn().mockResolvedValueOnce({ duplicateOf: 0, definition: "A reviewed merged definition.", relationship: "same_meaning" })
+    .mockResolvedValueOnce({ duplicateOf: null, definition: null, relationship: "uncertain" });
+  const result = await dedupeGlossaryEntries([entry("Valve", { meaningId: "first" }), entry("Valve"), entry("Valve")], judge,
+    async (_progress, reviewed) => { if (reviewed) snapshots.push(structuredClone([...reviewed])); }, { pending });
+  expect(result).toHaveLength(1);
+  expect(pending).toHaveLength(1);
+  expect(snapshots.at(-1)?.[0]?.definition).toBe("A reviewed merged definition.");
+  expect(snapshots.at(-1)).toHaveLength(1);
+});
+
 describe("glossary duplicate guard", () => {
   it("runs independent checks beyond a cluster of dependent terms without exceeding three calls", async () => {
     let release!: () => void;
@@ -143,7 +164,7 @@ describe("glossary duplicate guard", () => {
       citations: [{ unitId: "u2", revisionId: "r2", sourceId: "s2", sourceTitle: "Training" }],
     })], judge, heartbeat);
     expect(judge).toHaveBeenCalledTimes(1);
-    expect(heartbeat).toHaveBeenLastCalledWith({ phase: "comparing", completed: 2, total: 2 });
+    expect(heartbeat).toHaveBeenLastCalledWith({ phase: "comparing", completed: 2, total: 2 }, result);
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({ term: "Consumer product", definition: combined, aliases: ["Consumer goods", "Consumer products"] });
     expect(result[0]?.citations.map((cite) => cite.sourceId)).toEqual(["s1", "s2"]);

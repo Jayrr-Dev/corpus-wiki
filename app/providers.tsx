@@ -6,7 +6,7 @@ import { Toaster } from "@/components/toast";
 import { TooltipProvider } from "@/components/standard/tooltip";
 
 // QUERY DEFAULTS: Realtime (agent D) pushes changes, so polling and focus refetch stay off
-function makeQueryClient(): QueryClient {
+export function makeQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: { queries: { staleTime: 30_000, refetchOnWindowFocus: false } },
   });

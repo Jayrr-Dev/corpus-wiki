@@ -37,14 +37,16 @@ export function DomainsTree({ showRetired = false }: { showRetired?: boolean }) 
   const [creatingTab, setCreatingTab] = useState(false);
   const [editingTab, setEditingTab] = useState(false);
   const customTabs = tabQuery.data ?? [];
-  const [tab, setTab] = useState("00000000-0000-4000-8000-000000000001");
+  const [tab, setTab] = useState("");
   const { tree, counts, state } = useDomainCounts(showRetired);
+  const selectedTab = customTabs.some(group => group.id === tab) ? tab
+    : customTabs.find(group => tree.some(root => group.root_ids.includes(root.id)))?.id ?? customTabs[0]?.id;
   return (
     <QueryState query={readsState([state, tabQuery])}>
-      <Tabs.Root value={tab} onValueChange={setTab} className="space-y-4">
+      <Tabs.Root value={selectedTab} onValueChange={setTab} className="space-y-4">
         <div className="flex items-center gap-2 border-b pb-2">
         <Tabs.List data-tour="domains-groups" aria-label="Domain groups" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
-          {customTabs.map((group) => <Tabs.Trigger key={group.id} value={group.id} className={cn("shrink-0 rounded-md px-3 py-2 text-panel transition-colors focus-visible:outline-2 focus-visible:outline-ring", tab === group.id ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-hover hover:text-foreground")}>{group.name}</Tabs.Trigger>)}
+          {customTabs.map((group) => <Tabs.Trigger key={group.id} value={group.id} className={cn("shrink-0 rounded-md px-3 py-2 text-panel transition-colors focus-visible:outline-2 focus-visible:outline-ring", selectedTab === group.id ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-hover hover:text-foreground")}>{group.name}</Tabs.Trigger>)}
         </Tabs.List>
           <Dialog open={creatingTab} onOpenChange={setCreatingTab}><Tooltip content="New domain tab"><DialogTrigger asChild><button type="button" aria-label="New domain tab" className="my-auto flex size-7 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-hover hover:text-foreground"><Plus className="size-4" /></button></DialogTrigger></Tooltip><DialogContent className="sm:max-w-lg">{creatingTab && <DomainTabForm onDone={(id) => { setTab(id); setCreatingTab(false); }} />}</DialogContent></Dialog>
         </div>
@@ -53,9 +55,9 @@ export function DomainsTree({ showRetired = false }: { showRetired?: boolean }) 
             <p className="max-w-prose whitespace-pre-wrap text-panel leading-relaxed text-muted-foreground">{group.description}</p>
             <div className="flex shrink-0 items-center gap-1.5">
               <NewDomainButton tabId={group.id} />
-              <Dialog open={tab === group.id && editingTab} onOpenChange={setEditingTab}>
+              <Dialog open={selectedTab === group.id && editingTab} onOpenChange={setEditingTab}>
                 <Tooltip content="Edit tab"><DialogTrigger asChild><Button type="button" variant="ghost" size="icon-sm" aria-label={`Edit ${group.name} tab`}><Settings2 className="size-4" /></Button></DialogTrigger></Tooltip>
-                <DialogContent className="sm:max-w-lg">{editingTab && tab === group.id && <DomainTabForm tab={group} onDone={() => setEditingTab(false)} />}</DialogContent>
+                <DialogContent className="sm:max-w-lg">{editingTab && selectedTab === group.id && <DomainTabForm tab={group} onDone={() => setEditingTab(false)} />}</DialogContent>
               </Dialog>
             </div>
           </div>

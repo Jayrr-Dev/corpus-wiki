@@ -1,4 +1,6 @@
 "use client";
+import { MediaImage } from "@/components/preview/MediaImage";
+
 
 import { AudioLines, Film } from "lucide-react";
 import { ImageViewer } from "@/components/preview";
@@ -29,8 +31,7 @@ export function AssetThumbnail({ asset, alt, className }: { asset: Asset; alt: s
   const src = assetSrc(asset);
   const box = cn("flex aspect-[4/3] w-full items-center justify-center overflow-hidden bg-muted", className);
   if (asset.kind === "image") {
-    // eslint-disable-next-line @next/next/no-img-element -- a signed redirect, not an optimizable asset
-    return <div className={cn(box, asset.origin !== "source" && "bg-white")}><img src={src} alt={alt} loading="lazy" className={asset.asset_type === "logo" ? "max-h-24 max-w-24 object-contain" : cn("size-full", asset.origin !== "source" ? "object-contain p-3" : "object-cover")} /></div>;
+    return <div className={cn(box, asset.origin !== "source" && "bg-white")}><MediaImage src={src} alt={alt} loading="lazy" className={asset.asset_type === "logo" ? "max-h-24 max-w-24 object-contain" : cn("size-full", asset.origin !== "source" ? "object-contain p-3" : "object-cover")} /></div>;
   }
   if (asset.kind === "video") {
     return (
@@ -51,8 +52,7 @@ export function AssetPlayer({ asset, alt }: { asset: Asset; alt: string }) {
   return (
     <ImageViewer src={src} title={alt}>
       <button type="button" aria-label={`View ${alt} full size`} className="block w-full cursor-zoom-in overflow-hidden rounded-md border bg-white">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a signed redirect, not an optimizable asset */}
-        <img src={src} alt={alt} className="mx-auto max-h-[70vh] object-contain" />
+        <MediaImage src={src} alt={alt} sizes="(max-width: 640px) 100vw, 1000px" className="mx-auto h-auto max-h-[70vh] object-contain" />
       </button>
     </ImageViewer>
   );

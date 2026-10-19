@@ -1,9 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { hasPublicSupabaseEnv } from "@/lib/supabase/env";
-import { isPublicPath, refreshSession } from "@/lib/supabase/proxy";
+import { isPublicPath, isPublicWikiPath, refreshSession } from "@/lib/supabase/proxy";
 
 // AUTH GATE (Next 16 "proxy", formerly middleware): signed-out users go to /login
 export async function proxy(request: NextRequest) {
+  // Public readers never resolve a signed-in workspace or refresh its cookies.
+  if (isPublicWikiPath(request.nextUrl.pathname)) {
+    // Server Actions can be posted to page URLs. The public reader is a strict
+    // GET/HEAD surface, even if a caller knows a workspace action identifier.
+    if (request.nextUrl.pathname !== "/api/public-wiki/metrics" && !["GET", "HEAD"].includes(request.method)) {
+      return new NextResponse(null, { status: 405, headers: { Allow: "GET, HEAD", "Cache-Control": "no-store" } });
+    }
+    const response = NextResponse.next();
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    response.headers.set("CDN-Cache-Control", "no-store");
+    response.headers.set("Vercel-CDN-Cache-Control", "no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return response;
+  }
   // Without Supabase settings there is no login to check; fail closed to /login
   if (!hasPublicSupabaseEnv()) return redirectUnlessPublic(request);
   const { response, isSignedIn } = await refreshSession(request);

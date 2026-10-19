@@ -31,9 +31,10 @@ export function getAdminSupabase(): AdminSupabase {
 // from, so the database can name them on the rows it writes
 // (supabase/migrations/20261031000000_profiles.sql)
 async function fetchAsPerson(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  const { personId, via } = await currentActor();
+  const { personId, via, spaceId } = await currentActor();
   const headers = new Headers(init?.headers);
   if (personId) headers.set("x-person-id", personId);
+  if (spaceId) headers.set("x-space-id", spaceId);
   headers.set("x-via", via);
   // A database call never waits forever: a hung connection becomes an error the upload
   // workflow records, so its run can be resumed. File transfers keep their own pace.

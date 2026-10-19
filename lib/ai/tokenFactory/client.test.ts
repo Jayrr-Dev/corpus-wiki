@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ReconciliationInput } from "@/lib/ai/types";
+import type { DraftChangeSet, ReconciliationInput } from "@/lib/ai/types";
 import { TokenFactoryReconciliationClient } from "./client";
 
 const input = (count: number, chars = 20): ReconciliationInput => ({
@@ -24,6 +24,22 @@ const response = (options: RequestInit) => new Response(JSON.stringify({
 afterEach(() => vi.unstubAllGlobals());
 
 describe("batched reconciliation", () => {
+  it("publishes every cited batch once and retains final links to its saved units", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (_url: unknown, options: RequestInit) => response(options)));
+    const batches: DraftChangeSet[] = [];
+    const source = { ...input(81), fileTopicsLater: true };
+    const draft = await client().draftChangeSet(source, async (_key, batch) => {
+      batches.push(batch);
+      return batch.actions.map((action, position) => ({ position, type: action.type, outcome: "applied", unitId:
+        action.type === "add_claim" ? `saved-${action.passageIds[0]}` : "saved-entity" }));
+    });
+    expect(batches).toHaveLength(3);
+    expect(batches.flatMap((batch) => batch.actions.filter((action) => action.type === "add_claim").map((action) => action.passageIds)))
+      .toEqual(source.passages.map((passage) => [passage.id]));
+    expect(draft.actions.map((action) => action.type)).toEqual(["link", "link"]);
+    expect(draft.actions[0]).toMatchObject({ targetId: "saved-passage-1", input: { toUnitId: "saved-passage-0" } });
+    expect(draft.actions[1]).toMatchObject({ targetId: "saved-passage-41", input: { toUnitId: "saved-passage-40" } });
+  });
   it("checks entity and domain variants before assigning action positions", async () => {
     const source = input(2);
     source.entities = [{ type: "company", key: "acme-industries", name: "Acme Industries" }];

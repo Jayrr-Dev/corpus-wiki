@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { PatchedText } from "./PatchedText";
 import type { CSSProperties, ReactNode } from "react";
 import { Tooltip } from "@/components/standard/tooltip";
-import { type ArticleLink, linkArticleText } from "@/lib/living-page/articleEvidence";
+import { type ArticleLink } from "@/lib/living-page/articleEvidence";
 import { type BlockPart, type ChartPoint, parseBlocks } from "@/lib/living-page/blocks";
 import { cn } from "@/lib/utils";
 
@@ -29,9 +29,7 @@ export function LineBlock({ content, links = [], trailing }: { content: string; 
 
 // Article links inside any piece of text, as on a prose paragraph
 function Linked({ text, links }: { text: string; links: ArticleLink[] }) {
-  return linkArticleText(text, links).map((chunk, index) => chunk.href ? (
-    <Link key={index} href={chunk.href} className="text-link hover:underline">{chunk.text}</Link>
-  ) : <span key={index}>{chunk.text}</span>);
+  return <PatchedText text={text} links={links} />;
 }
 
 // `trailing` (citations and the details button) ends a closing paragraph, callout or list; it goes under a table or chart
@@ -55,7 +53,7 @@ function BlockPartView({ part, links, trailing }: { part: BlockPart; links: Arti
         <div className="overflow-x-auto rounded-lg border">
           <table className="w-full text-left text-panel">
             <thead>
-              <tr className="border-b">{part.header.map((cell, index) => <th key={index} scope="col" className="px-3 py-2 font-semibold">{cell}</th>)}</tr>
+              <tr className="border-b">{part.header.map((cell, index) => <th key={index} scope="col" className="px-3 py-2 font-semibold"><Linked text={cell} links={links} /></th>)}</tr>
             </thead>
             <tbody>
               {part.rows.map((row, rowIndex) => (

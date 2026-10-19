@@ -61,12 +61,12 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
           { label: "Receives", text: "The entities this upload touched." },
           { label: "Submits", text: "A ChangeSet of entity merges and retirements. An entity is retired only when nothing uses it, so these apply without an Exception." },
         ], instructionsNote: NO_ROLE },
-      { id: "place", step: "Place", kind: "unnamed", name: "Topic placement", does: "Files the upload’s unplaced claims into topics, in one view of the whole file.", submits: ["create_domain", "place_claim"], exceptions: ["root_domain_approval"],
+      { id: "place", step: "Assign domains", kind: "role", roleId: "domain_decider", roles: ["domain_decider"], name: "Domain Decider", does: "Assigns incoming knowledge using source context, semantic neighbors and graph connections, then reviews each group before saving.", submits: ["create_domain", "place_claim"], exceptions: ["root_domain_approval"],
         facts: [
-          { label: "Receives", text: "The upload’s claims that have no topic yet, and the existing topic tree." },
+          { label: "Receives", text: "Unassigned incoming claims, source context, the whole-file plan, saved domain examples, embedding neighbors and typed connections." },
           { label: "Submits", text: "New topics and claim placements under the upload’s event." },
           { label: "You decide", text: "A new root topic waits for your approval in Exceptions. The rest of the upload pauses until you answer." },
-        ], instructionsNote: NO_ROLE },
+        ] },
       { id: "describe", step: "Describe", kind: "role", roleId: "identify_entities", name: "Entity analyst", roles: ["identify_entities"], does: "Writes short descriptions of new entities.", submits: [], direct: true,
         facts: [
           { label: "Receives", text: "New entities and the claims about them." },
@@ -199,12 +199,31 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
 // Keep the role catalogue grouped in the same phases as the upload runner.
 const uploadNode = (id: string) => FLOW_SOURCE_LANES.flatMap((lane) => lane.nodes).find((node) => node.id === id)!;
 export const AI_FLOW_LANES: AiFlowLane[] = [
+  { id: "sourcer", title: "User-requested external information", trigger: "Add External Info in an article menu; search and import are preapproved by the user.", toChangeControl: false, nodes: [
+    { id: "sourcer", step: "Source", kind: "role", roleId: "sourcer", roles: ["sourcer"], name: "Sourcer", does: "Finds external sources and turns checked excerpts into cited knowledge.", submits: [], direct: true, facts: [
+      { label: "Starts", text: "You choose Add External Info and optionally describe what to find. This directly authorizes search and import without another research-permission gate." },
+      { label: "Checks", text: "Skips saved URLs and checks source reliability and exact excerpt support automatically." },
+      { label: "Hands on", text: "Saves sources and their URLs, then sends approved evidence through external reconciliation to create new claims and knowledge units in reference topics. Existing internal claims are not overwritten." },
+    ] },
+  ] },
   FLOW_SOURCE_LANES[0]!,
   { id: "clean", title: "Upload · clean and file the knowledge", trigger: "Runs after saving and before the first articles.", toChangeControl: true, nodes: ["embeddings", "deduplicator", "tidy", "place", "hierarchy"].map(uploadNode) },
   { id: "articles", title: "Upload · write the first articles", trigger: "Runs after filing. Reviewed articles are ready before enrichment begins.", toChangeControl: true, nodes: ["planner", "article_reviewer", "writer", "reviewer"].map(uploadNode) },
   { id: "enrichment", title: "Upload · background enrichment", trigger: "After articles are ready: describe entities, build profiles and expand terms. Changed claims trigger a separate hierarchy, planning and writing pass; glossary and Curator finish the run.", toChangeControl: true, nodes: ["describe", "profiles", "definer", "dictionary"].map(uploadNode) },
   FLOW_SOURCE_LANES[3]!,
   FLOW_SOURCE_LANES[4]!,
+  { id: "illustrations", title: "Article illustrations and reusable assets", trigger: "Automatic article assessment or a manual illustration request; separate from upload evidence.", toChangeControl: false, nodes: [
+    { id: "composer", step: "Illustrate", kind: "role", roleId: "composer", roles: ["composer"], name: "Composer", does: "Chooses useful library images, verified web pictures or new illustrations.", submits: [], direct: true, facts: [
+      { label: "Receives", text: "The current article, cited evidence, available assets, existing illustrations and any section replacement request." },
+      { label: "Checks", text: "Inspects visible candidates and captions, reviews support and article fit, and can omit weak images. Keeps at most three article illustrations." },
+      { label: "Saves", text: "Versioned illustrations only if the article still matches. Imported and generated images become reusable Assets with provenance. Generated scenes are disclosed, not admitted as source evidence." },
+    ] },
+    { id: "asset-lifecycle", step: "Manage assets", kind: "system", name: "Asset lifecycle", does: "Tracks usage, Deleted, Unlink and permanent cleanup.", submits: [], direct: true, facts: [
+      { label: "Usage", text: "Links each image to its article, source, knowledge and stakeholder destinations; graph thumbnails share their knowledge destination." },
+      { label: "Deleted only", text: "Delete keeps existing uses intact. Unlink removes a deleted library image from articles, saved illustration versions and stakeholder logos. Source-owned images use source removal." },
+      { label: "Cleanup", text: "Unused deleted assets expire after seven days, or can be permanently deleted immediately. Used assets are protected. The app checks hourly while running and at startup; failed file removal is retried." },
+    ] },
+  ] },
 ];
 
 export const CHANGE_CONTROL = {

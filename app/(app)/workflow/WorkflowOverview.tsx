@@ -14,10 +14,14 @@ const PHASE_SUMMARIES: Record<string, string> = {
   enrichment: "Add profiles and definitions, then update articles when new knowledge is added.",
   research: "Find and review outside sources to fill gaps in your knowledge.",
   "on-request": "Start a review, refresh profiles, or tidy up your topics when needed.",
+  illustrations: "Choose, review and save useful images without turning illustrations into evidence.",
+  assets: "Track image uses, restore deleted media, unlink placements and clean up unused files.",
+  graph: "Organize knowledge and domains, with Undo and Redo for graph changes.",
+  sourcer: "Request outside information, save its sources, and create cited knowledge without another permission prompt.",
 };
 
 export function WorkflowOverview({ onAssignments }: { onAssignments: () => void }) {
-  const [selectedId, setSelectedId] = useState(UPLOAD_PHASES[0].steps[0].id);
+  const [selectedId, setSelectedId] = useState(UPLOAD_PHASES[0]!.steps[0]!.id);
   const panelRef = useRef<HTMLElement>(null);
   const phases = [...UPLOAD_PHASES, ...OTHER_PHASES];
   const selectedPhase = phases.find((phase) => phase.steps.some((step) => step.id === selectedId))!;
@@ -33,8 +37,8 @@ export function WorkflowOverview({ onAssignments }: { onAssignments: () => void 
   return <section aria-label="Workflow overview" className="space-y-6">
     <div className="flex flex-wrap items-baseline justify-between gap-3">
       <div className="space-y-1">
-        <h2 className="text-base font-semibold">Upload processing</h2>
-        <p className="text-xs leading-5 text-muted-foreground">Steps run in order within each stage. Select a step for its details and instructions.</p>
+        <h2 className="text-base font-semibold">How your workspace works</h2>
+        <p className="text-xs leading-5 text-muted-foreground">Follow upload processing, illustrations, asset cleanup, graph edits and research. Select a step for its details and instructions. Additional workflows run on their own triggers.</p>
       </div>
       <Link href="/upload" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">Upload progress <ArrowRight aria-hidden="true" className="size-3" /></Link>
     </div>

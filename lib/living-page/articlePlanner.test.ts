@@ -46,7 +46,7 @@ describe("article planning completeness", () => {
 
   it("requests a correction when a claim is placed nowhere", async () => {
     vi.mocked(chatJson).mockResolvedValueOnce(answer(incomplete)).mockResolvedValueOnce(answer(complete)).mockResolvedValueOnce(passedReview);
-    await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toEqual({ plan: complete, tokensIn: 30, tokensOut: 60 });
+    await expect(planArticle({ apiKey: "test" }, knowledge)).resolves.toMatchObject({ plan: complete, rationale: "Define the subject, then explain its requirements.", tokensIn: 30, tokensOut: 60 });
     expect(chatJson).toHaveBeenCalledTimes(3);
     expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("C2");
     expect(vi.mocked(chatJson).mock.calls[1]?.[1].messages.at(-1)?.content).toContain("exactly once");

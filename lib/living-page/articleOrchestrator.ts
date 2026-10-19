@@ -8,15 +8,20 @@ import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import type { DraftAction, SectionDraft } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
-import { uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
+import { reportUploadProgress, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { similarUnits } from "@/lib/knowledge/embeddingStore";
 import type { AdminSupabase } from "@/lib/supabase/admin";
+import { readIdBatches, readPages } from "@/lib/queries/batched";
 import { planArticle, topicSections } from "./articlePlanner";
+import { OutlineRejectedError, OUTLINE_POLICY_VERSION } from "./outlineBuilder";
+import { articleAdditionActions } from "./articleScaffold";
 import { ARTICLE_PROPOSER_PROMPT, ARTICLE_PROPOSER_PROMPT_VERSION, articleProposalsJsonSchema, articleProposalsSchema, buildProposerMessages, type PlannedArticle, type ProposerClaim, type ProposerEntity, readProposals } from "./articleProposer";
 import { type ArticleIndexEntry, type ArticleProposal, type ArticleReviewDecision, nextStep, type RelatedKnowledge } from "./articleReview";
 import { groupClaimsForArticle } from "./discoverArticleUpdates";
 import { ARTICLE_REVIEW_PROMPT_VERSION, reviewArticleProposal } from "./runArticleReview";
+import { articleKnowledgeCandidates } from "./articleKnowledgeCandidates";
+import { readArticleStructure, saveArticleStructure } from "./articleStructureMemory";
 
 // =====================================================================
 // ARTICLE ORCHESTRATOR: the one place new articles come from.
@@ -43,58 +48,63 @@ async function eventUnitIds(db: DbRpc, eventId: string): Promise<string[]> {
 }
 
 // Claims with their text, topics and the entities they are about (never passing mentions)
-async function loadClaims(client: AdminSupabase, unitIds: string[]): Promise<{ claims: Claim[]; entities: ProposerEntity[] }> {
+export async function loadArticleClaims(client: AdminSupabase, unitIds: string[]): Promise<{ claims: Claim[]; entities: ProposerEntity[] }> {
   if (!unitIds.length) return { claims: [], entities: [] };
-  const { data: units, error } = await client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", unitIds).is("retired_at", null).order("id");
-  if (error) throw new Error(error.message);
-  if (!units?.length) return { claims: [], entities: [] };
+  const units = await readIdBatches(unitIds, (batch) => readPages((from,to) => client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", batch).is("retired_at", null).order("id").range(from,to)));
+  units.sort((a,b)=>a.id.localeCompare(b.id));
+  if (!units.length) return { claims: [], entities: [] };
   const ids = units.map((unit) => unit.id);
   const [revisions, links, placements] = await Promise.all([
-    client.from("revisions").select("id, content, knowledge_context").in("id", units.map((unit) => unit.current_revision_id)),
-    client.from("unit_entities").select("unit_id, entity_id, role").in("unit_id", ids).neq("role", "mentioned"),
-    client.from("unit_domains").select("unit_id, domain_id").in("unit_id", ids),
+    readIdBatches(units.map((unit) => unit.current_revision_id), (batch) => readPages((from,to)=>client.from("revisions").select("id, content, knowledge_context").in("id", batch).order("id").range(from,to))),
+    readIdBatches(ids, (batch) => readPages((from,to)=>client.from("unit_entities").select("unit_id, entity_id, role").in("unit_id", batch).neq("role", "mentioned").order("unit_id").order("entity_id").range(from,to))),
+    readIdBatches(ids, (batch) => readPages((from,to)=>client.from("unit_domains").select("unit_id, domain_id").in("unit_id", batch).order("unit_id").order("domain_id").range(from,to))),
   ]);
-  for (const result of [revisions, links, placements]) if (result.error) throw new Error(result.error.message);
-  const domainIds = [...new Set((placements.data ?? []).map((row) => row.domain_id))];
-  const entityIds = [...new Set((links.data ?? []).map((row) => row.entity_id))];
+  const domainIds = [...new Set(placements.map((row) => row.domain_id))];
+  const entityIds = [...new Set(links.map((row) => row.entity_id))];
   const [domains, entities] = await Promise.all([
-    domainIds.length ? client.from("domains").select("id, path").in("id", domainIds) : Promise.resolve({ data: [], error: null }),
-    entityIds.length ? client.from("entities").select("id, type, key, name").in("id", entityIds).is("merged_into_id", null).is("retired_at", null) : Promise.resolve({ data: [], error: null }),
+    readIdBatches(domainIds, (batch) => readPages((from,to)=>client.from("domains").select("id, path").in("id", batch).order("id").range(from,to))),
+    readIdBatches(entityIds, (batch) => readPages((from,to)=>client.from("entities").select("id, type, key, name").in("id", batch).is("merged_into_id", null).is("retired_at", null).order("id").range(from,to))),
   ]);
-  for (const result of [domains, entities]) if (result.error) throw new Error(result.error.message);
-  const revisionById = new Map((revisions.data ?? []).map((revision) => [revision.id, revision]));
-  const pathById = new Map((domains.data ?? []).map((domain) => [domain.id, domain.path]));
-  const liveEntities = new Set((entities.data ?? []).map((entity) => entity.id));
+  const revisionById = new Map(revisions.map((revision) => [revision.id, revision]));
+  const pathById = new Map(domains.map((domain) => [domain.id, domain.path]));
+  const liveEntities = new Set(entities.map((entity) => entity.id));
   const claims = units.map((unit): Claim => {
     const revision = revisionById.get(unit.current_revision_id);
     return {
       unitId: unit.id, revisionId: unit.current_revision_id, content: revision?.content ?? "", context: parseKnowledgeContext(revision?.knowledge_context),
       kind: unit.kind, epistemicStatus: unit.epistemic_status,
-      topics: (placements.data ?? []).filter((row) => row.unit_id === unit.id).flatMap((row) => pathById.get(row.domain_id) ?? []),
-      entityIds: [...new Set((links.data ?? []).filter((row) => row.unit_id === unit.id && liveEntities.has(row.entity_id)).map((row) => row.entity_id))],
+      topics: placements.filter((row) => row.unit_id === unit.id).flatMap((row) => pathById.get(row.domain_id) ?? []),
+      entityIds: [...new Set(links.filter((row) => row.unit_id === unit.id && liveEntities.has(row.entity_id)).map((row) => row.entity_id))],
     };
   }).filter((claim) => claim.content.trim());
-  return { claims, entities: entities.data ?? [] };
+  return { claims, entities };
 }
 
 // PROPOSE: one call per batch of claims, with one corrective retry; a batch whose answer
 // is cut off runs again as two halves
-async function propose(deps: OrchestratorDeps, claims: Claim[], entities: ProposerEntity[]): Promise<TokenUsage & { planned: PlannedArticle[] }> {
+async function propose(deps: OrchestratorDeps, claims: Claim[], entities: ProposerEntity[], scope: string): Promise<TokenUsage & { planned: PlannedArticle[] }> {
   const charter = await readArticleCharter(deps.db);
   const instructions = `${skillInstructions(["plan_articles"], deps.settings.skills)}\n${ARTICLE_PROPOSER_PROMPT}`;
   const planned: PlannedArticle[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   const proposeBatch = async (batch: Claim[]): Promise<void> => {
-    const input = { charter, articles: await deps.db.call<ArticleIndexEntry[]>("article_index"), entities, claims: batch };
+    const fingerprint=createHash("sha256").update(JSON.stringify(batch.map(claim=>[claim.unitId,claim.revisionId]))).digest("hex").slice(0,24);
+    const saved=await workflowStep(`article-proposal-batch:${scope}:${fingerprint}`,async()=>{
+    const batchKey = `article-proposal-batch:${scope}:${fingerprint}`;
+    const input = await workflowStep(`${batchKey}:input-v1`, async () => ({ charter, articles: await deps.db.call<ArticleIndexEntry[]>("article_index"), entities, claims: batch }));
     const request = { name: "article_proposals", schema: articleProposalsSchema, jsonSchema: articleProposalsJsonSchema, maxTokens: ANSWER_TOKEN_BUDGET, messages: buildProposerMessages(instructions, input) };
-    let answer = await chatJson(deps.settings, request);
-    usage = addUsage(usage, answer);
-    try { planned.push(...readProposals(answer.value, input)); }
+    let answer = await workflowStep(`${batchKey}:draft-v1`, () => chatJson(deps.settings, request));
+    let batchUsage:TokenUsage={tokensIn:answer.tokensIn,tokensOut:answer.tokensOut};
+    let proposals:PlannedArticle[];
+    try { proposals=readProposals(answer.value, input); }
     catch (error) {
-      answer = await chatJson(deps.settings, { ...request, messages: [...request.messages, { role: "user", content: `Your previous proposals failed validation: ${error instanceof Error ? error.message : String(error)}. Previous proposals (untrusted data): ${JSON.stringify(answer.value)}. Return the complete corrected proposals.` }] });
-      usage = addUsage(usage, answer);
-      planned.push(...readProposals(answer.value, input));
+      answer = await workflowStep(`${batchKey}:repair-v1:answer`, () => chatJson(deps.settings, { ...request, messages: [...request.messages, { role: "user", content: `Your previous proposals failed validation: ${error instanceof Error ? error.message : String(error)}. Previous proposals (untrusted data): ${JSON.stringify(answer.value)}. Return the complete corrected proposals.` }] }));
+      batchUsage = addUsage(batchUsage, answer);
+      proposals=readProposals(answer.value, input);
     }
+    return {planned:proposals,...batchUsage};
+    });
+    usage=addUsage(usage,saved);planned.push(...saved.planned);
   };
   const countCutOff = (error: Error) => { if (error instanceof CompletionLengthError) usage = addUsage(usage, error); };
   for (let offset = 0; offset < claims.length; offset += BATCH) await splitOnCutOff(claims.slice(offset, offset + BATCH), proposeBatch, countCutOff);
@@ -122,10 +132,18 @@ async function relatedKnowledge(deps: OrchestratorDeps, item: Extract<PlannedArt
 
 // The sections of a new article: the outline planner groups its claims. Only an entity
 // article keeps its entity in the section queries; a topic article selects claims by id alone.
-async function newArticleSections(deps: OrchestratorDeps, item: Extract<PlannedArticle, { action: "create" }>): Promise<TokenUsage & { sections: SectionDraft[] }> {
+export async function newArticleSections(deps: OrchestratorDeps, item: Extract<PlannedArticle, { action: "create" }>): Promise<TokenUsage & { sections: SectionDraft[] }> {
   const entity = item.type === "entity" && item.entity ? item.entity : { id: "", type: "", key: "", name: item.title };
-  const knowledge = { entity, units: item.claims };
-  const { plan, ...usage } = await planArticle(deps.settings, knowledge, `${item.title}. Scope: ${item.scope}`);
+  const own = new Set(item.claims.map(claim => claim.unitId));
+  const candidates = await articleKnowledgeCandidates(deps.db, item.title, item.scope, deps.embedder);
+  const extra = await loadArticleClaims(deps.client, candidates.filter(id => !own.has(id)));
+  const selection = extra.claims.length ? await groupClaimsForArticle(deps.settings, item.title, [], extra.claims,
+    "Select all relevant saved knowledge before planning this new article's complete scaffold. These provisional groups are evidence selections, not final headings.", item.scope) : { sections: [], tokensIn: 0, tokensOut: 0 };
+  const selected = new Set(selection.sections.flatMap(section => section.query.unitIds ?? []));
+  const knowledge = { entity, units: [...item.claims, ...extra.claims.filter(claim => selected.has(claim.unitId))] };
+  const { plan, ...planningUsage } = await planArticle(deps.settings, knowledge, `${item.title}. Scope: ${item.scope}`,
+    "Finish the complete article scaffold before prose is written. Group all supplied knowledge coherently; avoid a heading per batch, fact, or example. Choose the reading order and evidence assignments first.");
+  const usage = addUsage(selection, planningUsage);
   const sections = topicSections(plan, knowledge).map((section) => {
     if (entity.id) return section;
     const query = { ...section.query };
@@ -149,10 +167,14 @@ async function updateSections(deps: OrchestratorDeps, pageId: string, claims: Cl
   return groupClaimsForArticle(deps.settings, page.data!.title, (sections.data ?? []).map((section) => section.title), fresh, "");
 }
 
-type Outcome = { verdict: ArticleReviewDecision["verdict"]; pageId: string | null };
+type Outcome = { verdict: ArticleReviewDecision["verdict"]; pageId: string | null; outlinePolicyVersion?: string };
 
 // CARRY OUT ONE PROPOSAL: review it (new articles only), act on the verdict, record the decision
 async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: PlannedArticle, key: string): Promise<Outcome> {
+  // Freeze the reviewed decision and exact write intent before committing it.
+  // Retrying a lost audit reply must not ask the AI for a different decision
+  // after the original article has already been saved.
+  const prepared = await workflowStep(`${key}:prepare-v1`, async () => {
   const proposal: ArticleProposal = item.action === "create"
     ? { title: item.title, type: item.type, scope: item.scope, parentPageId: item.parentPageId, claims: item.claims.map((claim, index) => ({ ref: `C${index + 1}`, content: claim.content })) }
     : { title: "", type: "concept", scope: "", parentPageId: null, claims: item.claims.map((claim, index) => ({ ref: `C${index + 1}`, content: claim.content })) };
@@ -161,7 +183,7 @@ async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: Pl
     review = { verdict: "update_existing", targetPageId: item.pageId, sectionTitle: null, failed: [], reason: "The proposer sent these claims to an existing article.", decidedBy: "rule", model: null, promptVersion: ARTICLE_PROPOSER_PROMPT_VERSION, tokensIn: 0, tokensOut: 0 };
   } else {
     const articles = await deps.db.call<ArticleIndexEntry[]>("article_index");
-    review = await reviewArticleProposal(deps.settings, { charter: await readArticleCharter(deps.db), articles, proposal, related: await relatedKnowledge(deps, item) });
+    review = await workflowStep(`${key}:review-v1`, async () => reviewArticleProposal(deps.settings, { charter: await readArticleCharter(deps.db), articles, proposal, related: await relatedKnowledge(deps, item) }));
   }
   const step = nextStep(review, proposal);
   const unitIds = item.claims.map((claim) => claim.unitId);
@@ -169,21 +191,40 @@ async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: Pl
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   let summary = "";
   if (step.kind === "create_article" && item.action === "create") {
-    const { sections, ...planUsage } = await newArticleSections(deps, item);
+    let outline: Awaited<ReturnType<typeof newArticleSections>>;
+    try { outline = await newArticleSections(deps, item); }
+    catch (error) {
+      if (!(error instanceof OutlineRejectedError)) throw error;
+      // This is a completed editorial decision, not a failed write. Preserve
+      // its evidence and every review; only this optional article is declined.
+      // Transport, validation and storage failures must still fail the step.
+      const issues = error.attempts.at(-1)?.review?.blockingIssues ?? error.attempts.at(-1)?.problems ?? [];
+      const rejected = { ...review, verdict: "reject" as const, targetPageId: null, sectionTitle: null,
+        reason: `No article was published because its outline did not pass independent review after ${error.attempts.length} attempts. Claims remain saved.${issues.length ? ` ${issues.join(" ")}` : ""}`,
+        promptVersion: `${review.promptVersion}+${OUTLINE_POLICY_VERSION}` };
+      return { proposal, review: rejected, unitIds, actions: [], usage: addUsage(usage, error.usage), summary: "", kind: "none" as const, pageId: null,
+        outlineReview: { policyVersion: OUTLINE_POLICY_VERSION, attempts: error.attempts } };
+    }
+    const { sections, ...planUsage } = outline;
     usage = addUsage(usage, planUsage);
     actions.push({ ...base, type: "create_page", input: { title: item.title, entityId: item.type === "entity" ? item.entity?.id ?? null : null, articleType: item.type, scope: item.scope, parentPageId: item.parentPageId, sections } });
     summary = `Created the article “${item.title}” after independent review`;
   } else if (step.kind === "update_article") {
     const { sections, ...groupUsage } = await updateSections(deps, step.pageId, item.claims);
     usage = addUsage(usage, groupUsage);
-    actions.push(...sections.map((section): DraftAction => ({ ...base, type: "create_section", input: { pageId: step.pageId, ...section } })));
+    actions.push(...await articleAdditionActions(deps.db, deps.client, deps.settings, step.pageId, sections));
     summary = item.action === "create" ? `Added new knowledge to an existing article instead of creating “${item.title}”` : "Added new knowledge to an existing article";
   } else if (step.kind === "add_section") {
-    actions.push({ ...base, type: "create_section", input: { pageId: step.pageId, title: step.title, query: { unitIds, article: true } } });
+    actions.push(...await articleAdditionActions(deps.db, deps.client, deps.settings, step.pageId,
+      [{ title: step.title, query: { unitIds, article: true } }], `Integrate the reviewed facet ${JSON.stringify(step.title)} with related existing topics where coherent.`));
     summary = `Added “${step.title}” as a section instead of a separate article`;
   }
+  return { proposal, review, unitIds, actions, usage, summary, kind: step.kind,
+    pageId: step.kind === "update_article" || step.kind === "add_section" ? step.pageId : null };
+  });
+  const { proposal, review, unitIds, actions, usage, summary } = prepared;
   let changeSetId: string | null = null;
-  let pageId = step.kind === "update_article" || step.kind === "add_section" ? step.pageId : null;
+  let pageId = prepared.pageId;
   if (actions.length) {
     const submitted = await submitChangeSet(deps.db, { eventId, cause: eventId ? "upload" : "edit", actor: "ai", operationKey: key }, {
       summary, actions,
@@ -192,20 +233,33 @@ async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: Pl
     changeSetId = submitted.changeSetId;
     const result = await commitChangeSet(deps.db, changeSetId);
     if (result.status === "rejected" || result.rejected > 0) throw new Error(`Article proposal was not fully applied. Review change set ${changeSetId} in Changes.`);
-    if (step.kind === "create_article") {
+    if (prepared.kind === "create_article") {
       const { data, error } = await deps.client.from("actions").select("target_id").eq("change_set_id", changeSetId).eq("type", "create_page").eq("outcome", "applied").maybeSingle();
       if (error) throw new Error(error.message);
       pageId = data?.target_id ?? null;
+      if (pageId) {
+        const live = await readArticleStructure(deps.db, pageId);
+        await saveArticleStructure(deps.db, { pageId, key: `initial:${key}`, structure: live.current, changes: { created: true },
+          rationale: "The reviewed initial outline assigns the selected evidence before article writing starts.", model: deps.settings.model ?? null });
+      }
     }
   }
-  const { error } = await deps.client.from("article_reviews").insert({
-    event_id: eventId, proposal: { action: item.action, ...proposal, entity: item.action === "create" ? item.entity?.name ?? null : null, claimIds: unitIds },
+  const record = {
+    event_id: eventId, proposal: { action: item.action, ...proposal, entity: item.action === "create" ? item.entity?.name ?? null : null, claimIds: unitIds,
+      ...("outlineReview" in prepared ? { outlineReview: prepared.outlineReview } : {}) },
     verdict: review.verdict, failed_checks: review.failed, reason: review.reason, decided_by: review.decidedBy,
     target_page_id: review.targetPageId, section_title: review.sectionTitle, result_page_id: pageId, change_set_id: changeSetId,
     model: review.model, prompt_version: review.promptVersion, tokens_in: review.tokensIn, tokens_out: review.tokensOut,
-  });
+  };
+  // A deterministic upload audit ID makes a lost insert reply safe to replay.
+  const hash = createHash("sha256").update(JSON.stringify(["article-review-v1", eventId, key])).digest("hex");
+  const id = `${hash.slice(0,8)}-${hash.slice(8,12)}-8${hash.slice(13,16)}-a${hash.slice(17,20)}-${hash.slice(20,32)}`;
+  const { error } = eventId
+    ? await deps.client.from("article_reviews").upsert({ ...record, id }, { onConflict: "id", ignoreDuplicates: true })
+    : await deps.client.from("article_reviews").insert(record);
   if (error) throw new Error(`Article review could not be recorded: ${error.message}`);
-  return { verdict: review.verdict, pageId };
+  return { verdict: review.verdict, pageId,
+    ...("outlineReview" in prepared && prepared.outlineReview ? { outlinePolicyVersion: prepared.outlineReview.policyVersion } : {}) };
 }
 
 // Try every independent proposal. Upload failures remain retryable checkpoints;
@@ -229,21 +283,40 @@ async function carryOutSafely(deps: OrchestratorDeps, eventId: string | null, it
 // RUN for a set of claims; `scope` keys the workflow steps so a resume skips finished ones
 async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope: string, unitIds: string[]): Promise<OrchestratorResult> {
   const result: OrchestratorResult = { created: 0, updated: 0, sections: 0, rejected: 0, pageIds: [] };
-  const { claims, entities } = await loadClaims(deps.client, unitIds);
+  const { claims, entities } = await workflowStep(`article-input:${scope}:v1`, () => loadArticleClaims(deps.client, unitIds));
   // Small updates can still belong in an existing article. The independent
   // reviewer's minimum-claim rule continues to guard creation of new articles.
   if (!claims.length) return result;
-  const { planned } = await workflowStep(`article-proposals:${scope}`, () => propose(deps, claims, entities));
+  const { planned } = await workflowStep(`article-proposals:${scope}`, () => propose(deps, claims, entities, scope));
   // jsonb reorders object keys. Save the operation keys before executing any
   // proposal, rather than recomputing hashes from a resumed JSON representation.
   const keys = await workflowStep(`article-keys:${scope}`, async () => planned.map((item, index) =>
     `article:${scope}:${index}:${createHash("sha256").update(JSON.stringify(item)).digest("hex").slice(0, 16)}`));
   let failed = false;
   let failure: unknown;
+  const progressStep = eventId && scope === eventId ? "plan"
+    : eventId && scope === `enrichment:${eventId}` ? "plan-enrichment" : null;
+  let completed = 0;
+  if (progressStep) await reportUploadProgress({ step: progressStep, done: completed, total: planned.length });
   for (const [index, item] of planned.entries()) {
+    uploadExecution.getStore()?.signal?.throwIfAborted();
     const key = keys[index]!;
     let outcome: Outcome;
-    try { outcome = await workflowStep(key, () => carryOutSafely(deps, eventId, item, key)); }
+    try {
+      outcome = await workflowStep(key, () => carryOutSafely(deps, eventId, item, key));
+      const execution = uploadExecution.getStore();
+      if (execution && outcome.verdict === "reject" && outcome.outlinePolicyVersion !== OUTLINE_POLICY_VERSION) {
+        const prior = await execution.db.call<{ done: boolean; output?: { outlineReview?: { policyVersion: string } } }>("read_completed_upload_step",
+          { p_event_id: execution.eventId, p_token: execution.token, p_key: `${key}:prepare-v1` });
+        if (prior.done && prior.output?.outlineReview && /^article-outline-v[567]-/.test(prior.output.outlineReview.policyVersion)) {
+          // One audited reassessment for the old rubric mismatch. Keep the
+          // original decision immutable, recheck today's article index, and
+          // never replay a completed reassessment on a later resume.
+          const recoveryKey = `${key}:outline-rubric-recovery-v1`;
+          outcome = await workflowStep(recoveryKey, () => carryOutSafely(deps, eventId, item, recoveryKey));
+        }
+      }
+    }
     catch (error) {
       if (!failed) { failed = true; failure = error; }
       continue;
@@ -253,6 +326,8 @@ async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope
     else if (outcome.verdict === "section_of") result.sections++;
     else result.rejected++;
     if (outcome.pageId && !result.pageIds.includes(outcome.pageId)) result.pageIds.push(outcome.pageId);
+    completed++;
+    if (progressStep) await reportUploadProgress({ step: progressStep, done: completed, total: planned.length });
   }
   if (failed) throw failure;
   return result;

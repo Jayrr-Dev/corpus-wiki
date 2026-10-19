@@ -1,4 +1,6 @@
 "use client";
+import { MediaImage } from "@/components/preview/MediaImage";
+
 
 import { ImageViewer } from "@/components/preview";
 import type { ArticleFigure as Figure } from "@/lib/living-page/articleEvidence";
@@ -14,8 +16,7 @@ export function ArticleFigure({ figure }: { figure: Figure }) {
       ) : (
         <ImageViewer src={figure.src} title={figure.title}>
           <button type="button" aria-label={`View ${figure.title}`} className="block w-full cursor-zoom-in">
-            {/* eslint-disable-next-line @next/next/no-img-element -- signed, short-lived URLs; next/image cannot cache them */}
-            <img src={figure.src} alt={figure.caption} loading="lazy" className="w-full rounded-sm" />
+            <MediaImage src={figure.src} alt={figure.caption} sizes="(max-width: 640px) 100vw, 256px" loading="lazy" className="h-auto w-full rounded-sm" />
           </button>
         </ImageViewer>
       )}

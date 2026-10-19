@@ -10,7 +10,7 @@ export const uploadExecution = new AsyncLocalStorage<{ eventId: string; token: s
 
 // HOW FAR A LONG ROLE HAS GOT, shown live on the upload's status line. Also a lease check,
 // so a cancel stops the run at the next batch or section.
-export type UploadProgress = { step: string; done: number; total: number };
+export type UploadProgress = { step: string; done: number; total: number; phase?: "review" };
 export async function reportUploadProgress(progress: UploadProgress): Promise<void> {
   const execution = uploadExecution.getStore();
   if (execution) await execution.db.call("report_upload_progress", { p_event_id: execution.eventId, p_token: execution.token, p_progress: progress });

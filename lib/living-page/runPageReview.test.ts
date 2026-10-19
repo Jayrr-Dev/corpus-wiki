@@ -4,11 +4,12 @@ import { runPageReview, reviewRebuiltSections } from "./runPageReview";
 
 const chat = vi.hoisted(() => vi.fn());
 const similar = vi.hoisted(() => vi.fn());
-vi.mock("@/lib/ai/chat", () => ({ chatJson: chat }));
+vi.mock("@/lib/ai/chat", async original => ({ ...(await original<typeof import("@/lib/ai/chat")>()), chatJson: chat }));
+vi.mock("@/lib/ai/contextWindow", () => ({ reviewContextWindow: async (settings: { contextWindowTokens?: number }) => settings.contextWindowTokens ?? 65536 }));
 vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: similar }));
 const page = "11111111-1111-4111-8111-111111111111";
 const line = "22222222-2222-4222-8222-222222222222";
-const snapshot = { page: { id: page, title: "Inspections", slug: "inspections" }, pages: [], sections: [], lines: [{ line_id: line, content: "Inspections occur weekly.", author: "ai" }] };
+const snapshot = { page: { id: page, title: "Inspections", slug: "inspections" }, pages: [], sections: [], lines: [{ line_id: line, content: "Inspections occur weekly.", author: "ai", unit_revision_ids: ["claim"] }], claims: [{ id: "claim", content: "Inspections occur weekly." }] };
 beforeEach(() => {
   vi.clearAllMocks();
   chat.mockReset();
@@ -16,7 +17,7 @@ beforeEach(() => {
   similar.mockResolvedValue([{ revisionId: line, content: "Related claim" }]);
 });
 function database() {
-  const call = vi.fn(async (name: string, args?: Record<string, unknown>) => {
+  const call = vi.fn(async (name: string, args?: Record<string, unknown>): Promise<unknown> => {
     if (name === "page_review_snapshot") return snapshot;
     if (name === "page_review_related") return [{ content: "Related claim", passages: [{ text: "Supporting evidence" }] }];
     if (name === "complete_page_review") return { summary: "Reviewed", edits: (args?.p_edits as unknown[]).length, exceptions: 0, changeSetId: null };
@@ -26,9 +27,26 @@ function database() {
   return { db: { call: call as DbRpc["call"] }, call };
 }
 describe("review workflow", () => {
+  it("finishes the review while rejecting an unsafe patch batch and preserving existing text", async () => {
+    const { db, call } = database();
+    chat.mockResolvedValueOnce({ value: { summary: "Changed weekly to daily.", findings: [], edits: [{ type: "revise_line", targetId: line, patches: [{ old_str: "weekly", new_str: "daily" }], reason: "Improve wording" }] }, model: "test", tokensIn: 10, tokensOut: 2 });
+    chat.mockResolvedValueOnce({ value: { lines: [{ ref: "L1", supported: false, problem: "The evidence says weekly, not daily.", missingCitations: [], unstatedCitations: [] }] }, tokensIn: 3, tokensOut: 1 });
+    chat.mockResolvedValueOnce({ value: { lineHasFault: true, reason: "Only weekly is supported." }, tokensIn: 4, tokensOut: 1 });
+    const result = await runPageReview(db, { apiKey: "test" }, page);
+    expect(result.coverageComplete).toBe(true);
+    expect(chat).toHaveBeenCalledTimes(3);
+    expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({
+      p_edits: [], p_snapshot: snapshot,
+      p_review: expect.objectContaining({ summary: expect.stringContaining("were not applied"), coverageComplete: true }),
+      p_trace: expect.objectContaining({ tokensIn: 17, tokensOut: 4 }),
+    }));
+    const saved = call.mock.calls.find(([name]) => name === "complete_page_review")![1]?.p_review as { summary: string };
+    expect(saved.summary).not.toContain("Changed weekly to daily");
+  });
+
   it("retries a provider context-limit error with smaller payloads, without saving the failed attempt", async () => {
     const { db, call } = database();
-    const large = { ...snapshot, lines: Array.from({ length: 6 }, (_, i) => ({ line_id: String(i), author: "ai", content: "Review this sentence. ".repeat(700) })) };
+    const large = { ...snapshot, lines: Array.from({ length: 6 }, (_, i) => ({ line_id: String(i), author: "ai", unit_revision_ids: [], content: "Review this sentence. ".repeat(700) })) };
     call.mockImplementation(async (name) => name === "page_review_snapshot" ? large : { summary: "Reviewed", edits: 0, exceptions: 0, changeSetId: null });
     chat.mockRejectedValueOnce(new Error("Token Factory 400: maximum context length exceeded"));
     await runPageReview(db, { apiKey: "test" }, page);
@@ -41,9 +59,10 @@ describe("review workflow", () => {
   it("settles a same-page destination without another model call and saves the validated rewrite", async () => {
     const { db, call } = database();
     const edit = { type: "revise_line", targetId: line, text: "Inspections follow a weekly schedule.", reason: "Shorten the repeated lead." };
-    chat.mockResolvedValueOnce({ value: { summary: "Consolidate", edits: [edit], findings: [{ operation: "consolidate", quote: "Inspections occur weekly.", guideline: "Repetition", reason: "Repeated", recommendation: "Shorten the lead", destinationId: page, decisionKind: null, decisionQuestion: null }] }, model: "test" });
+    chat.mockResolvedValueOnce({ value: { summary: "Consolidate", edits: [{ type: edit.type, targetId: line, patches: [{ old_str: "occur weekly", new_str: "follow a weekly schedule" }], reason: edit.reason }], findings: [{ operation: "consolidate", quote: "Inspections occur weekly.", guideline: "Repetition", reason: "Repeated", recommendation: "Shorten the lead", destinationId: page, decisionKind: null, decisionQuestion: null }] }, model: "test" });
+    chat.mockResolvedValueOnce({ value: { lines: [{ ref: "L1", supported: true, problem: "", missingCitations: [], unstatedCitations: [] }] }, tokensIn: 1, tokensOut: 1 });
     await runPageReview(db, { apiKey: "test" }, page);
-    expect(chat).toHaveBeenCalledTimes(1);
+    expect(chat).toHaveBeenCalledTimes(2);
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [edit], p_snapshot: snapshot, p_trace: expect.objectContaining({ timingsMs: expect.objectContaining({ snapshot: expect.any(Number), editorial: expect.any(Number) }) }) }));
   });
 
@@ -95,7 +114,7 @@ describe("review workflow", () => {
 
   it("reviews oversized pages in bounded parts and saves the original snapshot once", async () => {
     const { db, call } = database();
-    const large = { ...snapshot, lines: [0, 1, 2].map((i) => ({ line_id: `${i}`, author: "ai", content: "A long paragraph. ".repeat(5500) })) };
+    const large = { ...snapshot, lines: [0, 1, 2].map((i) => ({ line_id: `${i}`, author: "ai", unit_revision_ids: [], content: "A long paragraph. ".repeat(5500) })) };
     call.mockImplementation(async (name) => name === "page_review_snapshot" ? large : { summary: "Reviewed", edits: 0, exceptions: 0, changeSetId: null });
     await runPageReview(db, { apiKey: "test" }, page);
     expect(chat.mock.calls.length).toBeGreaterThan(1);
@@ -105,7 +124,7 @@ describe("review workflow", () => {
 
   it("saves nothing if a later batch fails", async () => {
     const { db, call } = database();
-    const large = { ...snapshot, lines: [0, 1, 2].map((i) => ({ line_id: `${i}`, author: "ai", content: "A long paragraph. ".repeat(5500) })) };
+    const large = { ...snapshot, lines: [0, 1, 2].map((i) => ({ line_id: `${i}`, author: "ai", unit_revision_ids: [], content: "A long paragraph. ".repeat(5500) })) };
     call.mockImplementation(async (name) => name === "page_review_snapshot" ? large : {} as never);
     chat.mockResolvedValueOnce({ value: { summary: "Reviewed", edits: [], findings: [] }, model: "test", tokensIn: 1, tokensOut: 1 }).mockRejectedValueOnce(new Error("Provider unavailable"));
     await expect(runPageReview(db, { apiKey: "test" }, page)).rejects.toThrow("Provider unavailable");
@@ -136,15 +155,43 @@ describe("review workflow", () => {
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [], p_review: expect.objectContaining({ findings: [] }) }));
   });
   it("rejects fabricated edit targets before making database changes", async () => {
-    chat.mockResolvedValue({ value: { summary: "Edited", findings: [], edits: [{ type: "revise_line", targetId: page, text: "Invalid", reason: "test" }] } });
+    chat.mockResolvedValue({ value: { summary: "Edited", findings: [], edits: [{ type: "revise_line", targetId: page, patches: [], reason: "test" }] } });
     const { db, call } = database();
-    await expect(runPageReview(db, { apiKey: "test" }, page)).rejects.toThrow(/current AI-authored/);
+    await expect(runPageReview(db, { apiKey: "test" }, page)).rejects.toThrow(/unknown or protected/);
     expect(call.mock.calls.some(([name]) => name === "complete_page_review")).toBe(false);
   });
   it("does not call the model when the database returns no pages needing review", async () => {
     const { db } = database();
     await reviewRebuiltSections(db, { apiKey: "test" }, [line]);
     expect(chat).not.toHaveBeenCalled();
+  });
+  it("finishes an outstanding partial review without rebuilding its scaffold", async () => {
+    const { db, call } = database();
+    const original = call.getMockImplementation()!;
+    let reads = 0;
+    call.mockImplementation(async (name, args) => {
+      if (name === "pages_needing_editorial_review") return ++reads < 3 ? [page] : [];
+      if (name === "page_review_content_hash") return "current-content";
+      return original(name, args);
+    });
+    await reviewRebuiltSections(db, { apiKey: "test" }, [line]);
+    expect(call.mock.calls.filter(([name]) => name === "complete_page_review")).toHaveLength(2);
+    expect(call).toHaveBeenCalledWith("page_review_content_hash", { p_page_id: page });
+  });
+  it("does not let partial checks finish the upload's article review", async () => {
+    const { db, call } = database();
+    const original = call.getMockImplementation()!;
+    const large = { ...snapshot, lines: [0, 1, 2].map(i => ({ line_id: String(i), author: "ai", unit_revision_ids: [], content: "A long paragraph. ".repeat(5500) })) };
+    call.mockImplementation(async (name, args) => {
+      if (name === "pages_needing_editorial_review") return [page];
+      if (name === "page_review_content_hash") return "large-content";
+      if (name === "page_review_snapshot") return large;
+      return original(name, args);
+    });
+    await expect(reviewRebuiltSections(db, { apiKey: "test" }, [line])).rejects.toThrow("full article review is still incomplete");
+    const saves = call.mock.calls.filter(([name]) => name === "complete_page_review");
+    expect(saves).toHaveLength(2);
+    expect(saves.every(([, args]) => (args?.p_review as { coverageComplete: boolean }).coverageComplete === false)).toBe(true);
   });
 });
 

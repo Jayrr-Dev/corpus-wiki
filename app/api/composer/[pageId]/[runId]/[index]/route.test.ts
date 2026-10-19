@@ -20,6 +20,14 @@ it("resolves reused raster assets from the library instead of invented image URL
 const pageId = "10000000-0000-4000-8000-000000000001";
 const runId = "10000000-0000-4000-8000-000000000002";
 const context = { params: Promise.resolve({ pageId, runId, index: "0" }) };
+it("keeps image URLs stable when an earlier figure is hidden", async () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520"><rect width="10" height="10"/></svg>';
+  call.mockResolvedValue({ id: runId, composition: { figures: [{ sourceIndex: 1, svg }] } });
+  expect((await GET(new Request("http://localhost"), context)).status).toBe(404);
+  const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ pageId, runId, index: "1" }) });
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe(svg);
+});
 beforeEach(() => { vi.resetAllMocks(); vi.mocked(supabaseRpc).mockReturnValue({ call }); });
 it("requires sign-in before any illustration read", async () => {
   vi.mocked(requireUser).mockRejectedValueOnce(new Error("Not signed in"));
@@ -37,6 +45,6 @@ it("rejects active SVG content and serves inert SVG with private security header
   call.mockResolvedValueOnce({ id: runId, composition: { figures: [{ svg }] } });
   const response = await GET(new Request("http://localhost"), context);
   expect(await response.text()).toBe(svg);
-  expect(response.headers.get("cache-control")).toBe("private, no-store");
+  expect(response.headers.get("cache-control")).toBe("private, max-age=0, must-revalidate");
   expect(response.headers.get("content-security-policy")).toContain("sandbox");
 });

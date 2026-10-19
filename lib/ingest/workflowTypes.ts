@@ -1,4 +1,12 @@
 export type UploadWorkflowState = "pending" | "running" | "waiting" | "complete" | "incomplete";
+
+// Older runs saved model diagnostics as their public error. Keep those details
+// in the checkpoint audit trail, while giving customers a useful next step.
+export function uploadErrorMessage(error: string | null | undefined): string | null | undefined {
+  return error?.includes("Domain assignments need further review; no assignments were saved.")
+    ? "Topic filing paused for further review. Your extracted knowledge is saved. Resume to continue filing."
+    : error;
+}
 export type UploadWorkflow = {
   event_id: string;
   state: UploadWorkflowState;
@@ -9,7 +17,7 @@ export type UploadWorkflow = {
   waiting: boolean;
   cancel_requested?: boolean;
   // How far the current long role has got (batches read, sections written)
-  progress?: { step: string; done: number; total: number } | null;
+  progress?: { step: string; done: number; total: number; phase?: "review" } | null;
 };
 
 // The run holds a live lease: something is working on it right now
@@ -28,9 +36,16 @@ export function canCancelUpload(workflow: UploadWorkflow): boolean {
 export type UploadJob = "knowledge" | "articles";
 
 // Only identity, duplication and filing checks block the first reviewed articles.
-export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "tidy", "place", "embeddings-cleaned", "hierarchy"] as const;
+export const KNOWLEDGE_STAGES = ["embeddings", "duplicates", "tidy", "embeddings-cleaned", "place", "hierarchy"] as const;
 export const ARTICLE_STAGES = ["plan", "pages"] as const;
 export const ENRICHMENT_STAGES = ["describe", "profiles", "expand", "embeddings-enrichment", "hierarchy-enrichment", "plan-enrichment", "pages-enrichment", "glossary", "curate"] as const;
+
+// Child checkpoints are an audit trail, not the current stage result. A retry
+// can succeed with a different evidence key while an old child remains failed.
+const RESULT_STAGES = new Set<string>(["reconcile", ...KNOWLEDGE_STAGES, ...ARTICLE_STAGES, ...ENRICHMENT_STAGES, "articles-ready"]);
+export function failedWorkflowStages(workflow: UploadWorkflow) {
+  return workflow.steps.filter(step=>step.state==="failed"&&step.error!=="Cancelled"&&RESULT_STAGES.has(step.key));
+}
 
 export function articlesReady(workflow: UploadWorkflow): boolean {
   return workflow.steps.some((step) => step.key === "articles-ready" && step.state === "succeeded");
@@ -58,6 +73,7 @@ export function canResumeUpload(workflow: UploadWorkflow): boolean {
 }
 
 export function workflowLabel(workflow: UploadWorkflow): string {
+  if (workflow.waiting && workflow.progress?.step === "root-approval") return "Applying approved domains";
   if (workflow.waiting) return "Awaiting approval";
   // Complete with an error: processing was closed early (its file was removed). A clean finish
   // reads "Applied", the same as an older upload that has no workflow record

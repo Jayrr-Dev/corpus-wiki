@@ -11,9 +11,15 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   const { captureConsole } = await import("@/lib/errors/errorLog");
   captureConsole();
+  const { startAssetCleanupWorker } = await import("@/lib/assets/cleanup");
+  startAssetCleanupWorker();
+  const { startMediaOptimizationWorker } = await import("@/lib/media/worker");
+  startMediaOptimizationWorker();
   const { startComposerWorker } = await import("@/lib/composer/worker");
   startComposerWorker();
-  if (process.env.PROCESSING_RECOVERY_ENABLED === "true") {
+  const { startRootApprovalWorker } = await import("@/lib/processing/rootApprovals");
+  startRootApprovalWorker();
+  if (process.env.PROCESSING_RECOVERY_ENABLED !== "false") {
     const { startUploadRecoveryWorker } = await import("@/lib/processing/recovery");
     startUploadRecoveryWorker();
   }

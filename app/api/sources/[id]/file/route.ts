@@ -1,6 +1,8 @@
 import { requireUser } from "@/lib/auth/requireUser";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getServerSupabase } from "@/lib/supabase/server";
+import { optimizedMediaResponse } from "@/lib/media/optimize";
+import { replaceStoredMedia } from "@/lib/media/replace";
 
 // =====================================================================
 // A SOURCE'S ORIGINAL FILE: redirects to a short-lived signed URL in the
@@ -18,10 +20,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     return new Response("Sign in to read source files.", { status: 401 });
   }
   const { id } = await params;
-  const { data: source } = await (await getServerSupabase()).from("sources").select("title, storage_path").eq("id", id).maybeSingle();
+  const { data: source } = await (await getServerSupabase()).from("sources").select("title, storage_path, mime_type").eq("id", id).maybeSingle();
   if (!source?.storage_path) return new Response("No file for this source.", { status: 404 });
 
   const isDownload = new URL(request.url).searchParams.has("download");
+  const optimized = await optimizedMediaResponse(request, { bucket: "sources", path: source.storage_path, mime: source.mime_type, replace: (bytes, mime) => replaceStoredMedia("sources", source.storage_path, bytes, mime), download: async () => {
+    const result = await getAdminSupabase().storage.from("sources").download(source.storage_path);
+    if (result.error || !result.data) throw new Error("Source media unavailable");
+    return result.data;
+  } });
+  if (optimized) return optimized;
   const { data, error } = await getAdminSupabase()
     .storage.from("sources")
     .createSignedUrl(source.storage_path, SIGNED_URL_SECONDS, isDownload ? { download: source.title } : undefined);

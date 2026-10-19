@@ -12,7 +12,7 @@ export type IdTableName = {
 
 // LIST OPTIONS: equality filters (null means "is null"), one sort column, an optional cap
 export type ListOptions<T extends TableName> = {
-  filters?: Partial<Row<T>>;
+  filters?: Partial<Row<T>> & { space_id?: string };
   orderBy?: keyof Row<T> & string;
   ascending?: boolean;
   limit?: number;

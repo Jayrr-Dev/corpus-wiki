@@ -5,7 +5,7 @@ import { assertActiveUpload, reportUploadProgress, uploadExecution, workflowStep
 import type { AiCallLogger } from "@/lib/ai/callLog";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { type ModelChoice, tokenFactoryFromEnv } from "@/lib/ai/chat";
-import { commitAsRole, submitChangeSet } from "@/lib/change-control";
+import { commitAsRole, commitTextPatchSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { SectionProgress } from "./buildProgress";
 import { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
@@ -13,6 +13,9 @@ import type { FinishedSectionBuild, PageContextSection, SectionRef, SectionRevis
 import { FakeSectionWriter } from "./writers/fake";
 import { cancellableBuildDb, SectionBuildCancelled } from "./cancelBuild";
 import { TokenFactorySectionWriter } from "./writers/tokenFactory";
+import type { ArticleStructureMemory } from "./articleStructureMemory";
+import { IncompleteSectionEvidence } from "./draftEvidence";
+import type { UploadWorkflow } from "@/lib/ingest/workflowTypes";
 
 export type * from "./types";
 export { commitLineEdit } from "./editLine";
@@ -53,22 +56,57 @@ export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenMod
 // Different pages can build together; siblings stay in order because each reads
 // the rest of its page. Stop scheduling on failure and drain active builds before
 // returning, so the upload never releases its lease while a worker still writes.
-export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string, checkpointScope = eventId): Promise<void> {
-  const sections = await workflowStep(`affected-sections:${checkpointScope}`, () => db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId }));
+export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string, checkpointScope = eventId, addedUnitIds?: readonly string[]): Promise<void> {
+  const sections = await workflowStep(`affected-sections:${checkpointScope}${addedUnitIds ? ":scoped-v2" : ""}`, async () => {
+    const candidates = await db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId });
+    if (!addedUnitIds) return candidates;
+    const added = new Set(addedUnitIds);
+    const affected: SectionRef[] = [];
+    for (const section of candidates) {
+      const state = await db.call<SectionState>("read_section_state", { p_section_id: section.sectionId });
+      const unwritten = state.units.length > 0 && !state.lines.some(line => line.content.trim());
+      if (unwritten || state.units.some(unit => added.has(unit.unitId)) || state.lines.some(line => line.needsRewrite)) affected.push(section);
+    }
+    return affected;
+  });
+  const progressStep = checkpointScope === eventId ? "pages" : "pages-enrichment";
+  const review = async () => {
+    if (!sections.length) return;
+    await processingSpan("stage.editorial-review", async () => {
+      const ids = sections.map(section => section.sectionId);
+      if (checkpointScope === eventId) await writer.reviewSections?.(ids);
+      else await writer.reviewSections?.(ids, checkpointScope);
+    });
+  };
+  const finished = new Set<string>();
+  if (sections.length && uploadExecution.getStore()) {
+    const workflows = await db.call<Pick<UploadWorkflow, "event_id" | "steps">[]>("read_upload_workflows", { p_event_ids: [eventId] });
+    for (const step of workflows.find(workflow => workflow.event_id === eventId)?.steps ?? []) {
+      if (step.state === "succeeded") finished.add(step.key);
+    }
+    if (sections.every(section => finished.has(`rebuild-section:${checkpointScope}:${section.sectionId}`))) {
+      // These same durable keys would skip every build individually. One read
+      // avoids hundreds of lease/progress round trips when only review remains.
+      await assertActiveUpload();
+      await reportUploadProgress({ step: progressStep, done: sections.length, total: sections.length });
+      await review();
+      return;
+    }
+  }
+  const pending = sections.filter(section => !finished.has(`rebuild-section:${checkpointScope}:${section.sectionId}`));
   const byPage = new Map<string, SectionRef[]>();
-  for (const section of sections) {
+  for (const section of pending) {
     const siblings = byPage.get(section.pageId) ?? [];
     siblings.push(section);
     byPage.set(section.pageId, siblings);
   }
   const pages = [...byPage.values()];
   let next = 0;
-  let completed = 0;
+  let completed = sections.length - pending.length;
   let failed = false;
   let failure: unknown;
-  const progressStep = checkpointScope === eventId ? "pages" : "pages-enrichment";
   // Serialize progress writes so slower replies cannot overwrite a newer count.
-  let progress = reportUploadProgress({ step: progressStep, done: 0, total: sections.length });
+  let progress = reportUploadProgress({ step: progressStep, done: completed, total: sections.length });
   await progress;
   await Promise.all(Array.from({ length: Math.min(3, pages.length) }, async () => {
     try {
@@ -104,20 +142,25 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
   if (failed) throw failure;
   uploadExecution.getStore()?.signal?.throwIfAborted();
   await assertActiveUpload();
-  if (sections.length) await processingSpan("stage.editorial-review", async () => {
-    const ids = sections.map((section) => section.sectionId);
-    if (checkpointScope === eventId) await writer.reviewSections?.(ids);
-    else await writer.reviewSections?.(ids, checkpointScope);
-  });
+  await review();
 }
 
 // Another page update can own the section briefly. Keep the upload lease alive
 // and wait for that owner instead of making the person repeatedly press Resume.
-export async function rebuildUploadSection(db: DbRpc, writer: SectionWriter, sectionId: string, eventId: string): Promise<FinishedSectionBuild | null> {
+export async function rebuildUploadSection(db: DbRpc, writer: SectionWriter, sectionId: string, eventId: string | null): Promise<FinishedSectionBuild | null> {
   const execution = uploadExecution.getStore();
   const deadline = Date.now() + 180_000;
+  let incompleteDrafts = 0;
   for (;;) {
-    const built = await rebuildSection(db, writer, sectionId, eventId, false);
+    let built: FinishedSectionBuild | null;
+    try { built = await rebuildSection(db, writer, sectionId, eventId, false); }
+    catch (error) {
+      // Redraft only a known pre-save evidence rejection. Database errors and
+      // uncertain saves retain their existing recovery and ownership rules.
+      if (!execution || !(error instanceof IncompleteSectionEvidence) || ++incompleteDrafts >= 3) throw error;
+      await assertActiveUpload();
+      continue;
+    }
     if (!execution || (built && !built.rebuildRequested)) return built;
     if (Date.now() >= deadline) throw new Error("This section's other update has not finished after three minutes. Completed sections are saved; resume to continue waiting.");
     await assertActiveUpload();
@@ -128,7 +171,7 @@ export async function rebuildUploadSection(db: DbRpc, writer: SectionWriter, sec
 // Builds every generated section of one page (used after a page is created); no change notes
 export async function rebuildPage(db: DbRpc, writer: SectionWriter, pageId: string): Promise<void> {
   const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
-  for (const section of sections) await rebuildSection(db, writer, section.sectionId, null, false);
+  for (const section of sections) await rebuildUploadSection(db, writer, section.sectionId, null);
   if (sections.length) await writer.reviewSections?.(sections.map((section) => section.sectionId));
 }
 
@@ -211,14 +254,29 @@ async function rewriteLines(
   progress: SectionProgress | undefined,
   cancellable = false,
 ): Promise<{ applied: number; modelVersion: string }> {
-  const pageContext = await readPageContext(db, state.sectionId);
-  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}) };
+  const [pageContext, articleStructure] = await Promise.all([readPageContext(db, state.sectionId), readStructureContext(db, state.sectionId)]);
+  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}), ...(articleStructure ? { articleStructure } : {}) };
   const flagged = state.lines.filter((line) => line.needsRewrite).length;
   progress?.step(writingStep(flagged, input.uncoveredUnitIds.length));
   const revision = progress ? await writer.reviseSection(input, progress) : await writer.reviseSection(input);
   if (cancellable) await db.call("assert_section_build");
   const actions = revisionToActions(revision, state, ({ text, numbers }) =>
     console.warn("Writer line dropped for unsupported numbers", { sectionId: state.sectionId, page: state.pageTitle, section: state.title, numbers, text: text.slice(0, 160) }));
+  // Validate the actual actions, after unsupported/invalid lines were filtered.
+  // A successful model response is not necessarily a completed section.
+  const changed = new Set(actions.filter(action => action.type === "retire_line" || action.type === "revise_line").map(action => action.targetId));
+  const covered = new Set(state.lines.filter(line => !changed.has(line.lineId)).flatMap(line => line.unitIds));
+  const unitOf = new Map(state.units.map(unit => [unit.revisionId, unit.unitId]));
+  for (const action of actions) if (action.type === "write_line" || action.type === "revise_line") {
+    for (const id of action.input.unitRevisionIds) {
+      const unitId = unitOf.get(id);
+      if (unitId) covered.add(unitId);
+    }
+  }
+  const omitted = new Set(revision.omittedUnitIds ?? []);
+  if (state.units.some(unit => !covered.has(unit.unitId) && !omitted.has(unit.unitId))) {
+    throw new Error("The section draft omitted saved knowledge. It remains unfinished; retry the update.");
+  }
   if (actions.length === 0) return { applied: 0, modelVersion: revision.modelVersion };
   progress?.step(`Saving ${actions.length} change${actions.length === 1 ? "" : "s"}…`);
   const draft = {
@@ -227,7 +285,9 @@ async function rewriteLines(
     trace: { modelVersion: revision.modelVersion, promptVersion: writer.promptVersion ?? null, tokensIn: revision.tokensIn ?? null, tokensOut: revision.tokensOut ?? null },
   };
   const { changeSetId } = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai", operationKey: `section:${state.sectionId}:${createHash("sha256").update(JSON.stringify(input)).digest("hex")}` }, draft);
-  const result = await commitAsRole(db, "write_articles", changeSetId);
+  const result = revision.textPatches
+    ? await commitTextPatchSet(db, changeSetId, state.units.map(({ unitId, revisionId }) => ({ unitId, revisionId })))
+    : await commitAsRole(db, "write_articles", changeSetId);
   // Held changes (a person's line the AI wants to change) wait on Exceptions; only a refused change is a failure
   if (result.status === "rejected" || result.rejected > 0) throw new Error("The section update was not fully applied. Review its change set in Changes before retrying.");
   return { applied: result.applied, modelVersion: revision.modelVersion };
@@ -241,6 +301,21 @@ async function readPageContext(db: DbRpc, sectionId: string): Promise<PageContex
   } catch (error) {
     console.warn("Section written without the rest of its page", { sectionId, error: error instanceof Error ? error.message : String(error) });
     return [];
+  }
+}
+
+async function readStructureContext(db: DbRpc, sectionId: string): Promise<SectionReviseInput["articleStructure"]> {
+  try {
+    const memory = await db.call<ArticleStructureMemory | null>("read_section_article_structure", { p_section_id: sectionId });
+    const intended = memory?.planned ?? memory?.applied;
+    const sections = intended?.structure ?? memory?.current ?? [];
+    if (!sections.length) return undefined;
+    return { status: intended?.status ?? "current", outOfDate: intended?.outOfDate ?? false, rationale: intended?.rationale ?? "",
+      sections: sections.map(section => ({ title: section.title, position: section.position, claimCount: section.unitIds.length })),
+      currentSectionTitles: memory?.current?.map(section => section.title) ?? [] };
+  } catch (error) {
+    console.warn("Saved article structure unavailable for this section", { sectionId, error: error instanceof Error ? error.message : String(error) });
+    return undefined;
   }
 }
 

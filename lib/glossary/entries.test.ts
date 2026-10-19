@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dictionaryAnswerSchema, dictionaryResponseSchema, glossaryLetter, glossaryScopeKey, mergeGlossaryEntries, type GlossaryEntry } from "./entries";
+import { dictionaryAnswerSchema, dictionaryResponseSchema, glossaryLetter, glossaryScopeKey, mergeGlossaryEntries, visibleGlossaryEntries, type GlossaryEntry } from "./entries";
 import { parseContent } from "../ai/chat";
 import { z } from "zod";
 
@@ -8,6 +8,15 @@ function entry(values: Partial<GlossaryEntry> = {}): GlossaryEntry {
     definition: "Equipment worn to reduce exposure to workplace hazards.", context: null, scopeKey: "general",
     citations: [{ unitId: "u1", revisionId: "r1", sourceId: "s1", sourceTitle: "Safety handbook" }], ...values };
 }
+
+it("shows live replacements without duplicating merged meanings or hiding other senses", () => {
+  const first = entry({ meaningId: "first" });
+  const merged = entry({ meaningId: "merged" });
+  const other = entry({ meaningId: "other", definition: "Another supported meaning of the same term." });
+  const live = entry({ meaningId: "first", redirectIds: ["merged"], definition: "Updated reviewed definition." });
+  expect(visibleGlossaryEntries([first, merged, other], [live])).toEqual([other, live]);
+  expect(visibleGlossaryEntries([other])).toEqual([other]);
+});
 
 describe("generated dictionary entries", () => {
   it("accepts category label variations and preserves the whole batch through response validation", () => {

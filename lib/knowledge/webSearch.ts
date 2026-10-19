@@ -55,6 +55,19 @@ export async function searchWeb(apiKey: string | null, query: string, maxResults
   return searchWikipedia(query, maxResults);
 }
 
+// User-requested sourcing checks both channels, even when web search succeeds.
+export async function searchWebAndWikipedia(apiKey: string | null, query: string, wikipediaQuery: string) {
+  const results = await Promise.allSettled([
+    apiKey ? searchTavily(apiKey, query, 6) : Promise.resolve([]),
+    searchWikipedia(wikipediaQuery, 2),
+  ]);
+  const seen = new Set<string>();
+  return results.flatMap((result) => result.status === "fulfilled" ? result.value : []).filter((page) => {
+    if (seen.has(page.url)) return false;
+    seen.add(page.url); return true;
+  });
+}
+
 // Each page with its full text (or Tavily's summary when the page text is missing)
 async function searchTavily(apiKey: string, query: string, maxResults: number): Promise<WebPage[]> {
   const body = await webJson<TavilyResponse>(TAVILY_SEARCH_URL, {

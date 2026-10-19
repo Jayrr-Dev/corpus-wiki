@@ -3,7 +3,7 @@
 import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import type { GraphData, GraphForces } from "@/lib/graph";
 import { applyForces, createSimulation, type GraphSimulation, type SimLink, type SimNode, toSimGraph } from "@/lib/graph/physics";
-import { separateRootDomains } from "@/lib/graph/clusters";
+import { createDomainSeparator } from "@/lib/graph/clusters";
 
 // =====================================================================
 // FORCE LAYOUT: runs the d3 simulation for the visible graph. A new
@@ -13,6 +13,7 @@ import { separateRootDomains } from "@/lib/graph/clusters";
 // =====================================================================
 
 export interface ForceLayout {
+  revision: number;
   nodes: SimNode[];
   links: SimLink[];
   simulation: GraphSimulation | null;
@@ -24,7 +25,7 @@ const NUDGE_ALPHA = 0.3;
 
 // Runs the simulation and returns it as a ref; calls `onTick.current` each step so the canvas can redraw
 export function useForceLayout(graph: GraphData, forces: GraphForces, nodeSize: number, onTick: RefObject<() => void>): RefObject<ForceLayout> {
-  const layout = useRef<ForceLayout>({ nodes: [], links: [], simulation: null });
+  const layout = useRef<ForceLayout>({ nodes: [], links: [], simulation: null, revision: 0 });
   const settings = useRef({ forces, nodeSize });
   // Latest slider values for the rebuild below (synced after render, read in effects)
   useLayoutEffect(() => {
@@ -36,14 +37,23 @@ export function useForceLayout(graph: GraphData, forces: GraphForces, nodeSize: 
     const previous = new Map(layout.current.nodes.map((node) => [node.id, node]));
     const { nodes, links } = toSimGraph(graph, previous);
     const simulation = createSimulation(nodes, links, settings.current.forces, settings.current.nodeSize);
+    let separationSize = settings.current.nodeSize;
+    let separate = createDomainSeparator(nodes, separationSize, links);
     simulation.on("tick", () => {
       // d3 integrates velocities after its forces. Resolve ring collisions after
       // that movement as well, so the rendered (and final) frame stays separated.
-      if (settings.current.forces.cluster > 0) separateRootDomains(nodes, settings.current.nodeSize, links);
+      if (settings.current.forces.cluster > 0) {
+        if (separationSize !== settings.current.nodeSize) {
+          separationSize = settings.current.nodeSize;
+          separate = createDomainSeparator(nodes, separationSize, links);
+        }
+        separate();
+      }
+      layout.current.revision++;
       onTick.current();
     });
     simulation.alpha(previous.size === 0 ? FIRST_ALPHA : NUDGE_ALPHA).restart();
-    layout.current = { nodes, links, simulation };
+    layout.current = { nodes, links, simulation, revision: layout.current.revision + 1 };
     onTick.current();
     return () => void simulation.stop();
   }, [graph, onTick]);

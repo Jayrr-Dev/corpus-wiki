@@ -174,6 +174,10 @@ function ringAround(middle: { x: number; y: number }, nodes: readonly SimNode[],
 
 // CIRCLES for the current positions, outermost first so inner rings draw on top
 export function clusterCircles(nodes: readonly SimNode[], nodeSize: number): ClusterCircle[] {
+  return circlesForTree(clusterTree(nodes), nodeSize);
+}
+
+function circlesForTree(tree: readonly ClusterGroup[], nodeSize: number): ClusterCircle[] {
   // Builds a group's ring from its children's, and returns it with every ring inside it
   const build = (group: ClusterGroup, index: number): { circle: ClusterCircle; all: ClusterCircle[]; dots: SimNode[] } => {
     const inner = group.children.map((child) => build(child, index));
@@ -213,38 +217,32 @@ export function clusterCircles(nodes: readonly SimNode[], nodeSize: number): Clu
     const circle = { key: group.path, label: group.label, depth: group.depth, isBranch, ...middle, r, index };
     return { circle, all: [circle, ...inner.flatMap((child) => child.all)], dots };
   };
-  return clusterTree(nodes).flatMap((group, index) => build(group, index).all);
+  return tree.flatMap((group, index) => build(group, index).all);
 }
 
 // Move whole root groups apart using their actual drawn bounds. Moving every
 // member equally preserves the compact arrangement inside each root.
 export function separateRootDomains(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = []): void {
-  const depth = Math.max(0, ...nodes.map((node) => primarySegments(node).length - 1));
-  // Separate children first, then recompute their parents' expanded bounds.
-  for (let level = depth; level >= 0; level--) separateDomainsAtDepth(nodes, nodeSize, links, level);
+  createDomainSeparator(nodes, nodeSize, links)();
 }
 
-function separateDomainsAtDepth(nodes: SimNode[], nodeSize: number, links: readonly SimLink[], depth: number): void {
-  const roots = clusterCircles(nodes, nodeSize).filter((circle) => circle.depth === depth);
-  const groups = roots.map((circle) => ({
-    circle,
-    parentPath: circle.key.split("/").slice(0, -1).join("/"),
-    nodes: nodes.filter((node) => {
-      const path = primarySegments(node).join("/");
-      return path === circle.key || path.startsWith(`${circle.key}/`);
-    }),
-  }));
-  // Parent-level claims are not members of any child. Reserve their actual
-  // bounds alongside the child circles so a summary hub cannot appear inside
-  // a subject it does not belong to. This obstacle is never drawn as a domain.
-  for (const parentPath of new Set(groups.map(group => group.parentPath))) {
-    if (!parentPath) continue;
-    const members = nodes.filter(node => primarySegments(node).join("/") === parentPath);
-    if (!members.length) continue;
-    const circle = clusterCircles(members, nodeSize).find(group => group.key === parentPath)!;
-    groups.push({ circle, parentPath, nodes: members });
-  }
-  const rootByNode = new Map(nodes.map((node) => [node.id, primarySegments(node)[0]]));
+// Membership and link affinity stay fixed for a simulation. Only bounds and
+// pinned state change on a tick; avoid scanning every node for every domain.
+export function createDomainSeparator(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = []): () => void {
+  const tree = clusterTree(nodes);
+  const membersByPath = new Map<string, SimNode[]>();
+  const directByPath = new Map<string, ClusterGroup>();
+  const rootByNode = new Map<string, string>();
+  let depth = 0;
+  const collect = (group: ClusterGroup, root: string): SimNode[] => {
+    depth = Math.max(depth, group.depth);
+    directByPath.set(group.path, { ...group, children: [] });
+    for (const node of group.members) rootByNode.set(node.id, root);
+    const members = [...group.members, ...group.children.flatMap(child => collect(child, root))];
+    membersByPath.set(group.path, members);
+    return members;
+  };
+  for (const group of tree) collect(group, group.path);
   const connectionWeight = new Map<string, number>();
   const pairKey = (a: string, b: string) => JSON.stringify([a, b].sort());
   for (const link of links) {
@@ -254,6 +252,65 @@ function separateDomainsAtDepth(nodes: SimNode[], nodeSize: number, links: reado
     const key = pairKey(a, b);
     connectionWeight.set(key, (connectionWeight.get(key) ?? 0) + (link.kind === "similar" ? 0.25 : 1));
   }
+  return () => {
+    // Cross-domain links can stretch a subject faster than the separating
+    // rings move it away. Bound each subject's own footprint before measuring
+    // rings, otherwise those two operations amplify each other every tick.
+    for (const [path, members] of membersByPath) {
+      if (members.length < 2 || members.some(node => node.fx != null || node.fy != null)) continue;
+      const middle = centroid(members);
+      const direct = directByPath.get(path)!;
+      const isBranch = members.length !== direct.members.length;
+      const room = Math.max(isBranch ? 160 * Math.sqrt(members.length) : 160, 14 * Math.sqrt(members.length), 2 * Math.sqrt(members.reduce((area, node) => area + (nodeRadius(node, nodeSize) + 2) ** 2, 0)));
+      for (const node of members) {
+        const dx = (node.x ?? 0) - middle.x, dy = (node.y ?? 0) - middle.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance <= room) continue;
+        node.x = middle.x + dx * room / distance;
+        node.y = middle.y + dy * room / distance;
+        node.vx = 0;
+        node.vy = 0;
+      }
+    }
+  // Separate children first, then recompute their parents' expanded bounds.
+    for (let level = depth; level >= 0; level--) {
+      separateDomainsAtDepth(tree, nodeSize, level, membersByPath, directByPath, connectionWeight);
+    }
+  };
+}
+
+function separateDomainsAtDepth(tree: readonly ClusterGroup[], nodeSize: number, depth: number, membersByPath: ReadonlyMap<string, SimNode[]>, directByPath: ReadonlyMap<string, ClusterGroup>, connectionWeight: ReadonlyMap<string, number>): void {
+  const roots = circlesForTree(tree, nodeSize).filter((circle) => circle.depth === depth);
+  const groups = roots.map((circle) => ({
+    circle,
+    parentPath: circle.key.split("/").slice(0, -1).join("/"),
+    nodes: membersByPath.get(circle.key)!,
+  }));
+  // Parent-level claims are not members of any child. Reserve their actual
+  // bounds alongside the child circles so a summary hub cannot appear inside
+  // a subject it does not belong to. This obstacle is never drawn as a domain.
+  for (const parentPath of new Set(groups.map(group => group.parentPath))) {
+    if (!parentPath) continue;
+    const parent = directByPath.get(parentPath)!;
+    const members = parent.members;
+    if (!members.length) continue;
+    const circle = circlesForTree([parent], nodeSize)[0]!;
+    groups.push({ circle, parentPath, nodes: members });
+  }
+  const pairKey = (a: string, b: string) => JSON.stringify([a, b].sort());
+  const pinned = new Map(groups.map(group => [group, group.nodes.some(node => node.fx != null || node.fy != null)]));
+  // Compare siblings only, and calculate their affinity once outside the solver.
+  const siblings = new Map<string, typeof groups>();
+  for (const group of groups) {
+    const bucket = siblings.get(group.parentPath) ?? [];
+    bucket.push(group);
+    siblings.set(group.parentPath, bucket);
+  }
+  const pairs = [...siblings.values()].flatMap(bucket => bucket.flatMap((a, i) => bucket.slice(i + 1).map(b => {
+    const weight = depth === 0 ? connectionWeight.get(pairKey(a.circle.key, b.circle.key)) ?? 0 : 0;
+    const affinity = Math.min(1, weight / Math.max(1, Math.min(a.nodes.length, b.nodes.length)));
+    return { a, b, gap: 32 * (1 - affinity), sharedSpace: Math.min(a.circle.r, b.circle.r) * 0.35 * affinity };
+  })));
   const move = (group: typeof groups[number], dx: number, dy: number) => {
     group.circle.x += dx;
     group.circle.y += dy;
@@ -264,23 +321,16 @@ function separateDomainsAtDepth(nodes: SimNode[], nodeSize: number, links: reado
   };
   for (let pass = 0; pass < 32; pass++) {
     let largestOverlap = 0;
-    for (let i = 0; i < groups.length; i++) for (let j = i + 1; j < groups.length; j++) {
-      const a = groups[i]!, b = groups[j]!;
-      // Only siblings share a container; cousins are handled by their parents.
-      if (a.parentPath !== b.parentPath) continue;
+    for (const { a, b, gap, sharedSpace } of pairs) {
       const dx = b.circle.x - a.circle.x, dy = b.circle.y - a.circle.y;
       const distance = Math.hypot(dx, dy);
       // Many cross-domain connections relax the boundary; similarity links
       // count less than explicit relationships. Internal link forces can
       // still stretch each group toward its neighbors.
-      const weight = depth === 0 ? connectionWeight.get(pairKey(a.circle.key, b.circle.key)) ?? 0 : 0;
-      const affinity = Math.min(1, weight / Math.max(1, Math.min(a.nodes.length, b.nodes.length)));
-      const gap = 32 * (1 - affinity);
-      const sharedSpace = Math.min(a.circle.r, b.circle.r) * 0.35 * affinity;
       const overlap = a.circle.r + b.circle.r + gap - sharedSpace - distance;
       if (overlap <= 0) continue;
-      const pinnedA = a.nodes.some((node) => node.fx != null || node.fy != null);
-      const pinnedB = b.nodes.some((node) => node.fx != null || node.fy != null);
+      const pinnedA = pinned.get(a)!;
+      const pinnedB = pinned.get(b)!;
       if (pinnedA && pinnedB) continue;
       largestOverlap = Math.max(largestOverlap, overlap);
       const ux = distance > 0 ? dx / distance : 1;
@@ -294,9 +344,9 @@ function separateDomainsAtDepth(nodes: SimNode[], nodeSize: number, links: reado
 }
 
 export function forceRootSeparation(nodeSize: number, links: readonly SimLink[] = []): Force<SimNode, undefined> {
-  let nodes: SimNode[] = [];
-  const force = () => separateRootDomains(nodes, nodeSize, links);
-  force.initialize = (value: SimNode[]) => { nodes = value; };
+  let separate = () => {};
+  const force = () => separate();
+  force.initialize = (value: SimNode[]) => { separate = createDomainSeparator(value, nodeSize, links); };
   return force;
 }
 

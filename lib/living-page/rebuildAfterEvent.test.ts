@@ -28,6 +28,7 @@ function fixture(sections: SectionRef[]) {
       return;
     }
     if (name === "list_affected_sections") return sections;
+    if (name === "read_upload_workflows") return [{ event_id: "event", steps: [...saved.keys()].map(key => ({ key, state: "succeeded" })) }];
     if (name === "claim_section_build") {
       builds.push(args.p_section_id as string);
       return { claimed: true };
@@ -46,6 +47,51 @@ function fixture(sections: SectionRef[]) {
     run: (signal: AbortSignal = abort.signal) => uploadExecution.run({ eventId: "event", token: "lease", db, signal }, () => rebuildAfterEvent(db, writer, "event")),
   };
 }
+
+it("limits enrichment to new evidence and actually stale citations instead of every originally touched section", async () => {
+  const f = fixture(["unchanged", "omitted", "new-evidence", "stale-citation", "unwritten"].map(sectionId => ({ pageId: sectionId, sectionId })));
+  const original = f.call.getMockImplementation()!;
+  f.call.mockImplementation(async (name, args = {}) => {
+    const value = await original(name, args);
+    if (name !== "read_section_state") return value;
+    const state = value as SectionState;
+    const id = args.p_section_id;
+    return { ...state, units: [{ unitId: id === "new-evidence" ? "added" : "old", revisionId: "r", content: "Fact", kind: "fact", epistemicStatus: "supported" }],
+      lines: id === "unwritten" ? [] : [{ lineId: "l", lineRevisionId: "lr", content: "Fact", author: "ai", position: 0, unitIds: id === "omitted" ? [] : [id === "new-evidence" ? "added" : "old"], needsRewrite: id === "stale-citation" }] };
+  });
+  f.writer.prepareSection = async state => ({ ...state, units: [], lines: [] });
+  await uploadExecution.run({ eventId: "event", token: "lease", db: f.db }, () => rebuildAfterEvent(f.db, f.writer, "event", "enrichment:event", ["added"]));
+  expect(f.builds.sort()).toEqual(["new-evidence", "stale-citation", "unwritten"]);
+  expect(f.reviewSections).toHaveBeenCalledWith(["new-evidence", "stale-citation", "unwritten"], "enrichment:event");
+});
+
+it("resumes unfinished review with one completion read instead of replaying every completed build", async () => {
+  const f = fixture([{ pageId: "a", sectionId: "a1" }, { pageId: "b", sectionId: "b1" }]);
+  f.reviewSections.mockRejectedValueOnce(new Error("Reviewer unavailable"));
+  await expect(f.run()).rejects.toThrow("Reviewer unavailable");
+  f.call.mockClear(); f.builds.length = 0; f.progress.length = 0;
+  await f.run();
+  expect(f.builds).toEqual([]);
+  expect(f.call.mock.calls.filter(([name]) => name === "read_upload_workflows")).toHaveLength(1);
+  expect(f.call.mock.calls.filter(([name, args]) => name === "start_upload_step" && String(args?.p_key).startsWith("rebuild-section:"))).toHaveLength(0);
+  expect(f.progress).toEqual([2]);
+  expect(f.reviewSections).toHaveBeenCalledTimes(2);
+  // An absent checkpoint must still take the normal build path.
+  f.saved.delete("rebuild-section:event:a1"); f.builds.length = 0;
+  await f.run();
+  expect(f.builds).toEqual(["a1"]);
+});
+
+it("starts a partial resume at the saved count and visits only unfinished sections", async () => {
+  const f = fixture([{ pageId: "a", sectionId: "a1" }, { pageId: "a", sectionId: "a2" }, { pageId: "b", sectionId: "b1" }]);
+  f.saved.set("rebuild-section:event:a1", { rebuildRequested: false });
+  f.saved.set("rebuild-section:event:b1", { rebuildRequested: false });
+  await f.run();
+  expect(f.progress).toEqual([2, 3]);
+  expect(f.builds).toEqual(["a2"]);
+  expect(f.call.mock.calls.filter(([name, args]) => name === "start_upload_step" && String(args?.p_key).startsWith("rebuild-section:")).map(([, args]) => args?.p_key)).toEqual(["rebuild-section:event:a2"]);
+  expect(f.reviewSections).toHaveBeenCalledWith(["a1", "a2", "b1"]);
+});
 
 it("overlaps at most three pages, preserves sibling order, and reviews after all builds", async () => {
   // Interleave the input to verify grouping preserves each page's original order.

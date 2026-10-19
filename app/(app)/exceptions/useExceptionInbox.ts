@@ -4,17 +4,19 @@ import { useQuery } from "@tanstack/react-query";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { CATEGORY_OF_REASON, type CategoryTab } from "./categories";
 import type { Tables } from "@/lib/database/types";
+import { useActiveSpace } from "@/components/shell/SpaceProvider";
 
 export const INBOX_PAGE_SIZE = 25;
 export type InboxStatus = "open" | "answered";
 export type InboxRow = { exception: Tables<"exceptions">; action: Tables<"actions"> | undefined };
 
 export function useExceptionInbox(status: InboxStatus, category: CategoryTab, page: number, search: string, oldestFirst: boolean) {
+  const space = useActiveSpace();
   return useQuery({
-    queryKey: ["table", "exceptions", "inbox", status, category, page, search, oldestFirst],
+    queryKey: ["table", "exceptions", "inbox", status, category, page, search, oldestFirst, space.id],
     queryFn: async () => {
       const client = getBrowserSupabase();
-      let query = client.from("exceptions").select("*", { count: "exact" });
+      let query = client.from("exceptions").select("*", { count: "exact" }).filter("space_id", "eq", space.id);
       query = status === "open" ? query.eq("status", "open") : query.neq("status", "open");
       if (category !== "all") query = query.in("reason", Object.entries(CATEGORY_OF_REASON).filter(([, value]) => value === category).map(([reason]) => reason as Tables<"exceptions">["reason"]));
       if (search.trim()) {
@@ -35,13 +37,14 @@ export function useExceptionInbox(status: InboxStatus, category: CategoryTab, pa
 }
 
 export function useExceptionCounts() {
+  const space = useActiveSpace();
   return useQuery({
-    queryKey: ["table", "exceptions", "inbox-counts"],
+    queryKey: ["table", "exceptions", "inbox-counts", space.id],
     queryFn: async () => {
       const client = getBrowserSupabase();
       const [open, answered] = await Promise.all([
-        client.from("exceptions").select("id", { count: "exact", head: true }).eq("status", "open"),
-        client.from("exceptions").select("id", { count: "exact", head: true }).neq("status", "open"),
+        client.from("exceptions").select("id", { count: "exact", head: true }).filter("space_id", "eq", space.id).eq("status", "open"),
+        client.from("exceptions").select("id", { count: "exact", head: true }).filter("space_id", "eq", space.id).neq("status", "open"),
       ]);
       if (open.error) throw open.error;
       if (answered.error) throw answered.error;

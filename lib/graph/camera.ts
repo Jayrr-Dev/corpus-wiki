@@ -15,7 +15,9 @@ export interface Point {
 }
 
 // ZOOM LIMITS
-const MIN_ZOOM = 0.05;
+// Large domain hierarchies can fit below 5%; their first wheel step must
+// not jump straight back to 5%, even when scrolling out.
+const MIN_ZOOM = 0.0001;
 const MAX_ZOOM = 8;
 const WHEEL_SPEED = 0.0015;
 

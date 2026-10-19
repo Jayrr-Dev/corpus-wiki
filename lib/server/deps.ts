@@ -31,14 +31,14 @@ import { getSectionWriter, type SectionWriter } from "@/lib/living-page";
 import type { PipelineDeps } from "@/lib/ingest/pipeline";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { broadcastSectionProgress } from "./sectionBroadcast";
-import { reviewRebuiltSections } from "@/lib/living-page/runPageReview";
+import { reviewRebuiltSections, verifyEventArticleReviews } from "@/lib/living-page/runPageReview";
 import { requireContextStorage } from "./contextReadiness";
 
 // SERVER DEPENDENCIES: the database port and the two AI clients, built from env
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
 // Every AI call is logged to public.ai_calls (token usage on /settings).
 // Server actions take them from here; tests build their own (pg + fakes).
-export type ServerDeps = { refreshAppliedOverviews?: (eventId: string, pageIds: string[]) => Promise<import("@/lib/living-page/refreshOrganizationOverviews").OverviewOutcome[]>; db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<import("@/lib/living-page/articleOrchestrator").OrchestratorResult>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string | null, options?: { curate?: boolean; dispatches?: import("@/lib/curator/plan").Dispatch[] }) => Promise<unknown>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
+export type ServerDeps = { refreshAppliedOverviews?: (eventId: string, pageIds: string[]) => Promise<import("@/lib/living-page/refreshOrganizationOverviews").OverviewOutcome[]>; db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<import("@/lib/living-page/articleOrchestrator").OrchestratorResult>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; articleVerifier?: (eventId: string) => Promise<void>; pageMaintainer?: (eventId: string | null, options?: { curate?: boolean; dispatches?: import("@/lib/curator/plan").Dispatch[] }) => Promise<unknown>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
 
 export async function getServerDeps(): Promise<ServerDeps> {
   const { startComposerWorker } = await import("@/lib/composer/worker");
@@ -54,10 +54,11 @@ export async function getServerDeps(): Promise<ServerDeps> {
   // Section builds tell open pages what they are doing and stream their draft
   writer.progress = broadcastSectionProgress(admin);
   const embedder = embedderFromEnv(process.env, logCall);
-  if (settings) writer.reviewSections = (sectionIds, scope) => reviewRebuiltSections(db, settings, sectionIds, embedder, scope);
+  if (settings) writer.reviewSections = (sectionIds, scope) => reviewRebuiltSections(db, settings, sectionIds, embedder, scope, { client: admin, writer });
   return {
     refreshAppliedOverviews: settings ? (eventId: string, pageIds: string[]) => refreshOrganizationOverviews({ settings, client: admin, db, writer }, eventId, { pageIds }) : undefined,
     db,
+    articleVerifier: settings ? (eventId) => verifyEventArticleReviews(db, settings, eventId, embedder) : undefined,
     glossaryGenerator: settings ? async () => {
       await generateGlossary(admin, settings);
       if (embedder) await embedMissingGlossary(db, embedder);

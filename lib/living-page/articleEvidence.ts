@@ -93,16 +93,28 @@ export function formatReferencePages(pages: number[]): string {
 
 export type ArticleLink = { label: string; href: string };
 const linkLabelKey = (text: string) => text.trim().toLowerCase().replace(/[\s\p{Pd}]+/gu, " ");
-export function linkArticleText(text: string, links: ArticleLink[]): { text: string; href?: string }[] {
+// All paragraphs share the same immutable destination list. Compile its matcher
+// once per list rather than sorting and building a large regexp per paragraph.
+const linkMatchers = new WeakMap<ArticleLink[], { unique: Map<string, ArticleLink>; pattern: RegExp | null }>();
+function articleLinkMatcher(links: ArticleLink[]) {
+  const cached = linkMatchers.get(links);
+  if (cached) return cached;
   // Keep explicit article destinations ahead of inferred section destinations.
   const unique = new Map<string, ArticleLink>();
   for (const link of links) if (link.label.trim().length > 2 && !unique.has(linkLabelKey(link.label))) unique.set(linkLabelKey(link.label), link);
   const candidates = [...unique.values()].sort((a, b) => b.label.length - a.label.length);
+  const escaped = candidates.map((link) => link.label.trim().split(/[\s\p{Pd}]+/u).map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s\\p{Pd}]+"));
+  const pattern = escaped.length ? new RegExp(`(?<![\\p{L}\\p{N}])(?:${escaped.join("|")})(?![\\p{L}\\p{N}])`, "giu") : null;
+  const matcher = { unique, pattern };
+  linkMatchers.set(links, matcher);
+  return matcher;
+}
+
+export function linkArticleText(text: string, links: ArticleLink[]): { text: string; href?: string }[] {
+  const { unique, pattern } = articleLinkMatcher(links);
+  if (!pattern) return [{ text }];
   const used = new Set<string>();
   const result: { text: string; href?: string }[] = [];
-  const escaped = candidates.map((link) => link.label.trim().split(/[\s\p{Pd}]+/u).map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s\\p{Pd}]+"));
-  if (!escaped.length) return [{ text }];
-  const pattern = new RegExp(`(?<![\\p{L}\\p{N}])(?:${escaped.join("|")})(?![\\p{L}\\p{N}])`, "giu");
   let cursor = 0;
   for (const match of text.matchAll(pattern)) {
     if (match.index > cursor) result.push({ text: text.slice(cursor, match.index) });

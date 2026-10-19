@@ -70,6 +70,20 @@ describe("entity name duplicate guard", () => {
 });
 
 describe("domain name duplicate guard", () => {
+  it("keeps distinct numbered personality types separate even when the judge would merge them",async()=>{
+    const judge=vi.fn(async()=>0);
+    const proposed="Enneagram/Type descriptions/Type Five/Avarice passion";
+    const resolved=await reuseFuzzyDomainPaths([proposed],["Enneagram/Type descriptions/Type Four"],judge);
+    expect(resolved.get(proposed)).toBe(proposed);
+    expect(judge).not.toHaveBeenCalled();
+  });
+
+  it("still permits evidence-based spelling matches within the same explicit type",async()=>{
+    const judge=vi.fn(async()=>0);
+    const resolved=await reuseFuzzyDomainPaths(["Enneagram/Type Five profiles"],["Enneagram/Type Five profile"],judge);
+    expect(resolved.get("Enneagram/Type Five profiles")).toBe("Enneagram/Type Five profile");
+    expect(judge).toHaveBeenCalledTimes(1);
+  });
   it("reuses a confirmed sibling and carries new descendants under its canonical path", async () => {
     const judge = vi.fn(async () => 0);
     const resolved = await reuseFuzzyDomainPaths(["Acme/Quality inspections/Training", "Acme/Quality inspections/Records"], ["Acme/Quality inspection"], judge);

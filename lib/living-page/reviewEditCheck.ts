@@ -19,6 +19,12 @@ import { checkLines, type CheckedClaim, type LineToCheck } from "./writers/lineC
 type Edit = { type: string; targetId: string; text: string; reason: string };
 export type CheckedEdit<E extends Edit> = E & { unitRevisionIds?: string[] };
 
+export class ReviewEditsRejected extends Error {
+  constructor(readonly tokensIn: number | null, readonly tokensOut: number | null) {
+    super("The review edits could not preserve supported evidence; no patches were saved.");
+  }
+}
+
 // The snapshot's claims (current revisions the page cites); the database sends them, the type leaves them out
 type SnapshotClaim = { id: string; content: string };
 function snapshotClaims(snapshot: PageReviewSnapshot): SnapshotClaim[] {
@@ -27,9 +33,9 @@ function snapshotClaims(snapshot: PageReviewSnapshot): SnapshotClaim[] {
   return raw.flatMap((claim) => (claim && typeof claim.id === "string" && typeof claim.content === "string" ? [{ id: claim.id, content: claim.content }] : []));
 }
 
-export async function checkReviewEdits<E extends Edit>(settings: TokenFactorySettings, snapshot: PageReviewSnapshot, proposed: E[]): Promise<TokenUsage & { edits: CheckedEdit<E>[] }> {
+export async function checkReviewEdits<E extends Edit>(settings: TokenFactorySettings, snapshot: PageReviewSnapshot, proposed: E[], textPatches = false): Promise<TokenUsage & { edits: CheckedEdit<E>[] }> {
   // Rewrites follow the same punctuation policy as the writer's lines
-  const edits = proposed.map((edit) => (edit.type === "revise_line" ? { ...edit, text: withoutEditorialDashes(edit.text) } : edit));
+  const edits = proposed.map((edit) => (edit.type === "revise_line" && !textPatches ? { ...edit, text: withoutEditorialDashes(edit.text) } : edit));
   const claims = snapshotClaims(snapshot);
   const refOf = new Map(claims.map((claim, index) => [claim.id, `C${index + 1}`]));
   const idOf = new Map(claims.map((claim, index) => [`C${index + 1}`, claim.id]));
@@ -43,7 +49,18 @@ export async function checkReviewEdits<E extends Edit>(settings: TokenFactorySet
     const cited = (lineOf.get(edit.targetId)?.unit_revision_ids ?? []).flatMap((id) => (refOf.has(id) ? [claimOf.get(refOf.get(id)!)!] : []));
     return cited.length ? [{ ref: `L${index + 1}`, text: edit.text, claims: cited, edit }] : [];
   });
-  if (!checked.length) return { edits: keepSectionsCovered(snapshot, edits), tokensIn: 0, tokensOut: 0 };
+  const finish = (result: CheckedEdit<E>[], usage: TokenUsage = { tokensIn: 0, tokensOut: 0 }) => {
+    const covered = keepSectionsCovered(snapshot, result);
+    if (textPatches && covered.length !== edits.length) throw new ReviewEditsRejected(usage.tokensIn, usage.tokensOut);
+    return textPatches ? covered.filter((edit) => {
+      const original = lineOf.get(edit.targetId);
+      const before = original?.unit_revision_ids ?? [];
+      const after = edit.unitRevisionIds ?? before;
+      return edit.type !== "revise_line" || edit.text !== original?.content || new Set(before).size !== new Set(after).size || before.some((id) => !after.includes(id));
+    }) : covered;
+  };
+  if (textPatches && checked.length !== edits.filter((edit) => edit.type === "revise_line").length) throw new Error("The review lacks citation evidence for an edit; no patches were saved.");
+  if (!checked.length) return { edits: finish(edits), tokensIn: 0, tokensOut: 0 };
   const { verdicts, tokensIn, tokensOut } = await checkLines(settings, { page: snapshot.page.title, section: "Reviewer edits", lines: checked.map(({ ref, text, claims: cited }) => ({ ref, text, claims: cited })), sectionClaims: pageClaims });
 
   const verdictOf = new Map(verdicts.map((verdict) => [verdict.line, verdict]));
@@ -51,6 +68,7 @@ export async function checkReviewEdits<E extends Edit>(settings: TokenFactorySet
   const kept = edits.flatMap((edit): CheckedEdit<E>[] => {
     const line = checkedOf.get(edit);
     const verdict = line && verdictOf.get(line.ref);
+    if (textPatches && line && !verdict) throw new Error("An edit received no evidence verdict; no patches were saved.");
     if (!line || !verdict) return [edit];
     if (!verdict.supported) {
       console.warn("Reviewer edit dropped by the fact-check", { page: snapshot.page.title, targetId: edit.targetId, text: edit.text.slice(0, 200), problem: verdict.problem });
@@ -63,7 +81,7 @@ export async function checkReviewEdits<E extends Edit>(settings: TokenFactorySet
     if (!refs.length || (refs.length === before.length && refs.every((ref, index) => ref === before[index]))) return [edit];
     return [{ ...edit, unitRevisionIds: refs.map((ref) => idOf.get(ref)!) }];
   });
-  return { edits: keepSectionsCovered(snapshot, kept), tokensIn, tokensOut };
+  return { edits: finish(kept, { tokensIn, tokensOut }), tokensIn, tokensOut };
 }
 
 // SECTION COVERAGE: drops the edits that would leave a claim of a section cited by none of its lines.

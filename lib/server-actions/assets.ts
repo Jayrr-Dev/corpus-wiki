@@ -23,6 +23,27 @@ export async function setAssetDeleted(id: string, deleted: boolean) {
   });
 }
 
+export async function permanentlyDeleteAsset(id: string) {
+  return toActionResult(async () => {
+    await requireUser();
+    const assetId = z.uuid().parse(id);
+    const db = supabaseRpc(getAdminSupabase());
+    await db.call("purge_deleted_asset", { p_asset_id: assetId });
+    const { runAssetCleanup } = await import("@/lib/assets/cleanup");
+    await runAssetCleanup();
+    return {};
+  });
+}
+
+export async function unlinkAsset(id: string) {
+  return toActionResult(async () => {
+    await requireUser();
+    const assetId = z.uuid().parse(id);
+    const unlinked = await supabaseRpc(getAdminSupabase()).call<number>("unlink_deleted_asset", { p_asset_id: assetId });
+    return { unlinked };
+  });
+}
+
 // ASSETS (called by /assets): find new media in the sources, then have the Media analyst
 // describe and tag them, a few batches per call (the screen calls again while some remain).
 // `ids` describes just those assets again.

@@ -5,6 +5,8 @@ import { useEffect, useId } from "react";
 import { queryKeys, type TableName } from "@/lib/queries";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { coalesceInvalidation } from "./coalesce";
+import { SPACE_COOKIE } from "@/lib/spaces/shared";
+import { subscriptionFallback } from "./subscriptionFallback";
 
 // =====================================================================
 // REALTIME -> TANSTACK QUERY: when a row of `table` changes (optionally
@@ -27,11 +29,18 @@ export function useRealtimeInvalidation(table: TableName, { filter, enabled = tr
     const supabase = getBrowserSupabase();
     const invalidate = () => void queryClient.invalidateQueries({ queryKey: queryKeys.table(table) });
     const updates = coalesceInvalidation(queryClient, table, invalidate);
+    const fallback = subscriptionFallback(() => updates.trigger(), () => document.visibilityState !== "hidden");
     const channel = supabase
       .channel(`invalidate:${table}:${filter ?? "all"}:${instanceId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table, ...(filter ? { filter } : {}) }, updates.trigger)
-      .subscribe();
+      .on("postgres_changes", { event: "*", schema: "public", table, ...(filter ? { filter } : {}) }, (payload) => {
+        const selected = document.cookie.split("; ").find((part) => part.startsWith(`${SPACE_COOKIE}=`))?.split("=")[1];
+        const row = payload.new as Record<string, unknown>;
+        if (selected && row.space_id && row.space_id !== selected) return;
+        updates.trigger();
+      })
+      .subscribe(fallback.status);
     return () => {
+      fallback.dispose();
       updates.dispose();
       void supabase.removeChannel(channel);
     };

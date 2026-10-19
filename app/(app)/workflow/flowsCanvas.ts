@@ -3,6 +3,25 @@ import { Globe, ListTree, ShieldCheck } from "lucide-react";
 import { KNOWLEDGE_FLOW, RESEARCH_FLOW, type Flow } from "./flowModel";
 import type { CanvasDiagram, CanvasNode } from "./canvasTypes";
 import { ROLE_ICONS } from "./roleIcons";
+import { ASSET_PHASE, ILLUSTRATION_PHASE, type OverviewPhase } from "./workflowOverviewModel";
+
+// Share descriptions with the overview so both views describe the same behavior.
+function phaseDiagram(phase: OverviewPhase): CanvasDiagram {
+  return {
+    width: phase.steps.length * 300 + 80, height: 520,
+    nodes: phase.steps.map((step, index) => ({
+      id: step.id, shape: "box", x: 190 + index * 300, y: 270,
+      title: step.name, short: step.description,
+      roles: phase.id === "illustrations" && step.control === "roles" ? ["composer"] : undefined,
+      facts: [{ label: "What happens", text: step.detail }, { label: "When", text: step.trigger ?? phase.trigger }],
+    })),
+    edges: phase.steps.slice(1).map((step, index) => ({ from: phase.steps[index]!.id, to: step.id, kind: "handoff" })),
+    groups: [{ id: phase.id, title: phase.name, note: phase.id === "assets" ? "Only deleted assets can be unlinked or permanently deleted; used assets are protected" : "A separate workflow from source processing; images remain reusable assets", x: 20, y: 20, w: phase.steps.length * 300 + 40, h: 460 }],
+  };
+}
+
+export const ASSET_CANVAS = phaseDiagram(ASSET_PHASE);
+export const ILLUSTRATION_CANVAS = phaseDiagram(ILLUSTRATION_PHASE);
 
 // FLOWS CANVAS: the Knowledge pipeline and Outside research flows laid out left to right in the
 // same shapes as the AI flow. Shapes carry a short title; the step's text from flowModel fills

@@ -65,19 +65,25 @@ export function DomainsSection({ value, nodes, onChange }: { value: GraphFilters
     domainScope: nextInternal ? (nextExternal ? "both" : "internal") : (nextExternal ? "external" : "none"),
     domain: "",
   });
-  const domains = useMemo(() => groupSuggestions(nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, value.domainScope) }))).domain.map((path) => ({ id: path, path })), [nodes, value.domainScope]);
+  // Visibility switches filter the canvas, not the choices available in the picker.
+  const domains = useMemo(() => groupSuggestions(nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, "both") }))).domain.map((path) => ({ id: path, path })), [nodes]);
   const domainGroups = useMemo(() => (["internal", "external"] as const).map((scope) => ({
     id: scope,
     label: scope === "internal" ? "Internal" : "External",
-    domains: (value.domainScope === scope || value.domainScope === "both")
-      ? groupSuggestions(nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, scope) }))).domain.map((path) => ({ id: path, path }))
-      : [],
-  })), [nodes, value.domainScope]);
+    domains: groupSuggestions(nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, scope) }))).domain.map((path) => ({ id: path, path })),
+  })), [nodes]);
+  const selectDomain = (domain: string, scope?: string) => {
+    let domainScope = value.domainScope;
+    if (scope === "internal" && !internal) domainScope = external ? "both" : "internal";
+    if (scope === "external" && !external) domainScope = internal ? "both" : "external";
+    if (!domain && domainScope === "none") domainScope = "both";
+    onChange({ ...value, domain, domainScope });
+  };
   return (
     <PanelSection title="Domains">
       <SwitchRow label="Internal" checked={internal} onChange={(checked) => setScopes(checked, external)} />
       <SwitchRow label="External" checked={external} onChange={(checked) => setScopes(internal, checked)} />
-      <DomainTreeSelect label="Show domain" emptyLabel="All domains" value={value.domain} domains={domains} groups={domainGroups} onChange={(domain) => onChange({ ...value, domain })} className="h-7 w-full max-w-none" />
+      <DomainTreeSelect label="Show domain" emptyLabel="All domains" value={value.domain} domains={domains} groups={domainGroups} onChange={selectDomain} className="h-7 w-full max-w-none" />
     </PanelSection>
   );
 }
@@ -272,6 +278,7 @@ export function GroupsSection({ value, nodes, onChange }: { value: GraphGroup[];
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const options = useMemo(() => groupSuggestions(nodes), [nodes]);
   const counts = useMemo(() => groupCounts(value, nodes), [value, nodes]);
+  const unassigned = nodes.filter((node) => node.kind === "unit" && node.domainPaths.length === 0).length;
   const visible = useMemo(() => colorGroupTree(value, expanded, search), [value, expanded, search]);
   return <PanelSection title="Colors" defaultOpen>
     <div className="flex items-center gap-1">
@@ -283,8 +290,9 @@ export function GroupsSection({ value, nodes, onChange }: { value: GraphGroup[];
         onToggle={() => setExpanded((current) => { const next = new Set(current); if (next.has(branch.group.id)) next.delete(branch.group.id); else next.add(branch.group.id); return next; })}
         onChange={(next) => onChange(value.map((current) => current.id === branch.group.id ? next : current))}
         onRemove={() => onChange(value.filter((current) => current.id !== branch.group.id))} />)}
-      {!visible.length ? <p className="py-2 text-xs text-faint">{search ? "No matching domains." : "Colors appear as domains are added."}</p> : null}
+      {!visible.length ? <p className="py-2 text-xs text-faint">{search ? "No matching domains." : options.domain.length ? "No color rules. Add a rule to color a domain." : "No domains in this space yet."}</p> : null}
     </div>
+    {unassigned > 0 ? <p className="text-xs text-muted-foreground">{unassigned.toLocaleString()} {unassigned === 1 ? "claim has" : "claims have"} no domain yet. Unassigned nodes stay gray; domain colors appear after filing.</p> : null}
   </PanelSection>;
 }
 

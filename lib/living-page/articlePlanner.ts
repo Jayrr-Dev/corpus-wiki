@@ -11,6 +11,7 @@ import { contextRelevance } from "@/lib/knowledge/contextSelection";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { overviewActions } from "./organizationOverview";
 import { organizationOverviewPlan } from "./refreshOrganizationOverviews";
+import { readIdBatches, readPages } from "@/lib/queries/batched";
 
 export type PagePlanner = ((candidates: PageCandidate[]) => Promise<TokenUsage & { actions: DraftAction[] }>) & { promptVersion?: string; model?: string };
 
@@ -23,17 +24,16 @@ export async function loadArticleKnowledge(client: AdminSupabase, entityId: stri
   if (entityError) throw new Error(entityError.message);
   const unitIds = await supabaseRpc(client).call<string[]>("living_page_query_units", { p_query: { entity: { type: entity.type, key: entity.key } } });
   if (!unitIds.length) throw new NoArticleClaimsError();
-  const { data: units, error: unitError } = await client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", unitIds).is("retired_at", null).order("id");
-  if (unitError) throw new Error(unitError.message);
-  const { data: revisions, error: revisionError } = await client.from("revisions").select("id, content, knowledge_context").in("id", (units ?? []).map((unit) => unit.current_revision_id));
-  if (revisionError) throw new Error(revisionError.message);
-  const byId = new Map((revisions ?? []).map((revision) => [revision.id, revision]));
+  const units = await readIdBatches(unitIds,(batch)=>readPages((from,to)=>client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", batch).is("retired_at", null).order("id").range(from,to)));
+  units.sort((a,b)=>a.id.localeCompare(b.id));
+  const revisions = await readIdBatches(units.map((unit)=>unit.current_revision_id),(batch)=>readPages((from,to)=>client.from("revisions").select("id, content, knowledge_context").in("id", batch).order("id").range(from,to)));
+  const byId = new Map(revisions.map((revision) => [revision.id, revision]));
   // Steps and items of a composite on this page, so the outline keeps them with it
-  const { data: memberships, error: membershipError } = await client.from("relationships").select("from_unit_id, to_unit_id")
-    .eq("type", "part_of").is("retired_at", null).in("from_unit_id", unitIds).in("to_unit_id", unitIds);
-  if (membershipError) throw new Error(membershipError.message);
-  const memberOf = new Map((memberships ?? []).map((link) => [link.from_unit_id, link.to_unit_id]));
-  return { entity, units: (units ?? []).flatMap((unit) => {
+  const memberships = await readIdBatches(unitIds,(batch)=>readPages((from,to)=>client.from("relationships").select("from_unit_id, to_unit_id")
+    .eq("type", "part_of").is("retired_at", null).in("from_unit_id", batch).order("from_unit_id").order("to_unit_id").range(from,to)));
+  const included = new Set(units.map(unit=>unit.id));
+  const memberOf = new Map(memberships.filter(link=>included.has(link.to_unit_id)).map((link) => [link.from_unit_id, link.to_unit_id]));
+  return { entity, units: units.flatMap((unit) => {
     const revision = byId.get(unit.current_revision_id);
     const context = parseKnowledgeContext(revision?.knowledge_context);
     if (context && contextRelevance(context, entity) === "excluded") return [];
@@ -47,7 +47,8 @@ export async function planArticle(settings: TokenFactorySettings, knowledge: Art
   const result = await buildOutline(settings, knowledge, {
     subject, editorialNote, systemInstructions: skillInstructions(["plan_articles"], settings.skills), onAttempt: options.onAttempt,
   });
-  return { plan: result.plan, tokensIn: result.tokensIn, tokensOut: result.tokensOut };
+  const rationale = result.attempts.at(-1)?.readingOrderRationale;
+  return { plan: result.plan, ...(rationale ? { rationale } : {}), tokensIn: result.tokensIn, tokensOut: result.tokensOut };
 }
 
 // A small topic needs no separate opening: with one body section, the introduction's claims open that section.

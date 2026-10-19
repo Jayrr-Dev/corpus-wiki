@@ -4,6 +4,7 @@ import { z } from "zod";
 import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { KnowledgeContext } from "@/lib/knowledge/context";
 import { SOURCE_ATTRIBUTION_POLICY } from "../articleStyle";
+import { reviewMap } from "../reviewConcurrency";
 
 // =====================================================================
 // LINE FACT-CHECK: a second, independent call that reads each line the
@@ -53,7 +54,7 @@ const CHECK_PROMPT = [
 ].join(" ");
 
 // Checks the lines in one call, then confirms each objection in its own. A verdict is matched by ref, or by the line's text when the model echoes that instead.
-// A line left without a verdict counts as supported (a missing verdict never removes text) and is logged.
+// A missing verdict gets a focused check before any new text may be saved.
 // An objection is confirmed with the line's missing citations added; when that settles it, the verdict says to cite them.
 export async function checkLines(settings: TokenFactorySettings, request: CheckRequest): Promise<TokenUsage & { verdicts: LineVerdict[] }> {
   if (request.lines.length === 0) return { verdicts: [], tokensIn: 0, tokensOut: 0 };
@@ -71,19 +72,33 @@ export async function checkLines(settings: TokenFactorySettings, request: CheckR
   });
   const byKey = new Map(request.lines.flatMap((line) => [[line.ref, line.ref], [normalized(line.text), line.ref]] as const));
   const verdicts = new Map<string, LineVerdict & { missingCitations: string[] }>();
-  for (const { ref, supported, problem, missingCitations, unstatedCitations } of value.lines) {
+  const accept = (answers: z.infer<typeof checkSchema>["lines"]) => { for (const { ref, supported, problem, missingCitations, unstatedCitations } of answers) {
     const line = byKey.get(ref.trim()) ?? byKey.get(normalized(ref));
     if (!line || verdicts.has(line)) continue;
     const cited = new Set(request.lines.find((item) => item.ref === line)!.claims.map((claim) => claim.ref));
     const unstated = [...new Set(unstatedCitations.map((item) => item.trim()))].filter((item) => cited.has(item));
     verdicts.set(line, { line, supported, problem, missingCitations, ...(unstated.length ? { dropCitations: unstated } : {}) });
+  } };
+  accept(value.lines);
+  let usage: TokenUsage = { tokensIn, tokensOut };
+  const missing = request.lines.filter(line => !verdicts.has(line.ref));
+  if (missing.length) {
+    console.warn("Fact-check omitted verdicts; requesting focused checks", { page: request.page, section: request.section, missing: missing.map(line => line.ref) });
+    const recovered = await reviewMap(missing, async line => {
+      const single = z.object({ lines: z.array(verdictSchema.extend({ ref: z.literal(line.ref) })).length(1) });
+      return chatJson(settings, { name: "line_fact_check", subject: `${request.page} › ${request.section}`, schema: single,
+        jsonSchema: z.toJSONSchema(single), reasoningEffort: "medium", maxTokens: 6000, retryInvalidOutput: true,
+        messages: [{ role: "system", content: `${CHECK_PROMPT}\nThe previous check omitted this line. Return exactly one evidence verdict for its supplied ref. Do not assume it is supported because no earlier verdict was returned.` },
+          { role: "user", content: JSON.stringify({ ...request, lines: [line] }) }],
+      });
+    });
+    for (const answer of recovered) { accept(answer.value.lines); usage = addUsage(usage, answer); }
+    const unresolved = request.lines.filter(line => !verdicts.has(line.ref));
+    if (unresolved.length) throw new Error(`Evidence verdicts remain missing for ${unresolved.map(line => line.ref).join(", ")}; no draft was saved.`);
   }
-  const missing = request.lines.filter((line) => !verdicts.has(line.ref)).map((line) => line.ref);
-  if (missing.length) console.warn("Fact-check gave no verdict for some lines; they are kept", { page: request.page, section: request.section, missing });
   // Each objection gets a second opinion; a mistaken objection leaves the line supported
   const lineOf = new Map(request.lines.map((line) => [line.ref, line]));
   const claimOf = new Map(request.sectionClaims.map((claim) => [claim.ref, claim]));
-  let usage: TokenUsage = { tokensIn, tokensOut };
   const results = await Promise.all([...verdicts.values()].map(async ({ missingCitations, ...verdict }): Promise<{ verdict: LineVerdict; opinion?: TokenUsage }> => {
     if (verdict.supported) return { verdict };
     const line = lineOf.get(verdict.line)!;

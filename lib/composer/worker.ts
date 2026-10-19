@@ -2,6 +2,7 @@ import "server-only";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { composeNextAutomatic } from "./live";
+import { forEachWorkerSpace } from "@/lib/spaces/workers";
 
 export async function processOneComposerJob(): Promise<boolean> {
   return composeNextAutomatic(supabaseRpc(getAdminSupabase()));
@@ -15,7 +16,7 @@ export function startComposerWorker() {
   const tick = async () => {
     if (busy || process.env.COMPOSER_AUTO_ENABLED === "false") return;
     busy = true;
-    try { await processOneComposerJob(); }
+    try { await forEachWorkerSpace(processOneComposerJob); }
     catch (error) { console.warn("Automatic Composer assessment failed:", error instanceof Error ? error.message : String(error)); }
     finally { busy = false; }
   };

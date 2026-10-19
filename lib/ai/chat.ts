@@ -138,7 +138,15 @@ export async function runToolCalls(tools: ChatTool[], calls: { id: string; name:
 export function addCompletionUsage(total: CompletionUsage | undefined, round: CompletionUsage | undefined): CompletionUsage | undefined {
   if (!round) return total;
   if (!total) return round;
-  return { prompt_tokens: (total.prompt_tokens ?? 0) + (round.prompt_tokens ?? 0), completion_tokens: (total.completion_tokens ?? 0) + (round.completion_tokens ?? 0) };
+  return {
+    prompt_tokens: (total.prompt_tokens ?? 0) + (round.prompt_tokens ?? 0),
+    completion_tokens: (total.completion_tokens ?? 0) + (round.completion_tokens ?? 0),
+    reasoning_tokens: (total.completion_tokens_details?.reasoning_tokens ?? total.reasoning_tokens ?? 0)
+      + (round.completion_tokens_details?.reasoning_tokens ?? round.reasoning_tokens ?? 0),
+    // Keep individual requests: a context price tier applies per round, never
+    // to the combined prompt count of a conversation's tool calls.
+    billing_rounds: [...total.billing_rounds ?? [total], ...round.billing_rounds ?? [round]],
+  };
 }
 
 // The model AI calls use: the one picked on /settings, else AI_MODEL, else the Nemotron default
@@ -379,7 +387,7 @@ async function requestCompletion(
       continue;
     }
     // Logs and traces keep the prefixed id, so a Cerebras call never reads as the Token Factory model of the same name
-    return { ...body, usage, ...(cerebras ? { model } : {}) };
+    return { ...body, usage, ...(cerebras || isOpenRouterModel(model) ? { model } : {}) };
   }
 }
 

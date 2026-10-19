@@ -23,6 +23,9 @@ import { useUnfinishedSources } from "@/components/upload/useUnfinishedSources";
 import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
 import { ERROR_LOG_NAV, isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
+import { SpaceSwitcher } from "./SpaceSwitcher";
+import type { Space } from "@/lib/spaces/shared";
+import { Tooltip } from "@/components/standard/tooltip";
 
 // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
 function useOpenExceptionCount(): number {
@@ -67,7 +70,7 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
 
 // APP SIDEBAR: brand and search, the two nav groups, then error log / settings / tutorial / sign out
 // On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links
-export function AppSidebar() {
+export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Space[]; activeSpace: Space; accountEmail?: string | null }) {
   const openCount = useOpenExceptionCount();
   const unfinishedSources = useUnfinishedSources().size;
   const { isMobile } = useSidebar();
@@ -83,6 +86,9 @@ export function AppSidebar() {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SpaceSwitcher spaces={spaces} activeSpace={activeSpace} />
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
@@ -92,6 +98,7 @@ export function AppSidebar() {
         {isMobile ? <MobileSidebarTree /> : null}
       </SidebarContent>
       <SidebarFooter separator>
+        {accountEmail ? <Tooltip content={accountEmail}><p className="truncate px-2 py-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">{accountEmail}</p></Tooltip> : null}
         <SidebarMenu>
           <NavLink item={ERROR_LOG_NAV} />
           <NavLink item={SETTINGS_NAV} />

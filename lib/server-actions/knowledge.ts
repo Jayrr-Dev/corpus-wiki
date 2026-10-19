@@ -2,6 +2,8 @@
 
 import { after } from "next/server";
 import { requireUser } from "@/lib/auth/requireUser";
+import { currentActor, withSpaceActor } from "@/lib/auth/currentPerson";
+import { applyRootApprovalBatches } from "@/lib/processing/rootApprovals";
 import { commitPersonAction, type CommitResult, type PersonAction, resolveException, revertChangeSet } from "@/lib/change-control";
 import { commitLineEdit, rebuildAfterEvent, rebuildSection } from "@/lib/living-page";
 import { getServerDeps } from "@/lib/server/deps";
@@ -59,11 +61,19 @@ export async function undoChangeSet(changeSetId: string): Promise<ActionResult> 
 export async function answerException(exceptionId: string, accept: boolean, note: string | null): Promise<ActionResult> {
   return toActionResult(async () => {
     await requireUser();
+    const actor = await currentActor();
     const deps = await getServerDeps();
     const { db, writer } = deps;
     const { data: exception, error } = await getAdminSupabase().from("exceptions").select("reason, action_id").eq("id", exceptionId).single();
     if (error) throw new Error(error.message);
-    const { eventId } = await resolveException(db, { exceptionId, accept, note });
+    const { eventId, queued } = await resolveException(db, { exceptionId, accept, note });
+    if (exception.reason === "root_domain_approval") {
+      after(() => withSpaceActor(actor, async () => {
+        await applyRootApprovalBatches(db, (id) => finishApprovedUpload(deps, id));
+        if (eventId && !queued) await finishApprovedUpload(deps, eventId);
+      }).catch((error) => console.error("Applying approved root domains failed:", error)));
+      return {};
+    }
     // An accepted Curator merge adds one section to the page that stays; write its lines now
     if (accept && exception.reason === "page_structure_review") {
       const { data: action, error: actionError } = await getAdminSupabase().from("actions").select("undo_state").eq("id", exception.action_id).single();

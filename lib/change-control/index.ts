@@ -36,6 +36,12 @@ export async function commitChangeSet(db: DbRpc, changeSetId: string): Promise<C
   return workflowWrite<CommitResult>(db, `commit:${changeSetId}`, "commit_change_set", { p_change_set_id: changeSetId });
 }
 
+// Text patches are one indivisible edit, with the evidence snapshot checked
+// under database locks. A rejected/held action rolls back the entire commit.
+export async function commitTextPatchSet(db: DbRpc, changeSetId: string, evidence: { unitId: string; revisionId: string }[]): Promise<CommitResult> {
+  return workflowWrite<CommitResult>(db, `commit-text-patches:${changeSetId}`, "commit_text_patch_set", { p_change_set_id: changeSetId, p_evidence: evidence });
+}
+
 // Stores a person's edit as a one-action ChangeSet and commits it
 export async function commitPersonAction(db: DbRpc, action: PersonAction): Promise<CommitResult & { eventId: string }> {
   return commitPersonEdit(db, describePersonAction(action), [action]);
@@ -54,15 +60,15 @@ export async function commitPersonEdit(db: DbRpc, summary: string, actions: Draf
 
 // Undoes an applied ChangeSet; returns the revert event id
 export async function revertChangeSet(db: DbRpc, changeSetId: string): Promise<{ eventId: string }> {
-  return db.call<{ eventId: string }>("revert_change_set", { p_change_set_id: changeSetId });
+  return db.call<{ eventId: string }>("revert_upload_knowledge", { p_change_set_id: changeSetId });
 }
 
 // Answers an exception; accepting applies the held action. Returns the event to rebuild pages for
 export async function resolveException(
   db: DbRpc,
   input: { exceptionId: string; accept: boolean; note: string | null },
-): Promise<{ eventId: string | null }> {
-  return db.call<{ eventId: string | null }>("resolve_exception", {
+): Promise<{ eventId: string | null; queued?: boolean }> {
+  return db.call<{ eventId: string | null; queued?: boolean }>("resolve_exception", {
     p_exception_id: input.exceptionId,
     p_accept: input.accept,
     p_note: input.note,

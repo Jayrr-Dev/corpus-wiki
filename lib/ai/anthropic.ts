@@ -1,6 +1,7 @@
 import "server-only";
 import { withAiActivity } from "./inactivityTimeout";
 import { withRequestSlot } from "@/lib/processing/requests";
+import { processingMetric } from "@/lib/processing/metrics";
 
 import Anthropic from "@anthropic-ai/sdk";
 import { jsonSchemaOutputFormat } from "@anthropic-ai/sdk/helpers/json-schema";
@@ -48,7 +49,10 @@ export async function requestClaudeCompletion(request: ClaudeRequest): Promise<C
   // Keep the provider's schema transformation, but leave parsing to parseContent.
   // The SDK's helper parser runs before we can inspect max_tokens and throws on
   // truncated JSON, bypassing our normal cut-off retry and losing usage details.
-  const format = { type: transformedFormat.type, schema: transformedFormat.schema };
+  // The installed SDK also moves enum/const into descriptions, although Claude
+  // supports these constraints. Restore them so invalid claim classifications
+  // are prevented at generation time rather than paying for a full retry.
+  const format = { type: transformedFormat.type, schema: restoreValueConstraints(request.jsonSchema, transformedFormat.schema) };
   const system = request.messages.flatMap((message) => (message.role === "system" ? [message.content] : [])).join("\n\n");
   const messages: Anthropic.MessageParam[] = request.messages.flatMap((message) => (message.role === "user" ? [toClaudeMessage(message)] : []));
   let tools = request.tools?.length ? request.tools : undefined;
@@ -61,7 +65,9 @@ export async function requestClaudeCompletion(request: ClaudeRequest): Promise<C
       {
         model: request.model.slice(ANTHROPIC_MODEL_PREFIX.length),
         max_tokens: request.maxTokens,
-        ...(system ? { system } : {}),
+        // Book batches share the same instructions and schema. Cache only that
+        // stable prefix; source passages remain specific to each request.
+        ...(system ? { system: [{ type: "text" as const, text: system, cache_control: { type: "ephemeral" as const } }] } : {}),
         messages,
         // Summarized thinking only when someone is watching the stream
         thinking: request.onStream ? { type: "adaptive", display: "summarized" } : { type: "adaptive" },
@@ -115,6 +121,25 @@ export async function requestClaudeCompletion(request: ClaudeRequest): Promise<C
   }
 }
 
+function restoreValueConstraints(original: object, transformed: object): Record<string, unknown> {
+  const source = original as Record<string, unknown>;
+  const target = transformed as Record<string, unknown>;
+  const primitive = (value: unknown) => value === null || ["string", "number", "boolean"].includes(typeof value);
+  if (Array.isArray(source.enum) && source.enum.every(primitive)) target.enum = [...source.enum];
+  if (Object.hasOwn(source, "const") && primitive(source.const)) target.const = source.const;
+  for (const [key, value] of Object.entries(source)) {
+    const output = target[key === "oneOf" ? "anyOf" : key];
+    if (Array.isArray(value) && Array.isArray(output)) {
+      value.forEach((child, index) => {
+        if (child && typeof child === "object" && output[index] && typeof output[index] === "object") restoreValueConstraints(child, output[index]);
+      });
+    } else if (value && typeof value === "object" && output && typeof output === "object") {
+      restoreValueConstraints(value, output);
+    }
+  }
+  return target;
+}
+
 // A user message in Claude's shape: plain text, or text and pictures (data URLs become base64 images)
 function toClaudeMessage(message: ChatMessage | ChatMediaMessage): Anthropic.MessageParam {
   if (typeof message.content === "string") return { role: "user", content: message.content };
@@ -133,6 +158,8 @@ function toClaudeBlock(part: ChatContentPart): Anthropic.TextBlockParam | Anthro
 function toCompletion(message: Anthropic.Message, pickedModel: string): CompletionResponse {
   const text = message.content.flatMap((block) => (block.type === "text" ? [block.text] : [])).join("");
   const usage = message.usage;
+  processingMetric("ai.cache.read", 0, { tokensIn: usage.cache_read_input_tokens ?? 0 });
+  processingMetric("ai.cache.write", 0, { tokensIn: usage.cache_creation_input_tokens ?? 0 });
   return {
     model: pickedModel,
     choices: [
@@ -147,6 +174,9 @@ function toCompletion(message: Anthropic.Message, pickedModel: string): Completi
     usage: {
       prompt_tokens: usage.input_tokens + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0),
       completion_tokens: usage.output_tokens,
+      cache_read_input_tokens: usage.cache_read_input_tokens ?? 0,
+      cache_creation_input_tokens: usage.cache_creation_input_tokens ?? 0,
+      cache_creation: usage.cache_creation,
     },
   };
 }

@@ -83,6 +83,18 @@ An event-driven processing layer handles execution state, retries, idempotency, 
 
 ## Main workflows
 
+### Publish and share a wiki
+
+Open **Publishing** in the sidebar to choose **Private**, **Unlisted** (anyone with the link), or **Public** (also listed in `/explore`). Select up to 100 pages, preview the visitor text, and publish a reviewed edition. Later edits and newly created pages stay private until republished. Source files, private citations, images, attachments, and workspace tools are excluded from this first version.
+
+Enable embedding to copy a read-only wiki iframe for another website. Public readers use `/s/[spaceSlug]`; embeds use `/embed/[spaceSlug]`. Both read only the published projection, without a workspace session. Unpublishing or deleting a space disables its reader, embeds, and Explore listing. Existing copies cannot be recalled. Both public and unlisted editions request no search-engine indexing.
+
+The owner-only Publishing screen reports views, daily browser-tab sessions, engaged reads (30 visible seconds), embed views, Explore-attributed views, and popular articles for 7, 30, or 90 UTC calendar days. Repeated views are deduplicated per article, tab, surface, and 30-minute period. Known bots and signed-in owner visits are excluded; browser privacy preferences and blocked storage can reduce counts. No analytics cookies or raw IP addresses are stored. Older event rows are removed when new reads or owner metrics are processed.
+
+Apply database migrations with `npm run db:migrate` before running these routes. Public access is through narrow read RPCs; workspace tables retain their existing ownership rules, and public page URLs reject write requests.
+
+### Capture, reason, and learn
+
 **Capture and update**
 
 Source → preserved evidence → Knowledge Shift Event → KRE → KDCE checks for new or revised units → validated ChangeSet → canonical store.

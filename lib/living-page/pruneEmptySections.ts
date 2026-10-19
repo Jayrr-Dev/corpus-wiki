@@ -8,7 +8,10 @@ export async function pruneEmptySections(db: DbRpc, sectionIds: string[]): Promi
   const empty: string[] = [];
   for (const sectionId of sectionIds) {
     const state = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
-    if (!state.lines.some((line) => line.author === "person" || line.content.trim())) empty.push(sectionId);
+    // Failed writing is retryable work, not disposable scaffolding.
+    if (state.units?.length) continue;
+    if (!state.lines.some((line) => line.author === "person" || line.content.trim())
+      && !await db.call<boolean>("composer_section_has_images", { p_section_id: sectionId })) empty.push(sectionId);
   }
   if (!empty.length) return 0;
   const { changeSetId } = await submitChangeSet(db, { eventId: null, cause: "edit", actor: "ai" }, {

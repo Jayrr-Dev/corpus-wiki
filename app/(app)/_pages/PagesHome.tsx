@@ -1,4 +1,6 @@
 "use client";
+import { MediaImage } from "@/components/preview/MediaImage";
+
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
@@ -16,6 +18,8 @@ import { getBrowserSupabase } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/queries/keys";
 import { buildFrontArticles, dailyOrder, editionDay, frontSelections, plainExcerpt, type FrontArticle } from "@/lib/living-page/frontPage";
 import { PagesTable } from "./PagesTable";
+import { useActiveSpace } from "@/components/shell/SpaceProvider";
+import { readSpaceWelcome } from "@/lib/server-actions/spaceWelcome";
 
 export function PagesHome() {
   const [view, setView] = useState<"front" | "browse">("front");
@@ -29,6 +33,19 @@ export function PagesHome() {
 }
 
 function FrontPage({ browse }: { browse: () => void }) {
+  const space = useActiveSpace();
+  const welcome = useQuery({
+    queryKey: ["space-welcome", space.id, space.name],
+    queryFn: async () => {
+      const result = await readSpaceWelcome();
+      if (!result.ok) throw new Error(result.error);
+      if (result.spaceId !== space.id || result.title !== space.name) return null;
+      return result.subtitle;
+    },
+    staleTime: Infinity,
+    retry: false,
+  });
+  const subtitle = welcome.data ?? (space.subtitle_for_name === space.name ? space.subtitle : null);
   const data = useFrontPage();
   const zone = useTimeZone();
   const [now, setNow] = useState<Date | null>(null);
@@ -50,8 +67,8 @@ function FrontPage({ browse }: { browse: () => void }) {
     <div className="space-y-4">
       <section className="rounded-md border bg-sidebar/40 px-5 py-7 text-center sm:px-8" aria-label="Welcome">
         <p className="mb-2 text-xs text-muted-foreground">{now?.toLocaleDateString("en-US", { timeZone: zone, weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
-        <h2 className="text-2xl font-medium tracking-tight">Welcome to your Second Brain</h2>
-        <p className="mt-2 text-muted-foreground">A growing collection of what you know. Something new to explore, every day.</p>
+        <h2 className="break-words text-2xl font-medium tracking-tight">{space.name}</h2>
+        <p className="mt-2 text-muted-foreground">{subtitle || "A place to collect ideas, make connections, and keep exploring."}</p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
           <button className="text-link hover:underline" onClick={browse}>{data.pages.data?.count.toLocaleString()} articles</button>
           <TextLink href="/sources">{data.sources.isSuccess ? `${data.sources.data.count.toLocaleString()} sources` : "Sources"}</TextLink>
@@ -144,7 +161,6 @@ function MediaPreview({ sourceId, src = sourceFileSrc(sourceId), kind, title, ca
   if (failed) return <Link href={`/sources/${sourceId}`} className="flex aspect-video items-center justify-center gap-2 rounded-md border bg-sidebar text-muted-foreground"><ImageIcon className="size-4" />View source</Link>;
   if (kind === "video") return <video src={src} controls preload="none" aria-label={title} className="aspect-video w-full rounded-md border bg-sidebar object-contain" onError={() => setFailed(true)} />;
   return <a href={src} target="_blank" rel="noreferrer" aria-label={`Open image: ${title}`}>
-    {/* eslint-disable-next-line @next/next/no-img-element -- authenticated source route redirects to a short-lived signed URL */}
-    <img src={src} alt={plainExcerpt(caption, 240)} loading="lazy" className="aspect-video w-full rounded-md border bg-sidebar object-contain" onError={() => setFailed(true)} />
+    <MediaImage src={src} alt={plainExcerpt(caption, 240)} loading="lazy" className="aspect-video w-full rounded-md border bg-sidebar object-contain" onError={() => setFailed(true)} />
   </a>;
 }

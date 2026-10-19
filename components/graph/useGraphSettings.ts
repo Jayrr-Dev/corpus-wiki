@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DEFAULT_GRAPH_SETTINGS, type GraphSettings, parseSavedSettings } from "@/lib/graph";
+import { DEFAULT_GRAPH_SETTINGS, type GraphSettings } from "@/lib/graph";
+import { useActiveSpace } from "@/components/shell/SpaceProvider";
+import { graphSettingsStorageKey, loadGraphSettings } from "@/lib/graph/settingsStorage";
 import { withDomainColorGroups } from "@/lib/graph/settings";
 import type { GraphNode } from "@/lib/graph/types";
 
@@ -17,8 +19,7 @@ export const GLOBAL_GRAPH_SETTINGS_KEY = "graph:global";
 // Reads saved settings, or the defaults
 function loadSettings(key: string): GraphSettings {
   try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? parseSavedSettings(JSON.parse(raw)) : DEFAULT_GRAPH_SETTINGS;
+    return loadGraphSettings(window.localStorage, key);
   } catch {
     return DEFAULT_GRAPH_SETTINGS;
   }
@@ -39,22 +40,30 @@ export type UpdateGraphSettings = <K extends keyof GraphSettings>(section: K, va
 const EMPTY_NODES: readonly GraphNode[] = [];
 
 export function useGraphSettings(key: string, nodes: readonly GraphNode[] = EMPTY_NODES) {
+  const space = useActiveSpace();
+  const storageKey = graphSettingsStorageKey(key, space.id);
   // LOAD once. The server has no storage and renders defaults; the graph only draws on the
   // client after its data loads, so no server markup depends on these values.
-  const [savedSettings, setSettings] = useState<GraphSettings>(() =>
-    typeof window === "undefined" ? DEFAULT_GRAPH_SETTINGS : loadSettings(key),
-  );
+  const [state, setState] = useState(() => ({
+    key: storageKey,
+    settings: typeof window === "undefined" ? DEFAULT_GRAPH_SETTINGS : loadSettings(storageKey),
+  }));
+  // Also handle a changed provider without relying on the layout remounting us.
+  const savedSettings = state.key === storageKey ? state.settings : loadSettings(storageKey);
   const settings = useMemo(() => withDomainColorGroups(savedSettings, nodes), [savedSettings, nodes]);
   // Retain discoveries even when later data refreshes remove a domain's last node.
-  if (settings !== savedSettings) setSettings(settings);
+  if (state.key !== storageKey || settings !== savedSettings) setState({ key: storageKey, settings });
 
   // SAVE on every change
-  useEffect(() => saveSettings(key, settings), [key, settings]);
+  useEffect(() => saveSettings(storageKey, settings), [storageKey, settings]);
 
   const update: UpdateGraphSettings = useCallback((section, value) => {
-    setSettings((current) => ({ ...withDomainColorGroups(current, nodes), [section]: value }));
-  }, [nodes]);
-  const reset = useCallback(() => setSettings(DEFAULT_GRAPH_SETTINGS), []);
+    setState((current) => ({ key: storageKey, settings: {
+      ...withDomainColorGroups(current.key === storageKey ? current.settings : loadSettings(storageKey), nodes),
+      [section]: value,
+    } }));
+  }, [nodes, storageKey]);
+  const reset = useCallback(() => setState({ key: storageKey, settings: DEFAULT_GRAPH_SETTINGS }), [storageKey]);
 
   return { settings, update, reset };
 }

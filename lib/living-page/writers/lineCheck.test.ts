@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { roleForPurpose } from "@/lib/ai/roles";
+import { InvalidStructuredAnswerError } from "@/lib/ai/chat";
 import type { SectionReviseInput } from "../types";
 import { TokenFactorySectionWriter } from "./tokenFactory";
+import { checkEditorialDraft } from "./editorialSelection";
 
 // These tests isolate citation checking; editorial selection/review has its own suite.
 vi.mock("./editorialSelection", () => ({
   selectEditorialClaims: async () => ({ omittedUnitIds: [], tokensIn: 0, tokensOut: 0 }),
-  checkEditorialDraft: async () => ({ verdicts: [], tokensIn: 0, tokensOut: 0 }),
+  checkEditorialDraft: vi.fn(async () => ({ verdicts: [], tokensIn: 0, tokensOut: 0 })),
 }));
 
 // The model is a queue of answers per call name (section_lines, line_fact_check); every request is kept
@@ -18,6 +20,7 @@ function fakeModel(answers: Record<string, unknown[]>) {
     requests.push({ name, body });
     const answer = answers[name]?.shift();
     if (!answer) throw new Error(`No answer queued for ${name}`);
+    if (body.stream) return new Response(`data: ${JSON.stringify({ model: "test", choices: [{ delta: { content: JSON.stringify(answer) }, finish_reason: "stop" }] })}\n\ndata: [DONE]\n\n`, { headers: { "Content-Type": "text/event-stream" } });
     return new Response(JSON.stringify({ model: "test", usage: { prompt_tokens: 10, completion_tokens: 5 }, choices: [{ finish_reason: "stop", message: { content: JSON.stringify(answer) } }] }));
   }));
   return requests;
@@ -39,11 +42,38 @@ const REJECTED = { lineHasFault: false, reason: "The claim states this." };
 const verdicts = (...lines: [string, boolean, string?, string[]?][]) => ({ lines: lines.map(([ref, supported, problem, missingCitations]) => ({ ref, supported, problem: problem ?? "", missingCitations: missingCitations ?? [], unstatedCitations: [] })) });
 
 describe("line fact-check", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.mocked(checkEditorialDraft).mockReset().mockResolvedValue({ verdicts: [], tokensIn: 0, tokensOut: 0 });
+  });
+
+  it("preserves supported coverage when only editorial overlap remains after repairs", async () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    for (let i = 0; i < 4; i++) vi.mocked(checkEditorialDraft).mockResolvedValueOnce({ verdicts: [{ line: "A1", supported: false, problem: "Editorial: An orienting phrase overlaps the introduction." }], tokensIn: 0, tokensOut: 0 });
+    fakeModel({ section_lines: Array.from({ length: 4 }, () => writerAnswer(GOOD, FIXED)), line_fact_check: Array.from({ length: 4 }, () => verdicts(["A1", true], ["A2", true])) });
+    const result = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection({ ...INPUT, pageContext: [{ section: "Overview", text: "Hearing protection is required." }] });
+    expect(result.add).toHaveLength(2);
+    expect(warning).toHaveBeenCalledWith("Section kept supported detail for page editorial review", expect.objectContaining({ section: INPUT.sectionTitle }));
+    warning.mockRestore();
+  });
 
   it("runs on the Reviewer's model", () => {
     expect(roleForPurpose("line_fact_check")).toBe("reviewer");
     expect(roleForPurpose("line_fact_confirm")).toBe("reviewer");
+  });
+  it("repairs a factual regression introduced by an editorial pass even after overlap is resolved", async () => {
+    const overlap = { verdicts: [{ line: "A1", supported: false, problem: "Editorial: Merge repeated wording." }], tokensIn: 0, tokensOut: 0 };
+    vi.mocked(checkEditorialDraft).mockResolvedValueOnce(overlap).mockResolvedValueOnce(overlap)
+      .mockResolvedValueOnce({ verdicts: [], tokensIn: 0, tokensOut: 0 }).mockResolvedValueOnce({ verdicts: [], tokensIn: 0, tokensOut: 0 });
+    const requests = fakeModel({
+      section_lines: [writerAnswer(GOOD, FIXED), writerAnswer(GOOD, FIXED), writerAnswer(GOOD, INVENTED), writerAnswer(GOOD, FIXED)],
+      line_fact_check: [verdicts(["A1", true], ["A2", true]), verdicts(["A1", true], ["A2", true]), verdicts(["A1", true], ["A2", false, "The program is planned, not operating."]), verdicts(["A1", true], ["A2", true])],
+      line_fact_confirm: [UPHELD],
+    });
+    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection({ ...INPUT, pageContext: [{ section: "Overview", text: "ExampleCo has hearing protection requirements." }] });
+    expect(revision.add.map(line => line.text)).toEqual([GOOD.text, FIXED.text]);
+    const lastDraft = requests.filter(request => request.name === "section_lines").at(-1)!;
+    expect(JSON.parse(lastDraft.body.messages.at(-1)!.content).factualIssues).toEqual([expect.objectContaining({ line: "A2", problem: "The program is planned, not operating." })]);
   });
 
   it("keeps supported lines after one check, showing each line only its cited claims", async () => {
@@ -75,30 +105,42 @@ describe("line fact-check", () => {
     expect(revision).toMatchObject({ tokensIn: 50, tokensOut: 25 });
   });
 
-  it("drops a line that still fails after the fix and keeps the rest", async () => {
+  it("rejects an incomplete draft when dropping a failed line would lose required evidence", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     fakeModel({
       section_lines: [writerAnswer(GOOD, INVENTED), writerAnswer(GOOD, INVENTED)],
       line_fact_check: [verdicts(["A1", true], ["A2", false, "invented tests"]), verdicts(["A1", true], ["A2", false, "invented tests"])],
       line_fact_confirm: [UPHELD, UPHELD],
     });
-    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
-    expect(revision.add).toEqual([{ text: GOOD.text, unitIds: ["noise"] }]);
+    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT)).rejects.toThrow("no incomplete draft was saved");
     expect(warn).toHaveBeenCalledWith("Writer line dropped by the fact-check", expect.objectContaining({ line: "A2", problem: "invented tests" }));
     warn.mockRestore();
   });
 
-  it("checks revised lines by their line ref and drops only the failed one", async () => {
+  it("rejects the complete patch batch when a revised line fails evidence checks", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const input: SectionReviseInput = { ...INPUT, uncoveredUnitIds: [], lines: [
       { lineId: "l1", lineRevisionId: "lr1", position: 0, content: "Old noise text.", author: "ai", unitIds: ["noise"], needsRewrite: true },
       { lineId: "l2", lineRevisionId: "lr2", position: 1, content: "Old plan text.", author: "ai", unitIds: ["plan"], needsRewrite: true },
     ] };
-    const answer = { revise: [{ line: "L1", ...GOOD }, { line: "L2", ...INVENTED }], retire: [], add: [] };
+    const answer = { revise: [{ line: "L1", patches: [{ old_str: "Old noise text.", new_str: GOOD.text }], claims: GOOD.claims }, { line: "L2", patches: [{ old_str: "Old plan text.", new_str: INVENTED.text }], claims: INVENTED.claims }], retire: [], add: [] };
     fakeModel({ section_lines: [answer, answer], line_fact_check: [verdicts(["L1", true], ["L2", false, "x"]), verdicts(["L1", true], ["L2", false, "x"])], line_fact_confirm: [UPHELD, UPHELD] });
-    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(input);
-    expect(revision.revise).toEqual([{ lineId: "l1", text: GOOD.text, unitIds: ["noise"] }]);
+    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(input)).rejects.toThrow("no patches were saved");
     vi.restoreAllMocks();
+  });
+
+  it("repairs an invalid exact match against the original and keeps untouched punctuation", async () => {
+    const original = "  ExampleCo plans to introduce a Hearing Conservation Program.  ";
+    const input: SectionReviseInput = { ...INPUT, units: [INPUT.units[1]!], uncoveredUnitIds: [], lines: [
+      { lineId: "l1", lineRevisionId: "lr1", position: 0, content: original, author: "ai", unitIds: ["plan"], needsRewrite: true },
+    ] };
+    const answer = (old_str: string) => ({ revise: [{ line: "L1", patches: [{ old_str, new_str: "intends" }], claims: ["C1"] }], retire: [], add: [] });
+    const requests = fakeModel({ section_lines: [answer("Plans"), answer("plans")], line_fact_check: [verdicts(["L1", true])] });
+    const progress = { step: vi.fn(), thinking: vi.fn(), draft: vi.fn(), done: vi.fn() };
+    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(input, progress);
+    expect(revision).toMatchObject({ textPatches: true, revise: [{ lineId: "l1", text: original.replace("plans", "intends"), unitIds: ["plan"] }] });
+    expect(requests[1]!.body.messages.at(-1)!.content).toContain("No patches were applied");
+    expect(progress.draft).not.toHaveBeenCalled();
   });
 
   it("matches a verdict that echoes the line's text instead of its ref", async () => {
@@ -108,8 +150,7 @@ describe("line fact-check", () => {
       line_fact_check: [verdicts([GOOD.text, true], [` ${INVENTED.text.toUpperCase()} `, false, "x"]), verdicts(["A1", true], [INVENTED.text, false, "x"])],
       line_fact_confirm: [UPHELD, UPHELD],
     });
-    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
-    expect(revision.add.map((line) => line.text)).toEqual([GOOD.text]);
+    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT)).rejects.toThrow("no incomplete draft was saved");
     vi.restoreAllMocks();
   });
 
@@ -140,12 +181,22 @@ describe("line fact-check", () => {
     expect(requests[0]!.body.messages.some((message) => message.content.includes("otherSections shows what the page's other sections already say"))).toBe(true);
   });
 
-  it("keeps and logs a line the check gives no verdict for", async () => {
+  it("checks a missing verdict explicitly before returning the draft", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
-    fakeModel({ section_lines: [writerAnswer(GOOD, FIXED)], line_fact_check: [verdicts(["A1", true])] });
+    const requests = fakeModel({ section_lines: [writerAnswer(GOOD, FIXED)], line_fact_check: [verdicts(["A1", true]), verdicts(["A2", true])] });
     const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
     expect(revision.add).toHaveLength(2);
-    expect(warn).toHaveBeenCalledWith("Fact-check gave no verdict for some lines; they are kept", expect.objectContaining({ missing: ["A2"] }));
+    expect(warn).toHaveBeenCalledWith("Fact-check omitted verdicts; requesting focused checks", expect.objectContaining({ missing: ["A2"] }));
+    expect(requests.map(request => request.name)).toEqual(["section_lines", "line_fact_check", "line_fact_check"]);
+    expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content).lines.map((line: { ref: string }) => line.ref)).toEqual(["A2"]);
+    expect(revision).toMatchObject({ tokensIn: 30, tokensOut: 15 });
     warn.mockRestore();
+  });
+  it("does not return a draft when the focused verdict remains absent", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const requests = fakeModel({ section_lines: [writerAnswer(GOOD, FIXED)], line_fact_check: [verdicts(["A1", true]), verdicts(), verdicts()] });
+    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT)).rejects.toBeInstanceOf(InvalidStructuredAnswerError);
+    expect(requests.map(request => request.name)).toEqual(["section_lines", "line_fact_check", "line_fact_check", "line_fact_check"]);
+    vi.restoreAllMocks();
   });
 });

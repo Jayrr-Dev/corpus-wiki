@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { expansionActions, validateExpansion, type ExpansionContext, type KnowledgeExpansion } from "./knowledgeExpansionPlan";
+import { expansionActions, expansionAnswerSchema, validateExpansion, type ExpansionContext, type KnowledgeExpansion } from "./knowledgeExpansionPlan";
 
 const context: ExpansionContext = {
   knowledge: { entity: { id: "company", type: "company", key: "acme", name: "Acme" }, units: [{ unitId: "u1", revisionId: "r1", content: "Acme requires protective equipment.", kind: "procedure", epistemicStatus: "established" }] },
@@ -9,6 +9,13 @@ const context: ExpansionContext = {
 const plan: KnowledgeExpansion = { concepts: [{ name: "Personal protective equipment", key: "ppe", type: "equipment", aliases: ["PPE"], definition: "Personal protective equipment is equipment worn to protect workers from hazards.", domainPath: "Safety/PPE", claims: ["C1"], passages: ["P1"] }] };
 
 describe("source-backed knowledge expansion", () => {
+  it("constrains generated citations to actual claim and passage references", () => {
+    const schema = expansionAnswerSchema(1, 1);
+    expect(schema.safeParse(plan).success).toBe(true);
+    for (const refs of [{ claims: ["P1 states that an offprint can be ordered."] }, { claims: ["C2"] }, { passages: ["P2"] }]) {
+      expect(schema.safeParse({ concepts: [{ ...plan.concepts[0]!, ...refs }] }).success).toBe(false);
+    }
+  });
   it("creates the subject before its definition, with actual passage IDs and source dates", () => {
     const actions = expansionActions(plan, context);
     expect(actions.map((action) => action.type)).toEqual(["create_entity", "add_claim"]);

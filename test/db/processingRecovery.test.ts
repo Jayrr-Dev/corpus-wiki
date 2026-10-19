@@ -74,6 +74,22 @@ describe("durable processing dispatch and provider budgets", () => {
       expect(result.rows[0]).toEqual({ anonymous: false, signed_in: false, service: true });
     }
   });
+  it("does not reset the automatic retry budget for saved rejection notes alone", async () => {
+    const event = await upload();
+    for (let attempt=0;attempt<3;attempt++) {
+      const dispatch = await store.db.call<{token:string}>("claim_upload_recovery");
+      expect(dispatch).toBeTruthy();
+      const owner = await store.db.call<{token:string}>("claim_upload_workflow", {p_event_id:event,p_continue:true});
+      const args = {p_event_id:event,p_token:owner.token,p_key:`place-v4:batch:repair-v1:${attempt}`};
+      await store.db.call("start_upload_step",args);
+      await store.db.call("finish_upload_step",{...args,p_output:{feedback:"Still rejected"},p_error:null});
+      await store.db.call("release_upload_workflow",{p_event_id:event,p_token:owner.token,p_state:"incomplete"});
+      await store.db.call("finish_upload_recovery",{p_event_id:event,p_token:dispatch.token,p_error:"Review remains unresolved"});
+      await store.pg.query("update public.upload_recovery_jobs set available_at=now()-interval '1 second' where event_id=$1",[event]);
+    }
+    expect(await store.db.call("claim_upload_recovery")).toBeNull();
+    expect((await store.pg.query<{attempts:number}>("select attempts from public.upload_recovery_jobs where event_id=$1",[event])).rows[0]!.attempts).toBe(3);
+  });
   it("recovers expired owners while refusing to release a replacement dispatch", async () => {
     const event = await upload();
     const first = await store.db.call<{ token: string }>("claim_upload_recovery");
@@ -82,6 +98,36 @@ describe("durable processing dispatch and provider budgets", () => {
     expect(second.token).not.toBe(first.token);
     await store.db.call("finish_upload_recovery", { p_event_id: event, p_token: first.token });
     expect((await store.pg.query<{ token: string }>("select token from public.upload_recovery_jobs where event_id=$1", [event])).rows[0]!.token).toBe(second.token);
+  });
+  it("does not count paid outline drafts and review answers as completed recovery progress", async () => {
+    const event = await upload();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const dispatch = await store.db.call<{ token: string }>("claim_upload_recovery");
+      const owner = await store.db.call<{ token: string }>("claim_upload_workflow", { p_event_id: event, p_continue: true });
+      for (const kind of ["draft", "review-v2"]) {
+        const args = { p_event_id: event, p_token: owner.token, p_key: `outline-v1:fixture:${attempt}:${kind}` };
+        await store.db.call("start_upload_step", args);
+        await store.db.call("finish_upload_step", { ...args, p_output: { accepted: false }, p_error: null });
+      }
+      await store.db.call("release_upload_workflow", { p_event_id: event, p_token: owner.token, p_state: "incomplete" });
+      await store.db.call("finish_upload_recovery", { p_event_id: event, p_token: dispatch.token, p_error: "No publishable plan" });
+      await store.pg.query("update public.upload_recovery_jobs set available_at=now()-interval '1 second' where event_id=$1", [event]);
+    }
+    expect(await store.db.call("claim_upload_recovery")).toBeNull();
+    expect((await store.pg.query("select key from public.upload_steps where event_id=$1 and state='succeeded'", [event])).rows).toHaveLength(6);
+  });
+  it("stops automatic retries on an explicitly rejected outline even when other work was saved", async () => {
+    const event = await upload();
+    const dispatch = await store.db.call<{ token: string }>("claim_upload_recovery");
+    const owner = await store.db.call<{ token: string }>("claim_upload_workflow", { p_event_id: event, p_continue: true });
+    const args = { p_event_id: event, p_token: owner.token, p_key: "rebuild-section:initial:completed" };
+    await store.db.call("start_upload_step", args);
+    await store.db.call("finish_upload_step", { ...args, p_output: {}, p_error: null });
+    await store.db.call("release_upload_workflow", { p_event_id: event, p_token: owner.token, p_state: "incomplete" });
+    await store.db.call("finish_upload_recovery", { p_event_id: event, p_token: dispatch.token, p_error: "pages: Outline needs review after 12 attempts; nothing was published." });
+    await store.pg.query("update public.upload_recovery_jobs set available_at=now()-interval '1 second' where event_id=$1", [event]);
+    expect(await store.db.call("claim_upload_recovery")).toBeNull();
+    expect((await store.pg.query<{ attempts: number }>("select attempts from public.upload_recovery_jobs where event_id=$1", [event])).rows[0]!.attempts).toBe(3);
   });
   it("bounds provider requests across instances and fences stale permit releases", async () => {
     const first = await store.db.call<string>("claim_processing_slot", { p_scope: "test", p_limit: 1 });

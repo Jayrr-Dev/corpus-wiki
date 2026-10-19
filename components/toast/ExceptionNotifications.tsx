@@ -17,9 +17,11 @@ import { useRowsByIds } from "@/lib/queries/screens";
 import { useRealtimeInvalidation } from "@/lib/realtime/useRealtimeInvalidation";
 import { answerException } from "@/lib/server-actions/knowledge";
 import type { Tables } from "@/lib/database/types";
+import { useActiveSpace } from "@/components/shell/SpaceProvider";
 
 // Mounted in the signed-in layout so questions appear wherever the user is working.
 export function ExceptionNotifications() {
+  const space = useActiveSpace();
   const data = useExceptionData({ filters: { status: "open" }, limit: 50 });
   const exceptions = useExceptions({ filters: { status: "open" }, limit: 50 });
   const refetch = exceptions.refetch;
@@ -34,7 +36,9 @@ export function ExceptionNotifications() {
 
   // Approval requests are persistent UI, independent of toast timers and limits.
   // Only an explicit decision writes an answer; hiding a card leaves it open.
-  const queue = data.exceptions
+  // Also guard rendering against stale or incorrectly scoped responses.
+  const scopedExceptions = data.exceptions.filter((exception) => "space_id" in exception && exception.space_id === space.id);
+  const queue = scopedExceptions
     .filter((exception) => exception.status === "open" && !dismissed.has(exception.id))
     .sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id));
   const current = queue[0];
@@ -43,7 +47,7 @@ export function ExceptionNotifications() {
   const currentChangeSet = changeSets.data?.find((changeSet) => changeSet.id === currentAction?.change_set_id);
   const hide = (id: string) => setDismissed((previous) => new Set(previous).add(id));
 
-  const selected = data.exceptions.find((exception) => exception.id === selectedId);
+  const selected = scopedExceptions.find((exception) => exception.id === selectedId);
   const action = selected ? data.actionById.get(selected.action_id) : undefined;
   const unit = action && UNIT_ACTION_TYPES.has(action.type) ? data.unitById.get(action.target_id ?? "") : undefined;
   return <>

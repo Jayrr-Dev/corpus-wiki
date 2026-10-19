@@ -59,11 +59,13 @@ export function domainPathsForScope(node: GraphNode, scope: GraphFilters["domain
   return scope === "internal" ? internal : external;
 }
 
-// Entities follow connected notes; unassigned notes remain in Internal.
+// Entities follow connected notes; notes without domains still follow source origin.
 export function inDomainScope(data: GraphData, scope: GraphFilters["domainScope"]): GraphData {
   const matched = new Set(data.nodes.filter((node) => node.kind !== "entity" &&
-    (domainPathsForScope(node, scope).length > 0 ||
-      ((scope === "internal" || scope === "both") && node.domainPaths.length === 0))).map((node) => node.id));
+    (node.sourceScopes
+      ? node.sourceScopes.some((origin) => scope === "both" || scope === origin)
+      : (domainPathsForScope(node, scope).length > 0 ||
+        ((scope === "internal" || scope === "both") && node.domainPaths.length === 0)))).map((node) => node.id));
   const linked = new Set(data.links.flatMap((link) => matched.has(link.source) ? [link.target] : matched.has(link.target) ? [link.source] : []));
   const scoped = keepNodes(data, (node) => matched.has(node.id) || (node.kind === "entity" && linked.has(node.id)));
   return { ...scoped, nodes: scoped.nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, scope) })) };

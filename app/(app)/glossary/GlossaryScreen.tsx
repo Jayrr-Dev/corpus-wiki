@@ -11,12 +11,12 @@ import { RowMenu } from "@/components/row-menu/RowMenu";
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip } from "@/components/standard/tooltip";
-import { useUnits } from "@/lib/queries";
+import { readPages } from "@/lib/queries/batched";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { getBrowserSupabase } from "@/lib/supabase/client";
-import { glossaryClient, type GlossaryState } from "@/lib/glossary/storage";
+import { readGlossaryView } from "@/lib/glossary/storage";
 import { RightPanelSlot } from "@/components/shell";
-import { glossaryAnchor, glossaryEntryKey, glossaryLetter, glossaryRedirectAnchors, glossarySentenceCase, type GlossaryEntry } from "@/lib/glossary/entries";
+import { glossaryAnchor, glossaryEntryKey, glossaryLetter, glossaryRedirectAnchors, glossarySentenceCase, visibleGlossaryEntries, type GlossaryEntry } from "@/lib/glossary/entries";
 import { changeGlossaryDefinition, regenerateGlossaryDefinition, requestGlossaryGeneration, searchGlossaryMeaning } from "@/lib/server-actions/glossary";
 import { cn } from "@/lib/utils";
 import { DefinitionPanel, type DefinitionPreview } from "./DefinitionPanel";
@@ -39,7 +39,11 @@ const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase("
 
 export function GlossaryScreen() {
   useRealtimeInvalidation("units");
-  const units = useUnits({ filters: { retired_at: null } });
+  const units = useQuery({
+    queryKey: ["table", "units", "glossary-inputs"],
+    queryFn: () => readPages((from, to) => getBrowserSupabase().from("units")
+      .select("id, current_revision_id").is("retired_at", null).order("id").range(from, to)),
+  });
   const client = useQueryClient();
   const checked = useRef("");
   const recoveredLease = useRef("");
@@ -74,10 +78,8 @@ export function GlossaryScreen() {
   const query = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
-      const { data, error } = await glossaryClient(getBrowserSupabase()).from("glossary_state")
-        .select("entries, pending_entries, generated_at, status, completed_batches, total_batches, error, lease_until, review_progress:review_cache->review_progress").eq("id", true).single();
-      if (error) throw new Error(error.message);
-      const state = data as unknown as Pick<GlossaryState, "entries" | "pending_entries" | "generated_at" | "status" | "completed_batches" | "total_batches" | "error" | "lease_until"> & { review_progress?: { phase: "normalizing" | "comparing"; completed: number; total: number } | null };
+      const state = await readGlossaryView(getBrowserSupabase());
+      if (!state) return null;
       return { ...state, active: state.status === "generating" && !!state.lease_until && Date.parse(state.lease_until) > Date.now() };
     },
     refetchInterval: (current) => current.state.data?.status === "generating" || current.state.data?.status === "idle" ? 2000 : 15000,
@@ -93,7 +95,8 @@ export function GlossaryScreen() {
     if (!state?.generated_at || !window.location.hash.startsWith("#term-")) return;
     document.getElementById(decodeURIComponent(window.location.hash.slice(1)))?.scrollIntoView({ block: "start" });
   }, [state?.generated_at]);
-  const entries = state?.entries ?? EMPTY_ENTRIES;
+  const entries = useMemo(() => visibleGlossaryEntries(state?.entries ?? EMPTY_ENTRIES, state?.status === "ready" ? EMPTY_ENTRIES : state?.live_entries), [state?.entries, state?.live_entries, state?.status]);
+  const readOnly = state?.status !== "ready";
   const redirects = glossaryRedirectAnchors(entries);
   const busy = generation.isPending || state?.active;
   const progress = state?.review_progress;
@@ -150,8 +153,14 @@ export function GlossaryScreen() {
         <span className="font-medium text-foreground">{shown.length} {shown.length === 1 ? "definition" : "definitions"}{search || category !== "All terms" || letter ? ` of ${entries.length}` : ""}</span>
       </div>
 
-      {error && <div role="alert" className="mb-5 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm"><p>Dictionary generation needs attention: {error}</p><Button className="mt-3" variant="outline" disabled={busy} onClick={() => generate(false)}>Retry generation</Button></div>}
+      {error && !busy && <div role="alert" className="mb-5 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+        <p>Glossary generation paused. Resume to continue from saved progress.</p>
+        {!!state?.completed_batches && <p className="mt-2 text-muted-foreground">{state.completed_batches} of {state.total_batches} groups saved.</p>}
+        <details className="mt-2 text-xs text-muted-foreground"><summary className="cursor-pointer">Error details</summary><p className="mt-2 break-words">{error}</p></details>
+        <Button className="mt-3" variant="outline" onClick={() => generate(false)}>Resume generation</Button>
+      </div>}
       {busy && <div role="status" className="flex items-center gap-3 text-panel text-muted-foreground"><Loader inline /><span>{state?.total_batches && state.completed_batches === state.total_batches ? reviewLabel : `Updating glossary…${state?.total_batches ? ` ${state.completed_batches} of ${state.total_batches} groups complete.` : ""}`}</span></div>}
+      {!!state?.live_entries?.length && state.status !== "ready" && <p className="text-xs text-muted-foreground">Reviewed definitions are saved as they appear. You can edit them once the glossary update finishes.</p>}
       <PendingDefinitions pending={state?.pending_entries ?? []} entries={entries} busy={!!busy} />
 
       {!shown.length && !error && (busy || query.isPending || state?.status === "idle") ? <div className="space-y-8 py-10" aria-label="Dictionary loading">{[1, 2, 3].map((value) => <div key={value} className="animate-pulse space-y-3"><div className="h-6 w-44 rounded bg-muted" /><div className="h-3 w-full rounded bg-muted" /><div className="h-3 w-2/3 rounded bg-muted" /></div>)}</div> : null}
@@ -160,7 +169,7 @@ export function GlossaryScreen() {
       {[...groups].sort(([a], [b]) => ALPHABET.indexOf(a) - ALPHABET.indexOf(b)).map(([initial, terms]) => <section key={initial} aria-label={`Letter ${initial}`} className="grid grid-cols-[2rem_1fr] gap-4 border-b py-8 sm:grid-cols-[3.5rem_1fr] sm:gap-6">
         <h3 className="sticky top-14 flex size-10 items-center justify-center rounded-md bg-link/10 text-xl font-semibold text-link">{initial}</h3>
         <dl className="min-w-0 divide-y divide-border">
-          {[...terms.values()].map((senses) => <DictionaryWord key={normalize(senses[0]!.term)} senses={senses} redirects={redirects.get(glossaryAnchor(senses[0]!.term)) ?? []} sourceNumbers={sourceNumbers} selectedKey={selected ? selectedKey : null} preview={preview} onSelect={select} />)}
+          {[...terms.values()].map((senses) => <DictionaryWord key={normalize(senses[0]!.term)} senses={senses} redirects={redirects.get(glossaryAnchor(senses[0]!.term)) ?? []} sourceNumbers={sourceNumbers} selectedKey={selected ? selectedKey : null} preview={preview} onSelect={select} readOnly={readOnly} />)}
         </dl>
       </section>)}
       {shown.length > 0 && <section aria-labelledby="glossary-references-title" className="border-t pt-8">
@@ -171,13 +180,13 @@ export function GlossaryScreen() {
           </li>)}
         </ol>
       </section>}
-      {selected ? <RightPanelSlot onClose={() => select(null)}><DefinitionPanel key={selectedKey} entry={selected} queryKey={QUERY_KEY} preview={preview} onPreview={setPreview} onRemoved={() => select(null)} /></RightPanelSlot> : null}
+      {selected ? <RightPanelSlot onClose={() => select(null)}><DefinitionPanel key={selectedKey} entry={selected} queryKey={QUERY_KEY} preview={preview} onPreview={setPreview} onRemoved={() => select(null)} readOnly={readOnly} /></RightPanelSlot> : null}
     </div>
   );
 }
 
-type DictionaryWordProps = { senses: GlossaryEntry[]; redirects: string[]; sourceNumbers: Map<string, DictionarySource>; selectedKey: string | null; preview: DefinitionPreview | null; onSelect: (key: string | null) => void };
-function DictionaryWord({ senses, redirects, sourceNumbers, selectedKey, preview, onSelect }: DictionaryWordProps) {
+type DictionaryWordProps = { senses: GlossaryEntry[]; redirects: string[]; sourceNumbers: Map<string, DictionarySource>; selectedKey: string | null; preview: DefinitionPreview | null; onSelect: (key: string | null) => void; readOnly: boolean };
+function DictionaryWord({ senses, redirects, sourceNumbers, selectedKey, preview, onSelect, readOnly }: DictionaryWordProps) {
   const head = senses[0]!;
   const client = useQueryClient();
   // Rewrites one definition from the current claims it cites; the rest of the glossary is untouched
@@ -208,9 +217,9 @@ function DictionaryWord({ senses, redirects, sourceNumbers, selectedKey, preview
           })}</p>
           <RowMenu label={`${entry.term} definition ${index + 1}`} items={[
             { label: "Show evidence and history", run: () => onSelect(key) },
-            { label: isRegenerating ? "Regenerating…" : "Regenerate definition", isDisabled: regenerating !== null, separatorBefore: true, run: () => regeneration.mutate(entry) },
-            { label: "Edit definition", body: (close) => <DefinitionForm entry={entry} close={close} /> },
-            { label: "Delete definition", isDestructive: true, body: (close) => <DefinitionForm entry={entry} close={close} deleting /> },
+            { label: isRegenerating ? "Regenerating…" : "Regenerate definition", isDisabled: readOnly || regenerating !== null, separatorBefore: true, run: () => regeneration.mutate(entry) },
+            { label: "Edit definition", isDisabled: readOnly, body: (close) => <DefinitionForm entry={entry} close={close} /> },
+            { label: "Delete definition", isDisabled: readOnly, isDestructive: true, body: (close) => <DefinitionForm entry={entry} close={close} deleting /> },
           ]} />
         </div>
         {isRegenerating && <p role="status" className="mt-2 flex items-center gap-2 text-xs text-muted-foreground"><Loader inline /><span>Regenerating definition…</span></p>}

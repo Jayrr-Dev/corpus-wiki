@@ -11,7 +11,7 @@ import type { GraphData } from "./types";
 // table, so anything that invalidates units (a commit, Realtime) refreshes the graph.
 export function useGraphData(): UseQueryResult<GraphData> {
   return useQuery({
-    queryKey: [...queryKeys.table("units"), "graph"],
+    queryKey: [...queryKeys.table("units"), "graph", "source-origin"],
     queryFn: async () => buildGraph(await fetchGraphRows(getBrowserSupabase())),
   });
 }

@@ -63,6 +63,10 @@ describe("answerToActions", () => {
     expect(actions[1]?.input).toMatchObject({ entities: [], context: { applicability: { entities: [{ type: "company", key: "acme" }] } } });
   });
 
+  it("preserves explicit conditions when a model mislabels their applicability", () => {
+    const actions = answerToActions({ summary: "", claims: [claim({ applicability: { status: "general", entities: [], conditions: "in Canadian workplaces" } })] }, INPUT);
+    expect(actions.at(-1)?.input).toMatchObject({ context: { applicability: { status: "scoped", conditions: "in Canadian workplaces" } } });
+  });
   it("does not collapse same-text revisions with different applicability", () => {
     const actions = answerToActions({ summary: "", claims: ["onsite", "remote"].map(conditions => claim({ action: "revise", unit: "U1", applicability: { status: "scoped", entities: [], conditions } })) }, INPUT);
     expect(actions.map(a => a.type)).toEqual(["revise_claim", "add_claim"]);

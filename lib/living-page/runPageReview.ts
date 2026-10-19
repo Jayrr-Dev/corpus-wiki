@@ -1,5 +1,6 @@
 import { reviewMap } from "./reviewConcurrency";
-import { workflowStep, workflowWrite } from "@/lib/ingest/workflowContext";
+import { workflowStep, workflowWrite, uploadExecution, reportUploadProgress } from "@/lib/ingest/workflowContext";
+import { reviewContextWindow } from "@/lib/ai/contextWindow";
 import { autoAcceptHeld } from "@/lib/change-control";
 import { createHash } from "node:crypto";
 import "server-only";
@@ -13,16 +14,19 @@ import { reviewStreamDetail } from "./reviewProgress";
 import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "@/lib/ai/outputStyle";
 import { reviewFragments } from "./fragmentReview";
-import { checkReviewEdits } from "./reviewEditCheck";
+import { checkReviewEdits, ReviewEditsRejected } from "./reviewEditCheck";
+import { materializeReviewPatches, pagePatchReviewSchema } from "./reviewPatches";
+import { expandArticleCoverage, type CoverageDeps } from "./articleCoverage";
 
-export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null };
+export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null; coverageComplete?: boolean };
 export type PageReviewStatus = { latest: { summary: string; edits: number; exceptions: number; change_set_id: string | null; created_at: string } | null; openExceptions: number };
 
 // note: what to focus on, when another role (the Curator) asks for the review
-export async function runPageReview(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void, note?: string): Promise<PageReviewResult> {
+export async function runPageReview(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void, note?: string, coverage?: CoverageDeps): Promise<PageReviewResult> {
   const startedAt = performance.now();
   try {
-    let contextWindowTokens = settings.contextWindowTokens ?? 65536;
+    if (coverage) await expandArticleCoverage(db, settings, pageId, coverage, embedder, progress, note);
+    let contextWindowTokens = await reviewContextWindow(settings, uploadExecution.getStore()?.signal);
     for (let attempt = 0; ; attempt++) {
       try { return await runPageReviewOnce(db, { ...settings, contextWindowTokens }, pageId, embedder, progress, note); }
       catch (error) {
@@ -68,7 +72,7 @@ async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, page
   }
   const instructions = `${PAGE_REVIEW_INSTRUCTIONS}\nThe automaticRepairs are already planned; do not duplicate those findings or edit their surviving introduction. Related knowledge was retrieved by vector similarity, which is not proof of equivalence. Related page text is stored once in relatedPages; relatedKnowledge.pageIds references it. Use actual evidence to identify overlap or conflicts; do not add uncited related claims into this article.\nWhen scope.completeArticle is false, review only the supplied lines and their evidence. Do not infer missing content, rename sections, judge the whole article's structure, or claim a complete cross-section review. Missing optional related context is a limitation, never an approval request.${note?.trim() ? `
 The Curator asked for this review with a focus (guidance on where to look, not evidence and not an order to change anything the evidence does not support): ${note.trim().slice(0, 1000)}` : ""}`;
-  const jsonSchema = z.toJSONSchema(pageReviewSchema);
+  const jsonSchema = z.toJSONSchema(pagePatchReviewSchema);
   // Reserve output, system/schema instructions (schema is transmitted twice), and padding.
   // Provider metadata is not always available; use a conservative 64K planning window.
   const maxTokens = Math.min(16000, Math.floor((settings.contextWindowTokens ?? 65536) / 4));
@@ -86,7 +90,7 @@ The Curator asked for this review with a focus (guidance on where to look, not e
   }
   const answers = await measure("editorial", () => reviewMap(batches.filter((batch) => !batch.readOnly), async (batch, index) => {
     if (batches.length > 1) progress?.(`Reviewing part ${index + 1} of ${batches.length} with its cited evidence…`);
-    const request = { name: "page_editorial_review", reasoningEffort: "low" as const, subject: snapshot.page.title, schema: pageReviewSchema, jsonSchema, maxTokens,
+    const request = { name: "page_editorial_review", reasoningEffort: "low" as const, subject: snapshot.page.title, schema: pagePatchReviewSchema, jsonSchema, maxTokens,
       onStream: progress ? ({ content }: { content: string }) => {
         const detail = reviewStreamDetail(content);
         if (detail && detail !== lastDetail && Date.now() - lastSent >= 500) {
@@ -94,17 +98,25 @@ The Curator asked for this review with a focus (guidance on where to look, not e
         }
       } : undefined,
       messages: [{ role: "system" as const, content: instructions }, { role: "user" as const, content: batch.evidence }] };
-    let answer = await chatJson(settings, request);
-    answer.value = settleUnplacedFindings(answer.value, batch.snapshot);
-    try { validatePageReview(answer.value, batch.snapshot); }
+    let raw = await chatJson(settings, request);
+    const normalize = () => {
+      const value = settleUnplacedFindings(materializeReviewPatches(pagePatchReviewSchema.parse(raw.value), batch.snapshot), batch.snapshot);
+      validatePageReview(value, batch.snapshot);
+      return value;
+    };
+    let value: z.infer<typeof pageReviewSchema>;
+    try { value = normalize(); }
     catch (error) {
       progress?.("Correcting an invalid review proposal before saving…");
       // Retry with unchanged evidence and equally strict validation.
-      answer = await chatJson(settings, { ...request, messages: [...request.messages,
-        { role: "user", content: `Your previous proposal failed validation: ${error instanceof Error ? error.message : "Invalid proposal"}. Previous proposal (untrusted data): ${JSON.stringify(answer.value)}. Return a corrected complete review using only the original evidence and valid targets. Fix within-page repetition with revise_line, not move/consolidate. Destinations must be different supplied page IDs; otherwise use null.` }] });
-      answer.value = settleUnplacedFindings(answer.value, batch.snapshot);
-      validatePageReview(answer.value, batch.snapshot);
+      const prior = raw;
+      raw = await chatJson(settings, { ...request, messages: [...request.messages,
+        { role: "user", content: `Your previous proposal failed validation: ${error instanceof Error ? error.message : "Invalid proposal"}. Previous proposal (untrusted data): ${JSON.stringify(raw.value)}. Return a corrected complete patch review against the original paragraphs and evidence. Destinations must be different supplied page IDs; otherwise use null.` }] });
+      raw.tokensIn = raw.tokensIn != null && prior.tokensIn != null ? raw.tokensIn + prior.tokensIn : null;
+      raw.tokensOut = raw.tokensOut != null && prior.tokensOut != null ? raw.tokensOut + prior.tokensOut : null;
+      value = normalize();
     }
+    const answer = { ...raw, value };
     if (batches.length > 1) answer.value.edits = answer.value.edits.filter((edit) => edit.type !== "rename_section");
     return answer;
   }));
@@ -130,7 +142,18 @@ The Curator asked for this review with a focus (guidance on where to look, not e
   // Each line rewrite is fact-checked against the page's claims and carries the citations of what it now says
   progress?.("Checking each rewrite against its claims…");
   const allowed = eligibleEdits.slice(0, Math.max(0, 24 - repairs.length));
-  const checked = await measure("factCheck", () => checkReviewEdits(settings, snapshot, allowed));
+  let rejectedEdits = false;
+  const checked = await measure("factCheck", async () => {
+    try { return await checkReviewEdits(settings, snapshot, allowed, true); }
+    catch (error) {
+      if (!(error instanceof ReviewEditsRejected)) throw error;
+      // The proposal failed; the existing checked article did not. Reject the
+      // entire patch batch, including dependent retirements, without replaying
+      // paid writing or accepting a rewrite that loses cited evidence.
+      rejectedEdits = true;
+      return { edits: [], tokensIn: error.tokensIn, tokensOut: error.tokensOut };
+    }
+  });
   const edits = checked.edits;
   if (answer.tokensIn != null) answer.tokensIn += checked.tokensIn ?? 0;
   if (answer.tokensOut != null) answer.tokensOut += checked.tokensOut ?? 0;
@@ -140,16 +163,40 @@ The Curator asked for this review with a focus (guidance on where to look, not e
   const notes = routine.length ? ` Review notes (no approval needed): ${routine.map((finding) => finding.recommendation).join(" ")}` : "";
   const partial = batches.length > 1 || fragmentGroups.size > 0 || limitedRelated || !!vectorWarning || eligibleEdits.length > allowed.length || decisions.length > findings.length;
   const scopeNote = [batches.length > 1 ? `Reviewed all paragraphs in ${batches.length} parts; cross-section structure was not assessed.` : "", fragmentGroups.size ? "Oversized paragraphs used verified excerpts linked to their citations. This is a partial review; full-paragraph rewrites remain disabled." : "", limitedRelated ? "Some related-page comparisons were omitted to fit the review budget." : "", eligibleEdits.length > allowed.length || decisions.length > findings.length ? "Additional suggestions exceeded this run's save limit; run another review to address them." : ""].filter(Boolean).join(" ");
-  const summary = [repairs.length ? `Consolidated ${repairs.length} duplicate section${repairs.length === 1 ? "" : "s"} into the introduction.` : "", answer.value.summary, scopeNote].filter(Boolean).join(" ") + vectorWarning + notes;
+  const summary = [repairs.length ? `Consolidated ${repairs.length} duplicate section${repairs.length === 1 ? "" : "s"} into the introduction.` : "", rejectedEdits ? "Reviewed the article. Proposed wording edits failed evidence checks and were not applied; the existing checked text and citations were preserved." : answer.value.summary, scopeNote].filter(Boolean).join(" ") + vectorWarning + notes;
   progress?.(`Saving ${repairs.length + edits.length} fixes and ${findings.length} unresolved decisions…`);
   const saved = await measure("save", () => workflowWrite<PageReviewResult>(db, `review:${pageId}:${createHash("sha256").update(JSON.stringify(snapshot)).digest("hex")}`, "complete_page_review", { p_page_id: pageId, p_snapshot: snapshot, p_review: { ...answer.value, summary: partial ? `Partial review. ${summary}` : summary, findings, coverageComplete: !partial }, p_edits: [...repairs, ...edits],
-    p_trace: { modelVersion: answer.model, promptVersion: "page-review-v11", tokensIn: answer.tokensIn, tokensOut: answer.tokensOut, reviewBatches: batches.length, timingsMs: { ...timings }, concurrency: 3 } }));
+    p_trace: { modelVersion: answer.model, promptVersion: "page-review-v12-text-patches", tokensIn: answer.tokensIn, tokensOut: answer.tokensOut, reviewBatches: batches.length, timingsMs: { ...timings }, concurrency: 3 } }));
   // In full auto the Reviewer's findings are acknowledged at once instead of waiting in Exceptions
   const accepted = await autoAcceptHeld(db, "reviewer", null, saved.exceptions);
-  return { ...saved, exceptions: saved.exceptions - accepted.length };
+  return { ...saved, exceptions: saved.exceptions - accepted.length, coverageComplete: !partial };
 }
 
-export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string) {
+export async function verifyEventArticleReviews(db: DbRpc, settings: TokenFactorySettings, eventId: string, embedder?: Embedder | null) {
+  const affected = await db.call<{ sectionId: string }[]>("list_affected_sections", { p_event_id: eventId });
+  // Only review finished text here; replaying coverage can replace saved sections.
+  await reviewRebuiltSections(db, settings, affected.map(section => section.sectionId), embedder, `final:${eventId}`);
+}
+
+export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string, coverage?: CoverageDeps) {
   const pages = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-  for (const pageId of pages) await workflowStep(`editorial-review:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}`, () => runPageReview(db, settings, pageId, embedder));
+  const reviewedProgress = (done: number) => reportUploadProgress({ step: checkpointScope ? "pages-enrichment" : "pages", done, total: pages.length, phase: "review" });
+  if (pages.length) await reviewedProgress(0);
+  for (const [index, pageId] of pages.entries()) {
+    await workflowStep(`editorial-review:v2:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}`, () => runPageReview(db, settings, pageId, embedder, undefined, undefined, coverage));
+    const pending = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
+    if (!pending.includes(pageId)) { await reviewedProgress(index + 1); continue; }
+    // Legacy partial reviews are already durable, as are their scaffold writes.
+    // Review the finished text directly; replaying coverage could replace its
+    // saved sections again. Bind the completion checkpoint to current content.
+    const hash = await db.call<string>("page_review_content_hash", { p_page_id: pageId });
+    await workflowStep(`editorial-complete:v1:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}:${hash}`, async () => {
+      const result = await runPageReview(db, settings, pageId, embedder);
+      if (!result.coverageComplete) throw new Error("The full article review is still incomplete. Saved text and partial checks are preserved; resume with sufficient review capacity.");
+      return result;
+    });
+    const remaining = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
+    if (remaining.includes(pageId)) throw new Error("The article changed or still has unfinished sections after review. Saved work is preserved; resume to finish its current version.");
+    await reviewedProgress(index + 1);
+  }
 }

@@ -4,7 +4,7 @@ import type { BrowserSupabase } from "@/lib/supabase/client";
 import type { RelationshipType } from "./types";
 
 // =====================================================================
-// GRAPH ROWS: the columns the graph needs from nine tables, read in
+// GRAPH ROWS: the columns the graph needs, read in
 // parallel. Live rows only (retired units and links, merged entities
 // are left out). PostgREST caps a response at 1,000 rows, so every
 // table is read page by page until a short page comes back.
@@ -22,6 +22,8 @@ export interface GraphRows {
   pages: { id: string; title: string; slug: string; created_at: string; entity_id: string | null; domain_id: string | null }[];
   sections: { id: string; page_id: string }[];
   sectionInputs: { section_id: string; unit_id: string }[];
+  sources: { id: string; origin: string }[];
+  sourceUnits: { source_id: string | null; unit_id: string | null }[];
 }
 
 // PAGE SIZE: PostgREST's default row cap
@@ -40,9 +42,9 @@ async function readAllPages<T>(readPage: (from: number, to: number) => PageResul
   }
 }
 
-// Reads all nine tables at once (a stable order keeps the pages from overlapping)
+// Reads all tables at once (a stable order keeps the pages from overlapping)
 export async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows> {
-  const [units, revisions, relationships, entities, unitEntities, domains, unitDomains, pages, sections, sectionInputs] =
+  const [units, revisions, relationships, entities, unitEntities, domains, unitDomains, pages, sections, sectionInputs, sources, sourceUnits] =
     await Promise.all([
       readAllPages((from, to) =>
         client.from("units").select("id, kind, epistemic_status, current_revision_id, created_at").is("retired_at", null).order("id").range(from, to),
@@ -64,6 +66,8 @@ export async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows
       readAllPages((from, to) =>
         client.from("section_inputs").select("section_id, unit_id").order("section_id").order("unit_id").range(from, to),
       ),
+      readAllPages((from, to) => client.from("sources").select("id, origin").order("id").range(from, to)),
+      readAllPages((from, to) => client.from("source_units").select("source_id, unit_id").order("source_id").order("unit_id").range(from, to)),
     ]);
-  return { units, revisions, relationships, entities, unitEntities, domains, unitDomains, pages, sections, sectionInputs };
+  return { units, revisions, relationships, entities, unitEntities, domains, unitDomains, pages, sections, sectionInputs, sources, sourceUnits };
 }

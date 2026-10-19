@@ -69,6 +69,19 @@ const CIRCLE_RING_PX = 1.2;
 const CIRCLE_LABEL_PX = { branch: 14, leaf: 12 } as const;
 const CIRCLE_LABEL_HALO_PX = 3;
 
+// Paint text in screen space. Canvas clamps enormous world-space font sizes
+// (10,000px in Chrome), making labels vanish at very small overview scales.
+function paintText(input: DrawInput, text: string, x: number, y: number, size = LABEL_PX, weight = "", halo = false): void {
+  const { ctx, camera, pixelRatio, palette } = input;
+  ctx.save();
+  ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  ctx.font = `${weight ? `${weight} ` : ""}${size}px ${palette.fontFamily}`;
+  const sx = x * camera.k + camera.x, sy = y * camera.k + camera.y;
+  if (halo) { ctx.lineWidth = CIRCLE_LABEL_HALO_PX; ctx.strokeText(text, sx, sy); }
+  ctx.fillText(text, sx, sy);
+  ctx.restore();
+}
+
 // Default dot color for a node kind (grays only; groups add the accents)
 function baseColor(node: GraphNode, palette: CanvasPalette): string {
   if (node.kind === "page") return palette.text;
@@ -214,7 +227,7 @@ function drawHoveredLabel(input: DrawInput, node: SimNode): void {
   ctx.globalAlpha = 1;
   ctx.fillStyle = palette.text;
   ctx.textAlign = anchor.align;
-  lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
+  lines.forEach((line, i) => paintText(input, line, x, y + i * lineHeight));
 }
 
 // Opacity of note titles at this zoom (in layers from the overview, or by plain zoom when there is none)
@@ -228,6 +241,7 @@ function titleOpacity({ camera, display, overviewZoom }: DrawInput): number {
 // hoverLabelOnly, only the hovered one does), and the hovered label is drawn last so it sits on top
 function drawLabels(input: DrawInput): void {
   const { ctx, nodes, palette, camera, display, hoveredId, focusIds, hoverLabelOnly } = input;
+  ctx.textBaseline = "top";
   if (hoveredId !== null && hoverLabelOnly) {
     const hovered = nodes.find((node) => node.id === hoveredId);
     if (hovered) drawHoveredLabel(input, hovered);
@@ -235,7 +249,7 @@ function drawLabels(input: DrawInput): void {
   }
   const zoomOpacity = titleOpacity(input);
   const lineHeight = (LABEL_PX * LINE_HEIGHT) / camera.k;
-  ctx.font = `${LABEL_PX / camera.k}px ${palette.fontFamily}`;
+  ctx.font = `${LABEL_PX}px ${palette.fontFamily}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   ctx.fillStyle = palette.muted;
@@ -252,7 +266,7 @@ function drawLabels(input: DrawInput): void {
     const left = align === "center" ? x - widthPx / camera.k / 2 : align === "right" ? x - widthPx / camera.k : x;
     if (!reserveLabel(input, left, y, widthPx, lines.length * LABEL_PX * LINE_HEIGHT)) continue;
     ctx.textAlign = align;
-    lines.forEach((line, i) => ctx.fillText(line, x, y + i * lineHeight));
+    lines.forEach((line, i) => paintText(input, line, x, y + i * lineHeight));
   }
   ctx.globalAlpha = 1;
   if (hovered) drawHoveredLabel(input, hovered);
@@ -318,15 +332,16 @@ function drawCircleLabels(input: DrawInput): void {
     if (alpha <= 0.01) return;
     ctx.globalAlpha = alpha;
     ctx.fillStyle = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
-    ctx.font = `${circle.isBranch ? "600 " : "500 "}${CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"] / camera.k}px ${palette.fontFamily}`;
+    const fontSize = CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"];
+    const weight = circle.isBranch ? "600" : "500";
+    ctx.font = `${weight} ${fontSize}px ${palette.fontFamily}`;
     ctx.textBaseline = place === "top" ? "bottom" : "middle";
     const y = place === "top" ? circle.y - circle.r - 3 / camera.k : circle.y;
-    const width = ctx.measureText(circle.label).width * camera.k;
+    const width = ctx.measureText(circle.label).width;
     const height = CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"];
     if (!reserveLabel(input, circle.x - width / camera.k / 2, y - (place === "top" ? height : height / 2) / camera.k, width, height)) return;
     input.domainLabelBoxes?.push({path:circle.key,x:circle.x*camera.k+camera.x-width/2,y:y*camera.k+camera.y-(place==="top"?height:height/2),width,height});
-    ctx.strokeText(circle.label, circle.x, y);
-    ctx.fillText(circle.label, circle.x, y);
+    paintText(input, circle.label, circle.x, y, fontSize, weight, true);
   };
   for (const circle of circles) {
     if (circle.isBranch) name(circle, "top", dim);

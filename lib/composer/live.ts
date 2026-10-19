@@ -13,7 +13,7 @@ import { reviewedComposition, type ComposerAttempt } from "./review";
 import { validateSvg } from "./svg";
 import type { ComposerRun, ShownIllustration } from "./types";
 
-type ComposerOptions = { model?: string; feedback?: string; targetParagraphIds?: string[]; onAttempt?: (attempt: ComposerAttempt) => Promise<void> };
+type ComposerOptions = { automatic?: boolean; model?: string; feedback?: string; targetParagraphIds?: string[]; onAttempt?: (attempt: ComposerAttempt) => Promise<void> };
 export async function composeLivePage(db: DbRpc, pageId: string, options: ComposerOptions = {}) {
   const claim = await db.call<ComposerClaim | null>("claim_composer_job", { p_page_id: pageId, p_automatic: false });
   if (!claim) return { runId: null, figures: 0, message: "Composer is already working on this article, or it has no text yet." };
@@ -22,7 +22,7 @@ export async function composeLivePage(db: DbRpc, pageId: string, options: Compos
 export async function composeNextAutomatic(db: DbRpc): Promise<boolean> {
   const claim = await db.call<ComposerClaim | null>("claim_composer_job", { p_automatic: true });
   if (!claim) return false;
-  await runComposerClaim(db, claim, (guard) => composeClaimedPage(db, claim, {}, guard));
+  await runComposerClaim(db, claim, (guard) => composeClaimedPage(db, claim, { automatic: true }, guard));
   return true;
 }
 async function composeClaimedPage(db: DbRpc, claim: ComposerClaim, options: ComposerOptions, guard: () => Promise<void>) {
@@ -30,6 +30,9 @@ async function composeClaimedPage(db: DbRpc, claim: ComposerClaim, options: Comp
   const snapshot = claim.snapshot;
   if (!snapshot?.paragraphs.length) throw new Error("This article has no text to illustrate.");
   const current = await db.call<ComposerRun | null>("read_composer_run", { p_page_id: pageId });
+  if (options.automatic && current?.composition.figures.length && !current.omittedFigureCount) {
+    return { runId: current.id, figures: 0, message: "Kept the article's existing illustrations." };
+  }
   const existing = current ?? await db.call<ComposerRun | null>("read_composer_reusable_run", { p_page_id: pageId });
   const choice = await readModelChoice(db);
   if (options.model) choice.roleModels = { ...choice.roleModels, composer: options.model, reviewer: options.model };
@@ -68,7 +71,7 @@ async function composeClaimedPage(db: DbRpc, claim: ComposerClaim, options: Comp
     visuals.registerAsset(asset.id, image);
     return asset;
   }, visuals.assess, cache);
-  const result = await reviewedComposition(settings, article, { inspectComposition: visuals.review, feedback: options.feedback, previous, onAttempt: options.onAttempt, prepareComposition: generator.prepare, toolsForArticle: (selected) => [...webImages.tools(selected), ...(process.env.OPENROUTER_API_KEY ? [generator.tool(selected), generator.tool(selected, true)] : [])] });
+  const result = await reviewedComposition(settings, article, { inspectComposition: visuals.review, feedback: options.feedback ?? (options.automatic && current?.omittedFigureCount ? "Previous illustrations were hidden because their supporting text changed. Create useful replacements using only the current paragraphs. Preserve the unchanged existing figures. Do not reproduce facts or quantities from older drawings." : undefined), previous, onAttempt: options.onAttempt, prepareComposition: generator.prepare, toolsForArticle: (selected) => [...webImages.tools(selected), ...(process.env.OPENROUTER_API_KEY ? [generator.tool(selected), generator.tool(selected, true)] : [])] });
   if (!result.attempt && retained.length && !current) return saveRetained(result.composition.omitted);
   if (!result.attempt) return { runId: existing?.id ?? null, figures: 0, message: result.composition.omitted, selection: result.selection };
   result.composition.figures = [...retained, ...result.composition.figures];
@@ -84,6 +87,7 @@ async function composeClaimedPage(db: DbRpc, claim: ComposerClaim, options: Comp
 }
 
 export function shownIllustrations(run: ComposerRun | null): ShownIllustration[] {
-  return run?.composition.figures.map((f, index) => ({ id: `${run.id}:${index}`, pageId: run.page_id, after: f.after, caption: f.caption, alt: f.alt, learningGoal: f.learningGoal, evidence: f.evidence, assetType: f.assetType, assetId: f.assetId,
-    src: `/api/composer/${run.page_id}/${run.id}/${index}` })) ?? [];
+  return run?.composition.figures.map((f, index) => ({ id: `${run.id}:${f.sourceIndex ?? index}`, pageId: run.page_id, sectionId: f.sectionId, sectionTitle: f.sectionTitle, sectionPosition: f.sectionPosition, after: f.after, caption: f.caption, alt: f.alt, learningGoal: f.learningGoal, evidence: f.evidence, assetType: f.assetType, assetId: f.assetId,
+    evidenceRevisions: Object.fromEntries(run.snapshot.paragraphs.filter((p) => p.id === f.after || f.evidence.includes(p.id)).map((p) => [p.id, p.revisionId])),
+    src: `/api/composer/${run.page_id}/${run.id}/${f.sourceIndex ?? index}` })) ?? [];
 }

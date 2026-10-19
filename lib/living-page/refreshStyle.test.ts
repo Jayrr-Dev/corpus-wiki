@@ -54,6 +54,8 @@ describe("user-triggered section update", () => {
     const call = vi.fn(async (fn: string) => {
       if (fn === "claim_section_build") return { claimed: true };
       if (fn === "read_section_state") return latest;
+      if (fn === "read_section_article_structure") return { current: [{ title: "Current heading", position: 0, unitIds: ["a", "new"] }], planned: null,
+        applied: { status: "applied", outOfDate: true, rationale: "Start with context, then explain the process.", structure: [{ title: "Saved heading", position: 0, unitIds: ["a"] }] } };
       if (fn === "submit_change_set") return { changeSetId: "change", eventId: "event" };
       if (fn === "commit_change_set") return { status: "applied", applied: 2 };
       return {};
@@ -61,7 +63,8 @@ describe("user-triggered section update", () => {
     const reviseSection = vi.fn(async () => ({ modelVersion: "current-model", revise: [{ lineId: "generated", text: "Updated wording", unitIds: ["a"] }], retire: [], add: [{ text: "Newly saved knowledge.", unitIds: ["new"] }] }));
     await refreshSectionStyle({ call: call as import("@/lib/db/rpc").DbRpc["call"] }, { name: "test", promptVersion: "skill-v3", reviseSection }, "s", "Keep it concise.");
     expect(reviseSection).toHaveBeenCalledWith(expect.objectContaining({ updateNote: "Keep it concise.", uncoveredUnitIds: ["new"], units: latest.units, lines: expect.arrayContaining([expect.objectContaining({ lineId: "manual", needsRewrite: false }), expect.objectContaining({ lineId: "generated", needsRewrite: true })]) }));
-    expect(call.mock.calls.map(([name]) => name)).toEqual(["resume_section_build", "claim_section_build", "read_section_state", "read_page_context", "submit_change_set", "commit_change_set", "finish_section_build"]);
+    expect(reviseSection).toHaveBeenCalledWith(expect.objectContaining({ articleStructure: expect.objectContaining({ outOfDate: true, currentSectionTitles: ["Current heading"], sections: [{ title: "Saved heading", position: 0, claimCount: 1 }] }) }));
+    expect(call.mock.calls.map(([name]) => name)).toEqual(["resume_section_build", "claim_section_build", "read_section_state", "read_page_context", "read_section_article_structure", "submit_change_set", "commit_change_set", "finish_section_build"]);
   });
   it("reports a rejected commit and leaves the section stale instead of reporting success", async () => {
     const call = vi.fn(async (fn: string) => {

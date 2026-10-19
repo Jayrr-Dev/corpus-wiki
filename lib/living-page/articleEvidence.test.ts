@@ -49,6 +49,16 @@ describe("internal article links", () => {
     expect(chunks.filter((chunk) => chunk.href)).toEqual([{ text: "C++", href: "/p/cpp" }]);
     expect(chunks.map((chunk) => chunk.text).join("")).toBe(text);
   });
+
+  it("reuses a destination list across paragraphs without sharing match position or used links", () => {
+    const links = [{ label: "Type Seven", href: "/p/seven" }];
+    for (const text of ["Type Seven and Type Seven", "Another Type Seven", "No match", "Type Seven"]) {
+      const chunks = linkArticleText(text, links);
+      expect(chunks.filter((chunk) => chunk.href)).toHaveLength(text.includes("Type Seven") ? 1 : 0);
+      expect(chunks.map((chunk) => chunk.text).join("")).toBe(text);
+    }
+    expect(linkArticleText("Type Seven", [{ label: "Type Seven", href: "/p/new" }])[0]?.href).toBe("/p/new");
+  });
 });
 
 describe("compact bibliography", () => {

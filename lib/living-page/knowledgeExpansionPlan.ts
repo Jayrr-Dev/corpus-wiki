@@ -12,6 +12,14 @@ export const expansionSchema = z.object({ concepts: z.array(z.object({
   domainPath: z.string(), claims: z.array(z.string()).min(1), passages: z.array(z.string()).min(1),
 })).max(12) });
 export type KnowledgeExpansion = z.infer<typeof expansionSchema>;
+export function expansionAnswerSchema(claimCount: number, passageCount: number) {
+  const refs = (count: number, prefix: string) => count
+    ? z.enum(Array.from({ length: count }, (_, i) => `${prefix}${i + 1}`) as [string, ...string[]]) : z.never();
+  return expansionSchema.extend({ concepts: z.array(expansionSchema.shape.concepts.element.extend({
+    claims: z.array(refs(claimCount, "C")).min(1),
+    passages: z.array(refs(passageCount, "P")).min(1),
+  })).max(12) });
+}
 export type ExpansionPassage = { id: string; text: string; sourceDate: string };
 export type ExpansionContext = { knowledge: ArticleKnowledge; passages: ExpansionPassage[]; domainPaths: string[]; existingEntities: ExistingEntity[]; definedEntityKeys: string[]; existingDefinitions?: { entityKey: string; context: KnowledgeContext | null }[] };
 const base = { targetId: null, expectedRevisionId: null, speechAct: null, passageIds: [] };

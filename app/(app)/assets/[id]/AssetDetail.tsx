@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ASSET_TYPE_LABEL, ASSET_TYPES, type AssetEditableField, type AssetType } from "@/lib/assets/tags";
 import { useAsset, useAssets, usePassages, useSource, usePage } from "@/lib/queries";
 import { useActionsForPassages, useUnitSummaries } from "@/lib/queries/screens";
+import { useAssetUsage } from "@/lib/queries/assetUsage";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { describeAssets, editAsset, releaseAssetEdits } from "@/lib/server-actions/assets";
 import { type Asset, ASSET_KIND_LABEL, AssetPlayer, assetSrc, assetTitle } from "../AssetMedia";
@@ -35,10 +36,13 @@ export function AssetDetail({ assetId }: { assetId: string }) {
 }
 
 function AssetBody({ asset }: { asset: Asset }) {
+  const usage = useAssetUsage();
+  const placements = usage.data?.filter((placement) => placement.assetId === asset.id);
   const source = useSource(asset.source_id ?? undefined).data;
   const generatedPage = usePage(asset.generated_page_id ?? undefined).data;
   const title = assetTitle(asset, source?.title);
   const facts: [string, ReactNode][] = [["Kind", ASSET_KIND_LABEL[asset.kind]], ["Type", <AssetTypeSelect key="type" asset={asset} />]];
+  facts.push(["Used in", usage.isError ? "Usage unavailable" : !placements ? "Checking usage…" : placements.length ? <span key="usage" className="flex flex-col gap-1">{placements.map((placement) => <TextLink key={placement.href} href={placement.href}>{placement.kind === "article" ? "Article" : placement.kind === "source" ? "Source" : placement.kind === "knowledge" ? "Knowledge" : "Stakeholder"}: {placement.title}</TextLink>)}</span> : "Not used anywhere"]);
   if (asset.attribution) facts.push(["Attribution", asset.attribution]);
   if (asset.license) facts.push(["Rights", asset.license]);
   if (asset.origin === "external") facts.push(["Origin", "External image"]);
@@ -48,7 +52,8 @@ function AssetBody({ asset }: { asset: Asset }) {
   if (asset.figure_number) facts.push(["Place", `Figure ${asset.figure_number} in the source`]);
   if (source) facts.push(["Source date", <span key="date" className="font-mono">{formatDate(source.source_date)}</span>]);
   if (asset.described_at) facts.push(["Described", <span key="described"><DateTime iso={asset.described_at} />{asset.model ? <span className="text-faint"> · {asset.model}</span> : null}</span>]);
-  facts.push(["File", <a key="file" href={assetSrc(asset)} target="_blank" rel="noreferrer" className="text-link hover:underline">Open original</a>]);
+  const originalSrc = assetSrc(asset);
+  facts.push(["File", <a key="file" href={originalSrc.startsWith("/api/") ? `${originalSrc}${originalSrc.includes("?") ? "&" : "?"}original=1` : originalSrc} target="_blank" rel="noreferrer" className="text-link hover:underline">Open file</a>]);
 
   return (
     <div className="flex flex-col gap-6">

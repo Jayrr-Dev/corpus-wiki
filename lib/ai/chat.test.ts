@@ -370,11 +370,17 @@ describe("role memory", () => {
   });
 
   it("gives independent reviewers and unnamed calls no memory", async () => {
-    for (const name of ["independent_article_review", "independent_external_source_approval", "place_topics"]) {
+    for (const name of ["independent_article_review", "independent_external_source_approval", "independent_upload_domain_review", "unassigned_test_call"]) {
       const fetchMock = rounds(completion('{"summary":"ok"}', "stop"));
       await chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([{ key: "pref:x", value: "y" }]) }, { name, schema: SCHEMA, jsonSchema: {}, messages: [] });
       expect(JSON.stringify(sent(fetchMock, 0).messages)).not.toContain("pref:x");
     }
+  });
+
+  it("gives topic placement its assigned domain-decider memory", async () => {
+    const fetchMock = rounds(completion('{"summary":"ok"}', "stop"));
+    await chatJson({ apiKey: "k", model: "other/model", memoryDb: memoryDb([{ key: "filing:preference", value: "Reuse existing topics" }]) }, { name: "place_topics", schema: SCHEMA, jsonSchema: {}, messages: [] });
+    expect(JSON.stringify(sent(fetchMock, 0).messages)).toContain("filing:preference");
   });
 });
 

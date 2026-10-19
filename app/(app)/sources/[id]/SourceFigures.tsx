@@ -1,4 +1,6 @@
 "use client";
+import { MediaImage } from "@/components/preview/MediaImage";
+
 
 import { Note, QueryState, Section } from "@/app/(app)/_components/bits";
 import { ImageViewer } from "@/components/preview";
@@ -68,8 +70,7 @@ export function FigureThumbnail({ sourceId, figure, size = "md" }: { sourceId: s
   return (
     <ImageViewer src={src} title={`Figure ${figure.number}`}>
       <button type="button" aria-label={`View figure ${figure.number}`} className="shrink-0 cursor-zoom-in self-start overflow-hidden rounded border bg-white">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a signed redirect, not an optimizable asset */}
-        <img src={src} alt={`Figure ${figure.number}`} loading="lazy" className={size === "sm" ? "h-14 w-20 object-contain" : "h-20 w-28 object-contain"} />
+        <MediaImage src={src} alt={`Figure ${figure.number}`} loading="lazy" className={size === "sm" ? "h-14 w-20 object-contain" : "h-20 w-28 object-contain"} />
       </button>
     </ImageViewer>
   );

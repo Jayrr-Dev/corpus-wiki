@@ -64,3 +64,4 @@ it("retries only a failed dispatch and reuses its committed outline across jsonb
   expect(discoverArticleUpdates).toHaveBeenCalledTimes(2);
   expect(rebuildPage).toHaveBeenCalledTimes(3);
 });
+vi.mock("@/lib/living-page/articleScaffold", () => ({ articleAdditionActions: vi.fn(async (_db, _client, _settings, pageId, sections) => sections.map((section: object) => ({ type: "create_section", targetId: null, expectedRevisionId: null, passageIds: [], speechAct: null, input: { pageId, ...section } }))) }));

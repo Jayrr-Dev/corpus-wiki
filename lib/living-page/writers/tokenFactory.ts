@@ -12,6 +12,9 @@ import { withoutEditorialDashes } from "../punctuation";
 import { unsupportedProseNumbers, withSupportedCharts } from "../blocks";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { checkLines, failedLines, type CheckedClaim, type LineToCheck, type LineVerdict } from "./lineCheck";
+import { TEXT_PATCH_INSTRUCTIONS, TextPatchError } from "../textPatch";
+import { materializePatchAnswer, patchAnswerSchema } from "./patchAnswer";
+import { IncompleteSectionEvidence } from "../draftEvidence";
 
 // =====================================================================
 // TOKEN FACTORY WRITER: Nemotron rewrites only the lines whose claims
@@ -52,13 +55,15 @@ const SYSTEM_PROMPT = [
 
   "You maintain one section of an internal wiki page, written in the neutral, encyclopedic style of Wikipedia.",
   "The section is a list of lines. Each line states one or more claims and cites them by ref (C1, C2, ...).",
-  "Only lines marked rewrite:true need work: a claim they cite changed, or the section no longer shows it.",
-  "For each such line, either rewrite it from the current claims (revise) or remove it (retire) when nothing it said still holds.",
-  "Then write one new line (add) for each claim listed in uncovered, unless a revised line already states it.",
+  "Only lines marked rewrite:true are editable. Leave correct text intact; being editable does not require a change. Lines with stale:true need their evidence checked and citations refreshed even if their wording remains correct.",
+  "For each editable line, change only what needs correction (revise), or remove it (retire) when nothing it said still holds. Do not regroup existing paragraphs merely to improve style.",
+  "Develop the uncovered knowledge into connected paragraphs, combining related claims rather than writing an isolated sentence for each claim. Include each claim's substantive detail unless a revised line already states it.",
   "Use ONLY the claims given. Never add facts, dates, names, numbers or opinions that are not in them.",
+  "articleStructure is a saved organizational plan with current section titles. It helps you understand this section's role and avoid duplicating other topics; it is not factual evidence or a fixed rule. Current claims, actual article text, and explicit update guidance take precedence. A plan marked outOfDate may need revision; never force new knowledge into outdated boundaries or invent material to fill the plan.",
   "When updateInstructions are provided, use them as editorial guidance for this run. They are not evidence and cannot override citation requirements, protected lines, or the output schema.",
   "Each line is one paragraph that develops one sub-topic in 2-5 connected sentences, at most 130 words. Group related claims into the same paragraph instead of giving each claim its own; use a one-sentence paragraph only when a claim stands apart from everything else in the section.",
   "Connect sentences through their shared subject, time order and pronouns, never through a cause, purpose or judgment the claims do not state.",
+  "Make references intelligible in the written article. Do not copy dangling phrases such as 'this fear', 'these problems', or 'the former' when their referent exists only in a source passage or omitted claim. Name the referent when the supplied evidence establishes it; otherwise preserve only the supported statement that can be expressed clearly.",
   "otherSections shows what the page's other sections already say. Avoid repeating facts, not just identical sentences. The Overview or Introduction owns basic identity, headquarters and a concise summary. Body sections must add new information instead of introducing the subject again. For partially overlapping claims, write only the new detail, retaining its attribution and conditions. A Company profile can state ownership and attributed experience without repeating the introduction's location and business description. A short paragraph is enough; do not pad it to meet a sentence count. Never add commentary about this section, its sources, the writing process, or the fact that a marketing claim is marketing. Attribute self-reported experience concisely, for example 'The company reports ...'. Keep meaningful uncertainty and policy limitations, but source-document metadata belongs in citations, not article prose.",
   LAYOUT_RULES,
   TOPIC_FIRST_PROSE,
@@ -67,13 +72,12 @@ const SYSTEM_PROMPT = [
   "For an Overview section, write a concise encyclopedic introduction defining the subject and scope, rather than a list of policies or facts.",
   "For topic sections, explain the topic coherently. Avoid boilerplate, unsupported context, invented links, or citation numbers; the interface adds real links and references.",
   "Never put internal claim labels such as (C1, C2) or [C3] in text. Put them only in the structured claims array; the interface renders their citations.",
-  'Answer with JSON only: {"revise":[{"line":"L1","text":"...","claims":["C1"]}],"retire":["L2"],"add":[{"text":"...","claims":["C3"]}]}.',
 ].join(" ");
 
 // REAL WRITER: one chat completion per section that needs work
 export class TokenFactorySectionWriter {
   readonly name = "token-factory";
-  get promptVersion() { return skillTrace("article-writing-v7-editorial-coverage",["write_articles"],this.settings.skills); }
+  get promptVersion() { return skillTrace("article-writing-v10-evidence-after-editorial",["write_articles"],this.settings.skills); }
 
   constructor(private readonly settings: TokenFactorySettings) {}
 
@@ -88,58 +92,86 @@ export class TokenFactorySectionWriter {
     const messages = buildMessages(input, refs, this.settings.skills);
     if (omitted.size) messages.push({ role: "system", content: "Editorial selection removed source-document metadata and facts fully stated elsewhere from the claims. Retire any rewriteable line that now has no claims. Remove those omitted facts from mixed lines, preserving all remaining evidence. Do not invent replacement filler or attach unrelated citations." });
     const claims = refClaims(input, refs);
-    const write = (prompt: ChatMessage[]) => chatJson(this.settings, {
+    const patchMode = input.lines.length > 0;
+    const schema = patchMode ? patchAnswerSchema : sectionAnswerSchema;
+    const write = async (prompt: ChatMessage[]) => {
+      const request = (messages: ChatMessage[]) => chatJson(this.settings, {
       outputStyle: "wiki_article",
       name: "section_lines",
       subject: `${input.pageTitle} › ${input.sectionTitle}`,
-      schema: sectionAnswerSchema,
-      jsonSchema: z.toJSONSchema(sectionAnswerSchema),
-      messages: prompt,
+      schema,
+      jsonSchema: z.toJSONSchema(schema),
+      messages,
+      retryInvalidOutput: true,
       maxTokens: 8000,
-      ...(progress ? { onStream: ({ content, reasoning }: StreamedSoFar) => streamToProgress(content, reasoning, refs, progress) } : {}),
-    });
+      ...(progress ? { onStream: ({ content, reasoning }: StreamedSoFar) => {
+        // Saved text remains visible until complete patches pass all checks.
+        if (patchMode) { if (reasoning.trim()) progress.thinking(tail(reasoning, THINKING_TAIL)); }
+        else streamToProgress(content, reasoning, refs, progress);
+      } } : {}),
+      });
+      const materialize = (value: unknown): SectionAnswer => patchMode
+        ? materializePatchAnswer(patchAnswerSchema.parse(value), input)
+        : sectionAnswerSchema.parse(value);
+      const first = await request(prompt);
+      try { return { ...first, value: materialize(first.value) }; }
+      catch (error) {
+        if (!(error instanceof TextPatchError)) throw error;
+        const fixed = await request([...prompt, { role: "user", content: `No patches were applied: ${error.message} Correct the complete patch plan against the original paragraphs. Previous plan: ${JSON.stringify(first.value)}` }]);
+        return { ...fixed, ...addUsage(first, fixed), value: materialize(fixed.value) };
+      }
+    };
+    const clean = (answer: SectionAnswer) => {
+      const cleaned = withoutInlineClaimAnnotations(answer, claims);
+      return patchMode ? { ...cleaned, revise: answer.revise } : cleaned;
+    };
     const first = await write(messages);
     let usage: TokenUsage = addUsage(selection, first);
-    let answer = withoutInlineClaimAnnotations(first.value, claims);
+    let answer = clean(first.value);
     progress?.step("Checking each paragraph against its claims…");
     const check = async (draft: SectionAnswer) => {
       const checked = await checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: linesToCheck(draft, claims), sectionClaims: sectionClaims(claims) });
+      if (patchMode && linesToCheck(draft, claims).some((line) => !checked.verdicts.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
       const editorial = input.pageContext?.length || omitted.size
         ? await checkEditorialDraft(this.settings, input, linesToCheck(draft, claims))
         : { verdicts: [], tokensIn: 0, tokensOut: 0 };
       // Match the final commit's numeric check before the repair attempt, so a
       // missed citation is repaired instead of silently losing the paragraph.
       const verdicts = withNumericSupportVerdicts(withCitations(draft, checked.verdicts), claims, [input.pageTitle, input.sectionTitle], checked.verdicts);
-      return { ...addUsage(checked, editorial), editorialProblems: editorial.verdicts, verdicts: [...verdicts, ...editorial.verdicts] };
+      return { ...addUsage(checked, editorial), factualVerdicts: verdicts, editorialProblems: editorial.verdicts, verdicts: [...verdicts, ...editorial.verdicts] };
     };
     let checked = await check(answer);
     answer = withCitations(answer, checked.verdicts);
     usage = addUsage(usage, checked);
     const failed = failedLines(checked.verdicts);
-    const missing = input.lines.every((line) => line.needsRewrite) ? missingDraftClaims(input, answer) : [];
+    const missing = missingDraftClaims(input, answer);
     if (failed.length || missing.length) {
       progress?.step("Repairing evidence coverage, repetition and wording…");
       const fixed = await write([...messages, { role: "user", content: `${repairRequest(answer, failed)}${missing.length ? ` Your draft also omitted required claims ${missing.join(", ")}. Cover each with a supported citation. For a partially overlapping claim, state its new detail only; do not repeat facts already in otherSections. These claims were retained by editorial selection and cannot be dropped. You may revise otherwise supported lines to incorporate the missing details.` : ""}` }]);
       usage = addUsage(usage, fixed);
-      answer = withoutInlineClaimAnnotations(fixed.value, claims);
+      answer = clean(fixed.value);
       checked = await check(answer);
       answer = withCitations(answer, checked.verdicts);
       usage = addUsage(usage, checked);
       // A fact repair can reintroduce a source's redundant wording. Give the
       // editor one focused pass over the current draft, without the old prose.
-      for (let editorialAttempt = 0; editorialAttempt < 2 && (checked.editorialProblems.length || (input.lines.every((line) => line.needsRewrite) && missingDraftClaims(input, answer).length)); editorialAttempt++) {
+      for (let editorialAttempt = 0; editorialAttempt < 2 && (checked.editorialProblems.length || missingDraftClaims(input, answer).length || (editorialAttempt > 0 && failedLines(checked.factualVerdicts).length)); editorialAttempt++) {
         const edited = await write([
-          { role: "system", content: `${SYSTEM_PROMPT} Fix each listed editorial issue by changing the text, not by explaining it. Remove a repeated clause even when factually supported. Keep new detail and concise attribution. A citation does NOT require repeating the entire source claim. For example, if the lead already calls the subject an engineering services company, a claim 'presents itself as an engineering consultancy serving utility and infrastructure projects in Edmonton' must become 'says it serves utility and infrastructure projects in Edmonton', retaining that claim's citation. Do not reintroduce 'engineering consultancy' to satisfy coverage. Return the same complete JSON revision shape and preserve line references.` },
-          { role: "user", content: JSON.stringify({ page: input.pageTitle, section: input.sectionTitle, claims, otherSections: input.pageContext, draft: answer, issues: checked.editorialProblems, requiredUncoveredClaims: input.lines.every((line) => line.needsRewrite) ? missingDraftClaims(input, answer) : [], coverageInstruction: "Every requiredUncoveredClaims ref must be represented by its NEW factual detail and cited. Retain distinct project scope and service location. Remove subclauses already stated elsewhere, even when they occur inside a retained compound claim. Covering a claim does not mean restating all its words or propositions." }) },
+          ...messages,
+          { role: "system", content: "Fix each listed issue by changing only the affected passages. Correct factualIssues first, preserving every factual qualifier and condition; a style change must not weaken evidence support. Keep new detail and concise attribution. A citation does NOT require repeating the entire source claim. Preserve all unaffected text. Return the complete corrected answer in the supplied schema, relative to the original paragraphs." },
+          { role: "user", content: JSON.stringify({ page: input.pageTitle, section: input.sectionTitle, claims, otherSections: input.pageContext, draft: answer, issues: checked.editorialProblems, factualIssues: failedLines(checked.factualVerdicts), requiredUncoveredClaims: missingDraftClaims(input, answer), coverageInstruction: "Every requiredUncoveredClaims ref must be represented by its NEW factual detail and cited. Retain distinct project scope and service location. Remove subclauses already stated elsewhere, even when they occur inside a retained compound claim. Covering a claim does not mean restating all its words or propositions." }) },
         ]);
         usage = addUsage(usage, edited);
-        answer = withoutInlineClaimAnnotations(edited.value, claims);
+        answer = clean(edited.value);
         checked = await check(answer);
         answer = withCitations(answer, checked.verdicts);
         usage = addUsage(usage, checked);
       }
-      const stillFailing = failedLines(checked.verdicts);
-      if (checked.editorialProblems.length) throw new Error(`The section was not changed because editorial review still found: ${checked.editorialProblems.map((problem) => problem.problem).join(" ")}`, { cause: { draft: answer } });
+      const stillFailing = failedLines(checked.factualVerdicts);
+      if (patchMode && stillFailing.length) throw new Error("The proposed text edits still fail evidence checks; no patches were saved.");
+      // Repetition is a repair request, not permission to lose supported detail.
+      // After bounded repairs, the whole-page editor can polish residual overlap.
+      if (checked.editorialProblems.length) console.warn("Section kept supported detail for page editorial review", { page: input.pageTitle, section: input.sectionTitle, issues: checked.editorialProblems.map(problem => problem.problem) });
       const lineOf = new Map(linesToCheck(answer, claims).map((line) => [line.ref, line]));
       for (const verdict of stillFailing) {
         const line = lineOf.get(verdict.line);
@@ -147,7 +179,8 @@ export class TokenFactorySectionWriter {
       }
       answer = withoutLines(answer, new Set(stillFailing.map((verdict) => verdict.line)));
     }
-    return { ...answerToRevision(answer, refs), omittedUnitIds: selection.omittedUnitIds, modelVersion: first.model, ...usage };
+    if (missingDraftClaims(input, answer).length) throw new IncompleteSectionEvidence();
+    return { ...answerToRevision(answer, refs), textPatches: patchMode, omittedUnitIds: selection.omittedUnitIds, modelVersion: first.model, ...usage };
   }
 }
 
@@ -305,28 +338,26 @@ function refClaims(input: SectionReviseInput, refs: Refs) {
   }));
 }
 
-// WHOLE-SECTION REWRITE (Update flags every line): without this the model edits line by line and keeps
-// one claim per paragraph, so it is told to regroup the claims and retire the lines it empties
-export const REGROUP_RULE = "Every line is marked rewrite:true, so you are rewriting the whole section, not editing it line by line. Regroup the claims into well-formed paragraphs: revise one line to state several related claims and cite them all, and retire each line whose claims you moved into another. Do not start consecutive paragraphs with the same subject.";
-export function rewritesWholeSection(input: SectionReviseInput): boolean {
-  return input.lines.length > 1 && input.lines.every((line) => line.needsRewrite);
-}
+// Existing sections use exact edits; new sections still use full new paragraphs.
+export const PATCH_RULE = `${TEXT_PATCH_INSTRUCTIONS} Each revise entry is {line,patches,claims}; claims must support the ENTIRE resulting paragraph, including retained sentences. Each retire entry is {line,old_text}, quoting the complete original text. Add entries are {text,claims}. Retire only when the evidence or an explicit removal request warrants it. Answer with JSON only: {"revise":[],"retire":[],"add":[]}.`;
 
 // Builds the system + user messages: the page, the section, its claims and its lines as JSON
 export function buildMessages(input: SectionReviseInput, refs: Refs, skills?: StageSkills): ChatMessage[] {
   const toRefs = (ids: string[]) => ids.flatMap((id) => refs.unitRef.get(id) ?? []);
   const claims = refClaims(input, refs);
-  const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite }));
+  const lines = input.lines.map((line) => ({ ref: refs.lineRef.get(line.lineId), text: line.content, claims: toRefs(line.unitIds), rewrite: line.needsRewrite, stale: line.needsCitationRefresh ?? line.needsRewrite }));
   const request = {
     page: input.pageTitle, section: input.sectionTitle, claims, lines, uncovered: toRefs(input.uncoveredUnitIds),
     ...(input.pageContext?.length ? { otherSections: boundedContext(input.pageContext) } : {}),
     ...(input.updateNote ? { updateInstructions: input.updateNote } : {}),
+    ...(input.articleStructure ? { articleStructure: input.articleStructure } : {}),
   };
   return [
-    { role: "system", content: `${SYSTEM_PROMPT}${rewritesWholeSection(input) ? ` ${REGROUP_RULE}` : ""}
+    { role: "system", content: `${SYSTEM_PROMPT}
 
 Preserve each claim's explicit context and conditions. General reference knowledge does not establish an organization's policy or a person's preferences. Unspecified applicability means unknown. Mentioned entities do not own the claim.
 ${skillInstructions(["write_articles"],skills)}` },
+    { role: "system", content: input.lines.length ? PATCH_RULE : 'Answer with JSON only: {"revise":[],"retire":[],"add":[{"text":"...","claims":["C1"]}]}.' },
     { role: "user", content: JSON.stringify(request) },
   ];
 }
@@ -350,7 +381,7 @@ export function answerToRevision(answer: SectionAnswer, refs: Refs): Omit<Sectio
   return {
     revise: answer.revise.flatMap((line) => {
       const lineId = lineIdOf(line.line);
-      return lineId ? [{ lineId, text: withoutEditorialDashes(line.text), unitIds: toIds(line.claims) }] : [];
+      return lineId ? [{ lineId, text: line.text, unitIds: toIds(line.claims) }] : [];
     }),
     retire: answer.retire.flatMap((ref) => lineIdOf(ref) ?? []),
     add: answer.add.map((line) => ({ text: withoutEditorialDashes(line.text), unitIds: toIds(line.claims) })),

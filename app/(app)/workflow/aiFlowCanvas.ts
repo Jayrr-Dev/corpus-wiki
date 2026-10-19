@@ -4,7 +4,7 @@ import type { CanvasDiagram, CanvasEdge, CanvasGroup, CanvasNode } from "./canva
 
 // AI FLOW CANVAS: the AI roles placed left to right. The canvas shows a short label only; the
 // facts in aiFlowModel fill the details panel.
-export const CANVAS = { width: 4900, height: 1300, busX: 40, busEnd: 4220, busY: 600, busH: 90, mainY: 330, lowerY: 1000 };
+export const CANVAS = { width: 4900, height: 1700, busX: 40, busEnd: 4220, busY: 600, busH: 90, mainY: 330, lowerY: 1000 };
 
 const lanes = Object.fromEntries(AI_FLOW_LANES.flatMap((lane) => lane.nodes).map((node) => [node.id, node]));
 function placed(id: string, x: number, y: number, extra: Partial<CanvasNode> & { short: string }): CanvasNode {
@@ -18,6 +18,9 @@ function placed(id: string, x: number, y: number, extra: Partial<CanvasNode> & {
 const M = CANVAS.mainY, L = CANVAS.lowerY;
 
 export const CANVAS_NODES: CanvasNode[] = [
+  placed("sourcer", 1800, 1460, { short: "User-preapproved sources and new knowledge" }),
+  placed("composer", 600, 1460, { short: "Selects and reviews article images" }),
+  placed("asset-lifecycle", 1000, 1460, { short: "Usage, Unlink and seven-day cleanup" }),
   { id: "upload", shape: "pill", variant: "person", x: 120, y: M, title: "You upload a file", facts: [{ label: "Starts", text: "An upload runs groups 1 to 3 in order: save the evidence, clean and file it, then write and review the first articles. Background enrichment and a conditional article refresh follow; glossary and Curator finish the run." }] },
   placed("media", 370, M, { short: "Reads images and video" }),
   placed("reconciler", 620, M, { short: "Turns passages into claims", sends: "claims, links, entities", needsYou: true }),
@@ -66,6 +69,7 @@ const HANDOFFS: [string, string, string?][] = [
   ["start-section", "researcher-search", "context"], ["researcher-search", "reviewer-search", "proposal"], ["reviewer-search", "web-search", "yes"], ["web-search", "researcher-source", "pages"], ["researcher-source", "reviewer-source", "excerpts"], ["reviewer-source", "reconciler-external", "yes"],
 ];
 export const CANVAS_EDGES: CanvasEdge[] = [
+  { from: "composer", to: "asset-lifecycle", kind: "handoff", label: "reusable images" },
   ...HANDOFFS.map(([from, to, label]) => ({ from, to, label, kind: "handoff" as const })),
   { from: "reviewer-search", to: "stop", kind: "reject", label: "no", path: "M2900 1094V1195H3198", labelAt: [2900, 1150] },
   { from: "reviewer-source", to: "stop", kind: "reject", label: "no", path: "M3650 1094V1195H3352", labelAt: [3650, 1150] },
@@ -77,6 +81,8 @@ export const CANVAS_EDGES: CanvasEdge[] = [
 ];
 
 export const CANVAS_GROUPS: CanvasGroup[] = [
+  { id: "sourcer", title: "Add External Info · Sourcer", note: "Your article-menu request preapproves search and import; evidence checks and reconciliation still apply", x: 1580, y: 1300, w: 1500, h: 360 },
+  { id: "illustrations", title: "Illustrations and asset lifecycle", note: "Separate from evidence admission and Change control; see the dedicated flows for each step", x: 300, y: 1300, w: 1250, h: 360 },
   { id: "save", title: "1 · Save the evidence", note: "When you upload a file", x: 20, y: 20, w: 740, h: 520 },
   { id: "clean", title: "2 · Clean and file the knowledge", note: "Right after the save, in order", x: 780, y: 20, w: 1250, h: 520 },
   { id: "articles", title: "3 · Write the articles", note: "Once the knowledge is filed", x: 2050, y: 20, w: 980, h: 520 },

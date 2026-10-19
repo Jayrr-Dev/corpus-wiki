@@ -2,6 +2,34 @@ import { expect, it } from "vitest";
 import { DEFAULT_GRAPH_SETTINGS } from "@/lib/graph/settings";
 import { drawGraph, type DrawInput } from "./drawGraph";
 
+it("keeps domain text at readable screen sizes even below the canvas font limit", () => {
+  let font = "10px sans-serif";
+  let transform: number[] = [];
+  const labels: {font:string;transform:number[];x:number;y:number}[] = [];
+  const ctx = new Proxy({}, {
+    get(_, key) {
+      if (key === "font") return font;
+      if (key === "setTransform") return (...value:number[]) => {transform=value;};
+      if (key === "fillText") return (_:string,x:number,y:number) => labels.push({font,transform:[...transform],x,y});
+      if (key === "measureText") return () => ({width:60});
+      return () => {};
+    },
+    set(_, key, value) {if(key === "font") font=value; return true;},
+  }) as unknown as CanvasRenderingContext2D;
+  drawGraph({
+    ctx,width:800,height:600,pixelRatio:2,camera:{x:400,y:300,k:0.000001},overviewZoom:0.000001,
+    nodes:[],links:[],circles:[{key:"root",label:"Domain",depth:0,isBranch:true,x:0,y:0,r:100,index:0}],
+    display:DEFAULT_GRAPH_SETTINGS.display,
+    palette:{background:"#111",border:"#333",text:"#fff",muted:"#aaa",faint:"#666",fontFamily:"sans-serif",token:()=>"#aaf"},
+    colorOf:()=>null,hoveredId:null,focusIds:new Set(),hoverLabelOnly:false,
+  });
+  expect(labels).toHaveLength(1);
+  expect(labels[0]!.font).toBe("600 14px sans-serif");
+  expect(labels[0]!.transform).toEqual([2,0,0,2,0,0]);
+  expect(labels[0]!.x).toBe(400);
+  expect(labels[0]!.y).toBeCloseTo(297);
+});
+
 it("paints nested domain circles progressively fainter without fading their names", () => {
   const fills: number[] = [];
   const outlines: number[] = [];

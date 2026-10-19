@@ -1,7 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getServerSupabase } from "@/lib/supabase/server";
+import { resetRequestActor } from "@/lib/auth/currentPerson";
+import { SPACE_COOKIE } from "@/lib/spaces/shared";
+import { safeNextPath } from "./paths";
 
 // LOGIN FORM STATE: the error message to show, if any
 export type SignInState = { error: string | null };
@@ -19,18 +23,17 @@ export async function signIn(_prev: SignInState, formData: FormData): Promise<Si
       ? "Can't connect to the sign-in service right now. Please try again in a moment."
       : error.message };
   }
+  (await cookies()).delete(SPACE_COOKIE);
+  await resetRequestActor();
   redirect(next);
 }
 
 // Signs out and returns to the login page
 export async function signOut(): Promise<void> {
   const supabase = await getServerSupabase();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: "local" });
+  if (error) throw new Error(error.message);
+  (await cookies()).delete(SPACE_COOKIE);
+  await resetRequestActor();
   redirect("/login");
-}
-
-// Only same-site paths are allowed after login (blocks open redirects like "//evil.com")
-function safeNextPath(value: FormDataEntryValue | null): string {
-  const path = typeof value === "string" ? value : "";
-  return path.startsWith("/") && !path.startsWith("//") ? path : "/";
 }

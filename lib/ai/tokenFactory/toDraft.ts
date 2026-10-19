@@ -297,7 +297,10 @@ function claimContext(claim: AnswerClaim) {
   const scope = uniqueEntities((applicability?.entities ?? []).map((e) => ({ ...e, role: "subject" as const }))).map(({ type, key }) => ({ type, key }));
   if (applicability && applicability.status !== "scoped" && scope.length) throw new Error("Only scoped applicability may name scope entities.");
   if (applicability?.status === "scoped" && !scope.length && !applicability.conditions?.trim()) throw new Error("Scoped applicability requires entities or conditions.");
-  return normalizeKnowledgeContext({ entities, applicability: { status: applicability?.status ?? "unspecified", entities: scope, conditions: applicability?.conditions?.trim() || null } });
+  const conditions = applicability?.conditions?.trim() || null;
+  // Preserve explicit restrictions when the model mislabeled their status.
+  const status = conditions ? "scoped" : applicability?.status ?? "unspecified";
+  return normalizeKnowledgeContext({ entities, applicability: { status, entities: scope, conditions } });
 }
 
 // SMALL TEXT HELPERS

@@ -139,7 +139,7 @@ export async function startExternalSource(input: { title: string; url: string; t
 }
 
 // EXTERNAL STEP 2: reconciliation that only adds claims (see reconcileExternalUpload)
-export async function processExternalEvent(eventId: string, scope: { article: string; section: string; note: string }, reviewId: string) {
+export async function processExternalEvent(eventId: string, scope: { article: string; section: string; note: string; fallbackDomainPath?: string }, reviewId: string) {
   const client = getAdminSupabase();
   const { data: approval, error: approvalError } = await client.from("external_source_reviews").select("outcome,stage,source_id,context,reverted_at").eq("id", reviewId).single();
   if (approvalError) throw new Error(approvalError.message);
@@ -151,7 +151,7 @@ export async function processExternalEvent(eventId: string, scope: { article: st
   }
   // A company Overview can be approved from its article as well as its stakeholder
   // card. Both need the same reference home, outside the organization's policies.
-  let fallbackDomainPath: string | undefined;
+  let fallbackDomainPath: string | undefined = scope.fallbackDomainPath;
   if (["overview", "history"].includes(scope.section.toLowerCase())) {
     const name = scope.article.replace(/^Stakeholder: /, "");
     const { data: entity, error: entityError } = await client.from("entities").select("id").eq("name", name).is("retired_at", null).limit(1).maybeSingle();

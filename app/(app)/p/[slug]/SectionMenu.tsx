@@ -7,10 +7,16 @@ import { removeSection, renameSection } from "@/lib/server-actions/pages";
 import { ForceCreateForm } from "./ForceCreateDialog";
 import { UpdateArticleForm } from "./UpdateArticleDialog";
 import { IllustrateSectionForm } from "./IllustrateSectionDialog";
+import { AddExternalInfoForm } from "./AddExternalInfoForm";
 
 // SECTION MENU: "…" beside a section title with Update, Force Create, Rename, and Remove (shown on hover unless `className` says otherwise)
 export function SectionMenu({ section, className = "invisible group-focus-within:visible group-hover:visible" }: { section: Tables<"sections">; className?: string }) {
   const items = [
+    {
+      label: "Add External Info",
+      hint: "Ask Sourcer to find external sources and create cited knowledge focused on this section. Your request preapproves search and import.",
+      render: (close: () => void) => <AddExternalInfoForm pageId={section.page_id} sectionId={section.id} sectionTitle={section.title} onDone={close} />,
+    },
     {
       label: "Illustrate",
       hint: "Ask Composer to create or replace this section’s illustration. Optional guidance lets you steer the drawing.",
@@ -58,5 +64,5 @@ export function SectionMenu({ section, className = "invisible group-focus-within
       ),
     },
   ];
-  return <DialogMenu label={`Actions for ${section.title}`} items={items} className={className} />;
+  return <DialogMenu label={`Actions for ${section.title.toLowerCase() === "overview" ? "Introduction" : section.title}`} items={items} className={className} />;
 }

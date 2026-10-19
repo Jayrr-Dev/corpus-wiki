@@ -9,8 +9,8 @@ import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import type { SectionWriter } from "./index";
-import { loadArticleKnowledge } from "./articlePlanner";
-import { expansionActions, expansionSchema, naturalKey, validateExpansion, type ExpansionContext } from "./knowledgeExpansionPlan";
+import { loadArticleKnowledge, NoArticleClaimsError } from "./articlePlanner";
+import { expansionActions, expansionAnswerSchema, naturalKey, validateExpansion, type ExpansionContext } from "./knowledgeExpansionPlan";
 import type { PageCandidate } from "./proposePages";
 import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import { organizeExistingEntityContext } from "./organizeHierarchy";
@@ -74,9 +74,11 @@ async function commitExpansion(deps: Dependencies, eventId: string | null, actio
 export async function expandEntityKnowledge(deps: Dependencies, entityId: string, eventId: string | null = null): Promise<{ entities: number; definitions: number }> {
   await organizeExistingEntityContext(deps.db, deps.client, entityId);
   const context = await loadContext(deps.client, entityId);
+  if (!context.knowledge.units.length) throw new NoArticleClaimsError();
   if (!context.passages.length) throw new Error("This knowledge has no source passages to support definitions.");
+  const schema = expansionAnswerSchema(context.knowledge.units.length, context.passages.length);
   const result = await chatJson(deps.settings, {
-    name: "knowledge_expansion", schema: expansionSchema, jsonSchema: z.toJSONSchema(expansionSchema), maxTokens: 8000,
+    name: "knowledge_expansion", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: 8000, retryInvalidOutput: true,
     messages: [{ role: "system", content: `${skillInstructions(["define_concepts","identify_entities","organize_topics"],deps.settings.skills)}\n${PROMPT}` }, { role: "user", content: JSON.stringify({ contextEntity: context.knowledge.entity, existingEntities: context.existingEntities, domains: context.domainPaths, claims: context.knowledge.units.map((unit, index) => ({ ref: `C${index + 1}`, text: unit.content, context: unit.context })), passages: context.passages.map((passage, index) => ({ ref: `P${index + 1}`, text: passage.text })) }) }],
   });
   validateExpansion(result.value, context);
@@ -90,6 +92,15 @@ export async function expandEntityKnowledge(deps: Dependencies, entityId: string
 export async function expandEventKnowledge(deps: Dependencies, eventId: string): Promise<void> {
   const candidates = await deps.db.call<PageCandidate[]>("page_candidates", { p_event_id: eventId });
   for (const candidate of candidates.filter((candidate) => typeOwnsContext(candidate.type))) {
-    await workflowStep(`expand-entity:${candidate.entityId}`, () => expandEntityKnowledge(deps, candidate.entityId, eventId));
+    await workflowStep(`expand-entity:${candidate.entityId}`, async () => {
+      try { return await expandEntityKnowledge(deps, candidate.entityId, eventId); }
+      catch (error) {
+        // Candidates include referenced parties, not only subjects with their
+        // own sourced knowledge. Optional enrichment has nothing to do for
+        // those entities; do not fail the already published upload.
+        if (!(error instanceof NoArticleClaimsError)) throw error;
+        return { entities: 0, definitions: 0, skipped: "No claims in this entity's context." };
+      }
+    });
   }
 }

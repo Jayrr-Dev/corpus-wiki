@@ -4,7 +4,7 @@ export class SectionBuildCancelled extends Error {
   constructor() { super("Section update cancelled."); }
 }
 
-const WRITES = new Set(["commit_change_set", "auto_accept_exceptions", "upload_workflow_write", "finish_section_build", "mark_section_stale"]);
+const WRITES = new Set(["commit_change_set", "commit_text_patch_set", "auto_accept_exceptions", "upload_workflow_write", "finish_section_build", "mark_section_stale"]);
 
 export function cancellableBuildDb(db: DbRpc, sectionId: string, token: string): DbRpc {
   return {

@@ -156,11 +156,15 @@ export type DraftAction = {
 export type DraftChangeSet = {
   summary: string;
   actions: DraftAction[];
-  trace: { modelVersion: string | null; promptVersion: string | null; tokensIn: number | null; tokensOut: number | null };
+  trace: { modelVersion: string | null; promptVersion: string | null; tokensIn: number | null; tokensOut: number | null;
+    articleScaffold?: { keepSectionIds: string[]; replaceSectionIds: string[]; sections: { title: string; unitIds: string[]; position: number }[] } };
 };
 
 // THE SEAM: one call per uploaded file
 export interface ReconciliationClient {
   readonly name: string;
-  draftChangeSet(input: ReconciliationInput): Promise<DraftChangeSet>;
+  draftChangeSet(input: ReconciliationInput, publish?: PublishKnowledgeBatch): Promise<DraftChangeSet>;
 }
+
+export type SavedKnowledgeAction = { position: number; unitId: string | null; type: string; outcome: string };
+export type PublishKnowledgeBatch = (key: string, draft: DraftChangeSet) => Promise<SavedKnowledgeAction[]>;

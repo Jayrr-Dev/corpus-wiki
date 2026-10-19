@@ -14,6 +14,7 @@ import { z } from "zod";
 import { domainReviewKey, focusedReview, validateFocusedReview } from "@/lib/domains/focusedReview";
 import { organizationEvidence, organizationPlanSchema, organizationCritiqueSchema, simulateOrganization, validateAlternativeCoverage, validateCritique, ORGANIZATION_METHOD, ORGANIZATION_CRITIC } from "@/lib/domains/organizationEvidence";
 import { residualParentEvidence, validateParentGroups } from "@/lib/domains/organizationEvidence";
+import { TAB_FILING_RULES } from "@/lib/domains/tabOrganization";
 
 const gradeHistorySchema = z.array(z.object({
   attempt: z.number(),
@@ -86,7 +87,7 @@ export async function updateDomains(guidance: string = "", graphOptions: { thres
     const context = { ...scope.context, clusters: undefined, claims: scope.context.clusters.flatMap(c => c.claims), partitionAlternatives: alternatives };
     const evidence = JSON.stringify(context);
     if (evidence.length > 300000) throw new Error("This domain needs a smaller review scope. No domains changed.");
-    const instructions = (await loadRoleInstructions(db)).find(r => r.role === "domain_decider")?.instructions ?? DOMAIN_DECIDER_INSTRUCTIONS;
+    const instructions = ((await loadRoleInstructions(db)).find(r => r.role === "domain_decider")?.instructions ?? DOMAIN_DECIDER_INSTRUCTIONS) + "\n" + TAB_FILING_RULES;
     let feedback = "";
     let answer: Awaited<ReturnType<typeof propose>> | undefined;
     let critique: z.infer<typeof organizationCritiqueSchema> | undefined;

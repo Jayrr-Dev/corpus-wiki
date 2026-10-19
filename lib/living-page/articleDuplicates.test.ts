@@ -3,6 +3,8 @@ import { articleDuplicateCandidates } from "./articleDuplicates";
 import type { ArticleIndexEntry, ArticleReviewInput } from "./articleReview";
 import { nextStep } from "./articleReview";
 import { reviewArticleProposal } from "./runArticleReview";
+import { uploadExecution } from "@/lib/ingest/workflowContext";
+import type { DbRpc } from "@/lib/db/rpc";
 
 const article = (id: string, title: string, scope = "The Edmonton application process."): ArticleIndexEntry => ({
   id, title, scope, type: "process", parentId: null, claimCount: 10,
@@ -14,6 +16,16 @@ const input = (title: string, articles: ArticleIndexEntry[]): ArticleReviewInput
 });
 
 describe("page title duplicate candidates", () => {
+  it("keeps an unavailable upload review retryable instead of saving it as an editorial rejection", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("Review service unavailable", { status: 400 })));
+    try {
+      await expect(uploadExecution.run({ eventId: "upload", token: "owner", db: {} as DbRpc },
+        () => reviewArticleProposal({ apiKey: "test", model: "test-model" }, input("Recorded subject", []))))
+        .rejects.toThrow("Review service unavailable");
+      await expect(reviewArticleProposal({ apiKey: "test", model: "test-model" }, input("Recorded subject", [])))
+        .resolves.toMatchObject({ verdict: "reject", decidedBy: "rule" });
+    } finally { vi.unstubAllGlobals(); }
+  });
   it.each([
     ["Consumer products", "Consumer product"],
     ["Quality managment", "Quality management"],

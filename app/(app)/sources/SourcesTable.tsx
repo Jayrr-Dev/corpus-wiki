@@ -44,6 +44,7 @@ function sourceColumns(usage: Map<string, SourceUsage> | undefined, uploads: Upl
     linkColumn<Source>("title", "Title", (source) => source.title, (source) => `/sources/${source.id}`),
     countColumn<Source>("knowledge", "Knowledge", (source) => (usage ? (usage.get(source.id)?.units ?? 0) : null)),
     countColumn<Source>("articles", "Articles", (source) => (usage ? (usage.get(source.id)?.articles ?? 0) : null)),
+    countColumn<Source>("sections", "Sections", (source) => (usage ? (usage.get(source.id)?.sections ?? 0) : null)),
     countColumn<Source>("lines", "Lines", (source) => (usage ? (usage.get(source.id)?.lines ?? 0) : null)),
     dateColumn<Source>("sourceDate", "Source date", (source) => source.source_date),
     textColumn<Source>("by", origin === "external" ? "Added by" : "Uploaded by", (source) => origin === "external" ? "AI" : uploads.get(source.id)?.person_id ?? "", (source) => origin === "external" ? <span>AI</span> : <UploaderName event={uploads.get(source.id)} />),

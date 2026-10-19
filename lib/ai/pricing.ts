@@ -5,9 +5,9 @@
 // Source: Nebius Token Factory pricing, checked 2026-10-15; Claude rows: Anthropic API list prices, checked 2026-10-16.
 // =====================================================================
 
-export const PRICES_CHECKED_ON = "2026-10-15";
+export const PRICES_CHECKED_ON = "2026-10-18 (Claude); 2026-10-15 (Token Factory)";
 
-export type ModelPrice = { model: string; inputPerM: number; outputPerM: number };
+export type ModelPrice = { model: string; inputPerM: number; outputPerM: number; cacheReadMultiplier?: number; longContext?: { above: number; inputPerM: number; outputPerM: number } };
 
 // Keyed by the model name without its org prefix ("zai-org/GLM-5.3-Flash" -> "GLM-5.3-Flash")
 export const MODEL_PRICES: readonly ModelPrice[] = [
@@ -31,29 +31,65 @@ export const MODEL_PRICES: readonly ModelPrice[] = [
   { model: "Qwen3-235B-A22B-Instruct-2507", inputPerM: 0.2, outputPerM: 0.6 },
   { model: "gpt-oss-120b", inputPerM: 0.15, outputPerM: 0.6 },
   { model: "Llama-3.3-70B-Instruct", inputPerM: 0.13, outputPerM: 0.4 },
-  // Claude ("anthropic/<id>" picks); cache reads bill lower, so cached calls are overestimated
-  { model: "claude-fable-5-1", inputPerM: 10.0, outputPerM: 50.0 },
-  { model: "claude-opus-5-5", inputPerM: 4.0, outputPerM: 20.0 },
+  // https://platform.claude.com/docs/en/about-claude/pricing
+  { model: "claude-fable-5-1", inputPerM: 10.0, outputPerM: 50.0, cacheReadMultiplier: 0.025 },
+  { model: "claude-opus-5-5", inputPerM: 4.0, outputPerM: 20.0, cacheReadMultiplier: 0.05 },
   { model: "claude-opus-5", inputPerM: 5.0, outputPerM: 25.0 },
   { model: "claude-opus-4-8", inputPerM: 5.0, outputPerM: 25.0 },
-  { model: "claude-sonnet-5-5", inputPerM: 2.0, outputPerM: 10.0 },
+  { model: "claude-sonnet-5-5", inputPerM: 2.0, outputPerM: 10.0, cacheReadMultiplier: 0.05 },
   { model: "claude-sonnet-5", inputPerM: 2.0, outputPerM: 10.0 },
-  { model: "claude-haiku-5-5", inputPerM: 0.1, outputPerM: 0.5 },
+  { model: "claude-haiku-5-5", inputPerM: 0.1, outputPerM: 0.5, longContext: { above: 100_000, inputPerM: 0.5, outputPerM: 2.5 } },
+  { model: "claude-fable-5", inputPerM: 10, outputPerM: 50 },
+  { model: "claude-opus-4-7", inputPerM: 5, outputPerM: 25 },
+  { model: "claude-opus-4-6", inputPerM: 5, outputPerM: 25 },
+  { model: "claude-sonnet-4-6", inputPerM: 3, outputPerM: 15 },
+  { model: "claude-haiku-4-5", inputPerM: 1, outputPerM: 5 },
 ];
 
 const BY_NAME = new Map(MODEL_PRICES.map((price) => [price.model.toLowerCase(), price]));
 
 // The price for a model id, or null when the table has none
 export function priceFor(model: string): ModelPrice | null {
+  // These providers have their own rates, even for the same model name.
+  if (model.startsWith("openrouter/") || model.startsWith("cerebras/")) return null;
   const name = model.split("/").pop() ?? model;
-  return BY_NAME.get(name.toLowerCase()) ?? null;
+  return BY_NAME.get(name.toLowerCase()) ?? BY_NAME.get(name.toLowerCase().replace(/-\d{8}$/, "")) ?? null;
 }
 
 // Estimated dollars for some tokens on one model (null = unpriced model)
-export function estimateCost(model: string, promptTokens: number, completionTokens: number): number | null {
+export function estimateCost(model: string, promptTokens: number, completionTokens: number, usageDetails?: unknown): number | null {
   const price = priceFor(model);
   if (!price) return null;
-  return (promptTokens * price.inputPerM + completionTokens * price.outputPerM) / 1_000_000;
+  if (![promptTokens, completionTokens].every((value) => Number.isFinite(value) && value >= 0)) return null;
+  const rates = price.longContext && promptTokens > price.longContext.above ? price.longContext : price;
+  const usage = usageDetails && typeof usageDetails === "object" ? usageDetails as Record<string, unknown> : {};
+  if (Array.isArray(usage.billing_rounds) && usage.billing_rounds.length) {
+    const costs = usage.billing_rounds.map((round: unknown) => {
+      if (!round || typeof round !== "object") return null;
+      const item = round as Record<string, unknown>;
+      if (typeof item.prompt_tokens !== "number" || typeof item.completion_tokens !== "number") return null;
+      return estimateCost(model, item.prompt_tokens, item.completion_tokens, item);
+    });
+    return costs.some((cost) => cost === null) ? null : costs.reduce<number>((sum, cost) => sum + cost!, 0);
+  }
+  const count = (value: unknown) => typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+  const claude = price.model.startsWith("claude-");
+  const read = claude ? count(usage.cache_read_input_tokens) : 0;
+  const write = claude ? count(usage.cache_creation_input_tokens) : 0;
+  const creation = usage.cache_creation as { ephemeral_1h_input_tokens?: number } | null | undefined;
+  const hourWrite = claude ? count(creation?.ephemeral_1h_input_tokens) : 0;
+  if (read + write > promptTokens || hourWrite > write) return null;
+  const input = promptTokens - read - write;
+  return (rates.inputPerM * (input + read * (price.cacheReadMultiplier ?? 0.1) + (write - hourWrite) * 1.25 + hourWrite * 2)
+    + completionTokens * rates.outputPerM) / 1_000_000;
+}
+
+export type CostedCall = { model: string; prompt_tokens: number | null; completion_tokens: number | null; usage_details?: unknown };
+
+// Missing provider usage is unknown spend, never a free request.
+export function estimateCallCost(call: CostedCall): number | null {
+  if (call.prompt_tokens === null || call.completion_tokens === null) return null;
+  return estimateCost(call.model, call.prompt_tokens, call.completion_tokens, call.usage_details);
 }
 
 // "$0.1765"-style for small sums, "$12.40" once it reaches a dollar

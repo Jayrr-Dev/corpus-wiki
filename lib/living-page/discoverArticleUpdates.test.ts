@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { discoverArticleUpdates, discoveryQueries, discoverySections, repairEmptyIntroductions } from "./discoverArticleUpdates";
+import { discoverArticleUpdates, discoveryQueries, discoverySections, repairEmptyIntroductions, groupClaimsForArticle } from "./discoverArticleUpdates";
 import { articleUpdateSchema } from "./updateRequest";
 
 const entity = { type: "company", key: "example" };
@@ -26,6 +26,32 @@ describe("article update discovery boundaries", () => {
 
 
 afterEach(() => vi.unstubAllGlobals());
+it("lets related new evidence reuse an existing topic for whole-article planning", async () => {
+  const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(JSON.stringify({ model: "test", choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [{ title: "Requirements", claims: ["C1"] }], excluded: [] }) } }] })));
+  vi.stubGlobal("fetch", fetch);
+  const result = await groupClaimsForArticle({ apiKey: "test" }, "Example", ["Requirements"], [candidate], "");
+  expect(result.sections).toEqual([{ title: "Requirements", query: { unitIds: ["new"], article: true } }]);
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+it("merges the same new topic across discovery batches without losing claims", async () => {
+  const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async (_url, init) => {
+    const request = JSON.parse(String(init?.body));
+    const input = JSON.parse(request.messages.find((message: { role: string }) => message.role === "user").content);
+    return new Response(JSON.stringify({ model: "test", choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [{ title: "Detailed behavior", claims: input.claims.map((claim: { ref: string }) => claim.ref) }], excluded: [] }) } }] }));
+  });
+  vi.stubGlobal("fetch", fetch);
+  const candidates = Array.from({ length: 41 }, (_, index) => ({ ...candidate, unitId: `u${index}`, revisionId: `r${index}` }));
+  const result = await groupClaimsForArticle({ apiKey: "test" }, "Example", [], candidates, "");
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(result.sections).toHaveLength(1);
+  expect(result.sections[0]?.query.unitIds).toHaveLength(41);
+});
+it("rejects silent omissions instead of accepting thin coverage", async () => {
+  const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => new Response(JSON.stringify({ model: "test", choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [], excluded: [] }) } }] })));
+  vi.stubGlobal("fetch", fetch);
+  await expect(groupClaimsForArticle({ apiKey: "test" }, "Example", [], [candidate], "")).rejects.toThrow("every claim");
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
 it("discovers relevant new claims using current planning skills and the one-run note", async () => {
   const tables: Record<string, unknown> = {
     pages: { title: "Safety at ExampleCo", scope: "Safety requirements; excludes unrelated company history." },
@@ -34,10 +60,10 @@ it("discovers relevant new claims using current planning skills and the one-run 
     revisions: [{ id: "rnew", content: candidate.content, knowledge_context: { entities: [{ ...entity, role: "subject" }], applicability: { status: "scoped", entities: [entity], conditions: null } } }],
   };
   const client = { from: (table: string) => {
-    const chain = { select: () => chain, eq: () => chain, is: () => chain, in: () => chain, order: () => chain, single: () => chain, then: (resolve: (result: object) => unknown) => Promise.resolve(resolve({ data: tables[table], error: null })) };
+    const chain = { select: () => chain, eq: () => chain, is: () => chain, in: () => chain, range: () => chain, order: () => chain, single: () => chain, then: (resolve: (result: object) => unknown) => Promise.resolve(resolve({ data: tables[table], error: null })) };
     return chain;
   } } as unknown as import("@/lib/supabase/admin").AdminSupabase;
-  const db: import("@/lib/db/rpc").DbRpc = { call: async <T>(_name: string, args?: Record<string, unknown>) => ((args?.p_query as { unitIds?: string[] }).unitIds ? ["old"] : ["old", "new"]) as T };
+  const db: import("@/lib/db/rpc").DbRpc = { call: async <T>(name: string, args?: Record<string, unknown>) => (name === "article_knowledge_candidates" ? ["new"] : (args?.p_query as { unitIds?: string[] }).unitIds ? ["old"] : ["old", "new"]) as T };
   const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(new Response(JSON.stringify({ model: "test", usage: { prompt_tokens: 120, completion_tokens: 30 }, choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [{ title: "New requirement", claims: ["C1"] }] }) } }] })));
   vi.stubGlobal("fetch", fetch);
   const result = await discoverArticleUpdates(db, client, { apiKey: "test", skills: { plan_articles: { id: "custom", name: "Planning", version: 4, instructions: "CUSTOM_PLAN_INSTRUCTIONS" } } }, "page", "Explain new requirements clearly.");

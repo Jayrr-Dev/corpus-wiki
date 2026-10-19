@@ -7,6 +7,7 @@ import { webSearchKey } from "@/lib/knowledge/webSearch";
 import { rebuildPage } from "@/lib/living-page";
 import { orchestrateClaims } from "@/lib/living-page/articleOrchestrator";
 import { discoverArticleUpdates } from "@/lib/living-page/discoverArticleUpdates";
+import { articleAdditionActions } from "@/lib/living-page/articleScaffold";
 import { forceCreateSection, NoSectionKnowledgeError } from "@/lib/living-page/forceCreateSection";
 import { refreshOrganizationOverviews, type OverviewDeps } from "@/lib/living-page/refreshOrganizationOverviews";
 import { runPageReview } from "@/lib/living-page/runPageReview";
@@ -53,7 +54,7 @@ async function commitAi(deps: DispatchDeps, summary: string, actions: DraftActio
 
 // REVIEWER: the page review a person starts with "Review page"
 async function review(deps: DispatchDeps, dispatch: PageDispatch): Promise<string> {
-  await runPageReview(deps.db, deps.settings, dispatch.pageId, deps.embedder ?? null, undefined, dispatch.note);
+  await runPageReview(deps.db, deps.settings, dispatch.pageId, deps.embedder ?? null, undefined, dispatch.note, deps.writer ? { client: deps.client, writer: deps.writer } : undefined);
   return "Reviewed the page with the Curator's focus.";
 }
 
@@ -69,8 +70,10 @@ async function plan(deps: DispatchDeps, dispatch: PageDispatch): Promise<string 
   const key = intentHash(dispatch);
   const { sections } = await workflowStep(`dispatch:plan:${key}`, () => discoverArticleUpdates(deps.db, deps.client, deps.settings, dispatch.pageId, dispatch.note, dispatch.claimIds));
   if (!sections.length) return null;
+  const actions = await workflowStep(`dispatch:scaffold:${key}`, () => articleAdditionActions(deps.db, deps.client, deps.settings, dispatch.pageId, sections, dispatch.note));
+  if (!actions.length) return null;
   await commitAi(deps, `Planner (for the Curator): added ${sections.length} section(s) of stored knowledge`,
-    sections.map((section): DraftAction => ({ ...NO_PERSON, type: "create_section", targetId: null, input: { pageId: dispatch.pageId, ...section } })), "curator-dispatch-planner-v1");
+    actions, "curator-dispatch-planner-v2");
   if (deps.writer) await rebuildPage(deps.db, deps.writer, dispatch.pageId);
   return `Added ${sections.length} section(s).`;
 }

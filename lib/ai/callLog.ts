@@ -21,6 +21,7 @@ export type AiCallRecord = {
   durationMs: number;
   status: AiCallStatus;
   error: string | null;
+  usageDetails?: CompletionUsage | null;
 };
 
 export type AiCallLogger = (call: AiCallRecord) => Promise<void>;
@@ -31,14 +32,19 @@ export type CompletionUsage = {
   completion_tokens?: number;
   reasoning_tokens?: number;
   completion_tokens_details?: { reasoning_tokens?: number | null } | null;
+  cache_read_input_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_creation?: { ephemeral_5m_input_tokens?: number; ephemeral_1h_input_tokens?: number } | null;
+  billing_rounds?: CompletionUsage[];
 };
 
 // Token counts from a usage field (all null when the provider sent none)
-export function usageTokens(usage: CompletionUsage | undefined): Pick<AiCallRecord, "promptTokens" | "completionTokens" | "reasoningTokens"> {
+export function usageTokens(usage: CompletionUsage | undefined): Pick<AiCallRecord, "promptTokens" | "completionTokens" | "reasoningTokens" | "usageDetails"> {
   return {
     promptTokens: usage?.prompt_tokens ?? null,
     completionTokens: usage?.completion_tokens ?? null,
     reasoningTokens: usage?.completion_tokens_details?.reasoning_tokens ?? usage?.reasoning_tokens ?? null,
+    usageDetails: usage ?? null,
   };
 }
 

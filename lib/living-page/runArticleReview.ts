@@ -2,6 +2,7 @@ import "server-only";
 import { chatJson, type ChatJsonResult, type TokenFactorySettings } from "@/lib/ai/chat";
 import { ARTICLE_REVIEWER_INSTRUCTIONS } from "@/lib/ai/rolePolicies";
 import { ARTICLE_DUPLICATE_INSTRUCTIONS } from "./articleDuplicates";
+import { uploadExecution } from "@/lib/ingest/workflowContext";
 import { type ArticleReviewAnswer, type ArticleReviewDecision, type ArticleReviewInput, articleReviewJsonSchema, articleReviewSchema, buildArticleReviewMessages, readArticleReview, ruleDecision, validateArticleReview } from "./articleReview";
 
 export const ARTICLE_REVIEW_PROMPT_VERSION = "article-review-title-dedupe-v2";
@@ -14,7 +15,8 @@ function independent(settings: TokenFactorySettings): TokenFactorySettings {
 }
 
 // REVIEW ONE PROPOSAL: rules first, then the model in a fresh two-message context, with one
-// corrective retry. Any failure rejects: no page is made, and the claims stay in the store.
+// corrective retry. Upload infrastructure failures remain retryable unfinished
+// work; a manual run still returns a safe no-publication result.
 export async function reviewArticleProposal(settings: TokenFactorySettings, input: ArticleReviewInput): Promise<ArticleReviewResult> {
   const base = { model: null, promptVersion: ARTICLE_REVIEW_PROMPT_VERSION, tokensIn: null, tokensOut: null };
   const rule = ruleDecision(input);
@@ -38,6 +40,7 @@ export async function reviewArticleProposal(settings: TokenFactorySettings, inpu
     }
     return { ...readArticleReview(last.value), ...base, model: last.model, ...usage() };
   } catch (error) {
+    if (uploadExecution.getStore()) throw error;
     const reason = `No page was made because the review could not finish: ${error instanceof Error ? error.message : String(error)}`;
     return { verdict: "reject", targetPageId: null, sectionTitle: null, failed: [], reason, decidedBy: "rule", ...base, model: calls.at(-1)?.model ?? null, ...usage() };
   }

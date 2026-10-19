@@ -54,9 +54,11 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  motion = false,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
+  motion?: boolean
 }) {
   return (
     <DialogPortal>
@@ -65,6 +67,7 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full min-w-72 max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-panel text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm",
+          motion && "dialog-menu-motion",
           className
         )}
         {...props}

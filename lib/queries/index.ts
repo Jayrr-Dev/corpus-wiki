@@ -1,5 +1,6 @@
 import type { ListOptions } from "./fetchers";
 import { useTableList, useTableRow } from "./useTable";
+import { useActiveSpace } from "@/components/shell/SpaceProvider";
 
 // =====================================================================
 // TYPED READ HOOKS, ONE PAIR PER TABLE (list + by id). Reads only:
@@ -60,8 +61,10 @@ export const useChangeSet = (id?: string) => useTableRow("change_sets", id);
 export const useActions = (o: ListOptions<"actions"> = {}) =>
   useTableList("actions", { orderBy: "position", ...o });
 export const useAction = (id?: string) => useTableRow("actions", id);
-export const useExceptions = (o: ListOptions<"exceptions"> = {}) =>
-  useTableList("exceptions", { orderBy: "created_at", ascending: false, ...o });
+export const useExceptions = (o: ListOptions<"exceptions"> = {}) => {
+  const space = useActiveSpace();
+  return useTableList("exceptions", { orderBy: "created_at", ascending: false, ...o, filters: { ...o.filters, space_id: space.id } });
+};
 export const useException = (id?: string) => useTableRow("exceptions", id);
 
 // LIVING PAGE (removed pages and sections are retired, so lists show only shown ones)

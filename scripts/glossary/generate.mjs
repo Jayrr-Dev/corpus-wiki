@@ -4,12 +4,26 @@ import { createClient } from "@supabase/supabase-js";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
+const spaceFlag = process.argv.indexOf("--space");
+const spaceId = spaceFlag < 0 ? null : process.argv[spaceFlag + 1];
+if (spaceFlag >= 0 && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(spaceId ?? "")) throw new Error("--space requires a space UUID.");
 const server = await createServer({
-  root, configFile: false, server: { middlewareMode: true },
+  root, configFile: false, server: { middlewareMode: true, hmr: false, watch: null },
+  optimizeDeps: { noDiscovery: true },
   resolve: { alias: { "@": root, "server-only": fileURLToPath(new URL("../../test/server-only.ts", import.meta.url)) } },
 });
 try {
-  const client = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+  const client = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: {
+      headers: spaceId ? { "x-space-id": spaceId } : {},
+      // The standalone runner must have the same bounded database calls as the
+      // app; a missing HTTP response must not strand its generation lease.
+      fetch: (input, init = {}) => fetch(input, { ...init,
+        signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000),
+      }),
+    },
+  });
   const { supabaseRpc } = await server.ssrLoadModule("/lib/db/rpc.ts");
   const { readModelChoice } = await server.ssrLoadModule("/lib/ai/models.ts");
   const { tokenFactoryFromEnv } = await server.ssrLoadModule("/lib/ai/chat.ts");

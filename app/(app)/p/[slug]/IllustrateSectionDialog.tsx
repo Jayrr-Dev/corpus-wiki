@@ -1,6 +1,8 @@
 "use client";
 import { type FormEvent, useId, useState } from "react";
 import { toast } from "sonner";
+import { InfoIcon } from "@/components/icons";
+import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,11 +25,20 @@ export function IllustrateSectionForm({ sectionId, title, onClose }: { sectionId
     else toast.success("Section illustration ready.");
   };
   return <form onSubmit={submit} className="flex flex-col gap-4">
-    <DialogHeader><DialogTitle>Illustrate section</DialogTitle><DialogDescription>Create a new illustration for “{title}”.</DialogDescription></DialogHeader>
+    <DialogHeader>
+      <div className="flex items-center gap-2 pr-6">
+        <DialogTitle>Illustrate section</DialogTitle>
+        <Tooltip content={`Create a new illustration for “${title}”.`} className="max-w-64">
+          <button type="button" aria-label="About this illustration" className="inline-flex shrink-0 rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
+            <InfoIcon size={14} />
+          </button>
+        </Tooltip>
+      </div>
+      <DialogDescription className="sr-only">Create a new illustration for “{title}”.</DialogDescription>
+    </DialogHeader>
     <FormRow htmlFor={noteId} label="How would you like it illustrated? (optional)">
       <Textarea id={noteId} rows={4} maxLength={2000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Describe the subject, style, viewpoint, colours, or what to avoid. For example: A clean top-down SVG with the clearance marked." />
     </FormRow>
-    <p className="text-sm text-muted-foreground">Leave this blank to let Composer choose. It uses this section’s facts and reviews the image before saving. An existing Composer image is replaced only when a different image passes review; text and other sections’ images stay.</p>
     <DialogFooter><Button type="button" variant="ghost" onClick={onClose}>Cancel</Button><Button type="submit" disabled={illustrate.isPending}>Illustrate</Button></DialogFooter>
   </form>;
 }

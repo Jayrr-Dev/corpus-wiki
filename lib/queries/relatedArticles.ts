@@ -1,16 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { readRelatedArticles } from "@/lib/server-actions/relatedArticles";
 
-export function useRelatedArticles(pageId: string, contextKey: string) {
+export function useRelatedArticles(pageId: string, contextKey: string, enabled = true) {
   return useQuery({
     queryKey: ["table", "lines", "related-articles", pageId, contextKey],
+    enabled,
+    placeholderData: (previous, query) => query?.queryKey[3] === pageId ? previous : undefined,
     queryFn: async () => {
       const result = await readRelatedArticles(pageId);
       if (!result.ok) throw new Error(result.error);
       return result.articles;
     },
-    staleTime: 60_000,
-    // Refresh connection/vector changes too, including tables without Realtime.
-    refetchInterval: 60_000,
+    staleTime: Infinity,
+    gcTime: 30 * 60_000,
   });
 }

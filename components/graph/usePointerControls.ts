@@ -167,6 +167,7 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
         const world = toWorld(camera.current, point);
         gesture.node.x = gesture.node.fx = world.x - gesture.offset.x;
         gesture.node.y = gesture.node.fy = world.y - gesture.offset.y;
+        layout.current.revision++;
       } else if (gesture.mode === "pan") {
         camera.current = panBy(camera.current, point.x - gesture.last.x, point.y - gesture.last.y);
         gesture.last = point;
@@ -240,9 +241,14 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
     // WHEEL: zoom around the cursor (non-passive so the page does not scroll)
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
+      if (gesture.mode !== "idle") return;
       isAutoFit.current = false;
       const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1);
-      motion.animateTo(zoomAt(motion.target.current ?? camera.current, localPoint(element, event), Math.max(-160, Math.min(160, delta))));
+      // Wheel/pinch streams already supply intermediate steps. Animating each
+      // one queues scale ahead of the visible view and moves the cursor anchor.
+      motion.cancel();
+      camera.current = zoomAt(camera.current, localPoint(element, event), Math.max(-160, Math.min(160, delta)));
+      hoveredId.current = null;
       latest.current.redraw();
     };
 

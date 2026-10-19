@@ -49,12 +49,16 @@ export type MigrationReport = { applied: MigrationFile[]; pending: MigrationFile
 
 // Every migration file in version order; a badly named .sql file is an error, not a skip
 export function readMigrationFiles(dir: string = MIGRATIONS_DIR): MigrationFile[] {
+  const seen = new Map<string, string>();
   return readdirSync(dir)
     .filter((fileName) => fileName.endsWith(".sql"))
     .sort()
     .map((fileName) => {
       const match = FILE_NAME_PATTERN.exec(fileName);
       if (!match?.[1] || !match[2]) throw new Error(`Migration file name must be <version>_<name>.sql: ${fileName}`);
+      const previous = seen.get(match[1]);
+      if (previous) throw new Error(`Duplicate migration version ${match[1]}: ${previous} and ${fileName}. Give every migration a unique version before applying or checking status.`);
+      seen.set(match[1], fileName);
       return { version: match[1], name: match[2], path: join(dir, fileName) };
     });
 }

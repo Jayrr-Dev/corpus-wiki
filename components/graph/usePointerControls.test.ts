@@ -2,6 +2,7 @@ import { expect, it, vi } from "vitest";
 vi.mock("react",()=>({useRef:(current:unknown)=>({current}),useLayoutEffect:(fn:()=>void)=>fn(),useEffect:(fn:()=>void)=>fn()}));
 import { usePointerControls } from "./usePointerControls";
 import type { SimNode } from "@/lib/graph/physics";
+import { toWorld } from "@/lib/graph/camera";
 
 function setup(){
  const listeners=new Map<string,(e:unknown)=>void>();
@@ -9,12 +10,36 @@ function setup(){
  const nodes=[{id:"a",x:10,y:20,degree:1},{id:"b",x:40,y:50,degree:1}] as SimNode[];
  const simulation={stop:vi.fn(),alpha:vi.fn(()=>0.01),alphaTarget:vi.fn(),restart:vi.fn()};
  const onOpen=vi.fn(),onSelect=vi.fn(),onContextNode=vi.fn(),onSelectionBox=vi.fn();
+ const camera={current:{x:100,y:50,k:2}};
+ const motion={cancel:vi.fn(),animateTo:vi.fn(),target:{current:{x:500,y:400,k:8}}};
  // Hooks are mocked above to wire real pointer handlers onto a test canvas.
  // eslint-disable-next-line react-hooks/rules-of-hooks
- usePointerControls({canvas:{current:element as unknown as HTMLCanvasElement},layout:{current:{nodes,links:[],simulation:simulation as never}},camera:{current:{x:100,y:50,k:2}},hoveredId:{current:null},isAutoFit:{current:false},nodeSize:1,onOpen,onSelect,onContextNode,onSelectionBox,motion:{cancel:vi.fn(),animateTo:vi.fn(),target:{current:null}},redraw:vi.fn()});
+ usePointerControls({canvas:{current:element as unknown as HTMLCanvasElement},layout:{current:{nodes,links:[],simulation:simulation as never,revision:0}},camera,hoveredId:{current:null},isAutoFit:{current:false},nodeSize:1,onOpen,onSelect,onContextNode,onSelectionBox,motion,redraw:vi.fn()});
  const send=(type:string,x:number,y:number,extra={})=>listeners.get(type)!({clientX:x,clientY:y,button:0,pointerId:1,pointerType:"mouse",preventDefault:vi.fn(),...extra});
- return {send,onOpen,onSelect,onContextNode,onSelectionBox,nodes,simulation};
+ return {send,onOpen,onSelect,onContextNode,onSelectionBox,nodes,simulation,camera,motion};
 }
+it("wheel streams zoom the visible camera immediately and keep each cursor position anchored",()=>{
+ const t=setup();
+ for(const [x,y] of [[300,200],[450,280],[200,150]]) {
+  const point={x:x!-10,y:y!-20};
+  const before=toWorld(t.camera.current,point);
+  const scale=t.camera.current.k;
+  t.send("wheel",x!,y!,{deltaY:-40,deltaMode:0});
+  expect(t.camera.current.k).toBeGreaterThan(scale);
+  expect(toWorld(t.camera.current,point).x).toBeCloseTo(before.x);
+  expect(toWorld(t.camera.current,point).y).toBeCloseTo(before.y);
+ }
+ expect(t.motion.cancel).toHaveBeenCalledTimes(3);
+ expect(t.motion.animateTo).not.toHaveBeenCalled();
+});
+it("wheel input cannot change the camera underneath an active node drag",()=>{
+ const t=setup();t.send("pointerdown",130,110);
+ const before={...t.camera.current};
+ t.send("wheel",130,110,{deltaY:-160,deltaMode:0});
+ expect(t.camera.current).toEqual(before);
+ t.send("pointermove",150,130);
+ expect(t.nodes[0]).toMatchObject({x:20,y:30});
+});
 it("right click opens the context menu without opening or dragging a node",()=>{
  const t=setup();t.send("pointerdown",130,110,{button:2});t.send("pointerup",130,110,{button:2});t.send("contextmenu",130,110);
  expect(t.onOpen).not.toHaveBeenCalled();expect(t.onContextNode.mock.calls[0]?.[0].id).toBe("a");

@@ -98,6 +98,10 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     [settings.forces, settings.display.domainCircles],
   );
   const layout = useForceLayout(graph, forces, settings.display.nodeSize, redrawRef);
+  const geometry = useRef<{
+    nodes: SimNode[]; revision: number; nodeSize: number; domainCircles: boolean;
+    width: number; height: number; circles: ReturnType<typeof clusterCircles>; overview: Camera;
+  } | null>(null);
 
   // DRAW NOW: paints the current layout with the latest settings
   // The stable callback intentionally reads the latest mutable simulation on each frame.
@@ -107,10 +111,17 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     const element = canvas.current;
     const ctx = element?.getContext("2d");
     if (!element || !ctx || size.current.width === 0) return;
-    const { nodes, links } = layout.current;
+    const { nodes, links, revision } = layout.current;
     const { display } = latest.current;
-    const circles = display.domainCircles ? clusterCircles(nodes, display.nodeSize) : [];
-    const overview = fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height);
+    let bounds = geometry.current;
+    if (!bounds || bounds.nodes !== nodes || bounds.revision !== revision || bounds.nodeSize !== display.nodeSize || bounds.domainCircles !== display.domainCircles || bounds.width !== size.current.width || bounds.height !== size.current.height) {
+      const circles = display.domainCircles ? clusterCircles(nodes, display.nodeSize) : [];
+      bounds = { nodes, revision, nodeSize: display.nodeSize, domainCircles: display.domainCircles, ...size.current,
+        circles, overview: fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height) };
+      geometry.current = bounds;
+    }
+    const { circles, overview } = bounds;
+    const palette = readCanvasPalette(element);
     if (isAutoFit.current) camera.current = overview;
     domainLabelBoxes.current=[];
     drawGraph({
@@ -124,7 +135,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
       links,
       circles,
       display,
-      palette: readCanvasPalette(element),
+      palette,
       colorOf: latest.current.colorOf,
       hoveredId: hoveredId.current,
       focusIds: focusOf(hoveredId.current, links),
@@ -133,8 +144,9 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     });
     ctx.save();
     ctx.setTransform(window.devicePixelRatio || 1,0,0,window.devicePixelRatio || 1,0,0);
-    ctx.strokeStyle = readCanvasPalette(element).token("link"); ctx.lineWidth = 3;
-    for (const node of nodes) if(selection.current.includes(node.id)) {
+    ctx.strokeStyle = palette.token("link"); ctx.lineWidth = 3;
+    const selected = new Set(selection.current);
+    for (const node of nodes) if(selected.has(node.id)) {
       ctx.beginPath(); ctx.arc((node.x??0)*camera.current.k+camera.current.x,(node.y??0)*camera.current.k+camera.current.y, nodeRadius(node,display.nodeSize)*camera.current.k+5,0,Math.PI*2); ctx.stroke();
     }
     ctx.restore();
@@ -197,8 +209,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     const members = nodes.filter((node) => node.domainPaths.some((path) => path === picked.key || path.startsWith(`${picked.key}/`)));
     const childRings = circles.filter((circle) => circle.key === picked.key || circle.key.startsWith(`${picked.key}/`));
     const fitted = fitCamera([...members, ...circleExtents(childRings, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height, 70);
-    const k = Math.min(8, Math.max(fitted.k, overview.k * 1.6 ** (picked.depth + 1) * 1.5));
-    motion.animateTo({ k, x: size.current.width / 2 - picked.x * k, y: size.current.height / 2 - picked.y * k });
+    motion.animateTo(fitted);
     hoveredId.current = null;
     isAutoFit.current = false;
     redraw();
@@ -237,3 +248,4 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     </div>
   );
 }
+

@@ -1,13 +1,14 @@
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { getBrowserSupabase, type BrowserSupabase } from "@/lib/supabase/client";
-import { fetchRowById, type Row } from "./fetchers";
-import { type Evidence, toEvidence } from "@/lib/knowledge/evidence";
-import { knowledgeLabel } from "@/lib/knowledge/label";
-import { fetchDescribableEntityIds } from "@/lib/knowledge/describableEntities";
-import { queryKeys } from "./keys";
-import { parseKnowledgeContext, type KnowledgeContext } from "@/lib/knowledge/context";
 import type { Structure } from "@/lib/ai/types";
+import { parseKnowledgeContext, type KnowledgeContext } from "@/lib/knowledge/context";
+import { fetchDescribableEntityIds } from "@/lib/knowledge/describableEntities";
 import { typeOwnsContext } from "@/lib/knowledge/entityTypes";
+import { toEvidence, type Evidence } from "@/lib/knowledge/evidence";
+import { knowledgeLabel } from "@/lib/knowledge/label";
+import { getBrowserSupabase, type BrowserSupabase } from "@/lib/supabase/client";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { readIdBatches, readPages } from "./batched";
+import { fetchRowById, fetchRows, type Row } from "./fetchers";
+import { queryKeys } from "./keys";
 
 // =====================================================================
 // SCREEN READ HOOKS: the reads the table hooks in ./index.ts cannot
@@ -25,11 +26,11 @@ type ByIdTable = "units" | "revisions" | "line_revisions" | "passages" | "source
 
 // Reads rows by id; an empty list reads nothing
 async function fetchByIds<T extends ByIdTable>(client: BrowserSupabase, table: T, ids: readonly string[]): Promise<Row<T>[]> {
-  if (ids.length === 0) return [];
   // The generic `from(table)` cannot type `.in("id")`, so the PostgREST filter is written out
-  const { data, error } = await client.from(table).select("*").filter("id", "in", `(${ids.join(",")})`);
-  if (error) throw error;
-  return (data ?? []) as unknown as Row<T>[];
+  return readIdBatches(ids, (batch) => readPages<Row<T>>(async (from, to) => {
+    const { data, error } = await client.from(table).select("*").filter("id", "in", `(${batch.join(",")})`).order("id").range(from, to);
+    return { data: data as unknown as Row<T>[] | null, error };
+  }));
 }
 
 // Sorted, de-duplicated ids so the query key is stable
@@ -47,38 +48,48 @@ export function useRowsByIds<T extends ByIdTable>(table: T, ids: readonly (strin
 }
 
 // Reads units (all, or by id) with their current revision's content
-async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null): Promise<UnitSummary[]> {
-  let query = client.from("units").select("*").order("last_changed_at", { ascending: false });
-  if (ids) query = query.in("id", ids);
-  const { data, error } = await query;
-  if (error) throw error;
-  const units = (data ?? []) as Row<"units">[];
+export async function fetchUnitSummaries(client: BrowserSupabase, ids: string[] | null): Promise<UnitSummary[]> {
+  const units = ids
+    ? (await fetchByIds(client, "units", ids)).sort((a, b) => b.last_changed_at.localeCompare(a.last_changed_at))
+    : await fetchRows(client, "units", { orderBy: "last_changed_at", ascending: false });
   if (!units.length) return [];
-  const revisions = await fetchByIds(client, "revisions", units.map((unit) => unit.current_revision_id));
-  const [links, memberships, subjects, topics, evidence, sourceLinks, sources] = await Promise.all([
-    client.from("unit_entities").select("unit_id, entity_id, role").in("unit_id", units.map((unit)=>unit.id)),
-    client.from("unit_domains").select("unit_id, domain_id").in("unit_id", units.map((unit)=>unit.id)),
-    client.from("entities").select("id, name, type").is("merged_into_id", null),
-    client.from("domains").select("id, name, path"),
-    ids ? client.from("unit_evidence").select("unit_id, evidence").in("unit_id", ids) : client.from("unit_evidence").select("unit_id, evidence"),
-    client.from("source_units").select("unit_id, source_id").in("unit_id", units.map((unit) => unit.id)),
-    client.from("sources").select("id, origin"),
+  const unitIds = units.map((unit) => unit.id);
+  const [revisions, links, memberships, evidence, sourceLinks] = await Promise.all([
+    fetchByIds(client, "revisions", units.map((unit) => unit.current_revision_id)),
+    readIdBatches(unitIds, (batch) => readPages((from, to) => client.from("unit_entities").select("unit_id, entity_id, role").in("unit_id", batch).order("unit_id").order("entity_id").order("role").range(from, to))),
+    readIdBatches(unitIds, (batch) => readPages((from, to) => client.from("unit_domains").select("unit_id, domain_id").in("unit_id", batch).order("unit_id").order("domain_id").range(from, to))),
+    readIdBatches(unitIds, (batch) => readPages((from, to) => client.from("unit_evidence").select("unit_id, evidence").in("unit_id", batch).order("unit_id").range(from, to))),
+    readIdBatches(unitIds, (batch) => readPages((from, to) => client.from("source_units").select("unit_id, source_id").in("unit_id", batch).order("unit_id").order("source_id").range(from, to))),
   ]);
-  for (const result of [sourceLinks, sources]) if (result.error) throw result.error;
-  const externalSources = new Set((sources.data ?? []).filter((source) => source.origin === "external").map((source) => source.id));
+  // Read only referenced metadata, once for the whole collection.
+  const [subjects, topics, sources] = await Promise.all([
+    fetchByIds(client, "entities", uniqueIds(links.map((link) => link.entity_id))),
+    fetchByIds(client, "domains", uniqueIds(memberships.map((link) => link.domain_id))),
+    fetchByIds(client, "sources", uniqueIds(sourceLinks.map((link) => link.source_id))),
+  ]);
+  const externalSources = new Set(sources.filter((source) => source.origin === "external").map((source) => source.id));
   const externalUnits = new Set<string>();
   const internalUnits = new Set<string>();
-  for (const link of sourceLinks.data ?? []) {
+  for (const link of sourceLinks) {
     if (!link.unit_id || !link.source_id) continue;
     (externalSources.has(link.source_id) ? externalUnits : internalUnits).add(link.unit_id);
   }
-  for (const result of [links,memberships,subjects,topics,evidence]) if (result.error) throw result.error;
-  const evidenceById = new Map((evidence.data ?? []).map((row) => [row.unit_id, toEvidence(row.evidence)]));
-  const subjectById = new Map((subjects.data ?? []).filter((entity)=>!typeOwnsContext(entity.type)).map((entity)=>[entity.id, entity.name]));
-  const topicById = new Map((topics.data ?? []).map((topic)=>[topic.id, topic]));
+  const evidenceById = new Map(evidence.map((row) => [row.unit_id, toEvidence(row.evidence)]));
+  const subjectById = new Map(subjects.filter((entity)=>!entity.merged_into_id && !typeOwnsContext(entity.type)).map((entity)=>[entity.id, entity.name]));
+  const topicById = new Map(topics.map((topic)=>[topic.id, topic]));
+  const subjectHint = new Map<string, string>();
+  for (const link of links) {
+    const name = subjectById.get(link.entity_id);
+    if (name && link.role === "subject" && !subjectHint.has(link.unit_id)) subjectHint.set(link.unit_id, name);
+  }
+  const topicHint = new Map<string, Row<"domains">>();
+  for (const link of memberships) {
+    const topic = topicById.get(link.domain_id);
+    if (topic && topic.path.length > (topicHint.get(link.unit_id)?.path.length ?? -1)) topicHint.set(link.unit_id, topic);
+  }
   const hints = (id: string) => ({
-    subject: (links.data ?? []).filter((link)=>link.unit_id===id && link.role==="subject").map((link)=>subjectById.get(link.entity_id)).find(Boolean),
-    topic: (memberships.data ?? []).filter((link)=>link.unit_id===id).map((link)=>topicById.get(link.domain_id)).filter((topic)=>!!topic).sort((a,b)=>b.path.length-a.path.length)[0]?.name,
+    subject: subjectHint.get(id),
+    topic: topicHint.get(id)?.name,
   });
   const contentById = new Map(revisions.map((revision) => [revision.id, revision.content]));
   const titleById = new Map(revisions.map((revision) => [revision.id, revision.title?.trim() || null]));
@@ -114,16 +125,20 @@ export function useUnitRelationships(unitId: string): UseQueryResult<Row<"relati
   });
 }
 
+// The passage screen only needs identity, kind, target and citations. Selecting
+// the whole row pulls glossary and review snapshots stored on other actions.
+export type PassageAction = Pick<Row<"actions">, "id" | "type" | "target_id" | "passage_ids">;
+
 // Reads actions whose evidence includes any of the passages
-async function fetchActionsForPassages(client: BrowserSupabase, passageIds: string[]): Promise<Row<"actions">[]> {
-  if (passageIds.length === 0) return [];
-  const { data, error } = await client.from("actions").select("*").overlaps("passage_ids", passageIds);
-  if (error) throw error;
-  return data ?? [];
+export async function fetchActionsForPassages(client: BrowserSupabase, passageIds: string[]): Promise<PassageAction[]> {
+  const actions = await readIdBatches(passageIds, (batch) => readPages<PassageAction>((from, to) =>
+    client.from("actions").select("id,type,target_id,passage_ids").overlaps("passage_ids", batch).order("id").range(from, to)));
+  // An action can cite passages in several batches.
+  return [...new Map(actions.map((action) => [action.id, action])).values()];
 }
 
 // ACTIONS CITING PASSAGES (Source detail: what each passage produced)
-export function useActionsForPassages(passageIds: readonly string[]): UseQueryResult<Row<"actions">[]> {
+export function useActionsForPassages(passageIds: readonly string[]): UseQueryResult<PassageAction[]> {
   const list = uniqueIds(passageIds);
   return useQuery({
     queryKey: [...queryKeys.table("actions"), "passages", list],
@@ -160,20 +175,19 @@ export function useLiveShiftEvent(eventId: string | undefined, isLive: boolean):
 
 // Reads the ids of units whose current revision cites the file (source_units view)
 async function fetchSourceUnitIds(client: BrowserSupabase, sourceId: string): Promise<string[]> {
-  const { data, error } = await client.from("source_units").select("unit_id").eq("source_id", sourceId);
-  if (error) throw error;
-  return (data ?? []).flatMap((row) => (row.unit_id ? [row.unit_id] : []));
+  const rows = await readPages((from, to) => client.from("source_units").select("unit_id").eq("source_id", sourceId).order("unit_id").range(from, to));
+  return uniqueIds(rows.map((row) => row.unit_id));
 }
 
-export type SourceUsage = { units: number; articles: number; lines: number };
+export type SourceUsage = { units: number; articles: number; sections: number; lines: number };
 
 // Reads every file's knowledge, article and line counts (source_usage view), by source id
 async function fetchSourceUsage(client: BrowserSupabase): Promise<Map<string, SourceUsage>> {
-  const { data, error } = await client.from("source_usage").select("source_id, unit_count, article_count, line_count");
+  const { data, error } = await client.from("source_usage").select("source_id, unit_count, article_count, line_count, section_count");
   if (error) throw error;
   return new Map(
     (data ?? []).flatMap((row) =>
-      row.source_id ? [[row.source_id, { units: row.unit_count ?? 0, articles: row.article_count ?? 0, lines: row.line_count ?? 0 }] as const] : [],
+      row.source_id ? [[row.source_id, { units: row.unit_count ?? 0, articles: row.article_count ?? 0, sections: row.section_count ?? 0, lines: row.line_count ?? 0 }] as const] : [],
     ),
   );
 }
@@ -181,7 +195,7 @@ async function fetchSourceUsage(client: BrowserSupabase): Promise<Map<string, So
 // KNOWLEDGE AND ARTICLE COUNTS PER FILE (Sources list). Keyed under units so knowledge edits refresh it
 export function useSourceUsage(): UseQueryResult<Map<string, SourceUsage>> {
   return useQuery({
-    queryKey: [...queryKeys.table("units"), "source-usage"],
+    queryKey: [...queryKeys.table("units"), "source-usage", "with-sections"],
     queryFn: () => fetchSourceUsage(getBrowserSupabase()),
   });
 }
@@ -199,17 +213,17 @@ async function fetchSourceArticles(client: BrowserSupabase, sourceId: string): P
   const unitIds = await fetchSourceUnitIds(client, sourceId);
   const units = (await fetchByIds(client, "units", uniqueIds(unitIds))).filter((unit) => !unit.retired_at);
   if (units.length === 0) return [];
-  const inputs = await client.from("section_inputs").select("section_id").in("unit_id", units.map((unit) => unit.id));
-  if (inputs.error) throw inputs.error;
-  const sectionIds = uniqueIds((inputs.data ?? []).map((input) => input.section_id));
+  const inputs = await readIdBatches(units.map((unit) => unit.id), (batch) => readPages((from, to) =>
+    client.from("section_inputs").select("section_id,unit_id").in("unit_id", batch).order("section_id").order("unit_id").range(from, to)));
+  const sectionIds = uniqueIds(inputs.map((input) => input.section_id));
   if (sectionIds.length === 0) return [];
-  const sections = await client.from("sections").select("page_id").in("id", sectionIds).is("retired_at", null);
-  if (sections.error) throw sections.error;
-  const pageIds = uniqueIds((sections.data ?? []).map((section) => section.page_id));
+  const sectionRows = await readIdBatches(sectionIds, (batch) => readPages((from, to) =>
+    client.from("sections").select("page_id").in("id", batch).is("retired_at", null).order("id").range(from, to)));
+  const pageIds = uniqueIds(sectionRows.map((section) => section.page_id));
   if (pageIds.length === 0) return [];
-  const pages = await client.from("pages").select("*").in("id", pageIds).is("retired_at", null).order("title");
-  if (pages.error) throw pages.error;
-  return pages.data ?? [];
+  const pages = await readIdBatches(pageIds, (batch) => readPages((from, to) =>
+    client.from("pages").select("*").in("id", batch).is("retired_at", null).order("id").range(from, to)));
+  return pages.sort((a, b) => a.title.localeCompare(b.title));
 }
 
 // ARTICLES BUILT FROM A FILE (Source detail). Keyed under units, like the article count it lists
@@ -242,14 +256,12 @@ async function fetchSourceReach(client: BrowserSupabase, sourceId: string): Prom
   const units = (await fetchByIds(client, "units", unitIds)).filter((unit) => !unit.retired_at).map((unit) => unit.id);
   if (units.length === 0) return { definitions, entities: [], domains: [] };
   const [entityLinks, domainLinks] = await Promise.all([
-    client.from("unit_entities").select("entity_id").in("unit_id", units),
-    client.from("unit_domains").select("domain_id").in("unit_id", units),
+    readIdBatches(units, (batch) => readPages((from, to) => client.from("unit_entities").select("entity_id").in("unit_id", batch).order("unit_id").order("entity_id").order("role").range(from, to))),
+    readIdBatches(units, (batch) => readPages((from, to) => client.from("unit_domains").select("domain_id").in("unit_id", batch).order("unit_id").order("domain_id").range(from, to))),
   ]);
-  if (entityLinks.error) throw entityLinks.error;
-  if (domainLinks.error) throw domainLinks.error;
   const [entities, domains] = await Promise.all([
-    fetchByIds(client, "entities", uniqueIds((entityLinks.data ?? []).map((link) => link.entity_id))),
-    fetchByIds(client, "domains", uniqueIds((domainLinks.data ?? []).map((link) => link.domain_id))),
+    fetchByIds(client, "entities", uniqueIds(entityLinks.map((link) => link.entity_id))),
+    fetchByIds(client, "domains", uniqueIds(domainLinks.map((link) => link.domain_id))),
   ]);
   return {
     definitions,

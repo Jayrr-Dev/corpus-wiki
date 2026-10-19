@@ -17,6 +17,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      spaces: {
+        Row: { id: string; name: string; owner_id: string | null; created_at: string; deleted_at: string | null; subtitle: string | null; subtitle_for_name: string | null }
+        Insert: { id?: string; name: string; owner_id: string; created_at?: string }
+        Update: { name?: string; subtitle?: string | null; subtitle_for_name?: string | null }
+        Relationships: []
+      }
       glossary_embeddings: {
         Row: {
           created_at: string
@@ -43,6 +49,8 @@ export type Database = {
       }
       glossary_state: {
         Row: {
+          live_entries: Json
+          live_input_hash: string | null
           review_cache: Json
           pending_entries: Json
           identity_registry: Json
@@ -61,6 +69,8 @@ export type Database = {
           total_batches: number
         }
         Insert: {
+          live_entries?: Json
+          live_input_hash?: string | null
           review_cache?: Json
           pending_entries?: Json
           identity_registry?: Json
@@ -79,6 +89,8 @@ export type Database = {
           total_batches?: number
         }
         Update: {
+          live_entries?: Json
+          live_input_hash?: string | null
           review_cache?: Json
           pending_entries?: Json
           identity_registry?: Json
@@ -135,6 +147,7 @@ export type Database = {
         }
         Update: {
           deleted_at?: string | null;
+          mime_type?: string;
           figure_number?: number | null; passage_ids?: string[]; title?: string | null; description?: string | null; tags?: string[];
           input_hash?: string | null; described_at?: string | null; model?: string | null;
           asset_type?: "photo" | "diagram" | "chart" | "flowchart" | "map" | "screenshot" | "table" | "logo" | "drawing" | "document scan" | "recording" | "other" | null; edited_fields?: ("title" | "description" | "tags" | "asset_type")[];
@@ -167,6 +180,7 @@ export type Database = {
       }
       ai_calls: {
         Row: {
+          usage_details?: Json | null
           role?: string | null
           completion_tokens: number | null
           created_at: string
@@ -182,6 +196,7 @@ export type Database = {
           subject: string | null
         }
         Insert: {
+          usage_details?: Json | null
           role?: string | null
           completion_tokens?: number | null
           created_at?: string
@@ -197,6 +212,7 @@ export type Database = {
           subject?: string | null
         }
         Update: {
+          usage_details?: Json | null
           role?: string | null
           completion_tokens?: number | null
           created_at?: string
@@ -1164,6 +1180,7 @@ export type Database = {
       source_usage: {
         Row: {
           article_count: number | null
+          section_count: number | null
           line_count: number | null
           source_id: string | null
           unit_count: number | null

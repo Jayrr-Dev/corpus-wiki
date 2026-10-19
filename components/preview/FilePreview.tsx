@@ -1,5 +1,6 @@
 "use client";
 
+
 import {
   DownloadIcon,
   ExternalLinkIcon,
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip } from "@/components/standard/tooltip";
 import { PREVIEW_KIND_LABEL, type PreviewKind, parseDelimited, previewKindOf, TEXT_KINDS } from "./kind";
 import { Loader } from "@/components/standard/loader";
+import { originalMediaUrl } from "@/lib/media/urls";
 
 // =====================================================================
 // FILE PREVIEW: one frame for any file the app stores. It picks a
@@ -96,12 +98,12 @@ export function FilePreview({
   const style = { "--preview-height": typeof height === "number" ? `${height}px` : height } as CSSProperties;
   return (
     <figure className={cn("flex min-w-0 flex-col overflow-hidden rounded-lg border bg-card", className)}>
-      {header ? <PreviewHeader title={title} kind={kind} src={src} downloadHref={downloadHref ?? src} actions={headerActions} /> : null}
+      {header ? <PreviewHeader title={title} kind={kind} src={src} downloadHref={downloadHref ?? originalMediaUrl(src)} actions={headerActions} /> : null}
       <div
         className={cn("relative min-h-0 bg-muted/40", kind !== "audio" && "h-(--preview-height)", scrollbar ? "overflow-auto" : "overflow-hidden no-scrollbar")}
         style={style}
       >
-        <PreviewBody {...body} downloadHref={downloadHref ?? src} />
+        <PreviewBody {...body} downloadHref={downloadHref ?? originalMediaUrl(src)} />
       </div>
     </figure>
   );
@@ -273,7 +275,7 @@ function ImageBody({ src, title }: { src: string; title: string }) {
         onPointerCancel={() => (drag.current = null)}
       >
         <div className={cn("flex items-center justify-center p-3", scale === null ? "size-full" : "min-h-full min-w-full w-max")}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- signed, short-lived URLs; next/image cannot cache them */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- zoom uses natural image dimensions; the authenticated source route optimizes the bytes */}
           <img
             ref={imageRef}
             src={src}

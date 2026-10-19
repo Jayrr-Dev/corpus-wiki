@@ -7,6 +7,8 @@ import { useServerAction } from "@/components/actions/useServerAction";
 import { startProgress } from "@/components/toast";
 import { ReviewSummary } from "@/components/standard/ReviewSummary";
 import type { ActionResult } from "@/lib/server-actions/result";
+import { OrganizeTabsDialog } from "./OrganizeTabsDialog";
+import { DomainUpdateStatus, useDomainUpdate } from "../graph/UpdateDomainsButton";
 
 type ReviewResult = { reason: string; changeSetId: string; exceptions: number };
 async function streamReview(): Promise<ActionResult<ReviewResult>> {
@@ -42,8 +44,12 @@ export function DomainsPageMenu({ showRetired }: { showRetired: boolean }) {
   const review = useServerAction(streamReview, { progress: false });
   const [result, setResult] = useState<{ reason: string; changeSetId: string; exceptions: number } | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [organizeTabs, setOrganizeTabs] = useState(false);
+  const update = useDomainUpdate();
   return <>
     <RowMenu label="Domains" items={[
+      { label: "Organize tabs", run: () => setOrganizeTabs(true) },
+      { label: update.busy ? "Updating…" : "Update domains", isDisabled: update.busy, run: update.run },
       { label: review.isPending ? "Reviewing…" : "Review structure", isDisabled: review.isPending, run: async () => {
         setResult(null);
         const response = await review.run();
@@ -52,6 +58,8 @@ export function DomainsPageMenu({ showRetired }: { showRetired: boolean }) {
       } },
       { label: showRetired ? "Hide retired" : "Show retired", href: showRetired ? "/domains" : "/domains?retired=1" },
     ]} />
+    <DomainUpdateStatus update={update} />
+    {organizeTabs && <OrganizeTabsDialog open={organizeTabs} onOpenChange={setOrganizeTabs} />}
     <Dialog open={showResult} onOpenChange={setShowResult}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogTitle>Domain structure review</DialogTitle>

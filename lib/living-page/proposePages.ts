@@ -2,6 +2,7 @@ import type { DraftAction, SectionDraft, UnitKind } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { PagePlanner } from "./articlePlanner";
+import { workflowStep } from "@/lib/ingest/workflowContext";
 
 // =====================================================================
 // PAGES FROM THE KNOWLEDGE: after an upload is committed, every entity
@@ -37,8 +38,12 @@ export type PageCandidate = {
 
 // Proposes and commits the pages and sections an event calls for; returns how many actions applied
 export async function proposePages(db: DbRpc, eventId: string, planner?: PagePlanner, operationKey = "pages:propose"): Promise<number> {
-  const candidates = await db.call<PageCandidate[]>("page_candidates", { p_event_id: eventId });
-  const { actions, tokensIn, tokensOut } = planner ? await planner(candidates) : { actions: pageProposalActions(candidates), tokensIn: null, tokensOut: null };
+  // Freeze the write intent before submission. An interrupted commit must not
+  // regenerate a different plan against the same operation key.
+  const { actions, tokensIn, tokensOut } = await workflowStep(`${operationKey}:prepared-v1`, async () => {
+    const candidates = await workflowStep(`${operationKey}:input-v1`, () => db.call<PageCandidate[]>("page_candidates", { p_event_id: eventId }));
+    return planner ? planner(candidates) : { actions: pageProposalActions(candidates), tokensIn: null, tokensOut: null };
+  });
   if (actions.length === 0) return 0;
   const draft = {
     summary: describeProposals(actions),

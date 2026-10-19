@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { chatJson } from "@/lib/ai/chat";
+import { ANSWER_TOKEN_BUDGET, chatJson, CompletionLengthError } from "@/lib/ai/chat";
 import type { ArticleKnowledge, ArticlePlan } from "@/lib/living-page/articlePlan";
 import { roleForPurpose } from "@/lib/ai/roles";
-import { buildOutline, draftSchema, OutlineRejectedError, reviewPasses, reviewTotal, structuralProblems, type OutlineReview } from "./outlineBuilder";
+import { uploadExecution } from "@/lib/ingest/workflowContext";
+import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
+import { buildOutline, claimInput, draftSchema, OutlineRejectedError, reviewPasses, reviewTotal, structuralProblems, type OutlineReview } from "./outlineBuilder";
 
 vi.mock("@/lib/ai/chat", async (original) => ({ ...(await original<typeof import("@/lib/ai/chat")>()), chatJson: vi.fn() }));
 const knowledge: ArticleKnowledge = { entity: { id: "school", key: "school", name: "School colors", type: "concept" }, units: [
@@ -16,10 +18,145 @@ const review = (score = 4): OutlineReview => {
   return { grounding: grade(), cohesion: grade(), flow: grade(), headings: grade(), balance: grade(), introduction: grade(), blockingIssues: [], fixes: [] };
 };
 const answer = (value: unknown) => ({ value, model: "test", tokensIn: 10, tokensOut: 20 });
+
+// Persist only finished steps, with the same JSONB object ordering on reload.
+function persistedPlanning() {
+  const saved = new Map<string, unknown>();
+  const jsonb = (value: unknown): unknown => Array.isArray(value) ? value.map(jsonb)
+    : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, jsonb(item)])) : value;
+  const db: DbRpc = { async call<T>(name: string, args: RpcArgs = {}) {
+    const key = String(args.p_key);
+    if (name === "start_upload_step") return { done: saved.has(key), output: saved.get(key) } as T;
+    if (name === "finish_upload_step" && args.p_error === null) saved.set(key, jsonb(args.p_output));
+    return undefined as T;
+  } };
+  return (input = knowledge, options: Parameters<typeof buildOutline>[2] = {}) => uploadExecution.run({ eventId: "upload", token: "lease", db }, () => buildOutline({ apiKey: "test" }, input, options));
+}
+
+describe("durable outline continuation", () => {
+  it("allows bounded fresh repairs after every exhausted resume while preserving all rejections", async () => {
+    const resume = persistedPlanning();
+    const critique = { ...review(2), blockingIssues: ["C2 still needs its evidence-led home"], fixes: ["Move the whole claim"] };
+    vi.mocked(chatJson).mockImplementation(async (_settings, request) => answer(request.name === "article_outline" ? draft() : critique));
+    for (const total of [2, 4]) {
+      vi.mocked(chatJson).mockClear();
+      try {
+        await resume(knowledge, { maxAttempts: 2 });
+        expect.unreachable("Rejected plans must not be accepted");
+      } catch (error) {
+        expect(error).toBeInstanceOf(OutlineRejectedError);
+        expect((error as OutlineRejectedError).attempts).toHaveLength(total);
+        expect((error as OutlineRejectedError).attempts.every(attempt => !attempt.accepted)).toBe(true);
+      }
+      expect(chatJson).toHaveBeenCalledTimes(4);
+    }
+    vi.mocked(chatJson).mockClear().mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    const built = await resume(knowledge, { maxAttempts: 2 });
+    expect(built.attempts).toHaveLength(5);
+    expect(built.attempts.at(-1)?.accepted).toBe(true);
+    expect(chatJson).toHaveBeenCalledTimes(2);
+    const finalReview = vi.mocked(chatJson).mock.calls[1]![1];
+    expect(JSON.parse(String(finalReview.messages[1]!.content)).priorReviewFindings).toHaveLength(4);
+    vi.mocked(chatJson).mockClear();
+    expect((await resume()).attempts.at(-1)?.accepted).toBe(true);
+    expect(chatJson).not.toHaveBeenCalled();
+  });
+  it("still rejects the outline when the extended repair budget is exhausted", async () => {
+    vi.mocked(chatJson).mockImplementation(async (_settings, request) => answer(request.name === "article_outline" ? draft() : {
+      ...review(2), blockingIssues: ["A material topic mismatch remains"], fixes: ["Correct the misplaced claim"],
+    }));
+    let failure: unknown;
+    try { await buildOutline({ apiKey: "test" }, knowledge); } catch (error) { failure = error; }
+    expect(failure).toBeInstanceOf(OutlineRejectedError);
+    expect((failure as OutlineRejectedError).attempts).toHaveLength(6);
+    expect((failure as OutlineRejectedError).attempts.every(attempt => !attempt.accepted)).toBe(true);
+    expect(chatJson).toHaveBeenCalledTimes(12);
+  });
+  it("continues beyond four saved rejections without redrafting or accepting them", async () => {
+    const resume = persistedPlanning();
+    const critique = { ...review(2), blockingIssues: ["Move C2 to the origins section"], fixes: ["Preserve the other sections"] };
+    for (let index = 0; index < 4; index++) vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(critique));
+    await expect(resume(knowledge, { maxAttempts: 4 })).rejects.toBeInstanceOf(OutlineRejectedError);
+    vi.mocked(chatJson).mockClear().mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    const built = await resume();
+    expect(built.attempts).toHaveLength(5);
+    expect(built.attempts.slice(0, 4).every(attempt => !attempt.accepted)).toBe(true);
+    expect(built.attempts[4]?.accepted).toBe(true);
+    expect(chatJson).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(vi.mocked(chatJson).mock.calls[0]?.[1].messages)).toContain("Move C2 to the origins section");
+  });
+  it("resumes a cut-off draft with room for the complete outline and still requires review", async () => {
+    const resume = persistedPlanning();
+    vi.mocked(chatJson).mockRejectedValueOnce(new CompletionLengthError(27209, 8000, "test", 8000));
+    await expect(resume()).rejects.toBeInstanceOf(CompletionLengthError);
+    vi.mocked(chatJson).mockClear().mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    expect((await resume()).attempts[0]?.accepted).toBe(true);
+    const requests = vi.mocked(chatJson).mock.calls.map(call => call[1]);
+    expect(requests.map(request => request.name)).toEqual(["article_outline", "article_outline_review"]);
+    expect(requests[0]?.maxTokens).toBe(ANSWER_TOKEN_BUDGET);
+    expect(requests[0]?.maxTokens).toBeGreaterThan(8000);
+    expect(requests[1]?.maxTokens).toBe(ANSWER_TOKEN_BUDGET);
+  });
+
+  it("resumes a cut-off review without discarding its saved complete draft", async () => {
+    const resume = persistedPlanning();
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft()))
+      .mockRejectedValueOnce(new CompletionLengthError(12000, 6000, "test", 6000));
+    await expect(resume()).rejects.toBeInstanceOf(CompletionLengthError);
+    vi.mocked(chatJson).mockClear().mockResolvedValueOnce(answer(review()));
+    expect((await resume()).attempts[0]?.accepted).toBe(true);
+    expect(chatJson).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(chatJson).mock.calls[0]?.[1]).toMatchObject({ name: "article_outline_review", maxTokens: ANSWER_TOKEN_BUDGET });
+  });
+
+  it("resumes a saved draft after interruption during review, including JSONB reordering", async () => {
+    const resume = persistedPlanning();
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockRejectedValueOnce(new Error("Server restarted"));
+    await expect(resume()).rejects.toThrow("Server restarted");
+    vi.mocked(chatJson).mockClear().mockResolvedValueOnce(answer(review()));
+    expect((await resume()).plan).toEqual(good);
+    expect(chatJson).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(chatJson).mock.calls[0]?.[1].name).toBe("article_outline_review");
+  });
+
+  it("keeps the rejected draft and reviewer feedback when the repair is interrupted", async () => {
+    const resume = persistedPlanning();
+    const critique = { ...review(2), blockingIssues: ["Move C2 before C3"], fixes: ["Put origins before uses"] };
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(critique)).mockRejectedValueOnce(new Error("Deadline"));
+    await expect(resume()).rejects.toThrow("Deadline");
+    vi.mocked(chatJson).mockClear().mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    const built = await resume();
+    expect(built.attempts.map(attempt => attempt.accepted)).toEqual([false, true]);
+    expect(chatJson).toHaveBeenCalledTimes(2);
+    expect(JSON.stringify(vi.mocked(chatJson).mock.calls[0]?.[1].messages)).toContain("Put origins before uses");
+    const reviewInput = JSON.parse(String(vi.mocked(chatJson).mock.calls[1]?.[1].messages[1]?.content));
+    expect(reviewInput.priorReviewFindings).toEqual([{ blockingIssues: critique.blockingIssues, fixes: critique.fixes }]);
+    expect(reviewInput.priorReviewFindings[0]).not.toHaveProperty("flow");
+  });
+
+  it("does not reuse a plan after its evidence changes", async () => {
+    const resume = persistedPlanning();
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    await resume();
+    vi.mocked(chatJson).mockClear().mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    await resume({ ...knowledge, units: knowledge.units.map(unit => ({ ...unit, revisionId: `${unit.revisionId}-new` })) });
+    expect(chatJson).toHaveBeenCalledTimes(2);
+  });
+});
 const draft = (plan = good) => ({ plan, centralMessage: "School colors express institutional identity.", readingOrderRationale: "Definition, origins, then uses." });
 beforeEach(() => vi.clearAllMocks());
 
 describe("outline structure gates", () => {
+  it("passes source sequence positions separately from arbitrary claim reference numbers", () => {
+    const input = { ...knowledge, units: [knowledge.units[0]!,
+      { ...knowledge.units[1]!, memberOf: "definition", position: 2 },
+      { ...knowledge.units[2]!, memberOf: "definition", position: 1 },
+    ] };
+    expect(claimInput(input).claims.slice(1)).toEqual([
+      expect.objectContaining({ ref: "C2", stepOf: "C1", step: 2 }),
+      expect.objectContaining({ ref: "C3", stepOf: "C1", step: 1 }),
+    ]);
+  });
   it("accepts sparse evidence without padding to three sections", () => {
     expect(structuralProblems(good, knowledge)).toEqual([]);
   });
@@ -41,6 +178,11 @@ describe("outline structure gates", () => {
     expect(structuralProblems({ ...good, sections: [{ title: "Step one", claims: ["C2"] }, { title: "Other", claims: ["C3"] }] }, knowledge)).toHaveLength(2);
     expect(structuralProblems({ ...good, sections: [{ title: "Origins", claims: ["C2"] }, { title: "Origins", claims: ["C3"] }] }, knowledge).join(" ")).toContain("repeated");
   });
+  it("keeps concrete background-practice headings while rejecting a bare background label", () => {
+    const plan = { ...good, sections: [{ title: "Background practices for type groups", claims: ["C2", "C3"] }] };
+    expect(structuralProblems(plan, knowledge)).toEqual([]);
+    expect(structuralProblems({ ...plan, sections: [{ ...plan.sections[0]!, title: "Background" }] }, knowledge)).toContain('"Background" is a vague or introductory heading; name its actual topic.');
+  });
   it("keeps composite members with the parent, including introduction assignments", () => {
     const linked = { ...knowledge, units: knowledge.units.map((u, i) => i === 2 ? { ...u, memberOf: "origin" } : u) };
     expect(structuralProblems(good, linked).join(" ")).toContain("C3 must stay with its parent C2");
@@ -51,11 +193,24 @@ describe("outline structure gates", () => {
     expect(reviewTotal(r)).toBe(22);
     expect(reviewPasses(r)).toBe(false);
     expect(reviewPasses({ ...review(), blockingIssues: ["C2 is under the wrong heading"] })).toBe(false);
-    expect(reviewPasses(review(3))).toBe(false); // 18/24 is below the fixed acceptance threshold.
+    expect(reviewPasses(review(3))).toBe(true); // Every dimension is sound under the rubric.
   });
 });
 
 describe("outline review and repair", () => {
+  it("gives later reviews the earlier findings without allowing them to override a new rejection", async () => {
+    const first = { ...review(2), blockingIssues: ["Move C2 to origins"], fixes: ["Keep C3 in sports"] };
+    const second = { ...review(2), blockingIssues: ["C3 still has a misleading heading"], fixes: ["Rename the sports heading"] };
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(first))
+      .mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(second))
+      .mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    const built = await buildOutline({ apiKey: "test" }, knowledge);
+    expect(built.attempts.map(attempt => attempt.accepted)).toEqual([false, false, true]);
+    const requests = vi.mocked(chatJson).mock.calls.filter(call => call[1].name === "article_outline_review").map(call => call[1]);
+    expect(JSON.parse(String(requests[0]?.messages[1]?.content))).not.toHaveProperty("priorReviewFindings");
+    expect(JSON.parse(String(requests[2]?.messages[1]?.content)).priorReviewFindings).toEqual([first, second].map(({ blockingIssues, fixes }) => ({ blockingIssues, fixes })));
+    expect(String(requests[2]?.messages[0]?.content)).toContain("prior review never entitles a plan to approval");
+  });
   it("repairs valid but semantically bad structure using specific reviewer feedback", async () => {
     const bad = { ...good, sections: [...good.sections].reverse() };
     const critique = { ...review(2), blockingIssues: ["Origins must precede uses"], fixes: ["Move C2 before C3"] };
@@ -102,6 +257,15 @@ describe("outline review and repair", () => {
     expect(logCall).not.toHaveBeenCalled();
     expect(roleForPurpose("article_outline")).toBe("plan_articles");
     expect(roleForPurpose("article_outline_review")).toBe("reviewer");
+  });
+  it("gives the independent reviewer the same approved scope and evidence limits as the planner", async () => {
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
+    const subject = "School colors. Scope: recorded origins and sporting uses only.";
+    await buildOutline({ apiKey: "test" }, knowledge, { subject });
+    const request = vi.mocked(chatJson).mock.calls[1]![1];
+    expect(JSON.parse(String(request.messages[1]!.content))).toMatchObject({ articleSubject: subject, plan: good });
+    expect(String(request.messages[0]!.content)).toContain("Do not demand definitions");
+    expect(String(request.messages[0]!.content)).toContain("must NOT be repeated");
   });
   it("uses the primary agent's editorial audit to force a revision even when the seed passed AI review", async () => {
     vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));

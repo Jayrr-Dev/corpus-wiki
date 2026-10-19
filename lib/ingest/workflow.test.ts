@@ -11,6 +11,7 @@ import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
 import { articlesPending, articlesReady, canResumeUpload, workflowLabel, type UploadWorkflow } from "./workflowTypes";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { PublishedKnowledge, publishableDraft } from "./incrementalDraft";
 
 describe("persistent upload pipeline with real change control and pages", () => {
   let store: Awaited<ReturnType<typeof portablePostgres>>;
@@ -59,6 +60,53 @@ describe("persistent upload pipeline with real change control and pages", () => 
       entityDescriber: vi.fn(async () => {}), claimEmbedder: vi.fn(async () => {}), hierarchyOrganizer: vi.fn(async () => {}), deduper: vi.fn(async () => {}) };
   }
   async function count(table: string) { return (await store.pg.query<{ count: number }>(`select count(*)::integer count from public.${table}`)).rows[0]!.count; }
+
+  it("checks heartbeat ownership and cancellation without rewriting a healthy lease", async () => {
+    const source = await upload();
+    const claim = await store.db.call<{ token: string }>("claim_upload_workflow", { p_event_id: source.eventId });
+    const args = { p_event_id: source.eventId, p_token: claim.token };
+    const lease = async () => (await store.pg.query("select lease_until,updated_at from public.upload_workflows where event_id=$1", [source.eventId])).rows[0];
+    const before = await lease();
+    await store.db.call("heartbeat_upload_workflow", args);
+    expect(await lease()).toEqual(before);
+    await store.pg.query("update public.upload_workflows set lease_until=now()+interval '3 minutes' where event_id=$1", [source.eventId]);
+    await store.db.call("heartbeat_upload_workflow", args);
+    expect(await lease()).toEqual(before);
+    await store.pg.exec("savepoint wrong_owner");
+    await expect(store.db.call("heartbeat_upload_workflow", { ...args, p_token: crypto.randomUUID() })).rejects.toThrow("ownership expired");
+    await store.pg.exec("rollback to savepoint wrong_owner");
+    await store.db.call("cancel_upload_workflow", { p_event_id: source.eventId });
+    await expect(store.db.call("heartbeat_upload_workflow", args)).rejects.toThrow("cancelled");
+  });
+
+  it("saves cited knowledge during extraction, resumes without duplicates and undoes all batches together", async () => {
+    const source = await upload();
+    const unitsBefore = await count("units");
+    const cited = async () => (await store.pg.query<{ count: number }>("select count(*)::integer count from public.revisions where event_id=$1 and cardinality(passage_ids)>0", [source.eventId])).rows[0]!.count;
+    const liveBefore = (await store.pg.query("select id from public.units where retired_at is null")).rows.length;
+    const pipeline = deps();
+    const original = pipeline.reconciler.draftChangeSet.bind(pipeline.reconciler);
+    let fail = true;
+    pipeline.reconciler.draftChangeSet = async (input, publish) => {
+      const draft = await original(input);
+      const early = publishableDraft(draft);
+      const state = new PublishedKnowledge();
+      state.remember(early, await publish!("first-batch", early));
+      expect(await count("units")).toBe(unitsBefore + 2);
+      expect(await cited()).toBe(2);
+      if (fail) { fail = false; throw new Error("Interrupted after saving a batch"); }
+      return state.remaining(draft);
+    };
+    const interrupted = await reconcileUpload(pipeline, source.eventId, "knowledge");
+    expect(interrupted.workflow?.state).toBe("incomplete");
+    expect(await count("units")).toBe(unitsBefore + 2);
+    const completed = await reconcileUpload(pipeline, source.eventId, "knowledge");
+    expect(completed.error).toBeNull();
+    expect(await count("units")).toBe(unitsBefore + 2);
+    expect(await cited()).toBe(2);
+    await revertChangeSet(store.db, completed.changeSetId!);
+    expect((await store.pg.query("select id from public.units where retired_at is null")).rows).toHaveLength(liveBefore);
+  });
 
   it("automatically checks stakeholder duplicates and retries a failed check before generating articles", async () => {
     const source = await upload();
@@ -243,6 +291,18 @@ describe("persistent upload pipeline with real change control and pages", () => 
     await store.db.call("finish_upload_recovery", { p_event_id: source.eventId, p_token: dispatch.token });
     expect((await store.pg.query("select * from public.upload_recovery_jobs where event_id=$1", [source.eventId])).rows).toHaveLength(0);
     expect(pipeline.draft).toHaveBeenCalledTimes(1);
+  });
+
+  it("blocks articles after a root rejection leaves claims unassigned, including checkpoint resumes", async () => {
+    const source = await upload(); const pipeline = deps(true);
+    expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("waiting");
+    const exception = (await store.pg.query<{ id: string }>("select x.id from public.exceptions x join public.actions a on a.id=x.action_id join public.change_sets c on c.id=a.change_set_id where c.event_id=$1 and x.reason='root_domain_approval'", [source.eventId])).rows[0]!;
+    await resolveException(store.db, {exceptionId:exception.id,accept:false,note:"This is not the correct root."});
+    const result = await reconcileUpload(pipeline, source.eventId);
+    expect(result.workflow?.state).toBe("incomplete");
+    expect(result.error).toContain("still need domain assignments");
+    expect(result.workflow?.steps.some(step=>step.key==="plan")).toBe(false);
+    expect(pipeline.topicPlacer).toHaveBeenCalledTimes(1);
   });
 
   it("keeps a topic the upload placed under an approved root where it is when the context is organized", async () => {
@@ -504,6 +564,27 @@ describe("persistent upload pipeline with real change control and pages", () => 
     expect(await count("line_revisions")).toBe(before);
     expect(pipeline.draft).toHaveBeenCalledTimes(1);
     expect(pipeline.pageMaintainer).toHaveBeenCalledTimes(2);
+  });
+
+  it("checks final article versions after curation and resumes verification without rebuilding saved lines", async () => {
+    const source = await upload(); const pipeline = deps();
+    const order: string[] = [];
+    pipeline.pageMaintainer = vi.fn(async () => { order.push("curate"); });
+    pipeline.articleVerifier = vi.fn(async () => {
+      order.push("verify");
+      if (order.filter(stage => stage === "verify").length === 1) throw new Error("Current article review is missing");
+    });
+    const first = await reconcileUpload(pipeline, source.eventId);
+    expect(first.workflow?.state).toBe("incomplete");
+    expect(first.error).toContain("Current article review is missing");
+    expect(order).toEqual(["curate", "verify"]);
+    const before = await count("line_revisions");
+    const second = await reconcileUpload(pipeline, source.eventId);
+    expect(second.workflow?.state).toBe("complete");
+    expect(second.error).toBeNull();
+    expect(order).toEqual(["curate", "verify", "verify"]);
+    expect(await count("line_revisions")).toBe(before);
+    expect(pipeline.draft).toHaveBeenCalledTimes(1);
   });
 
   it("resumes a failed editorial reviewer without rewriting already saved page lines", async () => {

@@ -1,0 +1,30 @@
+import { beforeEach, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+import { GET } from "./route";
+
+const mocks = vi.hoisted(() => ({ exchange: vi.fn(), verify: vi.fn(), clear: vi.fn() }));
+vi.mock("@/lib/supabase/server", () => ({ getServerSupabase: async () => ({ auth: { exchangeCodeForSession: mocks.exchange, verifyOtp: mocks.verify } }) }));
+vi.mock("next/headers", () => ({ cookies: async () => ({ delete: mocks.clear }) }));
+beforeEach(() => { vi.clearAllMocks(); mocks.exchange.mockResolvedValue({ error: null }); mocks.verify.mockResolvedValue({ error: null }); });
+
+it("exchanges a confirmation code and clears the old account's space selection", async () => {
+  const response = await GET(new NextRequest("http://localhost:3003/auth/callback?code=test&next=%2Fsettings"));
+  expect(mocks.exchange).toHaveBeenCalledWith("test");
+  expect(mocks.clear).toHaveBeenCalledWith("second_brain_space");
+  expect(response.headers.get("location")).toBe("http://localhost:3003/settings");
+});
+
+it("supports email token hashes but prevents redirects to another origin", async () => {
+  const response = await GET(new NextRequest("http://localhost:3003/auth/callback?token_hash=test&type=email&next=%2F%5Cevil.example"));
+  expect(mocks.verify).toHaveBeenCalledWith({ token_hash: "test", type: "email" });
+  expect(response.headers.get("location")).toBe("http://localhost:3003/");
+});
+
+it("rejects missing and invalid confirmation credentials", async () => {
+  const missing = await GET(new NextRequest("http://localhost:3003/auth/callback"));
+  expect(missing.headers.get("location")).toContain("/login?confirmation=failed");
+  mocks.exchange.mockResolvedValue({ error: new Error("expired") });
+  const expired = await GET(new NextRequest("http://localhost:3003/auth/callback?code=expired"));
+  expect(expired.headers.get("location")).toContain("/login?confirmation=failed");
+  expect(mocks.clear).not.toHaveBeenCalled();
+});

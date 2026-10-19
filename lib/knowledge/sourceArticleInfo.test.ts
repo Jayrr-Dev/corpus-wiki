@@ -1,0 +1,94 @@
+import { beforeEach, it, expect, vi } from "vitest";
+import { sourceArticleInfo } from "./sourceArticleInfo";
+import { getServerDeps } from "@/lib/server/deps";
+import { getAdminSupabase } from "@/lib/supabase/admin";
+import { chatJson, tokenFactoryFromEnv } from "@/lib/ai/chat";
+import { searchWebAndWikipedia } from "./webSearch";
+import { approveExternalSource, approveExternalSearch } from "./externalApproval";
+import { startExternalSource, processExternalEvent } from "@/lib/ingest";
+import { externalProjectContext, externalReviewRecorder } from "./externalReviewStore";
+import { expandSourcedArticle } from "./expandSourcedArticle";
+vi.mock("./expandSourcedArticle", () => ({ expandSourcedArticle: vi.fn().mockResolvedValue(1) }));
+vi.mock("@/lib/server/deps", () => ({ getServerDeps: vi.fn() }));
+vi.mock("@/lib/supabase/admin", () => ({ getAdminSupabase: vi.fn() }));
+vi.mock("@/lib/ai/chat", () => ({ chatJson: vi.fn(), tokenFactoryFromEnv: vi.fn() }));
+vi.mock("@/lib/ai/models", () => ({ readModelChoice: vi.fn().mockResolvedValue("test") }));
+vi.mock("@/lib/ai/skills/server", () => ({ loadRoleInstructions: vi.fn().mockResolvedValue([]) }));
+vi.mock("@/lib/ingest", () => ({ startExternalSource: vi.fn(), processExternalEvent: vi.fn() }));
+vi.mock("./webSearch", () => ({ searchWebAndWikipedia: vi.fn(), webSearchKey: vi.fn().mockReturnValue(null) }));
+vi.mock("./externalApproval", () => ({ approveExternalSearch: vi.fn(), approveExternalSource: vi.fn() }));
+vi.mock("./externalReviewStore", () => ({ externalProjectContext: vi.fn(), externalReviewRecorder: vi.fn() }));
+const context = { organization: null, article: "Topic", section: "External information", sourceTitles: [], projectFacts: [], existingKnowledge: [] };
+const result = { title: "Official reference", url: "https://example.org/reference", text: "Verified source information.", publishedDate: null };
+const record = vi.fn().mockResolvedValue("review");
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(getServerDeps).mockResolvedValue({ db: { call: vi.fn() } } as unknown as Awaited<ReturnType<typeof getServerDeps>>);
+  vi.mocked(tokenFactoryFromEnv).mockReturnValue({ apiKey: "test" });
+  vi.mocked(chatJson).mockResolvedValue({ value: { query: "Topic official reference", gap: "New facts", justification: "User request" }, model: "test", tokensIn: 1, tokensOut: 1 } as never);
+  vi.mocked(externalProjectContext).mockResolvedValue(context);
+  vi.mocked(externalReviewRecorder).mockReturnValue(record);
+  vi.mocked(searchWebAndWikipedia).mockResolvedValue([result, result]);
+  vi.mocked(approveExternalSource).mockResolvedValue({ text: result.text, reviewId: "review" });
+  vi.mocked(startExternalSource).mockResolvedValue({ kind: "started", sourceId: "source", eventId: "event" });
+  vi.mocked(processExternalEvent).mockResolvedValue({ status: "applied", added: 1 });
+  const client = { from: vi.fn((table: string) => {
+    const data = table === "pages" ? { id: "page", title: "Topic", entity_id: null } : table === "domains" ? { id: "domain" } : table === "source_units" ? [{ unit_id: "knowledge" }] : table === "section_lines" ? [{ content: "WHMIS first became law in 1988." }] : [];
+    const value = { data, error: null };
+    const query = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), is: vi.fn().mockReturnThis(), limit: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue(value), maybeSingle: vi.fn().mockResolvedValue(value), then: (resolve: (v: unknown) => unknown) => Promise.resolve(value).then(resolve) };
+    return query;
+  }) };
+  vi.mocked(getAdminSupabase).mockReturnValue(client as unknown as ReturnType<typeof getAdminSupabase>);
+});
+it("treats the user's request as preapproved and imports checked evidence into knowledge", async () => {
+  expect(await sourceArticleInfo("page", "Find useful facts")).toMatchObject({ sources: [{ id: "source" }], knowledge: 1, pending: 0 });
+  expect(approveExternalSearch).not.toHaveBeenCalled();
+  expect(record).toHaveBeenCalledWith(expect.objectContaining({ stage: "search", outcome: "approved", attribution: expect.objectContaining({ decidedBy: { role: "person", model: null } }) }));
+  expect(approveExternalSource).toHaveBeenCalledWith(expect.anything(), context, expect.anything(), result, record, "sourcer");
+  expect(startExternalSource).toHaveBeenCalledTimes(1);
+  expect(processExternalEvent).toHaveBeenCalledWith("event", expect.objectContaining({ fallbackDomainPath: "External references" }), "review");
+  expect(expandSourcedArticle).toHaveBeenCalledWith(expect.anything(), "page", ["knowledge"], "Find useful facts", undefined);
+});
+it("does not create sources or claims from excerpts that fail factual checks", async () => {
+  vi.mocked(approveExternalSource).mockResolvedValue(null);
+  expect(await sourceArticleInfo("page", "")).toMatchObject({ sources: [], knowledge: 0 });
+  expect(startExternalSource).not.toHaveBeenCalled();
+  expect(processExternalEvent).not.toHaveBeenCalled();
+});
+it("uses only the targeted section's knowledge and records that section", async () => {
+  const client = getAdminSupabase();
+  const originalFrom = client.from.bind(client);
+  const eq = vi.fn().mockReturnThis();
+  const query = { select: vi.fn().mockReturnThis(), eq, is: vi.fn().mockReturnThis(), then: (resolve: (v: unknown) => unknown) => Promise.resolve({ data: [{ id: "target", title: "Quality control definitions" }], error: null }).then(resolve) };
+  vi.mocked(getAdminSupabase).mockReturnValue({ ...client, from: (table: string) => table === "sections" ? query : originalFrom(table as never) } as unknown as ReturnType<typeof getAdminSupabase>);
+  const deps = await getServerDeps();
+  const units = [{ unitId: "target-unit", content: "Quality control checks requirements." }];
+  vi.mocked(deps.db.call).mockResolvedValue({ units });
+  await sourceArticleInfo("page", "", "target");
+  expect(eq).toHaveBeenCalledWith("page_id", "page");
+  expect(eq).toHaveBeenCalledWith("id", "target");
+  expect(deps.db.call).toHaveBeenCalledWith("read_section_state", { p_section_id: "target" });
+  expect(externalProjectContext).toHaveBeenCalledWith(expect.anything(), expect.anything(), "Quality control definitions", units);
+  expect(externalReviewRecorder).toHaveBeenCalledWith(expect.anything(), "page", "target");
+  expect(chatJson).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ messages: expect.arrayContaining([expect.objectContaining({ role: "user", content: expect.stringContaining("Only find information relevant to this section") })]) }));
+});
+it("rejects a missing section before searching or importing", async () => {
+  await expect(sourceArticleInfo("page", "", "missing")).rejects.toThrow("section is no longer available");
+  expect(searchWebAndWikipedia).not.toHaveBeenCalled();
+  expect(startExternalSource).not.toHaveBeenCalled();
+});
+it("skips a saved URL and uses the next new external source", async () => {
+  const next = { ...result, title: "Next official source", url: "https://example.gov/next" };
+  vi.mocked(searchWebAndWikipedia).mockResolvedValue([result, next]);
+  const client = getAdminSupabase(), originalFrom = client.from.bind(client);
+  vi.mocked(getAdminSupabase).mockReturnValue({ ...client, from: (table: string) => {
+    if (table !== "sources") return originalFrom(table as never);
+    let currentUrl = "";
+    const query = { select: vi.fn().mockReturnThis(), is: vi.fn().mockReturnThis(), limit: vi.fn().mockReturnThis(), eq: vi.fn((key: string, value: string) => { if (key === "url") currentUrl = value; return query; }), then: (resolve: (v: unknown) => unknown) => Promise.resolve({ data: currentUrl === result.url ? [{ id: "already-saved" }] : [], error: null }).then(resolve) };
+    return query;
+  } } as unknown as ReturnType<typeof getAdminSupabase>);
+  await sourceArticleInfo("page", "");
+  expect(approveExternalSource).toHaveBeenCalledTimes(1);
+  expect(approveExternalSource).toHaveBeenCalledWith(expect.anything(), expect.anything(), expect.anything(), next, expect.anything(), "sourcer");
+  expect(startExternalSource).toHaveBeenCalledWith(expect.objectContaining({ url: next.url }));
+});

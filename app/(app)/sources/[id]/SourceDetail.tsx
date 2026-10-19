@@ -1,6 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Facts, Note, QueryState, Section, TextLink, UnitLink } from "@/app/(app)/_components/bits";
 import { SourceState } from "../SourceState";
 import { DateTime } from "@/app/(app)/_components/DateTime";
@@ -17,7 +19,7 @@ import { SourcePreview } from "../SourcePreview";
 import { SourceRowMenu } from "../SourceRowMenu";
 import { SourceFigures } from "./SourceFigures";
 import { SourcePassages } from "./SourcePassages";
-import { UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
+import { UploadWorkflowStatus, useUploadWorkflows } from "@/components/upload/UploadWorkflowStatus";
 
 // SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the articles built on it, the knowledge that cites it,
 // the definitions, entities and domains that knowledge produced, then its passages
@@ -49,7 +51,31 @@ export function SourceDetail({ sourceId }: { sourceId: string }) {
 function SourceUploadProgress({ sourceId, active }: { sourceId: string; active: boolean }) {
   const events = useShiftEvents({ filters: { source_id: sourceId, cause: "upload" }, limit: 1 });
   const latest = events.data?.[0];
-  return latest ? <UploadWorkflowStatus eventId={latest.id} allowRetry={active} /> : null;
+  const eventId = latest?.id;
+  const workflows = useUploadWorkflows(latest ? [latest.id] : []);
+  const queryClient = useQueryClient();
+  const workflow = workflows.data?.[0];
+  const progress = workflow?.progress?.done;
+  const state = workflow?.state;
+  const lastRefresh = useRef(0);
+  // Refresh once per durable batch (also on resume/finish), rather than refetching
+  // a large book after every inserted row or waiting for a manual page reload.
+  useEffect(() => {
+    if (!eventId) return;
+    const refresh = () => {
+      lastRefresh.current = Date.now();
+      for (const table of ["units", "actions", "entities", "domains"] as const) {
+        void queryClient.invalidateQueries({ queryKey: ["table", table] });
+      }
+    };
+    const delay = state === "running" ? Math.max(0, 5000 - (Date.now() - lastRefresh.current)) : 0;
+    if (!delay) { refresh(); return; }
+    const timer = setTimeout(refresh, delay);
+    return () => clearTimeout(timer);
+  }, [eventId, progress, state, queryClient]);
+  return latest ? <div className="flex flex-col gap-2"><UploadWorkflowStatus eventId={latest.id} allowRetry={active} />
+    {state === "running" ? <Note>New knowledge is saved as each batch finishes. Duplicate checks, topic filing and article updates continue afterward.</Note> : null}
+  </div> : null;
 }
 
 // HEADER: title, state, versions, dates, type and how much knowledge and article text cites it, with the source's "…" menu
@@ -88,6 +114,7 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
     facts.push(
       ["Knowledge units", <span key="units" className="font-mono">{usage.units}</span>],
       ["Articles", <span key="articles" className="font-mono">{usage.articles}</span>],
+      ["Article sections", <span key="sections" className="font-mono">{usage.sections}</span>],
       ["Article lines", <span key="lines" className="font-mono">{usage.lines}</span>],
     );
   }
@@ -113,7 +140,7 @@ function SourceArticles({ sourceId }: { sourceId: string }) {
   return (
     <Section title={`Articles from this file (${list.length})`}>
       <QueryState query={articles}>
-        {list.length === 0 ? <Note>No article is built on this file's knowledge yet.</Note> : null}
+        {list.length === 0 ? <Note>No article is built on this file&apos;s knowledge yet.</Note> : null}
         <ul className="flex flex-col gap-1.5">
           {list.map((page) => (
             <li key={page.id}>
@@ -128,6 +155,7 @@ function SourceArticles({ sourceId }: { sourceId: string }) {
 
 // KNOWLEDGE: every unit whose current version cites this file, with its evidence state
 function SourceKnowledge({ sourceId }: { sourceId: string }) {
+  const [visibleCount, setVisibleCount] = useState(50);
   const unitIds = useSourceUnitIds(sourceId);
   const units = useUnitSummaries(unitIds.data ?? []);
   const list = (units.data ?? []).filter((unit) => !unit.retired_at);
@@ -136,12 +164,13 @@ function SourceKnowledge({ sourceId }: { sourceId: string }) {
       <QueryState query={readsState([unitIds, units])}>
         {list.length === 0 ? <Note>No current knowledge cites this file.</Note> : null}
         <ul className="flex flex-col gap-1.5">
-          {list.map((unit) => (
+          {list.slice(0, visibleCount).map((unit) => (
             <li key={unit.id}>
               <UnitLink unit={unit} />
             </li>
           ))}
         </ul>
+        {visibleCount < list.length ? <Button variant="outline" onClick={() => setVisibleCount((count) => count + 50)}>Show 50 more knowledge units</Button> : null}
       </QueryState>
     </Section>
   );
@@ -167,7 +196,7 @@ function SourceReachLists({ sourceId }: { sourceId: string }) {
       </Section>
       <Section title={`Entities from this file (${entities.length})`}>
         <QueryState query={reach}>
-          {entities.length === 0 ? <Note>No entity is linked to this file's knowledge.</Note> : null}
+          {entities.length === 0 ? <Note>No entity is linked to this file&apos;s knowledge.</Note> : null}
           <ul className="flex flex-col gap-1.5">
             {entities.map((entity) => (
               <li key={entity.id} className="flex items-baseline gap-2">
@@ -180,7 +209,7 @@ function SourceReachLists({ sourceId }: { sourceId: string }) {
       </Section>
       <Section title={`Domains from this file (${domains.length})`}>
         <QueryState query={reach}>
-          {domains.length === 0 ? <Note>No domain holds this file's knowledge.</Note> : null}
+          {domains.length === 0 ? <Note>No domain holds this file&apos;s knowledge.</Note> : null}
           <ul className="flex flex-col gap-1.5">
             {domains.map((domain) => (
               <li key={domain.id}>

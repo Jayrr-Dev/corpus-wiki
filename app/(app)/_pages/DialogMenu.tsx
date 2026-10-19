@@ -20,7 +20,8 @@ type DialogMenuProps = { label: string; items: DialogMenuItem[]; className?: str
 // row hide the button until hover (it stays visible while the menu is open).
 export function DialogMenu({ label, items, className }: DialogMenuProps) {
   const [openItem, setOpenItem] = useState<DialogMenuItem | null>(null);
-  const close = () => setOpenItem(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const close = () => setDialogOpen(false);
   return (
     <>
       <DropdownMenu>
@@ -33,7 +34,7 @@ export function DialogMenu({ label, items, className }: DialogMenuProps) {
           {orderMenuItems(items).map(({ item, hasSeparator }) => (
             <Fragment key={item.label}>
               {hasSeparator && <DropdownMenuSeparator />}
-              <DropdownMenuItem variant={item.isDestructive ? "destructive" : "default"} disabled={item.disabled} onSelect={() => item.onSelect ? item.onSelect() : setOpenItem(item)}>
+              <DropdownMenuItem variant={item.isDestructive ? "destructive" : "default"} disabled={item.disabled} onSelect={() => { if (item.onSelect) item.onSelect(); else { setOpenItem(item); setDialogOpen(true); } }}>
                 {item.label}
                 {item.hint && <ActionHint>{item.hint}</ActionHint>}
               </DropdownMenuItem>
@@ -41,8 +42,8 @@ export function DialogMenu({ label, items, className }: DialogMenuProps) {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={openItem !== null} onOpenChange={(isOpen) => !isOpen && close()}>
-        <DialogContent>{openItem ? openItem.render?.(close) : null}</DialogContent>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent motion>{openItem ? openItem.render?.(close) : null}</DialogContent>
       </Dialog>
     </>
   );

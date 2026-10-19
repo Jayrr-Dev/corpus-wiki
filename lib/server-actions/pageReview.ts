@@ -10,6 +10,7 @@ import { runPageReview, type PageReviewStatus } from "@/lib/living-page/runPageR
 import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { toActionResult } from "./result";
 import { REVIEW_PROGRESS_EVENT, reviewProgressChannel } from "@/lib/living-page/reviewProgress";
+import { getServerDeps } from "@/lib/server/deps";
 
 export async function reviewPage(pageId: string, runId?: string) {
   return toActionResult(async () => {
@@ -29,7 +30,8 @@ export async function reviewPage(pageId: string, runId?: string) {
       void sending.finally(() => pending.delete(sending));
     } : undefined;
     try {
-      return await runPageReview(db, settings, pageId, embedderFromEnv(process.env, settings.logCall), progress);
+      const { writer } = await getServerDeps();
+      return await runPageReview(db, settings, pageId, embedderFromEnv(process.env, settings.logCall), progress, undefined, { client: admin, writer });
     } finally {
       await Promise.allSettled([...pending]);
       if (channel) await admin.removeChannel(channel);

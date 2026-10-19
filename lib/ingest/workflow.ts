@@ -7,7 +7,7 @@ import { proposePages, rebuildAfterEvent } from "@/lib/living-page";
 import type { PipelineDeps } from "./pipeline";
 import type { ProcessUploadResult } from "./types";
 import { uploadExecution, workflowStep } from "./workflowContext";
-import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, type UploadJob, type UploadWorkflow } from "./workflowTypes";
+import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, failedWorkflowStages, uploadErrorMessage, type UploadJob, type UploadWorkflow } from "./workflowTypes";
 
 // The articles job also walks the knowledge roles: finished ones come back from their
 // checkpoints, unfinished ones run first, so articles never read half-cleaned knowledge.
@@ -49,7 +49,8 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
     heartbeat = setInterval(() => {
       if (heartbeatPending) return;
       heartbeatPending = true;
-      void checkLease().catch((error) => { leaseError = error; abort.abort(error); }).finally(() => { heartbeatPending = false; });
+      void db.call("heartbeat_upload_workflow", { p_event_id: eventId, p_token: token })
+        .catch((error) => { leaseError = error; abort.abort(error); }).finally(() => { heartbeatPending = false; });
     }, HEARTBEAT_MS);
     await uploadExecution.run({ eventId, token, db, signal }, async () => {
       await timedStage(eventId, "reconcile", async () => {
@@ -106,8 +107,9 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           await deps.articleOrchestrator?.(eventId, `enrichment:${eventId}`, added);
         },
         "pages-enrichment": async () => {
-          if (!(await enrichmentUnits()).length) return;
-          await rebuildAfterEvent(db, deps.writer, eventId, `enrichment:${eventId}`);
+          const added = await enrichmentUnits();
+          if (!added.length) return;
+          await rebuildAfterEvent(db, deps.writer, eventId, `enrichment:${eventId}`, added);
           if (deps.articleOrchestrator) await deps.hierarchyOrganizer?.(eventId);
         },
         // A failed upkeep read is unfinished work. Keep its checkpoint resumable
@@ -135,7 +137,20 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           await release("waiting");
           return;
         }
+        // Recheck even on a checkpoint hit: rejecting a proposed root can leave
+        // claims unfiled after the original placement stage completed.
+        if (key === "place" && deps.topicPlacer) {
+          const coverage = await db.call<{ unplaced: string[] }>("verify_upload_topic_coverage", { p_event_id: eventId });
+          if (coverage.unplaced.length) {
+            fatal = `${coverage.unplaced.length} knowledge units still need domain assignments. Assign them before resuming articles.`;
+            failed = true;
+            break;
+          }
+        }
       }
+      // Enrichment and curation can change an article outside the rebuilt subset.
+      // Recheck current content after every stage, including checkpoint resumes.
+      if (!failed && job !== "knowledge") await deps.articleVerifier?.(eventId);
       // A finished knowledge job leaves the upload incomplete without an error: articles are next
       await release(failed || job === "knowledge" ? "incomplete" : "complete");
     });
@@ -156,11 +171,11 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
   async function readResult(error: string | null = null): Promise<ProcessUploadResult> {
     const [workflow] = await db.call<UploadWorkflow[]>("read_upload_workflows", { p_event_ids: [eventId] });
     const knowledge = await db.call<CommitResult | null>("upload_knowledge_result", { p_event_id: eventId });
-    const warnings = workflow?.steps.filter((step) => step.state === "failed" && !step.key.startsWith("extract:")).map((step) => `${step.key}: ${step.error}`) ?? [];
+    const warnings = workflow ? failedWorkflowStages(workflow).map((step) => `${step.key}: ${step.error}`) : [];
     return {
       status: knowledge?.eventStatus ?? (error || warnings.length ? "failed" : "received"),
       changeSetId: knowledge?.changeSetId ?? null,
-      error: [error ?? workflow?.error, ...warnings].filter(Boolean).join("\n") || null,
+      error: [...new Set([error ?? workflow?.error, ...warnings].filter(Boolean).map(message=>uploadErrorMessage(message)))].join("\n") || null,
       workflow,
     };
   }

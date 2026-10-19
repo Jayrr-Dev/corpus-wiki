@@ -3,18 +3,22 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Circle, LoaderCircle, Minus, X } from "lucide-react";
 import { useState } from "react";
-import { ErrorNote, TextLink } from "@/app/(app)/_components/bits";
+import { ErrorNote as RawErrorNote, TextLink } from "@/app/(app)/_components/bits";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { EVENT_TONE, type Tone } from "@/app/(app)/_lib/tone";
 import { RetryUploadButton } from "@/app/(app)/upload/RetryUploadButton";
 import { Button } from "@/components/ui/button";
 import { getBrowserSupabase } from "@/lib/supabase/client";
-import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, canCancelUpload, canResumeUpload, isRunning, workflowLabel, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, canCancelUpload, canResumeUpload, failedWorkflowStages, isRunning, uploadErrorMessage, workflowLabel, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
 import { cn } from "@/lib/utils";
 
 // How often the status is read while a run works, and while it waits for a resume
 const RUNNING_POLL_MS = 1500;
 const IDLE_POLL_MS = 3000;
+
+function ErrorNote({ error }: { error?: string | null }) {
+  return <RawErrorNote error={uploadErrorMessage(error)} />;
+}
 
 export function useUploadWorkflows(eventIds: string[]) {
   const ids = [...new Set(eventIds)].sort();
@@ -37,15 +41,15 @@ export function useUploadWorkflows(eventIds: string[]) {
 
 const LABELS: Record<string, string> = {
   "embeddings-cleaned": "Indexing cleaned knowledge", "embeddings-enrichment": "Indexing new definitions",
-  reconcile: "Saving knowledge", "reconciliation-input": "Reading evidence", extraction: "Extracting knowledge",
+  reconcile: "Finalizing knowledge links", "reconciliation-input": "Reading evidence", extraction: "Extracting and saving knowledge",
   "duplicate-guard": "Comparing existing claims", embeddings: "Indexing knowledge", describe: "Describing subjects", tidy: "Tidying entities", profiles: "Writing stakeholder cards",
-  expand: "Expanding definitions", plan: "Planning pages", pages: "Updating and reviewing pages", curate: "Tidying the page tree",
+  expand: "Expanding definitions", plan: "Planning article structures", pages: "Writing and reviewing articles", curate: "Tidying the page tree",
   hierarchy: "Organizing topics", place: "Filing into topics", duplicates: "Merging repeated claims", "settle-pages": "Checking final page updates", glossary: "Writing dictionary entries",
   "hierarchy-enrichment": "Organizing new definitions", "plan-enrichment": "Planning updates from new knowledge", "pages-enrichment": "Writing updates from new knowledge",
 };
 
 // What the live counts are counting, per role that reports them
-const PROGRESS_UNITS: Record<string, string> = { extraction: "batches", pages: "sections completed", "pages-enrichment": "sections completed" };
+const PROGRESS_UNITS: Record<string, string> = { extraction: "batches", plan: "proposals reviewed", "plan-enrichment": "proposals reviewed", pages: "sections completed", "pages-enrichment": "sections completed" };
 
 // THE STAGES IN ORDER: the knowledge commit is two steps inside "reconcile", then its cleanup; then the articles
 const STAGES = [
@@ -88,7 +92,9 @@ function currentActivity(workflow: UploadWorkflow): string | null {
 function progressText(workflow: UploadWorkflow, key: string): string {
   const progress = workflow.progress;
   if (!progress || progress.step !== key || !progress.total) return "";
-  const count = key === "pages" || key === "pages-enrichment" ? progress.done : progress.done + 1;
+  if (progress.phase === "review") return ` · ${Math.min(progress.done, progress.total)} of ${progress.total} articles reviewed`;
+  if ((key === "pages" || key === "pages-enrichment") && progress.done >= progress.total) return " · Checking article structure and final edits";
+  const count = key === "pages" || key === "pages-enrichment" || key === "plan" || key === "plan-enrichment" ? progress.done : progress.done + 1;
   return ` · ${Math.min(count, progress.total)} of ${progress.total} ${PROGRESS_UNITS[key] ?? ""}`.trimEnd();
 }
 
@@ -174,7 +180,7 @@ function CompactStatus({ workflow }: { workflow: UploadWorkflow }) {
   const running = isRunning(workflow);
   const activity = currentActivity(workflow);
   const share = stageShare(workflow);
-  const failed = workflow.steps.find((step) => step.state === "failed" && step.error && step.error !== "Cancelled" && step.error !== workflow.error);
+  const failed = failedWorkflowStages(workflow).find((step) => step.error && step.error !== workflow.error);
   return (
     <div className="flex flex-col gap-1.5 whitespace-normal" aria-live="polite">
       <StatusDot tone={workflowTone(workflow)} label={workflowLabel(workflow)} busy={running} className="font-medium" />
@@ -185,7 +191,8 @@ function CompactStatus({ workflow }: { workflow: UploadWorkflow }) {
         </div>
       ) : null}
       {workflow.error ? <ErrorNote error={workflow.error} /> : failed ? <ErrorNote error={`${LABELS[failed.key] ?? "Document processing"}: ${failed.error}`} /> : null}
-      {workflow.waiting ? <TextLink href="/exceptions" className="text-xs">Review pending decisions</TextLink> : null}
+      {workflow.waiting && workflow.progress?.step !== "root-approval" ? <TextLink href="/exceptions" className="text-xs">Review pending decisions</TextLink> : null}
+      {workflow.waiting && workflow.progress?.step === "root-approval" ? <span className="text-xs text-muted-foreground">{workflow.progress.done} of {workflow.progress.total} changes saved</span> : null}
     </div>
   );
 }
@@ -225,7 +232,7 @@ export function UploadWorkflowStatus({ eventId, allowRetry = true, legacyStatus,
   if (compact) return <CompactStatus workflow={workflow} />;
   // One failure is listed once: the roles that wrap it (extraction inside the knowledge commit)
   // repeat its message, and a cancel marks the roles it interrupted
-  const failed = workflow.steps.filter((step) => step.state === "failed" && !step.key.startsWith("extract:") && step.error !== "Cancelled")
+  const failed = failedWorkflowStages(workflow)
     .filter((step, index, all) => step.error !== workflow.error && all.findIndex((other) => other.error === step.error) === index);
   const activity = currentActivity(workflow);
   const showStages = !compact && workflow.state !== "complete" && !workflow.waiting;
@@ -241,7 +248,8 @@ export function UploadWorkflowStatus({ eventId, allowRetry = true, legacyStatus,
       {showStages ? <StageList workflow={workflow} /> : null}
       {workflow.error ? <ErrorNote error={workflow.error} /> : null}
       {failed.length ? <ul className="space-y-1">{failed.map((step) => <li key={step.key}><ErrorNote error={`${LABELS[step.key] ?? "Document processing"}: ${step.error}`} /></li>)}</ul> : null}
-      {workflow.waiting ? <TextLink href="/exceptions">Review pending decisions</TextLink> : null}
+      {workflow.waiting && workflow.progress?.step !== "root-approval" ? <TextLink href="/exceptions">Review pending decisions</TextLink> : null}
+      {workflow.waiting && workflow.progress?.step === "root-approval" ? <span className="text-xs text-muted-foreground">{workflow.progress.done} of {workflow.progress.total} changes saved</span> : null}
     </div>
   );
 }

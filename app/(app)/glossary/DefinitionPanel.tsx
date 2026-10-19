@@ -17,10 +17,10 @@ import { changeGlossaryDefinition, glossaryDefinitionHistory, type GlossaryDefin
 import { cn } from "@/lib/utils";
 
 export type DefinitionPreview = { key: string; versionId: string; definition: string };
-type DefinitionPanelProps = { entry: GlossaryEntry; queryKey: readonly unknown[]; preview: DefinitionPreview | null; onPreview: (preview: DefinitionPreview | null) => void; onRemoved: () => void };
+type DefinitionPanelProps = { entry: GlossaryEntry; queryKey: readonly unknown[]; preview: DefinitionPreview | null; onPreview: (preview: DefinitionPreview | null) => void; onRemoved: () => void; readOnly?: boolean };
 
 // DEFINITION PANEL: the clicked definition (editable), the claims it rests on, and its history
-export function DefinitionPanel({ entry, queryKey, preview, onPreview, onRemoved }: DefinitionPanelProps) {
+export function DefinitionPanel({ entry, queryKey, preview, onPreview, onRemoved, readOnly = false }: DefinitionPanelProps) {
   const history = useQuery({
     queryKey: ["glossary", "history", glossaryEntryKey(entry), entry.definition],
     queryFn: async () => {
@@ -32,7 +32,7 @@ export function DefinitionPanel({ entry, queryKey, preview, onPreview, onRemoved
   const revisionIds = [...new Set(entry.citations.map((cite) => cite.revisionId))];
   return (
     <div className="flex flex-col">
-      <DefinitionSection entry={entry} queryKey={queryKey} onRemoved={onRemoved} />
+      {readOnly ? <PanelSection title="This definition"><p className="text-panel font-medium">{glossarySentenceCase(entry.term)}</p><p className="text-panel">{entry.definition}</p></PanelSection> : <DefinitionSection entry={entry} queryKey={queryKey} onRemoved={onRemoved} />}
       <PanelSection title="Knowledge applied">
         {revisionIds.length === 0 ? <p className="text-panel text-faint">Source needed: this definition cites no claim.</p> : null}
         {revisionIds.map((revisionId) => <ClaimCard key={revisionId} citedRevisionId={revisionId} />)}
@@ -40,7 +40,7 @@ export function DefinitionPanel({ entry, queryKey, preview, onPreview, onRemoved
       <PanelSection title="History">
         {history.isPending ? <Loader inline /> : null}
         {history.error ? <p role="alert" className="text-panel text-failed">{history.error.message}</p> : null}
-        {history.data ? <DefinitionHistory entry={entry} versions={history.data} queryKey={queryKey} preview={preview} onPreview={onPreview} /> : null}
+        {history.data && !readOnly ? <DefinitionHistory entry={entry} versions={history.data} queryKey={queryKey} preview={preview} onPreview={onPreview} /> : null}
       </PanelSection>
     </div>
   );

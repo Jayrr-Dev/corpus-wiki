@@ -259,6 +259,12 @@
 }
 
 /* NO SCROLLBAR: scrolls but hides the bar (the sidebar content uses it) */
+@keyframes dialog-menu-enter { from { opacity: 0; scale: .97; } to { opacity: 1; scale: 1; } }
+@keyframes dialog-menu-exit { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .97; } }
+.dialog-menu-motion[data-state="open"] { animation: dialog-menu-enter 140ms ease-out; }
+.dialog-menu-motion[data-state="closed"] { animation: dialog-menu-exit 120ms ease-in; }
+@media (prefers-reduced-motion: reduce) { .dialog-menu-motion { animation: none !important; } }
+
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }

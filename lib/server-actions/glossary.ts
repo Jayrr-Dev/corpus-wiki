@@ -2,6 +2,7 @@
 
 import { after } from "next/server";
 import { requireUser } from "@/lib/auth/requireUser";
+import { currentActor, withSpaceActor } from "@/lib/auth/currentPerson";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
@@ -52,8 +53,8 @@ export type GlossaryDefinitionVersion = {
 };
 
 // EVERY VERSION OF ONE DEFINITION, newest first. Each glossary change is audited as a
-// whole-dictionary snapshot; this follows the entry (same headword, expansion and scope)
-// through those snapshots and keeps the points where its text changed.
+// checkpoint or changed-entry snapshot; this follows the entry (same headword,
+// expansion and scope) and keeps the points where its text changed.
 export async function glossaryDefinitionHistory(entry: GlossaryEntry) {
   return toActionResult(async () => {
     await requireUser();
@@ -88,22 +89,30 @@ export async function resolvePendingGlossary(input: { id: string; decision: "kee
 export async function requestGlossaryGeneration(force = false) {
   return toActionResult(async () => {
     await requireUser();
+    const actor = await currentActor();
     const client = getAdminSupabase();
     const db = supabaseRpc(client);
     const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: call }));
     if (!settings) throw new Error("Configure the AI provider in Settings to generate your dictionary.");
-    after(async () => {
+    after(() => withSpaceActor(actor, async () => {
       try {
         await generateGlossary(client, settings, force);
-        const embedder = embedderFromEnv(process.env, (call) => db.call("log_ai_call", { p_call: { ...call, purpose: "glossary_embeddings", role: "dictionary_editor" } }));
-        if (embedder) await embedMissingGlossary(db, embedder);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         console.error("Glossary generation failed:", message);
         // Failures before the lease is claimed must also be visible in the page.
         await glossaryClient(client).from("glossary_state").update({ error: message }).eq("id", true).is("lease_token", null);
+        return;
       }
-    });
+      // Indexing can retry independently; it must not mark a saved dictionary
+      // as a failed generation when the search provider is temporarily offline.
+      try {
+        const embedder = embedderFromEnv(process.env, (call) => db.call("log_ai_call", { p_call: { ...call, purpose: "glossary_embeddings", role: "dictionary_editor" } }));
+        if (embedder) await embedMissingGlossary(db, embedder);
+      } catch (error) {
+        console.error("Glossary meaning-search indexing failed:", error instanceof Error ? error.message : String(error));
+      }
+    }));
     return {};
   });
 }

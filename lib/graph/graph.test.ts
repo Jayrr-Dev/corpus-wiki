@@ -20,6 +20,8 @@ const T2 = "2026-10-05T00:00:00Z";
 const T3 = "2026-10-09T00:00:00Z";
 
 const rows: GraphRows = {
+  sources: [],
+  sourceUnits: [],
   units: [
     { id: "u1", kind: "decision", epistemic_status: "established", current_revision_id: "r1", created_at: T1 },
     { id: "u2", kind: "fact", epistemic_status: "disputed", current_revision_id: "r2", created_at: T2 },
@@ -93,16 +95,55 @@ describe("shortLabel", () => {
 });
 
 describe("applyFilters", () => {
+  it("keeps uploaded book topics Internal even without an organization context", () => {
+    const book = buildGraph({ ...rows,
+      domains: rows.domains.map((domain) => ({ ...domain, context_entity_id: null })),
+      sources: [{ id: "book", origin: "internal" }],
+      sourceUnits: rows.units.map((unit) => ({ unit_id: unit.id, source_id: "book" })),
+    });
+    expect(ids(applyFilters(book, ALL_LAYERS))).toEqual(["e1", "p1", "u1", "u2", "u3"]);
+    expect(ids(applyFilters(book, { ...ALL_LAYERS, domainScope: "external" }))).toEqual([]);
+    expect(book.nodes.find((node) => node.id === "u1")?.domainScopePaths).toEqual({ internal: ["Projects/Alpha/Data layer"], external: [] });
+  });
+
+  it("separates uploaded and external knowledge within the same domain", () => {
+    const mixed = buildGraph({ ...rows,
+      domains: rows.domains.map((domain) => ({ ...domain, context_entity_id: "org" })),
+      unitDomains: [{ unit_id: "u1", domain_id: "d1" }, { unit_id: "u2", domain_id: "d1" }],
+      sources: [{ id: "upload", origin: "internal" }, { id: "web", origin: "external" }],
+      sourceUnits: [{ unit_id: "u1", source_id: "upload" }, { unit_id: "u2", source_id: "web" }, { unit_id: "u3", source_id: "web" }],
+      sectionInputs: [{ section_id: "s1", unit_id: "u2" }],
+    });
+    expect(ids(applyFilters(mixed, ALL_LAYERS))).toEqual(["e1", "u1"]);
+    expect(ids(applyFilters(mixed, { ...ALL_LAYERS, domainScope: "external" }))).toEqual(["e1", "p1", "u2", "u3"]);
+    expect(mixed.nodes.find((node) => node.id === "u2")?.domainScopePaths).toEqual({ internal: [], external: ["Projects/Alpha"] });
+  });
+
+  it("keeps mixed-source units Internal and includes mixed-source pages in both scopes", () => {
+    const mixed = buildGraph({ ...rows,
+      sources: [{ id: "upload", origin: "internal" }, { id: "web", origin: "external" }],
+      sourceUnits: [{ unit_id: "u1", source_id: "upload" }, { unit_id: "u1", source_id: "web" }, { unit_id: "u2", source_id: "web" }],
+      sectionInputs: [{ section_id: "s1", unit_id: "u1" }, { section_id: "s2", unit_id: "u2" }],
+    });
+    expect(mixed.nodes.find((node) => node.id === "u1")?.sourceScopes).toEqual(["internal"]);
+    expect(mixed.nodes.find((node) => node.id === "p1")?.sourceScopes).toEqual(["internal", "external"]);
+    expect(ids(applyFilters(mixed, ALL_LAYERS))).toContain("p1");
+    expect(ids(applyFilters(mixed, { ...ALL_LAYERS, domainScope: "external" }))).toContain("p1");
+  });
+
   it("hides knowledge units while retaining the other selected layers", () => {
     expect(ids(applyFilters(graph, { ...ALL_LAYERS, showUnits: false }))).toEqual(["e1", "p1"]);
     expect(ids(applyFilters(graph, { ...DEFAULT_GRAPH_SETTINGS.filters, showUnits: false }))).toEqual([]);
   });
-  it("switches domain scopes using the root context and keeps connected entities", () => {
+  it("switches domain scopes using source origin and keeps connected entities", () => {
     const scoped = buildGraph({ ...rows, domains: [
       { id: "d1", path: "Projects/Alpha", context_entity_id: "org", parent_id: null },
       { id: "d2", path: "Projects/Alpha/Data layer", context_entity_id: null, parent_id: "d1" },
       { id: "ext", path: "Reference", context_entity_id: null, parent_id: null },
-    ], unitDomains: [...rows.unitDomains, { unit_id: "u3", domain_id: "ext" }] });
+    ], unitDomains: [...rows.unitDomains, { unit_id: "u3", domain_id: "ext" }],
+    sources: [{ id: "upload", origin: "internal" }, { id: "web", origin: "external" }],
+    sourceUnits: [{ unit_id: "u1", source_id: "upload" }, { unit_id: "u2", source_id: "upload" }, { unit_id: "u3", source_id: "web" }],
+    });
     expect(ids(applyFilters(scoped, ALL_LAYERS))).toEqual(["e1", "p1", "u1", "u2"]);
     expect(ids(applyFilters(scoped, { ...ALL_LAYERS, domainScope: "external" }))).toEqual(["u3"]);
     expect(ids(applyFilters(scoped, { ...ALL_LAYERS, domainScope: "both" }))).toEqual(["e1", "p1", "u1", "u2", "u3"]);
@@ -210,6 +251,19 @@ describe("neighborhood", () => {
 });
 
 describe("camera", () => {
+  it("zooms smoothly in both directions from a large graph overview below 5%", () => {
+    const camera = { x: 400, y: 300, k: 0.003 };
+    const cursor = { x: 200, y: 100 };
+    const before = toWorld(camera, cursor);
+    for (const delta of [-40, 40]) {
+      const next = zoomAt(camera, cursor, delta);
+      expect(next.k / camera.k).toBeGreaterThan(0.9);
+      expect(next.k / camera.k).toBeLessThan(1.1);
+      expect(Math.sign(next.k - camera.k)).toBe(-Math.sign(delta));
+      expect(toWorld(next, cursor).x).toBeCloseTo(before.x);
+      expect(toWorld(next, cursor).y).toBeCloseTo(before.y);
+    }
+  });
   it("keeps the point under the cursor fixed while zooming", () => {
     const camera = { x: 100, y: 50, k: 1 };
     const cursor = { x: 300, y: 200 };

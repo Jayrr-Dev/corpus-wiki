@@ -1,7 +1,7 @@
+import type { GlossaryEntry, PendingGlossaryEntry } from "@/lib/glossary/entries";
+import { glossaryRegistry } from "@/lib/glossary/identity";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { portablePostgres } from "./portablePostgres";
-import { glossaryRegistry } from "@/lib/glossary/identity";
-import type { GlossaryEntry, PendingGlossaryEntry } from "@/lib/glossary/entries";
 
 const id = "f0000000-0000-4000-8000-000000000001";
 const otherId = "f0000000-0000-4000-8000-000000000002";
@@ -24,7 +24,7 @@ describe("canonical glossary publication", () => {
 
 
   it("Auto Decide defaults off, fences stale choices and records AI changes with undo", async () => {
-    const proposed = { ...entry(otherId), term: "Four-gas detector" };
+    const proposed = { ...entry(otherId), term: "Four-gas detector", citations: [entry().citations[0]!, { unitId: "u2", revisionId: "r2", sourceId: "s2", sourceTitle: "Instrument manual" }] };
     const pending: PendingGlossaryEntry = { entry: proposed, candidateIds: [id], reason: "Check this scope.", relationship: "uncertain" };
     await publish([entry()], [pending]);
     const args = { p_item: pending, p_candidates: [entry()], p_decision: "merge", p_target: id, p_definition: entry().definition, p_reason: "These describe the same instrument." };
@@ -36,9 +36,13 @@ describe("canonical glossary publication", () => {
     expect((await state()).pending_entries).toEqual([]);
     expect((await state()).entries[0]?.personEdited).toBe(false);
     expect((await state()).entries[0]?.redirectIds).toContain(otherId);
+    expect((await state()).entries[0]?.citations).toHaveLength(2);
+    expect((await state()).entries[0]?.citations).toEqual(expect.arrayContaining(proposed.citations));
     expect(await store.db.call("apply_glossary_auto_decision", args)).toBe(false);
-    const audit = (await store.pg.query<{ id: string; proposed_by: string; undo_state: { pendingEntries: unknown[] } }>("select a.id,a.undo_state,c.proposed_by from actions a join change_sets c on c.id=a.change_set_id where a.type::text='glossary_update' order by a.applied_at desc limit 1")).rows[0]!;
+    const audit = (await store.pg.query<{ id: string; proposed_by: string; undo_state: { pendingEntries: unknown[] }; delta: boolean; stored_entries: number }>("select a.id,a.undo_state,c.proposed_by,a.input ? 'glossaryDelta' delta,jsonb_array_length(a.input->'snapshot'->'entries') stored_entries from actions a join change_sets c on c.id=a.change_set_id where a.type::text='glossary_update' order by a.applied_at desc limit 1")).rows[0]!;
     expect(audit.undo_state.pendingEntries).toHaveLength(1);
+    expect(audit.delta).toBe(true);
+    expect(audit.stored_entries).toBe(1);
     expect(audit.proposed_by).toBe("ai");
     const revert = "f0000000-0000-4000-8000-000000000004";
     await store.pg.query("insert into shift_events(id,cause,actor,status) values($1,'edit','person','applied')", [revert]);
@@ -71,6 +75,29 @@ describe("canonical glossary publication", () => {
     expect(audit.snapshot.entries[0]?.usageNotes).toHaveLength(1);
     expect(audit.snapshot.identityRegistry).toEqual({ [id]: id });
     expect(audit.undo_state.identityRegistry).toEqual({});
+  });
+
+  it("records added, revised and removed meanings while preserving both cited snapshots", async () => {
+    const removed = { ...entry(otherId), term: "Removed meaning" };
+    await publish([entry(), removed]);
+    const revised = { ...entry(), definition: "A revised instrument definition that preserves its original citations." };
+    const added = { ...entry("f0000000-0000-4000-8000-000000000003"), term: "Added meaning" };
+    await publish([revised, added]);
+    const audit = (await store.pg.query<{ input: { added: string[]; revised: string[]; removed: string[]; snapshot: { entries: GlossaryEntry[] } }; undo_state: { entries: GlossaryEntry[] } }>(
+      "select input,undo_state from actions where type::text='glossary_update' order by applied_at desc limit 1")).rows[0]!;
+    expect(audit.input.added).toEqual([added.term]);
+    expect(audit.input.revised).toEqual([revised.term]);
+    expect(audit.input.removed).toEqual([removed.term]);
+    expect(audit.input.snapshot.entries).toEqual([revised, added]);
+    expect(audit.undo_state.entries).toEqual([entry(), removed]);
+  });
+
+  it("finalizes batch progress when publishing saved work after a recovery claim", async () => {
+    await store.pg.exec("update glossary_state set total_batches=66,completed_batches=0");
+    await publish();
+    const progress = (await store.pg.query<{ completed_batches: number; total_batches: number }>(
+      "select completed_batches,total_batches from glossary_state")).rows[0]!;
+    expect(progress).toEqual({ completed_batches: 66, total_batches: 66 });
   });
 
   it("rejects duplicate identities and overlapping origins atomically", async () => {
@@ -113,13 +140,15 @@ describe("canonical glossary publication", () => {
   });
 
   it("merges a reviewed candidate with evidence, usage notes, and redirects intact", async () => {
-    const proposed = { ...entry(otherId), term: "Four-gas detector" };
+    const proposed = { ...entry(otherId), term: "Four-gas detector", citations: [{ unitId: "u2", revisionId: "r2", sourceId: "s2", sourceTitle: "Instrument manual" }] };
     await publish([entry()], [{ entry: proposed, candidateIds: [id], reason: "Check equivalence.", relationship: "uncertain" }]);
     await store.db.call("resolve_glossary_pending", { p_id: otherId, p_decision: "merge", p_target: id, p_definition: "The reviewed combined meaning of this four-gas monitoring instrument.", p_expected: entry().definition });
     const saved = await state();
     expect(saved.entries).toHaveLength(1);
     expect(saved.entries[0]?.redirectIds).toContain(otherId);
     expect(saved.entries[0]?.usageNotes).toHaveLength(1);
+    expect(saved.entries[0]?.citations).toHaveLength(2);
+    expect(saved.entries[0]?.citations).toEqual(expect.arrayContaining([...entry().citations, ...proposed.citations]));
     expect(saved.identity_registry[otherId]).toBe(id);
     expect(saved.pending_entries).toEqual([]);
   });

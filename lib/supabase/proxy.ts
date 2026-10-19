@@ -2,12 +2,17 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/database/types";
 import { getPublicSupabaseEnv } from "./env";
+import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 
 // ROUTES THE PROXY LETS THROUGH WITHOUT A SESSION. /api/capture checks the
 // caller itself (session or API key); /api/processing/recover requires its own
 // worker key. Scripts and schedulers have no cookie to redirect;
 // every other route, future /api routes included, stays behind sign-in
-export const PUBLIC_PATHS = ["/login", "/api/capture", "/api/processing/recover"] as const;
+export const PUBLIC_PATHS = ["/login", "/signup", "/auth/callback", "/api/capture", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics"] as const;
+
+export function isPublicWikiPath(pathname: string): boolean {
+  return ["/explore", "/s", "/embed", "/api/public-wiki/metrics"].some(p => pathname === p || pathname.startsWith(`${p}/`));
+}
 
 // True when the path is a public route (or below one)
 export function isPublicPath(pathname: string): boolean {
@@ -30,5 +35,19 @@ export async function refreshSession(request: NextRequest) {
     },
   });
   const { data } = await supabase.auth.getClaims();
+  const selected = request.cookies.get(SPACE_COOKIE)?.value;
+  if (data?.claims && selected) {
+    const owned = isSpaceId(selected)
+      ? await supabase.from("spaces").select("id").eq("id", selected).maybeSingle()
+      : { data: null, error: null };
+    if (owned.error) throw new Error(owned.error.message);
+    if (!owned.data) {
+      request.cookies.delete(SPACE_COOKIE);
+      const refreshedCookies = response.cookies.getAll();
+      response = NextResponse.next({ request });
+      refreshedCookies.forEach((cookie) => response.cookies.set(cookie));
+      response.cookies.delete(SPACE_COOKIE);
+    }
+  }
   return { response, isSignedIn: Boolean(data?.claims) };
 }

@@ -5,6 +5,7 @@ import { CheckIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Tabs } from "radix-ui";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { domainPickerGroup, type DomainPickerGroup } from "@/lib/domains/pickerGroups";
 
 type DomainLike = { id: string; path: string };
 
@@ -14,8 +15,8 @@ type DomainTreeSelectProps = {
   label: string;
   value: string;
   domains: readonly DomainLike[];
-  groups?: readonly { id: string; label: string; domains: readonly DomainLike[] }[];
-  onChange: (value: string) => void;
+  groups?: readonly DomainPickerGroup[];
+  onChange: (value: string, groupId?: string) => void;
   // shown as the first item with value "" (e.g. "Any domain")
   emptyLabel?: string;
   // trigger text when nothing is picked and there is no empty item (defaults to the label)
@@ -58,7 +59,7 @@ function ancestorIds(roots: DomainNode[], id: string): string[] {
 export function DomainTreeSelect({ label, value, domains, groups, onChange, emptyLabel, placeholder, className }: DomainTreeSelectProps) {
   const roots = useMemo(() => buildDomainTree(domains), [domains]);
   const [activeGroup, setActiveGroup] = useState("");
-  const selectedGroup = groups?.find((group) => group.id === activeGroup) ?? groups?.[0];
+  const selectedGroup = domainPickerGroup(groups, activeGroup);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const selected = domains.find((domain) => domain.id === value);
 
@@ -96,7 +97,7 @@ export function DomainTreeSelect({ label, value, domains, groups, onChange, empt
     return (
       <div key={node.id}>
         <DropdownMenuItem
-          onSelect={() => onChange(node.id)}
+          onSelect={() => onChange(node.id, selectedGroup?.id)}
           onKeyDown={onKeyDown}
         >
           <span className="w-[calc(var(--depth)*1rem)] shrink-0" style={{ "--depth": node.depth } as CSSProperties} aria-hidden="true" />
@@ -150,7 +151,7 @@ export function DomainTreeSelect({ label, value, domains, groups, onChange, empt
             <Tabs.List aria-label="Domain type" className="mb-1 flex gap-1 border-b p-1" onKeyDown={(event) => event.stopPropagation()}>
               {groups.map((group) => (
                 <Tabs.Trigger key={group.id} value={group.id} className="flex-1 rounded px-3 py-1 text-panel text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-                  {group.label}
+                  {group.label} <span className="ml-1 text-muted-foreground">({group.domains.length})</span>
                 </Tabs.Trigger>
               ))}
             </Tabs.List>

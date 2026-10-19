@@ -3,6 +3,7 @@ import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
 import { rebuildAfterEvent, rebuildSection, rebuildUploadSection, type SectionWriter } from "./index";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
 import type { SectionState } from "./types";
+import { IncompleteSectionEvidence } from "./draftEvidence";
 
 const state: SectionState = { sectionId: "s", title: "Overview", pageTitle: "ExampleCo", units: [], lines: [] };
 const writer: SectionWriter = { name: "test", reviseSection: vi.fn() };
@@ -18,6 +19,53 @@ function fakeDb(claims: boolean[], finishes: object[]) {
 }
 
 describe("one build per section", () => {
+  it.each(["event", null])("redrafts a rejected section locally and saves only the successful attempt (cause: %s)", async (cause) => {
+    const { db, call } = fakeDb([true, true, true], [{ rebuildRequested: false }]);
+    const prepareSection = vi.fn().mockRejectedValueOnce(new IncompleteSectionEvidence())
+      .mockRejectedValueOnce(new IncompleteSectionEvidence()).mockResolvedValue(state);
+    const result = await uploadExecution.run({ eventId: "event", token: "owner", db },
+      () => rebuildUploadSection(db, { ...writer, prepareSection }, "s", cause));
+    expect(result?.rebuildRequested).toBe(false);
+    expect(prepareSection).toHaveBeenCalledTimes(3);
+    expect(call.mock.calls.filter(([fn]) => fn === "mark_section_stale")).toHaveLength(2);
+    expect(call.mock.calls.filter(([fn]) => fn === "finish_section_build")).toHaveLength(1);
+  });
+  it("bounds local draft retries and never retries an uncertain save", async () => {
+    const { db, call } = fakeDb([true, true, true], []);
+    const prepareSection = vi.fn().mockRejectedValue(new IncompleteSectionEvidence());
+    await expect(uploadExecution.run({ eventId: "event", token: "owner", db },
+      () => rebuildUploadSection(db, { ...writer, prepareSection }, "s", "event"))).rejects.toThrow("omits required evidence");
+    expect(prepareSection).toHaveBeenCalledTimes(3);
+    expect(call.mock.calls.some(([fn]) => fn === "finish_section_build")).toBe(false);
+    prepareSection.mockReset().mockResolvedValue(state);
+    const next = fakeDb([true], []);
+    const original = next.call.getMockImplementation()!;
+    next.call.mockImplementation(async (fn, args) => {
+      if (fn === "finish_section_build") throw new Error("Connection lost during save");
+      return original(fn, args);
+    });
+    await expect(uploadExecution.run({ eventId: "event", token: "owner", db: next.db },
+      () => rebuildUploadSection(next.db, { ...writer, prepareSection }, "s", "event"))).rejects.toThrow("Connection lost during save");
+    expect(prepareSection).toHaveBeenCalledTimes(1);
+    expect(next.call.mock.calls.filter(([fn]) => fn === "finish_section_build")).toHaveLength(1);
+  });
+  it("honors cancellation before another local draft attempt", async () => {
+    const { db, call } = fakeDb([true], []);
+    const abort = new AbortController();
+    const prepareSection = vi.fn(async () => { abort.abort(new Error("Cancelled")); throw new IncompleteSectionEvidence(); });
+    await expect(uploadExecution.run({ eventId: "event", token: "owner", db, signal: abort.signal },
+      () => rebuildUploadSection(db, { ...writer, prepareSection }, "s", "event"))).rejects.toThrow("Cancelled");
+    expect(prepareSection).toHaveBeenCalledTimes(1);
+    expect(call.mock.calls.some(([fn]) => fn === "finish_section_build")).toBe(false);
+  });
+  it("keeps the section stale when the writer drops required knowledge", async () => {
+    const { db, call } = fakeDb([true], []);
+    const original = call.getMockImplementation()!;
+    call.mockImplementation(async (name, args) => name === "read_section_state" ? { ...state, units: [{ unitId: "u", revisionId: "r", content: "Saved fact", kind: "fact", epistemicStatus: "established" }] } : original(name, args));
+    await expect(rebuildSection(db, { name: "empty", reviseSection: async () => ({ modelVersion: "test", revise: [], retire: [], add: [] }) }, "s", null)).rejects.toThrow("omitted saved knowledge");
+    expect(call).toHaveBeenCalledWith("mark_section_stale", { p_section_id: "s" });
+    expect(call.mock.calls.some(([name]) => name === "finish_section_build")).toBe(false);
+  });
   it.each([false, true])("cleans up after upload cancellation using the section token (replacement owner: %s)", async (replaced) => {
     const abort = new AbortController();
     const call = vi.fn(async (fn: string, args: RpcArgs = {}): Promise<unknown> => {

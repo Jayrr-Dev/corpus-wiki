@@ -6,15 +6,16 @@ import { AppSidebar } from "./AppSidebar";
 import { MobileTopBar } from "./MobileTopBar";
 import { RightPanel, RightPanelProvider } from "./RightPanel";
 import { SidebarTree } from "./SidebarTree";
+import type { Space } from "@/lib/spaces/shared";
 
 // APP SHELL: app sidebar | inset (context tree | reading pane | right panel); no top header bar
 // on desktop; the module tutorial button sits in the page's top-right corner. Phones get a slim top bar instead that opens the sidebars as drawers.
 // `defaultOpen` comes from the sidebar_state cookie (read in the layout) so the first paint matches
-export function AppShell({ children, defaultOpen = true }: { children: ReactNode; defaultOpen?: boolean }) {
+export function AppShell({ children, defaultOpen = true, spaces, activeSpace, accountEmail }: { children: ReactNode; defaultOpen?: boolean; spaces: Space[]; activeSpace: Space; accountEmail?: string | null }) {
   return (
     <RightPanelProvider>
       <SidebarProvider defaultOpen={defaultOpen} className="h-dvh min-h-0 overflow-hidden">
-        <AppSidebar />
+        <AppSidebar spaces={spaces} activeSpace={activeSpace} accountEmail={accountEmail} />
         <SidebarInset className="min-h-0 flex-row overflow-hidden">
           <SidebarTree />
           <div className="relative flex min-w-0 flex-1">

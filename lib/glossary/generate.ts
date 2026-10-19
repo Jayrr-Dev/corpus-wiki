@@ -2,9 +2,8 @@ import "server-only";
 import { autoDecideGlossary } from "./autoDecide";
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { ANSWER_TOKEN_BUDGET, chatJson, settingsForCall, type TokenFactorySettings } from "@/lib/ai/chat";
-import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
-import type { Json, Tables } from "@/lib/database/types";
+import { ANSWER_TOKEN_BUDGET, AnswerCutOffError, InvalidStructuredAnswerError, ProviderTimeoutError, chatJson, settingsForCall, type TokenFactorySettings } from "@/lib/ai/chat";
+import type { Json } from "@/lib/database/types";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
@@ -15,6 +14,8 @@ import { identifyGlossaryEntries, glossaryRegistry, reuseReviewedMeanings } from
 import { embedderFromEnv } from "@/lib/ai/embeddings";
 import type { PendingGlossaryEntry } from "./entries";
 import { glossaryClient, type GlossaryState, type GlossaryUpdate } from "./storage";
+import { retryGlossaryOperation } from "./retry";
+import { waitForGlossaryPublisher } from "./generationWait";
 
 type InputClaim = {
   id: string; revisionId: string; text: string; context: ReturnType<typeof parseKnowledgeContext>;
@@ -27,51 +28,22 @@ async function assertGenerationActive(): Promise<void> {
   await assertActiveUpload();
 }
 
-async function allRows<T>(read: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>): Promise<T[]> {
-  const rows: T[] = [];
-  for (let from = 0; ; from += 500) {
-    const { data, error } = await read(from, from + 499);
-    if (error) throw new Error(error.message);
-    rows.push(...data ?? []);
-    if (!data || data.length < 500) return rows;
-  }
+async function readGlossary<T>(read: () => PromiseLike<{ data: T; error: { message: string; code?: string } | null }>): Promise<T> {
+  return retryGlossaryOperation(async () => {
+    const { data, error } = await read();
+    if (error) throw Object.assign(new Error(error.message), error);
+    return data;
+  });
 }
 
-// Every live claim with source evidence, or only the given claims (still live) when ids are passed
+// A single statement reads a consistent, space-scoped snapshot without API row caps.
 async function currentClaims(client: AdminSupabase, unitIds?: string[]): Promise<InputClaim[]> {
-  const units = await allRows((from, to) => {
-    const query = client.from("units").select("id, current_revision_id").is("retired_at", null);
-    return (unitIds ? query.in("id", unitIds) : query).order("id").range(from, to);
-  });
-  const claims: InputClaim[] = [];
-  for (let offset = 0; offset < units.length; offset += 50) {
-    const part = units.slice(offset, offset + 50);
-    const { data: revisions, error } = await client.from("revisions").select("id, unit_id, content, passage_ids, knowledge_context").in("id", part.map((unit) => unit.current_revision_id));
-    if (error) throw new Error(error.message);
-    const passageIds = [...new Set((revisions ?? []).flatMap((revision) => revision.passage_ids))];
-    const passages: Pick<Tables<"passages">, "id" | "source_id" | "text">[] = [];
-    for (let i = 0; i < passageIds.length; i += 80) {
-      const result = await client.from("passages").select("id, source_id, text").in("id", passageIds.slice(i, i + 80));
-      if (result.error) throw new Error(result.error.message);
-      passages.push(...result.data ?? []);
-    }
-    const sourceIds = [...new Set(passages.map((passage) => passage.source_id))];
-    const sources = sourceIds.length ? await client.from("sources").select("id, title").in("id", sourceIds) : { data: [], error: null };
-    if (sources.error) throw new Error(sources.error.message);
-    const sourceById = new Map((sources.data ?? []).map((source) => [source.id, source.title]));
-    const passageById = new Map(passages.map((passage) => [passage.id, passage]));
-    const revisionById = new Map((revisions ?? []).map((revision) => [revision.id, revision]));
-    for (const unit of part) {
-      const revision = revisionById.get(unit.current_revision_id);
-      if (!revision) throw new Error("Knowledge changed while reading it. Try again.");
-      const sourceEvidence = revision.passage_ids.flatMap((id) => {
-        const passage = passageById.get(id);
-        return passage ? [{ sourceId: passage.source_id, sourceTitle: sourceById.get(passage.source_id) ?? "Source", text: passage.text }] : [];
-      });
-      if (sourceEvidence.length) claims.push({ id: unit.id, revisionId: revision.id, text: revision.content, context: parseKnowledgeContext(revision.knowledge_context), sourceEvidence });
-    }
-  }
-  return claims;
+  const rows = await retryGlossaryOperation(() => supabaseRpc(client).call<InputClaim[]>("glossary_claim_snapshot", { p_unit_ids: unitIds ?? null }));
+  // Preserve the existing serialization and hashes so every saved batch remains reusable.
+  return rows.map((claim) => ({ id: claim.id, revisionId: claim.revisionId, text: claim.text,
+    context: parseKnowledgeContext(claim.context),
+    sourceEvidence: claim.sourceEvidence.map((source) => ({ sourceId: source.sourceId, sourceTitle: source.sourceTitle, text: source.text })),
+  }));
 }
 
 // Stable, bounded batches keep prompts readable and let interrupted work reuse completed AI calls.
@@ -104,8 +76,15 @@ export function dictionaryBatches(claims: InputClaim[], previousPlan?: unknown):
 }
 
 export async function generateGlossary(client: AdminSupabase, settings: TokenFactorySettings, force = false): Promise<void> {
+  let first = true;
   for (let attempt = 0; attempt < 3; attempt++) {
-    if (!await generateOnce(client, settings, force && attempt === 0)) {
+    // A late connection failure resumes the saved batches/reviews/publication.
+    // A forced rebuild applies only once; recovery must reuse its new checkpoints.
+    if (!await retryGlossaryOperation(() => {
+      const rebuild = force && first;
+      first = false;
+      return generateOnce(client, settings, rebuild);
+    }, [4000, 10000])) {
       await autoDecideGlossary(supabaseRpc(client), settings);
       return;
     }
@@ -120,8 +99,8 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
   const inputHash = hash([GLOSSARY_VERSION, GLOSSARY_MERGE_VERSION, settingsForCall(settings, "glossary_dictionary").model, claims]);
   await assertGenerationActive();
   const token = await supabaseRpc(client).call<string | null>("claim_glossary_generation", { p_hash: inputHash, p_force: force });
-  if (!token) return false;
-  const writeState = async (values: GlossaryUpdate) => {
+  if (!token) return uploadExecution.getStore() ? waitForGlossaryPublisher(client, inputHash) : false;
+  const writeState = async (values: GlossaryUpdate, cleanup = false) => retryGlossaryOperation(async () => {
     for (let attempt = 0; ; attempt++) {
       const result = await storage.from("glossary_state").update(values).eq("id", true).eq("lease_token", token).select("id").maybeSingle();
       if (result.error) {
@@ -132,19 +111,19 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
           await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
           continue;
         }
-        throw new Error(result.error.message || `Glossary checkpoint failed (${result.error.code || result.status || "unknown response"}).`);
+        throw Object.assign(new Error(result.error.message || `Glossary checkpoint failed (${result.error.code || result.status || "unknown response"}).`), { code: result.error.code, status: result.status });
       }
       if (!result.data) throw new Error("Another glossary generation took over. Retry to see its result.");
       return;
     }
-  };
+  }, undefined, cleanup ? null : uploadExecution.getStore()?.signal);
   const save = async (values: GlossaryUpdate) => {
     await assertGenerationActive();
     await writeState(values);
   };
   try {
-    const { data: state, error } = await storage.from("glossary_state").select("batches, entries, identity_registry, definition_overrides, review_cache").eq("id", true).single();
-    if (error) throw new Error(error.message);
+    const state = await readGlossary(() => storage.from("glossary_state").select("batches, entries, identity_registry, definition_overrides, review_cache").eq("id", true).single());
+    if (!state) throw new Error("The glossary state is unavailable. Resume generation to retry.");
     const publicationKey = `publication:${inputHash}:${hash(state.definition_overrides ?? {})}`;
     const storedReviews = state.review_cache;
     const staged = storedReviews && typeof storedReviews === "object" && !Array.isArray(storedReviews) ? storedReviews[publicationKey] : undefined;
@@ -181,8 +160,7 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
           await assertGenerationActive();
           if (failed) return;
           if (completed[batchHash]) continue;
-          const result: GlossaryEntry[] = [];
-          await splitOnCutOff(batch, async (part) => { result.push(...await dictionaryEntries(settings, part, `Dictionary batch ${index + 1}/${batches.length}`)); });
+          const result = await dictionaryBatchEntries(settings, batch, `Dictionary batch ${index + 1}/${batches.length}`);
           checkpoints = checkpoints.then(async () => {
             completed[batchHash] = result;
             await save({ batches: { ...cached, ...completed } as unknown as Json, completed_batches: Object.keys(completed).length, lease_until: new Date(Date.now() + 600_000).toISOString() });
@@ -211,17 +189,22 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     const embedder = embedderFromEnv(process.env, (call) => db.call("log_ai_call", { p_call: { ...call, purpose: "glossary_duplicate_embeddings", role: "dictionary_editor" } }));
     let checkpointAt = Date.now(), checkpointSize = Object.keys(normalizationCache).length + Object.keys(decisionCache).length;
     let normalizationSize = Object.keys(normalizationCache).length;
+    let liveAt = 0;
     let progressPhase: GlossaryReviewProgress["phase"] | undefined;
-    const heartbeat = async (progress?: GlossaryReviewProgress) => {
+    const heartbeat = async (progress?: GlossaryReviewProgress, reviewed?: readonly GlossaryEntry[]) => {
       const phaseChanged = progress && progress.phase !== progressPhase;
       if (progress) decisionCache.review_progress = progress;
       const count = Object.keys(normalizationCache).length + Object.keys(decisionCache).length;
-      if (!phaseChanged && count - checkpointSize < 10 && Date.now() - checkpointAt < 15_000) return;
+      const finished = progress?.phase === "comparing" && progress.completed === progress.total;
+      const cacheDue = phaseChanged || finished || count - checkpointSize >= 10 || Date.now() - checkpointAt >= 15_000;
+      const liveDue = reviewed && (phaseChanged || finished || Date.now() - liveAt >= 2000);
+      if (!cacheDue && !liveDue) return;
       const nextNormalizationSize = Object.keys(normalizationCache).length;
-      await save({ ...(nextNormalizationSize !== normalizationSize ? { batches: { ...completed, ...normalizationCache } as unknown as Json } : {}),
-        review_cache: decisionCache as Json, lease_until: new Date(Date.now() + 600_000).toISOString() });
-      checkpointAt = Date.now(); checkpointSize = count;
-      normalizationSize = nextNormalizationSize;
+      await save({ ...(cacheDue && nextNormalizationSize !== normalizationSize ? { batches: { ...completed, ...normalizationCache } as unknown as Json } : {}),
+        ...(liveDue ? { live_entries: reviewed.map((entry) => { const live = { ...entry }; delete live.established; return live; }) as unknown as Json, live_input_hash: inputHash } : {}),
+        ...(cacheDue ? { review_cache: decisionCache as Json } : {}), lease_until: new Date(Date.now() + 600_000).toISOString() });
+      if (liveDue) liveAt = Date.now();
+      if (cacheDue) { checkpointAt = Date.now(); checkpointSize = count; normalizationSize = nextNormalizationSize; }
       if (progress) progressPhase = progress.phase;
     };
     const reviewed = await reviewGlossaryDuplicates(identified, settings, heartbeat, { embedder, pending, normalizationCache, decisionCache });
@@ -229,7 +212,7 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     // Never publish against superseded knowledge. A retry reuses every unchanged batch.
     const current = await currentClaims(client);
     if (hash([GLOSSARY_VERSION, GLOSSARY_MERGE_VERSION, settingsForCall(settings, "glossary_dictionary").model, current]) !== inputHash) {
-      await save({ status: "idle", lease_token: null, lease_until: null });
+      await save({ status: "idle", lease_token: null, lease_until: null, live_entries: [], live_input_hash: null });
       return true;
     }
     await assertGenerationActive();
@@ -246,9 +229,27 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
   } catch (error) {
     // Cancellation still releases our dictionary lease, but a replacement owner
     // is fenced by its token. Cleanup must not hide the original failure.
-    try { await writeState({ status: "error", error: error instanceof Error ? error.message : String(error), lease_token: null, lease_until: null }); }
+    try { await writeState({ status: "error", error: error instanceof Error ? error.message : String(error), lease_token: null, lease_until: null }, true); }
     catch { /* Cleanup is best effort; preserve the original failure. */ }
     throw error;
+  }
+}
+
+// Validation repair happens inside chatJson first. If that still fails, shrink
+// only this batch. Collect results without side effects so a failed child never
+// leaves duplicated or partially accepted definitions in the batch cache.
+async function dictionaryBatchEntries(settings: TokenFactorySettings, batch: InputClaim[], subject: string): Promise<GlossaryEntry[]> {
+  try { return await dictionaryEntries(settings, batch, subject); }
+  catch (error) {
+    if (!(error instanceof AnswerCutOffError) && !(error instanceof ProviderTimeoutError) && !(error instanceof InvalidStructuredAnswerError)) throw error;
+    if (batch.length <= 1) {
+      if (error instanceof InvalidStructuredAnswerError) throw new Error("The AI could not produce a valid glossary entry for one knowledge item. Saved groups are preserved; resume to try that item again.", { cause: error });
+      throw error;
+    }
+    const middle = Math.ceil(batch.length / 2);
+    const left = await dictionaryBatchEntries(settings, batch.slice(0, middle), subject);
+    const right = await dictionaryBatchEntries(settings, batch.slice(middle), subject);
+    return [...left, ...right];
   }
 }
 
@@ -256,13 +257,13 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
 async function dictionaryEntries(settings: TokenFactorySettings, batch: InputClaim[], subject: string): Promise<GlossaryEntry[]> {
   await assertGenerationActive();
   const refs = new Map(batch.map((claim, i) => [`K${i + 1}`, claim]));
-  const result = await chatJson(settings, {
-    name: "glossary_dictionary", subject,
+  const result = await retryGlossaryOperation(() => chatJson(settings, {
+    name: "glossary_dictionary", subject, retryInvalidOutput: true,
     schema: dictionaryResponseSchema, jsonSchema: z.toJSONSchema(dictionaryAnswerSchema.extend({ entries: z.array(dictionaryAnswerSchema.shape.entries.element.extend({ usageNotes: z.array(dictionaryUsageSchema).max(12) })).max(100) })), maxTokens: ANSWER_TOKEN_BUDGET,
     // Listing terms is careful reading, not puzzle solving: thinking only eats the answer's room
     reasoningEffort: "low",
     messages: [{ role: "system", content: DICTIONARY_PROMPT }, { role: "user", content: JSON.stringify({ knowledge: [...refs].map(([ref, claim]) => ({ ref, text: claim.text, context: claim.context, sourceEvidence: claim.sourceEvidence })) }) }],
-  });
+  }));
   return result.value.entries.map((entry) => {
     const resolve = (ref: string) => {
       const claim = refs.get(ref);
@@ -297,7 +298,7 @@ export async function regenerateDefinition(client: AdminSupabase, settings: Toke
   const claims = await currentClaims(client, [...new Set(entry.citations.map((cite) => cite.unitId))]);
   if (!claims.length) throw new Error("The knowledge behind this definition is no longer available.");
   const result = await chatJson(settings, {
-    name: "glossary_definition", subject: `Definition of ${entry.term}`,
+    name: "glossary_definition", subject: `Definition of ${entry.term}`, retryInvalidOutput: true,
     schema: definitionAnswerSchema, jsonSchema: z.toJSONSchema(definitionAnswerSchema), maxTokens: 1500,
     messages: [{ role: "system", content: DEFINITION_PROMPT }, { role: "user", content: JSON.stringify({
       term: entry.term, expansion: entry.expansion, category: entry.category, context: entry.context, currentDefinition: entry.definition, usageNotes: entry.usageNotes,

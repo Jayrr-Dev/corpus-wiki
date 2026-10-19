@@ -1,7 +1,7 @@
 "use client";
 import { ComposerFigure } from "./ComposerFigure";
 
-import Link from "next/link";
+import { PatchedText } from "./PatchedText";
 import { LoaderCircle, X } from "lucide-react";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Fragment, type ReactNode, useMemo } from "react";
@@ -9,7 +9,7 @@ import { diffPhrases } from "@/components/diff/diffWords";
 import { Tooltip } from "@/components/standard/tooltip";
 import type { Tables } from "@/lib/database/types";
 import type { ShownLine } from "@/lib/queries";
-import { formatReferencePages, linkArticleText, type ArticleEvidence, type ArticleLink } from "@/lib/living-page/articleEvidence";
+import { formatReferencePages, type ArticleEvidence, type ArticleLink } from "@/lib/living-page/articleEvidence";
 import { isBlock } from "@/lib/living-page/blocks";
 import { type SectionBuild, useSectionBuild } from "@/lib/realtime/useSectionBuild";
 import { cn } from "@/lib/utils";
@@ -59,10 +59,10 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
   const updatedAt = sectionUpdatedAt(section, lines);
   // While the section is rewritten: the step the server is on and the paragraphs written so far
   const build = useSectionBuild(section.id, section.status === "building");
-  // The server only returns illustrations whose snapshot matches the saved text.
-  // A pending update alone does not invalidate them; drafts and previews do.
-  const showComposerFigures = !preview && section.status !== "building" && !build.step;
-  const hasComposerFigure = showComposerFigures && composerFigures.some((f) => lines.some((l) => l.lineId === f.after));
+  // Images belong to the section independently of its current prose, draft or
+  // preview. Keep them mounted even when a rewrite temporarily has no lines.
+  const sectionFigures = composerFigures.filter((f) => f.sectionId ? f.sectionId === section.id : lines.some((l) => l.lineId === f.after));
+  const hasComposerFigure = sectionFigures.length > 0;
   const revisedDraft = build.draft?.revised ?? {};
   const addedDraft = build.draft?.added ?? [];
   const caretLineId = addedDraft.length ? null : lines.findLast((line) => line.lineId in revisedDraft)?.lineId;
@@ -105,9 +105,7 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
       <p key={line.lineId} id={`line-${line.lineId}`} className={cn(lineClass, linePreview && "whitespace-pre-line")}>
         {linePreview ? (
           <PreviewText before={linePreview.content} now={line.content} />
-        ) : linkArticleText(line.content, links).map((chunk, index) => chunk.href ? (
-          <Link key={index} href={chunk.href} className="text-link hover:underline">{chunk.text}</Link>
-        ) : <span key={index}>{chunk.text}</span>)}
+        ) : <PatchedText text={line.content} links={links} />}
         {trailing}
       </p>
     );
@@ -127,6 +125,7 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
         </div>
       ) : null}
       {cancel.error ? <p role="alert" className="mb-2 text-panel text-destructive">{cancel.error}</p> : null}
+      {hideHeading && menu ? <div className="float-right mb-1 ml-3">{menu}</div> : null}
       {!hideHeading ? (
         <header className="group mb-4 flex items-end justify-between gap-2 border-b pb-2">
           <div className="min-w-0">
@@ -142,20 +141,22 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
       ) : null}
       {isStale && (build.step || build.thinking) ? <BuildStatus build={build} /> : null}
       {section.status === "stale" && lines.length > 0 ? <p role="status" className="mb-2 text-xs text-muted-foreground">{section.build_cancelled ? "Updates are paused for this section. Use Update to resume." : "This section is awaiting an update."}</p> : null}
+      <div className="flow-root space-y-4">
+        {sectionFigures.map((figure) => <ComposerFigure key={figure.id} figure={figure} />)}
       {lines.length === 0 && addedDraft.length === 0 ? (
-        build.step ? null : <p className="text-body text-faint">{section.status === "building" ? "Writing this section…" : isStale ? "Waiting to be rewritten." : "Nothing known yet."}</p>
+        build.step || hasComposerFigure ? null : <p className="text-body text-faint">{section.status === "building" ? "Writing this section…" : isStale ? "Waiting to be rewritten." : "Nothing known yet."}</p>
       ) : (
-        <div className="flow-root space-y-4">
+        <>
           {lines.map((line) => (
             <Fragment key={line.lineId}>
               {(hasComposerFigure ? [] : evidence?.figuresByLine.get(line.lineId) ?? []).map((figure) => <ArticleFigure key={figure.key} figure={figure} />)}
-              {showComposerFigures ? composerFigures.filter((f) => f.after === line.lineId).map((figure) => <ComposerFigure key={figure.id} figure={figure} />) : null}
               {renderLine(line)}
             </Fragment>
           ))}
           {addedDraft.map((text, index) => <DraftParagraph key={`draft-${index}`} text={text} caret={index === addedDraft.length - 1} />)}
-        </div>
+        </>
       )}
+      </div>
     </section>
   );
 }
@@ -178,7 +179,7 @@ function BuildStatus({ build }: { build: SectionBuild }) {
 // A paragraph the model is still writing: faded, not yet saved, with a caret where the text is growing
 function DraftParagraph({ text, caret }: { text: string; caret: boolean }) {
   return (
-    <p className="whitespace-pre-line text-body leading-7 text-faint" title="Being written, not saved yet">
+    <p className="whitespace-pre-line text-body leading-7 text-faint" aria-label="Being written, not saved yet">
       {text}
       {caret ? <span aria-hidden="true" className="ml-0.5 inline-block h-[1em] w-0.5 translate-y-0.5 animate-pulse bg-current" /> : null}
     </p>

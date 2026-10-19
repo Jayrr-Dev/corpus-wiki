@@ -126,7 +126,9 @@ export async function fillThinSectionsFromWeb(deps: ForceCreateDeps, sectionIds:
     const { data: section } = await deps.client.from("sections").select("mode").eq("id", sectionId).is("retired_at", null).maybeSingle();
     if (section?.mode !== "generated") continue;
     const state = await deps.db.call<SectionState>("read_section_state", { p_section_id: sectionId });
-    if (state.units.length >= THIN_SECTION_CLAIMS || state.lines.some((line) => line.author === "person")) continue;
+    // Automatic fills may populate empty sections, but must never retire and
+    // recreate existing prose behind an ordinary Update's targeted edits.
+    if (state.lines.length || state.units.length >= THIN_SECTION_CLAIMS) continue;
     attempts++;
     try {
       filled.push((await forceCreateSection(deps, sectionId, note, true, true)).sectionId);

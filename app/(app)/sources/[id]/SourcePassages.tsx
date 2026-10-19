@@ -1,36 +1,50 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
-import { cn } from "@/lib/utils";
 import { UNIT_ACTION_TYPES } from "@/app/(app)/_components/ActionSummary";
 import { Note, QueryState, Quote, Section, UnitLink } from "@/app/(app)/_components/bits";
-import { Tooltip } from "@/components/standard/tooltip";
 import { formatLocation, humanize, readablePassage } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
+import { Tooltip } from "@/components/standard/tooltip";
+import { Button } from "@/components/ui/button";
 import type { Enums, Tables } from "@/lib/database/types";
 import { usePassages } from "@/lib/queries";
+import { type PassageAction, type UnitSummary, useActionsForPassages, useUnitSummaries } from "@/lib/queries/screens";
+import { cn } from "@/lib/utils";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { FigureThumbnail, type SourceFigure, sourceFigures } from "./SourceFigures";
-import { type UnitSummary, useActionsForPassages, useUnitSummaries } from "@/lib/queries/screens";
 
 // PASSAGES: in order, each with the units its actions produced or changed
 export function SourcePassages({ sourceId }: { sourceId: string }) {
   const passages = usePassages({ filters: { source_id: sourceId } });
   const list = passages.data ?? [];
-  const actions = useActionsForPassages(list.map((passage) => passage.id));
+  const [visibleCount, setVisibleCount] = useState(50);
+  const targetId = usePassageTarget();
+  // Citation links keep working even when the passage is beyond the first page.
+  const visible = list.filter((passage, index) => index < visibleCount || passage.id === targetId);
+  const actions = useActionsForPassages(visible.map((passage) => passage.id));
   const unitActions = (actions.data ?? []).filter((action) => action.target_id && UNIT_ACTION_TYPES.has(action.type));
   const units = useUnitSummaries(unitActions.map((action) => action.target_id));
   const unitById = useMemo(() => new Map((units.data ?? []).map((unit) => [unit.id, unit])), [units.data]);
-  const targetId = usePassageTarget();
+  const actionsByPassage = useMemo(() => {
+    const byPassage = new Map<string, PassageAction[]>();
+    for (const action of unitActions) for (const id of action.passage_ids) {
+      const matches = byPassage.get(id);
+      if (matches) matches.push(action);
+      else byPassage.set(id, [action]);
+    }
+    return byPassage;
+  }, [unitActions]);
   const figureByPassage = useMemo(() => new Map(sourceFigures(passages.data ?? []).flatMap((figure) => figure.passages.map((passage) => [passage.id, figure] as const))), [passages.data]);
   return (
     <Section title={`Passages (${list.length})`}>
       <QueryState query={readsState([passages, actions, units])}>
         {list.length === 0 ? <Note>No passages were extracted.</Note> : null}
         <ol className="flex flex-col gap-4">
-          {list.map((passage) => (
-            <PassageItem key={passage.id} passage={passage} figure={figureByPassage.get(passage.id) ?? null} isTarget={passage.id === targetId} actions={unitActions.filter((a) => a.passage_ids.includes(passage.id))} unitById={unitById} />
+          {visible.map((passage) => (
+            <PassageItem key={passage.id} passage={passage} figure={figureByPassage.get(passage.id) ?? null} isTarget={passage.id === targetId} actions={actionsByPassage.get(passage.id) ?? []} unitById={unitById} />
           ))}
         </ol>
+        {visibleCount < list.length ? <Button variant="outline" onClick={() => setVisibleCount((count) => count + 50)}>Show 50 more passages</Button> : null}
       </QueryState>
     </Section>
   );
@@ -56,7 +70,7 @@ function usePassageTarget(): string | null {
   return targetId;
 }
 
-type PassageItemProps = { passage: Tables<"passages">; actions: Tables<"actions">[]; unitById: Map<string, UnitSummary> };
+type PassageItemProps = { passage: Tables<"passages">; actions: PassageAction[]; unitById: Map<string, UnitSummary> };
 
 // ONE PASSAGE: position and location, the text, then what it produced. A passage describing a
 // picture says which figure; the figure's first passage shows its thumbnail.

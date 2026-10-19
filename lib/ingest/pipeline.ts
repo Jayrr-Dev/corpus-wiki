@@ -10,6 +10,8 @@ import { scopeExternalDraft } from "./scopeExternalDraft";
 import { runUploadWorkflow } from "./workflow";
 import type { UploadJob } from "./workflowTypes";
 import { uploadExecution, workflowStep } from "./workflowContext";
+import { publishableDraft } from "./incrementalDraft";
+import type { PublishKnowledgeBatch, SavedKnowledgeAction } from "@/lib/ai/types";
 
 // =====================================================================
 // UPLOAD PIPELINE (runtime-neutral: the app runs it on Supabase, the
@@ -27,7 +29,7 @@ import { uploadExecution, workflowStep } from "./workflowContext";
 // submitted (lib/ingest/duplicateGuard.ts); uploads save first and leave repeats to `deduper`,
 // which merges them after the commit; claimEmbedder: saves vectors of the claims a commit wrote,
 // and of source passages not yet embedded
-export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void>; pageMaintainer?: (eventId: string) => Promise<unknown> };
+export type PipelineDeps = { db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<unknown>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: (input: ReconciliationInput, draft: DraftChangeSet, options?: GuardOptions) => Promise<DraftChangeSet>; claimEmbedder?: () => Promise<void>; articleVerifier?: (eventId: string) => Promise<void>; pageMaintainer?: (eventId: string) => Promise<unknown> };
 
 // WHAT STEP 1 NEEDS: the file's metadata and its passages (text already extracted)
 export type UploadRecord = {
@@ -113,7 +115,18 @@ async function draftAndCommit({ db, reconciler, duplicateGuard, claimEmbedder }:
   // An upload's claims are saved without topics: the "place" role files them all at once
   // after cleaning. A web page keeps its topics (it may only add to existing reference branches).
   const drafted = await workflowStep("extraction", async () => {
-    const draft = shape(await reconciler.draftChangeSet(externalScope ? input : { ...input, fileTopicsLater: true }), input);
+    const publish: PublishKnowledgeBatch = async (key, extracted) => {
+      const draft = publishableDraft(withoutTopics(extracted));
+      if (!draft.actions.length) return [];
+      return workflowStep(`save-extract:${key}`, async () => {
+        const { changeSetId } = await submitChangeSet(db, { eventId, cause: "upload", actor: "ai", operationKey: `extract-save:${key}` }, draft);
+        await commitAsRole(db, "reconciler", changeSetId);
+        const execution = uploadExecution.getStore();
+        if (!execution) throw new Error("Incremental knowledge requires an upload lease.");
+        return db.call<SavedKnowledgeAction[]>("read_upload_batch_targets", { p_event_id: eventId, p_token: execution.token, p_change_set_id: changeSetId });
+      });
+    };
+    const draft = shape(await reconciler.draftChangeSet(externalScope ? input : { ...input, fileTopicsLater: true }, externalScope || !uploadExecution.getStore() ? undefined : publish), input);
     return externalScope ? draft : withoutTopics(draft);
   });
   const draft = externalScope && duplicateGuard ? await duplicateGuard(input, drafted, guardOptions) : drafted;

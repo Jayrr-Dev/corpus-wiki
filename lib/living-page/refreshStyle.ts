@@ -6,7 +6,7 @@ import type { SectionReviseInput, SectionRevision, SectionState } from "./types"
 // An explicit style refresh may rewrite generated prose, while handwritten lines
 // remain protected by the normal action planner and revision preconditions.
 export function styleRefreshState(state: SectionState): SectionState {
-  return { ...state, lines: state.lines.map((line) => ({ ...line, needsRewrite: line.author === "ai" })) };
+  return { ...state, lines: state.lines.map((line) => ({ ...line, needsCitationRefresh: line.needsRewrite, needsRewrite: line.author === "ai" })) };
 }
 
 export function assertStyleCoverage(input: SectionReviseInput, revision: SectionRevision): void {

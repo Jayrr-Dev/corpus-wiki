@@ -2,10 +2,11 @@ import { beforeEach, expect, it, vi } from "vitest";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
-import { AnswerCutOffError } from "@/lib/ai/chat";
+import { AnswerCutOffError, InvalidStructuredAnswerError } from "@/lib/ai/chat";
 import { dictionaryBatches, generateGlossary } from "./generate";
 import type { GlossaryEntry } from "./entries";
 import type { GlossaryState, GlossaryUpdate } from "./storage";
+import * as publisherWait from "./generationWait";
 
 const { chat, review } = vi.hoisted(() => ({ chat: vi.fn(), review: vi.fn() }));
 vi.mock("@/lib/ai/chat", async (original) => ({ ...await original<typeof import("@/lib/ai/chat")>(), chatJson: chat }));
@@ -63,6 +64,7 @@ function fixture(count = 140) {
   const ids = Array.from({ length: count }, (_, index) => `u${String(index).padStart(3, "0")}`);
   const state: GlossaryState = { id: true, entries: [published], batches: {}, input_hash: "previous", generated_at: "previous-date", status: "ready", completed_batches: 0, total_batches: 0, error: null, lease_token: null, lease_until: null };
   const writes: GlossaryUpdate[] = [];
+  const reads: Record<string, number> = {};
   const hooks: { beforeSave?: (values: GlossaryUpdate) => Promise<void | { code: string; message: string }> } = {};
   let lease = 0;
   let version = 0;
@@ -76,11 +78,17 @@ function fixture(count = 140) {
   } };
   const client = {
     rpc: vi.fn(async (name: string, args: Record<string, unknown>) => {
+      if (name === "glossary_claim_snapshot") {
+        reads.snapshots = (reads.snapshots ?? 0) + 1;
+        return { data: ids.map((id) => ({ id, revisionId: `${id}:${id === ids[0] ? version : 0}`, text: `Claim ${id}:${id === ids[0] ? version : 0}`, context: null,
+          sourceEvidence: [{ sourceId: "source", sourceTitle: "Handbook", text: `Evidence for ${id}` }],
+        })), error: null };
+      }
       if (name === "publish_glossary_meanings") {
         if (args.p_token !== state.lease_token) throw new Error("Another glossary generation took over");
         const values: GlossaryUpdate = {
           entries: args.p_entries as GlossaryUpdate["entries"], batches: args.p_batches as GlossaryUpdate["batches"],
-          input_hash: args.p_hash as string, generated_at: new Date().toISOString(), status: "ready", error: null, lease_token: null, lease_until: null,
+          input_hash: args.p_hash as string, generated_at: new Date().toISOString(), status: "ready", error: null, lease_token: null, lease_until: null, live_entries: [], live_input_hash: null,
         };
         writes.push(structuredClone(values));
         Object.assign(state, structuredClone(values));
@@ -118,6 +126,7 @@ function fixture(count = 140) {
           } finally { activeSaves--; }
         },
         then(resolve: (result: { data: unknown[]; error: null }) => unknown) {
+          reads[table] = (reads[table] ?? 0) + 1;
           let data: unknown[];
           if (table === "units") data = ids.slice(range[0], range[1] + 1).map((id) => ({ id, current_revision_id: `${id}:${id === ids[0] ? version : 0}` }));
           else if (table === "revisions") data = selected.map((id) => ({ id, unit_id: id.split(":")[0], content: `Claim ${id}`, passage_ids: [id.split(":")[0]], knowledge_context: null }));
@@ -130,7 +139,7 @@ function fixture(count = 140) {
     },
   } as unknown as AdminSupabase;
   return {
-    client, state, writes, hooks, peakSaves: () => peakSaves,
+    client, state, writes, hooks, reads, peakSaves: () => peakSaves,
     run: (force = false) => uploadExecution.run({ eventId: "event", token: "upload", db, signal: abort.signal }, () => generateGlossary(client, settings, force)),
     cancel: () => { cancelled = true; abort.abort(new Error("Cancelled")); },
     resume: () => { cancelled = false; abort = new AbortController(); },
@@ -138,6 +147,71 @@ function fixture(count = 140) {
     takeover: () => { state.lease_token = "replacement"; state.status = "generating"; },
   };
 }
+
+it("does not finish an upload while another worker still owns dictionary publication", async () => {
+  const f = fixture(3);
+  f.takeover();
+  f.state.lease_until = new Date(Date.now() + 600_000).toISOString();
+  const release = gate();
+  const wait = vi.spyOn(publisherWait, "waitForGlossaryPublisher").mockImplementationOnce(async () => { await release.promise; return false; });
+  try {
+    await generateGlossary(f.client, settings); // Manual UI requests can join an existing job.
+    expect(wait).not.toHaveBeenCalled();
+    let finished = false;
+    const running = f.run().finally(() => { finished = true; });
+    await vi.waitFor(() => expect(wait).toHaveBeenCalledTimes(1));
+    expect(finished).toBe(false);
+    expect(chat).not.toHaveBeenCalled();
+    Object.assign(f.state, { status: "ready", input_hash: wait.mock.calls[0]![1], lease_token: null, lease_until: null });
+    release.resolve();
+    await running;
+    expect(f.writes).toHaveLength(0); // Never clears or overwrites the other owner's result.
+  } finally { wait.mockRestore(); }
+});
+
+it("reads each complete knowledge snapshot in one database call", async () => {
+  const f = fixture(140);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  await f.run();
+  // The second snapshot checks for superseded knowledge before publication.
+  expect(f.reads.snapshots).toBe(2);
+  expect(f.state.status).toBe("ready");
+});
+
+it("saves reviewed definitions before completion and retains them across an interruption", async () => {
+  const f = fixture(28);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  review.mockImplementationOnce(async (entries, _settings, heartbeat) => {
+    await heartbeat({ phase: "comparing", completed: 1, total: 2 }, entries);
+    expect(f.state.live_entries).toHaveLength(1);
+    expect(f.state.entries).toEqual([published]);
+    throw new Error("Review paused");
+  });
+  await expect(f.run()).rejects.toThrow("Review paused");
+  expect(f.state.live_entries).toHaveLength(1);
+  expect(f.state.status).toBe("error");
+  chat.mockClear();
+  await f.run();
+  expect(chat).not.toHaveBeenCalled();
+  expect(f.state.status).toBe("ready");
+  expect(f.state.live_entries).toEqual([]);
+});
+
+it("saves live definitions without resending the full comparison cache on every update", async () => {
+  const f = fixture(28);
+  let now = Date.now();
+  const clock = vi.spyOn(Date, "now").mockImplementation(() => now);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  review.mockImplementationOnce(async (entries, _settings, heartbeat) => {
+    await heartbeat({ phase: "comparing", completed: 0, total: 2 }, []);
+    now += 2500;
+    await heartbeat({ phase: "comparing", completed: 1, total: 2 }, entries);
+    expect(f.writes.at(-1)?.live_entries).toHaveLength(1);
+    expect(f.writes.at(-1)?.review_cache).toBeUndefined();
+    return entries;
+  });
+  try { await f.run(); } finally { clock.mockRestore(); }
+});
 
 it("bounds concurrency, serializes checkpoints, and publishes once after every batch and duplicate review", async () => {
   const f = fixture();
@@ -306,6 +380,29 @@ it("keeps cutoff retries inside their batch and caches all recovered parts", asy
   expect(f.writes.filter((write) => write.entries)).toHaveLength(1);
 });
 
+it("splits a batch after validation repair fails and publishes only valid child answers", async () => {
+  const f = fixture(28);
+  chat.mockRejectedValueOnce(new InvalidStructuredAnswerError("entries[16]: empty term and definition", null, null))
+    .mockImplementation(async (_settings, request: Request) => answer(request));
+  await f.run();
+  expect(chat).toHaveBeenCalledTimes(3);
+  expect(chat.mock.calls.map(([, request]) => JSON.parse(request.messages[1].content).knowledge.length)).toEqual([28, 14, 14]);
+  expect(chat.mock.calls.every(([, request]) => request.retryInvalidOutput)).toBe(true);
+  expect(f.state.status).toBe("ready");
+  expect(f.state.entries).toHaveLength(2);
+  expect(f.writes.filter((write) => write.entries)).toHaveLength(1);
+});
+
+it("bounds validation recovery at one claim and keeps the previous glossary", async () => {
+  const f = fixture(1);
+  chat.mockRejectedValue(new InvalidStructuredAnswerError("empty term", null, null));
+  await expect(f.run()).rejects.toThrow("one knowledge item");
+  expect(chat).toHaveBeenCalledOnce();
+  expect(f.state.entries).toEqual([published]);
+  expect(f.state).toMatchObject({ status: "error", lease_token: null });
+  expect(f.writes.filter((write) => write.entries)).toHaveLength(0);
+});
+
 it("skips an unchanged dictionary, permits forced regeneration, and works outside uploads", async () => {
   const f = fixture(28);
   chat.mockImplementation(async (_settings, request: Request) => answer(request));
@@ -351,6 +448,77 @@ it("retries a rolled-back checkpoint timeout without repeating model work", asyn
   await f.run();
   expect(chat).toHaveBeenCalledTimes(1);
   expect(f.state.status).toBe("ready");
+  expect(f.writes.filter((write) => write.entries)).toHaveLength(1);
+});
+
+it("retries an upstream checkpoint reset without repeating completed AI work", async () => {
+  const f = fixture(28);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  let failed = false;
+  f.hooks.beforeSave = async (values) => {
+    if (values.completed_batches === 1 && !failed) {
+      failed = true;
+      return { code: "", message: "upstream connect error or disconnect/reset before headers. connection termination" };
+    }
+  };
+  await f.run();
+  expect(chat).toHaveBeenCalledOnce();
+  expect(f.state.status).toBe("ready");
+  expect(f.writes.filter((write) => write.status === "error")).toHaveLength(0);
+});
+
+it("retries an aborted database checkpoint in a fresh request without repeating AI work", async () => {
+  const f = fixture(28);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  let failed = false;
+  f.hooks.beforeSave = async (values) => {
+    if (values.completed_batches === 1 && !failed) {
+      failed = true;
+      return { code: "25P02", message: "current transaction is aborted, commands ignored until end of transaction block" };
+    }
+  };
+  await f.run();
+  expect(chat).toHaveBeenCalledOnce();
+  expect(f.state.status).toBe("ready");
+});
+
+it("automatically resumes a failed publication using its staged result", async () => {
+  const f = fixture(28);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  const rpc = vi.mocked(f.client.rpc);
+  const original = rpc.getMockImplementation()!;
+  let failed = false;
+  rpc.mockImplementation((...args) => {
+    if (String(args[0]) === "publish_glossary_meanings" && !failed) {
+      failed = true;
+      return Promise.resolve({ data: null, error: { code: "08006", message: "connection terminated" } }) as ReturnType<typeof original>;
+    }
+    return original(...args);
+  });
+  await f.run(true);
+  expect(f.state.status).toBe("ready");
+  expect(chat).toHaveBeenCalledOnce();
+  expect(review).toHaveBeenCalledOnce();
+});
+
+it("recovers a lost publication response without publishing or generating twice", async () => {
+  const f = fixture(28);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  const rpc = vi.mocked(f.client.rpc);
+  const original = rpc.getMockImplementation()!;
+  let lost = false;
+  rpc.mockImplementation(async (...args) => {
+    const result = await original(...args);
+    if (String(args[0]) === "publish_glossary_meanings" && !lost) {
+      lost = true;
+      throw new TypeError("fetch failed");
+    }
+    return result;
+  });
+  await f.run(true);
+  expect(f.state.status).toBe("ready");
+  expect(chat).toHaveBeenCalledOnce();
+  expect(review).toHaveBeenCalledOnce();
   expect(f.writes.filter((write) => write.entries)).toHaveLength(1);
 });
 

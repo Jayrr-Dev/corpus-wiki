@@ -44,10 +44,11 @@ describe("workflow diagrams match upload stage order", () => {
   });
   it("gives every diagram edge existing endpoints", async () => {
     const { AI_FLOW } = await import("./aiFlowCanvas");
-    const { KNOWLEDGE_CANVAS, RESEARCH_CANVAS } = await import("./flowsCanvas");
-    for (const diagram of [AI_FLOW, KNOWLEDGE_CANVAS, RESEARCH_CANVAS]) {
+    const { ASSET_CANVAS, ILLUSTRATION_CANVAS, KNOWLEDGE_CANVAS, RESEARCH_CANVAS } = await import("./flowsCanvas");
+    for (const diagram of [AI_FLOW, KNOWLEDGE_CANVAS, RESEARCH_CANVAS, ASSET_CANVAS, ILLUSTRATION_CANVAS]) {
       const ids = new Set(diagram.nodes.map((node) => node.id));
       for (const edge of diagram.edges) { expect(ids.has(edge.from)).toBe(true); expect(ids.has(edge.to)).toBe(true); }
+      for (const node of diagram.nodes) if (node.store) expect(ids.has(node.store)).toBe(true);
     }
   });
 });

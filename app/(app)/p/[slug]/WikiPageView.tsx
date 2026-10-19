@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { pageAncestors } from "@/lib/living-page/pageHierarchy";
 import { articleNavigation } from "@/lib/living-page/articleNavigation";
+import { illustrationSections } from "@/lib/living-page/illustrationSections";
 import { useRelatedArticles } from "@/lib/queries/relatedArticles";
 import { useArticleTopicLinks } from "@/lib/queries/articleTopicLinks";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PageIcon } from "@/components/icons";
 import { EmptyState } from "@/components/EmptyState";
 import { ErrorBoundary } from "@/components/error";
@@ -26,6 +27,7 @@ import { SectionMenu } from "./SectionMenu";
 import { UpdateArticleDialog } from "./UpdateArticleDialog";
 import { Loader } from "@/components/standard/loader";
 import { ReviewPageButton } from "./ReviewPageButton";
+import { AddExternalInfoForm } from "./AddExternalInfoForm";
 
 export function WikiPageView({ slug }: { slug: string }) {
   const { data: pages = [], isPending, error } = usePages({ filters: { slug } });
@@ -45,9 +47,18 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const [editingLineId, setEditingLineId] = useState<string | null>(null);
   const [showEmpty, setShowEmpty] = useState(false);
   const sectionsQuery = useSections({ filters: { page_id: page.id } });
-  const sections = sectionsQuery.data ?? [];
+  const sections = useMemo(() => sectionsQuery.data ?? [], [sectionsQuery.data]);
   const linesQuery = useSectionLines(page.id);
-  const lines = sections.flatMap((section) => (linesQuery.data ?? []).filter((line) => line.sectionId === section.id));
+  const linesBySection = useMemo(() => {
+    const grouped = new Map<string, ShownLine[]>();
+    for (const line of linesQuery.data ?? []) {
+      const group = grouped.get(line.sectionId);
+      if (group) group.push(line);
+      else grouped.set(line.sectionId, [line]);
+    }
+    return grouped;
+  }, [linesQuery.data]);
+  const lines = useMemo(() => sections.flatMap((section) => linesBySection.get(section.id) ?? []), [sections, linesBySection]);
   const staleRefresh = useAutoRefreshStale(lines, sections, !linesQuery.isPending && !sectionsQuery.isPending);
   const evidence = useArticleEvidence(lines);
   const composer = useComposerFigures(page.id, lines, JSON.stringify([page.title, sections.map((s) => [s.id, s.title, s.status, s.position])]));
@@ -56,10 +67,14 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   const children = (allPages.data ?? []).filter((other) => other.parent_page_id === page.id);
   const entities = useEntities();
   const allSections = useSections();
-  const { links: titleLinks, related: fallbackRelated } = articleNavigation(allPages.data ?? [], entities.data ?? [], allSections.data ?? [], page.id, lines.map((line) => line.content).join(" "));
-  const topicLinks = useArticleTopicLinks(page.id, JSON.stringify([allPages.dataUpdatedAt, allSections.dataUpdatedAt, entities.dataUpdatedAt]));
-  const links = [...titleLinks, ...(topicLinks.data ?? [])];
-  const recommendations = useRelatedArticles(page.id, JSON.stringify([allPages.dataUpdatedAt, allSections.dataUpdatedAt]));
+  const { links: titleLinks, related: fallbackRelated } = useMemo(() => articleNavigation(allPages.data ?? [], entities.data ?? [], allSections.data ?? [], page.id, lines.map((line) => line.content).join(" ")), [allPages.data, entities.data, allSections.data, page.id, lines]);
+  // Identical metadata refetches keep the same cache entry. Wait for the full
+  // snapshot so initial loading doesn't calculate several partial versions.
+  const navigationContext = useMemo(() => JSON.stringify([allPages.data, allSections.data, entities.data]), [allPages.data, allSections.data, entities.data]);
+  const navigationReady = !!allPages.data && !!allSections.data && !!entities.data;
+  const topicLinks = useArticleTopicLinks(page.id, navigationContext, navigationReady);
+  const links = useMemo(() => [...titleLinks, ...(topicLinks.data ?? [])], [titleLinks, topicLinks.data]);
+  const recommendations = useRelatedArticles(page.id, navigationContext, navigationReady);
   const related = recommendations.data ?? fallbackRelated;
   const showRelated = related.length > 0 || recommendations.isPending || !!recommendations.error;
   useRealtimeInvalidation("sections", { filter: `page_id=eq.${page.id}` });
@@ -87,16 +102,20 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
   };
   const selectedSection = sections.find((section) => section.id === selectedSectionId);
   const overview = sections.find((section) => section.title.toLowerCase() === "overview");
+  // Only illustrations validated against the current paragraphs are shown.
+  const figures = (composer.data ?? []).map((figure) => ({ ...figure,
+    sectionId: figure.sectionId ?? lines.find((line) => line.lineId === figure.after)?.sectionId ?? null,
+  }));
   // A finished section with no lines is hidden; one still being written keeps its placeholder.
-  const isEmpty = (section: Tables<"sections">) => !linesQuery.isPending && section.status === "current" && !lines.some((line) => line.sectionId === section.id);
+  const isEmpty = (section: Tables<"sections">) => !linesQuery.isPending && section.status === "current" && !lines.some((line) => line.sectionId === section.id) && !figures.some((figure) => figure.sectionId === section.id);
   const introduction = overview && (showEmpty || !isEmpty(overview)) ? overview : undefined;
   const allTopics = sections.filter((section) => section.id !== overview?.id);
   const emptyCount = allTopics.filter(isEmpty).length + (overview && isEmpty(overview) ? 1 : 0);
-  const topics = showEmpty ? allTopics : allTopics.filter((section) => !isEmpty(section));
+  const topics = illustrationSections(showEmpty ? allTopics : allTopics.filter((section) => !isEmpty(section)), figures.filter((figure) => figure.sectionId !== overview?.id));
   const error = sectionsQuery.error?.message ?? linesQuery.error?.message;
   const renderSection = (section: Tables<"sections">, hideHeading = false) => (
     <ErrorBoundary key={section.id} where={`The section "${section.title}"`}>
-      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={selectLine} isSectionSelected={section.id === selectedSectionId} onSelectSection={() => selectSection(section)} preview={shownPreview} onExitPreview={() => setPreview(null)} editingLineId={editingLineId} onEndEdit={() => setEditingLineId(null)} evidence={evidence.loading ? undefined : evidence} composerFigures={composer.data} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} />} />
+      <LiveSection section={section} lines={lines.filter((line) => line.sectionId === section.id)} selectedLineId={selectedLineId} onSelect={selectLine} isSectionSelected={section.id === selectedSectionId} onSelectSection={() => selectSection(section)} preview={shownPreview} onExitPreview={() => setPreview(null)} editingLineId={editingLineId} onEndEdit={() => setEditingLineId(null)} evidence={evidence.loading ? undefined : evidence} composerFigures={figures} links={links} hideHeading={hideHeading} menu={<SectionMenu section={section} className={hideHeading ? "" : undefined} />} />
     </ErrorBoundary>
   );
   return (
@@ -119,9 +138,9 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
       {sectionsQuery.isPending || linesQuery.isPending ? <Loader label="Loading article…" /> : null}
       {/* A placeholder topic page has no sections: its scope introduces it, and its pages are listed below */}
       {!sectionsQuery.isPending && !sections.length && page.scope ? <p className="mb-6 max-w-3xl text-lg leading-relaxed text-muted-foreground">{page.scope}</p> : null}
-      {!sectionsQuery.isPending && !sections.length && !page.scope && !children.length ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
+      {!sectionsQuery.isPending && !sections.length && !figures.length && !page.scope && !children.length ? <EmptyState icon={PageIcon} title="This page has no sections yet" /> : null}
       <div className="grid min-w-0 gap-8 xl:grid-cols-[10rem_minmax(0,1fr)]">
-        {sections.length > 0 ? <nav aria-label="Article contents" className="text-panel xl:sticky xl:top-6 xl:self-start">
+        {sections.length > 0 || topics.length > 0 ? <nav aria-label="Article contents" className="text-panel xl:sticky xl:top-6 xl:self-start">
           <h2 className="mb-2 font-semibold">Contents</h2>
           <ol className="space-y-2 border-l pl-3">
             {introduction ? <li><a className="text-link hover:underline" href={`#section-${introduction.id}`}>Introduction</a></li> : null}
@@ -133,7 +152,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
         <article className="min-w-0 space-y-8" data-tour="page-body" aria-label={page.title}>
           {children.length ? <section aria-label="Subpages" className="rounded-md border p-4"><h2 className="mb-2 font-semibold">Explore this topic</h2><ul className="grid gap-2 sm:grid-cols-2">{children.map((child) => <li key={child.id}><Link href={`/p/${child.slug}`} className="text-link hover:underline">{child.title}</Link></li>)}</ul></section> : null}
           {introduction ? renderSection(introduction, true) : null}
-          {topics.map((section) => renderSection(section))}
+          {topics.map((entry) => renderSection(entry.section))}
           {emptyCount ? <button type="button" onClick={() => setShowEmpty((shown) => !shown)} className="text-panel text-faint hover:text-link">{showEmpty ? "Hide" : "Show"} {emptyCount} empty {emptyCount === 1 ? "section" : "sections"}</button> : null}
           {showRelated ? <section id="article-see-also" className="scroll-mt-6 border-t pt-5">
             <h2 className="mb-3 font-serif text-2xl">See also</h2>
@@ -195,7 +214,8 @@ function PageActions({ page }: { page: Tables<"pages"> }) {
         <UpdateArticleDialog id={page.id} title={page.title} scope="page" disabled={improve.isPending || expand.isPending} />
         <PageMenu page={page} extraItems={[
           { label: compose.isPending ? "Illustrating article…" : "Illustrate article", disabled: compose.isPending || removeFigures.isPending || restoreFigures.isPending || improve.isPending || expand.isPending, onSelect: () => { void compose.run(page.id).then((result) => { if (result.ok) { setRemovedRunId(null); setComposerMessage(result.figures ? `Composer added ${result.figures} illustration${result.figures === 1 ? "" : "s"}.` : result.message ?? "No additional illustrations needed."); } }); } },
-          { label: "Remove Composer illustrations", disabled: compose.isPending || removeFigures.isPending || restoreFigures.isPending, onSelect: () => { void removeFigures.run(page.id).then((result) => { if (result.ok) { setComposerMessage("Composer illustrations removed."); setRemovedRunId(result.previousRunId); } }); } },
+          { label: "Remove Illustration", disabled: compose.isPending || removeFigures.isPending || restoreFigures.isPending, onSelect: () => { void removeFigures.run(page.id).then((result) => { if (result.ok) { setComposerMessage("Illustration removed."); setRemovedRunId(result.previousRunId); } }); } },
+          { label: "Add External Info", render: (close) => <AddExternalInfoForm pageId={page.id} onDone={close} /> },
           ...(page.entity_id ? [{ label: improve.isPending ? "Structuring article…" : "Improve article", disabled: improve.isPending || expand.isPending, onSelect: () => { void improve.run(page.id); } }] : []),
           ...((page.context_entity_id ?? page.entity_id) ? [{ label: expand.isPending ? "Expanding knowledge…" : "Expand knowledge", disabled: expand.isPending || improve.isPending, onSelect: () => { void expand.run(page.id); } }] : []),
           { label: "Add section", render: (close) => <AddSectionForm page={page} onDone={close} /> },

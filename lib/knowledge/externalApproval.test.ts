@@ -13,6 +13,13 @@ const answer = (value: object) => ({ value, model: "test-model", tokensIn: 1, to
 beforeEach(() => vi.resetAllMocks());
 
 describe("independent external research approval", () => {
+  it("attributes user-requested source selection to Sourcer while checking factual support", async () => {
+    mock.mockResolvedValueOnce(answer({ justification: "Supports the user's requested topic.", excerpts: [excerpt] })).mockResolvedValueOnce(answer({ approved: true, reason: "Exact supported excerpt.", excerptIndices: [0] }));
+    const record = vi.fn().mockResolvedValue("review");
+    expect(await approveExternalSource({ ...settings, roleInstructions: [{ role: "sourcer", instructions: "Custom sourcer", version: 1 }] }, context, research, source, record, "sourcer")).toEqual({ text: excerpt, reviewId: "review" });
+    expect(mock.mock.calls[0]![1]).toMatchObject({ name: "sourcer_source_justification", messages: [{ role: "system", content: "Custom sourcer" }, expect.anything()] });
+    expect(record).toHaveBeenCalledWith(expect.objectContaining({ attribution: expect.objectContaining({ proposedBy: { role: "sourcer", model: "test-model" } }) }));
+  });
   it("uses saved role instructions independently and records the actual policies", async () => {
     mock.mockResolvedValueOnce(answer(research)).mockResolvedValueOnce(answer({ approved: false, reason: "Already covered." }));
     const record = vi.fn().mockResolvedValue("review");

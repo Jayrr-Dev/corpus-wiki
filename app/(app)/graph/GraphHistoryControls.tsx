@@ -8,13 +8,22 @@ import { ErrorNote } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { graphHistory, stepGraphHistory } from "@/lib/server-actions/graphHistory";
 
+type RedoStack = { ids: string[]; fingerprint: string };
+const storageKey = "graph-redo-history";
+function readRedo(): RedoStack | null {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(storageKey) ?? "null");
+    return value && Array.isArray(value.ids) && value.ids.every((id: unknown) => typeof id === "string") && typeof value.fingerprint === "string" ? value : null;
+  } catch { return null; }
+}
+
 export function GraphHistoryControls() {
   const history = useQuery({ queryKey: ["table", "change_sets", "graph-history"], queryFn: async () => {
     const result = await graphHistory();
     if (!result.ok) throw new Error(result.error);
     return result;
   } });
-  const [redo, setRedo] = useState<{ ids: string[]; fingerprint: string } | null>(null);
+  const [redo, setRedo] = useState<RedoStack | null>(readRedo);
   const inFlight = useRef(false);
   const action = useServerAction(stepGraphHistory, { progress: false });
   const undo = history.data?.undo;
@@ -26,7 +35,9 @@ export function GraphHistoryControls() {
     try {
       const result = await action.run(id, direction, history.data.fingerprint);
       if (result.ok) {
-        setRedo({ ids: direction === "undo" ? [...(validRedo?.ids ?? []), id] : (validRedo?.ids ?? []).slice(0, -1), fingerprint: result.fingerprint });
+        const next = { ids: direction === "undo" ? [...(validRedo?.ids ?? []), id] : (validRedo?.ids ?? []).slice(0, -1), fingerprint: result.fingerprint };
+        setRedo(next);
+        try { sessionStorage.setItem(storageKey, JSON.stringify(next)); } catch { /* History still works without storage. */ }
       }
     } finally { inFlight.current = false; }
   }

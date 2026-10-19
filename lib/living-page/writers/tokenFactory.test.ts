@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SectionLine, SectionReviseInput } from "../types";
-import { buildMessages, buildRefs, missingDraftClaims, REGROUP_RULE, withoutInlineClaimAnnotations, withNumericSupportVerdicts } from "./tokenFactory";
+import { buildMessages, buildRefs, missingDraftClaims, PATCH_RULE, withoutInlineClaimAnnotations, withNumericSupportVerdicts } from "./tokenFactory";
 import { unsupportedProseNumbers } from "../blocks";
 
 const line = (lineId: string, unitId: string, needsRewrite: boolean): SectionLine =>
@@ -47,7 +47,7 @@ describe("repairing numbers before the final commit guard", () => {
     expect(withNumericSupportVerdicts(answer, claims, [], [])[0]?.supported).toBe(false);
   });
 });
-const system = (lines: SectionLine[]) => buildMessages(input(lines), buildRefs(input(lines)))[0]?.content;
+const system = (lines: SectionLine[]) => buildMessages(input(lines), buildRefs(input(lines))).map((message) => message.content).join(" ");
 
 it("requests the missing substantive detail when a rewrite retires its old paragraph", () => {
   const original = input([line("1", "a", true), line("2", "b", true)]);
@@ -56,13 +56,10 @@ it("requests the missing substantive detail when a rewrite retires its old parag
 });
 
 describe("writer prompt", () => {
-  it("asks for regrouped paragraphs when every line is rewritten (Update)", () => {
-    expect(system([line("1", "a", true), line("2", "b", true)])).toContain(REGROUP_RULE);
-  });
-
-  it("leaves line-by-line edits alone when only some lines changed, or there is one line", () => {
-    expect(system([line("1", "a", true), line("2", "b", false)])).not.toContain(REGROUP_RULE);
-    expect(system([line("1", "a", true)])).not.toContain(REGROUP_RULE);
-    expect(system([])).not.toContain(REGROUP_RULE);
+  it("uses precise patches for all existing sections", () => {
+    expect(system([line("1", "a", true), line("2", "b", true)])).toContain(PATCH_RULE);
+    expect(system([line("1", "a", true), line("2", "b", false)])).toContain(PATCH_RULE);
+    expect(system([line("1", "a", true)])).toContain(PATCH_RULE);
+    expect(system([])).not.toContain(PATCH_RULE);
   });
 });

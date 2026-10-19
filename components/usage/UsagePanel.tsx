@@ -9,7 +9,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { DataTable } from "@/components/data-table";
 import { ChangeIcon } from "@/components/icons";
 import type { Tables } from "@/lib/database/types";
-import { estimateCost, formatUsd } from "@/lib/ai/pricing";
+import { estimateCallCost, formatUsd } from "@/lib/ai/pricing";
 import { useAiCalls } from "@/lib/queries";
 import { grandTotal, totalsByDayAndModel, type UsageTotal } from "./summarizeUsage";
 
@@ -29,8 +29,8 @@ function costColumn<T>(id: string, header: string, value: (row: T) => number | n
   return textColumn<T>(id, header, (row) => (value(row) ?? -1).toFixed(6).padStart(16, "0"), (row) => <span className="font-mono">{formatUsd(value(row))}</span>);
 }
 
-const totalCost = (total: UsageTotal) => estimateCost(total.model, total.promptTokens, total.completionTokens);
-const callCost = (call: AiCall) => estimateCost(call.model, call.prompt_tokens ?? 0, call.completion_tokens ?? 0);
+const totalCost = (total: UsageTotal) => total.unknownCostCalls === total.calls ? null : total.costUsd;
+const callCost = estimateCallCost;
 
 // COLUMNS: one row per day and model
 const TOTAL_COLUMNS: ColumnDef<UsageTotal, unknown>[] = [
@@ -76,10 +76,6 @@ export function UsagePanel() {
   const calls = useAiCalls();
   const totals = useMemo(() => totalsByDayAndModel(calls.data ?? []), [calls.data]);
   const total = useMemo(() => grandTotal(calls.data ?? []), [calls.data]);
-  const cost = useMemo(() => {
-    const priced = totals.map(totalCost);
-    return { usd: priced.reduce<number>((sum, value) => sum + (value ?? 0), 0), unpriced: new Set(totals.filter((_, i) => priced[i] === null).map((t) => t.model)).size };
-  }, [totals]);
   const empty = <EmptyState icon={ChangeIcon} title="No AI calls yet" hint="Every upload and page rebuild is logged here." />;
   return (
     <div className="flex flex-col gap-6">
@@ -88,15 +84,16 @@ export function UsagePanel() {
           { label: "Total calls", value: total.calls, detail: `${formatCount(total.failed)} cut off or failed` },
           { label: "Tokens in", value: total.promptTokens, detail: "Input tokens processed" },
           { label: "Tokens out", value: total.completionTokens, detail: `${formatCount(total.reasoningTokens)} reasoning tokens` },
-          { label: "Estimated cost", value: cost.usd, detail: cost.unpriced ? `${cost.unpriced} model${cost.unpriced === 1 ? "" : "s"} without a price` : "At Token Factory list prices", usd: true },
+          { label: "Estimated cost", value: total.calls > 0 && total.unknownCostCalls === total.calls ? null : total.costUsd, detail: total.unknownCostCalls ? `${formatCount(total.unknownCostCalls)} calls have unknown cost; total is partial` : "Per-request provider list prices", usd: true },
         ].map(({ label, value, detail, usd }) => (
           <div key={label} className="min-w-0 rounded-xl border bg-sidebar/50 p-4">
             <p className="text-xs font-medium text-muted-foreground">{label}</p>
-            <p className="mt-2 break-all text-2xl font-semibold tracking-tight tabular-nums">{calls.isPending ? "—" : usd ? formatUsd(value) : formatCount(value)}</p>
+            <p className="mt-2 break-all text-2xl font-semibold tracking-tight tabular-nums">{calls.isPending ? "—" : value === null ? "Unknown" : usd ? formatUsd(value) : formatCount(value)}</p>
             <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
           </div>
         ))}
       </div>
+      <p className="text-xs text-muted-foreground">All-time logged usage in this space. Days are in UTC. Retries with reported usage are included.{total.legacyClaudeCalls > 0 ? ` ${formatCount(total.legacyClaudeCalls)} older Claude calls lack cache details; their estimates use regular input rates.` : ""} Your provider bill may also include calls from other spaces, API clients, and unreported usage.</p>
       <h3 className="font-medium">Daily breakdown</h3>
       <DataTable query={{ ...calls, data: totals }} columns={TOTAL_COLUMNS} getRowId={(row) => `${row.day}|${row.model}`} pageSize={7} filterPlaceholder="Search days or models…" emptyState={empty} />
       <h3 className="font-medium">Recent calls</h3>
