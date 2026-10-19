@@ -1,11 +1,12 @@
-import { writeFileSync } from "node:fs";
-import { expect, it } from "vitest";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readModelChoice } from "@/lib/ai/models";
 import { lostClaims, readVectors, type CuratorSnapshot } from "@/lib/curator/curate";
 import { treeHealth } from "@/lib/curator/score";
+import { attachCuratorVectors } from "@/lib/curator/vectors";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { writeFileSync } from "node:fs";
+import { expect, it } from "vitest";
 import { articleSections } from "./articlePlan";
 import { loadArticleKnowledge, planArticle } from "./articlePlanner";
 import { MAX_BORROWED_INTRO, descendantClaimIds, organizationPageHealth, plannedClaimIds } from "./organizationOverview";
@@ -27,7 +28,7 @@ it.skipIf(process.env.LIVE_OVERVIEW_BENCH !== "1")("benchmarks organization over
   const client = getAdminSupabase();
   const db = supabaseRpc(client);
   const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db))!;
-  const snapshot = await db.call<CuratorSnapshot>("curator_snapshot");
+  const snapshot = await attachCuratorVectors(db, await db.call<CuratorSnapshot>("curator_snapshot"));
   const vectors = readVectors(snapshot);
   const targets = organizationPageHealth(snapshot.pages);
   const score = (pageId: string, planned: string[]) => {

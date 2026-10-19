@@ -1,21 +1,22 @@
-import "server-only";
-import { after } from "next/server";
-import { requireUser } from "@/lib/auth/requireUser";
-import { getServerDeps } from "@/lib/server/deps";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readArticleCharter, readModelChoice } from "@/lib/ai/models";
-import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { CURATOR_INSTRUCTIONS } from "@/lib/ai/rolePolicies";
-import { type AutoAccepted, commitAsRole, submitChangeSet } from "@/lib/change-control";
+import { loadRoleInstructions } from "@/lib/ai/skills/server";
+import { requireUser } from "@/lib/auth/requireUser";
+import { commitAsRole, submitChangeSet, type AutoAccepted } from "@/lib/change-control";
+import { supabaseRpc, type DbRpc } from "@/lib/db/rpc";
+import { uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import { rebuildSection, type SectionWriter } from "@/lib/living-page";
-import { type DbRpc, supabaseRpc } from "@/lib/db/rpc";
-import { getAdminSupabase } from "@/lib/supabase/admin";
 import { toActionResult } from "@/lib/server-actions/result";
+import { getServerDeps } from "@/lib/server/deps";
+import { getAdminSupabase } from "@/lib/supabase/admin";
+import { after } from "next/server";
+import "server-only";
 import { CURATOR_PROMPT_VERSION, curate, lostClaims, type CuratorSnapshot } from "./curate";
 import { changeToAction, describeChange, type Dispatch } from "./plan";
-import type { TreeHealth } from "./score";
 import type { CuratorScope } from "./scope";
-import { uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
+import type { TreeHealth } from "./score";
+import { attachCuratorVectors } from "./vectors";
 
 // =====================================================================
 // RUN THE CURATOR ON THE LIVE WIKI: one pass over the whole page tree. Each
@@ -47,7 +48,7 @@ export async function runCuratorPass(db: DbRpc, progress: (detail: string) => vo
   progress("Loading every page and the claims it cites…");
   const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "curator" } }));
   if (!settings) throw new Error("Configure an AI provider in Settings before curating pages.");
-  const snapshot = await workflowStep("curator:snapshot", () => db.call<CuratorSnapshot>("curator_snapshot"));
+  const snapshot = await attachCuratorVectors(db, await workflowStep("curator:snapshot", () => db.call<CuratorSnapshot>("curator_snapshot")));
   const instructions = (await loadRoleInstructions(db)).find((row) => row.role === "curator")?.instructions ?? CURATOR_INSTRUCTIONS;
   const pass = await workflowStep("curator:plan", async () => curate(settings, snapshot, { charter: await readArticleCharter(db), instructions, onProgress: progress, scope: options.scope }));
   // Safety: a run never drops a claim from every page
