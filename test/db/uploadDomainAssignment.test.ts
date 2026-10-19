@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { beforeAll, afterAll, beforeEach, afterEach, expect, it, vi } from "vitest";
 import { portablePostgres } from "./portablePostgres";
 import { recordUpload } from "@/lib/ingest/pipeline";
@@ -523,4 +524,50 @@ it("asks again only for destinations a review approved without assessing, withou
  expect(reviews[1]!.request).toContain("did not assess");
  expect((reviews[1] as unknown as {proposal:{ref:string}[]}).proposal.map(c=>c.ref)).toEqual(["C3"]);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+});
+
+it("keeps finished plan steps and reviewed batches when the upload context changes before a resume",async()=>{
+ const event=await setup(Array.from({length:81},(_,i)=>`Permit condition ${i+1} applies to the site.`));
+ const owner=await store.db.call<{token:string}>("claim_upload_workflow",{p_event_id:event});
+ let plans=0,fail=true;const placements:number[]=[];
+ vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
+  let value:unknown;
+  const payload=payloadOf(request);
+  if(request.name==="upload_domain_plan") {plans++;value={groups:[{scopePath:"Upload test",subject:"Permits",reason:"Permit conditions",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};}
+  else if(request.name==="place_topics") {
+   placements.push(payload.claims.length);
+   if(payload.claims.length===1&&fail){fail=false;throw new Error("Placement connection interrupted");}
+   value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
+  } else if(request.name==="independent_upload_domain_review") {
+   const review=JSON.parse(request.messages.at(-1)!.content as string);
+   value={approved:true,issues:[],parents:review.parents.map((p:object)=>({...p,reason:"Permit conditions fit."}))};
+  } else throw new Error(request.name);
+  return {value,model:"test",tokensIn:10,tokensOut:10} as never;
+ });
+ const run=()=>uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
+ await expect(run()).rejects.toThrow("Placement connection interrupted");
+ // Another upload adds a domain meanwhile: the old whole-context keys would all miss now
+ await store.pg.exec("insert into domains(name,path,proposed_by) values ('Elsewhere','Elsewhere','person')");
+ await run();
+ expect(plans).toBe(1);
+ expect(placements).toEqual([80,1,1]);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+});
+
+it("reuses a plan step saved under the place-v4 key of an upload already in flight",async()=>{
+ const event=await setup();model();
+ const owner=await store.db.call<{token:string}>("claim_upload_workflow",{p_event_id:event});
+ const context=await store.db.call<UploadTopicContext>("upload_topic_context",{p_event_id:event});
+ const key=`place-v4:${createHash("sha256").update(JSON.stringify(context)).digest("hex").slice(0,24)}:plan:0`;
+ const args={p_event_id:event,p_token:owner.token,p_key:key};
+ await store.db.call("start_upload_step",args);
+ await store.db.call("finish_upload_step",{...args,p_error:null,p_output:{groups:[{scopePath:"Upload test",subject:"Saved plan",reason:"Planned before the update",refs:["C1","C2","C3"]}],tokensIn:5,tokensOut:5,model:"test"}});
+ const original=vi.mocked(chatJson).getMockImplementation()!;
+ vi.mocked(chatJson).mockImplementation(async(settings,request)=>{
+  if(request.name==="upload_domain_plan")throw new Error("The saved plan should be reused");
+  return original(settings,request);
+ });
+ await uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ expect((await store.pg.query("select count(*)::int n from upload_steps where event_id=$1 and key like 'place-v5:plan:0:%' and state='succeeded'",[event])).rows).toEqual([{n:1}]);
 });
