@@ -15,6 +15,7 @@ import { finishArticleStructure, readArticleStructure, saveArticleStructure, typ
 import { rebuildUploadSection, type SectionWriter } from "./index";
 import { needsRewrite } from "./plan";
 import type { SectionState, SectionUnit } from "./types";
+import { readArticleJudgments, rememberedJudgment, saveArticleJudgments, scopeBasis } from "./articleJudgments";
 
 export type ExistingScaffoldSection = { state: SectionState; position: number; protected: boolean; query?: unknown };
 export type KeptScaffoldSection = ExistingScaffoldSection & { plannedUnitIds: string[] };
@@ -111,7 +112,11 @@ export async function prepareArticleScaffold(db: DbRpc, client: AdminSupabase, s
   const extra = await loadScaffoldUnits(client, additions.flatMap(section => section.query.unitIds ?? []));
   let units = [...new Map([...editable.flatMap(section => section.state.units), ...extra].map(unit => [unit.unitId, unit])).values()];
   progress?.("Reconciling selected evidence with the article scope…");
-  const scoped = await selectArticleScope(settings, page.title, page.scope, units);
+  const basis = scopeBasis(page.title, page.scope);
+  const judgments = await readArticleJudgments(db, pageId);
+  const scoped = await selectArticleScope(settings, page.title, page.scope, units,
+    unit => rememberedJudgment(judgments, "scope", unit.unitId, unit.revisionId, basis)?.decision as "in_scope" | "outside_scope" | undefined);
+  await saveArticleJudgments(db, pageId, "scope", scoped.judged.map(item => ({ subject: item.unitId, revisionId: item.revisionId, basis, decision: item.decision, reason: item.reason })));
   const excluded = new Set(scoped.excludedIds);
   // Keep an old mixed section whole; selection cannot remove its saved text.
   existing = existing.map(section => section.state.units.some(unit => excluded.has(unit.unitId)) ? { ...section, protected: true } : section);

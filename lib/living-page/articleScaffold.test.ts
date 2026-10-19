@@ -33,7 +33,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   queries.clear();
   changeSets.clear();
-  scope.mockResolvedValue({ excludedIds: [], tokensIn: 0, tokensOut: 0 });
+  scope.mockResolvedValue({ excludedIds: [], judged: [], tokensIn: 0, tokensOut: 0 });
   planner.mockResolvedValue({ plan: { title: "Subject", introduction: ["C1"], sections: [{ title: "Details", claims: ["C2", "C3"] }] }, tokensIn: 5, tokensOut: 6 });
   submit.mockImplementation(async (_db, _origin, value: { actions: Submitted[] }) => {
     const type = value.actions[0]!.type;
@@ -123,7 +123,7 @@ function context(createdIds = ["new-details"], alreadyRetired: string[] = []) {
 }
 it("keeps an existing out-of-scope section unchanged and plans only eligible additions", async () => {
   const { db, client } = context();
-  scope.mockResolvedValueOnce({ excludedIds: ["u2"], tokensIn: 4, tokensOut: 2 });
+  scope.mockResolvedValueOnce({ excludedIds: ["u2"], judged: [], tokensIn: 4, tokensOut: 2 });
   planner.mockResolvedValueOnce({ plan: { title: "Subject", introduction: ["C1"], sections: [{ title: "New evidence", claims: ["C2"] }] }, tokensIn: 5, tokensOut: 6 });
   const actions = await articleAdditionActions(db, client, { apiKey: "test" }, "page", [draft("New evidence", ["u3"])]);
   expect(planner.mock.calls[0]![1].units.map((unit: SectionUnit) => unit.unitId)).toEqual(["u1", "u3"]);
@@ -132,7 +132,7 @@ it("keeps an existing out-of-scope section unchanged and plans only eligible add
 });
 it("keeps the entire saved article when no supplied evidence fits its scope", async () => {
   const { db, client } = context();
-  scope.mockResolvedValueOnce({ excludedIds: ["u1", "u2", "u3"], tokensIn: 1, tokensOut: 1 });
+  scope.mockResolvedValueOnce({ excludedIds: ["u1", "u2", "u3"], judged: [], tokensIn: 1, tokensOut: 1 });
   expect(await articleAdditionActions(db, client, { apiKey: "test" }, "page", [draft("Outside", ["u3"])])).toEqual([]);
   expect(planner).not.toHaveBeenCalled();
   expect(submit).not.toHaveBeenCalled();

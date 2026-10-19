@@ -90,3 +90,49 @@ it("repairs an empty definition-only lead from scoped current facts, preserving 
   manual = true;
   expect(await repairEmptyIntroductions(db, client, "page")).toEqual([]);
 });
+
+it("remembers excluded claim revisions and offers them again only after the claim, scope or covering text changes", async () => {
+  const tables: Record<string, unknown> = {
+    pages: { title: "Enneagram", scope: "The system as a whole; per-type profiles belong elsewhere." },
+    sections: [{ id: "section", title: "Overview", mode: "generated", query: { unitIds: ["old"] } }],
+    units: [{ id: "out", current_revision_id: "rout", kind: "fact", epistemic_status: "established" }, { id: "covered", current_revision_id: "rcovered", kind: "fact", epistemic_status: "established" }],
+    revisions: [{ id: "rout", content: "Type Four envies others.", knowledge_context: null }, { id: "rcovered", content: "There are nine types.", knowledge_context: null }, { id: "rout2", content: "Type Four envies others.", knowledge_context: null }],
+    section_lines: [{ content: "The Enneagram describes nine types." }],
+  };
+  const client = { from: (table: string) => {
+    let ids: string[] | undefined;
+    const chain = { select: () => chain, eq: () => chain, is: () => chain, in: (_column: string, values: string[]) => { ids = values; return chain; }, range: () => chain, order: () => chain, single: () => chain,
+      then: (resolve: (result: object) => unknown) => {
+        const rows = tables[table];
+        return Promise.resolve(resolve({ data: Array.isArray(rows) && ids ? rows.filter(row => ids!.includes(row.id)) : rows, error: null }));
+      } };
+    return chain;
+  } } as unknown as import("@/lib/supabase/admin").AdminSupabase;
+  let saved: Record<string, unknown>[] = [];
+  const db: import("@/lib/db/rpc").DbRpc = { call: async <T>(name: string, args: Record<string, unknown> = {}) => {
+    if (name === "article_knowledge_candidates") return ["out", "covered"] as T;
+    if (name === "read_article_judgments") return saved as T;
+    if (name === "save_article_judgments") { saved = [...saved.filter(row => !(args.p_judgments as { subject: string }[]).some(item => item.subject === row.subject)), ...(args.p_judgments as object[]).map(item => ({ ...item, stage: args.p_stage }))]; return 1 as T; }
+    return ["old"] as T;
+  } };
+  const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async (_url, init) => {
+    const input = JSON.parse(JSON.parse(String(init?.body)).messages.find((message: { role: string }) => message.role === "user").content);
+    const excluded = input.claims.map((claim: { ref: string; content: string }) => ({ claim: claim.ref, reason: claim.content.includes("nine") ? "already_covered" : "outside_scope", explanation: "Not for this article." }));
+    return new Response(JSON.stringify({ model: "test", choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [], excluded }) } }] }));
+  });
+  vi.stubGlobal("fetch", fetch);
+  const discover = (note = "") => discoverArticleUpdates(db, client, { apiKey: "test" }, "page", note);
+  await discover();
+  expect(saved.map(row => [row.subject, row.decision])).toEqual([["out", "outside_scope"], ["covered", "already_covered"]]);
+  expect(await discover()).toEqual({ sections: [], tokensIn: 0, tokensOut: 0 });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  // New covering text: only the already-covered claim is judged again.
+  tables.section_lines = [{ content: "The Enneagram is a typology." }];
+  await discover();
+  expect(JSON.parse(JSON.parse(String(fetch.mock.calls[1]?.[1]?.body)).messages.find((message: { role: string }) => message.role === "user").content).claims.map((claim: { content: string }) => claim.content)).toEqual(["There are nine types."]);
+  // A revised claim and a person's note are both looked at again.
+  (tables.units as { current_revision_id: string }[])[0]!.current_revision_id = "rout2";
+  await discover();
+  await discover("Include type detail this time.");
+  expect(fetch).toHaveBeenCalledTimes(4);
+});
