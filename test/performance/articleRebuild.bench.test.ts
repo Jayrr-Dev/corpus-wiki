@@ -3,6 +3,7 @@ import type { DbRpc } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import type { DraftAction, DraftChangeSet } from "@/lib/ai/types";
 import type { SectionState } from "@/lib/living-page/types";
+import { SCAFFOLD_OUTLINE_ATTEMPTS } from "@/lib/living-page/articleScaffold";
 
 // ARTICLE REBUILD COST FIXTURE: one existing article in memory, the real coverage,
 // scope, outline and scaffold code, and a deterministic model keyed by call name.
@@ -232,6 +233,10 @@ it("costs nothing after the first pass when no new knowledge arrives", async () 
   report.unchanged = { outcomes, ...snapshot() };
   if (process.env.PROCESSING_BENCHMARK) console.info("Article rebuild, 3 passes, no new knowledge", report.unchanged);
   expect(outcomes).toEqual(["ok", "ok", "ok"]);
+  // On main 811fa66: 3 discovery, 3 scope and 3+3 outline calls, and 6 sections patched.
+  expect(world.calls.get("article_update_discovery")?.calls).toBe(1);
+  expect(["article_scope_review", "article_outline", "article_outline_review"].some(name => world.calls.has(name))).toBe(false);
+  expect(world.writes).toEqual({ fresh: 0, patch: 0, lines: 0 });
 });
 
 it("updates one section in place when one claim arrives", async () => {
@@ -243,6 +248,10 @@ it("updates one section in place when one claim arrives", async () => {
   report.oneClaim = { outcomes, ...snapshot() };
   if (process.env.PROCESSING_BENCHMARK) console.info("Article rebuild, one new claim then one more pass", report.oneClaim);
   expect(outcomes).toEqual(["ok", "ok"]);
+  // On main 811fa66: 2 scope and 2+2 outline calls, and 5 sections patched.
+  expect(world.actions.has("retire_section") || world.actions.has("create_section")).toBe(false);
+  expect(world.writes).toMatchObject({ fresh: 0, patch: 3 });
+  expect(world.calls.get("article_outline")?.calls).toBe(1);
 });
 
 it("stops re-planning an outline the reviewer keeps rejecting", async () => {
@@ -252,4 +261,8 @@ it("stops re-planning an outline the reviewer keeps rejecting", async () => {
   const outcomes = [await pass(), await pass(), await pass()];
   report.rejected = { outcomes, ...snapshot() };
   if (process.env.PROCESSING_BENCHMARK) console.info("Article rebuild, outline review always objects, 3 passes", report.rejected);
+  // On main 811fa66: 18 outline and 18 outline-review calls, and every pass failed.
+  expect(outcomes).toEqual(["ok", "ok", "ok"]);
+  expect(world.calls.get("article_outline")?.calls).toBe(SCAFFOLD_OUTLINE_ATTEMPTS);
+  expect(world.holds).toBe(1);
 });
