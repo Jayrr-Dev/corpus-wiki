@@ -4,7 +4,7 @@ import { z } from "zod";
 import { addUsage, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import { buildPlaceTopicsMessages, PLACE_TOPICS_BATCH, placeTopicsPayload, PLACE_TOPICS_PROMPT_VERSION, placementActions,
   placeTopicsAnswerSchema, placeTopicsJsonSchema, readPlacements, type PlaceTopicsInput } from "@/lib/ai/tokenFactory/placeTopics";
-import { submitChangeSet } from "@/lib/change-control";
+import { autoAcceptHeld, submitChangeSet, type CommitResult } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
 import { uploadExecution, workflowWrite, workflowStep, reportUploadProgress } from "./workflowContext";
 import { reuseFuzzyDomainPaths } from "@/lib/knowledge/nameDuplicates";
@@ -27,7 +27,8 @@ const REPAIR_ATTEMPTS_PER_RUN = 3;
 const DESTINATION_SAMPLE = 6;
 type ObjectionCheck = { issues: string[]; verdicts: { issue: number; blocking: boolean; reason: string }[] };
 type FilingRepair = { proposal: [string,string[]][] | null; correctionRefs: string[] | null; feedback: string; reviewFeedback: string; history: string[][]; usage: TokenUsage; model?: string; objectionChecks?: ObjectionCheck[]; parentReasons?: [string,string][] };
-type ReviewedBatch=TokenUsage&{model?:string;placements:[string,string[]][];rationales:[string,string][];objectionChecks?:ObjectionCheck[]};
+// `disputed`: refs the review still objected to after the last attempt, held for a person
+type ReviewedBatch=TokenUsage&{model?:string;placements:[string,string[]][];rationales:[string,string][];objectionChecks?:ObjectionCheck[];disputed?:{refs:string[];issues:string[]}};
 const reviewKey=(input:PlaceTopicsInput)=>createHash("sha256").update(JSON.stringify(input,(_key,value)=>value&&typeof value==="object"&&!Array.isArray(value)
   ?Object.fromEntries(Object.entries(value).sort(([a],[b])=>a.localeCompare(b))):value)).digest("hex").slice(0,24);
 
@@ -92,6 +93,7 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
     // Placement sees every group's subject and size; only its own claims in full
     const planOutline=plan.groups.map(group=>({scopePath:group.scopePath,subject:group.subject,reason:group.reason,claims:group.refs.length}));
     let completed=0;
+    const held=new Map<string,{issues:string[];detail:string}>();
     for(let taskIndex=0;taskIndex<tasks.length;taskIndex++) {
         let {group,claims}=tasks[taskIndex]!;
         const filed=evidence.claims.filter(c=>placed.has(c.unitId)).map(c=>({ref:c.ref,title:c.title,content:c.content,domainPaths:placed.get(c.unitId)!}));
@@ -126,7 +128,7 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
           input=inputFor(claims);
         }
         const refs=new Set(claims.map(c=>c.ref));
-        const saved=cached.done?cached.output:await workflowStep(`${prefix}:review-v2:${reviewKey(input)}`,async()=>{
+        const saved:ReviewedBatch=cached.done?cached.output:await workflowStep<ReviewedBatch>(`${prefix}:review-v2:${reviewKey(input)}`,async()=>{
         let batchUsage:TokenUsage={tokensIn:0,tokensOut:0};
         let batchModel:string|undefined;
         const captureBatch=(call:TokenUsage&{model?:string})=>{batchUsage=addUsage(batchUsage,call);if(call.model)batchModel=call.model;};
@@ -239,7 +241,14 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
             await workflowStep<FilingRepair>(repairKey,async()=>({proposal:previousProposal?[...previousProposal]:null,correctionRefs:correctionRefs?[...correctionRefs]:null,feedback,reviewFeedback,history,usage:batchUsage,model:batchModel,objectionChecks,parentReasons:[...parentReasons]}));
           }
         }
-        if(!accepted) throw new Error("Topic filing paused after repeated review corrections; no assignments were saved. Your extracted knowledge is saved. Resume to continue from the saved corrections.");
+        if(!accepted) {
+          if(!previousProposal) throw new Error("Topic filing paused after repeated review corrections; no assignments were saved. Your extracted knowledge is saved. Resume to continue from the saved corrections.");
+          // Still disputed after the retry budget: file the latest proposal and hold the
+          // claims the review objected to in Exceptions, instead of stalling the upload.
+          const disputed=correctionRefs?.size?[...correctionRefs]:claims.map(c=>c.ref!);
+          for(const c of claims) batchRationales.set(c.unitId,(reasons.get(c.ref)??group.reason)+" "+(disputed.includes(c.ref!)?"Independent review did not agree on this placement; held for a person.":previousProposal.get(c.unitId)!.flatMap(path=>parentReasons.get(path)??[]).join(" ")));
+          return {placements:[...previousProposal],rationales:[...batchRationales],objectionChecks,disputed:{refs:disputed,issues:history.at(-1)??[]},...batchUsage,model:batchModel};
+        }
         return {placements:[...accepted],rationales:[...batchRationales],objectionChecks,...batchUsage,model:batchModel};
         });
         const accepted=new Map(saved.placements);
@@ -247,19 +256,25 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
         capture(saved);
         for(const [id,rationale] of saved.rationales)rationales.set(id,rationale);
         for(const [id,paths] of accepted) {placed.set(id,paths);addKnown(paths);}
+        for(const ref of saved.disputed?.refs??[]) {
+          const claim=claims.find(c=>c.ref===ref);
+          if(claim)held.set(claim.unitId,{issues:saved.disputed!.issues,detail:`Independent review did not agree on filing this claim under ${accepted.get(claim.unitId)!.join(" and ")} after ${REPAIR_ATTEMPTS_PER_RUN} attempts. Open objection: ${saved.disputed!.issues.join(" ")}`});
+        }
         completed+=claims.length;
         await reportUploadProgress({step:"place",done:completed,total:evidence.claims.length});
     }
     if(placed.size!==evidence.claims.length) throw new Error("Domain assignments are incomplete. No assignments were saved.");
     const revisions=new Map(context.revisions.map(r=>[r.unitId,r.revisionId]));
     const actions=placementActions(placed,context.domainPaths,"Reviewed upload domain assignment").map(action=>action.type==="place_claim"?{
-      ...action,expectedRevisionId:revisions.get(action.targetId!)??null,input:{...action.input,rationale:rationales.get(action.targetId!),uploadAssignment:true},
+      ...action,expectedRevisionId:revisions.get(action.targetId!)??null,input:{...action.input,rationale:rationales.get(action.targetId!),uploadAssignment:true,...held.has(action.targetId!)?{filingReview:held.get(action.targetId!)}:{}},
     }:action);
     const proposalKey=createHash("sha256").update(JSON.stringify(actions)).digest("hex").slice(0,16);
     const {changeSetId}=await submitChangeSet(db,{eventId,cause:"upload",actor:"ai",operationKey:`${prefix}:${proposalKey}:submit`},{
-      summary:`Assigned ${placed.size} knowledge units to reviewed domains`,actions,trace:{modelVersion:model,promptVersion:PLACE_TOPICS_PROMPT_VERSION,...usage},
+      summary:`Assigned ${placed.size-held.size} knowledge units to reviewed domains${held.size?`; ${held.size} held for review`:""}`,actions,trace:{modelVersion:model,promptVersion:PLACE_TOPICS_PROMPT_VERSION,...usage},
     });
-    await workflowWrite(db,`${prefix}:${proposalKey}:commit`,"commit_upload_topics",{p_change_set_id:changeSetId,p_event_id:eventId});
+    const committed=await workflowWrite<CommitResult>(db,`${prefix}:${proposalKey}:commit`,"commit_upload_topics",{p_change_set_id:changeSetId,p_event_id:eventId});
+    // Full auto accepts held placements at once (new roots still wait for a person)
+    if(held.size)await autoAcceptHeld(db,"domain_decider",changeSetId,committed.exceptions);
     if(await db.call<boolean>("upload_workflow_waiting",{p_event_id:eventId}))return;
     const coverage=await db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:eventId});
     if(coverage.unplaced.length) throw new Error(`${coverage.unplaced.length} knowledge units still need domain assignments. Articles have not started.`);

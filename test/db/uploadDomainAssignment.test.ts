@@ -106,11 +106,17 @@ it("supplies real source context, repairs missing assignments, files every unit 
  await store.db.call("revert_change_set",{p_change_set_id:writes.rows[0]!.id});
  expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
 });
-it("saves no assignments when independent review rejects every attempt",async()=>{
- const event=await setup();model({rejectAll:true});
- await expect(topicPlacerFor(store.db,{apiKey:"test"})(event)).rejects.toThrow("no assignments were saved");
- expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
- expect((await store.pg.query("select id from change_sets where event_id=$1 and summary like 'Assigned %'",[event])).rows).toHaveLength(0);
+it("holds a still-disputed batch in Exceptions instead of pausing the upload",async()=>{
+ const event=await setup();const proposals=model({rejectAll:true});
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(proposals()).toBe(3);
+ // The objection names no refs, so every claim of the batch waits for a person
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ const held=await store.pg.query<{reason:string;detail:string}>("select e.reason,e.evidence->>'detail' detail from exceptions e join actions a on a.id=e.action_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and e.status='open'",[event]);
+ expect(held.rows).toHaveLength(3);
+ expect(held.rows.every(r=>r.reason==="low_confidence"&&r.detail.includes("The group needs correction"))).toBe(true);
+ expect((await store.pg.query("select summary from change_sets where event_id=$1 and summary like 'Assigned %'",[event])).rows).toEqual([{summary:"Assigned 0 knowledge units to reviewed domains; 3 held for review"}]);
+ expect(await store.db.call<{claims:unknown[]}>("upload_topic_context",{p_event_id:event})).toMatchObject({claims:[]});
 });
 it("identifies an invented planning child scope and requires a valid anchor on retry",async()=>{
  const event=await setup();model();
@@ -401,10 +407,10 @@ it("resumes saved review corrections after interruption without regenerating rej
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
-it("retains corrections after the retry budget and allows a later resume to finish",async()=>{
+it("files the undisputed claims after the retry budget and applies a held claim once accepted",async()=>{
  const event=await setup();
  const owner=await store.db.call<{token:string}>("claim_upload_workflow",{p_event_id:event});
- let proposals=0,reviews=0,approve=false;
+ let proposals=0,reviews=0;
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
@@ -417,21 +423,33 @@ it("retains corrections after the retry budget and allows a later resume to fini
    reviews++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    expect(payload.priorReviewIssues).toHaveLength(reviews-1);
-   value={approved:approve,issues:approve?[]:["C3 needs a supported responsibility assignment"],parents:payload.parents.map((p:object)=>({...p,reason:"Subject coherence assessed."}))};
+   value={approved:false,issues:["C3 needs a supported responsibility assignment"],parents:payload.parents.map((p:object)=>({...p,reason:"Subject coherence assessed."}))};
   } else if(request.name==="independent_upload_domain_issue_check") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
- const run=()=>uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
- await expect(run()).rejects.toThrow("Resume to continue from the saved corrections");
- expect(proposals).toBe(3);
- expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
- approve=true;
- await run();
- expect(proposals).toBe(4);expect(reviews).toBe(4);
+ await uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
+ expect(proposals).toBe(3);expect(reviews).toBe(3);
+ expect(await store.db.call("upload_workflow_waiting",{p_event_id:event})).toBe(false);
+ const context=await store.db.call<UploadTopicContext>("upload_topic_context",{p_event_id:event});
+ expect(context.claims).toEqual([]);
+ const exception=(await store.pg.query<{id:string}>("select e.id from exceptions e join actions a on a.id=e.action_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and e.status='open' and e.reason='low_confidence'",[event])).rows;
+ expect(exception).toHaveLength(1);
+ const paths=()=>store.pg.query<{path:string}>("select d.path from unit_domains m join domains d on d.id=m.domain_id join actions a on a.target_id=m.unit_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and a.type='add_claim' order by d.path",[event]);
+ expect((await paths()).rows.map(r=>r.path)).toEqual(["Upload test/Permits","Upload test/Permits"]);
+ await store.db.call("resolve_exception",{p_exception_id:exception[0]!.id,p_accept:true,p_note:null});
+ expect((await paths()).rows.map(r=>r.path)).toEqual(["Upload test/Permits","Upload test/Permits","Upload test/Responsibilities"]);
+});
+
+it("accepts held placements at once when the Domain Decider is in full auto",async()=>{
+ const event=await setup();model({rejectAll:true});
+ await store.db.call("set_ai_role_auto",{p_role:"domain_decider",p_on:true});
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect((await store.pg.query("select e.status from exceptions e join actions a on a.id=e.action_id join change_sets c on c.id=a.change_set_id where c.event_id=$1",[event])).rows).toEqual([{status:"accepted"},{status:"accepted"},{status:"accepted"}]);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ expect((await store.pg.query("select count(*)::int n from unit_domains m join actions a on a.target_id=m.unit_id join change_sets c on c.id=a.change_set_id where c.event_id=$1 and a.type='add_claim'",[event])).rows).toEqual([{n:3}]);
 });
 
 it("finishes corrected filing when a fresh evidence check dismisses a repeated optional objection",async()=>{
