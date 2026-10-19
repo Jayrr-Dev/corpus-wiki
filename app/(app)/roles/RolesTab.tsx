@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useServerAction } from "@/components/actions/useServerAction";
+import { RoleSpendPanel, useAllAiCalls, useRoleSpend } from "@/components/usage/RoleSpend";
 import { saveRoleInstructions } from "@/lib/server-actions/skills";
 import { setRoleAuto } from "@/lib/server-actions/settings";
+import { formatUsd } from "@/lib/ai/pricing";
 import { AI_STAGES, type SkillLibrary } from "@/lib/ai/skills/types";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { AUTO_ROLES, type AutoRole, FIXED_ROLES, MODEL_ROLES, type ModelRole, STAGE_ROLES } from "@/lib/ai/roles";
@@ -40,6 +42,8 @@ const APP_ROLES = {
 const appRole = (role: (typeof APP_ROLES)[keyof typeof APP_ROLES]) => ({ ...role, instructions: null, source: "Managed by the app", version: undefined });
 
 export function RolesTab({ library, modelSettings }: { library: SkillLibrary; modelSettings: ModelSettings }) {
+  const calls = useAllAiCalls();
+  const spend = useRoleSpend(calls);
   const roles = AI_STAGES.map((stage) => {
     const assignment = library.assignments.find((item) => item.stage === stage.id);
     const skill = assignment ? library.skills.find((item) => item.id === assignment.skill_id) : defaultSkill(stage.id);
@@ -61,11 +65,13 @@ export function RolesTab({ library, modelSettings }: { library: SkillLibrary; mo
         <p>Each role has a responsibility and a set of instructions. Open a card’s instructions to see how it works.</p>
       </InfoPopover>
     </div>
+    <RoleSpendPanel calls={calls} />
     <div className="grid items-start gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {roster.map((role, index) => {
         const Icon = ROLE_ICONS[role.id] ?? Sparkles;
         const override = library.roleInstructions?.find((item) => item.role === role.id);
         const exceptions = ROLE_EXCEPTIONS.get(role.id);
+        const spent = spend.get(role.id);
         return <article key={role.id} aria-label={role.name} className="rounded-xl border bg-background p-1 shadow-sm">
           <div className="overflow-hidden rounded-lg border border-border/60">
             <header className="flex items-center justify-between gap-3 border-b px-4 py-3">
@@ -73,6 +79,9 @@ export function RolesTab({ library, modelSettings }: { library: SkillLibrary; mo
               <div className="flex shrink-0 items-center gap-2">
                 {exceptions ? <Tooltip content={<div className="space-y-0.5"><p className="font-medium">Can hold changes for you in Exceptions</p>{exceptions.map((kind) => <p key={kind}>{ACTION_HINTS[kind]?.replace(/^Exception: (.)/, (_, first: string) => first.toUpperCase()) ?? kind}</p>)}</div>}>
                   <span><Badge variant="outline">Exceptions</Badge></span>
+                </Tooltip> : null}
+                {spent ? <Tooltip content={`Estimated all-time spend · ${spent.calls.toLocaleString("en-US")} calls`}>
+                  <span className="font-mono text-xs text-muted-foreground">{formatUsd(spent.costUsd)}</span>
                 </Tooltip> : null}
                 <span className="font-mono text-xs text-faint">{String(index + 1).padStart(2, "0")}</span>
               </div>

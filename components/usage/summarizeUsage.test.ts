@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Tables } from "@/lib/database/types";
-import { grandTotal, totalsByDayAndModel } from "./summarizeUsage";
+import { grandTotal, totalsByDayAndModel, totalsByRole } from "./summarizeUsage";
 
 // FIXTURE: one call with only the fields the totals read varying
 const call = (created_at: string, model: string, status: string, prompt: number | null, completion: number | null, reasoning: number | null): Tables<"ai_calls"> => ({
@@ -50,5 +50,20 @@ describe("usage totals", () => {
     expect(total.unknownCostCalls).toBe(1);
     expect(total.legacyClaudeCalls).toBe(4);
     expect(totalsByDayAndModel(calls)[0]?.costUsd).toBe(total.costUsd);
+  });
+
+  it("sums cost per role, most expensive first, falling back to the purpose's role", () => {
+    const model = "anthropic/claude-haiku-5-5";
+    const calls = [
+      { ...call("2026-10-18T01:00:00Z", model, "ok", 10_000, 1000, null), role: "reviewer" },
+      { ...call("2026-10-18T02:00:00Z", model, "ok", 50_000, 2000, null), purpose: "section_lines" },
+      { ...call("2026-10-18T03:00:00Z", model, "ok", 50_000, 2000, null), role: "write_articles" },
+      { ...call("2026-10-18T04:00:00Z", model, "error", null, null, null), purpose: "mystery" },
+    ];
+    const totals = totalsByRole(calls);
+    expect(totals.map((total) => [total.role, total.calls])).toEqual([["write_articles", 2], ["reviewer", 1], ["other", 1]]);
+    expect(totals[0]?.costUsd).toBeGreaterThan(totals[1]?.costUsd ?? Infinity);
+    expect(totals[2]).toMatchObject({ costUsd: 0, unknownCostCalls: 1 });
+    expect(totals.reduce((sum, total) => sum + total.costUsd, 0)).toBeCloseTo(grandTotal(calls).costUsd);
   });
 });

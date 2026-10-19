@@ -1,5 +1,6 @@
 import type { Tables } from "@/lib/database/types";
 import { estimateCallCost } from "@/lib/ai/pricing";
+import { roleForPurpose } from "@/lib/ai/roles";
 
 // =====================================================================
 // USAGE TOTALS: AI calls folded into one row per day and model, plus the
@@ -65,4 +66,19 @@ export function totalsByDayAndModel(calls: readonly AiCall[]): UsageTotal[] {
 // GRAND TOTAL over every call
 export function grandTotal(calls: readonly AiCall[]): UsageTotal {
   return calls.reduce(addCall, emptyTotal("all", "all"));
+}
+
+// THE ROLE A CALL WAS MADE FOR: the logged role, else the one its purpose maps to ("other" when neither)
+export const callRole = (call: AiCall): string => call.role ?? roleForPurpose(call.purpose) ?? "other";
+
+export type RoleTotal = UsageTotal & { role: string };
+
+// TOTALS BY ROLE, most expensive first (ties by call count, then role id)
+export function totalsByRole(calls: readonly AiCall[]): RoleTotal[] {
+  const totals = new Map<string, RoleTotal>();
+  for (const call of calls) {
+    const role = callRole(call);
+    totals.set(role, { ...addCall(totals.get(role) ?? { ...emptyTotal("all", "all"), role }, call), role });
+  }
+  return [...totals.values()].sort((a, b) => b.costUsd - a.costUsd || b.calls - a.calls || a.role.localeCompare(b.role));
 }
