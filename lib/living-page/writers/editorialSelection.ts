@@ -60,8 +60,12 @@ export async function checkEditorialDraft(settings: TokenFactorySettings, input:
 
 // Only wholly redundant claims or document provenance may be omitted. This
 // changes prose coverage, never stored evidence, queries, or handwritten lines.
+// A claim a current line already states at its current revision was selected when
+// that line was written; only new or revised claims are judged again.
 export async function selectEditorialClaims(settings: TokenFactorySettings, input: SectionReviseInput) {
-  const protectedUnits = new Set(input.lines.filter(line => !line.needsRewrite).flatMap(line => line.unitIds));
+  const statedRevisions = new Set(input.lines.flatMap(line => line.unitRevisionIds ?? []));
+  const protectedUnits = new Set([...input.lines.filter(line => !line.needsRewrite).flatMap(line => line.unitIds),
+    ...input.units.filter(unit => statedRevisions.has(unit.revisionId)).map(unit => unit.unitId)]);
   const selectable = input.units.map((unit, i) => ({ ref: `C${i + 1}`, ...unit })).filter(unit => !protectedUnits.has(unit.unitId));
   if (!selectable.length) return { omittedUnitIds: [] as string[], tokensIn: 0, tokensOut: 0 };
   const lead = /^(overview|introduction)$/i.test(input.sectionTitle);

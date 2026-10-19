@@ -178,25 +178,38 @@ export async function verifyEventArticleReviews(db: DbRpc, settings: TokenFactor
   await reviewRebuiltSections(db, settings, affected.map(section => section.sectionId), embedder, `final:${eventId}`);
 }
 
-export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string, coverage?: CoverageDeps) {
+// The same content reviewed partially this many times is not sent again: its
+// packing and limits are the same, so another call would repeat the result.
+export const MAX_IDENTICAL_PARTIAL_REVIEWS = 2;
+type ReviewState = { current: boolean; partialRuns: number; unfinishedSections: number };
+const settled = (state: ReviewState) => state.current || state.partialRuns >= MAX_IDENTICAL_PARTIAL_REVIEWS;
+
+// Content the review already saw is not sent again, so a rebuild that changed
+// nothing, or a retry of the same partial review, costs no review call.
+export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string) {
   const pages = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
   const reviewedProgress = (done: number) => reportUploadProgress({ step: "pages", done, total: pages.length, phase: "review" });
+  const scope = checkpointScope ? `${checkpointScope}:` : "";
+  const state = (pageId: string) => db.call<ReviewState>("page_review_state", { p_page_id: pageId });
   if (pages.length) await reviewedProgress(0);
   for (const [index, pageId] of pages.entries()) {
-    await workflowStep(`editorial-review:v2:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}`, () => runPageReview(db, settings, pageId, embedder, undefined, undefined, coverage));
+    await workflowStep(`editorial-review:v2:${scope}${pageId}`, async () => settled(await state(pageId)) ? null : runPageReview(db, settings, pageId, embedder));
     const pending = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-    if (!pending.includes(pageId)) { await reviewedProgress(index + 1); continue; }
+    const reviewed = await state(pageId);
+    if (!pending.includes(pageId) || (settled(reviewed) && !reviewed.unfinishedSections)) { await reviewedProgress(index + 1); continue; }
     // Legacy partial reviews are already durable, as are their scaffold writes.
     // Review the finished text directly; replaying coverage could replace its
     // saved sections again. Bind the completion checkpoint to current content.
     const hash = await db.call<string>("page_review_content_hash", { p_page_id: pageId });
-    await workflowStep(`editorial-complete:v1:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}:${hash}`, async () => {
+    await workflowStep(`editorial-complete:v1:${scope}${pageId}:${hash}`, async () => {
+      if (settled(await state(pageId))) return null;
       const result = await runPageReview(db, settings, pageId, embedder);
       if (!result.coverageComplete) throw new Error("The full article review is still incomplete. Saved text and partial checks are preserved; resume with sufficient review capacity.");
       return result;
     });
     const remaining = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-    if (remaining.includes(pageId)) throw new Error("The article changed or still has unfinished sections after review. Saved work is preserved; resume to finish its current version.");
+    const after = await state(pageId);
+    if (remaining.includes(pageId) && !(settled(after) && !after.unfinishedSections)) throw new Error("The article changed or still has unfinished sections after review. Saved work is preserved; resume to finish its current version.");
     await reviewedProgress(index + 1);
   }
 }

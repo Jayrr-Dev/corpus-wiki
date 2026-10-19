@@ -131,11 +131,24 @@ export class TokenFactorySectionWriter {
     let usage: TokenUsage = addUsage(selection, first);
     let answer = clean(first.value);
     progress?.step("Checking each paragraph against its claims…");
+    // Only new or changed paragraphs are reviewed again: one whose wording is unchanged
+    // keeps its editorial review, and one whose wording and evidence are both
+    // unchanged keeps its fact-check too (citation-only updates are still checked).
+    const original = (ref: string) => /^L([1-9]\d*)$/.test(ref) ? input.lines[Number(ref.slice(1)) - 1] : undefined;
+    const revisionOfRef = new Map(input.units.map((unit) => [refs.unitRef.get(unit.unitId)!, unit.revisionId]));
+    const sameWording = (line: LineToCheck) => original(line.ref)?.content === line.text;
+    const sameEvidence = (line: LineToCheck) => {
+      const cited = new Set(line.claims.map((claim) => revisionOfRef.get(claim.ref)));
+      const before = new Set(original(line.ref)?.unitRevisionIds ?? []);
+      return sameWording(line) && before.size > 0 && cited.size === before.size && [...cited].every((id) => id && before.has(id));
+    };
     const check = async (draft: SectionAnswer) => {
-      const checked = await checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: linesToCheck(draft, claims), sectionClaims: sectionClaims(claims) });
-      if (patchMode && linesToCheck(draft, claims).some((line) => !checked.verdicts.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
+      const lines = linesToCheck(draft, claims);
+      const factual = lines.filter((line) => !sameEvidence(line));
+      const checked = await checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: factual, sectionClaims: sectionClaims(claims) });
+      if (patchMode && factual.some((line) => !checked.verdicts.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
       const editorial = !input.skipEditorialReview && (input.pageContext?.length || omitted.size)
-        ? await checkEditorialDraft(this.settings, input, linesToCheck(draft, claims))
+        ? await checkEditorialDraft(this.settings, input, lines.filter((line) => !sameWording(line)))
         : { verdicts: [], tokensIn: 0, tokensOut: 0 };
       // Match the final commit's numeric check before the repair attempt, so a
       // missed citation is repaired instead of silently losing the paragraph.

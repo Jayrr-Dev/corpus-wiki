@@ -22,6 +22,7 @@ function database() {
     if (name === "page_review_related") return [{ content: "Related claim", passages: [{ text: "Supporting evidence" }] }];
     if (name === "complete_page_review") return { summary: "Reviewed", edits: (args?.p_edits as unknown[]).length, exceptions: 0, changeSetId: null };
     if (name === "pages_needing_editorial_review") return [];
+    if (name === "page_review_state") return { current: false, partialRuns: 0, unfinishedSections: 0 };
     throw new Error(name);
   });
   return { db: { call: call as DbRpc["call"] }, call };
@@ -195,6 +196,36 @@ describe("review workflow", () => {
   });
 });
 
+describe("reviewing only what changed", () => {
+  const states = (...values: object[]) => {
+    const { db, call } = database();
+    const original = call.getMockImplementation()!;
+    let reads = 0;
+    call.mockImplementation(async (name, args) => {
+      if (name === "pages_needing_editorial_review") return [page];
+      if (name === "page_review_content_hash") return "same-content";
+      if (name === "page_review_state") return values[Math.min(reads++, values.length - 1)];
+      return original(name, args);
+    });
+    return { db, call };
+  };
+  it("skips a page whose current content was already reviewed", async () => {
+    const { db, call } = states({ current: true, partialRuns: 0, unfinishedSections: 0 });
+    await reviewRebuiltSections(db, { apiKey: "test" }, [line]);
+    expect(chat).not.toHaveBeenCalled();
+    expect(call.mock.calls.filter(([name]) => name === "complete_page_review")).toHaveLength(0);
+  });
+  it("stops resending identical content after two partial reviews of it", async () => {
+    const { db } = states({ current: false, partialRuns: 2, unfinishedSections: 0 });
+    await expect(reviewRebuiltSections(db, { apiKey: "test" }, [line])).resolves.toBeUndefined();
+    expect(chat).not.toHaveBeenCalled();
+  });
+  it("still reports an article with unfinished sections without paying for another identical review", async () => {
+    const { db } = states({ current: true, partialRuns: 0, unfinishedSections: 1 });
+    await expect(reviewRebuiltSections(db, { apiKey: "test" }, [line])).rejects.toThrow("unfinished sections");
+    expect(chat).not.toHaveBeenCalled();
+  });
+});
 
 describe("approval noise control", () => {
   const finding = { operation: "investigate", quote: "Inspections occur weekly.", guideline: "Evidence", reason: "Check another page", recommendation: "Compare with the training page.", destinationId: null, decisionKind: null, decisionQuestion: null };
