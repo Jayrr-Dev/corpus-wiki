@@ -148,8 +148,12 @@ it("requires a corrected proposal after concrete independent review feedback",as
    expect(request.messages.some(m=>typeof m.content==="string"&&m.content.includes("Do not require a book-named"))).toBe(true);
    reviews++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
-   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2","C3"]);
+   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(corrected?["C3"]:["C1","C2","C3"]);
+   if(corrected)expect(payload.input.previousPlacements.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2"]);
    value={approved:corrected,issues:corrected?[]:["C3 is an employer responsibility and belongs under Responsibilities."],parents:payload.parents.map((p:object)=>({...p,reason:"Claims fit the destination subject."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -178,8 +182,11 @@ it("retains subject corrections and identifies omitted refs during a corrective 
   } else if(request.name==="independent_upload_domain_review") {
    reviews++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
-   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(["C1","C2","C3"]);
+   expect(payload.proposal.map((c:{ref:string})=>c.ref)).toEqual(reviews===1?["C1","C2","C3"]:["C2","C3"]);
    value={approved:reviews===2,issues:reviews===1?["C2 and C3 need Responsibilities"]:[],parents:payload.parents.map((p:object)=>({...p,reason:"The complete corrected proposal fits."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -203,6 +210,9 @@ it("repairs all current members of a flagged destination alongside individually 
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    const corrected=payload.proposal.every((c:{domainPaths:string[]})=>c.domainPaths[0]==="Upload test/Responsibilities");
    value={approved:corrected,issues:corrected?[]:["Upload test/Permits holds responsibility claims; move its current members to Responsibilities.","C3 also belongs under Responsibilities."],parents:payload.parents.map((p:object)=>({...p,reason:"The corrected group is coherent."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -377,6 +387,9 @@ it("resumes saved review corrections after interruption without regenerating rej
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    if(reviews>1)expect(payload.priorReviewIssues).toEqual([["C3 belongs under Responsibilities"]]);
    value={approved:reviews>1,issues:reviews===1?["C3 belongs under Responsibilities"]:[],parents:payload.parents.map((p:object)=>({...p,reason:"Claims belong together."}))};
+  } else if(request.name==="independent_upload_domain_issue_check") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
@@ -413,11 +426,11 @@ it("retains corrections after the retry budget and allows a later resume to fini
  });
  const run=()=>uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
  await expect(run()).rejects.toThrow("Resume to continue from the saved corrections");
- expect(proposals).toBe(6);
+ expect(proposals).toBe(3);
  expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
  approve=true;
  await run();
- expect(proposals).toBe(7);expect(reviews).toBe(7);
+ expect(proposals).toBe(4);expect(reviews).toBe(4);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
@@ -437,6 +450,7 @@ it("finishes corrected filing when a fresh evidence check dismisses a repeated o
   } else if(request.name==="independent_upload_domain_issue_check") {
    confirmations++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   if(confirmations===1){value={verdicts:[{issue:1,blocking:true,reason:"C3 states an employer responsibility."}]};return {value,model:"test",tokensIn:10,tokensOut:10} as never;}
    expect(payload.evidence.claims.find((c:{ref:string})=>c.ref==="C3").domainPaths).toEqual(["Upload test/Responsibilities"]);
    expect(payload.evidence.priorReviewIssues).toEqual([["C3 belongs under Responsibilities"]]);
    value={verdicts:[{issue:1,blocking:false,reason:"Responsibilities accurately names the employer responsibility; the parent is an optional alternative."}]};
@@ -444,7 +458,7 @@ it("finishes corrected filing when a fresh evidence check dismisses a repeated o
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
  await topicPlacerFor(store.db,{apiKey:"test"})(event);
- expect(proposals).toBe(2);expect(reviews).toBe(2);expect(confirmations).toBe(1);
+ expect(proposals).toBe(2);expect(reviews).toBe(2);expect(confirmations).toBe(2);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
@@ -470,3 +484,25 @@ it("atomically files a book-sized upload without dropping claims beyond API row 
  const saved=await store.pg.query<{count:number}>("select count(*)::int as count from actions a join change_sets c on c.id=a.change_set_id where c.event_id=$1 and a.type='place_claim' and a.outcome='applied'",[event]);
  expect(saved.rows[0]!.count).toBe(1843);
 },60000);
+
+it("asks again only for destinations a review approved without assessing, without re-placing the batch",async()=>{
+ const event=await setup();let proposals=0;const reviews:{parents:{path:string}[];request?:string}[]=[];
+ vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
+  let value:unknown;
+  if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
+  else if(request.name==="place_topics") {proposals++;value={placements:[{ref:"C1",domainPaths:["Upload test/Permits"]},{ref:"C2",domainPaths:["Upload test/Permits"]},{ref:"C3",domainPaths:["Upload test/Responsibilities"]}]};}
+  else if(request.name==="independent_upload_domain_review") {
+   const payload=JSON.parse(request.messages.at(-1)!.content as string);
+   reviews.push(payload);
+   const parents=payload.parents.map((p:{path:string;refs:string[]})=>({...p,reason:"Coherent."}));
+   value={approved:true,issues:[],parents:reviews.length===1?parents.filter((p:{path:string})=>p.path==="Upload test/Permits"):parents};
+  } else throw new Error(request.name);
+  return {value,model:"test",tokensIn:10,tokensOut:10} as never;
+ });
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(proposals).toBe(1);
+ expect(reviews.map(r=>r.parents.map(p=>p.path).sort())).toEqual([["Upload test/Permits","Upload test/Responsibilities"],["Upload test/Responsibilities"]]);
+ expect(reviews[1]!.request).toContain("did not assess");
+ expect((reviews[1] as unknown as {proposal:{ref:string}[]}).proposal.map(c=>c.ref)).toEqual(["C3"]);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+});
