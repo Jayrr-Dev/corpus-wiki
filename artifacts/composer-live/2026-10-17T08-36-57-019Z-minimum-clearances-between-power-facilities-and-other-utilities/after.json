@@ -1,0 +1,83 @@
+{
+  "page": {
+    "id": "15a53755-136b-4c25-915e-8dcad8315ac8",
+    "title": "Minimum clearances between power facilities and other utilities",
+    "slug": "minimum-clearances-between-power-facilities-and-other-utilities"
+  },
+  "result": {
+    "runId": "7fbeef8a-5ccb-46dd-89c0-8f5a7c38332a",
+    "figures": 1,
+    "total": 17
+  },
+  "run": {
+    "id": "7fbeef8a-5ccb-46dd-89c0-8f5a7c38332a",
+    "model": "anthropic/claude-opus-5-5",
+    "active": true,
+    "review": {
+      "fixes": [
+        "Increase label size from 28px to about 32px, and shorten labels if needed, so they stay readable on narrow screens.",
+        "Add a short 'Power facility' label or leader next to the left-panel duct so readers do not need the key in the other panel.",
+        "Consider adding 'Ground' near the surface line to make the section view clearer at a glance."
+      ],
+      "problems": [],
+      "grounding": 4,
+      "restraint": 4,
+      "usefulness": 3,
+      "visualDesign": 3,
+      "accessibility": 3
+    },
+    "page_id": "15a53755-136b-4c25-915e-8dcad8315ac8",
+    "snapshot": {
+      "slug": "minimum-clearances-between-power-facilities-and-other-utilities",
+      "title": "Minimum clearances between power facilities and other utilities",
+      "paragraphs": [
+        {
+          "id": "4d5d50b1-87e6-4946-9523-57091f2ab53d",
+          "text": "Mutually agreed clearances set the minimum distances that power facilities keep from other utilities and structures. They cover horizontal spacing from water, gas, communication, and drainage lines, streetlights, fire hydrants, bus shelters, and tree roots, as well as vertical spacing between utilities and horizontal setbacks from property lines. Horizontal distances under these clearances range from 1.0m to 3.0m, and the largest, 3.0m, applies to drainage lines, fire hydrants, and the edge of bus shelters.",
+          "section": "Overview",
+          "hasMedia": false,
+          "revisionId": "70043f02-3fa5-481a-ad18-dc33453e39e4"
+        },
+        {
+          "id": "a9c6098c-880b-47d1-b3af-b82d931865f7",
+          "text": "Mutually agreed clearances require a minimum horizontal clearance of 1.8m between power facilities and water lines, including water services. For transmission water lines, the minimum increases to 2.5m. Gas lines, communication lines, and streetlights require a minimum horizontal clearance of 1.0m from power facilities under the same agreed clearances.",
+          "section": "Horizontal clearances to water, gas, and communication lines",
+          "hasMedia": false,
+          "revisionId": "7731c5e7-3933-4042-a284-80b7b7c0f90a"
+        },
+        {
+          "id": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "text": "Mutually agreed clearances require a minimum horizontal distance of 3.0m between power facilities and drainage lines, fire hydrants, and the edge of bus shelters.",
+          "section": "Clearances to drainage lines, fire hydrants, and bus shelters",
+          "hasMedia": false,
+          "revisionId": "795eb927-1b98-490e-acbc-bfc0caa0f929"
+        },
+        {
+          "id": "22183c15-3ed0-4962-8077-5a203bf1b7ab",
+          "text": "Mutually agreed clearances set a minimum horizontal distance of 1.0m between power facilities and the edge of a tree root. They also set a minimum vertical clearance of 0.3m between power facilities and utilities, unless otherwise stipulated. For a power pole, the minimum horizontal clearance from the property line is 1.22m.",
+          "section": "Tree roots, vertical clearances, and property line setbacks",
+          "hasMedia": false,
+          "revisionId": "64dd2cef-4669-4681-aa3e-45c4a62d5019"
+        }
+      ]
+    },
+    "created_at": "2026-10-17T08:38:38.14539+00:00",
+    "composition": {
+      "figures": [
+        {
+          "alt": "Two side-by-side underground cross-sections, separated by a thin divider. Left: a tree stands above ground, with roots spreading below. A dashed line marks the outermost root edge. A shaded gap runs from that line to a round power duct, with a dimension arrow labeled 1.0 m. Right: a horizontal power duct crosses above a round pipe labeled Other utility. A shaded gap between them has a vertical dimension arrow labeled 0.3 m. A key identifies orange as the power facility.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>Minimum clearances from a tree root edge and between utilities</title><desc>Illustrative sections, not to scale: 1.0 m horizontal clearance from a power facility to a tree root edge, and 0.3 m vertical clearance between a power facility and another utility.</desc><defs><linearGradient id='soil' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#efe4d2'/><stop offset='1' stop-color='#e2d3bc'/></linearGradient><radialGradient id='leaf' cx='0.4' cy='0.35' r='0.7'><stop offset='0' stop-color='#8fb57a'/><stop offset='1' stop-color='#5d8a4c'/></radialGradient><linearGradient id='pipe' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#d3dae0'/><stop offset='1' stop-color='#9aa6b0'/></linearGradient><linearGradient id='duct' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='#eba25a'/><stop offset='1' stop-color='#c8711f'/></linearGradient></defs><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='40' y='250' width='720' height='230' fill='url(#soil)'/><line x1='40' y1='250' x2='760' y2='250' stroke='#6b5a44' stroke-width='3'/><line x1='400' y1='40' x2='400' y2='480' stroke='#9aa4ad' stroke-width='2' stroke-dasharray='6 6'/><path d='M141 250 C146 212 147 182 143 150 L157 150 C155 184 157 216 167 250 Z' fill='#7a5a3c'/><path d='M146 175 C130 160 118 148 105 140 M154 168 C170 152 184 140 198 132 M150 160 C150 135 152 110 150 92' stroke='#7a5a3c' stroke-width='5' fill='none' stroke-linecap='round'/><ellipse cx='112' cy='128' rx='52' ry='42' fill='url(#leaf)'/><ellipse cx='192' cy='118' rx='54' ry='46' fill='url(#leaf)'/><ellipse cx='152' cy='78' rx='56' ry='42' fill='url(#leaf)'/><ellipse cx='200' cy='140' rx='34' ry='22' fill='#557f45' opacity='0.55'/><ellipse cx='122' cy='150' rx='34' ry='20' fill='#557f45' opacity='0.5'/><rect x='250' y='256' width='62' height='154' fill='#cfe3f3' opacity='0.8'/><path d='M160 252 C190 262 222 278 250 300' stroke='#7a5a3c' stroke-width='5' fill='none' stroke-linecap='round'/><path d='M146 252 C120 262 90 278 62 294' stroke='#7a5a3c' stroke-width='5' fill='none' stroke-linecap='round'/><path d='M152 254 C146 280 132 305 118 330' stroke='#7a5a3c' stroke-width='4' fill='none' stroke-linecap='round'/><path d='M156 254 C168 282 182 308 196 334' stroke='#7a5a3c' stroke-width='4' fill='none' stroke-linecap='round'/><path d='M200 272 C212 292 220 312 228 326' stroke='#7a5a3c' stroke-width='3' fill='none' stroke-linecap='round'/><line x1='250' y1='256' x2='250' y2='432' stroke='#24323d' stroke-width='2' stroke-dasharray='5 4'/><circle cx='330' cy='330' r='18' fill='url(#duct)' stroke='#8a4b12' stroke-width='2.5'/><circle cx='330' cy='330' r='7' fill='#5a3410'/><line x1='312' y1='336' x2='312' y2='432' stroke='#24323d' stroke-width='2'/><line x1='250' y1='420' x2='312' y2='420' stroke='#24323d' stroke-width='2'/><polygon points='250,420 262,414 262,426' fill='#24323d'/><polygon points='312,420 300,414 300,426' fill='#24323d'/><text x='281' y='466' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2a33' text-anchor='middle'>1.0 m</text><text x='60' y='400' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2a33'>Root edge</text><line x1='196' y1='391' x2='247' y2='391' stroke='#24323d' stroke-width='1.5'/><rect x='440' y='60' width='30' height='20' fill='url(#duct)' stroke='#8a4b12' stroke-width='2'/><text x='482' y='80' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2a33'>Power facility</text><rect x='470' y='340' width='230' height='44' fill='#cfe3f3' opacity='0.8'/><rect x='450' y='300' width='270' height='40' fill='url(#duct)' stroke='#8a4b12' stroke-width='2.5'/><circle cx='560' cy='410' r='26' fill='url(#pipe)' stroke='#5b6770' stroke-width='2.5'/><circle cx='560' cy='410' r='15' fill='#ffffff' stroke='#5b6770' stroke-width='1.5'/><line x1='582' y1='384' x2='632' y2='384' stroke='#24323d' stroke-width='2'/><line x1='620' y1='340' x2='620' y2='384' stroke='#24323d' stroke-width='2'/><polygon points='620,341 614,352 626,352' fill='#24323d'/><polygon points='620,383 614,372 626,372' fill='#24323d'/><text x='640' y='373' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2a33'>0.3 m</text><text x='760' y='468' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2a33' text-anchor='end'>Other utility</text><line x1='592' y1='442' x2='580' y2='428' stroke='#24323d' stroke-width='1.5'/></svg>",
+          "after": "22183c15-3ed0-4962-8077-5a203bf1b7ab",
+          "caption": "Two independent underground examples of mutually agreed minimum clearances. The drawing is illustrative and not to scale. Left: at least 1.0 m horizontally between a power facility and the edge of a tree root. Right: at least 0.3 m vertically between a power facility and another utility, unless otherwise stipulated. Each clearance is shown as the clear gap between the two items.",
+          "evidence": [
+            "22183c15-3ed0-4962-8077-5a203bf1b7ab",
+            "4d5d50b1-87e6-4946-9523-57091f2ab53d"
+          ],
+          "learningGoal": "Readers see where each minimum clearance begins and ends: horizontally from a tree root's edge and vertically between a power facility and another utility."
+        }
+      ],
+      "omitted": "The 1.22 m pole setback is omitted because the article does not say whether it is measured from the pole's face or center. The water, gas, communication, streetlight, drainage, hydrant and bus shelter clearances are omitted because more scenes would add numbers without explaining a new type of measurement. No chart is included."
+    }
+  },
+  "textUnchanged": true
+}

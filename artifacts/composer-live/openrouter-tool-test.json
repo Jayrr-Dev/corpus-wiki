@@ -1,0 +1,13 @@
+{
+  "asset": {
+    "id": "9f0642f8-c44f-4abf-b57e-f13da36f451d",
+    "storage_path": "composer-images/9f0642f8-c44f-4abf-b57e-f13da36f451d.jpg",
+    "media_url": "/api/assets/9f0642f8-c44f-4abf-b57e-f13da36f451d/image",
+    "model": "black-forest-labs/flux-3-image-klein",
+    "deleted_at": null
+  },
+  "generationCalls": 1,
+  "repeatedToolCallReusedAsset": true,
+  "bytes": 491090,
+  "articleUnchanged": true
+}

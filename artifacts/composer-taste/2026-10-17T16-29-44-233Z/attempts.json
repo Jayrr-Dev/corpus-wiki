@@ -1,0 +1,178 @@
+[
+  {
+    "visual": {
+      "accepted": true,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "reason": "The photo shows the ruined St Martin's church named in the paragraph, matching the caption and the sentence about surviving church remains. It is a clear, authentic view, though the roofless ruin is partly softened by the church's standing walls and small thumbnail size.",
+          "id": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+          "after": "P6",
+          "total": 17,
+          "accepted": true
+        }
+      ],
+      "uninspected": [],
+      "problems": []
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows readers what survives at England's best-known deserted medieval village: the ruined church named in the text.",
+          "caption": "The ruined St Martin's church at Wharram Percy, North Yorkshire, seen from the southeast with the chancel in view.",
+          "alt": "Roofless stone ruin of a medieval church standing in grassland, viewed from the southeast, with the chancel end in the foreground.",
+          "svg": "",
+          "assetId": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I added one photo. I skipped the Overview because none of the earthwork photos showed visible earthworks. I skipped Reasons for desertion because no ridge-and-furrow photo cleared the quality check. I didn't draw diagrams for either: an invented site layout would add little and could mislead readers."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Make the alt text match the asset description more closely. 'Roofless', 'grassland' and 'chancel end in the foreground' cannot be confirmed from metadata; say 'Ruin of St Martin's church, Wharram Percy, viewed from the southeast, showing the chancel.'",
+        "Add a credit line to the caption with the photographer (dennis smith) and the CC BY-SA 2.0 license so attribution appears to readers.",
+        "Consider tying the caption to the article's point, for example by noting that Wharram Percy was excavated from 1948 to 1990."
+      ]
+    },
+    "total": 16,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 46935,
+    "tokensOut": 1011
+  },
+  {
+    "visual": {
+      "accepted": false,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 3,
+          "problems": [],
+          "reason": "The photo shows the ruined St Martin's church named in P6, matching the caption and alt text. It shows the surviving church, which supports the paragraph, but it does not show the fishpond or earthworks the paragraph mentions. The caption repeats the excavation dates from the paragraph.",
+          "id": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+          "after": "P6",
+          "total": 16,
+          "accepted": false
+        }
+      ],
+      "uninspected": [],
+      "problems": [
+        "P6: The photo shows the ruined St Martin's church named in P6, matching the caption and alt text. It shows the surviving church, which supports the paragraph, but it does not show the fishpond or earthworks the paragraph mentions. The caption repeats the excavation dates from the paragraph. "
+      ]
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows readers what survives at England's best-known deserted medieval village: the ruined church named in the text.",
+          "caption": "Ruin of St Martin's church at Wharram Percy, excavated from 1948 to 1990, viewed from the southeast. Photo: dennis smith, CC BY-SA 2.0.",
+          "alt": "Ruin of St Martin's church, Wharram Percy, viewed from the southeast, showing the chancel.",
+          "svg": "",
+          "assetId": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I kept the one Wharram Percy photo and revised its alt text and caption as requested. The caption now credits dennis smith under CC BY-SA 2.0 and gives the 1948–1990 excavation dates. The Overview still has no image because the earlier earthwork photos did not show visible earthworks. Reasons for desertion still has no image because no ridge-and-furrow photo was good enough. I didn't draw diagrams for either section because a made-up site layout could mislead readers."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Tie the caption to the article's point by noting that the ruined church is one of the features still visible at the site.",
+        "Shorten the caption by moving the excavation dates out, since they describe the site, not the photo."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 12780,
+    "tokensOut": 503
+  },
+  {
+    "visual": {
+      "accepted": false,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 3,
+          "problems": [],
+          "reason": "The photo shows the ruined St Martin's church at Wharram Percy, matching the paragraph's named church and the caption. It is a good fit for the Examples section, though the fishpond mentioned in the text is not visible. The church walls and chancel remain clear at thumbnail size.",
+          "id": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+          "after": "P6",
+          "total": 16,
+          "accepted": false
+        }
+      ],
+      "uninspected": [],
+      "problems": [
+        "P6: The photo shows the ruined St Martin's church at Wharram Percy, matching the paragraph's named church and the caption. It is a good fit for the Examples section, though the fishpond mentioned in the text is not visible. The church walls and chancel remain clear at thumbnail size. "
+      ]
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows what survives at England's best-known deserted medieval village: the ruined church named in the text.",
+          "caption": "The ruined St Martin's church, one of the features still visible at Wharram Percy, seen from the southeast. Photo: dennis smith, CC BY-SA 2.0.",
+          "alt": "Ruin of St Martin's church, Wharram Percy, viewed from the southeast, showing the chancel.",
+          "svg": "",
+          "assetId": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I revised the Wharram Percy caption to say the church is one of the site's surviving features, and I removed the excavation dates. The Overview and Reasons for desertion sections still have no images. Earlier searches found no photo that clearly showed earthworks or ridge and furrow, and a drawn site layout would be invented and could mislead readers."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Consider adding a sourced photo of earthworks or ridge and furrow for the Overview or Reasons sections if one is found, since these are the article's defining physical traces.",
+        "Add 'medieval' or 'deserted village' context to the alt text so screen-reader users know why the ruin matters."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 12769,
+    "tokensOut": 476
+  }
+]

@@ -1,0 +1,57 @@
+
+> second-brain-engine@0.1.0 test:live:utilitek
+> node --env-file-if-exists=.env.local scripts/performance/live-utilitek.mjs --resume artifacts/processing/utilitek-live/2026-10-17T03-11-10-244Z/report.json
+
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Upload articles ready {
+  eventId: 'a910b239-b659-4c54-85e7-ecf8c9eb71a0',
+  readyAt: '2026-10-17T03:12:07.533Z'
+}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Upload stage timing {
+  eventId: 'a910b239-b659-4c54-85e7-ecf8c9eb71a0',
+  stage: 'glossary',
+  status: 'failed',
+  durationMs: 4161
+}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Processing run metrics {"eventId":"a910b239-b659-4c54-85e7-ecf8c9eb71a0","job":"articles","startedAt":"2026-10-17T03:14:30.993Z","finishedAt":"2026-10-17T03:14:40.803Z","durationMs":9809,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":414,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":16,"durationMs":2381,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":308,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":18,"durationMs":2391,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.pages":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.articles-ready":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.describe":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.profiles":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.expand":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy-enrichment":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan-enrichment":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.pages-enrichment":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.claim_glossary_generation":{"count":1,"durationMs":204,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_glossary_auto_decide":{"count":1,"durationMs":188,"failures":0,"tokensIn":0,"tokensOut":0},"step.glossary":{"count":1,"durationMs":4162,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":1,"durationMs":112,"failures":0,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":146,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":127,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":145,"failures":0,"tokensIn":0,"tokensOut":0}}}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Utilitek live test result {"status":"incomplete","timeToArticlesMs":57288,"durationMs":11597,"aiCalls":12,"output":{"sourcePassages":3,"touchedUnits":6,"affectedPages":2,"affectedSections":20,"sourceUsage":{"unit_count":4,"article_count":0,"line_count":0},"articleReviews":[{"verdict":"update_existing","reason":"The proposer sent these claims to an existing article.","decided_by":"rule","result_page_id":"4ec35e88-e49a-4576-b43e-90425bf388e3"},{"verdict":"update_existing","reason":"The proposer sent these claims to an existing article.","decided_by":"rule","result_page_id":"73963b81-1961-4b0d-8865-aea76fbcb3a3"}],"glossary":{"status":"ready","completed_batches":14,"total_batches":14,"generated_at":"2026-10-17T03:13:54.097737+00:00"},"openWorkspaceExceptions":0},"reportPath":"C:\\Users\\Main\\Documents\\Projects\\second-brain-engine\\artifacts\\processing\\utilitek-live\\2026-10-17T03-11-10-244Z\\report.json"}
+
+ ❯ test/performance/utilitekLive.test.ts (1 test | 1 failed) 15138ms
+   × processes a Utilitek website fixture with the live app services 15136ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+AssertionError: Live processing failed; the saved report identifies the unfinished stage: expected 'glossary: get_glossary_auto_decide: i…' to be null
+
+- Expected:
+null
+
++ Received:
+"glossary: get_glossary_auto_decide: invalid memory alloc request size 1858142211"
+
+ ❯ test/performance/utilitekLive.test.ts:149:102
+    147|     expect(result.workflow).toBeDefined();
+    148|     expect(result.workflow?.state).not.toBe("running");
+    149|     expect(result.error, "Live processing failed; the saved report ide…
+       |                                                                                                      ^
+    150|     expect(attempt.metrics?.metrics["stage.curator.structure"]?.failur…
+    151|     if (!result.workflow?.waiting) expect(result.workflow?.state).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  20:14:26
+   Duration  15.53s (tests 99%)
+

@@ -1,0 +1,1627 @@
+{
+  "page": {
+    "id": "b3c755f1-fda1-463d-80e7-9029ba8f81d3",
+    "title": "Utility Line Assignment (ULA) application process",
+    "slug": "utility-line-assignment-ula-application-process",
+    "entity_id": "e2acdbab-03c6-475c-be99-e20c2a61a18b",
+    "article_type": "process"
+  },
+  "creationId": "6ad9601c-db1e-4669-9327-ebca3d354b51",
+  "retirementId": "5cd44069-0d13-4f3e-88de-cab1c7f2b8a9",
+  "plan": {
+    "title": "Utility Line Assignment (ULA) application process",
+    "introduction": [
+      "C1",
+      "C4",
+      "C2",
+      "C3",
+      "C5",
+      "C6"
+    ],
+    "sections": [
+      {
+        "title": "Design standards and minimum clearances",
+        "claims": [
+          "C39",
+          "C14",
+          "C25",
+          "C15"
+        ]
+      },
+      {
+        "title": "EPCOR responsibilities and related services",
+        "claims": [
+          "C29",
+          "C40"
+        ]
+      },
+      {
+        "title": "Complete application workflow",
+        "claims": [
+          "C7",
+          "C43",
+          "C36",
+          "C37",
+          "C42",
+          "C12",
+          "C10",
+          "C13",
+          "C30",
+          "C9",
+          "C41",
+          "C11",
+          "C21",
+          "C19",
+          "C35",
+          "C27",
+          "C17",
+          "C26",
+          "C18",
+          "C22",
+          "C44",
+          "C28",
+          "C31",
+          "C32",
+          "C20",
+          "C23",
+          "C45",
+          "C8",
+          "C38"
+        ]
+      },
+      {
+        "title": "High pressure pipeline crossings and proximity agreements",
+        "claims": [
+          "C24",
+          "C33",
+          "C34"
+        ]
+      },
+      {
+        "title": "Sample documents in the source appendix",
+        "claims": [
+          "C16"
+        ]
+      }
+    ]
+  },
+  "states": [
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "1c748e92-1f4f-42db-8d34-1819127362b6",
+          "content": "A Utility Line Assignment (ULA) is a requirement of the City of Edmonton for installing utility assets within the road allowance where a ground disturbance is required. The application process is administered by the City of Edmonton Transportation Office for proposed utility designs and culminates in a ULA permit. It covers all new installations, modifications, or maintenance of aerial and underground facilities within the City of Edmonton road allowance where ground disturbance is required. Per the City of Edmonton, a ULA permit is required for each proposed ground disturbance location over a horizontal distance of 1m from an existing EPCOR facility. The application informs all other utilities in the affected area of planned construction, giving them an opportunity to comment or object to possible conflicts and helping resolve conflicts between utilities before ground is broken. Complying with the ULA process helps reduce the likelihood of damage to other utilities, breach of municipal regulations, injury or death, environmental damage, loss of essential services, extensive repair costs, and loss of revenue.",
+          "unitIds": [
+            "14157c42-f26c-48d4-98ef-683eaa80438a",
+            "39441453-cde4-475e-9a1d-7ec63013cbdc",
+            "42458e4e-3a78-4e71-8b77-b1b2adb1463f",
+            "89820b1e-cd29-434f-9a81-67d2b01fcb73",
+            "d934d7fa-eb72-4298-a1c7-92500d6b31b2",
+            "ffc83ffc-73e7-483d-85fe-d9c81dfecccc"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "7a9fc20c-3552-48fa-af4f-503037ea19f3"
+        }
+      ],
+      "title": "Overview",
+      "units": [
+        {
+          "kind": "definition",
+          "unitId": "14157c42-f26c-48d4-98ef-683eaa80438a",
+          "content": "A Utility Line Assignment (ULA) is a requirement of the City of Edmonton for installing utility assets within the road allowance where a ground disturbance is required.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "object",
+                "type": "organization"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "organization"
+                }
+              ],
+              "conditions": "Installing utility assets within the road allowance where ground disturbance is required"
+            }
+          },
+          "revisionId": "d81c1536-cbf7-4647-a6aa-184384d8335c",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "39441453-cde4-475e-9a1d-7ec63013cbdc",
+          "content": "The ULA application covers all new installations, modifications, or maintenance of aerial and underground facilities within the City of Edmonton road allowance where ground disturbance is required.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "object",
+                "type": "organization"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "organization"
+                }
+              ],
+              "conditions": "Aerial and underground facilities within the road allowance where ground disturbance is required"
+            }
+          },
+          "revisionId": "dfa8463b-c59f-4422-8e6e-68b0cd495fed",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "42458e4e-3a78-4e71-8b77-b1b2adb1463f",
+          "content": "Complying with the ULA process helps reduce the likelihood of damage to other utilities, breach of municipal regulations, injury or death, environmental damage, loss of essential services, extensive repair costs, and loss of revenue.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "cf16c28f-978f-4051-a1cc-73fdcf26b7de",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "89820b1e-cd29-434f-9a81-67d2b01fcb73",
+          "content": "Per the City of Edmonton, a ULA permit is required for each proposed ground disturbance location over a horizontal distance of 1m from an existing EPCOR facility.",
+          "context": {
+            "entities": [
+              {
+                "key": "epcor",
+                "role": "mentioned",
+                "type": "company"
+              },
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "object",
+                "type": "organization"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "organization"
+                }
+              ],
+              "conditions": "Ground disturbance over 1m horizontal distance from an existing EPCOR facility"
+            }
+          },
+          "revisionId": "86ebdb94-65cc-40d2-a729-a1eb9faadc8f",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "d934d7fa-eb72-4298-a1c7-92500d6b31b2",
+          "content": "The ULA application informs all other utilities in the affected area of planned construction, giving them an opportunity to comment or object to possible conflicts and helping resolve conflicts between utilities before ground is broken.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "2554284f-23ee-4687-8706-2457a04f77b7",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "definition",
+          "unitId": "ffc83ffc-73e7-483d-85fe-d9c81dfecccc",
+          "content": "ULA stands for Utility Line Assignment, an application process administered by the City of Edmonton Transportation Office for proposed utility designs, culminating in a ULA permit.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "mentioned",
+                "type": "organization"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "71b52836-75b6-4cbc-9683-fef97f8c59ec",
+          "epistemicStatus": "established"
+        }
+      ],
+      "pageTitle": "Utility Line Assignment (ULA) application process",
+      "sectionId": "8472de70-06b9-471f-b0c8-f041b3282852"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "11b8c5bf-53ba-4208-8a18-217d004daedd",
+          "content": "Design submitted under the ULA process must meet the minimum requirements of the Alberta Electrical Utility Code (AEUC) 4th Edition 2013 and CSA C22.3 No. 1-10. The ULA application diagram illustrates these minimum clearances for a crossing at 90 degrees: the power cable or duct is installed between two utility lines, with the upper utility line 0.3 meters below grade and the lower utility line 0.3 meters below the power cable or duct.",
+          "unitIds": [
+            "4be1c7e6-9de0-4ce1-b9cb-e96970b37aef",
+            "5a8cc1a2-deaa-47ca-9801-ae37de7ec9dc"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "05b3699f-61fc-480a-aec8-051341c554b7"
+        },
+        {
+          "author": "ai",
+          "lineId": "8aa00ca6-de13-4c73-82b6-1cc4643fca2f",
+          "content": "If the minimum agreed clearances for a utility line assignment cannot be met, the Designer contacts the affected utility to discuss the problem. Utilities will normally agree to reduce the clearances to a certain point, as long as the reduction does not interfere with their operation and maintenance.",
+          "unitIds": [
+            "676b597e-90a7-403a-bae4-acc5043dfd86"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "ab1d145a-851e-4778-94c3-3f7522f52515"
+        },
+        {
+          "author": "ai",
+          "lineId": "93e8dc05-03c9-4878-931b-015d761265a3",
+          "content": "ULA application drawings are prepared in Microstation following the D&T Construction Drawing Standard Rev. A. As of the document's writing, no standard construction drawing is available for Electric Office.",
+          "unitIds": [
+            "c2e77094-fabb-4a13-8dd5-56747ba6ca4f"
+          ],
+          "position": 2,
+          "needsRewrite": false,
+          "lineRevisionId": "583e09a2-b63b-4fd9-a03b-f802f20364c7"
+        }
+      ],
+      "title": "Design standards and minimum clearances",
+      "units": [
+        {
+          "kind": "fact",
+          "unitId": "4be1c7e6-9de0-4ce1-b9cb-e96970b37aef",
+          "content": "Design under the ULA process must meet the minimum requirements of the Alberta Electrical Utility Code (AEUC) 4th Edition 2013 and CSA C22.3 No. 1-10.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "mentioned",
+                "type": "concept"
+              },
+              {
+                "key": "alberta-electrical-utility-code",
+                "role": "object",
+                "type": "standard"
+              },
+              {
+                "key": "csa-c22-3-no-1-10",
+                "role": "object",
+                "type": "standard"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "c966874a-e275-4e4d-8e51-f4a49b5aa831",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "5a8cc1a2-deaa-47ca-9801-ae37de7ec9dc",
+          "content": "In the ULA application diagram, the power cable or duct is installed between two utility lines, with the upper utility line 0.3 meters below grade and the lower utility line 0.3 meters below the power cable or duct, shown as the minimum clearance when crossing at 90 degrees.",
+          "context": {
+            "entities": [
+              {
+                "key": "minimum-clearance",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "96866d13-e1f8-43aa-9e21-d394226b0edd",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "676b597e-90a7-403a-bae4-acc5043dfd86",
+          "content": "If minimum agreed clearances for a utility line assignment cannot be met, the Designer contacts the affected utility to discuss the problem, and utilities will normally agree to reduce the clearances to a certain point as long as the reduction does not interfere with their operation and maintenance.",
+          "context": {
+            "entities": [
+              {
+                "key": "minimum-clearance",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "42aaa5a5-7093-4777-a347-84dcbe2cf01c",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "c2e77094-fabb-4a13-8dd5-56747ba6ca4f",
+          "content": "For ULA application drawings, Microstation drawings follow the D&T Construction Drawing Standard Rev. A, and as of the document's writing no standard construction drawing is available for Electric Office.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "electric-office",
+                "role": "object",
+                "type": "tool"
+              },
+              {
+                "key": "microstation",
+                "role": "object",
+                "type": "tool"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "901fad1e-f185-4425-91ae-70a250a8d3a3",
+          "epistemicStatus": "established"
+        }
+      ],
+      "pageTitle": "Utility Line Assignment (ULA) application process",
+      "sectionId": "c7011688-663c-4c96-9461-f8056df71f87"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "f3675c7a-4389-4a20-9c4d-5473461fd1d0",
+          "content": "EPCOR distribution designers must comply with all applicable federal and provincial statutes and regulations, all municipal by-laws in force, and all applicable standards, guidelines, and rules.",
+          "unitIds": [
+            "7bbc14ac-1f3f-45a3-8145-65d5e3440336"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "55b94c07-22d4-4396-8122-b6c016f566cf"
+        },
+        {
+          "author": "ai",
+          "lineId": "7d5a30e7-54b6-43f9-829b-d98cd9c5be19",
+          "content": "Maintenance and engineering support for traffic signals and street lights is also provided by EPCOR within the City of Edmonton and in other cities in Alberta.",
+          "unitIds": [
+            "757fe01d-a820-4a92-a382-6ba280019bc8"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "1a57da0e-b503-4b70-85c3-f1626f80b4c3"
+        }
+      ],
+      "title": "EPCOR responsibilities and related services",
+      "units": [
+        {
+          "kind": "fact",
+          "unitId": "7bbc14ac-1f3f-45a3-8145-65d5e3440336",
+          "content": "EPCOR distribution designers must comply with all applicable federal and provincial statutes and regulations, all municipal by-laws in force, and all applicable standards, guidelines, and rules.",
+          "context": {
+            "entities": [
+              {
+                "key": "epcor",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "designer",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "epcor",
+                  "type": "company"
+                }
+              ],
+              "conditions": "EPCOR distribution designers"
+            }
+          },
+          "revisionId": "37fa2f26-ebdd-4a75-8ee7-dacdb301a27d",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "757fe01d-a820-4a92-a382-6ba280019bc8",
+          "content": "EPCOR maintains and provides engineering support for traffic signals and street lights within the City of Edmonton and other cities in Alberta.",
+          "context": {
+            "entities": [
+              {
+                "key": "epcor",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "mentioned",
+                "type": "organization"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "epcor",
+                  "type": "company"
+                }
+              ],
+              "conditions": "City of Edmonton and other cities in Alberta"
+            }
+          },
+          "revisionId": "0f2ae0c4-3269-44a5-8e69-5fbe67b1b98f",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utility Line Assignment (ULA) application process",
+      "sectionId": "ce8195da-30ff-496d-a021-7291bca6b836"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "1d2aaff1-d470-4815-8223-4d133065e656",
+          "content": "The Utility Line Assignment (ULA) application process is the procedure by which a Designer determines whether a ULA permit is required, completes a ULA application drawing and form, circulates the application to stakeholders, and finalizes and files the permit once conditions are resolved. It is a City of Edmonton requirement for installing utility assets within the road allowance where ground disturbance is required, and the City processes the application, circulates it to stakeholders, advises the designer of conflicts, and issues a ULA permit number on approval. The process map trigger for the ULA application process is 'Prepare ULA Document'. The website address for the ULA application is https://ula.edmonton.ca.",
+          "unitIds": [
+            "259359f1-6e4c-458e-aefd-52db65d9e8f0",
+            "670c9b8b-1c85-4031-a0ee-599503d4b9fb",
+            "a9752146-bc1e-4ece-a15b-31e45ce2466f",
+            "d6a1fa09-2bce-4eb1-a49c-f1d160b18a0b"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "7ab4bb4e-d075-4f86-b542-bffa2ac12193"
+        },
+        {
+          "author": "ai",
+          "lineId": "e2fd81de-2ea2-46cd-acab-c8cc6b98d28e",
+          "content": "The 3.1 ULA application process flowchart runs across Designer, Drafting Tech, City of Edmonton, Stakeholders, and Data lanes, and the Designer lane proceeds through the following steps:\n1. The Designer completes the preliminary design, determines whether a ULA permit is required, and notifies the Drafting Technologist when a ULA is required.\n2. The Designer reviews the ULA application drawing for accuracy, and if it is inaccurate, marks all corrections on the drawing and sends it back to the Drafting Technologist for modifications.\n3. The Designer completes the ULA application form online and attaches all required documents, such as the ULA drawing in PDF format.\n4. The Designer receives the ULA permit from the City of Edmonton and reviews it; if there are any conditions the process goes to step 11, and if there are no conditions it proceeds to step 12.\n5. The Designer receives the issues or conflicts back from the Stakeholders, must go back to them to discuss or clarify the conflicts or objections, and must resolve the issue and mutually agree to the resolution with the Stakeholders; if necessary, the drawing may need to be modified and resubmitted.\n6. In step 12.0 of the ULA process, the Designer adds the ULA permit number to the design drawing and work order, and includes the ULA permit, Stakeholder comments, and Stakeholder drawings if applicable in the work order package.\n7. The Data lane contains Microstation EO entries and Outlook, Adobe, and the COE ULA Website.",
+          "unitIds": [
+            "750efc81-a24a-4a32-b996-c0d618f0763f",
+            "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+            "7bdd5b17-0e8d-467e-8bf4-975f62f6dd1b",
+            "a6e5501a-cfde-4614-816f-1d783a6fec1b",
+            "ce5c6f9d-1661-4381-8e84-d54669fcff98",
+            "d9c90ecf-b2b6-4df8-8a6c-c27b52c433aa",
+            "e1d05353-f0df-4ec4-b0a0-4ec1b8f87cc8",
+            "e482c13b-76ec-45ac-8647-57564d61a161"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "46f10f47-3033-4baa-8d27-e722a46d61ad"
+        },
+        {
+          "author": "ai",
+          "lineId": "c358cabb-1088-4f79-bb6d-e94f78f3870c",
+          "content": "After the application is submitted, the City of Edmonton Transportation Office acknowledges receipt of the online ULA application, provides the name of the contact person and the time frame of the ULA application process, and circulates the proposed design to all Stakeholders. The City also processes the ULA application and advises the Designer of conflicts or objections. Each Stakeholder reviews and comments on the proposed design circulated by the Transportation Office, and may comment via e-mail or phone call; if a Stakeholder finds no issues or conflicts, the proposed design is approved and the process proceeds to step 8.0. In step 8.0, the Stakeholder approves the proposed facility locations with comments and sends them to the City of Edmonton Transportation Department. A Stakeholder may instead respond to the circulation with conflicts to the City of Edmonton, and the COE will advise the Designer of the conflicts or objections; if a Stakeholder identifies conflicts with the proposed design, the process proceeds to step 6.0, Reply to circulation with objections.",
+          "unitIds": [
+            "28cbd30b-5361-43d0-b52b-f286a47ca5f6",
+            "3f4bbc06-9263-4758-b577-05e60affe190",
+            "5d786253-9304-497d-a083-bfe8bad419cb",
+            "9dd5643d-8088-42c8-96b8-e64da4a5261f",
+            "aadf64c3-a984-4cd6-959b-ce504848c72c",
+            "e6900a58-638a-4a7b-9822-8787be336190"
+          ],
+          "position": 2,
+          "needsRewrite": false,
+          "lineRevisionId": "b38736ba-e271-434d-b03b-1be7eaa5881b"
+        },
+        {
+          "author": "ai",
+          "lineId": "db0cb193-491f-497f-8ecf-ed5192011824",
+          "content": "Stakeholder conditions arise during the ULA application process, and the process includes a decision point on those conditions. Stakeholders reply to the circulation with objections where applicable and work with the Designer to resolve conditions before the design is finalized and the ULA permit is filed. In step 11.0 of the ULA process, the Designer goes back to the Stakeholders to discuss or clarify the permit conditions, and must resolve or clarify the issue and mutually agree to the resolution with the Stakeholders. Once conditions are resolved, the City of Edmonton approves the ULA application and issues a ULA permit number, which the Designer receives after submitting the ULA application form; the Designer must then finalize the design and file the ULA permit to complete the application.",
+          "unitIds": [
+            "4847f77e-5280-4b91-977f-c74b3458f2ff",
+            "6c57720c-f0cf-4267-819d-af726973b1ac",
+            "bc308118-cc21-4ca5-adc3-74a2e2f6e050",
+            "f0516fcc-aa44-4875-aa36-4e3dc2c70552",
+            "f69f95ce-1a57-4150-aa55-3f136819c2eb"
+          ],
+          "position": 3,
+          "needsRewrite": false,
+          "lineRevisionId": "1b36bfed-f478-4756-909f-a53122204d1e"
+        },
+        {
+          "author": "ai",
+          "lineId": "6958226e-53ce-4973-bc62-fd4fbd0cdd1a",
+          "content": "The ULA application process is documented as a City of Edmonton flowchart with lanes for the Designer, Drafting Tech, City of Edmonton, Stakeholders, and Data. The preliminary design is the first step in the process, where the Designer completes an initial design before investigating whether a ULA is required. The ULA application form is the form the Designer completes online as part of the process, after confirming the drawing is accurate; if the drawing is not accurate, the Designer sends a resolution to the City of Edmonton instead. The Drafting Technologist completes the design and ULA application drawings according to EPCOR's construction drawing standard.",
+          "unitIds": [
+            "1b1ea575-a9be-4d41-a25e-4a5da9a9ed36",
+            "310c39dd-364e-4ce6-9eb9-85122282a5d2",
+            "a801e1d0-ae7b-4a62-b89c-af3cf4fb029c",
+            "d80ba88c-1c7f-4d20-a110-11258f25c891"
+          ],
+          "position": 4,
+          "needsRewrite": false,
+          "lineRevisionId": "a1c61759-44a4-4cbd-93f6-12a8eeb999e5"
+        },
+        {
+          "author": "ai",
+          "lineId": "7fd8ea83-9ee9-4c92-ae59-f4810a22c0fc",
+          "content": "A scanned copy of all the ULA documents is added to the project file. In the ULA process map, the marker (A) indicates a required coordination between drafting and design to ensure the drawing meets designer requirements.",
+          "unitIds": [
+            "c9ca9b34-2374-47af-b697-727cef17384c",
+            "f4a0bb43-9360-4de0-b39f-acb16ff858a0"
+          ],
+          "position": 5,
+          "needsRewrite": false,
+          "lineRevisionId": "bbc53c5a-f284-4870-9391-160e4dafeead"
+        }
+      ],
+      "title": "Complete application workflow",
+      "units": [
+        {
+          "kind": "definition",
+          "unitId": "259359f1-6e4c-458e-aefd-52db65d9e8f0",
+          "content": "Utility Line Assignment (ULA) is an application process in which a Designer determines whether a ULA permit is required, a ULA application drawing and form are completed, the application is circulated to stakeholders, and the permit is finalized and filed once conditions are resolved.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "designer",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "244e6166-e8d7-48b5-ae47-8e17d0df890c",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "28cbd30b-5361-43d0-b52b-f286a47ca5f6",
+          "content": "In step 8.0 of the ULA process, the Stakeholder approves the proposed facility locations with comments and sends them to the City of Edmonton Transportation Department.",
+          "context": {
+            "entities": [
+              {
+                "key": "city-of-edmonton",
+                "role": "object",
+                "type": "organization"
+              },
+              {
+                "key": "stakeholder",
+                "role": "subject",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "9394a371-8461-40c7-8d85-72197621e6ec",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "310c39dd-364e-4ce6-9eb9-85122282a5d2",
+          "content": "In the ULA application process, the Drafting Technologist completes the design and ULA application drawings according to EPCOR's construction drawing standard.",
+          "context": {
+            "entities": [
+              {
+                "key": "epcor",
+                "role": "mentioned",
+                "type": "company"
+              },
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "drafting-technologist",
+                "role": "subject",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "490a2c05-4e9a-42e1-8bee-1728192d9e1d",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "3f4bbc06-9263-4758-b577-05e60affe190",
+          "content": "If a Stakeholder identifies conflicts with the proposed design, the ULA process proceeds to step 6.0, Reply to circulation with objections.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "b0416d65-437e-46af-ac8a-074e898f8a85",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "4847f77e-5280-4b91-977f-c74b3458f2ff",
+          "content": "In step 9.0 of the ULA process, the City of Edmonton approves the ULA application and issues a ULA permit number.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "subject",
+                "type": "organization"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "937d85da-39ad-459e-874b-e1fe3f17e486",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "5d786253-9304-497d-a083-bfe8bad419cb",
+          "content": "In the ULA application process, the City of Edmonton processes the ULA application, circulates it to all stakeholders, advises the Designer of conflicts or objections, and approves the ULA application and proposed facility locations.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "subject",
+                "type": "organization"
+              },
+              {
+                "key": "designer",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "6d36eb00-aeed-4950-8c5a-812a862aab27",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "6c57720c-f0cf-4267-819d-af726973b1ac",
+          "content": "In step 11.0 of the ULA process, the Designer goes back to the Stakeholders to discuss or clarify the permit conditions, and must resolve or clarify the issue and mutually agree to the resolution with the Stakeholders.",
+          "context": {
+            "entities": [
+              {
+                "key": "designer",
+                "role": "subject",
+                "type": "role"
+              },
+              {
+                "key": "stakeholder",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "b82ac476-3f57-4dd3-b8f8-d962986d3c72",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "9dd5643d-8088-42c8-96b8-e64da4a5261f",
+          "content": "A Stakeholder may respond to the circulation with conflicts to the City of Edmonton, and the COE will advise the Designer of the conflicts or objections.",
+          "context": {
+            "entities": [
+              {
+                "key": "city-of-edmonton",
+                "role": "subject",
+                "type": "organization"
+              },
+              {
+                "key": "designer",
+                "role": "object",
+                "type": "role"
+              },
+              {
+                "key": "stakeholder",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "4d330c84-ee49-487a-8809-a0c40a8824b0",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "aadf64c3-a984-4cd6-959b-ce504848c72c",
+          "content": "The City of Edmonton Transportation Office acknowledges receipt of an online Utility Line Assignment (ULA) application, provides the name of the contact person and the time frame of the ULA application process, and circulates the proposed design to all Stakeholders.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "subject",
+                "type": "organization"
+              },
+              {
+                "key": "stakeholder",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "9eb66b41-f999-4910-92d4-bb68adc48777",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "c9ca9b34-2374-47af-b697-727cef17384c",
+          "content": "In the ULA process map, the marker (A) indicates a required coordination between drafting and design to ensure the drawing meets designer requirements.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "54b75e32-b3d8-4609-a457-9cc06140bb15",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "d6a1fa09-2bce-4eb1-a49c-f1d160b18a0b",
+          "content": "The website address for the ULA application is https://ula.edmonton.ca.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "7f069273-b0cb-4a9a-8218-c677ed8908c8",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "e6900a58-638a-4a7b-9822-8787be336190",
+          "content": "Each Stakeholder reviews and comments on the proposed design circulated by the City of Edmonton Transportation Office, and may comment via e-mail or phone call; if a Stakeholder finds no issues or conflicts, the proposed design is approved and the process proceeds to step 8.0.",
+          "context": {
+            "entities": [
+              {
+                "key": "city-of-edmonton",
+                "role": "mentioned",
+                "type": "organization"
+              },
+              {
+                "key": "stakeholder",
+                "role": "subject",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "9f076b2d-79c0-4802-a696-346b9fa1f09b",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "f4a0bb43-9360-4de0-b39f-acb16ff858a0",
+          "content": "A scanned copy of all the ULA documents is added to the project file.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "04d4e315-db70-43fe-a670-010a1acf019f",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "f69f95ce-1a57-4150-aa55-3f136819c2eb",
+          "content": "In the ULA application process, stakeholders reply to the circulation with objections where applicable and work with the Designer to resolve conditions before the design is finalized and the ULA permit is filed.",
+          "context": {
+            "entities": [
+              {
+                "key": "stakeholders",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "utility-line-assignment",
+                "role": "mentioned",
+                "type": "concept"
+              },
+              {
+                "key": "designer",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "46cae045-2994-4435-a558-e422d0e39ae5",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "definition",
+          "unitId": "670c9b8b-1c85-4031-a0ee-599503d4b9fb",
+          "content": "A City of Edmonton requirement for installing utility assets within the road allowance where ground disturbance is required. The City processes the application, circulates it to stakeholders, advises the designer of conflicts, and issues a ULA permit number on approval.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "organization"
+                }
+              ],
+              "conditions": "New installations, modifications, or maintenance of aerial and underground facilities within the City of Edmonton road allowance where ground disturbance is required"
+            }
+          },
+          "revisionId": "cac92721-6ea8-4602-a233-a3e012c2bbd4",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "a9752146-bc1e-4ece-a15b-31e45ce2466f",
+          "content": "The process map trigger for the Utility Line Assignment (ULA) application process is 'Prepare ULA Document'.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "d7c3cafc-be9e-44e9-a6cb-a9fc200173bf",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "content": "The 3.1 Utility Line Assignment (ULA) application process flowchart runs across Designer, Drafting Tech, City of Edmonton, Stakeholders, and Data lanes, with the Designer lane proceeding from completing the preliminary design through investigating whether a ULA is required, confirming the drawing is accurate, completing the ULA application form online, receiving the ULA permit, resolving stakeholder conditions, and finalizing the design and filing the ULA permit.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "object",
+                "type": "government_body"
+              },
+              {
+                "key": "designer",
+                "role": "object",
+                "type": "role"
+              },
+              {
+                "key": "drafting-technologist",
+                "role": "object",
+                "type": "role"
+              },
+              {
+                "key": "stakeholder",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "structure": {
+            "mode": null,
+            "type": "sequence",
+            "complete": true
+          },
+          "revisionId": "66800d4c-a82a-4f4f-bca5-47b7fb361146",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "e482c13b-76ec-45ac-8647-57564d61a161",
+          "content": "In the ULA application process, the Designer completes the preliminary design, determines whether a ULA permit is required, and notifies the Drafting Technologist when a ULA is required.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "designer",
+                "role": "subject",
+                "type": "role"
+              },
+              {
+                "key": "drafting-technologist",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "position": 1,
+          "revisionId": "2be68310-3660-40c2-b350-776a3f56a9db",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "ce5c6f9d-1661-4381-8e84-d54669fcff98",
+          "content": "In the ULA application process, the Designer reviews the ULA application drawing for accuracy, and if it is inaccurate, marks all corrections on the drawing and sends it back to the Drafting Technologist for modifications.",
+          "context": {
+            "entities": [
+              {
+                "key": "designer",
+                "role": "subject",
+                "type": "role"
+              },
+              {
+                "key": "drafting-technologist",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "position": 2,
+          "revisionId": "e6e90574-1596-4b9c-928f-8e6898861a3c",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "750efc81-a24a-4a32-b996-c0d618f0763f",
+          "content": "In the ULA application process, the Designer completes the ULA application form online and attaches all required documents, such as the ULA drawing in PDF format.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "designer",
+                "role": "subject",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "position": 3,
+          "revisionId": "3c026515-22ec-4cac-9a34-c6447902b41d",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "e1d05353-f0df-4ec4-b0a0-4ec1b8f87cc8",
+          "content": "The Designer receives the ULA permit from the City of Edmonton and reviews it; if there are any conditions the process goes to step 11, and if there are no conditions it proceeds to step 12.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "designer",
+                "role": "subject",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "position": 4,
+          "revisionId": "8b3b6c72-d520-4ef9-9e34-fd6e21811132",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "d9c90ecf-b2b6-4df8-8a6c-c27b52c433aa",
+          "content": "The Designer receives the issues or conflicts back from the Stakeholders, must go back to them to discuss or clarify the conflicts or objections, and must resolve the issue and mutually agree to the resolution with the Stakeholders; if necessary, the drawing may need to be modified and resubmitted.",
+          "context": {
+            "entities": [
+              {
+                "key": "designer",
+                "role": "subject",
+                "type": "role"
+              },
+              {
+                "key": "stakeholder",
+                "role": "object",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "position": 5,
+          "revisionId": "331ac9ad-4c28-4394-b998-d0860cde7f14",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "7bdd5b17-0e8d-467e-8bf4-975f62f6dd1b",
+          "content": "In step 12.0 of the ULA process, the Designer adds the ULA permit number to the design drawing and work order, and includes the ULA permit, Stakeholder comments, and Stakeholder drawings if applicable in the work order package.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "object",
+                "type": "concept"
+              },
+              {
+                "key": "designer",
+                "role": "subject",
+                "type": "role"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "position": 6,
+          "revisionId": "609e12a1-0aae-4544-acd2-a4e736fec5ed",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "a6e5501a-cfde-4614-816f-1d783a6fec1b",
+          "content": "In the ULA application process flowchart, the Data lane contains Microstation EO entries and Outlook, Adobe, and the COE ULA Website.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "electric-office",
+                "role": "mentioned",
+                "type": "tool"
+              },
+              {
+                "key": "microstation",
+                "role": "mentioned",
+                "type": "tool"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+          "position": 7,
+          "revisionId": "2a733f11-fa73-435f-bc39-3e7b4538a9f6",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "definition",
+          "unitId": "1b1ea575-a9be-4d41-a25e-4a5da9a9ed36",
+          "content": "A City of Edmonton process for assigning utility lines, shown as a flowchart with lanes for the Designer, Drafting Tech, City of Edmonton, Stakeholders, and Data. The Designer completes a preliminary design, determines whether a ULA is required, confirms the drawing is accurate, submits the ULA application form online, receives the ULA permit, resolves any stakeholder conditions, and finalizes the design and files the permit.",
+          "context": {
+            "entities": [
+              {
+                "key": "ula-application-process",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "government_body"
+                },
+                {
+                  "key": "designer",
+                  "type": "role"
+                },
+                {
+                  "key": "drafting-technologist",
+                  "type": "role"
+                },
+                {
+                  "key": "stakeholder",
+                  "type": "role"
+                }
+              ],
+              "conditions": "Applies to the City of Edmonton's 3.1 ULA application process as documented in its flowchart."
+            }
+          },
+          "revisionId": "5a4d865a-593d-48fe-aa25-6adcfcbcc7ca",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "a801e1d0-ae7b-4a62-b89c-af3cf4fb029c",
+          "content": "The form the Designer completes online as part of the City of Edmonton ULA application process, after confirming the drawing is accurate; if the drawing is not accurate, the Designer sends a resolution to the City of Edmonton instead.",
+          "context": {
+            "entities": [
+              {
+                "key": "ula-application-form",
+                "role": "subject",
+                "type": "document"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "government_body"
+                },
+                {
+                  "key": "designer",
+                  "type": "role"
+                }
+              ],
+              "conditions": "Completed online within the City of Edmonton ULA application process."
+            }
+          },
+          "revisionId": "c5f48c67-8a89-4a23-a24a-b5e6f4c8e7ba",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "bc308118-cc21-4ca5-adc3-74a2e2f6e050",
+          "content": "Conditions raised by stakeholders during the City of Edmonton ULA application process. The process includes a decision point on stakeholder conditions, and the Designer must resolve any conditions with the stakeholder before finalizing the design and filing the ULA permit.",
+          "context": {
+            "entities": [
+              {
+                "key": "stakeholder-conditions",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "designer",
+                  "type": "role"
+                },
+                {
+                  "key": "stakeholder",
+                  "type": "role"
+                }
+              ],
+              "conditions": "Arises during the City of Edmonton ULA application process."
+            }
+          },
+          "revisionId": "1883a29a-3441-4351-a6b4-7c4bb93a08f3",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "d80ba88c-1c7f-4d20-a110-11258f25c891",
+          "content": "The first step in the City of Edmonton ULA application process, where the Designer completes an initial design before investigating whether a ULA is required.",
+          "context": {
+            "entities": [
+              {
+                "key": "preliminary-design",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "designer",
+                  "type": "role"
+                }
+              ],
+              "conditions": "Step in the City of Edmonton ULA application process."
+            }
+          },
+          "revisionId": "76469b27-dfa3-4e23-b9d5-ec7778523826",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "f0516fcc-aa44-4875-aa36-4e3dc2c70552",
+          "content": "In the City of Edmonton ULA application process, the permit the Designer receives after submitting the ULA application form. The Designer must resolve stakeholder conditions, then finalize the design and file the ULA permit to complete the application.",
+          "context": {
+            "entities": [
+              {
+                "key": "ula-permit",
+                "role": "subject",
+                "type": "document"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "government_body"
+                },
+                {
+                  "key": "designer",
+                  "type": "role"
+                }
+              ],
+              "conditions": "Issued within the City of Edmonton ULA application process."
+            }
+          },
+          "revisionId": "f726d965-addd-4b68-8069-49f98a26d21b",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utility Line Assignment (ULA) application process",
+      "sectionId": "11ddece9-27c7-4784-bbe3-80302991bfe5"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "157eba97-5cda-460d-a6fa-ff02af5431bc",
+          "content": "A high pressure pipeline crossing is an application made directly to a pipeline company for a crossing of a high pressure pipeline, and a proximity agreement is applied for directly to a pipeline company when a project is near its facilities. The City of Edmonton ULA application administrator circulates the application only to ATCO Pipelines, so all other pipeline companies will not be aware of a project unless the designer applies directly to them for a high pressure pipeline crossing and/or proximity agreement.",
+          "unitIds": [
+            "1817af96-8918-4f97-bfd7-cf46c2ed1b6e",
+            "524460b4-443f-4d0d-941d-1a091bbc47bc",
+            "5b08125b-64ac-443e-a5e8-81a02ee53e25"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "c064419b-ed40-432a-bd26-ae0319032a29"
+        }
+      ],
+      "title": "High pressure pipeline crossings and proximity agreements",
+      "units": [
+        {
+          "kind": "fact",
+          "unitId": "1817af96-8918-4f97-bfd7-cf46c2ed1b6e",
+          "content": "The City of Edmonton ULA application administrator circulates the application only to ATCO pipelines, so all other pipeline companies will not be aware of a project unless the designer applies directly to them for a high pressure pipeline crossing and/or proximity agreement.",
+          "context": {
+            "entities": [
+              {
+                "key": "atco-pipelines",
+                "role": "object",
+                "type": "company"
+              },
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "city-of-edmonton",
+                "role": "mentioned",
+                "type": "organization"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "organization"
+                }
+              ],
+              "conditions": "Pipeline companies other than ATCO require direct application for high pressure crossings or proximity agreements"
+            }
+          },
+          "revisionId": "2b8f5519-9239-4a24-b252-7a5b71837dfd",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "definition",
+          "unitId": "524460b4-443f-4d0d-941d-1a091bbc47bc",
+          "content": "An application made directly to a pipeline company for a crossing of a high pressure pipeline. The City of Edmonton ULA application administrator circulates only to ATCO Pipelines, so other pipeline companies require a direct application for a high pressure pipeline crossing and/or proximity agreement.",
+          "context": {
+            "entities": [
+              {
+                "key": "high-pressure-pipeline-crossing",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "organization"
+                }
+              ],
+              "conditions": "Pipeline companies other than ATCO Pipelines"
+            }
+          },
+          "revisionId": "6e070f9f-2ce8-43db-a546-85ef02c2b1a2",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "5b08125b-64ac-443e-a5e8-81a02ee53e25",
+          "content": "An agreement applied for directly to a pipeline company when a project is near its facilities. Because the City of Edmonton circulates ULA applications only to ATCO Pipelines, designers must apply directly to other pipeline companies for a proximity agreement.",
+          "context": {
+            "entities": [
+              {
+                "key": "proximity-agreement",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "city-of-edmonton",
+                  "type": "organization"
+                }
+              ],
+              "conditions": "Pipeline companies other than ATCO Pipelines"
+            }
+          },
+          "revisionId": "7fef5a2d-e992-4f6e-a935-ba86b55d0e11",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utility Line Assignment (ULA) application process",
+      "sectionId": "4ed5e1ca-b373-4a7c-ab61-6e3405dfaf11"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "9dcebb66-9dd3-42b8-8169-c696b161bda0",
+          "content": "The appendix of the 3.1 Utility Line Assignment (ULA) Application document contains a sample ULA application form, a sample ULA permit, sample ULA circulation responses, sample ULA application drawings, and a ULA memo.",
+          "unitIds": [
+            "fb889a73-fe0e-4061-affa-9e97330316d9"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "11ebc287-00b9-4586-9a4f-3de425c71714"
+        }
+      ],
+      "title": "Sample documents in the source appendix",
+      "units": [
+        {
+          "kind": "fact",
+          "unitId": "fb889a73-fe0e-4061-affa-9e97330316d9",
+          "content": "The appendix of the 3.1 Utility Line Assignment (ULA) Application document contains a sample ULA application form, a sample ULA permit, sample ULA circulation responses, sample ULA application drawings, and a ULA memo.",
+          "context": {
+            "entities": [
+              {
+                "key": "utility-line-assignment",
+                "role": "subject",
+                "type": "concept"
+              },
+              {
+                "key": "ula-application-drawings",
+                "role": "object",
+                "type": "document"
+              },
+              {
+                "key": "ula-application-form",
+                "role": "object",
+                "type": "document"
+              },
+              {
+                "key": "ula-circulation-responses",
+                "role": "object",
+                "type": "document"
+              },
+              {
+                "key": "ula-memo",
+                "role": "object",
+                "type": "document"
+              },
+              {
+                "key": "ula-permit",
+                "role": "object",
+                "type": "document"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "19f49653-15b6-4a2b-b7ee-21c3648718b3",
+          "epistemicStatus": "established"
+        }
+      ],
+      "pageTitle": "Utility Line Assignment (ULA) application process",
+      "sectionId": "e6439654-1b9b-4e2e-ac88-e44dbfad9622"
+    }
+  ]
+}

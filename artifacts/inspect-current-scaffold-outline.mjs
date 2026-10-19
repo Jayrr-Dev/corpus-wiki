@@ -1,0 +1,2 @@
+import {targetFromEnvironment} from '../scripts/db/targets.ts';const db=await targetFromEnvironment(process.env);
+try{console.log(JSON.stringify(await db.query(`select key,state,left(error,700) error,updated_at,jsonb_array_length(output->'value'->'plan'->'sections') sections,output->'value'->'blockingIssues' blockers,output->'value'->'fixes' fixes from upload_steps where event_id='811105ea-fcfe-4ac4-9c7d-dc589b1501e4' and key like 'outline-v1:%' and updated_at>'2026-10-18 20:04:00+00' order by updated_at desc limit 6`)));}finally{await db.close();}

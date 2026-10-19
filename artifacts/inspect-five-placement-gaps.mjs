@@ -1,0 +1,5 @@
+import {targetFromEnvironment} from '../scripts/db/targets.ts';const db=await targetFromEnvironment(process.env);
+try{
+console.log('domains',JSON.stringify(await db.query(`select id,path from domains where space_id='21132c80-32b3-4ef2-9156-d9af60486173' and retired_at is null and (path like 'Enneagram/Type descriptions/Type Five%' or path like 'Enneagram/Type descriptions/Type Four%') order by path`)));
+console.log('claims',JSON.stringify(await db.query(`select u.id,r.content,array(select d.path from unit_domains m join domains d on d.id=m.domain_id where m.unit_id=u.id and d.retired_at is null order by d.path) paths from units u join revisions r on r.id=u.current_revision_id where u.space_id='21132c80-32b3-4ef2-9156-d9af60486173' and u.retired_at is null and ((r.content ilike '%Five%' or r.content ilike '%Fives%') and r.content ilike any(array['%Eight%','%saving grace%','%self-aware%','%defense mechanism%','%integration%'])) order by r.content limit 30`)));
+}finally{await db.close();}

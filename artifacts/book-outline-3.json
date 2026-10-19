@@ -1,0 +1,631 @@
+{
+  "title": "Enneagram centers, triads, and groups",
+  "scope": "Describes the three Centers, the Triads built from them, and the Hornevian and Harmonic groups. Type-specific center behavior is covered in the type articles.",
+  "claims": [
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Dominant affects"
+      ],
+      "unitId": "01a94579-6bf2-4cf7-b1a5-8df439bf8ae0",
+      "content": "The Enneagram Rejection-Based Group includes types Two, Five, and Eight.",
+      "context": {
+        "entities": [
+          {
+            "key": "enneagram",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "93bd5ae7-fba5-488e-8b9c-abd9e1962b2a"
+      ],
+      "revisionId": "3dc3221e-3b01-412d-9946-4e0bb61924e7",
+      "epistemicStatus": "established"
+    },
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Triads and intelligence centers/Intelligence centers"
+      ],
+      "unitId": "08aaae69-c89d-4f87-a7b2-64a6981dfef9",
+      "content": "Assertive Types (Three, Seven, and Eight) have the Feeling Center as their third, undeveloped Center.",
+      "context": {
+        "entities": [
+          {
+            "key": "feeling-center",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "ecca54d5-ba78-469a-aad5-32bd701e89b1"
+      ],
+      "revisionId": "5a0e2614-1253-4403-97a1-82dda3efd0dd",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Type descriptions"
+      ],
+      "unitId": "10542e06-698c-4442-9f33-9e9e1a311c23",
+      "content": "Eight is the type in the Instinctive Triad that overexpresses its instinctual energy.",
+      "context": {
+        "entities": [
+          {
+            "key": "instinctive-triad",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "77e48890-bcd7-40e5-a2ba-85e1c830f00d"
+      ],
+      "revisionId": "0772850d-22c8-43a9-b7a4-5c4e989c12f1",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Triads and intelligence centers"
+      ],
+      "unitId": "12104988-95db-47ef-9c88-0809045b9a0e",
+      "content": "The Feeling Triad consists of Types Two, Three, and Four, and its issues involve finding value and identity.",
+      "context": {
+        "entities": [
+          {
+            "key": "enneagram-triad",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "8864ae1d-43b4-43b8-b8e6-dc9a90676bf1"
+      ],
+      "revisionId": "8f2b14e4-8964-4b47-b228-a03e43d643b2",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "procedure",
+      "topics": [
+        "Enneagram/Hornevian and Harmonic groups"
+      ],
+      "unitId": "13f29186-a82e-4932-848b-05131821d228",
+      "content": "The background practice for Assertive types (Threes, Sevens, and Eights) is to open the heart.",
+      "context": {
+        "entities": [
+          {
+            "key": "hornevian-groups",
+            "role": "mentioned",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [],
+      "revisionId": "de284a04-1d59-4d61-ace0-d8c2d0065943",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Personality and Essence/Formatory apparatus and scrambled Centers"
+      ],
+      "unitId": "15f85d10-0582-4383-ab60-b136def7a23d",
+      "content": "Gurdjieff taught that in ordinary ego consciousness, a person is not really in any of the three Centers: not really feeling, thinking, or present in the body.",
+      "context": {
+        "entities": [
+          {
+            "key": "three-centers",
+            "role": "object",
+            "type": "concept"
+          },
+          {
+            "key": "gurdjieff",
+            "role": "subject",
+            "type": "person"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "1c4bc9be-fc17-499d-9f83-d99b61670a0d",
+        "a957235d-032c-481e-976a-37d2a02176ba"
+      ],
+      "revisionId": "d6b74fe7-a9da-4147-8b6e-f1244f5d0243",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Triads and intelligence centers/Intelligence centers"
+      ],
+      "unitId": "18c0966e-56c7-4589-b166-d09fc67256d5",
+      "content": "Imbalance of Centers is described as the key to understanding personality structures and therapeutic strategies for unlocking them.",
+      "context": {
+        "entities": [
+          {
+            "key": "imbalance-of-centers",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "general",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "7ff6bed6-8b32-472d-ba25-82900f56ef8a"
+      ],
+      "revisionId": "84e7dc19-c159-4745-b3b2-1cef81b363aa",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Hornevian and Harmonic groups"
+      ],
+      "unitId": "2094ec45-93bc-4435-80c0-e5c37f896a38",
+      "content": "For the Primary types (Threes, Sixes, and Nines), the background practice and secondary focus are on the same Center.",
+      "context": {
+        "entities": [],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [],
+      "revisionId": "0cbbc6da-fe27-46b6-bba7-1f98962f3638",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "fact",
+      "topics": [
+        "Enneagram/Triads and intelligence centers/Third Center"
+      ],
+      "unitId": "24affd3c-46c6-4118-9619-2ebe56d0ab54",
+      "content": "Working only on the third Center may stabilize a person functioning in the average range but generally does not sustain further development toward Essential realization.",
+      "context": {
+        "entities": [],
+        "applicability": {
+          "status": "scoped",
+          "entities": [],
+          "conditions": "People functioning in the average range who work only on the third Center"
+        }
+      },
+      "entityIds": [],
+      "revisionId": "df993282-e684-4b41-8e54-ec7991c81a31",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "definition",
+      "topics": [
+        "Enneagram/Triads and intelligence centers/Intelligence centers"
+      ],
+      "unitId": "28798f4c-7c55-449f-a78f-faf5d8d71c02",
+      "content": "The Feeling Center is the intelligence of the heart and is associated with emotion and feelings.",
+      "context": {
+        "entities": [
+          {
+            "key": "feeling-center",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "ecca54d5-ba78-469a-aad5-32bd701e89b1"
+      ],
+      "revisionId": "cc2dcff4-b571-4b3a-8c26-5e7034c9e809",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "definition",
+      "topics": [
+        "Enneagram/Triads and intelligence centers"
+      ],
+      "unitId": "2ae70fa1-a437-470a-af6b-e92df9956d98",
+      "content": "The Feeling Triad concerns maintaining a false or assumed self as a defense against the loss of Essential identity and sense of value.",
+      "context": {
+        "entities": [
+          {
+            "key": "feeling-triad",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "f23b6576-b64b-4f67-a452-f1c8eb649118"
+      ],
+      "revisionId": "17cfcdf5-c1ab-468a-809e-fc2e5eb16132",
+      "epistemicStatus": "supported"
+    },
+    {
+      "kind": "definition",
+      "topics": [
+        "Enneagram/Triads and intelligence centers/Intelligence centers"
+      ],
+      "unitId": "2aff24f7-a522-4e4f-9005-e7ea9576269e",
+      "content": "Presence is the medium in which the three Centers can be unified, and it is the basis of inner work.",
+      "context": {
+        "entities": [
+          {
+            "key": "presence",
+            "role": "subject",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "unspecified",
+          "entities": [],
+          "conditions": null
+        }
+      },
+      "entityIds": [
+        "2e8fbdf1-d8ea-4358-ba8c-ecd99351ae4b"
+      ],
+      "revisionId": "a78e9522-6186-4056-9512-35bb57774b87",
+      "epistemicStatus": "supported"
+    }
+  ],
+  "attempts": [
+    {
+      "plan": {
+        "title": "Enneagram centers, triads, and groups",
+        "introduction": [
+          "C6",
+          "C12"
+        ],
+        "sections": [
+          {
+            "title": "The Feeling Center",
+            "claims": [
+              "C10",
+              "C2"
+            ]
+          },
+          {
+            "title": "Imbalance of Centers and development",
+            "claims": [
+              "C7",
+              "C9"
+            ]
+          },
+          {
+            "title": "The Instinctive and Feeling triads",
+            "claims": [
+              "C3",
+              "C4",
+              "C11"
+            ]
+          },
+          {
+            "title": "Hornevian and Harmonic groups",
+            "claims": [
+              "C1",
+              "C5",
+              "C8"
+            ]
+          }
+        ]
+      },
+      "centralMessage": "The Enneagram organizes personality around three Centers, which combine into triads and groups that describe how people develop and where they become unbalanced.",
+      "readingOrderRationale": "The introduction frames the Centers and presence, then the article covers the Feeling Center, imbalance and development, the triads, and finally the groups.",
+      "problems": [],
+      "review": {
+        "grounding": {
+          "score": 3,
+          "reason": "Every claim is used once and the headings match their sources, but C2 sits under the Feeling Center heading even though it describes Assertive types' third Center, which the Hornevian section covers."
+        },
+        "cohesion": {
+          "score": 2,
+          "reason": "The Feeling Center section pairs C10 with C2, a group-level claim that belongs with C1 and C5. The triads section also mixes Instinctive-triad membership (C3) with two Feeling Triad claims that overlap on value and identity (C4, C11)."
+        },
+        "flow": {
+          "score": 3,
+          "reason": "The sequence is broadly general to specific: introduction, centers, imbalance, triads, groups. However, C9 uses 'third Center' before C2 defines it in the Feeling Center section, which forces readers to backtrack."
+        },
+        "headings": {
+          "score": 3,
+          "reason": "Headings are descriptive and distinct, but 'The Instinctive and Feeling triads' is accurate only for C3 and C4 plus C11, and the Instinctive Triad's membership is never stated."
+        },
+        "balance": {
+          "score": 3,
+          "reason": "Section sizes are reasonable, but the Feeling Center section holds only C10 after C2 moves out, and the triads section has three claims while the groups section mixes group membership with practice."
+        },
+        "introduction": {
+          "score": 2,
+          "reason": "The introduction uses C6 and C12 but never defines Centers, Triads, or Groups, the subject named in the title. It jumps to Gurdjieff's ego-consciousness teaching and presence without that framing."
+        },
+        "blockingIssues": [
+          "C2 (Assertive types have the Feeling Center as their third, undeveloped Center) is placed under 'The Feeling Center' but belongs with the Hornevian group claims C1 and C5 in the groups section."
+        ],
+        "fixes": [
+          "Move C2 from 'The Feeling Center' into 'Hornevian and Harmonic groups' beside C5, so the third-center concept sits with the Assertive group's background practice.",
+          "Move C2 before C9 in the outline, or define 'third Center' where it first appears, so C9 reads without backtracking.",
+          "Retitle 'The Instinctive and Feeling triads' to name the triads it covers, or add the Instinctive Triad membership claim so that heading is supported.",
+          "Consider pairing C10 with C4 and C11 under a heading such as 'The Feeling Center and Feeling Triad' to avoid a one-claim section.",
+          "Revise the introduction to define Centers, Triads, and Groups from supplied claims before C6 and C12, and keep the body from repeating those ideas."
+        ]
+      },
+      "accepted": false
+    },
+    {
+      "plan": {
+        "title": "Enneagram centers, triads, and groups",
+        "introduction": [
+          "C6",
+          "C12"
+        ],
+        "sections": [
+          {
+            "title": "The Feeling Center and triads",
+            "claims": [
+              "C10",
+              "C4",
+              "C11",
+              "C3"
+            ]
+          },
+          {
+            "title": "Hornevian and Harmonic groups",
+            "claims": [
+              "C1",
+              "C2",
+              "C5",
+              "C8"
+            ]
+          },
+          {
+            "title": "Imbalance of centers and development",
+            "claims": [
+              "C7",
+              "C9"
+            ]
+          }
+        ]
+      },
+      "centralMessage": "The three Centers shape how the Enneagram describes personality, and imbalance among them guides development.",
+      "readingOrderRationale": "The introduction frames the Centers and presence. The body then covers the Feeling Center and triads, the groups that use the third Center, and finally imbalance and development, which depends on that term.",
+      "problems": [],
+      "review": {
+        "grounding": {
+          "score": 3,
+          "reason": "All twelve claims are used exactly once and the headings match the cited sources. The Eight-in-Instinctive-Triad claim (C3) sits under a Feeling heading, which weakens how its attribution reads."
+        },
+        "cohesion": {
+          "score": 2,
+          "reason": "The 'The Feeling Center and triads' section mixes the Feeling Triad (C4, C11) with the Instinctive Triad claim (C3). C12 on presence is a development claim placed in the introduction."
+        },
+        "flow": {
+          "score": 3,
+          "reason": "The order runs from the Feeling Center definition (C10) to the Feeling Triad (C4, C11), then to groups that use the center, then to imbalance and development. That sequence is readable, though C3 breaks the triad sequence."
+        },
+        "headings": {
+          "score": 2,
+          "reason": "'The Feeling Center and triads' predicts Feeling content but does not cover the Instinctive Triad claim (C3). 'Hornevian and Harmonic groups' and 'Imbalance of centers and development' are descriptive."
+        },
+        "balance": {
+          "score": 3,
+          "reason": "Section sizes are reasonable, with four, four, and two claims. The third section is slightly thin but has a distinct scope."
+        },
+        "introduction": {
+          "score": 2,
+          "reason": "The introduction uses C6 on ego consciousness and C12 on presence, but it does not define the three Centers or the Triads. C12 on inner work reads as a development claim rather than an introduction."
+        },
+        "blockingIssues": [
+          "C3 (Eight overexpresses instinctual energy in the Instinctive Triad) is placed under 'The Feeling Center and triads', a claim-to-heading mismatch."
+        ],
+        "fixes": [
+          "Move C3 from the 'The Feeling Center and triads' section to the 'Imbalance of centers and development' section. Overexpression of instinctual energy is an imbalance, which fits C7 and C9.",
+          "Rename 'The Feeling Center and triads' to 'The Feeling Center and Feeling Triad' so the heading matches C10, C4, and C11.",
+          "Move C12 from the introduction to the development section alongside C9. Presence as the basis of inner work is a development claim, and the introduction would then state only C6."
+        ]
+      },
+      "accepted": false
+    },
+    {
+      "plan": {
+        "title": "Enneagram centers, triads, and groups",
+        "introduction": [
+          "C6",
+          "C10"
+        ],
+        "sections": [
+          {
+            "title": "Instinctive and Feeling triads",
+            "claims": [
+              "C3",
+              "C4",
+              "C11"
+            ]
+          },
+          {
+            "title": "Hornevian and Harmonic groups",
+            "claims": [
+              "C1",
+              "C2",
+              "C5",
+              "C8"
+            ]
+          },
+          {
+            "title": "Imbalance, presence, and development",
+            "claims": [
+              "C7",
+              "C9",
+              "C12"
+            ]
+          }
+        ]
+      },
+      "centralMessage": "The Enneagram's three Centers form the basis of its triads and groups, and imbalance among the Centers shapes personality and development.",
+      "readingOrderRationale": "The introduction defines the Centers, then the article covers the triads, the Hornevian and Harmonic groups, and finally imbalance and development, moving from structure to application.",
+      "problems": [],
+      "review": {
+        "grounding": {
+          "score": 3,
+          "reason": "Every claim C1 through C12 appears once, and the headings match their content. The Gurdjieff claim C6 is placed in the introduction, which weakens its attribution as framing rather than a body fact."
+        },
+        "cohesion": {
+          "score": 2,
+          "reason": "The section Hornevian and Harmonic groups mixes two group systems. C2 and C5 concern Assertive types, while C1 and C8 concern the Rejection-based and Primary groups, so the section lacks one intelligible topic."
+        },
+        "flow": {
+          "score": 3,
+          "reason": "The order runs from triads to groups to imbalance and development, which is readable. Without a section on the three Centers, a reader meets Center concepts before they are introduced in a body section."
+        },
+        "headings": {
+          "score": 3,
+          "reason": "Instinctive and Feeling triads and Imbalance, presence, and development are descriptive and distinct. Hornevian and Harmonic groups is descriptive but covers two group types under one label."
+        },
+        "balance": {
+          "score": 3,
+          "reason": "Sections hold three, four, and three claims, which is proportionate. The section on groups is heavier because it combines two group systems, and no section covers the three Centers directly."
+        },
+        "introduction": {
+          "score": 2,
+          "reason": "The introduction gives C6, a Gurdjieff teaching, and C10, the Feeling Center definition, but does not define the subject, the three Centers, or the scope of triads and groups."
+        },
+        "blockingIssues": [
+          "The introduction does not define the three Centers, triads, or groups, the subject named in articleSubject.",
+          "The section Hornevian and Harmonic groups combines Hornevian claims (C2, C5) with Harmonic group claims (C1, C8), so it lacks one topic."
+        ],
+        "fixes": [
+          "Rewrite the introduction to use C10 and a centers-defining claim, and move C6 to a body section on the three Centers, since it is a teaching rather than a scope statement.",
+          "Split the section Hornevian and Harmonic groups into two sections by moving C1 and C8 to a Harmonic groups section and keeping C2 and C5 under a Hornevian groups heading.",
+          "Keep C2 with the Feeling Center content in the first section if the Hornevian section's scope is narrowed, and keep C11 and C4 together in the triads section."
+        ]
+      },
+      "accepted": false
+    },
+    {
+      "plan": {
+        "title": "Enneagram centers, triads, and groups",
+        "introduction": [
+          "C12",
+          "C6"
+        ],
+        "sections": [
+          {
+            "title": "The Feeling Center and Feeling Triad",
+            "claims": [
+              "C10",
+              "C4",
+              "C11"
+            ]
+          },
+          {
+            "title": "Assertive types and their third center",
+            "claims": [
+              "C2",
+              "C5"
+            ]
+          },
+          {
+            "title": "Rejection-based and Primary groups",
+            "claims": [
+              "C1",
+              "C8"
+            ]
+          },
+          {
+            "title": "Imbalance of centers and development",
+            "claims": [
+              "C7",
+              "C3",
+              "C9"
+            ]
+          }
+        ]
+      },
+      "centralMessage": "The Enneagram's three Centers, the triads built from them, and the Hornevian and Harmonic groups describe how types differ in their centers, and how imbalance among the centers affects development.",
+      "readingOrderRationale": "The introduction frames the three Centers and presence. The body then covers the Feeling Center and triad, the Assertive types, the Rejection-based and Primary groups, and finally imbalance and development, so each concept is introduced before it is used.",
+      "problems": [],
+      "review": {
+        "grounding": {
+          "score": 3,
+          "reason": "All twelve claims appear once, and the Gurdjieff attribution in C6 is kept. The Instinctive Triad claim (C3) sits under a heading it does not support, so the grounding is weakened."
+        },
+        "cohesion": {
+          "score": 2,
+          "reason": "The Rejection-based and Primary groups section joins C1 and C8, which come from different grouping systems. The imbalance section holds C3, an Instinctive Triad claim that no other section covers."
+        },
+        "flow": {
+          "score": 2,
+          "reason": "C3 appears between the general imbalance claim C7 and the development claim C9, which breaks the general-to-specific sequence. C9 about working on the third center would follow more naturally after C2 in the Assertive section."
+        },
+        "headings": {
+          "score": 3,
+          "reason": "Headings are descriptive and distinct. The Rejection-based and Primary groups heading covers two groupings, and the imbalance heading does not predict the Instinctive Triad content."
+        },
+        "balance": {
+          "score": 2,
+          "reason": "Sections are small and mostly even, but the imbalance section mixes general theory, a type-specific triad claim, and a scoped development claim, so its scope is uneven."
+        },
+        "introduction": {
+          "score": 2,
+          "reason": "C12 and C6 give presence and Gurdjieff's view, but no supplied claim defines the three Centers or Triads, so the introduction does not clearly define the subject."
+        },
+        "blockingIssues": [
+          "C3 (Eight in the Instinctive Triad) has no matching section; the Instinctive Triad is not introduced or developed anywhere, so the claim sits under an unsupported imbalance heading.",
+          "Section 'Rejection-based and Primary groups' combines C1 (Rejection-based group) and C8 (Primary types with shared background practice), which are different groupings and do not share one explanatory connection."
+        ],
+        "fixes": [
+          "Move C3 into its own section titled 'The Instinctive Triad' or place it under a group heading that covers all three triads, and keep it out of the imbalance section.",
+          "Move C8 out of the groups section and place it with C2 and C5 under the Assertive types heading, since C8 covers Threes and shares a background practice with C5; or give C8 a separate heading on primary types' focus.",
+          "Move C9 to follow C2 in the assertive section, because both discuss the third, undeveloped Center.",
+          "Keep C1 under a heading for the Rejection-based (Harmonic) group, and rename the section to match only what it covers."
+        ]
+      },
+      "accepted": false
+    }
+  ]
+}

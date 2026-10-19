@@ -1,0 +1,50 @@
+[
+  {
+    "backup": {
+      "steps": [
+        {
+          "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:40b098068918a78d",
+          "error": null,
+          "state": "succeeded",
+          "output": {
+            "pageId": null,
+            "verdict": "reject"
+          },
+          "attempts": 1,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "updated_at": "2026-10-17T02:24:20.224494+00:00"
+        },
+        {
+          "key": "pages",
+          "error": null,
+          "state": "succeeded",
+          "output": null,
+          "attempts": 1,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "updated_at": "2026-10-17T02:24:22.647363+00:00"
+        },
+        {
+          "key": "plan",
+          "error": null,
+          "state": "succeeded",
+          "output": 0,
+          "attempts": 1,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "updated_at": "2026-10-17T02:24:20.392387+00:00"
+        }
+      ],
+      "workflow": {
+        "error": null,
+        "state": "complete",
+        "token": null,
+        "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "progress": null,
+        "updated_at": "2026-10-17T02:27:26.741346+00:00",
+        "lease_until": null,
+        "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "cancel_requested": false,
+        "resume_requested": false
+      }
+    }
+  }
+]

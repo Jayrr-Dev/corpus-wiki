@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
 import type { Tables } from "@/lib/database/types";
 import type { UnitSummary } from "@/lib/queries/screens";
+import { describe, expect, it } from "vitest";
 import { filterUnits, readUnitFilters, type UnitJoins } from "./filterUnits";
 
 // SEED-LIKE ROWS: Projects/Alpha with a Planning child
@@ -46,6 +46,25 @@ describe("filterUnits", () => {
   it("includes child domains when filtering by a domain", () => {
     expect(filterUnits(UNITS, filters("domain=d-alpha"), JOINS).map((u) => u.id)).toEqual(["u1", "u2"]);
     expect(filterUnits(UNITS, filters("domain=d-plan"), JOINS).map((u) => u.id)).toEqual(["u2"]);
+  });
+
+  it("includes units cited by an article and its child articles", () => {
+    const joins: UnitJoins = {
+      ...JOINS,
+      pages: [
+        { id: "parent", parent_page_id: null },
+        { id: "child", parent_page_id: "parent" },
+        { id: "other", parent_page_id: null },
+      ],
+      articleUnits: [
+        { pageId: "parent", unitId: "u1" },
+        { pageId: "child", unitId: "u2" },
+        { pageId: "other", unitId: "u3" },
+      ],
+    };
+    expect(filterUnits(UNITS, filters("article=parent"), joins).map((unit) => unit.id)).toEqual(["u1", "u2"]);
+    expect(filterUnits(UNITS, filters("article=child"), joins).map((unit) => unit.id)).toEqual(["u2"]);
+    expect(filterUnits(UNITS, filters("article=missing"), joins)).toEqual([]);
   });
 
   it("filters by kind, entity and retired state", () => {

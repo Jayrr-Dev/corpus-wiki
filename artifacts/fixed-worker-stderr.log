@@ -1,0 +1,39 @@
+Server action failed: Error: permission denied for table spaces
+    at <unknown> (lib\server-actions\spaceWelcome.ts:33:26)
+    at async (lib\server-actions\spaceWelcome.ts:38:74)
+    at async toActionResult (lib\server-actions\result.ts:9:28)
+  31 |           .eq("id", activeSpace.id).eq("owner_id", account.id).eq("name", activeSpace.name)
+  32 |           .is("deleted_at", null).select("id").maybeSingle();
+> 33 |         if (error) throw new Error(error.message);
+     |                          ^
+  34 |         return data ? subtitle : null;
+  35 |       }).finally(() => { pending.delete(key); });
+  36 |       pending.set(key, task);
+Server action failed: Error: permission denied for table spaces
+    at <unknown> (lib\server-actions\spaceWelcome.ts:33:26)
+    at async (lib\server-actions\spaceWelcome.ts:38:74)
+    at async toActionResult (lib\server-actions\result.ts:9:28)
+  31 |           .eq("id", activeSpace.id).eq("owner_id", account.id).eq("name", activeSpace.name)
+  32 |           .is("deleted_at", null).select("id").maybeSingle();
+> 33 |         if (error) throw new Error(error.message);
+     |                          ^
+  34 |         return data ? subtitle : null;
+  35 |       }).finally(() => { pending.delete(key); });
+  36 |       pending.set(key, task);
+Section kept supported detail for page editorial review {
+  page: 'Typing and mistyping',
+  section: 'Principles for identifying a type',
+  issues: [
+    'Editorial: The Overview already says traits alone do not reveal a type and that underlying motives matter more than surface behavior. This repeats that point.',
+    "Editorial: The Overview already says identifying a type requires attention to motivation. Keep only the new 'whole pattern' detail.",
+    'Editorial: The Questionnaires section already says a questionnaire can never be foolproof and only provides evidence. This repeats the limit on certainty.'
+  ]
+}
+Section kept supported detail for page editorial review {
+  page: 'Enneagram levels of development',
+  section: 'Unhealthy range: Levels 7 to 9',
+  issues: [
+    'Editorial: The section covers Levels 7 to 9 but describes only Level 6, which belongs to the average range. This content is out of place here.',
+    'Editorial: The Average range section already says Type Six at Level 6 is the Authoritarian Rebel, characterized by blame. This repeats that fact.'
+  ]
+}

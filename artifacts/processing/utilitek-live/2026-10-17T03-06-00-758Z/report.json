@@ -1,0 +1,2639 @@
+{
+  "kind": "live app pipeline; real AI and configured workspace",
+  "runId": "2026-10-17T03-06-00-758Z",
+  "status": "complete",
+  "sourceUrls": [
+    "https://www.utiliteksolutions.ca/",
+    "https://www.utiliteksolutions.ca/expertise"
+  ],
+  "stages": [
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "reconcile",
+      "status": "succeeded",
+      "durationMs": 13113,
+      "recordedAt": "2026-10-17T03:06:16.533Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "embeddings",
+      "status": "succeeded",
+      "durationMs": 4621,
+      "recordedAt": "2026-10-17T03:06:21.694Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "duplicates",
+      "status": "succeeded",
+      "durationMs": 4101,
+      "recordedAt": "2026-10-17T03:06:26.289Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "tidy",
+      "status": "succeeded",
+      "durationMs": 9087,
+      "recordedAt": "2026-10-17T03:06:35.786Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "place",
+      "status": "succeeded",
+      "durationMs": 2849,
+      "recordedAt": "2026-10-17T03:06:39.055Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "hierarchy",
+      "status": "succeeded",
+      "durationMs": 1020,
+      "recordedAt": "2026-10-17T03:06:40.577Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "plan",
+      "status": "succeeded",
+      "durationMs": 18897,
+      "recordedAt": "2026-10-17T03:06:59.874Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "pages",
+      "status": "succeeded",
+      "durationMs": 1936,
+      "recordedAt": "2026-10-17T03:07:02.192Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "articles-ready",
+      "status": "succeeded",
+      "durationMs": 481,
+      "recordedAt": "2026-10-17T03:07:03.109Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "describe",
+      "status": "succeeded",
+      "durationMs": 8775,
+      "recordedAt": "2026-10-17T03:07:12.278Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "profiles",
+      "status": "succeeded",
+      "durationMs": 10560,
+      "recordedAt": "2026-10-17T03:07:23.229Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "expand",
+      "status": "succeeded",
+      "durationMs": 32337,
+      "recordedAt": "2026-10-17T03:07:55.982Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "hierarchy-enrichment",
+      "status": "succeeded",
+      "durationMs": 1438,
+      "recordedAt": "2026-10-17T03:07:57.810Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "glossary",
+      "status": "succeeded",
+      "durationMs": 89155,
+      "recordedAt": "2026-10-17T03:09:27.323Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "plan-enrichment",
+      "status": "succeeded",
+      "durationMs": 11435,
+      "recordedAt": "2026-10-17T03:09:39.257Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "pageId": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+      "status": "succeeded",
+      "completed": 7,
+      "total": 7,
+      "durationMs": 8396,
+      "recordedAt": "2026-10-17T03:09:53.602Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "pageId": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+      "status": "succeeded",
+      "completed": 21,
+      "total": 21,
+      "durationMs": 24572,
+      "recordedAt": "2026-10-17T03:10:09.780Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "pages-enrichment",
+      "status": "succeeded",
+      "durationMs": 26536,
+      "recordedAt": "2026-10-17T03:10:10.740Z"
+    },
+    {
+      "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+      "stage": "curate",
+      "status": "succeeded",
+      "durationMs": 48012,
+      "recordedAt": "2026-10-17T03:10:59.144Z"
+    }
+  ],
+  "aiCalls": [
+    {
+      "purpose": "reconciliation",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 71344,
+      "completionTokens": 2189,
+      "durationMs": 8242,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:14.708Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 190,
+      "completionTokens": 0,
+      "durationMs": 1154,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:18.528Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 157,
+      "completionTokens": 0,
+      "durationMs": 1304,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:21.218Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_cleanup",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 8439,
+      "completionTokens": 1460,
+      "durationMs": 6853,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:35.143Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "place_topics",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4177,
+      "completionTokens": 339,
+      "durationMs": 1998,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:38.445Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_proposals",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6369,
+      "completionTokens": 1106,
+      "durationMs": 6337,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:48.540Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3018,
+      "completionTokens": 147,
+      "durationMs": 1984,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:51.523Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 125,
+      "completionTokens": 0,
+      "durationMs": 1352,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:53.688Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "independent_article_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6294,
+      "completionTokens": 557,
+      "durationMs": 3689,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:57.924Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3085,
+      "completionTokens": 81,
+      "durationMs": 1252,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:06:59.479Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "describe_entities",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 4535,
+      "completionTokens": 1310,
+      "durationMs": 6407,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:07:11.112Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_profiles",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 10240,
+      "completionTokens": 1126,
+      "durationMs": 5777,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:07:20.683Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "knowledge_expansion",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 32546,
+      "completionTokens": 7323,
+      "durationMs": 26237,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:07:52.953Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_dictionary",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 14518,
+      "completionTokens": 3726,
+      "durationMs": 14009,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:19.352Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 4183,
+      "completionTokens": 0,
+      "durationMs": 1800,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:22.332Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 4939,
+      "completionTokens": 0,
+      "durationMs": 2226,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:22.758Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 5864,
+      "completionTokens": 582,
+      "durationMs": 4184,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:31.571Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 5036,
+      "completionTokens": 1419,
+      "durationMs": 6840,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:34.615Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 15521,
+      "completionTokens": 1963,
+      "durationMs": 8734,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:36.051Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4855,
+      "completionTokens": 580,
+      "durationMs": 4096,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:38.964Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 20508,
+      "completionTokens": 2864,
+      "durationMs": 10703,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:42.421Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4837,
+      "completionTokens": 654,
+      "durationMs": 4131,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:43.226Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 8649,
+      "completionTokens": 1501,
+      "durationMs": 6975,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:43.515Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 10547,
+      "completionTokens": 716,
+      "durationMs": 3945,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:46.592Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 21109,
+      "completionTokens": 635,
+      "durationMs": 3933,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:47.299Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 5553,
+      "completionTokens": 838,
+      "durationMs": 4534,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:48.211Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4897,
+      "completionTokens": 888,
+      "durationMs": 4646,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:51.368Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 5055,
+      "completionTokens": 1087,
+      "durationMs": 4832,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:52.262Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4123,
+      "completionTokens": 1072,
+      "durationMs": 5472,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:53.808Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 5289,
+      "completionTokens": 510,
+      "durationMs": 3617,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:55.100Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4856,
+      "completionTokens": 856,
+      "durationMs": 4302,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:56.680Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4278,
+      "completionTokens": 895,
+      "durationMs": 4128,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:08:58.069Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4917,
+      "completionTokens": 1064,
+      "durationMs": 4871,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:01.665Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4952,
+      "completionTokens": 927,
+      "durationMs": 4374,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:02.578Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 8116,
+      "completionTokens": 1762,
+      "durationMs": 7476,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:02.797Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4690,
+      "completionTokens": 462,
+      "durationMs": 2518,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:05.440Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4854,
+      "completionTokens": 799,
+      "durationMs": 4147,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:06.851Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 10899,
+      "completionTokens": 2002,
+      "durationMs": 8811,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:10.609Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 2973,
+      "completionTokens": 0,
+      "durationMs": 5063,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:25.394Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_proposals",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 7353,
+      "completionTokens": 1030,
+      "durationMs": 5099,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:34.611Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 4118,
+      "completionTokens": 491,
+      "durationMs": 3185,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:09:38.830Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_structure_review",
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "high",
+      "promptTokens": 10626,
+      "completionTokens": 1387,
+      "durationMs": 15327,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:10:28.439Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 1077,
+      "completionTokens": 0,
+      "durationMs": 1960,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:10:32.254Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_editorial_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 38132,
+      "completionTokens": 3835,
+      "durationMs": 18705,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:10:51.748Z",
+      "loggingAttempts": 3
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 4924,
+      "completionTokens": 511,
+      "durationMs": 2880,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:10:58.105Z",
+      "loggingAttempts": 1
+    }
+  ],
+  "attempts": [
+    {
+      "startedAt": "2026-10-17T03:06:00.760Z",
+      "finishedAt": "2026-10-17T03:11:00.401Z",
+      "durationMs": 299640,
+      "result": {
+        "status": "applied",
+        "changeSetId": "6a11af9b-40d6-47c7-b08a-7de96b397fdd",
+        "error": null,
+        "workflow": {
+          "error": null,
+          "state": "complete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:893acecf-570b-4ced-b512-a8192e2679ae:7eb88cbf-284b-428a-a24d-c315ba44ad25:c83fd2ad-df7f-4650-b4f8-023e842beb94",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place:76384c7f-3bb3-4177-9b3e-4476cb53d737",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:0:bf9f1eff4576e218",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:1:41a2693b35e1d7a2",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-ready",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:42a55928-7627-4d4e-a5e9-172ca13d89cd:e2acdbab-03c6-475c-be99-e20c2a61a18b:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:42a55928-7627-4d4e-a5e9-172ca13d89cd:e2acdbab-03c6-475c-be99-e20c2a61a18b:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:42a55928-7627-4d4e-a5e9-172ca13d89cd:e2acdbab-03c6-475c-be99-e20c2a61a18b:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "enrichment-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:0:f36ad7ce7077e01b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:780726b5-70fb-44c4-8d1b-f7069e42c89a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:d5733deb-ec41-45db-ae5b-6cbf6918cc46",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:db3d274e-b7e5-45b7-907e-63fa6d0da696",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:11b1f3db-6542-4b4b-b5a4-9e0b449b0837",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:2cf75d47-fe51-4c09-a17d-ece2cdeeaeef",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:2e738632-a544-4ae8-8db4-a84699a8d868",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:83cbce44-b4ad-4f99-9d3e-53f707fd04a4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:5bc0ee5b-8eca-4b3c-8799-0893e6deed6f",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:e2eac608-f841-4736-9ee7-3013822e1bc3",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:9b765188-c71d-47e3-b855-3758db94938a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:55367675-9d5b-45b2-a4c4-01969a91aad8",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:f7e54f1c-5bec-48c0-82d2-8fdf066b7f8c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:cd9aaff6-b2e0-44c0-ac73-03404ac8e88e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:70b016bb-7f73-4c5c-9282-5e6540519d1a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:2afbed00-1bfd-434a-8084-9b61572c7880",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:3bb47f93-1ba1-44e2-8f51-6236373dd0b1",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:0587131a-45b0-4d91-84e6-3f45a1b00966",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:6350d2e7-9bfd-4c94-8391-df22092ce557",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:6bbbbf74-1ad1-49ca-b3cd-ae53a6081c9d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:5d0604bd-dcfb-4f96-b157-ed9b3fd2114e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:e446c81e-2e9e-469b-bb5b-6ff4a5597f52",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:721714ea-fe8d-4ddf-90e1-d06da4439e2d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:65066cd2-6686-44eb-aaf4-60437c3b4569",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:71eab6a8-4abf-4d82-baf5-2812117ddd20",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:63bae489-a9a8-4b45-9041-28b31c89780c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:f719f2f8-2fc1-4e80-a802-786232fb8995",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:cc89580a-46ff-4b2f-bbd2-eaa2b6ca4947",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:00b829d7-8ca6-4a8e-b3ae-71833f9c6588:d7b0ebae-7a8b-4a2c-87cd-52185ab27d75",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "curate",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            }
+          ],
+          "waiting": false,
+          "event_id": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+          "progress": null,
+          "updated_at": "2026-10-17T03:10:59.458435+00:00",
+          "lease_until": null,
+          "change_set_id": "6a11af9b-40d6-47c7-b08a-7de96b397fdd",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "timeToArticlesMs": 62349,
+      "metrics": {
+        "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+        "job": "articles",
+        "startedAt": "2026-10-17T03:06:03.001Z",
+        "finishedAt": "2026-10-17T03:10:59.653Z",
+        "durationMs": 296653,
+        "status": "succeeded",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 160,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 71,
+            "durationMs": 9985,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 210,
+            "durationMs": 33562,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.set_event_status": {
+            "count": 1,
+            "durationMs": 157,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.reconciliation_input": {
+            "count": 1,
+            "durationMs": 966,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.reconciliation-input": {
+            "count": 1,
+            "durationMs": 967,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 71,
+            "durationMs": 11726,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.report_upload_progress": {
+            "count": 31,
+            "durationMs": 3987,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 8,
+            "durationMs": 1223,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 38,
+            "durationMs": 227,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.reconciliation": {
+            "count": 1,
+            "durationMs": 8242,
+            "failures": 0,
+            "tokensIn": 71344,
+            "tokensOut": 2189
+          },
+          "db.log_ai_call": {
+            "count": 47,
+            "durationMs": 8944,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.extract": {
+            "count": 1,
+            "durationMs": 8528,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.extraction": {
+            "count": 1,
+            "durationMs": 9050,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_write": {
+            "count": 9,
+            "durationMs": 4256,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.reconcile": {
+            "count": 1,
+            "durationMs": 13114,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 239,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_unit_embeddings": {
+            "count": 2,
+            "durationMs": 305,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.embedding": {
+            "count": 7,
+            "durationMs": 1,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.embeddings": {
+            "count": 7,
+            "durationMs": 14859,
+            "failures": 0,
+            "tokensIn": 13644,
+            "tokensOut": 0
+          },
+          "db.save_unit_embeddings": {
+            "count": 1,
+            "durationMs": 793,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_passage_embeddings": {
+            "count": 1,
+            "durationMs": 193,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.save_passage_embeddings": {
+            "count": 1,
+            "durationMs": 225,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.embeddings": {
+            "count": 1,
+            "durationMs": 4622,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.unit_vectors": {
+            "count": 1,
+            "durationMs": 1891,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.duplicates": {
+            "count": 1,
+            "durationMs": 4101,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.entity_cleanup_input": {
+            "count": 1,
+            "durationMs": 197,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.event_touched_entities": {
+            "count": 3,
+            "durationMs": 417,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_cleanup": {
+            "count": 1,
+            "durationMs": 6853,
+            "failures": 0,
+            "tokensIn": 8439,
+            "tokensOut": 1460
+          },
+          "step.tidy": {
+            "count": 2,
+            "durationMs": 16066,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_unplaced_claims": {
+            "count": 1,
+            "durationMs": 124,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.place_topics": {
+            "count": 1,
+            "durationMs": 1998,
+            "failures": 0,
+            "tokensIn": 4177,
+            "tokensOut": 339
+          },
+          "step.place": {
+            "count": 2,
+            "durationMs": 4965,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 7,
+            "durationMs": 1140,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.organize_entity_context": {
+            "count": 6,
+            "durationMs": 3247,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.hierarchy": {
+            "count": 1,
+            "durationMs": 1020,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_event_units": {
+            "count": 2,
+            "durationMs": 252,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_workspace_settings": {
+            "count": 7,
+            "durationMs": 968,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.article_index": {
+            "count": 3,
+            "durationMs": 471,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_proposals": {
+            "count": 2,
+            "durationMs": 11436,
+            "failures": 0,
+            "tokensIn": 13722,
+            "tokensOut": 2136
+          },
+          "step.article-proposals": {
+            "count": 2,
+            "durationMs": 12674,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.article-keys": {
+            "count": 2,
+            "durationMs": 1,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_update_discovery": {
+            "count": 3,
+            "durationMs": 6421,
+            "failures": 0,
+            "tokensIn": 10221,
+            "tokensOut": 719
+          },
+          "step.article": {
+            "count": 3,
+            "durationMs": 13816,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.similar_units": {
+            "count": 2,
+            "durationMs": 575,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.independent_article_review": {
+            "count": 1,
+            "durationMs": 3689,
+            "failures": 0,
+            "tokensIn": 6294,
+            "tokensOut": 557
+          },
+          "step.plan": {
+            "count": 1,
+            "durationMs": 18897,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.list_affected_sections": {
+            "count": 3,
+            "durationMs": 1184,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.affected-sections": {
+            "count": 2,
+            "durationMs": 891,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.pages": {
+            "count": 1,
+            "durationMs": 1937,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_article_inputs": {
+            "count": 2,
+            "durationMs": 260,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.articles-input": {
+            "count": 1,
+            "durationMs": 126,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.articles-ready": {
+            "count": 1,
+            "durationMs": 482,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.describe_entities": {
+            "count": 1,
+            "durationMs": 6407,
+            "failures": 0,
+            "tokensIn": 4535,
+            "tokensOut": 1310
+          },
+          "step.describe": {
+            "count": 2,
+            "durationMs": 17008,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.entity_profile_evidence": {
+            "count": 1,
+            "durationMs": 261,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.profiles": {
+            "count": 4,
+            "durationMs": 11759,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_profiles": {
+            "count": 1,
+            "durationMs": 5777,
+            "failures": 0,
+            "tokensIn": 10240,
+            "tokensOut": 1126
+          },
+          "step.profiles-draft": {
+            "count": 1,
+            "durationMs": 6043,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.web": {
+            "count": 1,
+            "durationMs": 262,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.stakeholder-web": {
+            "count": 1,
+            "durationMs": 732,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_query_units": {
+            "count": 1,
+            "durationMs": 196,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.knowledge_expansion": {
+            "count": 1,
+            "durationMs": 26237,
+            "failures": 0,
+            "tokensIn": 32546,
+            "tokensOut": 7323
+          },
+          "step.expand-entity": {
+            "count": 1,
+            "durationMs": 31956,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.expand": {
+            "count": 1,
+            "durationMs": 32337,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.articles-input": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.enrichment-input": {
+            "count": 1,
+            "durationMs": 255,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.hierarchy-enrichment": {
+            "count": 1,
+            "durationMs": 1439,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_glossary_generation": {
+            "count": 1,
+            "durationMs": 150,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.glossary_dictionary": {
+            "count": 1,
+            "durationMs": 14009,
+            "failures": 0,
+            "tokensIn": 14518,
+            "tokensOut": 3726
+          },
+          "ai.glossary_duplicate_review": {
+            "count": 22,
+            "durationMs": 117269,
+            "failures": 0,
+            "tokensIn": 169405,
+            "tokensOut": 24076
+          },
+          "db.publish_glossary_meanings": {
+            "count": 1,
+            "durationMs": 1795,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_glossary_auto_decide": {
+            "count": 1,
+            "durationMs": 187,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_glossary_embeddings": {
+            "count": 1,
+            "durationMs": 677,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.save_glossary_embeddings": {
+            "count": 1,
+            "durationMs": 1798,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 89155,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.enrichment-input": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.plan-enrichment": {
+            "count": 1,
+            "durationMs": 11435,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.finish_upload_step": {
+            "count": 3,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_section_build": {
+            "count": 28,
+            "durationMs": 3674,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_section_state": {
+            "count": 28,
+            "durationMs": 4076,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.section_build_write": {
+            "count": 28,
+            "durationMs": 3701,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.rebuild-section": {
+            "count": 28,
+            "durationMs": 18733,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.pages_needing_editorial_review": {
+            "count": 1,
+            "durationMs": 194,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.editorial-review": {
+            "count": 1,
+            "durationMs": 195,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.pages-enrichment": {
+            "count": 1,
+            "durationMs": 26536,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.curator_snapshot": {
+            "count": 2,
+            "durationMs": 2408,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_ai_role_instructions": {
+            "count": 1,
+            "durationMs": 145,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.page_structure_review": {
+            "count": 1,
+            "durationMs": 15327,
+            "failures": 0,
+            "tokensIn": 10626,
+            "tokensOut": 1387
+          },
+          "stage.curator.structure": {
+            "count": 1,
+            "durationMs": 17271,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.curator.overviews": {
+            "count": 1,
+            "durationMs": 1194,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_snapshot": {
+            "count": 1,
+            "durationMs": 400,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_related": {
+            "count": 1,
+            "durationMs": 197,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.page_editorial_review": {
+            "count": 1,
+            "durationMs": 18705,
+            "failures": 0,
+            "tokensIn": 38132,
+            "tokensOut": 3835
+          },
+          "db.retry.log_ai_call": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.assert_upload_lease": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.line_fact_check": {
+            "count": 1,
+            "durationMs": 2880,
+            "failures": 0,
+            "tokensIn": 4924,
+            "tokensOut": 511
+          },
+          "stage.curator.dispatch": {
+            "count": 1,
+            "durationMs": 29253,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.curate": {
+            "count": 1,
+            "durationMs": 48012,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 124,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 131,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 129,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.utiliteksolutions.ca/",
+      "title": "Utilitek Solutions | Leading Electrical Engineering Consulting in Edmonton, Alberta",
+      "fetchedAt": "2026-10-17T03:06:00.760Z",
+      "characters": 99254,
+      "sha256": "7194535fa8f520a56e8153cfb752d3e4c29bad40ff21aca412ac95b504f20dde"
+    },
+    {
+      "url": "https://www.utiliteksolutions.ca/expertise",
+      "title": "Electrical Engineering Expertise | Distribution Systems &amp; Grid Modernization | Utilitek | Utilitek Solutions",
+      "fetchedAt": "2026-10-17T03:06:00.760Z",
+      "characters": 152307,
+      "sha256": "fc85ea0ab72c5f7ca9861449b87b4231d544e7aab2e8c8b7ec3d11bba3416be8"
+    }
+  ],
+  "syntheticProjects": 0,
+  "fixture": "small-six-facts-v1",
+  "inputPath": "C:\\Users\\Main\\Documents\\Projects\\second-brain-engine\\artifacts\\processing\\utilitek-live\\2026-10-17T03-06-00-758Z\\utilitek-website-live-test.md",
+  "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+  "sourceId": "79dfa340-c171-4837-b706-35f9b91b3ccc",
+  "articlesReadyAt": "2026-10-17T03:07:03.109Z",
+  "timeToArticlesMs": 62349,
+  "networkErrors": [
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T03:09:39.451Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T03:09:39.924Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T03:09:40.626Z"
+    },
+    {
+      "path": "/rest/v1/rpc/log_ai_call",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:10:52.990Z"
+    },
+    {
+      "path": "/rest/v1/rpc/log_ai_call",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:10:54.576Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:10:54.873Z"
+    }
+  ],
+  "metrics": {
+    "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+    "job": "articles",
+    "startedAt": "2026-10-17T03:06:03.001Z",
+    "finishedAt": "2026-10-17T03:10:59.653Z",
+    "durationMs": 296653,
+    "status": "succeeded",
+    "metrics": {
+      "db.claim_upload_workflow": {
+        "count": 1,
+        "durationMs": 160,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.start_upload_step": {
+        "count": 71,
+        "durationMs": 9985,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.assert_upload_lease": {
+        "count": 210,
+        "durationMs": 33562,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.set_event_status": {
+        "count": 1,
+        "durationMs": 157,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.reconciliation_input": {
+        "count": 1,
+        "durationMs": 966,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.reconciliation-input": {
+        "count": 1,
+        "durationMs": 967,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.finish_upload_step": {
+        "count": 71,
+        "durationMs": 11726,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.report_upload_progress": {
+        "count": 31,
+        "durationMs": 3987,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_role_memory": {
+        "count": 8,
+        "durationMs": 1223,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "queue.chat": {
+        "count": 38,
+        "durationMs": 227,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.reconciliation": {
+        "count": 1,
+        "durationMs": 8242,
+        "failures": 0,
+        "tokensIn": 71344,
+        "tokensOut": 2189
+      },
+      "db.log_ai_call": {
+        "count": 47,
+        "durationMs": 8944,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.extract": {
+        "count": 1,
+        "durationMs": 8528,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.extraction": {
+        "count": 1,
+        "durationMs": 9050,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_workflow_write": {
+        "count": 9,
+        "durationMs": 4256,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.reconcile": {
+        "count": 1,
+        "durationMs": 13114,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_workflow_waiting": {
+        "count": 2,
+        "durationMs": 239,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.missing_unit_embeddings": {
+        "count": 2,
+        "durationMs": 305,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "queue.embedding": {
+        "count": 7,
+        "durationMs": 1,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.embeddings": {
+        "count": 7,
+        "durationMs": 14859,
+        "failures": 0,
+        "tokensIn": 13644,
+        "tokensOut": 0
+      },
+      "db.save_unit_embeddings": {
+        "count": 1,
+        "durationMs": 793,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.missing_passage_embeddings": {
+        "count": 1,
+        "durationMs": 193,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.save_passage_embeddings": {
+        "count": 1,
+        "durationMs": 225,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.embeddings": {
+        "count": 1,
+        "durationMs": 4622,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.unit_vectors": {
+        "count": 1,
+        "durationMs": 1891,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.duplicates": {
+        "count": 1,
+        "durationMs": 4101,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.entity_cleanup_input": {
+        "count": 1,
+        "durationMs": 197,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.event_touched_entities": {
+        "count": 3,
+        "durationMs": 417,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.entity_cleanup": {
+        "count": 1,
+        "durationMs": 6853,
+        "failures": 0,
+        "tokensIn": 8439,
+        "tokensOut": 1460
+      },
+      "step.tidy": {
+        "count": 2,
+        "durationMs": 16066,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_unplaced_claims": {
+        "count": 1,
+        "durationMs": 124,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.place_topics": {
+        "count": 1,
+        "durationMs": 1998,
+        "failures": 0,
+        "tokensIn": 4177,
+        "tokensOut": 339
+      },
+      "step.place": {
+        "count": 2,
+        "durationMs": 4965,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_candidates": {
+        "count": 7,
+        "durationMs": 1140,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.organize_entity_context": {
+        "count": 6,
+        "durationMs": 3247,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.hierarchy": {
+        "count": 1,
+        "durationMs": 1020,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.living_page_event_units": {
+        "count": 2,
+        "durationMs": 252,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_workspace_settings": {
+        "count": 7,
+        "durationMs": 968,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.article_index": {
+        "count": 3,
+        "durationMs": 471,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.article_proposals": {
+        "count": 2,
+        "durationMs": 11436,
+        "failures": 0,
+        "tokensIn": 13722,
+        "tokensOut": 2136
+      },
+      "step.article-proposals": {
+        "count": 2,
+        "durationMs": 12674,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.article-keys": {
+        "count": 2,
+        "durationMs": 1,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.article_update_discovery": {
+        "count": 3,
+        "durationMs": 6421,
+        "failures": 0,
+        "tokensIn": 10221,
+        "tokensOut": 719
+      },
+      "step.article": {
+        "count": 3,
+        "durationMs": 13816,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.similar_units": {
+        "count": 2,
+        "durationMs": 575,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.independent_article_review": {
+        "count": 1,
+        "durationMs": 3689,
+        "failures": 0,
+        "tokensIn": 6294,
+        "tokensOut": 557
+      },
+      "step.plan": {
+        "count": 1,
+        "durationMs": 18897,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.list_affected_sections": {
+        "count": 3,
+        "durationMs": 1184,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.affected-sections": {
+        "count": 2,
+        "durationMs": 891,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.pages": {
+        "count": 1,
+        "durationMs": 1937,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_article_inputs": {
+        "count": 2,
+        "durationMs": 260,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.articles-input": {
+        "count": 1,
+        "durationMs": 126,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.articles-ready": {
+        "count": 1,
+        "durationMs": 482,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.describe_entities": {
+        "count": 1,
+        "durationMs": 6407,
+        "failures": 0,
+        "tokensIn": 4535,
+        "tokensOut": 1310
+      },
+      "step.describe": {
+        "count": 2,
+        "durationMs": 17008,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.entity_profile_evidence": {
+        "count": 1,
+        "durationMs": 261,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.profiles": {
+        "count": 4,
+        "durationMs": 11759,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.entity_profiles": {
+        "count": 1,
+        "durationMs": 5777,
+        "failures": 0,
+        "tokensIn": 10240,
+        "tokensOut": 1126
+      },
+      "step.profiles-draft": {
+        "count": 1,
+        "durationMs": 6043,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.web": {
+        "count": 1,
+        "durationMs": 262,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "stage.stakeholder-web": {
+        "count": 1,
+        "durationMs": 732,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.living_page_query_units": {
+        "count": 1,
+        "durationMs": 196,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.knowledge_expansion": {
+        "count": 1,
+        "durationMs": 26237,
+        "failures": 0,
+        "tokensIn": 32546,
+        "tokensOut": 7323
+      },
+      "step.expand-entity": {
+        "count": 1,
+        "durationMs": 31956,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.expand": {
+        "count": 1,
+        "durationMs": 32337,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.articles-input": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.enrichment-input": {
+        "count": 1,
+        "durationMs": 255,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.hierarchy-enrichment": {
+        "count": 1,
+        "durationMs": 1439,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.claim_glossary_generation": {
+        "count": 1,
+        "durationMs": 150,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.glossary_dictionary": {
+        "count": 1,
+        "durationMs": 14009,
+        "failures": 0,
+        "tokensIn": 14518,
+        "tokensOut": 3726
+      },
+      "ai.glossary_duplicate_review": {
+        "count": 22,
+        "durationMs": 117269,
+        "failures": 0,
+        "tokensIn": 169405,
+        "tokensOut": 24076
+      },
+      "db.publish_glossary_meanings": {
+        "count": 1,
+        "durationMs": 1795,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_glossary_auto_decide": {
+        "count": 1,
+        "durationMs": 187,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.missing_glossary_embeddings": {
+        "count": 1,
+        "durationMs": 677,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.save_glossary_embeddings": {
+        "count": 1,
+        "durationMs": 1798,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.glossary": {
+        "count": 1,
+        "durationMs": 89155,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.enrichment-input": {
+        "count": 2,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.plan-enrichment": {
+        "count": 1,
+        "durationMs": 11435,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.retry.finish_upload_step": {
+        "count": 3,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.claim_section_build": {
+        "count": 28,
+        "durationMs": 3674,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.read_section_state": {
+        "count": 28,
+        "durationMs": 4076,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.section_build_write": {
+        "count": 28,
+        "durationMs": 3701,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.rebuild-section": {
+        "count": 28,
+        "durationMs": 18733,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.pages_needing_editorial_review": {
+        "count": 1,
+        "durationMs": 194,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "stage.editorial-review": {
+        "count": 1,
+        "durationMs": 195,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.pages-enrichment": {
+        "count": 1,
+        "durationMs": 26536,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.curator_snapshot": {
+        "count": 2,
+        "durationMs": 2408,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_ai_role_instructions": {
+        "count": 1,
+        "durationMs": 145,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.page_structure_review": {
+        "count": 1,
+        "durationMs": 15327,
+        "failures": 0,
+        "tokensIn": 10626,
+        "tokensOut": 1387
+      },
+      "stage.curator.structure": {
+        "count": 1,
+        "durationMs": 17271,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "stage.curator.overviews": {
+        "count": 1,
+        "durationMs": 1194,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_review_snapshot": {
+        "count": 1,
+        "durationMs": 400,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_review_related": {
+        "count": 1,
+        "durationMs": 197,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.page_editorial_review": {
+        "count": 1,
+        "durationMs": 18705,
+        "failures": 0,
+        "tokensIn": 38132,
+        "tokensOut": 3835
+      },
+      "db.retry.log_ai_call": {
+        "count": 2,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.retry.assert_upload_lease": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.line_fact_check": {
+        "count": 1,
+        "durationMs": 2880,
+        "failures": 0,
+        "tokensIn": 4924,
+        "tokensOut": 511
+      },
+      "stage.curator.dispatch": {
+        "count": 1,
+        "durationMs": 29253,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.curate": {
+        "count": 1,
+        "durationMs": 48012,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.release_upload_workflow": {
+        "count": 1,
+        "durationMs": 124,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.read_upload_workflows": {
+        "count": 1,
+        "durationMs": 131,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_knowledge_result": {
+        "count": 1,
+        "durationMs": 129,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      }
+    }
+  },
+  "output": {
+    "sourcePassages": 3,
+    "touchedUnits": 21,
+    "affectedPages": 2,
+    "affectedSections": 29,
+    "sourceUsage": {
+      "unit_count": 9,
+      "article_count": 1,
+      "line_count": 1
+    },
+    "articleReviews": [
+      {
+        "verdict": "update_existing",
+        "reason": "The proposer sent these claims to an existing article.",
+        "decided_by": "rule",
+        "result_page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3"
+      },
+      {
+        "verdict": "update_existing",
+        "reason": "The Utilitek Solutions Inc. page already states the same four-step delivery sequence. The five claims repeat one point and do not need their own process page.",
+        "decided_by": "model",
+        "result_page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3"
+      },
+      {
+        "verdict": "update_existing",
+        "reason": "The proposer sent these claims to an existing article.",
+        "decided_by": "rule",
+        "result_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3"
+      }
+    ],
+    "glossary": {
+      "status": "ready",
+      "completed_batches": 12,
+      "total_batches": 12,
+      "generated_at": "2026-10-17T03:09:19.195859+00:00"
+    },
+    "openWorkspaceExceptions": 0
+  }
+}

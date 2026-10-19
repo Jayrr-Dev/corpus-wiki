@@ -1,0 +1,38 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "69ca8903-8a40-4daa-8cb8-a595a09c3be6",
+          "evidence": [
+            "69ca8903-8a40-4daa-8cb8-a595a09c3be6"
+          ],
+          "learningGoal": "Identify ATCO Pipelines, the organization this article covers.",
+          "caption": "ATCO Pipelines logo, shown for identification only.",
+          "alt": "Official logo of ATCO Pipelines.",
+          "svg": "",
+          "assetId": "a56e3b9e-fcad-4009-8ae2-2f7ffa3a2590"
+        }
+      ],
+      "omitted": "Only the Overview was selected. The exact-match ATCO Pipelines logo identifies the subject. No spatial or mechanism drawing fits this text-only routing fact. The generic pipeline illustration and the clearance diagrams do not match the paragraph."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Consider a caption that ties the logo to the article's point, such as noting that ATCO Pipelines is the only pipeline company receiving City of Edmonton ULA circulations.",
+        "Alt text could name the company's wordmark more specifically if the logo includes text, but the current version is adequate."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 17471,
+    "tokensOut": 431
+  }
+]

@@ -1,0 +1,236 @@
+[
+  {
+    "lines": [
+      {
+        "author": "ai",
+        "lineId": "5951cccc-0645-4134-a311-57b4b10e5d5e",
+        "content": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada. The company lists four service areas: distribution system design, residential development support, utility power systems, and joint-use and infrastructure upgrades.",
+        "unitIds": [
+          "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+          "dff0858d-d356-47da-9eeb-418cc1221e4a"
+        ],
+        "position": 0,
+        "needsRewrite": false,
+        "lineRevisionId": "a16526be-7d04-4b89-a754-63b29a2cd648"
+      }
+    ],
+    "title": "Overview",
+    "units": [
+      {
+        "kind": "fact",
+        "unitId": "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+        "content": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "8ecda8fe-c1d2-45cc-af96-ca913f26aedf",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "content": "Utilitek Solutions Inc. lists four service areas: distribution system design, residential development support, utility power systems, and joint-use and infrastructure upgrades.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "structure": {
+          "mode": null,
+          "type": "set",
+          "complete": false
+        },
+        "revisionId": "1757c03d-aa0c-408c-b5ab-29d16d9bd75a",
+        "epistemicStatus": "supported"
+      }
+    ],
+    "pageTitle": "Utilitek Solutions Inc.",
+    "sectionId": "dde5b2be-9077-4749-8673-255783bf6df4"
+  },
+  {
+    "lines": [
+      {
+        "author": "ai",
+        "lineId": "2d2fa216-10c1-473e-b4c3-c127cb99be86",
+        "content": "Utilitek Solutions Inc. is a privately held company headquartered in Edmonton, Canada. Its website presents it as an engineering consultancy serving utility and infrastructure projects in Edmonton, Alberta, and advertises more than twenty-five years of experience, a claim the company makes in its own marketing.",
+        "unitIds": [
+          "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+          "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+          "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+          "c097021e-1909-4844-baae-67a2d45c8f3c"
+        ],
+        "position": 0,
+        "needsRewrite": false,
+        "lineRevisionId": "a11ad872-cf84-41d2-9e59-8781e9be6fad"
+      },
+      {
+        "author": "ai",
+        "lineId": "7f9b3bbf-e5b4-4cb5-b8db-3c97c1c43d3a",
+        "content": "The information in this section is drawn from the company's public website statements. It does not describe an internal operating policy.",
+        "unitIds": [
+          "c471e597-321d-4a46-8c36-a2885a141da7",
+          "f423a5ae-f664-433b-a5db-d8ac36b021c2"
+        ],
+        "position": 1,
+        "needsRewrite": false,
+        "lineRevisionId": "bc400485-6cd3-4fbf-ad91-ace159097999"
+      }
+    ],
+    "title": "Company profile",
+    "units": [
+      {
+        "kind": "fact",
+        "unitId": "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+        "content": "Utilitek Solutions Inc. is a privately held company.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "26749a6d-d299-4c65-a6af-2585e7aa6605",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+        "content": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "8ecda8fe-c1d2-45cc-af96-ca913f26aedf",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "content": "Utilitek Solutions presents itself as an engineering consultancy serving utility and infrastructure projects in Edmonton, Alberta.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            },
+            {
+              "key": "edmonton",
+              "role": "mentioned",
+              "type": "place"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "82da8733-f0fc-471d-ae99-24c11c28d094",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "c097021e-1909-4844-baae-67a2d45c8f3c",
+        "content": "Utilitek Solutions advertises more than twenty-five years of experience, a company marketing claim.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "bc74bca1-c068-41e2-8eac-cc93ea585e57",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "c471e597-321d-4a46-8c36-a2885a141da7",
+        "content": "The Utilitek Solutions website snapshot is a labelled test document that summarizes public website statements, not an internal operating policy.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "3f449f39-612f-4ad5-bc02-95b88d2d6035",
+        "epistemicStatus": "established"
+      },
+      {
+        "kind": "fact",
+        "unitId": "f423a5ae-f664-433b-a5db-d8ac36b021c2",
+        "content": "The Utilitek Solutions website snapshot is a labelled test document summarizing public website statements, not an internal operating policy.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "fcc9c808-320d-428f-8fff-756f973fabfb",
+        "epistemicStatus": "established"
+      }
+    ],
+    "pageTitle": "Utilitek Solutions Inc.",
+    "sectionId": "418613d4-dd1d-484e-8e9f-eca7aab5dfac"
+  }
+]

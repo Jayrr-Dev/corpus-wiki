@@ -1,0 +1,517 @@
+[
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C7",
+        "C8",
+        "C43"
+      ],
+      "sections": [
+        {
+          "title": "Scope and purpose of the ULA permit",
+          "claims": [
+            "C2",
+            "C6",
+            "C3",
+            "C5"
+          ]
+        },
+        {
+          "title": "Design standards and clearances",
+          "claims": [
+            "C13",
+            "C14",
+            "C15",
+            "C25",
+            "C29",
+            "C39"
+          ]
+        },
+        {
+          "title": "Pipeline circulation exceptions",
+          "claims": [
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "Complete ULA application workflow",
+          "claims": [
+            "C36",
+            "C37",
+            "C38",
+            "C10",
+            "C42",
+            "C12",
+            "C30",
+            "C41",
+            "C9",
+            "C21",
+            "C35",
+            "C26",
+            "C27",
+            "C32",
+            "C17",
+            "C19",
+            "C18",
+            "C22",
+            "C45",
+            "C44",
+            "C28",
+            "C31",
+            "C20",
+            "C23"
+          ]
+        },
+        {
+          "title": "Related EPCOR traffic signal and streetlight work",
+          "claims": [
+            "C40"
+          ]
+        },
+        {
+          "title": "Source documents and online access",
+          "claims": [
+            "C11",
+            "C16"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "A Utility Line Assignment permit is required before ground-disturbing utility work in the City of Edmonton road allowance, and the process coordinates designers, the City, and stakeholders to resolve conflicts before construction.",
+    "readingOrderRationale": "The introduction defines the process and summarizes its parties. Scope and purpose come first, then design standards and pipeline exceptions as prerequisites. Related EPCOR context and source material follow. The full workflow stays in one section so the composite procedure remains intact in order.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 3,
+        "reason": "All 45 claims are used exactly once, and the stepOf members stay with C37. Attribution is kept, but C7 and C1 repeat the same definition, and the Introduction and Scope headings are only loosely supported by their claims."
+      },
+      "cohesion": {
+        "score": 2,
+        "reason": "The 24-claim workflow section mixes drafting, stakeholder circulation, conflict resolution, and permit filing. The EPCOR traffic signal claim C40 is unrelated to ULA and has no shared topic with any other section."
+      },
+      "flow": {
+        "score": 2,
+        "reason": "C42, the first step, appears after C36 to C38, so the workflow does not start at the first step. C17 cites step 6 but sits after the step 8 and 9 claims C26 and C18. C13 and C10, drafting steps, are separated from the workflow in the standards section."
+      },
+      "headings": {
+        "score": 3,
+        "reason": "The headings are descriptive and distinct. The workflow heading is accurate, but 'Design standards and clearances' does not cover the drafting handoff in C10 and C13, and the EPCOR heading does not predict C40's content."
+      },
+      "balance": {
+        "score": 2,
+        "reason": "One section holds 24 claims while the EPCOR section holds a single unrelated claim. The imbalance reflects a grab bag and fragmentation, not a deliberate emphasis."
+      },
+      "introduction": {
+        "score": 3,
+        "reason": "The introduction defines ULA, its City of Edmonton origin, and the permit with C1, C4, C7, C8, and C43. It is proportionate, though C7 repeats C1, and it does not preview the pipeline exception."
+      },
+      "blockingIssues": [
+        "C40 (EPCOR maintains traffic signals and street lights) is an unrelated topic given its own section, so it does not belong in this ULA article as placed.",
+        "C13 and C10 (drafting standards and drafting-design coordination) are separated from the workflow section that contains the drafting handoff, which breaks the process sequence.",
+        "The workflow section mixes the first-step design, stakeholder circulation, and permit filing, and C42 precedes C12 in the wrong order while C17 is out of step order."
+      ],
+      "fixes": [
+        "Move C40 out of its single-claim section into the Introduction or Scope section as contextual background, or drop the section, keeping all its content.",
+        "Move C13 and C10 into the workflow section, placed after C12 and before C30, where the drafting handoff occurs; keep them with C37 and its stepOf members.",
+        "Move C42 to the start of the workflow, before C36 and C37, or immediately after C12 so the first step precedes the investigation steps.",
+        "Move C17 next to C35 and C32, the stakeholder-objection claims, so the step 6 reference follows the circulation claims.",
+        "Keep the workflow as one section because stepOf members C9, C12, C20, C22, C30, C31, and C38 must stay with C37; do not split it into separate sections."
+      ]
+    },
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C7",
+        "C8",
+        "C43"
+      ],
+      "sections": [
+        {
+          "title": "Scope and purpose of the ULA permit",
+          "claims": [
+            "C2",
+            "C3",
+            "C5",
+            "C6"
+          ]
+        },
+        {
+          "title": "Design standards and clearances",
+          "claims": [
+            "C39",
+            "C29",
+            "C14",
+            "C25",
+            "C15"
+          ]
+        },
+        {
+          "title": "Pipeline circulation exceptions",
+          "claims": [
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "Complete ULA application workflow",
+          "claims": [
+            "C36",
+            "C37",
+            "C38",
+            "C42",
+            "C12",
+            "C13",
+            "C10",
+            "C30",
+            "C41",
+            "C9",
+            "C21",
+            "C35",
+            "C26",
+            "C27",
+            "C32",
+            "C17",
+            "C19",
+            "C18",
+            "C45",
+            "C22",
+            "C44",
+            "C28",
+            "C31",
+            "C20",
+            "C23"
+          ]
+        },
+        {
+          "title": "EPCOR traffic signal and streetlight work",
+          "claims": [
+            "C40"
+          ]
+        },
+        {
+          "title": "Source documents and online access",
+          "claims": [
+            "C11",
+            "C16"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "A Utility Line Assignment is the City of Edmonton permit required before ground disturbance in the road allowance, and it coordinates utilities so conflicts are resolved before construction.",
+    "readingOrderRationale": "The introduction defines the ULA and its scope, then prerequisites and exceptions come first. The complete workflow follows as one section because the composite procedure C37 and its members must stay together. Related context and source material come last.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 2,
+        "reason": "Each claim is used once, but C40 (EPCOR traffic signals and streetlights) sits under a ULA-specific section and is unsupported by that heading. The 'Complete ULA application workflow' section also places preliminary design (C42) after data-lane entries (C38)."
+      },
+      "cohesion": {
+        "score": 1,
+        "reason": "'Complete ULA application workflow' has 25 claims mixing preliminary design, drafting, circulation, stakeholder objections, permit conditions, and filing. 'Scope and purpose' includes C5, which lists benefits of compliance, not scope. C40 is unrelated to ULA."
+      },
+      "flow": {
+        "score": 2,
+        "reason": "C33 and C34 define pipeline crossing and proximity agreements after C24 uses those ideas. C42 (first step, preliminary design) appears after C38 in the workflow, and C12 (preliminary design) follows later. Chronology within the workflow is not reliable."
+      },
+      "headings": {
+        "score": 3,
+        "reason": "Most H2 labels are descriptive and distinct, such as 'Pipeline circulation exceptions' and 'Source documents and online access'. 'EPCOR traffic signal and streetlight work' predicts content that does not fit the ULA subject."
+      },
+      "balance": {
+        "score": 2,
+        "reason": "One section holds a single unrelated claim (C40), while the workflow section holds 25 claims. Splitting the workflow by phase would give a more even and readable structure."
+      },
+      "introduction": {
+        "score": 3,
+        "reason": "The introduction defines ULA and its purpose. It includes C7 and C43, which repeat workflow and application-process detail, so it is somewhat more than a definition."
+      },
+      "blockingIssues": [
+        "C40 (EPCOR traffic signals and streetlights) is unrelated to the ULA process and must be removed from this outline or moved to a separate article.",
+        "'Complete ULA application workflow' is a grab bag that mixes preliminary design, circulation, conditions, and filing without phase sub-sections."
+      ],
+      "fixes": [
+        "Move C40 out of the ULA outline or into an EPCOR-specific article.",
+        "Move C5 from 'Scope and purpose of the ULA permit' to the introduction or a section on benefits of compliance.",
+        "Move C42 and C12 to the start of the workflow, ahead of C38, so preliminary design comes first.",
+        "Split the workflow into phases such as 'Preparing the design and application', 'Circulation and stakeholder review', and 'Permit conditions and filing', keeping stepOf members (C9, C12, C20, C22, C30, C31, C37, C38) together in one section.",
+        "Move C13 and C15 (drafting standards) into 'Design standards and clearances' and keep C10 with drafting.",
+        "Move C33 and C34 ahead of C24 so definitions precede the circulation detail."
+      ]
+    },
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C7",
+        "C8"
+      ],
+      "sections": [
+        {
+          "title": "When a ULA permit is required",
+          "claims": [
+            "C2",
+            "C6"
+          ]
+        },
+        {
+          "title": "Purpose and benefits of compliance",
+          "claims": [
+            "C3",
+            "C5"
+          ]
+        },
+        {
+          "title": "Design standards and clearances",
+          "claims": [
+            "C14",
+            "C15",
+            "C25",
+            "C29",
+            "C39"
+          ]
+        },
+        {
+          "title": "Pipeline circulation exceptions",
+          "claims": [
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "Complete ULA application workflow",
+          "claims": [
+            "C43",
+            "C36",
+            "C37",
+            "C42",
+            "C12",
+            "C13",
+            "C10",
+            "C30",
+            "C41",
+            "C9",
+            "C38",
+            "C21",
+            "C35",
+            "C26",
+            "C17",
+            "C27",
+            "C32",
+            "C19",
+            "C18",
+            "C45",
+            "C22",
+            "C44",
+            "C28",
+            "C31",
+            "C20",
+            "C23"
+          ]
+        },
+        {
+          "title": "Source documents and online access",
+          "claims": [
+            "C11",
+            "C16"
+          ]
+        },
+        {
+          "title": "Related EPCOR traffic signal and streetlight work",
+          "claims": [
+            "C40"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "A ULA permit is required before ground-disturbing work in the City of Edmonton road allowance, and the application moves through design, City circulation, stakeholder review, permit issuance, and filing.",
+    "readingOrderRationale": "The introduction defines the process, then the article covers when a permit is needed, why it matters, design standards, pipeline exceptions, the full workflow, source materials, and related EPCOR context.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 3,
+        "reason": "All 45 claims appear once and the title matches the content. C1 and C7 restate the same ULA requirement, and the introduction repeats it, so the outline does not distinguish supported from established wording."
+      },
+      "cohesion": {
+        "score": 2,
+        "reason": "The 26-claim section 'Complete ULA application workflow' mixes designer drafting (C12, C13, C30), stakeholder circulation (C21, C35, C27), and permit closeout (C20, C23). C40, about EPCOR traffic signals and streetlights, does not belong with the ULA process."
+      },
+      "flow": {
+        "score": 2,
+        "reason": "C17 (objections go to step 6) appears after C26 (step 8) and C35 (proceeds to step 8), so step 6 is read after step 8. Within the workflow section the order mostly follows the steps, but the 26-claim run hides that sequence."
+      },
+      "headings": {
+        "score": 3,
+        "reason": "Headings are descriptive and distinct: 'When a ULA permit is required', 'Pipeline circulation exceptions', 'Source documents and online access'. 'Related EPCOR traffic signal and streetlight work' does not predict a ULA topic and is vague about its relation to the process."
+      },
+      "balance": {
+        "score": 1,
+        "reason": "One section holds 26 claims while several sections hold one or two, so the workflow section overwhelms the outline. Splitting the workflow into designer preparation and stakeholder circulation would balance it."
+      },
+      "introduction": {
+        "score": 2,
+        "reason": "The introduction uses C1, C4, C7, and C8, which overlap heavily in defining ULA. It should define the process once and leave the acronym, requirement, and workflow for the body."
+      },
+      "blockingIssues": [
+        "C40 (EPCOR maintains traffic signals and street lights) is unrelated to the ULA process and sits alone in a section about EPCOR traffic signal work.",
+        "The 'Complete ULA application workflow' section (26 claims) mixes designer preparation with stakeholder circulation and permit closeout, which is a major cohesion defect.",
+        "C17 (objections go to step 6) is placed after C26 (step 8), a chronology defect in the workflow."
+      ],
+      "fixes": [
+        "Move C40 into the 'Design standards and clearances' section beside C29, which covers EPCOR designer obligations, or drop it into a clearly labelled EPCOR context section.",
+        "Split the workflow into two H2 sections: 'Designer preparation of the ULA application' (C42, C43, C36, C37, C12, C13, C10, C30, C41, C9, C38) and 'Stakeholder circulation and permit issuance' (C21, C35, C17, C27, C32, C26, C19, C18, C45, C22, C44, C28, C31, C20, C23), keeping the stepOf members of C37 together.",
+        "Move C17 so it follows C35 and precedes C26, or reorder so step 6 claims come before step 8 claims.",
+        "Keep C1 and C8 in the introduction, move C7 to a body section, and shorten the introduction to avoid repeating the requirement definition."
+      ]
+    },
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C8",
+        "C7"
+      ],
+      "sections": [
+        {
+          "title": "When a ULA permit is required",
+          "claims": [
+            "C2",
+            "C6"
+          ]
+        },
+        {
+          "title": "Purpose and benefits of compliance",
+          "claims": [
+            "C3",
+            "C5"
+          ]
+        },
+        {
+          "title": "Design standards and clearances",
+          "claims": [
+            "C39",
+            "C29",
+            "C14",
+            "C15",
+            "C25"
+          ]
+        },
+        {
+          "title": "Pipeline circulation exceptions",
+          "claims": [
+            "C33",
+            "C34",
+            "C24"
+          ]
+        },
+        {
+          "title": "Step-by-step ULA application workflow",
+          "claims": [
+            "C43",
+            "C37",
+            "C38",
+            "C36",
+            "C42",
+            "C12",
+            "C13",
+            "C10",
+            "C30",
+            "C41",
+            "C9",
+            "C21",
+            "C32",
+            "C17",
+            "C27",
+            "C35",
+            "C26",
+            "C19",
+            "C18",
+            "C45",
+            "C22",
+            "C44",
+            "C28",
+            "C31",
+            "C20",
+            "C23"
+          ]
+        },
+        {
+          "title": "Source documents and online access",
+          "claims": [
+            "C11",
+            "C16"
+          ]
+        },
+        {
+          "title": "EPCOR traffic signal and streetlight context",
+          "claims": [
+            "C40"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "The Utility Line Assignment is the City of Edmonton application process a designer uses to coordinate ground-disturbing utility work in the road allowance with stakeholders, ending in a ULA permit.",
+    "readingOrderRationale": "The introduction defines the process, then the body covers when a permit is needed, its purpose, standards, the pipeline exception, the full workflow in one section, source material, and unrelated EPCOR context last.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 2,
+        "reason": "Claims are used once, but the workflow section lists 26 claims including duplicates of the flowchart description (C37, C43) and overlapping step claims (C19, C7, C8 vs C21), while C7 and C8 are in the introduction. C1 and C7 both carry the definition; C7 duplicates C1. Duplicate refs across sections and introduction weaken grounding.)"
+      },
+      "cohesion": {
+        "score": 1,
+        "reason": "The 'Step-by-step ULA application workflow' section is a grab bag of 26 claims mixing workflow steps, flowchart descriptions, the trigger, the preliminary design, stakeholder conditions and the permit. 'Design standards and clearances' includes C29, which is EPCOR designer compliance, and C25 belongs with clearances, but C29 is a general compliance statement. 'Pipeline circulation exceptions' is coherent.)"
+      },
+      "flow": {
+        "score": 2,
+        "reason": "Introduction goes straight to 'When a ULA permit is required' and 'Purpose and benefits' before the workflow, which is reasonable. But the workflow section is unordered: C43 and C37 summarize the whole flowchart before steps, and C45 (permit received) and C22 (permit reviewed) appear after C18 (step 9 approval), while C17 (step 6) and C35 (step 8) are mixed into the sequence. The claims cannot be followed in step order.)"
+      },
+      "headings": {
+        "score": 3,
+        "reason": "Headings are descriptive and distinct: 'When a ULA permit is required', 'Pipeline circulation exceptions', 'Source documents and online access'. 'Purpose and benefits of compliance' and 'Design standards and clearances' are clear. 'EPCOR traffic signal and streetlight context' is accurate but tangential to the ULA subject.)"
+      },
+      "balance": {
+        "score": 1,
+        "reason": "The workflow section holds 26 of 45 claims, while sections such as 'EPCOR traffic signal and streetlight context' have one claim. The uneven split is a concrete problem: the workflow needs subdivision into stages (preliminary design, circulation, conditions, permit filing).)"
+      },
+      "introduction": {
+        "score": 2,
+        "reason": "The introduction cites C1, C4, C8 and C7, which define the subject, but C7 repeats C1 and the introduction does not state the central purpose clearly. Purpose claim C3 and C5 are placed in a later section rather than introduced here.)"
+      },
+      "blockingIssues": [
+        "Workflow section (26 claims) is a grab bag mixing flowchart summaries, step claims and the trigger; split into ordered stage headings.",
+        "C7 duplicates C1 and appears in the introduction, creating an overlap; keep one definition claim.",
+        "C40 (EPCOR traffic signals and streetlights) is unrelated to ULA and is isolated in its own section; it is a misplaced topic and should be moved or removed.",
+        "C29 (EPCOR distribution designer compliance) sits among clearance standards without clear connection; move it to a compliance or standards heading."
+      ],
+      "fixes": [
+        "Move C7 out of the introduction and keep C1 as the definition; move C8 to the workflow overview.",
+        "Split the workflow section into ordered headings: preliminary design and ULA determination (C42, C12, C36), application and drawing (C9, C30, C13, C10, C41), circulation and objections (C21, C32, C35, C17, C27, C26), conditions and permit (C19, C18, C22, C44, C28, C31, C45), filing (C20, C23). Place summary claims C43 and C37 at the start of the section.",
+        "Reorder the stage sections by process sequence and place C38 (Data lane tools) with the application stage or the flowchart summary.",
+        "Move C40 to a 'Related EPCOR services' heading or remove it as unrelated to the ULA process.",
+        "Move C29 under a 'Compliance and standards' heading with C39.",
+        "Keep C24 and C33/C34 in the pipeline section, and move C11 and C16 to the source documents section as they are."
+      ]
+    },
+    "accepted": false
+  }
+]

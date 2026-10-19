@@ -1,0 +1,319 @@
+{
+  "result": {
+    "composition": {
+      "figures": [],
+      "omitted": "I added no figures. The Wharram Percy and ridge-and-furrow searches found suitable photos on Wikimedia Commons, but the visual check could not download most of them because of rate limits (HTTP 429). The one photo it did check showed no visible ridges, so it was rejected. I imported only checked photos, so none were added. I did not draw diagrams because the article gives no layout or measurements for an accurate spatial drawing."
+    },
+    "attempt": null,
+    "selection": {
+      "selected": [
+        "Overview",
+        "Reasons for desertion",
+        "Examples"
+      ],
+      "assessments": [
+        {
+          "section": "Overview",
+          "visuallyExplainable": true,
+          "useful": true,
+          "supported": true,
+          "distinct": true,
+          "priority": 4,
+          "learningGoal": "What does a deserted medieval village site look like today, with only earthworks or cropmarks left?",
+          "evidence": [
+            "P1"
+          ],
+          "reason": "Readers may struggle to picture a village that left only earthworks or cropmarks. A real aerial or ground photograph of such earthworks, found through web image search, shows this clearly."
+        },
+        {
+          "section": "Other deserted settlements",
+          "visuallyExplainable": false,
+          "useful": false,
+          "supported": true,
+          "distinct": true,
+          "priority": 1,
+          "learningGoal": "Which deserted settlements are not medieval?",
+          "evidence": [
+            "P2"
+          ],
+          "reason": "This is a short note on date range and causes, with nothing physical to show."
+        },
+        {
+          "section": "Reasons for desertion",
+          "visuallyExplainable": true,
+          "useful": true,
+          "supported": true,
+          "distinct": true,
+          "priority": 4,
+          "learningGoal": "What does the medieval ridge and furrow pattern that survives in fields look like?",
+          "evidence": [
+            "P4"
+          ],
+          "reason": "The text says ridge and furrow remains visible today, but the pattern is hard to imagine from words. A photograph shows the surviving trace of former cropland."
+        },
+        {
+          "section": "Examples",
+          "visuallyExplainable": true,
+          "useful": true,
+          "supported": true,
+          "distinct": true,
+          "priority": 4,
+          "learningGoal": "What do Wharram Percy's ruined church and former fishpond look like today?",
+          "evidence": [
+            "P6"
+          ],
+          "reason": "Wharram Percy is the best-known example, and its church and fishpond are still visible. A real photograph would show readers a typical deserted village site."
+        }
+      ]
+    }
+  },
+  "assets": [],
+  "attempts": 0,
+  "audits": [
+    {
+      "name": "candidates",
+      "data": {
+        "grades": [
+          {
+            "id": "6585802",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          },
+          {
+            "id": "13199240",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          },
+          {
+            "id": "183989393",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          }
+        ],
+        "images": [
+          {
+            "id": "6585802",
+            "title": "Wharram Percy Geograph.jpg",
+            "description": "Picture of Wharram Percey, from this image at Geograph.org.uk.\nSubmitted to that site by Paul Allison\nTaken in 1993\n\nDescription: Deserted Medieval Village, Looking north from old Fish Pond",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Wharram_Percy_Geograph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy_Geograph.jpg",
+            "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Wharram_Percy_Geograph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+            "creator": "The original uploader was Nyh at English Wikipedia.",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          },
+          {
+            "id": "13199240",
+            "title": "Wharram Percy, St Martins Church - geograph.org.uk - 659805.jpg",
+            "description": "Ruin of St Martin's parish church, Wharram Percy, Ryedale, Yorkshire: view from the southeast, showing the chancel",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy,_St_Martins_Church_-_geograph.org.uk_-_659805.jpg",
+            "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+            "creator": "dennis smith",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          },
+          {
+            "id": "183989393",
+            "title": "Wharram Percy Church.jpg",
+            "description": "The church interior, looking towards the tower",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Wharram_Percy_Church.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy_Church.jpg",
+            "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Wharram_Percy_Church.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+            "creator": "HallCastleKing",
+            "license": "CC0",
+            "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+          }
+        ]
+      }
+    },
+    {
+      "name": "candidates",
+      "data": {
+        "grades": [
+          {
+            "subjectMatch": 1,
+            "learningValue": 0,
+            "composition": 2,
+            "thumbnailClarity": 2,
+            "contextualFit": 0,
+            "problems": [
+              "No ridge and furrow earthworks are visible; the image shows a generic grassy meadow with tall grass and trees.",
+              "The caption about the field being the village's birthplace does not relate to desertion.",
+              "The image does not show any cause of desertion discussed in the selected section.",
+              "Scenic mood takes the place of observable evidence."
+            ],
+            "reason": "Reject. The photo shows an ordinary meadow, not visible ridge and furrow traces. It cannot illustrate the reasons for desertion, so it does not earn a place in this section.",
+            "id": "12988662",
+            "total": 5,
+            "accepted": false
+          },
+          {
+            "id": "9268029",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          },
+          {
+            "id": "113202784",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          },
+          {
+            "id": "114494519",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          },
+          {
+            "id": "148338285",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          },
+          {
+            "id": "156620810",
+            "accepted": false,
+            "total": 0,
+            "subjectMatch": 0,
+            "learningValue": 0,
+            "composition": 0,
+            "thumbnailClarity": 0,
+            "contextualFit": 0,
+            "problems": [
+              "Could not download the selected image (HTTP 429)."
+            ],
+            "reason": "No pixel review available."
+          }
+        ],
+        "model": "anthropic/claude-haiku-5-5",
+        "images": [
+          {
+            "id": "9268029",
+            "title": "Ridge and Furrow - geograph.org.uk - 150726.jpg",
+            "description": "Ridge and Furrow near to Walton on The Wolds, Leicestershire, Great Britain. At the top of the hill on Melton Road out of Barrow on Soar.",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ridge_and_Furrow_-_geograph.org.uk_-_150726.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_Furrow_-_geograph.org.uk_-_150726.jpg",
+            "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ridge_and_Furrow_-_geograph.org.uk_-_150726.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+            "creator": "Kate Jewell",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          },
+          {
+            "id": "12988662",
+            "title": "Ridge and Furrow Hay Field - geograph.org.uk - 468370.jpg",
+            "description": "Ridge and Furrow Hay Field This small ridge and furrow field lies behind houses on the High Street. Along with the Church and ancient saxon settlement this field was the birthplace of our village.",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Ridge_and_Furrow_Hay_Field_-_geograph.org.uk_-_468370.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_Furrow_Hay_Field_-_geograph.org.uk_-_468370.jpg",
+            "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Ridge_and_Furrow_Hay_Field_-_geograph.org.uk_-_468370.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+            "creator": "kate",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          },
+          {
+            "id": "113202784",
+            "title": "Ridge and furrow field - geograph.org.uk - 2854974.jpg",
+            "description": "Ridge and furrow field",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/87/Ridge_and_furrow_field_-_geograph.org.uk_-_2854974.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_2854974.jpg",
+            "creator": "Hugh Venables",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          },
+          {
+            "id": "114494519",
+            "title": "Ridge and furrow field - geograph.org.uk - 3098075.jpg",
+            "description": "Ridge and furrow field",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Ridge_and_furrow_field_-_geograph.org.uk_-_3098075.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_3098075.jpg",
+            "creator": "Hugh Venables",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          },
+          {
+            "id": "148338285",
+            "title": "Ridge and furrow field - geograph.org.uk - 6325303.jpg",
+            "description": "Ridge and furrow field",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Ridge_and_furrow_field_-_geograph.org.uk_-_6325303.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_6325303.jpg",
+            "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Ridge_and_furrow_field_-_geograph.org.uk_-_6325303.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+            "creator": "Ian Calderwood",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          },
+          {
+            "id": "156620810",
+            "title": "Ridge and furrow field - geograph.org.uk - 7080514.jpg",
+            "description": "Ridge and furrow field",
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Ridge_and_furrow_field_-_geograph.org.uk_-_7080514.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+            "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_7080514.jpg",
+            "creator": "Philip Halling",
+            "license": "CC BY-SA 2.0",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+          }
+        ]
+      }
+    }
+  ],
+  "liveWrites": 0
+}

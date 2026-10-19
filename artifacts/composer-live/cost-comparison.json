@@ -1,0 +1,208 @@
+{
+  "ppeBefore": [
+    {
+      "created_at": "2026-10-17T16:48:09.502876+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 15373,
+      "completion_tokens": 896,
+      "status": "ok",
+      "duration_ms": 9786,
+      "estimatedCost": 0.079412
+    },
+    {
+      "created_at": "2026-10-17T16:48:19.862161+00:00",
+      "purpose": "article_composition",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 77597,
+      "completion_tokens": 793,
+      "status": "ok",
+      "duration_ms": 33871,
+      "estimatedCost": 0.326248
+    },
+    {
+      "created_at": "2026-10-17T16:48:23.731684+00:00",
+      "purpose": "composer_context_review",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 13151,
+      "completion_tokens": 180,
+      "status": "ok",
+      "duration_ms": 3327,
+      "estimatedCost": 0.056204
+    },
+    {
+      "created_at": "2026-10-17T16:48:27.133861+00:00",
+      "purpose": "composer_visual_review",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 12676,
+      "completion_tokens": 153,
+      "status": "ok",
+      "duration_ms": 3111,
+      "estimatedCost": 0.053764
+    }
+  ],
+  "noiseBefore": [
+    {
+      "created_at": "2026-10-17T16:48:54.249406+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 15256,
+      "completion_tokens": 551,
+      "status": "ok",
+      "duration_ms": 7008,
+      "estimatedCost": 0.072044
+    },
+    {
+      "created_at": "2026-10-17T16:48:56.536385+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 15369,
+      "completion_tokens": 665,
+      "status": "ok",
+      "duration_ms": 8881,
+      "estimatedCost": 0.074776
+    },
+    {
+      "created_at": "2026-10-17T16:49:12.387887+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 15398,
+      "completion_tokens": 816,
+      "status": "ok",
+      "duration_ms": 10106,
+      "estimatedCost": 0.077912
+    },
+    {
+      "created_at": "2026-10-17T16:49:19.80648+00:00",
+      "purpose": "article_composition",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 97210,
+      "completion_tokens": 1042,
+      "status": "ok",
+      "duration_ms": 38241,
+      "estimatedCost": 0.40968
+    },
+    {
+      "created_at": "2026-10-17T16:49:24.562457+00:00",
+      "purpose": "composer_context_review",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 13475,
+      "completion_tokens": 225,
+      "status": "ok",
+      "duration_ms": 4096,
+      "estimatedCost": 0.0584
+    },
+    {
+      "created_at": "2026-10-17T16:49:28.309168+00:00",
+      "purpose": "composer_visual_review",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 12983,
+      "completion_tokens": 144,
+      "status": "ok",
+      "duration_ms": 3409,
+      "estimatedCost": 0.054812
+    }
+  ],
+  "optimizedRuns": [
+    {
+      "created_at": "2026-10-17T16:58:28.456831+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 4469,
+      "completion_tokens": 327,
+      "status": "ok",
+      "duration_ms": 4232,
+      "estimatedCost": 0.024416
+    },
+    {
+      "created_at": "2026-10-17T16:58:33.265217+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 6385,
+      "completion_tokens": 781,
+      "status": "ok",
+      "duration_ms": 9175,
+      "estimatedCost": 0.04116
+    },
+    {
+      "created_at": "2026-10-17T16:58:39.524661+00:00",
+      "purpose": "article_composition",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 23850,
+      "completion_tokens": 733,
+      "status": "ok",
+      "duration_ms": 23621,
+      "estimatedCost": 0.11006
+    },
+    {
+      "created_at": "2026-10-17T16:59:21.095085+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 6385,
+      "completion_tokens": 894,
+      "status": "ok",
+      "duration_ms": 8701,
+      "estimatedCost": 0.04342
+    },
+    {
+      "created_at": "2026-10-17T16:59:32.965811+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 6356,
+      "completion_tokens": 628,
+      "status": "ok",
+      "duration_ms": 7504,
+      "estimatedCost": 0.037984
+    },
+    {
+      "created_at": "2026-10-17T16:59:49.151736+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 6495,
+      "completion_tokens": 748,
+      "status": "ok",
+      "duration_ms": 8366,
+      "estimatedCost": 0.04094
+    },
+    {
+      "created_at": "2026-10-17T16:59:59.691433+00:00",
+      "purpose": "article_composition",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 79203,
+      "completion_tokens": 983,
+      "status": "ok",
+      "duration_ms": 53086,
+      "estimatedCost": 0.336472
+    },
+    {
+      "created_at": "2026-10-17T17:00:45.56851+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 7071,
+      "completion_tokens": 835,
+      "status": "ok",
+      "duration_ms": 8867,
+      "estimatedCost": 0.044984
+    },
+    {
+      "created_at": "2026-10-17T17:00:57.863033+00:00",
+      "purpose": "composer_image_comparison",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 7062,
+      "completion_tokens": 717,
+      "status": "ok",
+      "duration_ms": 7489,
+      "estimatedCost": 0.042588
+    },
+    {
+      "created_at": "2026-10-17T17:01:07.617802+00:00",
+      "purpose": "article_composition",
+      "model": "anthropic/claude-opus-5-5",
+      "prompt_tokens": 78105,
+      "completion_tokens": 834,
+      "status": "ok",
+      "duration_ms": 39269,
+      "estimatedCost": 0.3291
+    }
+  ]
+}

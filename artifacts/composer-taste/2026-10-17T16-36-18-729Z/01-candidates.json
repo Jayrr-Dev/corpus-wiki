@@ -1,0 +1,36 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 2,
+      "learningValue": 1,
+      "composition": 2,
+      "thumbnailClarity": 1,
+      "contextualFit": 1,
+      "problems": [
+        "Earthworks and ridge and furrow are not clearly discernible at thumbnail size; the image reads as a generic grassy hillside.",
+        "Nothing visible illustrates a cause of desertion such as flooding, conversion to sheep pasture, or emparkment."
+      ],
+      "improvements": [
+        "Look for an aerial or low-sun photograph showing clear ridge and furrow or village earthworks under pasture."
+      ],
+      "reason": "The metadata places a deserted village site here, but the pixels show a plain grassy slope with faint marks and distant farm buildings. It does not clearly show ridge and furrow or any cause of desertion, so reject it.",
+      "id": "13839479",
+      "total": 7,
+      "accepted": false
+    }
+  ],
+  "model": "anthropic/claude-opus-5-5",
+  "images": [
+    {
+      "id": "13839479",
+      "title": "Stream valley west of East Heddon - geograph.org.uk - 1124337.jpg",
+      "description": "Stream valley west of East Heddon The buildings on the opposite hillside are Hawthorn Cottage on the left and East Heddon on the right. They are on the site of a deserted medieval village although little can now be seen despite a few earthworks and ridge and furrow ploughing. The farm buildings at East Heddon include some of the oldest in Heddon and have recently have been converted into a number of dwelling houses.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dd/Stream_valley_west_of_East_Heddon_-_geograph.org.uk_-_1124337.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Stream_valley_west_of_East_Heddon_-_geograph.org.uk_-_1124337.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Stream_valley_west_of_East_Heddon_-_geograph.org.uk_-_1124337.jpg/500px-Stream_valley_west_of_East_Heddon_-_geograph.org.uk_-_1124337.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Andrew Curtis",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    }
+  ]
+}

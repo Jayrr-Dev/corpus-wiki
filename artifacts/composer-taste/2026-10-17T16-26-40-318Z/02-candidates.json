@@ -1,0 +1,157 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 1,
+      "learningValue": 1,
+      "composition": 2,
+      "thumbnailClarity": 1,
+      "contextualFit": 1,
+      "problems": [
+        "Ridge and furrow earthworks are not visible; the field looks flat and grassy.",
+        "Generic meadow scene does not show the land-use change described in the section.",
+        "At 256px, the image reads as only green grass and sky.",
+        "The caption claims a ridge and furrow field, but the pixels do not confirm it."
+      ],
+      "reason": "Reject. The image shows a generic grassy meadow with no visible ridge and furrow traces, so it cannot show the sheep-pasture land change in the Reasons for desertion section.",
+      "id": "12988662",
+      "total": 6,
+      "accepted": false
+    },
+    {
+      "id": "9268029",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "113202784",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "114494519",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "148338285",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "156620810",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    }
+  ],
+  "model": "anthropic/claude-haiku-5-5",
+  "images": [
+    {
+      "id": "9268029",
+      "title": "Ridge and Furrow - geograph.org.uk - 150726.jpg",
+      "description": "Ridge and Furrow near to Walton on The Wolds, Leicestershire, Great Britain. At the top of the hill on Melton Road out of Barrow on Soar.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ridge_and_Furrow_-_geograph.org.uk_-_150726.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_Furrow_-_geograph.org.uk_-_150726.jpg",
+      "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Ridge_and_Furrow_-_geograph.org.uk_-_150726.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "creator": "Kate Jewell",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "12988662",
+      "title": "Ridge and Furrow Hay Field - geograph.org.uk - 468370.jpg",
+      "description": "Ridge and Furrow Hay Field This small ridge and furrow field lies behind houses on the High Street. Along with the Church and ancient saxon settlement this field was the birthplace of our village.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Ridge_and_Furrow_Hay_Field_-_geograph.org.uk_-_468370.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_Furrow_Hay_Field_-_geograph.org.uk_-_468370.jpg",
+      "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Ridge_and_Furrow_Hay_Field_-_geograph.org.uk_-_468370.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "creator": "kate",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "113202784",
+      "title": "Ridge and furrow field - geograph.org.uk - 2854974.jpg",
+      "description": "Ridge and furrow field",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/87/Ridge_and_furrow_field_-_geograph.org.uk_-_2854974.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_2854974.jpg",
+      "creator": "Hugh Venables",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "114494519",
+      "title": "Ridge and furrow field - geograph.org.uk - 3098075.jpg",
+      "description": "Ridge and furrow field",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/70/Ridge_and_furrow_field_-_geograph.org.uk_-_3098075.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_3098075.jpg",
+      "creator": "Hugh Venables",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "148338285",
+      "title": "Ridge and furrow field - geograph.org.uk - 6325303.jpg",
+      "description": "Ridge and furrow field",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Ridge_and_furrow_field_-_geograph.org.uk_-_6325303.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_6325303.jpg",
+      "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0d/Ridge_and_furrow_field_-_geograph.org.uk_-_6325303.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "creator": "Ian Calderwood",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "156620810",
+      "title": "Ridge and furrow field - geograph.org.uk - 7080514.jpg",
+      "description": "Ridge and furrow field",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1f/Ridge_and_furrow_field_-_geograph.org.uk_-_7080514.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ridge_and_furrow_field_-_geograph.org.uk_-_7080514.jpg",
+      "creator": "Philip Halling",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    }
+  ]
+}

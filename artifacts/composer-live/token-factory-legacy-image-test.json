@@ -1,0 +1,6 @@
+{
+  "endpoint": "https://api.studio.nebius.ai/v1/images/generations",
+  "status": 404,
+  "error": "Not Found",
+  "images": 0
+}

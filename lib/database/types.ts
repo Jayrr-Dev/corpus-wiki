@@ -126,6 +126,38 @@ export type Database = {
         }
         Relationships: []
       }
+      suggestion_runs: {
+        Row: {
+          id: string; space_id: string; requested_by: string | null; scope: Json; state: "queued" | "running" | "done" | "failed"; phase: string | null; groups: Json | null;
+          done: number; total: number; suggested: number; tokens_in: number; tokens_out: number; lease_token: string | null; lease_until: string | null;
+          attempts: number; error: string | null; created_at: string; started_at: string | null; finished_at: string | null;
+        }
+        Insert: { id?: string; requested_by?: string | null; scope?: Json }
+        Update: {
+          state?: "queued" | "running" | "done" | "failed"; phase?: string | null; groups?: Json | null; done?: number; total?: number; suggested?: number;
+          tokens_in?: number; tokens_out?: number; lease_token?: string | null; lease_until?: string | null; error?: string | null; finished_at?: string | null;
+        }
+        Relationships: []
+      }
+      article_suggestions: {
+        Row: {
+          id: string; space_id: string; run_id: string; group_key: string; kind: "create" | "merge"; page_id: string | null; title: string;
+          article_type: "entity" | "process" | "requirement" | "concept" | null; entity_id: string | null; scope: string; rationale: string; sections: Json;
+          unit_ids: string[]; revision_ids: string[]; signals: Json; status: "pending" | "accepting" | "applied" | "dismissed" | "stale" | "failed";
+          note: string | null; result_page_id: string | null; model: string | null; tokens_in: number | null; tokens_out: number | null;
+          lease_token: string | null; lease_until: string | null; attempts: number; created_at: string; decided_at: string | null; decided_by: string | null;
+        }
+        Insert: {
+          id?: string; run_id: string; group_key: string; kind: "create" | "merge"; page_id?: string | null; title: string;
+          article_type?: "entity" | "process" | "requirement" | "concept" | null; entity_id?: string | null; scope?: string; rationale?: string; sections: Json;
+          unit_ids: string[]; revision_ids: string[]; signals?: Json; model?: string | null; tokens_in?: number | null; tokens_out?: number | null;
+        }
+        Update: {
+          title?: string; status?: "pending" | "accepting" | "applied" | "dismissed" | "stale" | "failed"; note?: string | null; result_page_id?: string | null;
+          lease_token?: string | null; lease_until?: string | null; attempts?: number; decided_at?: string | null; decided_by?: string | null;
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           media_url: string | null; attribution: string | null; license: string | null; entity_id: string | null;
@@ -1153,6 +1185,35 @@ export type Database = {
       }
     }
     Views: {
+      article_knowledge: {
+        Row: {
+          article_type: string | null
+          page_id: string | null
+          slug: string | null
+          title: string | null
+          unit_count: number | null
+        }
+        Relationships: []
+      }
+      knowledge_usage: {
+        Row: {
+          unit_count: number | null
+          used_unit_count: number | null
+        }
+        Relationships: []
+      }
+      section_knowledge: {
+        Row: {
+          page_id: string | null
+          position: number | null
+          section_id: string | null
+          section_title: string | null
+          unit_content: string | null
+          unit_id: string | null
+          unit_title: string | null
+        }
+        Relationships: []
+      }
       section_lines: {
         Row: {
           author: Database["public"]["Enums"]["actor_kind"] | null
@@ -1184,6 +1245,7 @@ export type Database = {
           line_count: number | null
           source_id: string | null
           unit_count: number | null
+          used_unit_count: number | null
         }
         Relationships: []
       }

@@ -43,12 +43,20 @@ export async function runCurator(progress: (detail: string) => void = () => {}) 
   });
 }
 
+// Knowledge waiting in an unanswered article suggestion (/units?view=suggestions) is a
+// person's decision: the Curator does not propose articles for it meanwhile
+async function withoutHeldClaims(db: DbRpc, snapshot: CuratorSnapshot): Promise<CuratorSnapshot> {
+  if (!snapshot.unplaced?.length) return snapshot;
+  const held = new Set(await db.call<string[]>("held_suggestion_units"));
+  return held.size ? { ...snapshot, unplaced: snapshot.unplaced.filter((claim) => !held.has(claim.id)) } : snapshot;
+}
+
 // One pass, saved through change control (callers check who may start it)
 export async function runCuratorPass(db: DbRpc, progress: (detail: string) => void = () => {}, options: { scope?: CuratorScope } = {}): Promise<CuratorRunResult> {
   progress("Loading every page and the claims it cites…");
   const settings = tokenFactoryFromEnv(process.env, await readModelChoice(db), (call) => db.call("log_ai_call", { p_call: { ...call, role: "curator" } }));
   if (!settings) throw new Error("Configure an AI provider in Settings before curating pages.");
-  const snapshot = await attachCuratorVectors(db, await workflowStep("curator:snapshot", () => db.call<CuratorSnapshot>("curator_snapshot")));
+  const snapshot = await attachCuratorVectors(db, await withoutHeldClaims(db, await workflowStep("curator:snapshot", () => db.call<CuratorSnapshot>("curator_snapshot"))));
   const instructions = (await loadRoleInstructions(db)).find((row) => row.role === "curator")?.instructions ?? CURATOR_INSTRUCTIONS;
   const pass = await workflowStep("curator:plan", async () => curate(settings, snapshot, { charter: await readArticleCharter(db), instructions, onProgress: progress, scope: options.scope }));
   // Safety: a run never drops a claim from every page

@@ -1,0 +1,1 @@
+import {targetFromEnvironment} from '../scripts/db/targets.ts';const db=await targetFromEnvironment(process.env);try{console.log(JSON.stringify(await db.query(`select application_name,usename,count(*)::int connections from pg_stat_activity where datname=current_database() group by application_name,usename order by connections desc`)));}finally{await db.close();}

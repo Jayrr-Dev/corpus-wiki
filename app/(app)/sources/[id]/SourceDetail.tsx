@@ -1,17 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Facts, Note, QueryState, Section, TextLink, UnitLink } from "@/app/(app)/_components/bits";
-import { SourceState } from "../SourceState";
 import { DateTime } from "@/app/(app)/_components/DateTime";
 import { formatBytes, formatDate } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { usePersonName } from "@/app/(app)/_lib/useActorLabel";
+import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { SourceState } from "../SourceState";
 
 import type { Tables } from "@/lib/database/types";
 
+import { Tooltip } from "@/components/standard/tooltip";
+import { UploadWorkflowStatus, useUploadWorkflows } from "@/components/upload/UploadWorkflowStatus";
 import { glossaryAnchor } from "@/lib/glossary/entries";
 import { useShiftEvents, useSource, useSources } from "@/lib/queries";
 import { useSourceArticles, useSourceReach, useSourceUnitIds, useSourceUsage, useUnitSummaries } from "@/lib/queries/screens";
@@ -19,7 +21,6 @@ import { SourcePreview } from "../SourcePreview";
 import { SourceRowMenu } from "../SourceRowMenu";
 import { SourceFigures } from "./SourceFigures";
 import { SourcePassages } from "./SourcePassages";
-import { UploadWorkflowStatus, useUploadWorkflows } from "@/components/upload/UploadWorkflowStatus";
 
 // SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the articles built on it, the knowledge that cites it,
 // the definitions, entities and domains that knowledge produced, then its passages
@@ -112,7 +113,7 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
   if (source.byte_size !== null) facts.push(["Size", <span key="size" className="font-mono">{formatBytes(source.byte_size)}</span>]);
   if (usage) {
     facts.push(
-      ["Knowledge units", <span key="units" className="font-mono">{usage.units}</span>],
+      ["Knowledge units", <Tooltip key="units" content="How many of this file's knowledge units are cited by a live article section."><span className="font-mono">{usage.usedUnits} of {usage.units}</span></Tooltip>],
       ["Articles", <span key="articles" className="font-mono">{usage.articles}</span>],
       ["Article sections", <span key="sections" className="font-mono">{usage.sections}</span>],
       ["Article lines", <span key="lines" className="font-mono">{usage.lines}</span>],

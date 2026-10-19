@@ -1,0 +1,70 @@
+{
+  "kind": "offline synthetic scheduling replay",
+  "generatedAt": "2026-10-17T03:08:47.601Z",
+  "results": [
+    {
+      "fixture": "short document",
+      "repetitions": 5,
+      "sequentialMedianMs": 63,
+      "boundedMedianMs": 31,
+      "workers": 3,
+      "improvementPercent": 51
+    },
+    {
+      "fixture": "long document",
+      "repetitions": 5,
+      "sequentialMedianMs": 538,
+      "boundedMedianMs": 183,
+      "workers": 3,
+      "improvementPercent": 66
+    },
+    {
+      "fixture": "update existing knowledge",
+      "repetitions": 5,
+      "sequentialMedianMs": 109,
+      "boundedMedianMs": 46,
+      "workers": 3,
+      "improvementPercent": 58
+    },
+    {
+      "fixture": "several pages",
+      "repetitions": 5,
+      "sequentialMedianMs": 124,
+      "boundedMedianMs": 48,
+      "workers": 3,
+      "improvementPercent": 61
+    },
+    {
+      "fixture": "one page with many ordered sections",
+      "repetitions": 5,
+      "sequentialMedianMs": 185,
+      "boundedMedianMs": 186,
+      "workers": 3,
+      "improvementPercent": 0
+    },
+    {
+      "fixture": "stakeholder research",
+      "repetitions": 5,
+      "sequentialMedianMs": 121,
+      "boundedMedianMs": 62,
+      "workers": 2,
+      "improvementPercent": 49
+    },
+    {
+      "fixture": "embedding requests",
+      "repetitions": 5,
+      "sequentialMedianMs": 124,
+      "boundedMedianMs": 63,
+      "workers": 2,
+      "improvementPercent": 49
+    },
+    {
+      "fixture": "two uploads sharing a request budget",
+      "repetitions": 5,
+      "sequentialMedianMs": 364,
+      "boundedMedianMs": 124,
+      "workers": 3,
+      "improvementPercent": 66
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 3,
+    "problems": [],
+    "improvements": [
+      "The pond shown holds water, so say 'the fishpond' rather than implying a dry former pond, or note that it was later re-flooded.",
+      "The church tower is small at thumbnail size; a tighter crop on the pond and church would help."
+    ],
+    "reason": "The authentic photo shows both features named in the paragraph, the pond and the church, in their valley setting. It differs from the East Lilling earthworks figure. The church is small but recognizable in the thumbnail.",
+    "id": "6a3973af-8801-400e-82a6-245550023f0c",
+    "after": "P6",
+    "total": 16,
+    "accepted": false
+  },
+  "figure": {
+    "after": "P6",
+    "evidence": [
+      "P6"
+    ],
+    "learningGoal": "Shows the two Wharram Percy features the text names, the former fishpond and the ruined church, together in their valley setting.",
+    "caption": "Wharram Percy, North Yorkshire, in 1993, seen looking north from the old fishpond towards the ruined church.",
+    "alt": "A grassy valley seen from the site of the old fishpond at Wharram Percy, with the ruined church in the distance.",
+    "svg": "",
+    "assetId": "6a3973af-8801-400e-82a6-245550023f0c",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-opus-5-5"
+}

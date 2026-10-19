@@ -1,0 +1,110 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 2,
+      "learningValue": 1,
+      "composition": 2,
+      "thumbnailClarity": 1,
+      "contextualFit": 1,
+      "problems": [
+        "Earthworks are not discernible; the photographer notes sheep were the focus and an aerial view is needed.",
+        "Image shows sheep on a grassy ridge, not visible village traces."
+      ],
+      "reason": "Metadata names the Griff deserted village, but the pixels show grazing sheep and a tree against sky. The humps and bumps that define a deserted village are invisible.",
+      "id": "13153233",
+      "total": 7,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 2,
+      "learningValue": 1,
+      "composition": 1,
+      "thumbnailClarity": 1,
+      "contextualFit": 1,
+      "problems": [
+        "Earthworks are not discernible at thumbnail size; the image is dominated by a farmstead and patchwork fields.",
+        "Aircraft wing intrudes on the right edge."
+      ],
+      "reason": "Aerial view centres on a modern farm among ploughed fields. No village earthworks are visible, so it cannot show what a deserted site looks like.",
+      "id": "187662087",
+      "total": 6,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 2,
+      "learningValue": 1,
+      "composition": 1,
+      "thumbnailClarity": 1,
+      "contextualFit": 1,
+      "problems": [
+        "Hazy, oblique view; no earthworks are discernible.",
+        "Wing strut intrudes in the lower left corner."
+      ],
+      "reason": "A distant, hazy valley of fields with no identifiable house platforms or hollow ways. It reads as generic countryside.",
+      "id": "187662114",
+      "total": 6,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 2,
+      "learningValue": 1,
+      "composition": 2,
+      "thumbnailClarity": 1,
+      "contextualFit": 1,
+      "problems": [
+        "No village earthworks are discernible; fields, hedges and plough strips dominate."
+      ],
+      "reason": "Cleanest of the aerials, but it shows modern field patterns, not deserted-village traces. Reject all candidates; none shows the earthworks or cropmarks the Overview describes.",
+      "id": "188026490",
+      "total": 7,
+      "accepted": false
+    }
+  ],
+  "model": "anthropic/claude-opus-5-5",
+  "images": [
+    {
+      "id": "13153233",
+      "title": "Deserted Medieval Village of Griff - geograph.org.uk - 615670.jpg",
+      "description": "Deserted Medieval Village of Griff A field of well preserved humps and bumps give away where the village once stood. It was probably cleared during the construction of the grange farm to the east (now Griff Farm). Unfortunately it really needs an aerial view to show the earthworks to their best so on this occasion the sheep were more photogenic. \nThe site is designated as Open Access land under DEFRA's farm conservation scheme.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Deserted_Medieval_Village_of_Griff_-_geograph.org.uk_-_615670.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Village_of_Griff_-_geograph.org.uk_-_615670.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/Deserted_Medieval_Village_of_Griff_-_geograph.org.uk_-_615670.jpg/500px-Deserted_Medieval_Village_of_Griff_-_geograph.org.uk_-_615670.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Mick Garratt",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "187662087",
+      "title": "Deserted Medieval Earthworks, Stainton le Vale, aerial 2026 (1) - geograph.org.uk - 8261312.jpg",
+      "description": "Deserted Medieval Earthworks, Stainton le Vale: aerial 2026 (1)",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e7/Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%281%29_-_geograph.org.uk_-_8261312.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Earthworks,_Stainton_le_Vale,_aerial_2026_(1)_-_geograph.org.uk_-_8261312.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e7/Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%281%29_-_geograph.org.uk_-_8261312.jpg/500px-Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%281%29_-_geograph.org.uk_-_8261312.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Chris",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "187662114",
+      "title": "Deserted Medieval Earthworks, Stainton le Vale, aerial 2026 (2) - geograph.org.uk - 8261314.jpg",
+      "description": "Deserted Medieval Earthworks, Stainton le Vale: aerial 2026 (2)",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%282%29_-_geograph.org.uk_-_8261314.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Earthworks,_Stainton_le_Vale,_aerial_2026_(2)_-_geograph.org.uk_-_8261314.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%282%29_-_geograph.org.uk_-_8261314.jpg/500px-Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%282%29_-_geograph.org.uk_-_8261314.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Chris",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "188026490",
+      "title": "Deserted Medieval Earthworks, Stainton le Vale, aerial 2026 (3) - geograph.org.uk - 8263515.jpg",
+      "description": "Deserted Medieval Earthworks, Stainton le Vale: aerial 2026 (3)",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/83/Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%283%29_-_geograph.org.uk_-_8263515.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Earthworks,_Stainton_le_Vale,_aerial_2026_(3)_-_geograph.org.uk_-_8263515.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%283%29_-_geograph.org.uk_-_8263515.jpg/500px-Deserted_Medieval_Earthworks%2C_Stainton_le_Vale%2C_aerial_2026_%283%29_-_geograph.org.uk_-_8263515.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Simon Tomson",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    }
+  ]
+}

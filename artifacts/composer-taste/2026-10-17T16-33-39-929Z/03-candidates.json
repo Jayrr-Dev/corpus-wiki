@@ -1,0 +1,163 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 4,
+      "learningValue": 3,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 4,
+      "problems": [],
+      "improvements": [
+        "Caption should name East Lilling and point out the humps and hollows as house-platform earthworks."
+      ],
+      "reason": "The strongest choice. Undulating grassy earthworks fill the frame in clear light, directly showing the Overview's point that DMVs leave only earthworks. The others show flat fields, distant views or woodland where traces are faint.",
+      "id": "12282947",
+      "total": 17,
+      "accepted": true
+    },
+    {
+      "subjectMatch": 3,
+      "learningValue": 2,
+      "composition": 2,
+      "thumbnailClarity": 1,
+      "contextualFit": 2,
+      "problems": [
+        "Earthworks and moat are not discernible at thumbnail size; the low sun and foreground weeds dominate."
+      ],
+      "improvements": [],
+      "reason": "The image is attractive, but it shows mostly a dark field and grasses rather than visible village remains.",
+      "id": "9204280",
+      "total": 10,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 3,
+      "learningValue": 2,
+      "composition": 2,
+      "thumbnailClarity": 1,
+      "contextualFit": 2,
+      "problems": [
+        "The village earthworks are not clearly visible; the foreground cow parsley and the distant hillside dominate."
+      ],
+      "improvements": [],
+      "reason": "The scenic valley view leaves the North Ormsby village remains too faint to teach anything.",
+      "id": "9285982",
+      "total": 10,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 2,
+      "learningValue": 1,
+      "composition": 1,
+      "thumbnailClarity": 1,
+      "contextualFit": 1,
+      "problems": [
+        "The image shows a flat pasture under grey sky; no earthworks are discernible."
+      ],
+      "improvements": [],
+      "reason": "The image shows a dull, distant farm view with no visible village traces.",
+      "id": "12951733",
+      "total": 6,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 1,
+      "learningValue": 0,
+      "composition": 1,
+      "thumbnailClarity": 1,
+      "contextualFit": 0,
+      "problems": [
+        "The image shows woodland and a puddle; no earthworks are visible."
+      ],
+      "improvements": [],
+      "reason": "Nothing in the pixels shows a deserted village.",
+      "id": "13184869",
+      "total": 3,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 3,
+      "learningValue": 2,
+      "composition": 2,
+      "thumbnailClarity": 2,
+      "contextualFit": 2,
+      "problems": [
+        "Earthworks appear only as faint low bumps behind the fence and foliage."
+      ],
+      "improvements": [],
+      "reason": "This is the second-best option, but the humps are subtle and the foreground clutter weakens it.",
+      "id": "106475116",
+      "total": 11,
+      "accepted": false
+    }
+  ],
+  "model": "anthropic/claude-opus-5-5",
+  "images": [
+    {
+      "id": "9204280",
+      "title": "Deserted Medieval Village of Manxey - geograph.org.uk - 109631.jpg",
+      "description": "Deserted Medieval Village of Manxey. The earthworks and a moat are the only remains of the village of Manxey now populated only by sheep. This view looks north east from the Wartling Road.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/63/Deserted_Medieval_Village_of_Manxey_-_geograph.org.uk_-_109631.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Village_of_Manxey_-_geograph.org.uk_-_109631.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Deserted_Medieval_Village_of_Manxey_-_geograph.org.uk_-_109631.jpg/500px-Deserted_Medieval_Village_of_Manxey_-_geograph.org.uk_-_109631.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Simon Carey",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "9285982",
+      "title": "Deserted Medieval Village - geograph.org.uk - 179481.jpg",
+      "description": "Deserted Medieval Village. DMV of North Ormsby and Cistercian Abbey earthworks, the line of the 'salt road' clearly visible on the hillside.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/15/Deserted_Medieval_Village_-_geograph.org.uk_-_179481.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Village_-_geograph.org.uk_-_179481.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Deserted_Medieval_Village_-_geograph.org.uk_-_179481.jpg/500px-Deserted_Medieval_Village_-_geograph.org.uk_-_179481.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Richard Croft",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "12282947",
+      "title": "Earthworks of the Medieval Village of East Lilling - geograph.org.uk - 264259.jpg",
+      "description": "Earthworks of the Medieval Village of East Lilling Nothing can be seen of the village now apart from earthworks.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/23/Earthworks_of_the_Medieval_Village_of_East_Lilling_-_geograph.org.uk_-_264259.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Earthworks_of_the_Medieval_Village_of_East_Lilling_-_geograph.org.uk_-_264259.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Earthworks_of_the_Medieval_Village_of_East_Lilling_-_geograph.org.uk_-_264259.jpg/500px-Earthworks_of_the_Medieval_Village_of_East_Lilling_-_geograph.org.uk_-_264259.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Phil Catterall",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "12951733",
+      "title": "Griff Farm across the earthworks of Griff deserted medieval village - geograph.org.uk - 432227.jpg",
+      "description": "Griff Farm across the earthworks of Griff deserted medieval village",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fe/Griff_Farm_across_the_earthworks_of_Griff_deserted_medieval_village_-_geograph.org.uk_-_432227.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Griff_Farm_across_the_earthworks_of_Griff_deserted_medieval_village_-_geograph.org.uk_-_432227.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Griff_Farm_across_the_earthworks_of_Griff_deserted_medieval_village_-_geograph.org.uk_-_432227.jpg/500px-Griff_Farm_across_the_earthworks_of_Griff_deserted_medieval_village_-_geograph.org.uk_-_432227.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Carol Rose",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "13184869",
+      "title": "Deserted Medieval Village - geograph.org.uk - 643398.jpg",
+      "description": "Deserted Medieval Village The earthwork remains of the settlement associated with the church at Segenhoe can be found in the woods here.  The woodland is private, but there is plenty to see by remaining on the paths",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d8/Deserted_Medieval_Village_-_geograph.org.uk_-_643398.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Village_-_geograph.org.uk_-_643398.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d8/Deserted_Medieval_Village_-_geograph.org.uk_-_643398.jpg/500px-Deserted_Medieval_Village_-_geograph.org.uk_-_643398.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Dennis simpson",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "106475116",
+      "title": "Earthworks of the deserted medieval village of Newsham - geograph.org.uk - 2148228.jpg",
+      "description": "Earthworks of the deserted medieval village of Newsham",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/24/Earthworks_of_the_deserted_medieval_village_of_Newsham_-_geograph.org.uk_-_2148228.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Earthworks_of_the_deserted_medieval_village_of_Newsham_-_geograph.org.uk_-_2148228.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/Earthworks_of_the_deserted_medieval_village_of_Newsham_-_geograph.org.uk_-_2148228.jpg/500px-Earthworks_of_the_deserted_medieval_village_of_Newsham_-_geograph.org.uk_-_2148228.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Humphrey Bolton",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    }
+  ]
+}

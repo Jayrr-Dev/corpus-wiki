@@ -1,0 +1,121 @@
+{
+  "mode": "cold",
+  "query": "Sound level meter with sound waves.png",
+  "assetId": "3fb61d54-5b60-477a-8e96-ab9cd99644b8",
+  "stats": {
+    "hits": 0,
+    "misses": 4,
+    "writes": 4
+  },
+  "results": {
+    "results": [
+      {
+        "id": "11067356",
+        "title": "PIIGS Mk 4 map.png",
+        "description": "I modified a copy of the map 'File:Commonwealth games 1998 medal winners.PNG' by Commons user Roke. It replaces my map 'File:PIGS Mk 3 map.png' which became defective would not update, when I uploaded the updated image. I added Antarctica to it.--Snow storm in Eastern Asia (talk) 15:03, 4 June 2010 (UTC)\n\nThe map's time frame is from 1st January 2007 to 1st July 31 2010. \nSorry about the length, I have globalized it.\nThe price of Nickel boomed in the late 1990s, then the price of nickel imploded from around $51,000 /£36,700 per metric ton in the May of 2007 to about $11,550/£8,300 per metric ton in the January of 2009. Prices were only just starting to recover as of January 2010, but most of Australia's nickel mines had gone bankrupt by then. As the price for high grade nickel sulphate ore recovered in 2010, so did the Australian mining industry.\nBy late 2010 both Iceland, the UK, the USA and Latvia are recovering after their major 2008 and 2009 banking failures and closures (Northern Rock, Icesave, Lehman Broths, etc). Belarus had a 20% overnight devaluation of the national currency on 2 January 2009. Germany and Egypt were going down with a heavy budget deficit on May 6th and February the 24th, 2010, respectively. The Czech Republic had a heavy budget deficit by 22-09-2009. The banking situation still remains unbalanced, and major banking breakdowns are now limited thanks to the guaranty of public funds in the USA. The Euro-zone is still to recover, but generally hasn't been affected by such profound banking failures, with the exception of Greece, Spain, Belgium and the UK. Slovakia gave money to their folding central bank on the 8th of December, 2009, and Norway’s oil output fell in both 2009 and 2010. 40% of Bosnians were jobless in mid 2010.\nConcerning the European 'PIIGS' countries shown on the map : Consecutively to the severe crisis in Greece, some speculation was made against other Euro-zone states, using the pejorative name of PIIGS (combination of the ini",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3a/PIIGS_Mk_4_map.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:PIIGS_Mk_4_map.png",
+        "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/PIIGS_Mk_4_map.png/500px-PIIGS_Mk_4_map.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "creator": "The original uploader was Snow storm in Eastern Asia at English Wikipedia.",
+        "license": "CC BY 3.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+        "visualGrade": {
+          "subjectMatch": 0,
+          "learningValue": 0,
+          "composition": 1,
+          "thumbnailClarity": 1,
+          "contextualFit": 0,
+          "problems": [
+            "Wrong subject: a world map of economic crisis countries has nothing to do with noise exposure or hearing protection.",
+            "The legend and patterns are illegible at thumbnail size."
+          ],
+          "reason": "This economic map is unrelated to workplace noise, so it cannot explain any part of the section.",
+          "id": "11067356",
+          "total": 2,
+          "accepted": false
+        }
+      },
+      {
+        "id": "46614085",
+        "title": "Sound level meter with sound waves.png",
+        "description": "Illustrates how sound pressure waves are converted to an electrical signal and displayed as a sound pressure level on a sound level meter",
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5a/Sound_level_meter_with_sound_waves.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Sound_level_meter_with_sound_waves.png",
+        "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5a/Sound_level_meter_with_sound_waves.png/500px-Sound_level_meter_with_sound_waves.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+        "creator": "Acousticator",
+        "license": "CC BY-SA 4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+        "visualGrade": {
+          "subjectMatch": 4,
+          "learningValue": 4,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "In the caption, link the reading to the program's 85 dB hearing protection threshold.",
+            "The labels are small at 256px; consider showing the image slightly larger."
+          ],
+          "reason": "It shows a real handheld sound level meter, the measuring tool the paragraph names, with a readable 90.1 dB reading and labels showing how it works. It is far more useful than the unrelated map.",
+          "id": "46614085",
+          "total": 18,
+          "accepted": true
+        }
+      }
+    ],
+    "instruction": "Choose among visually accepted candidates only. Compare grades and reasons rather than taking the first result. If all fail, refine the query toward a visible feature, try source=wikipedia for curated article pictures, or omit the image. Up to five distinct searches are available; do not keep repeating the same weak query. These are external photos/images, not AI-generated art. Empty results mean no verified reusable image was found."
+  },
+  "review": {
+    "accepted": true,
+    "grades": [
+      {
+        "subjectMatch": 4,
+        "learningValue": 4,
+        "composition": 3,
+        "thumbnailClarity": 3,
+        "contextualFit": 4,
+        "problems": [],
+        "improvements": [
+          "Annotation labels are small and may be hard to read at thumbnail size; the caption carries the key reading.",
+          "The busy glass-building background slightly distracts from the meter."
+        ],
+        "reason": "The image shows a real handheld sound level meter reading 90.1 dB, matching the paragraph's measurement method and 85 dB threshold. The caption is accurate, labels it as a generic example, and does not duplicate the respirator figure.",
+        "id": "3fb61d54-5b60-477a-8e96-ab9cd99644b8",
+        "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+        "total": 18,
+        "accepted": true
+      }
+    ],
+    "uninspected": [],
+    "problems": []
+  },
+  "calls": [
+    {
+      "purpose": "composer_image_comparison",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4980,
+      "completionTokens": 349,
+      "reasoningTokens": null,
+      "durationMs": 6093,
+      "status": "ok",
+      "error": null,
+      "role": "composer"
+    },
+    {
+      "purpose": "composer_context_review",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4281,
+      "completionTokens": 197,
+      "reasoningTokens": null,
+      "durationMs": 3185,
+      "status": "ok",
+      "error": null,
+      "role": "composer"
+    }
+  ],
+  "estimatedCost": 0.047964
+}

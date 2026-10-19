@@ -1,0 +1,117 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "d918d5c8-5ab4-4989-b355-6654e381bfc0",
+          "evidence": [
+            "d918d5c8-5ab4-4989-b355-6654e381bfc0"
+          ],
+          "learningGoal": "Give visual context for pipeline project coordination, where designers may need to contact pipeline companies directly about crossings or proximity agreements.",
+          "caption": "AI-generated illustration of pipeline project coordination; not an ATCO site.",
+          "alt": "AI-generated editorial illustration of two engineers reviewing a site plan beside a generic pipeline right-of-way. It is a conceptual example, not ATCO staff, facilities or a documented site.",
+          "svg": "",
+          "assetId": "aa8b0e88-9983-404f-bc92-8bbadb636e99",
+          "assetType": "drawing"
+        }
+      ],
+      "omitted": "No SVG was drawn, as requested. The reused image is a generic editorial illustration, not evidence for circulation rules or technical requirements. The existing ATCO Pipelines logo in the Overview stays unchanged. The clearance diagrams and the other logos do not match this paragraph."
+    },
+    "review": {
+      "usefulness": 2,
+      "grounding": 3,
+      "restraint": 3,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "The image adds only generic mood. It does not show the paragraph's key point: ULA circulation goes only to ATCO Pipelines, and the designer must contact other pipeline companies directly. Consider the source ULA process flowchart if it shows stakeholder circulation, or leave the section without a figure.",
+        "Tie the caption to the section's point, for example: 'Designers contact other pipeline companies directly; the City circulates ULA applications only to ATCO Pipelines.' Keep the AI-generated disclaimer."
+      ]
+    },
+    "total": 14,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 18089,
+    "tokensOut": 597
+  },
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "d918d5c8-5ab4-4989-b355-6654e381bfc0",
+          "evidence": [
+            "d918d5c8-5ab4-4989-b355-6654e381bfc0"
+          ],
+          "learningGoal": "Show that pipeline project coordination can include designers contacting pipeline companies directly, because the City circulates ULA applications only to ATCO Pipelines.",
+          "caption": "AI-generated illustration, not an ATCO site: designers contact other pipeline companies directly, because the City circulates ULA applications only to ATCO Pipelines.",
+          "alt": "AI-generated editorial illustration of two engineers reviewing a site plan beside a generic pipeline right-of-way. It is a conceptual example, not ATCO staff, facilities or a documented site, and it does not show circulation rules.",
+          "svg": "",
+          "assetId": "aa8b0e88-9983-404f-bc92-8bbadb636e99",
+          "assetType": "drawing"
+        }
+      ],
+      "omitted": "No SVG was drawn, as requested. The ULA process flowchart was not used because its description does not confirm it shows circulation limited to ATCO Pipelines. The reused image adds context only and is not evidence for technical rules. The existing ATCO Pipelines logo in the Overview stays unchanged. The clearance diagrams and other logos do not match this paragraph."
+    },
+    "review": {
+      "usefulness": 2,
+      "grounding": 3,
+      "restraint": 3,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [
+        "The caption says designers contact other pipeline companies directly, but the source makes that conditional: only when they apply for a high pressure pipeline crossing or proximity agreement. Presenting it as universal broadens the source's scope."
+      ],
+      "fixes": [
+        "Reword the caption to keep the condition, for example: \"AI-generated illustration, not an ATCO site. The City circulates ULA applications only to ATCO Pipelines; other pipeline companies learn of a project only if the designer applies to them for a crossing or proximity agreement.\"",
+        "The generic image adds little beyond context. Consider omitting it, or use a simple process diagram showing the City sending applications to ATCO only, with a separate designer-to-other-company path.",
+        "Shorten the alt text by removing the repeated disclaimers, since the caption already carries them."
+      ]
+    },
+    "total": 14,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 18604,
+    "tokensOut": 756
+  },
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "d918d5c8-5ab4-4989-b355-6654e381bfc0",
+          "evidence": [
+            "d918d5c8-5ab4-4989-b355-6654e381bfc0"
+          ],
+          "learningGoal": "Give editorial context for pipeline project coordination, where the City circulates ULA applications only to ATCO Pipelines and other companies learn of projects only through a designer's agreement application.",
+          "caption": "AI-generated illustration of pipeline project coordination, not an ATCO site. Other pipeline companies learn of a project only if the designer applies for a crossing or proximity agreement.",
+          "alt": "Illustration of two engineers reviewing a site plan beside a generic pipeline right-of-way.",
+          "svg": "",
+          "assetId": "aa8b0e88-9983-404f-bc92-8bbadb636e99",
+          "assetType": "drawing"
+        }
+      ],
+      "omitted": "No SVG was drawn, as the feedback requested reuse of the existing illustration. The image is editorial context only, not evidence for circulation rules. A process diagram was not drawn because the test asked for this asset. The ULA flowchart was not used because its description does not confirm circulation limited to ATCO Pipelines. The Overview logo stays unchanged."
+    },
+    "review": {
+      "usefulness": 2,
+      "grounding": 3,
+      "restraint": 3,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "The image is generic decoration and does not show the circulation rule. A simple process diagram (City ULA administrator sends to ATCO Pipelines only; other companies only through the designer's direct agreement application) would teach the section better.",
+        "Keep the caption's 'high pressure' qualifier: 'only if the designer applies directly for a high pressure pipeline crossing or proximity agreement.'",
+        "Credit the image in the caption or credits using the asset's attribution and its 'no company affiliation implied' note."
+      ]
+    },
+    "total": 14,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 18731,
+    "tokensOut": 627
+  }
+]

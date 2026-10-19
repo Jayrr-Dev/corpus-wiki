@@ -1,0 +1,255 @@
+{
+  "pageId": "0cf0833e-9894-42ea-a9bf-62a36eeb1c9b",
+  "plan": {
+    "title": "Enneagram Type Six (Loyalist): levels, anxiety, and growth",
+    "sections": [
+      {
+        "title": "Levels of development in the Enneagram",
+        "claims": [
+          "C57",
+          "C72",
+          "C59",
+          "C88",
+          "C92",
+          "C94",
+          "C61",
+          "C84",
+          "C78",
+          "C51"
+        ]
+      },
+      {
+        "title": "Movement from healthy to unhealthy expression",
+        "claims": [
+          "C4",
+          "C3",
+          "C38"
+        ]
+      },
+      {
+        "title": "Healthy expression",
+        "claims": [
+          "C20",
+          "C53",
+          "C67",
+          "C68",
+          "C69"
+        ]
+      },
+      {
+        "title": "Named patterns across the levels",
+        "claims": [
+          "C28",
+          "C95",
+          "C19",
+          "C96",
+          "C2",
+          "C18",
+          "C63"
+        ]
+      },
+      {
+        "title": "Basic fear and basic desire",
+        "claims": [
+          "C10",
+          "C21",
+          "C70",
+          "C71"
+        ]
+      },
+      {
+        "title": "Lack of inner guidance and reliance on others",
+        "claims": [
+          "C47",
+          "C8",
+          "C22",
+          "C42",
+          "C98"
+        ]
+      },
+      {
+        "title": "Thinking and duty modes",
+        "claims": [
+          "C26",
+          "C31",
+          "C32"
+        ]
+      },
+      {
+        "title": "Doubt and uncertain decisions",
+        "claims": [
+          "C15",
+          "C14",
+          "C64"
+        ]
+      },
+      {
+        "title": "Courage, cowardice, and passion",
+        "claims": [
+          "C6",
+          "C13",
+          "C30",
+          "C24"
+        ]
+      },
+      {
+        "title": "Authority, belief, and control",
+        "claims": [
+          "C74",
+          "C56",
+          "C9",
+          "C17",
+          "C37"
+        ]
+      },
+      {
+        "title": "Seeking approval and reassurance",
+        "claims": [
+          "C11",
+          "C12",
+          "C41"
+        ]
+      },
+      {
+        "title": "Trust, closeness, and independence",
+        "claims": [
+          "C7",
+          "C62",
+          "C36",
+          "C52",
+          "C35"
+        ]
+      },
+      {
+        "title": "Anxiety and persistence in average expression",
+        "claims": [
+          "C5",
+          "C23",
+          "C34",
+          "C48",
+          "C79",
+          "C83",
+          "C85",
+          "C102"
+        ]
+      },
+      {
+        "title": "Stress responses and reactions to disapproval",
+        "claims": [
+          "C33",
+          "C76",
+          "C16",
+          "C60"
+        ]
+      },
+      {
+        "title": "Defending valued groups and aggression",
+        "claims": [
+          "C25",
+          "C93",
+          "C99",
+          "C100"
+        ]
+      },
+      {
+        "title": "Unhealthy patterns",
+        "claims": [
+          "C39",
+          "C40",
+          "C75",
+          "C65"
+        ]
+      },
+      {
+        "title": "Movement toward Types Three and Nine",
+        "claims": [
+          "C49",
+          "C54",
+          "C55"
+        ]
+      },
+      {
+        "title": "Self-described traits",
+        "claims": [
+          "C46",
+          "C58",
+          "C77",
+          "C89",
+          "C97"
+        ]
+      },
+      {
+        "title": "Artistic inclinations",
+        "claims": [
+          "C44",
+          "C45"
+        ]
+      },
+      {
+        "title": "Classification in the Enneagram",
+        "claims": [
+          "C27",
+          "C82",
+          "C87",
+          "C91"
+        ]
+      },
+      {
+        "title": "Recommendations for growth",
+        "claims": [
+          "C50",
+          "C73",
+          "C101",
+          "C29",
+          "C66",
+          "C80",
+          "C81",
+          "C86",
+          "C103",
+          "C43"
+        ]
+      }
+    ],
+    "introduction": [
+      "C90",
+      "C1"
+    ]
+  },
+  "review": {
+    "grounding": {
+      "score": 3,
+      "reason": "Headings are supported by their claims, and every claim appears once. The assumed C17 and unknown C24 and C43 keep their status. Minor issues: C69 and C60 sit under headings that only partly fit them.\n"
+    },
+    "cohesion": {
+      "score": 3,
+      "reason": "Most sections are coherent. Weaker spots are 'Self-described traits' (C46, C58, C77, C89, C97 hold generic trait statements), 'Stress responses and reactions to disapproval' (C60 is depression from anxiety), and the loose 'Classification in the Enneagram' section (C27, C82, C87, C91).\n"
+    },
+    "flow": {
+      "score": 3,
+      "reason": "The order runs from levels theory to healthy expression, named levels, fears and motives, behaviors, stress, unhealthy patterns, then growth. Two weaknesses: C65 (personality disorders) sits in 'Unhealthy patterns' away from the levels framework, and classification (C82, C87, C91) comes late.\n"
+    },
+    "headings": {
+      "score": 3,
+      "reason": "Headings are mostly descriptive and distinct. 'Stress responses and reactions to disapproval' and 'Self-described traits' are broad. 'Classification in the Enneagram' does not predict C87's affect groups or C91's Hornevian groups.\n"
+    },
+    "balance": {
+      "score": 3,
+      "reason": "Section sizes follow the evidence. 'Artistic inclinations' (2 refs) and 'Movement toward Types Three and Nine' (3 refs) are small but self-contained. 'Levels of development' (10 refs) and 'Recommendations' (10 refs) are large but coherent.\n"
+    },
+    "introduction": {
+      "score": 3,
+      "reason": "C90 then C1 gives a reasonable, proportionate framing of the Enneagram and Type Six, and neither claim is repeated in the body. It is thin, with no statement of the article's central focus.\n"
+    },
+    "blockingIssues": [],
+    "fixes": [
+      "Move C65 from 'Unhealthy patterns' into 'Levels of development in the Enneagram', since it describes how disorders map to levels.",
+      "Move C60 (depression from repressed anxiety) from the stress and disapproval section into 'Anxiety and persistence in average expression'.",
+      "Move C69 (others think better of Sixes) from 'Healthy expression' into 'Seeking approval and reassurance' beside C12, or retitle the healthy section to cover it.",
+      "Move C78 (traits become inflexible at Level 5) next to C19 in 'Named patterns across the levels'.",
+      "Retitle 'Classification in the Enneagram' to name its contents, such as 'Jungian type, triads, and groups'.",
+      "Retitle 'Self-described traits' to make clear it holds Sixes' self-descriptions, and keep their assumed status."
+    ]
+  },
+  "accepted": true,
+  "score": 18
+}

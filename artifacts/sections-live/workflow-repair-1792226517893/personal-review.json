@@ -1,0 +1,27 @@
+{
+  "finalScore": 20,
+  "scores": {
+    "introduction": 3,
+    "cohesion": 3,
+    "flow": 3,
+    "headings": 4,
+    "balance": 3,
+    "grounding": 4
+  },
+  "workflowClaims": 29,
+  "workflowCited": 29,
+  "baselineScore": 15,
+  "maximum": 24,
+  "reviewer": "Primary agent personal review",
+  "pageClaims": 45,
+  "rejectedLiveScore": 16,
+  "findings": [
+    "End-to-end actor handoffs are chronological.",
+    "Permit issuance precedes Designer condition resolution.",
+    "Stakeholder approval and objection paths are alternatives.",
+    "Data lane software is context rather than a numbered action.",
+    "All 29 workflow knowledge units remain cited; other five sections retain their original 16 units.",
+    "Remaining weakness: repeated process summaries and a long workflow section.",
+    "Conflicting form-description evidence is explicitly attributed rather than silently reconciled."
+  ]
+}

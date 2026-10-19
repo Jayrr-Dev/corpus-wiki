@@ -1,0 +1,193 @@
+[
+  {
+    "visual": {
+      "accepted": false,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 4,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "Consider a larger display or a crop on the village earthworks so house plots read more clearly at thumbnail size.",
+            "Mention that the blue strip is a canal or watercourse, so readers do not mistake it for part of the village."
+          ],
+          "reason": "The lidar image clearly shows the abandoned village earthworks and the surrounding ridge-and-furrow strips, which directly support the paragraph on conversion to pasture. It complements the Wharram Percy photograph rather than repeating it. Fine house-plot detail softens at small size.",
+          "id": "a5ccd68f-a312-4bf6-84df-652439ba2c08",
+          "after": "P4",
+          "total": 18,
+          "accepted": true
+        },
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 3,
+          "problems": [],
+          "improvements": [
+            "The pond in the foreground holds water, so 'former fishpond' may confuse readers. Describe it as the restored or flooded fishpond.",
+            "The alt text says 'site of a former fishpond'. It should mention the water that is visible.",
+            "Consider calling the church 'partly ruined', since its roof and walls look largely intact at this size."
+          ],
+          "reason": "Verified metadata confirms Wharram Percy. The photo shows the church and fishpond named in the paragraph and complements the lidar earthworks figure without duplicating it. The church is small but recognisable at thumbnail size.",
+          "id": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+          "after": "P6",
+          "total": 16,
+          "accepted": false
+        }
+      ],
+      "uninspected": [],
+      "problems": [
+        "P6 (16/20): Verified metadata confirms Wharram Percy. The photo shows the church and fishpond named in the paragraph and complements the lidar earthworks figure without duplicating it. The church is small but recognisable at thumbnail size. The pond in the foreground holds water, so 'former fishpond' may confuse readers. Describe it as the restored or flooded fishpond. The alt text says 'site of a former fishpond'. It should mention the water that is visible. Consider calling the church 'partly ruined', since its roof and walls look largely intact at this size."
+      ]
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P4",
+          "evidence": [
+            "P1",
+            "P4"
+          ],
+          "learningGoal": "Shows how a deserted village survives only as earthworks, with ridge and furrow field patterns still visible around it.",
+          "caption": "Lidar image of the deserted medieval village at Wormleighton, Warwickshire, showing village earthworks and surrounding ridge and furrow.",
+          "alt": "Shaded lidar terrain image of fields near Wormleighton. The faint outlines of former village earthworks sit among parallel strips of ridge and furrow.",
+          "svg": "",
+          "assetId": "a5ccd68f-a312-4bf6-84df-652439ba2c08",
+          "assetType": "other"
+        },
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows the two visible remains named in the text, the former fishpond and the ruined church, in the empty valley at Wharram Percy.",
+          "caption": "Wharram Percy deserted medieval village, looking north from the old fishpond toward the ruined church, photographed in 1993.",
+          "alt": "Grassy valley with the site of a former fishpond in the foreground and the ruined stone church of Wharram Percy in the distance.",
+          "svg": "",
+          "assetId": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "The Overview has no separate image. The Wormleighton lidar view already shows village earthworks, so another overview picture would repeat it. P3, P5, P7 and P8 are left without images because no accepted picture clearly shows natural desertion, emparkment or the listed sites."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 2,
+      "problems": [
+        "Wharram Percy alt text calls the foreground the 'site of a former fishpond', but the visual assessment reports visible water there. The alt text misdescribes what readers would see."
+      ],
+      "fixes": [
+        "Revise the Wharram Percy alt text to describe the water-filled fishpond in the foreground and the church beyond it.",
+        "Consider describing the church as partly ruined in the alt text, since the visual assessment says its roof and walls look largely intact.",
+        "Mention the blue canal or watercourse in the Wormleighton alt text so readers do not mistake it for part of the village.",
+        "Consider cropping or enlarging the Wormleighton lidar image so the house plots read better at small size."
+      ]
+    },
+    "total": 15,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 56849,
+    "tokensOut": 1449
+  },
+  {
+    "visual": {
+      "accepted": true,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 4,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "Consider a crop or annotation marking the village earthworks so readers can tell them apart from the ridge and furrow.",
+            "Note in the caption that Wormleighton is not named in the text, or briefly say it was cleared for sheep pasture if a source supports this."
+          ],
+          "reason": "The lidar image clearly shows parallel ridge and furrow beside rectilinear village earthworks, which directly illustrates the paragraph's point about pasture conversion and surviving field patterns. It does not duplicate the Wharram Percy photograph.",
+          "id": "a5ccd68f-a312-4bf6-84df-652439ba2c08",
+          "after": "P4",
+          "total": 18,
+          "accepted": true
+        },
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "The church ruin is small at thumbnail size. Consider a slightly larger display or a crop that tightens on the pond and church.",
+            "The alt text says the church is partly ruined; at this scale its roofless state is hard to confirm. Keep the alt wording cautious."
+          ],
+          "reason": "The photo matches the paragraph's two named remains: the pond in the foreground and the stone church beyond it in an open valley. Both stay recognizable at thumbnail size, and the image does not duplicate the Wormleighton lidar figure.",
+          "id": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+          "after": "P6",
+          "total": 17,
+          "accepted": true
+        }
+      ],
+      "uninspected": [],
+      "problems": []
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P4",
+          "evidence": [
+            "P1",
+            "P4"
+          ],
+          "learningGoal": "Shows how a deserted village survives only as earthworks, with ridge and furrow field patterns still visible around it.",
+          "caption": "Lidar image of the deserted medieval village at Wormleighton, Warwickshire, showing village earthworks and surrounding ridge and furrow.",
+          "alt": "Shaded lidar terrain image of fields near Wormleighton. Faint outlines of former village earthworks sit among parallel strips of ridge and furrow. A blue line marks a canal or watercourse that is not part of the village.",
+          "svg": "",
+          "assetId": "a5ccd68f-a312-4bf6-84df-652439ba2c08",
+          "assetType": "other"
+        },
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows the two visible remains named in the text, the fishpond and the church, in the empty valley at Wharram Percy.",
+          "caption": "Wharram Percy deserted medieval village, looking north from the old fishpond toward the church ruin, photographed in 1993.",
+          "alt": "Grassy valley with a water-filled fishpond in the foreground and the partly ruined stone church of Wharram Percy beyond it.",
+          "svg": "",
+          "assetId": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "No image for the Overview, because the Wormleighton lidar view already shows village earthworks. P3, P5, P7 and P8 have no images because no available picture clearly shows natural desertion, emparkment or the listed sites. The Wormleighton image cannot be cropped because only reuse of the existing asset is supported."
+    },
+    "review": {
+      "usefulness": 4,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Wormleighton is not named in the article. Consider a caption phrase that links it to the general earthworks point rather than implying it is a cited example.",
+        "The Wormleighton alt text guesses at 'a canal or watercourse'. Describe the blue line plainly as a blue line, or confirm what it is.",
+        "The Wharram Percy alt text should stay cautious about the church's ruined state, since the visual check could not confirm it at small size.",
+        "The Wharram Percy asset description says only 'looking north from old Fish Pond'. The visual check supports a church in view, but keep the caption wording consistent with the source description."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 14821,
+    "tokensOut": 820
+  }
+]

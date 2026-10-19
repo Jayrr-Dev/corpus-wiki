@@ -1,0 +1,8 @@
+{
+  "model": "openai/gpt-5.4-image-2",
+  "mime": "image/png",
+  "bytes": 2508694,
+  "cost": 0.018638,
+  "file": "artifacts/composer-live/openrouter-openai-gpt-5-4-image-2-test.png",
+  "prompt": "Professional editorial 3D illustration of a small city planning team reviewing a site plan at a table, subtle generic city skyline in background, restrained warm neutral and muted blue palette, realistic proportions, uncluttered composition, soft lighting. No text, labels, brands, logos, measurements or watermarks. Generic conceptual scene, not a real city project."
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "backup": {
+      "steps": [
+        {
+          "key": "affected-sections:65238e98-a58d-425a-b187-d927d3eb3f27",
+          "error": null,
+          "state": "succeeded",
+          "output": [],
+          "attempts": 1,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "updated_at": "2026-10-17T02:24:21.373783+00:00"
+        },
+        {
+          "key": "pages",
+          "error": null,
+          "state": "succeeded",
+          "output": null,
+          "attempts": 2,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "updated_at": "2026-10-17T02:33:28.341769+00:00"
+        }
+      ],
+      "workflow": {
+        "error": null,
+        "state": "complete",
+        "token": null,
+        "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "progress": null,
+        "updated_at": "2026-10-17T02:33:28.766395+00:00",
+        "lease_until": null,
+        "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "cancel_requested": false,
+        "resume_requested": false
+      }
+    }
+  }
+]

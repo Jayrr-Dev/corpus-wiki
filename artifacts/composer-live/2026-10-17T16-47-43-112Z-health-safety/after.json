@@ -1,0 +1,253 @@
+{
+  "page": {
+    "id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+    "title": "Health and safety program",
+    "slug": "health-safety"
+  },
+  "result": {
+    "runId": "999b1ec7-80e3-42c1-9334-f775648de5f9",
+    "figures": 1,
+    "total": 17,
+    "selection": {
+      "selected": [
+        "Personal protective equipment and noise"
+      ],
+      "assessments": [],
+      "manual": true
+    }
+  },
+  "run": {
+    "id": "999b1ec7-80e3-42c1-9334-f775648de5f9",
+    "model": "anthropic/claude-opus-5-5",
+    "active": true,
+    "review": {
+      "fixes": [
+        "Make the alt text more specific, such as \"Half-mask air-purifying respirator with two round filter cartridges, one on each side.\"",
+        "Consider shortening the caption to \"Half-mask air-purifying respirator, one type of specialized respiratory protection. Not Utilitek equipment.\""
+      ],
+      "visual": {
+        "grades": [
+          {
+            "id": "281b21e2-8e37-4519-9a86-529d1701a261",
+            "after": "ea83318f-aa77-453b-a075-091b426bf8c3",
+            "total": 19,
+            "reason": "The clear product photo shows a half-mask respirator with two filter cartridges, which matches the caption and the paragraph's mention of respiratory protection. The caption labels it as a generic example. It shows only one of the specialized items the paragraph names.",
+            "accepted": true,
+            "problems": [],
+            "composition": 4,
+            "improvements": [
+              "Consider noting that respirators require fit and cartridge selection matched to the hazard, if the article text supports it."
+            ],
+            "subjectMatch": 4,
+            "contextualFit": 4,
+            "learningValue": 3,
+            "thumbnailClarity": 4
+          }
+        ],
+        "accepted": true,
+        "problems": [],
+        "uninspected": []
+      },
+      "problems": [],
+      "grounding": 4,
+      "restraint": 4,
+      "selection": {
+        "manual": true,
+        "selected": [
+          "Personal protective equipment and noise"
+        ],
+        "assessments": []
+      },
+      "usefulness": 3,
+      "visualDesign": 3,
+      "accessibility": 3
+    },
+    "page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+    "snapshot": {
+      "slug": "health-safety",
+      "title": "Health and safety program",
+      "paragraphs": [
+        {
+          "id": "dd8562e4-405a-461e-8f04-4608afd7cb0e",
+          "text": "This program sets rules for workplace conduct, personal protective equipment, and incident reporting. The sections below give the details.",
+          "section": "Overview",
+          "hasMedia": false,
+          "revisionId": "3ec3a2d9-e933-49e5-bcfc-edc1f04fd8ae"
+        },
+        {
+          "id": "b10c0c9d-0622-433d-a4e8-aa701557ad37",
+          "text": "All employees must immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors report promptly to management so that submissions to the applicable worker's compensation board can be made in a timely manner, and senior management reports critical injuries to the authorities.",
+          "section": "Overview",
+          "hasMedia": false,
+          "revisionId": "9102d398-7bb4-4baf-b6d1-7dfed74b1c69"
+        },
+        {
+          "id": "ac0d19da-2465-49d9-84b8-d482712d3892",
+          "text": "Workplace harassment and violence are prohibited on Utilitek Solutions Inc. work sites, and employees receive training on workplace violence and harassment every year. Reported incidents are investigated, with review commencing within 24 hours of report review and investigations completed within 90 days. Investigation reports are retained for at least two years.",
+          "section": "Harassment and violence prevention",
+          "hasMedia": false,
+          "revisionId": "0775edd3-c67b-41ba-8346-a73e107a5a34"
+        },
+        {
+          "id": "be948e2e-82a6-4828-af51-f7350009cb2e",
+          "text": "The noise exposure program at Utilitek Solutions Inc. requires employees exposed to noise of 85 dB or greater to wear hearing protection, generally whenever voices must be elevated to be heard. The noise level is measured by a sound level meter or identified by the contracting company. A hearing conservation program is developed for workers consistently exposed to noise over 85 dB, complementing the hearing protection requirement.",
+          "section": "Noise exposure program",
+          "hasMedia": false,
+          "revisionId": "6680eaaf-7f29-4e64-9c9a-d43b4e105d4f"
+        },
+        {
+          "id": "ef467f06-ed45-41a0-8ca5-970c2ec3999b",
+          "text": "A pre-work job assessment at Utilitek Solutions Inc. must be completed before work begins. The procedure requires workers to break the job into sequential steps, identify hazards at each step, and review those hazards with affected workers. Hazards are then ranked by risk, the assessment is documented, and controls are implemented to protect workers.",
+          "section": "Pre-work job assessment",
+          "hasMedia": false,
+          "revisionId": "dbe2eab7-e431-47e6-9f2f-f1065547c8fd"
+        },
+        {
+          "id": "98b7abaf-b4df-4d3b-be4e-e36443eaa7d7",
+          "text": "The health and safety program of Utilitek Solutions Inc. addresses the protection of workers from injury or occupational disease, which the company describes as a major continuing objective. As employer, the company is ultimately responsible for worker health and safety, while supervisors are accountable for the workers under their supervision and each worker is accountable for their own individual health and safety performance. The company's hazard control hierarchy places elimination first, followed by substitution, isolation, engineering controls, administrative controls, and personal protective equipment, which is regarded as the last line of defense. The company publishes a delivery sequence of assessment, design, implementation and validation, with assessment as the first step. The program was last reviewed on April 16, 2025.",
+          "section": "Overview",
+          "hasMedia": false,
+          "revisionId": "7997983d-5442-49ec-8bbc-cac44526d581"
+        },
+        {
+          "id": "fcac7d66-0396-49c0-bf7c-235309c78290",
+          "text": "A job hazard analysis must be completed before work begins at Utilitek Solutions Inc. Workers help divide the job into sequential steps and identify the hazards at each step. The hazards are reviewed with affected workers, ranked by risk, and documented, and then the hazards are controlled.",
+          "section": "Hazard identification and control",
+          "hasMedia": false,
+          "revisionId": "1937a779-5b46-4798-b0cf-f93d820ef2e9"
+        },
+        {
+          "id": "8f645d45-3708-4d3c-b0e6-7e450a3bc648",
+          "text": "The hazard control hierarchy used at Utilitek Solutions Inc. consists of elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is tried first, and personal protective equipment is regarded as the last line of defense.",
+          "section": "Hazard identification and control",
+          "hasMedia": false,
+          "revisionId": "f78d7af2-5a3d-437d-ba75-6afe04a325d3"
+        },
+        {
+          "id": "46510f51-67c9-4711-9799-17fc8aa0c582",
+          "text": "Workplace inspections at Utilitek Solutions Inc. are documented and planned to identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections occur weekly on project sites and monthly at company premises, with supervisors and the health and safety representative involved.",
+          "section": "Hazard identification and control",
+          "hasMedia": false,
+          "revisionId": "17964bd9-5063-4533-895d-7b704bc6e1d4"
+        },
+        {
+          "id": "ea83318f-aa77-453b-a075-091b426bf8c3",
+          "text": "Personal protective equipment (PPE) is equipment that workers wear to protect themselves from hazards. Utilitek Solutions Inc. divides PPE into basic and specialized items. Basic items, including hard hats, safety glasses, safety footwear, and appropriate clothing, are worn at all times by all personnel. Specialized items, including gloves, welder's goggles, respiratory protection, fall arrest equipment, and special clothing, are used for specific jobs or hazards. Employee-owned PPE is not allowed.",
+          "section": "Personal protective equipment and noise",
+          "hasMedia": false,
+          "revisionId": "33cae2fd-1e2a-45d9-a716-1ee9213233ab"
+        },
+        {
+          "id": "e2d175ec-6a19-41c5-8403-0dd256b7e7f5",
+          "text": "Hazard control at Utilitek Solutions Inc. follows a hierarchy of elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is tried first, and PPE is regarded as the last line of defense.",
+          "section": "Personal protective equipment and noise",
+          "hasMedia": false,
+          "revisionId": "c01db9a6-f0c2-4527-ad33-6009ed417a17"
+        },
+        {
+          "id": "f989b2bd-51f9-4dd1-866d-b8c1dcfc2908",
+          "text": "Employees exposed to noise of 85 dB or greater must wear hearing protection at Utilitek Solutions Inc., generally whenever voices must be elevated to be heard. The noise level is measured by a sound level meter or identified by the contracting company. For workers consistently exposed to noise over 85 dB, the company develops a Hearing Conservation Program.",
+          "section": "Personal protective equipment and noise",
+          "hasMedia": false,
+          "revisionId": "54b539f0-a751-44ff-b65c-eeb773f88ea2"
+        },
+        {
+          "id": "5e8d8012-530c-46bc-8701-5331e1077b87",
+          "text": "Safety meetings at Utilitek Solutions Inc. are held every week. A daily tailgate meeting is documented at the beginning of each workday when two or more employees, subcontractor representatives, or client representatives are present at a job site. Workers who arrive late are briefed on the topics discussed and sign the form.",
+          "section": "Training, orientation and meetings",
+          "hasMedia": false,
+          "revisionId": "afb1d58c-c410-430d-a0c5-4c58bd42dc87"
+        },
+        {
+          "id": "c75eb0d3-5d0d-41c3-938b-25cbfe7320aa",
+          "text": "Health and safety orientation is required for all employees at Utilitek Solutions Inc. each year, and a supervisor or competent designate conducts it. A site-specific orientation is also required when an employee reports to a new site, covering site safety standards, first aid locations, and posted legislation. All orientation records are documented and filed in the employee file.",
+          "section": "Training, orientation and meetings",
+          "hasMedia": false,
+          "revisionId": "f1b4ecab-129c-4715-b175-7958d3de08e9"
+        },
+        {
+          "id": "535876ca-afe8-4985-8856-b303753c6d8e",
+          "text": "Employees at Utilitek Solutions Inc. receive WHMIS training at orientation. Refresher training is provided at least once every three years or when the program changes, and training records are maintained.",
+          "section": "Hazardous chemical information",
+          "hasMedia": false,
+          "revisionId": "db7b755c-b9bb-4474-9d8d-8ac89773889f"
+        },
+        {
+          "id": "59139d77-2d31-4256-ba3c-15062d111b3e",
+          "text": "A designated Safety Representative ensures that an SDS is available for all regulated chemicals at Utilitek Solutions Inc. The representative reviews each SDS for updates at least once every three years and participates in planned workplace inspections. An up-to-date SDS log book is kept at the shop in a clearly visible location.",
+          "section": "Hazardous chemical information",
+          "hasMedia": false,
+          "revisionId": "8587b09f-5018-4daa-92aa-2038b1e79950"
+        },
+        {
+          "id": "7466886d-ec93-48bc-b117-51e638cc0fc4",
+          "text": "Employees must advise management of deteriorated labels or missing SDSs.",
+          "section": "Hazardous chemical information",
+          "hasMedia": false,
+          "revisionId": "cfb295cc-81dc-4119-9995-e38c3f57373c"
+        },
+        {
+          "id": "ee730452-310e-43cd-aab5-9125d2989e48",
+          "text": "Employees must immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors then report them promptly to management, so that submissions to the applicable worker's compensation board can be made in a timely manner. Senior management reports critical injuries to the authorities.",
+          "section": "Incident reporting and return to work",
+          "hasMedia": false,
+          "revisionId": "8c0726b8-ffb9-416e-9c36-fa9a6374c291"
+        },
+        {
+          "id": "02b3f841-8366-4b1c-9047-667c1898a75e",
+          "text": "A modified work program is available to injured employees at Utilitek Solutions Inc. It lasts until employees can return to their pre-accident job, wherever possible. Before modified duty begins, the employee and employer sign an agreement covering hours of work, reporting requirements, and the nature of the position. During modified duty, the employee supplies medical progress reports every two weeks or as frequently as needed.",
+          "section": "Incident reporting and return to work",
+          "hasMedia": false,
+          "revisionId": "e8e46e4f-54a4-4e00-8e5b-120913fffc34"
+        },
+        {
+          "id": "b0c163b4-46e1-4bfa-9f81-a140a3d0cb28",
+          "text": "Emergency response at client locations follows the plan of the owner/operator, which Utilitek Solutions Inc. adopts when it works on those sites. The fire evacuation gathering point for the Utilitek Solutions Inc. office is the northwest corner of 176 St and 106 Ave.",
+          "section": "Emergency response",
+          "hasMedia": false,
+          "revisionId": "930b0eae-7bbe-47f7-b7cc-d150915cbb43"
+        },
+        {
+          "id": "b237200f-8633-4291-ae36-c1c4e20205bd",
+          "text": "Discipline for unacceptable conduct on jobsites is governed by the Discipline Policy at Utilitek Solutions Inc., which defines that conduct and the corrective measures that apply to it. Class A violations, including fighting, theft or willful destruction of property, drug and alcohol policy violations, and willful endangerment, warrant immediate termination. Class B violations, including dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action, which may include termination.",
+          "section": "Workplace conduct, harassment and violence",
+          "hasMedia": false,
+          "revisionId": "ded191fd-f593-44cf-b4f7-2d0d99c16b81"
+        },
+        {
+          "id": "d45d0905-e751-4b12-82d4-0fb6b8915c81",
+          "text": "Workplace harassment and violence are prohibited on Utilitek Solutions Inc. work sites, and employees receive training on both every year. Reported incidents are investigated, with review beginning within 24 hours of report review and investigations completed within 90 days. Investigation reports are kept for at least two years. The workplace violence and harassment prevention program is reviewed at least annually, and review records are kept for a minimum of three years.",
+          "section": "Workplace conduct, harassment and violence",
+          "hasMedia": false,
+          "revisionId": "ba8a500c-9396-48a1-98d3-9e1972935f3b"
+        },
+        {
+          "id": "3cfac11a-db85-4544-8c1c-137e5354f204",
+          "text": "The health and safety program at Utilitek Solutions Inc. was last reviewed on April 16, 2025.",
+          "section": "Program review",
+          "hasMedia": false,
+          "revisionId": "59744f8c-b8e8-41cd-b3a4-1e41cec06b82"
+        }
+      ]
+    },
+    "created_at": "2026-10-17T16:48:27.654684+00:00",
+    "composition": {
+      "figures": [
+        {
+          "alt": "Photo of a half-face respirator mask with two round filter cartridges on either side.",
+          "svg": "",
+          "after": "ea83318f-aa77-453b-a075-091b426bf8c3",
+          "assetId": "281b21e2-8e37-4519-9a86-529d1701a261",
+          "caption": "A half-mask air-purifying respirator, a general example of specialized respiratory protection; this is not Utilitek equipment.",
+          "evidence": [
+            "ea83318f-aa77-453b-a075-091b426bf8c3"
+          ],
+          "assetType": "other",
+          "learningGoal": "Shows readers what respiratory protection, one of the specialized PPE items named in the paragraph, looks like."
+        }
+      ],
+      "omitted": "I added one photo because the budget allows only one new figure. I left the hazard hierarchy paragraph and the noise paragraph unillustrated. Their content repeats other parts of the article, and a photo would add little. I rejected the other search results: they showed misused PPE, a protest, a hazmat scene, or equipment hidden by spray mist. No clear photo of basic PPE such as a hard hat or safety glasses came up."
+    }
+  },
+  "textUnchanged": true
+}

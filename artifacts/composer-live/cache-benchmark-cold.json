@@ -1,0 +1,243 @@
+{
+  "startedAt": "2026-10-17T17:40:51.634Z",
+  "stats": {
+    "hits": 0,
+    "misses": 19,
+    "writes": 19
+  },
+  "calls": [
+    {
+      "purpose": "composer_image_comparison",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 6252,
+      "completionTokens": 741,
+      "reasoningTokens": null,
+      "durationMs": 7839,
+      "status": "ok",
+      "error": null,
+      "role": "composer"
+    },
+    {
+      "purpose": "composer_image_comparison",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 6113,
+      "completionTokens": 628,
+      "reasoningTokens": null,
+      "durationMs": 7884,
+      "status": "ok",
+      "error": null,
+      "role": "composer"
+    },
+    {
+      "purpose": "composer_image_comparison",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 6142,
+      "completionTokens": 856,
+      "reasoningTokens": null,
+      "durationMs": 8320,
+      "status": "ok",
+      "error": null,
+      "role": "composer"
+    },
+    {
+      "purpose": "article_composition",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 59074,
+      "completionTokens": 873,
+      "reasoningTokens": null,
+      "durationMs": 36587,
+      "status": "ok",
+      "error": null,
+      "role": "composer"
+    },
+    {
+      "purpose": "composer_context_review",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4231,
+      "completionTokens": 228,
+      "reasoningTokens": null,
+      "durationMs": 4082,
+      "status": "ok",
+      "error": null,
+      "role": "composer"
+    },
+    {
+      "purpose": "composer_visual_review",
+      "subject": null,
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3684,
+      "completionTokens": 154,
+      "reasoningTokens": null,
+      "durationMs": 2335,
+      "status": "ok",
+      "error": null,
+      "role": "reviewer"
+    }
+  ],
+  "attempts": [
+    {
+      "visual": {
+        "accepted": true,
+        "grades": [
+          {
+            "subjectMatch": 4,
+            "learningValue": 3,
+            "composition": 4,
+            "thumbnailClarity": 3,
+            "contextualFit": 4,
+            "problems": [],
+            "improvements": [
+              "Mention in the caption that the reading of about 89.9 dB is above the 85 dB threshold, which ties the image directly to the rule.",
+              "Note that a dedicated handheld meter is also common, since a phone app is one example among several tools."
+            ],
+            "reason": "The photo shows a sound level meter app with an external microphone reading about 89.9 dB near machinery. It matches the paragraph's measuring tool, and the caption honestly labels it as a generic NIOSH example. The reading is readable at thumbnail size, though small.",
+            "id": "ddc454b8-7434-46a2-afe6-edf049f41e30",
+            "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+            "total": 18,
+            "accepted": true
+          }
+        ],
+        "uninspected": [],
+        "problems": []
+      },
+      "composition": {
+        "figures": [
+          {
+            "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+            "evidence": [
+              "be948e2e-82a6-4828-af51-f7350009cb2e"
+            ],
+            "learningGoal": "Shows what a sound level meter looks like, the tool used to check noise against the 85 dB threshold.",
+            "caption": "Example of a sound level meter: a NIOSH phone app with an external microphone reading noise near machinery. This is a NIOSH photo, not Utilitek equipment.",
+            "alt": "A smartphone running the NIOSH Sound Level Meter app with an external microphone shows a noise reading near industrial machinery.",
+            "svg": "",
+            "assetId": "ddc454b8-7434-46a2-afe6-edf049f41e30",
+            "assetType": "other"
+          }
+        ],
+        "omitted": "I added one photo, the clearest sound level meter image I found. I left out the hearing-protection earmuff photos: some showed cold-weather earmuffs, some came from lab tests or were cluttered, and none passed the visual review. The section allows only one image."
+      },
+      "review": {
+        "usefulness": 3,
+        "grounding": 4,
+        "restraint": 4,
+        "visualDesign": 3,
+        "accessibility": 3,
+        "problems": [],
+        "fixes": [
+          "Add to the caption that the reading of about 89.9 dB is above the 85 dB threshold, tying the photo to the rule.",
+          "Mention the reading value in the alt text so screen reader users get the same link to the threshold.",
+          "Consider noting that handheld meters are also common, since a phone app is one of several tools."
+        ]
+      },
+      "total": 17,
+      "validation": [],
+      "accepted": true,
+      "model": "anthropic/claude-opus-5-5",
+      "tokensIn": 62758,
+      "tokensOut": 1027
+    }
+  ],
+  "result": {
+    "composition": {
+      "figures": [
+        {
+          "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+          "evidence": [
+            "be948e2e-82a6-4828-af51-f7350009cb2e"
+          ],
+          "learningGoal": "Shows what a sound level meter looks like, the tool used to check noise against the 85 dB threshold.",
+          "caption": "Example of a sound level meter: a NIOSH phone app with an external microphone reading noise near machinery. This is a NIOSH photo, not Utilitek equipment.",
+          "alt": "A smartphone running the NIOSH Sound Level Meter app with an external microphone shows a noise reading near industrial machinery.",
+          "svg": "",
+          "assetId": "ddc454b8-7434-46a2-afe6-edf049f41e30",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I added one photo, the clearest sound level meter image I found. I left out the hearing-protection earmuff photos: some showed cold-weather earmuffs, some came from lab tests or were cluttered, and none passed the visual review. The section allows only one image."
+    },
+    "attempt": {
+      "visual": {
+        "accepted": true,
+        "grades": [
+          {
+            "subjectMatch": 4,
+            "learningValue": 3,
+            "composition": 4,
+            "thumbnailClarity": 3,
+            "contextualFit": 4,
+            "problems": [],
+            "improvements": [
+              "Mention in the caption that the reading of about 89.9 dB is above the 85 dB threshold, which ties the image directly to the rule.",
+              "Note that a dedicated handheld meter is also common, since a phone app is one example among several tools."
+            ],
+            "reason": "The photo shows a sound level meter app with an external microphone reading about 89.9 dB near machinery. It matches the paragraph's measuring tool, and the caption honestly labels it as a generic NIOSH example. The reading is readable at thumbnail size, though small.",
+            "id": "ddc454b8-7434-46a2-afe6-edf049f41e30",
+            "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+            "total": 18,
+            "accepted": true
+          }
+        ],
+        "uninspected": [],
+        "problems": []
+      },
+      "composition": {
+        "figures": [
+          {
+            "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+            "evidence": [
+              "be948e2e-82a6-4828-af51-f7350009cb2e"
+            ],
+            "learningGoal": "Shows what a sound level meter looks like, the tool used to check noise against the 85 dB threshold.",
+            "caption": "Example of a sound level meter: a NIOSH phone app with an external microphone reading noise near machinery. This is a NIOSH photo, not Utilitek equipment.",
+            "alt": "A smartphone running the NIOSH Sound Level Meter app with an external microphone shows a noise reading near industrial machinery.",
+            "svg": "",
+            "assetId": "ddc454b8-7434-46a2-afe6-edf049f41e30",
+            "assetType": "other"
+          }
+        ],
+        "omitted": "I added one photo, the clearest sound level meter image I found. I left out the hearing-protection earmuff photos: some showed cold-weather earmuffs, some came from lab tests or were cluttered, and none passed the visual review. The section allows only one image."
+      },
+      "review": {
+        "usefulness": 3,
+        "grounding": 4,
+        "restraint": 4,
+        "visualDesign": 3,
+        "accessibility": 3,
+        "problems": [],
+        "fixes": [
+          "Add to the caption that the reading of about 89.9 dB is above the 85 dB threshold, tying the photo to the rule.",
+          "Mention the reading value in the alt text so screen reader users get the same link to the threshold.",
+          "Consider noting that handheld meters are also common, since a phone app is one of several tools."
+        ]
+      },
+      "total": 17,
+      "validation": [],
+      "accepted": true,
+      "model": "anthropic/claude-opus-5-5",
+      "tokensIn": 62758,
+      "tokensOut": 1027
+    },
+    "selection": {
+      "selected": [
+        "Noise exposure program"
+      ],
+      "assessments": [],
+      "manual": true
+    }
+  },
+  "published": [
+    "ddc454b8-7434-46a2-afe6-edf049f41e30"
+  ]
+}

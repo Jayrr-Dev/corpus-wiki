@@ -1,0 +1,4 @@
+AiInactivityError: The AI sent no new output for 60 seconds. The update stopped; saved content is safe. Try Update again.
+    at Timeout.eval (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/inactivityTimeout.ts:30:18)
+    at listOnTimeout (node:internal/timers:585:17)
+    at process.processTimers (node:internal/timers:521:7)

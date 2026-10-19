@@ -1,0 +1,62 @@
+[
+  {
+    "visual": {
+      "accepted": true,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 4,
+          "thumbnailClarity": 4,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "Consider noting that respirators require fit and cartridge selection matched to the hazard, if the article text supports it."
+          ],
+          "reason": "The clear product photo shows a half-mask respirator with two filter cartridges, which matches the caption and the paragraph's mention of respiratory protection. The caption labels it as a generic example. It shows only one of the specialized items the paragraph names.",
+          "id": "281b21e2-8e37-4519-9a86-529d1701a261",
+          "after": "ea83318f-aa77-453b-a075-091b426bf8c3",
+          "total": 19,
+          "accepted": true
+        }
+      ],
+      "uninspected": [],
+      "problems": []
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "ea83318f-aa77-453b-a075-091b426bf8c3",
+          "evidence": [
+            "ea83318f-aa77-453b-a075-091b426bf8c3"
+          ],
+          "learningGoal": "Shows readers what respiratory protection, one of the specialized PPE items named in the paragraph, looks like.",
+          "caption": "A half-mask air-purifying respirator, a general example of specialized respiratory protection; this is not Utilitek equipment.",
+          "alt": "Photo of a half-face respirator mask with two round filter cartridges on either side.",
+          "svg": "",
+          "assetId": "281b21e2-8e37-4519-9a86-529d1701a261",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I added one photo because the budget allows only one new figure. I left the hazard hierarchy paragraph and the noise paragraph unillustrated. Their content repeats other parts of the article, and a photo would add little. I rejected the other search results: they showed misused PPE, a protest, a hazmat scene, or equipment hidden by spray mist. No clear photo of basic PPE such as a hard hat or safety glasses came up."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Make the alt text more specific, such as \"Half-mask air-purifying respirator with two round filter cartridges, one on each side.\"",
+        "Consider shortening the caption to \"Half-mask air-purifying respirator, one type of specialized respiratory protection. Not Utilitek equipment.\""
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 90273,
+    "tokensOut": 946
+  }
+]

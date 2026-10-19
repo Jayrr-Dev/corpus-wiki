@@ -1,0 +1,117 @@
+
+> second-brain-engine@0.1.0 build
+> next build
+
+▲ Next.js 16.4.1 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 65ms
+- Experiments (use with caution):
+  · serverActions
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 13.0s
+  Running TypeScript ...
+  Finished TypeScript in 16.7s ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/28) ...
+  Generating static pages using 23 workers (7/28) 
+  Generating static pages using 23 workers (14/28) 
+  Generating static pages using 23 workers (21/28) 
+✓ Generating static pages using 23 workers (28/28) in 1160ms
+  Finalizing page optimization ...
+Turbopack build encountered 1 warning:
+./lib/ingest/describeVideoServer.ts:69:19
+Warning: Dynamic filesystem access causes tracing of the whole project
+  67 | ...ry = await ffmpegPath();
+  68 | ... Promise((resolve, reject) => {
+> 69 | ...ild = spawn(binary, ["-hide_banner", "-nostdin", ...args], { windowsHide: true });
+     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  70 | ...t: Buffer[] = [];
+  71 | ...rr = "";
+  72 | ...dout.on("data", (chunk: Buffer) => out.push(chunk));
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: child_process.spawn(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import traces:
+  #1 [Server Component]:
+    ./lib/ingest/describeVideoServer.ts
+    ./lib/server/deps.ts
+    ./lib/server-actions/knowledge.ts
+
+  #2 [App Route]:
+    ./lib/ingest/describeVideoServer.ts
+    ./lib/server/deps.ts
+    ./lib/domains/runReview.ts
+    ./app/api/domains/review/route.ts
+
+  #3 [App Route]:
+    ./lib/ingest/describeVideoServer.ts
+    ./lib/ingest/describeVideoServer.ts
+    ./lib/server/deps.ts
+    ./lib/server-actions/knowledge.ts
+    ./app/api/chatbot/exception/route.ts
+
+  #4 [Instrumentation]:
+    ./lib/ingest/describeVideoServer.ts
+    ./lib/server/deps.ts
+    ./lib/ingest/index.ts
+    ./lib/processing/recovery.ts
+    ./instrumentation.ts
+
+
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ƒ /api/capture
+├ ƒ /api/chatbot
+├ ƒ /api/chatbot/exception
+├ ƒ /api/curator/run
+├ ƒ /api/domains/review
+├ ƒ /api/processing/recover
+├ ƒ /api/sections/[sectionId]/cancel
+├ ƒ /api/sources/[id]/figure
+├ ƒ /api/sources/[id]/file
+├ ƒ /api/uploads/[eventId]/cancel
+├ ƒ /ask
+├ ƒ /assets
+├ ƒ /assets/[id]
+├ ƒ /changes
+├ ƒ /changes/[id]
+├ ƒ /chatbot
+├ ƒ /decisions
+├ ƒ /decisions/[id]
+├ ƒ /domains
+├ ƒ /entities
+├ ƒ /entities/[id]
+├ ƒ /errors
+├ ƒ /exceptions
+├ ƒ /glossary
+├ ƒ /graph
+├ ƒ /login
+├ ƒ /p/[slug]
+├ ƒ /roles
+├ ƒ /settings
+├ ƒ /skills
+├ ƒ /sources
+├ ƒ /sources/[id]
+├ ƒ /stakeholders
+├ ƒ /stakeholders/[id]
+├ ƒ /units
+├ ƒ /units/[id]
+├ ƒ /upload
+└ ƒ /workflow
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

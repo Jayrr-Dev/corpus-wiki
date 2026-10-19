@@ -1,0 +1,8 @@
+{
+  "model": "qwen/qwen-image-3-pro",
+  "mime": "image/png",
+  "bytes": 4180738,
+  "cost": 0.075,
+  "file": "artifacts/composer-live/openrouter-qwen-qwen-image-3-pro-test.png",
+  "prompt": "Professional editorial 3D illustration of a small city planning team reviewing a site plan at a table, subtle generic city skyline in background, restrained warm neutral and muted blue palette, realistic proportions, uncluttered composition, soft lighting. No text, labels, brands, logos, measurements or watermarks. Generic conceptual scene, not a real city project."
+}

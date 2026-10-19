@@ -1,0 +1,27 @@
+[
+  {
+    "backup": {
+      "upkeep": {
+        "key": "curate",
+        "error": null,
+        "state": "succeeded",
+        "output": null,
+        "attempts": 1,
+        "event_id": "c9b45e65-695e-40fa-83cf-6389b8bb6275",
+        "updated_at": "2026-10-17T02:44:42.803219+00:00"
+      },
+      "workflow": {
+        "error": null,
+        "state": "complete",
+        "token": null,
+        "event_id": "c9b45e65-695e-40fa-83cf-6389b8bb6275",
+        "progress": null,
+        "updated_at": "2026-10-17T02:44:43.704279+00:00",
+        "lease_until": null,
+        "change_set_id": "7d7547aa-ec93-4370-ba5c-5c3857840ecc",
+        "cancel_requested": false,
+        "resume_requested": false
+      }
+    }
+  }
+]

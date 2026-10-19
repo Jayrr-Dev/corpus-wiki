@@ -1,0 +1,33 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 3,
+    "problems": [],
+    "improvements": [
+      "The pond in the foreground holds water, so 'former fishpond' may confuse readers. Describe it as the restored or flooded fishpond.",
+      "The alt text says 'site of a former fishpond'. It should mention the water that is visible.",
+      "Consider calling the church 'partly ruined', since its roof and walls look largely intact at this size."
+    ],
+    "reason": "Verified metadata confirms Wharram Percy. The photo shows the church and fishpond named in the paragraph and complements the lidar earthworks figure without duplicating it. The church is small but recognisable at thumbnail size.",
+    "id": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+    "after": "P6",
+    "total": 16,
+    "accepted": false
+  },
+  "figure": {
+    "after": "P6",
+    "evidence": [
+      "P6"
+    ],
+    "learningGoal": "Shows the two visible remains named in the text, the former fishpond and the ruined church, in the empty valley at Wharram Percy.",
+    "caption": "Wharram Percy deserted medieval village, looking north from the old fishpond toward the ruined church, photographed in 1993.",
+    "alt": "Grassy valley with the site of a former fishpond in the foreground and the ruined stone church of Wharram Percy in the distance.",
+    "svg": "",
+    "assetId": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-opus-5-5"
+}

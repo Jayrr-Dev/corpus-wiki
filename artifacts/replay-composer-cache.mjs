@@ -1,0 +1,36 @@
+import { createServer } from 'vite';
+import { resolve,join } from 'node:path';
+import { writeFile } from 'node:fs/promises';
+const root=resolve('.'),mode=process.argv[2];
+const runtime=await createServer({configFile:false,appType:'custom',server:{middlewareMode:true,watch:null},resolve:{alias:{'@':root,'server-only':join(root,'test/server-only.ts')}}});
+try{
+ const {getAdminSupabase}=await runtime.ssrLoadModule('/lib/supabase/admin.ts');
+ const {supabaseRpc}=await runtime.ssrLoadModule('/lib/db/rpc.ts');
+ const db=supabaseRpc(getAdminSupabase());
+ const {readModelChoice}=await runtime.ssrLoadModule('/lib/ai/models.ts');
+ const {tokenFactoryFromEnv}=await runtime.ssrLoadModule('/lib/ai/chat.ts');
+ const {loadRoleInstructions}=await runtime.ssrLoadModule('/lib/ai/skills/server.ts');
+ const {persistentComposerCache}=await runtime.ssrLoadModule('/lib/composer/cache.ts');
+ const {composerVisualTaste}=await runtime.ssrLoadModule('/lib/composer/visualTaste.ts');
+ const {composerWebImages}=await runtime.ssrLoadModule('/lib/composer/importImages.ts');
+ const {loadComposerImage}=await runtime.ssrLoadModule('/lib/composer/loadImage.ts');
+ const run=await db.call('read_composer_run',{p_page_id:'4ec35e88-e49a-4576-b43e-90425bf388e3'});
+ const figure=run.composition.figures.find(f=>f.after==='be948e2e-82a6-4828-af51-f7350009cb2e');
+ const library=await db.call('composer_asset_library');
+ const asset=library.find(a=>a.id===figure.assetId);
+ const calls=[],stats={hits:0,misses:0,writes:0};
+ const settings=tokenFactoryFromEnv(process.env,await readModelChoice(db),async call=>{calls.push(call);await db.call('log_ai_call',{p_call:call});});
+ settings.roleInstructions=await loadRoleInstructions(db);
+ settings.roleEfforts={...settings.roleEfforts,composer:settings.roleEfforts?.composer??'low'};
+ const storage=persistentComposerCache(db);
+ const cache={get:async key=>{const value=mode==='cold'?null:await storage.get(key);stats[value==null?'misses':'hits']++;return value;},set:async(...args)=>{stats.writes++;await storage.set(...args);}};
+ const article={...run.snapshot,sourceUrl:'/p/health-safety',availableAssets:[asset],existingFigures:run.composition.figures.filter(f=>f!==figure).map(f=>({after:f.after,learningGoal:f.learningGoal})),selectedSections:['Noise exposure program'],manualPlacementIds:[figure.after],newFigureBudget:1,webImageSearchAvailable:true};
+ const visuals=composerVisualTaste(settings,{cache,loadAsset:loadComposerImage});
+ const web=composerWebImages(async()=>{},undefined,undefined,visuals.assess,cache);
+ const [search]=web.tools(article);
+ const results=await search.run({query:asset.title,after:figure.after});
+ const review=await visuals.review({figures:[figure],omitted:''},article);
+ const report={mode,query:asset.title,assetId:asset.id,stats,results,review,calls,estimatedCost:calls.reduce((sum,c)=>sum+(c.promptTokens*4+c.completionTokens*20)/1e6,0)};
+ await writeFile(`artifacts/composer-live/cache-replay-${mode}.json`,JSON.stringify(report,null,2));
+ console.log(JSON.stringify({mode,query:asset.title,stats,calls:calls.length,estimatedCost:report.estimatedCost,grade:review.grades[0].total,candidateGrades:results.results.map(r=>({id:r.id,total:r.visualGrade?.total}))}));
+}finally{await runtime.close();}

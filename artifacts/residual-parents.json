@@ -1,0 +1,268 @@
+[
+  {
+    "path": "Quality Management/Quality Control/Inspections",
+    "count": 16,
+    "claims": [
+      {
+        "id": "0e18c0c4-dc87-43ec-afdc-6caa47187ee4",
+        "text": "In regulated manufacturing environments, quality inspection generates the objective evidence—measurements, test results, and documentation—that proves conformance, and Quality Control feeds that evidence into corrective action systems, process improvements, and supplier feedback loops."
+      },
+      {
+        "id": "1eb74875-71e7-4137-91c7-5f2d78791825",
+        "text": "Production-stage quality inspection covers four phases: Incoming (IQC), In-Process (IPQC), Final (FQC), and Outgoing (OQC)."
+      },
+      {
+        "id": "5741da65-7f8a-4b2e-be95-b06bb98531ed",
+        "text": "Strong quality inspection programs combine trained inspectors, standardized checklists, and real-time data to drive continuous improvement."
+      },
+      {
+        "id": "6018d56e-95ba-49b7-b6e4-0987917c3c12",
+        "text": "Quality inspection is a point-in-time verification that a product meets specifications, while Quality Control (QC) is the broader feedback system that uses inspection data to drive correction and improvement."
+      },
+      {
+        "id": "829ce03f-6649-4007-8394-ffe95b74cc7e",
+        "text": "In practice, quality inspection is the systematic process of measuring, testing, and documenting whether a product meets its design specifications before it moves forward in the supply chain."
+      },
+      {
+        "id": "87db0e4c-193b-4a10-a81c-7ca797ae331d",
+        "text": "Inspected products can be the components used for production, semi-finished goods, or, most often, finished goods before shipment to a customer."
+      },
+      {
+        "id": "895d8f71-3b9a-4ff5-aabd-bd9c87e17deb",
+        "text": "Quality inspections in precision manufacturing cover five core areas, including physical dimensions and geometric tolerances, material conformity, and performance and functionality."
+      },
+      {
+        "id": "8b27a61b-abe2-4ed0-90dc-a798afcf966d",
+        "text": "Quality inspection is defined in the ISO 2859 standard, which is derived from MIL-STD 105 E, as an activity such as measuring, examining, testing or gauging one or more characteristics of a product and comparing the results with specified requirements in order to establish whether conformity is achieved for each characteristic."
+      },
+      {
+        "id": "8f8907b1-d006-4779-8f5e-87ba6c4efd92",
+        "text": "The quality inspector usually follows a pre-established checklist based on the product specifications, using it to guide the control process and check whether production conforms to the specifications."
+      },
+      {
+        "id": "9264351a-d68a-4a94-a3ea-2e1256c24065",
+        "text": "Quality inspections typically take place before, during, and after production."
+      },
+      {
+        "id": "a5965ae0-2662-48f6-bb40-0c122375c8e1",
+        "text": "Quality inspection comprises the stages Incoming Quality Control (IQC), In-Process Quality Control (IPQC), and Final/PSI, each addressing a distinct point in the production lifecycle and applying broadly across industries, plus specialized inspection types used in precision manufacturing that operate within those stages for aerospace, defense, and high-tolerance work."
+      },
+      {
+        "id": "a5d06153-aeb3-49d7-8ba1-d9b211e532d8",
+        "text": "In quality control, the term inspection refers to the activity of checking products, whereas audit applies to analyzing manufacturing processes and/or systems."
+      },
+      {
+        "id": "b4da129e-e8ea-4237-b6fa-5ba3815a2f4a",
+        "text": "The American Society for Quality (ASQ) defines quality inspection as a verification activity in which one or more product characteristics are examined and compared against specified requirements to assess conformity."
+      },
+      {
+        "id": "b58e96c8-0ce0-40de-9595-b5b17fe97a8b",
+        "text": "Every effective quality inspection follows five steps: define criteria, sample, inspect, document, then correct."
+      },
+      {
+        "id": "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "text": "Checking quality only at the end of production is very risky."
+      },
+      {
+        "id": "faacd081-1333-42cc-a1f2-c6491542b9f3",
+        "text": "Each test in a quality inspection may require specific training and equipment, for example testing a watch's accuracy."
+      }
+    ]
+  },
+  {
+    "path": "Brightwater Utilities Ltd./Health & Safety/Confined Space Entry",
+    "count": 5,
+    "claims": [
+      {
+        "id": "6318c597-64df-44e6-b794-e878e63af87c",
+        "text": "Brightwater Utilities Ltd.'s Confined Space Entry Procedure applies to every Brightwater field crew entering a vault, manhole or tank classed as a permit-required confined space."
+      },
+      {
+        "id": "7e7aa05c-8a78-4608-ac89-d321209ddabf",
+        "text": "In Brightwater Utilities Ltd.'s procedure, the classification applied to a vault, manhole or tank that requires the confined space entry procedure before any Brightwater field crew enters it."
+      },
+      {
+        "id": "e60ce867-d3be-4c12-9d0e-d10b2ec81cde",
+        "text": "Brightwater Utilities Ltd.'s 12-step sequence for entering a vault, manhole or tank classed as a permit-required confined space. It covers permit opening, energy isolation, ventilation, atmosphere testing, permit authorization, entry, monitoring, evacuation, and permit closure. Crews must follow the steps in order and may not skip or reorder them."
+      },
+      {
+        "id": "e7d68282-97cc-4101-9b89-5b20e71f5884",
+        "text": "Brightwater crews follow the confined space entry steps in the stated order and may not skip or reorder steps."
+      },
+      {
+        "id": "fd793467-8294-4c2b-b340-cf648ee1edb3",
+        "text": "Brightwater's confined space entry procedure is a 12-step sequence covering permit opening, energy isolation, ventilation, atmosphere testing, permit authorization, entry, monitoring, evacuation, and permit closure."
+      }
+    ]
+  },
+  {
+    "path": "EPCOR/Utility Line Assignment/Stakeholder Circulation",
+    "count": 5,
+    "claims": [
+      {
+        "id": "28cbd30b-5361-43d0-b52b-f286a47ca5f6",
+        "text": "In step 8.0 of the ULA process, the Stakeholder approves the proposed facility locations with comments and sends them to the City of Edmonton Transportation Department."
+      },
+      {
+        "id": "5d786253-9304-497d-a083-bfe8bad419cb",
+        "text": "In the ULA application process, the City of Edmonton processes the ULA application, circulates it to all stakeholders, advises the Designer of conflicts or objections, and approves the ULA application and proposed facility locations."
+      },
+      {
+        "id": "aadf64c3-a984-4cd6-959b-ce504848c72c",
+        "text": "The City of Edmonton Transportation Office acknowledges receipt of an online Utility Line Assignment (ULA) application, provides the name of the contact person and the time frame of the ULA application process, and circulates the proposed design to all Stakeholders."
+      },
+      {
+        "id": "d934d7fa-eb72-4298-a1c7-92500d6b31b2",
+        "text": "The ULA application informs all other utilities in the affected area of planned construction, giving them an opportunity to comment or object to possible conflicts and helping resolve conflicts between utilities before ground is broken."
+      },
+      {
+        "id": "e6900a58-638a-4a7b-9822-8787be336190",
+        "text": "Each Stakeholder reviews and comments on the proposed design circulated by the City of Edmonton Transportation Office, and may comment via e-mail or phone call; if a Stakeholder finds no issues or conflicts, the proposed design is approved and the process proceeds to step 8.0."
+      }
+    ]
+  },
+  {
+    "path": "Health & Safety/WHMIS",
+    "count": 4,
+    "claims": [
+      {
+        "id": "34fdcb3c-06ae-4ec2-936c-2bfb61b42344",
+        "text": "The Workplace Hazardous Materials Information System (WHMIS) provides comprehensive health and safety information on the safe use of hazardous products in Canadian workplaces."
+      },
+      {
+        "id": "40491913-4490-4995-be18-119140fd701d",
+        "text": "The main components of WHMIS are hazard identification and product classification, labelling, safety data sheets, and worker education and training."
+      },
+      {
+        "id": "a88396dc-304a-4787-8184-37494f9474fb",
+        "text": "Canada has aligned the Workplace Hazardous Materials Information System (WHMIS) with the Globally Harmonized System of Classification and Labelling of Chemicals (GHS)."
+      },
+      {
+        "id": "f1d02ad9-57db-4f13-b29b-ccf30625bf47",
+        "text": "Aligning WHMIS with GHS provides more comprehensive hazard classification criteria that better indicate hazard severity, includes new hazard classes, makes physical hazard criteria consistent with the Transport of Dangerous Goods (TDG) regulations, and standardizes hazard and precautionary statements and the safety data sheet format with more comprehensive requirements."
+      }
+    ]
+  },
+  {
+    "path": "Utilitek Solutions Inc./Health & Safety/PPE",
+    "count": 4,
+    "claims": [
+      {
+        "id": "36f37d73-f442-47d8-a97e-c18fa2e99104",
+        "text": "Utilitek Solutions Inc. categorizes PPE as basic (hard hats, safety glasses, safety footwear, appropriate clothing), worn at all times by all personnel, and specialized (gloves, welder's goggles, respiratory protection, fall arrest equipment, special clothing) for specific jobs or hazards; employee-owned PPE is not allowed."
+      },
+      {
+        "id": "3b0d3436-56c8-4120-9fb8-d54f8785bb28",
+        "text": "Protective gear Utilitek divides into basic (hard hats, safety glasses, safety footwear, appropriate clothing) worn at all times by all personnel, and specialized (gloves, welder's goggles, respiratory protection, fall arrest equipment, special clothing) used for specific jobs or hazards. Employee-owned PPE is not permitted."
+      },
+      {
+        "id": "8f538b48-13d8-48fd-a551-78c7a20b40fd",
+        "text": "Equipment workers wear to protect themselves from hazards. Utilitek divides PPE into basic items worn at all times by all personnel and specialized items used for specific jobs or hazards. Employee-owned PPE is not allowed."
+      },
+      {
+        "id": "9ca31d71-eeb6-402c-a780-5d070f7a6354",
+        "text": "Equipment workers wear to protect themselves from hazards. Utilitek divides PPE into basic items worn at all times by all personnel and specialized items used for specific jobs or hazards. Employee-owned PPE is not allowed."
+      }
+    ]
+  },
+  {
+    "path": "EPCOR/Utility Line Assignment",
+    "count": 3,
+    "claims": [
+      {
+        "id": "259359f1-6e4c-458e-aefd-52db65d9e8f0",
+        "text": "Utility Line Assignment (ULA) is an application process in which a Designer determines whether a ULA permit is required, a ULA application drawing and form are completed, the application is circulated to stakeholders, and the permit is finalized and filed once conditions are resolved."
+      },
+      {
+        "id": "fb889a73-fe0e-4061-affa-9e97330316d9",
+        "text": "The appendix of the 3.1 Utility Line Assignment (ULA) Application document contains a sample ULA application form, a sample ULA permit, sample ULA circulation responses, sample ULA application drawings, and a ULA memo."
+      },
+      {
+        "id": "ffc83ffc-73e7-483d-85fe-d9c81dfecccc",
+        "text": "ULA stands for Utility Line Assignment, an application process administered by the City of Edmonton Transportation Office for proposed utility designs, culminating in a ULA permit."
+      }
+    ]
+  },
+  {
+    "path": "EPCOR/Utility Line Assignment/Clearances",
+    "count": 2,
+    "claims": [
+      {
+        "id": "5a8cc1a2-deaa-47ca-9801-ae37de7ec9dc",
+        "text": "In the ULA application diagram, the power cable or duct is installed between two utility lines, with the upper utility line 0.3 meters below grade and the lower utility line 0.3 meters below the power cable or duct, shown as the minimum clearance when crossing at 90 degrees."
+      },
+      {
+        "id": "676b597e-90a7-403a-bae4-acc5043dfd86",
+        "text": "If minimum agreed clearances for a utility line assignment cannot be met, the Designer contacts the affected utility to discuss the problem, and utilities will normally agree to reduce the clearances to a certain point as long as the reduction does not interfere with their operation and maintenance."
+      }
+    ]
+  },
+  {
+    "path": "Health & Safety/WHMIS/Roles & Responsibilities",
+    "count": 2,
+    "claims": [
+      {
+        "id": "a9c5b2ca-aa8c-4e97-9710-5e7454baecbb",
+        "text": "Employers must provide workers access to up-to-date safety data sheets, ensure hazardous products are properly labelled, prepare workplace labels as needed, prepare safety data sheets when necessary such as when they manufacture a hazardous product used on-site, and ensure appropriate control measures are in place to protect worker health and safety."
+      },
+      {
+        "id": "ece50b40-80f6-4270-8954-7e9eab544421",
+        "text": "Suppliers and employers must use and follow the WHMIS requirements for labels and safety data sheets (SDSs) for hazardous products sold, distributed, or imported into Canada."
+      }
+    ]
+  },
+  {
+    "path": "Health & Safety/WHMIS/Training",
+    "count": 2,
+    "claims": [
+      {
+        "id": "9ba82d2a-44cb-4714-9b1f-7e05a1289d25",
+        "text": "The Workplace Hazardous Materials Information System (WHMIS) course (catalogue code WMT109) is offered online in English, and registration requires signing in."
+      },
+      {
+        "id": "fa18d917-0c16-4fa4-99fe-920137fbedb0",
+        "text": "WHMIS worker education and training programs need to be reviewed annually, but most jurisdictions across Canada do not specify whether an employer must provide refresher training or require retraining at any set frequency."
+      }
+    ]
+  },
+  {
+    "path": "EPCOR",
+    "count": 1,
+    "claims": [
+      {
+        "id": "b3188b61-6949-44b8-82cf-14b2433a29fc",
+        "text": "A design role at EPCOR. EPCOR requires distribution designers to comply with all applicable federal and provincial statutes and regulations, all municipal by-laws in force, and all applicable standards, guidelines, and rules."
+      }
+    ]
+  },
+  {
+    "path": "Quality Management/Quality Control/Inspections/Reporting",
+    "count": 1,
+    "claims": [
+      {
+        "id": "191e6eec-0212-45b4-aec9-496b21828a4f",
+        "text": "Photos and/or videos should be captured all along the way during a quality inspection, and Microsoft Word makes it easy to prepare places for photos."
+      }
+    ]
+  },
+  {
+    "path": "Quality Management/Quality Control/Safety & Regulatory Compliance",
+    "count": 1,
+    "claims": [
+      {
+        "id": "7f28002c-f0d0-4b5b-978c-3148bbd86ad9",
+        "text": "Safety and regulatory compliance in quality inspection involves verification against industry standards (ISO, AS9100, MIL-STD), documentation of critical characteristics and key product characteristics, and traceability to engineering drawings and customer requirements."
+      }
+    ]
+  },
+  {
+    "path": "Utilitek Solutions Inc./Health & Safety",
+    "count": 1,
+    "claims": [
+      {
+        "id": "b4d3dba0-6651-4fe1-8044-2233e9366ec8",
+        "text": "Utilitek Solutions Inc.'s Health & Safety Program was last reviewed on April 16, 2025."
+      }
+    ]
+  }
+]

@@ -1,0 +1,155 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 3,
+      "learningValue": 3,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 3,
+      "problems": [
+        "Shows the ruined church only, not the village earthworks or the fishpond named in the text",
+        "Identity as Wharram Percy rests on file metadata, not visible landmarks"
+      ],
+      "reason": "The only candidate. It shows a stone ruin with a tower and walls, matching the paragraph's mention of Wharram Percy's ruined church. Its clear silhouette survives thumbnail size, so it earns its place.",
+      "id": "9254993",
+      "total": 15,
+      "accepted": false
+    },
+    {
+      "id": "109781043",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "115959751",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "139758908",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "142886251",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "150386146",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Could not download the selected image (HTTP 429)."
+      ],
+      "reason": "No pixel review available."
+    }
+  ],
+  "model": "anthropic/claude-haiku-5-5",
+  "images": [
+    {
+      "id": "9254993",
+      "title": "Church at Wharram Percy - geograph.org.uk - 165981.jpg",
+      "description": "Ruin of St Martin's parish church, Wharram Percy, Ryedale, Yorkshire: the west tower and part of the west end",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/04/Church_at_Wharram_Percy_-_geograph.org.uk_-_165981.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Church_at_Wharram_Percy_-_geograph.org.uk_-_165981.jpg",
+      "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/0/04/Church_at_Wharram_Percy_-_geograph.org.uk_-_165981.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "creator": "Judy Catterall",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "109781043",
+      "title": "Ruined church of St Martin, Wharram Percy - geograph.org.uk - 2584731.jpg",
+      "description": "Ruined church of St Martin, Wharram Percy",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/47/Ruined_church_of_St_Martin%2C_Wharram_Percy_-_geograph.org.uk_-_2584731.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ruined_church_of_St_Martin,_Wharram_Percy_-_geograph.org.uk_-_2584731.jpg",
+      "creator": "Pauline E",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "115959751",
+      "title": "The ruined church at Wharram Percy Medieval Village - geograph.org.uk - 3290523.jpg",
+      "description": "The ruined church at Wharram Percy Medieval Village",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a0/The_ruined_church_at_Wharram_Percy_Medieval_Village_-_geograph.org.uk_-_3290523.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_ruined_church_at_Wharram_Percy_Medieval_Village_-_geograph.org.uk_-_3290523.jpg",
+      "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a0/The_ruined_church_at_Wharram_Percy_Medieval_Village_-_geograph.org.uk_-_3290523.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "creator": "Colin Park",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "139758908",
+      "title": "Ruined church, Wharram Percy - geograph.org.uk - 5637477.jpg",
+      "description": "Ruined church, Wharram Percy",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Ruined_church%2C_Wharram_Percy_-_geograph.org.uk_-_5637477.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ruined_church,_Wharram_Percy_-_geograph.org.uk_-_5637477.jpg",
+      "creator": "Richard Sutcliffe",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "142886251",
+      "title": "Fish pond and ruined church, Wharram Percy - geograph.org.uk - 5997347.jpg",
+      "description": "Fish pond and ruined church, Wharram Percy",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Fish_pond_and_ruined_church%2C_Wharram_Percy_-_geograph.org.uk_-_5997347.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fish_pond_and_ruined_church,_Wharram_Percy_-_geograph.org.uk_-_5997347.jpg",
+      "displayUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7d/Fish_pond_and_ruined_church%2C_Wharram_Percy_-_geograph.org.uk_-_5997347.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "creator": "David Brown",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "150386146",
+      "title": "Wharram Percy, The ruined Church of St Martin - geograph.org.uk - 6485934.jpg",
+      "description": "Wharram Percy: The ruined Church of St Martin",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/95/Wharram_Percy%2C_The_ruined_Church_of_St_Martin_-_geograph.org.uk_-_6485934.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy,_The_ruined_Church_of_St_Martin_-_geograph.org.uk_-_6485934.jpg",
+      "creator": "Nigel Cox",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    }
+  ]
+}

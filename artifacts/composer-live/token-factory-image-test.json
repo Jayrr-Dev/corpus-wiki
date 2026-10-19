@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-17T09:26:06.653Z",
+  "endpoint": "/v1/images/generations",
+  "model": "black-forest-labs/flux-schnell",
+  "status": 404,
+  "durationMs": 529,
+  "error": "Not Found",
+  "images": 0
+}

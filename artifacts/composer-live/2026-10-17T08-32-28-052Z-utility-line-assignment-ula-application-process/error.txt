@@ -1,0 +1,5 @@
+Error: save_composer_run: The article changed while Composer was drawing. Run it again.
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:101:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async composeLivePage (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/live.ts:53:16)
+    at async file:///C:/Users/Main/Documents/Projects/second-brain-engine/scripts/live-composer.ts:41:22

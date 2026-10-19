@@ -1,0 +1,32 @@
+[
+  {
+    "id": "281b21e2-8e37-4519-9a86-529d1701a261",
+    "title": "Air-Purifying Respirator.jpg",
+    "origin": "external",
+    "storage_path": "composer-images/281b21e2-8e37-4519-9a86-529d1701a261.jpg",
+    "mime_type": "image/jpeg",
+    "attribution": "John Dimos and Paul Satti. Air-Purifying Respirator.jpg. Source: https://commons.wikimedia.org/wiki/File:Air-Purifying_Respirator.jpg",
+    "license": "Public domain. Display copy from Wikimedia; no content edits.",
+    "deleted_at": null,
+    "created_at": "2026-10-17T16:48:14.659922+00:00",
+    "bytes": 32774,
+    "width": 198,
+    "height": 217,
+    "format": "jpeg"
+  },
+  {
+    "id": "af4e217f-a43a-41e4-85e6-f5ccbc88cdf8",
+    "title": "NIOSHSoundLevelMeter.jpg",
+    "origin": "external",
+    "storage_path": "composer-images/af4e217f-a43a-41e4-85e6-f5ccbc88cdf8.jpg",
+    "mime_type": "image/jpeg",
+    "attribution": "Chuck Kardous. NIOSHSoundLevelMeter.jpg. Source: https://commons.wikimedia.org/wiki/File:NIOSHSoundLevelMeter.jpg",
+    "license": "Public domain. Display copy from Wikimedia; no content edits.",
+    "deleted_at": null,
+    "created_at": "2026-10-17T17:02:18.888779+00:00",
+    "bytes": 53817,
+    "width": 500,
+    "height": 755,
+    "format": "jpeg"
+  }
+]

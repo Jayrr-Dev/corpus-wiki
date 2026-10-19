@@ -1,0 +1,156 @@
+[
+  {
+    "type": "photo",
+    "asset": {
+      "id": "92811e4c-a861-4ed7-9b79-8db5b3a4a54e",
+      "tags": [
+        "men",
+        "hard hats",
+        "blueprint",
+        "indoor",
+        "review",
+        "ula application"
+      ],
+      "type": "photo",
+      "title": "Men in hard hats reviewing blueprint",
+      "origin": "source",
+      "license": null,
+      "entityId": null,
+      "attribution": null,
+      "description": "Two men in hard hats review a large blueprint together indoors, one gesturing as they discuss it. The blueprint shows technical line drawings and text, but its labels and numbers are not legible."
+    },
+    "accepted": true,
+    "composition": {
+      "figures": [
+        {
+          "after": "P1",
+          "evidence": [
+            "P1"
+          ],
+          "learningGoal": "Shows what a shared plan review looks like: team members in hard hats examining a large drawing together and discussing it.",
+          "caption": "Editorial example of two workers in hard hats reviewing a large blueprint together; not a record of any named project.",
+          "alt": "Two men in hard hats stand indoors over a large blueprint, one gesturing as they discuss it. The blueprint shows technical line drawings and text, but its labels and numbers are not legible.",
+          "svg": "",
+          "assetId": "92811e4c-a861-4ed7-9b79-8db5b3a4a54e",
+          "assetType": "photo"
+        }
+      ],
+      "omitted": "No SVG was drawn, as requested. The photo comes from the user's source document; its creator, location and license are not recorded, so none are stated."
+    },
+    "attempts": [
+      {
+        "composition": {
+          "figures": [
+            {
+              "after": "P1",
+              "evidence": [
+                "P1"
+              ],
+              "learningGoal": "Shows what a shared plan review looks like: team members in hard hats examining a large drawing together and discussing it.",
+              "caption": "Editorial example of two workers in hard hats reviewing a large blueprint together; not a record of any named project.",
+              "alt": "Two men in hard hats stand indoors over a large blueprint, one gesturing as they discuss it. The blueprint shows technical line drawings and text, but its labels and numbers are not legible.",
+              "svg": "",
+              "assetId": "92811e4c-a861-4ed7-9b79-8db5b3a4a54e",
+              "assetType": "photo"
+            }
+          ],
+          "omitted": "No SVG was drawn, as requested. The photo comes from the user's source document; its creator, location and license are not recorded, so none are stated."
+        },
+        "review": {
+          "usefulness": 3,
+          "grounding": 4,
+          "restraint": 4,
+          "visualDesign": 3,
+          "accessibility": 4,
+          "problems": [],
+          "fixes": [
+            "Record the photo's creator and license before publishing, since both are missing from the asset metadata.",
+            "Consider shortening the caption to \"Two workers in hard hats review a shared blueprint.\" The disclaimer could move to the image credits."
+          ]
+        },
+        "total": 18,
+        "validation": [],
+        "accepted": true,
+        "model": "anthropic/claude-opus-5-5",
+        "tokensIn": 8568,
+        "tokensOut": 406
+      }
+    ]
+  },
+  {
+    "type": "drawing",
+    "asset": {
+      "id": "aa8b0e88-9983-404f-bc92-8bbadb636e99",
+      "tags": [
+        "pipeline",
+        "engineers",
+        "coordination",
+        "illustration"
+      ],
+      "type": "drawing",
+      "title": "Pipeline project coordination illustration",
+      "origin": "generated",
+      "license": "AI-generated illustration; no company affiliation implied.",
+      "entityId": null,
+      "attribution": "Created with the image generation tool for this workspace",
+      "description": "AI-generated editorial illustration of two engineers reviewing a site plan beside a generic pipeline right-of-way. A conceptual example, not a photograph of ATCO facilities or a work procedure."
+    },
+    "accepted": true,
+    "composition": {
+      "figures": [
+        {
+          "after": "P1",
+          "evidence": [
+            "P1"
+          ],
+          "learningGoal": "Shows what a team plan review looks like: people examining a shared site plan beside a pipeline route.",
+          "caption": "AI-generated editorial illustration of engineers reviewing a site plan beside a generic pipeline right-of-way; a conceptual example, not a real named project.",
+          "alt": "Illustration of two engineers studying a site plan together, with a generic pipeline right-of-way in the background.",
+          "svg": "",
+          "assetId": "aa8b0e88-9983-404f-bc92-8bbadb636e99",
+          "assetType": "drawing"
+        }
+      ],
+      "omitted": "No SVG was drawn, as requested. The article has one paragraph, so no other figures were added. The image is generated art and does not document real facilities or work procedures."
+    },
+    "attempts": [
+      {
+        "composition": {
+          "figures": [
+            {
+              "after": "P1",
+              "evidence": [
+                "P1"
+              ],
+              "learningGoal": "Shows what a team plan review looks like: people examining a shared site plan beside a pipeline route.",
+              "caption": "AI-generated editorial illustration of engineers reviewing a site plan beside a generic pipeline right-of-way; a conceptual example, not a real named project.",
+              "alt": "Illustration of two engineers studying a site plan together, with a generic pipeline right-of-way in the background.",
+              "svg": "",
+              "assetId": "aa8b0e88-9983-404f-bc92-8bbadb636e99",
+              "assetType": "drawing"
+            }
+          ],
+          "omitted": "No SVG was drawn, as requested. The article has one paragraph, so no other figures were added. The image is generated art and does not document real facilities or work procedures."
+        },
+        "review": {
+          "usefulness": 3,
+          "grounding": 4,
+          "restraint": 4,
+          "visualDesign": 3,
+          "accessibility": 3,
+          "problems": [],
+          "fixes": [
+            "Make the alt text say the image is AI-generated, matching the caption.",
+            "Consider shortening the caption, for example: \"AI-generated illustration of engineers reviewing a site plan beside a generic pipeline route.\""
+          ]
+        },
+        "total": 17,
+        "validation": [],
+        "accepted": true,
+        "model": "anthropic/claude-opus-5-5",
+        "tokensIn": 8599,
+        "tokensOut": 392
+      }
+    ]
+  }
+]

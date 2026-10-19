@@ -1,4 +1,5 @@
 import type { Tables } from "@/lib/database/types";
+import { pageAndDescendants } from "@/lib/living-page/pageHierarchy";
 import type { UnitSummary } from "@/lib/queries/screens";
 
 // =====================================================================
@@ -8,9 +9,9 @@ import type { UnitSummary } from "@/lib/queries/screens";
 
 export type UnitState = "current" | "retired" | "all";
 
-export type UnitFilters = { kind: string; status: string; evidence: string; domain: string; entity: string; state: UnitState; origin?: string; applicability?: string };
+export type UnitFilters = { kind: string; status: string; evidence: string; domain: string; entity: string; state: UnitState; origin?: string; applicability?: string; article: string };
 
-export const FILTER_KEYS = ["kind", "status", "evidence", "domain", "entity", "state", "origin", "applicability"] as const;
+export const FILTER_KEYS = ["kind", "status", "evidence", "domain", "entity", "state", "origin", "applicability", "article"] as const;
 
 // Reads the filters from search params ("" = any; state defaults to current)
 export function readUnitFilters(params: { get: (key: string) => string | null }): UnitFilters {
@@ -23,6 +24,7 @@ export function readUnitFilters(params: { get: (key: string) => string | null })
     evidence: params.get("evidence") ?? "",
     domain: params.get("domain") ?? "",
     entity: params.get("entity") ?? "",
+    article: params.get("article") ?? "",
     state: state === "retired" || state === "all" ? state : "current",
   };
 }
@@ -35,10 +37,14 @@ export function domainSubtreeIds(domains: readonly Tables<"domains">[], domainId
   return new Set(below.map((domain) => domain.id));
 }
 
+export type ArticleUnitLink = { pageId: string; unitId: string };
+
 export type UnitJoins = {
   unitDomains: readonly Tables<"unit_domains">[];
   unitEntities: readonly Tables<"unit_entities">[];
   domains: readonly Tables<"domains">[];
+  pages?: readonly { id: string; parent_page_id?: string | null }[];
+  articleUnits?: readonly ArticleUnitLink[];
 };
 
 // Ids of units joined to any of `ids` through a join table
@@ -51,6 +57,10 @@ export function filterUnits(units: readonly UnitSummary[], filters: UnitFilters,
   const domainIds = filters.domain ? domainSubtreeIds(joins.domains, filters.domain) : null;
   const inDomain = domainIds ? unitsJoinedTo(joins.unitDomains, (row) => domainIds.has(row.domain_id)) : null;
   const aboutEntity = filters.entity ? unitsJoinedTo(joins.unitEntities, (row) => row.entity_id === filters.entity) : null;
+  const articleIds = filters.article ? new Set(pageAndDescendants(joins.pages ?? [], filters.article)) : null;
+  const inArticle = articleIds
+    ? new Set((joins.articleUnits ?? []).filter((row) => articleIds.has(row.pageId)).map((row) => row.unitId))
+    : null;
   return units.filter(
     (unit) =>
       matchesState(unit, filters.state) &&
@@ -60,7 +70,8 @@ export function filterUnits(units: readonly UnitSummary[], filters: UnitFilters,
       (!filters.status || unit.epistemic_status === filters.status) &&
       (!filters.evidence || unit.evidence === filters.evidence) &&
       (!inDomain || inDomain.has(unit.id)) &&
-      (!aboutEntity || aboutEntity.has(unit.id)),
+      (!aboutEntity || aboutEntity.has(unit.id)) &&
+      (!inArticle || inArticle.has(unit.id)),
   );
 }
 

@@ -1,0 +1,53 @@
+
+> second-brain-engine@0.1.0 test:live:utilitek
+> node --env-file-if-exists=.env.local scripts/performance/live-utilitek.mjs --resume artifacts/processing/utilitek-live/2026-10-17T02-09-28-904Z/report.json
+
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Upload stage timing {
+  eventId: '65238e98-a58d-425a-b187-d927d3eb3f27',
+  stage: 'plan',
+  status: 'failed',
+  durationMs: 15274
+}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Processing run metrics {"eventId":"65238e98-a58d-425a-b187-d927d3eb3f27","job":"articles","startedAt":"2026-10-17T02:29:51.671Z","finishedAt":"2026-10-17T02:30:10.910Z","durationMs":19238,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":182,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":14,"durationMs":2009,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":273,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":13,"durationMs":1928,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.describe":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.profiles":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.glossary":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.expand":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_candidates":{"count":1,"durationMs":148,"failures":0,"tokensIn":0,"tokensOut":0},"db.living_page_event_units":{"count":1,"durationMs":120,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-proposals":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-keys":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":494,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":1,"durationMs":139,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":2,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_update_discovery":{"count":2,"durationMs":13234,"failures":0,"tokensIn":7589,"tokensOut":2885},"db.log_ai_call":{"count":2,"durationMs":280,"failures":0,"tokensIn":0,"tokensOut":0},"step.article":{"count":1,"durationMs":13846,"failures":1,"tokensIn":0,"tokensOut":0},"step.plan":{"count":1,"durationMs":15276,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":148,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":116,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":143,"failures":0,"tokensIn":0,"tokensOut":0}}}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Utilitek live test result {"status":"incomplete","durationMs":20651,"aiCalls":44,"output":{"sourcePassages":14,"touchedUnits":22,"affectedPages":0,"affectedSections":0,"sourceUsage":{"unit_count":14,"article_count":0,"line_count":0},"articleReviews":[{"verdict":"reject","reason":"Nothing was written because this step failed: The update cited an unknown or repeated claim. No new sections were added.","decided_by":"rule","result_page_id":null}],"glossary":{"status":"ready","completed_batches":0,"total_batches":10,"generated_at":"2026-10-17T02:21:41.018646+00:00"},"openWorkspaceExceptions":0},"reportPath":"C:\\Users\\Main\\Documents\\Projects\\second-brain-engine\\artifacts\\processing\\utilitek-live\\2026-10-17T02-09-28-904Z\\report.json"}
+
+ ❯ test/performance/utilitekLive.test.ts (1 test | 1 failed) 23404ms
+   × processes a Utilitek website fixture with the live app services 23403ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+AssertionError: Live processing failed; the saved report identifies the unfinished stage: expected 'pages: Retrying an article-planning v…' to be null
+
+- Expected:
+null
+
++ Received:
+"pages: Retrying an article-planning validation failure previously recorded as a rejection.
+article:65238e98-a58d-425a-b187-d927d3eb3f27:0:d2373bb62e9178d0: The update cited an unknown claim (\"Utilitek Solutions lists these tools: Microstation, PLS CADD, SPIDA Calc, PLS-Caisson, Sag10, PLS Pole, PLS Laminated Pole, and Quick Pole. [C2]\"). Use C1 through C14. No new sections were added.
+plan: The update cited an unknown claim (\"Utilitek Solutions lists these tools: Microstation, PLS CADD, SPIDA Calc, PLS-Caisson, Sag10, PLS Pole, PLS Laminated Pole, and Quick Pole. [C2]\"). Use C1 through C14. No new sections were added."
+
+ ❯ test/performance/utilitekLive.test.ts:138:102
+    136|     expect(result.workflow).toBeDefined();
+    137|     expect(result.workflow?.state).not.toBe("running");
+    138|     expect(result.error, "Live processing failed; the saved report ide…
+       |                                                                                                      ^
+    139|     if (!result.workflow?.waiting) expect(result.workflow?.state).toBe…
+    140|   } catch (error) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:29:48
+   Duration  23.65s (tests 100%)
+

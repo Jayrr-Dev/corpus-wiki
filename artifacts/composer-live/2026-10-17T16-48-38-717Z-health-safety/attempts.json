@@ -1,0 +1,63 @@
+[
+  {
+    "visual": {
+      "accepted": true,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "Consider noting in the caption that the 89.9 dB reading is above the 85 dB threshold, linking the image to the rule.",
+            "Note that a dedicated handheld sound level meter would be a more typical workplace example than a phone app."
+          ],
+          "reason": "The photo clearly shows a sound level meter app reading 89.9 dB beside industrial machinery, matching the paragraph's measurement method. The caption honestly labels it as a general example. Small screen text is lost at thumbnail size, but the large reading survives.",
+          "id": "cd3559c6-3851-4156-88b9-f3af97feec63",
+          "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+          "total": 17,
+          "accepted": true
+        }
+      ],
+      "uninspected": [],
+      "problems": []
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "be948e2e-82a6-4828-af51-f7350009cb2e",
+          "evidence": [
+            "be948e2e-82a6-4828-af51-f7350009cb2e"
+          ],
+          "learningGoal": "Shows how noise is measured with a sound level meter, the method the paragraph names for checking the 85 dB threshold.",
+          "caption": "A smartphone sound level meter app with an external microphone measuring noise; a general example, not Utilitek equipment or a Utilitek site.",
+          "alt": "A hand holds a smartphone running a sound level meter app connected to an external microphone, showing a large decibel reading.",
+          "svg": "",
+          "assetId": "cd3559c6-3851-4156-88b9-f3af97feec63",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I added one photo, the sound level meter, because the budget allows only one new figure. I rejected the earmuff photos: some showed winter fashion muffs, one showed a cluttered site where the earmuffs are hard to see, and one was an ear-fit diagram on a topic the article does not cover. I also rejected the acoustics graphs because they do not explain the noise rules. The caption does not repeat the meter reading because I could not verify it."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Consider noting in the caption that the visual review reports an 89.9 dB reading, above the 85 dB threshold, to tie the photo to the rule.",
+        "Mention in the alt text that the phone sits beside machinery, as the visual review reports, so the workplace context comes through."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 110193,
+    "tokensOut": 1186
+  }
+]

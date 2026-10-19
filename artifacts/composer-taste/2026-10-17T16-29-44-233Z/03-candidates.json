@@ -1,0 +1,82 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 4,
+      "learningValue": 4,
+      "composition": 3,
+      "thumbnailClarity": 4,
+      "contextualFit": 4,
+      "problems": [],
+      "reason": "Best choice for the Examples section. It shows the ruined St Martin's church that the paragraph names, with the chancel clearly visible. Unlike the other images, it shows the ruin as the clear focal point and stays readable at thumbnail size.",
+      "id": "13199240",
+      "total": 19,
+      "accepted": true
+    },
+    {
+      "subjectMatch": 2,
+      "learningValue": 2,
+      "composition": 2,
+      "thumbnailClarity": 2,
+      "contextualFit": 2,
+      "problems": [
+        "The church looks roofed and intact, so it does not clearly show the ruin the paragraph describes.",
+        "The pond is visible, but the church is small and the scene is mostly landscape."
+      ],
+      "reason": "Shows a pond beside a church, which partly matches the former fishpond mentioned. It is weaker than the ruin photo because the church appears intact and the scenic landscape dominates.",
+      "id": "6585802",
+      "total": 10,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 2,
+      "learningValue": 2,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 1,
+      "problems": [
+        "The caption says this is the interior, but the image shows the exterior west front of the ruin.",
+        "The caption does not match the pixels, so readers would be misled about what the image shows."
+      ],
+      "reason": "The ruined church is clear and dramatic, but the caption is wrong for the view shown. Its misleading caption makes it a poor fit for the Examples paragraph, even though the 13199240 image covers the same ruin accurately.",
+      "id": "183989393",
+      "total": 11,
+      "accepted": false
+    }
+  ],
+  "model": "anthropic/claude-haiku-5-5",
+  "images": [
+    {
+      "id": "6585802",
+      "title": "Wharram Percy Geograph.jpg",
+      "description": "Picture of Wharram Percey, from this image at Geograph.org.uk.\nSubmitted to that site by Paul Allison\nTaken in 1993\n\nDescription: Deserted Medieval Village, Looking north from old Fish Pond",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Wharram_Percy_Geograph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy_Geograph.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Wharram_Percy_Geograph.jpg/500px-Wharram_Percy_Geograph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "The original uploader was Nyh at English Wikipedia.",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "13199240",
+      "title": "Wharram Percy, St Martins Church - geograph.org.uk - 659805.jpg",
+      "description": "Ruin of St Martin's parish church, Wharram Percy, Ryedale, Yorkshire: view from the southeast, showing the chancel",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy,_St_Martins_Church_-_geograph.org.uk_-_659805.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg/500px-Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "dennis smith",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "183989393",
+      "title": "Wharram Percy Church.jpg",
+      "description": "The church interior, looking towards the tower",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Wharram_Percy_Church.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy_Church.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Wharram_Percy_Church.jpg/500px-Wharram_Percy_Church.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "HallCastleKing",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    }
+  ]
+}

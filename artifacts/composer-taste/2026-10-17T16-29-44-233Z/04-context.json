@@ -1,0 +1,28 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 4,
+    "problems": [],
+    "reason": "The photo shows the ruined St Martin's church named in the paragraph, matching the caption and the sentence about surviving church remains. It is a clear, authentic view, though the roofless ruin is partly softened by the church's standing walls and small thumbnail size.",
+    "id": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+    "after": "P6",
+    "total": 17,
+    "accepted": true
+  },
+  "figure": {
+    "after": "P6",
+    "evidence": [
+      "P6"
+    ],
+    "learningGoal": "Shows readers what survives at England's best-known deserted medieval village: the ruined church named in the text.",
+    "caption": "The ruined St Martin's church at Wharram Percy, North Yorkshire, seen from the southeast with the chancel in view.",
+    "alt": "Roofless stone ruin of a medieval church standing in grassland, viewed from the southeast, with the chancel end in the foreground.",
+    "svg": "",
+    "assetId": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-haiku-5-5"
+}

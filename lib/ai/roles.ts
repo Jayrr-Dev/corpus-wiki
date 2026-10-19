@@ -53,7 +53,7 @@ export function roleForPurpose(purpose: string): string | null {
   if (purpose === "external_research_justification" || purpose === "external_source_justification") return "researcher";
   if (purpose === "reconciliation") return "reconciler";
   if (["section_lines", "section_rewrite", "claim_titles"].includes(purpose)) return "write_articles";
-  if (["article_outline", "article_update_discovery", "force_create_pick", "article_proposals"].includes(purpose)) return "plan_articles";
+  if (["article_outline", "article_update_discovery", "force_create_pick", "article_proposals", "article_suggestions"].includes(purpose)) return "plan_articles";
   if (purpose === "knowledge_expansion") return "define_concepts";
   if (["describe_entities", "entity_reclassify", "entity_duplicate_review", "entity_profiles", "entity_web_profiles"].includes(purpose)) return "identify_entities";
   if (purpose === "embeddings") return "embedder";

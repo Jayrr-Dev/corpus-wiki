@@ -19,6 +19,8 @@ export async function register() {
   startComposerWorker();
   const { startRootApprovalWorker } = await import("@/lib/processing/rootApprovals");
   startRootApprovalWorker();
+  const { startSuggestionWorker } = await import("@/lib/suggestions/worker");
+  startSuggestionWorker();
   if (process.env.PROCESSING_RECOVERY_ENABLED !== "false") {
     const { startUploadRecoveryWorker } = await import("@/lib/processing/recovery");
     startUploadRecoveryWorker();

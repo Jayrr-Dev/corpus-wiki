@@ -1,0 +1,42 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "4d5d50b1-87e6-4946-9523-57091f2ab53d",
+            "a9c6098c-880b-47d1-b3af-b82d931865f7",
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+            "22183c15-3ed0-4962-8077-5a203bf1b7ab"
+          ],
+          "learningGoal": "Readers can compare the agreed minimum horizontal clearances at a glance and see which features need the most space from power facilities.",
+          "caption": "Minimum horizontal clearances from power facilities under the mutually agreed clearances, drawn to a common scale. This is a comparison chart, not a layout or work instruction. The 0.3 m vertical clearance and the 1.22 m pole setback from property lines are covered in the text.",
+          "alt": "Horizontal bar chart starting from a vertical line labeled as the power facility. Gas, communication, streetlights and tree root edge need 1.0 m. Water lines need 1.8 m. Transmission water lines need 2.5 m. Drainage lines, fire hydrants and bus shelter edges need 3.0 m, the longest bar.",
+          "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\"><title>Minimum horizontal clearances from power facilities</title><desc>Bars show 1.0 m for gas, communication, streetlights and tree root edge; 1.8 m for water lines; 2.5 m for transmission water lines; 3.0 m for drainage lines, fire hydrants and bus shelter edges.</desc><defs><linearGradient id=\"b1\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9fb8cc\"/><stop offset=\"1\" stop-color=\"#86a3ba\"/></linearGradient><linearGradient id=\"b2\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#5f86a6\"/><stop offset=\"1\" stop-color=\"#4d7495\"/></linearGradient></defs><rect x=\"0\" y=\"0\" width=\"800\" height=\"520\" fill=\"#ffffff\"/><line x1=\"260\" y1=\"60\" x2=\"260\" y2=\"450\" stroke=\"#d5dce2\" stroke-width=\"1.5\" stroke-dasharray=\"4 6\"/><line x1=\"440\" y1=\"60\" x2=\"440\" y2=\"450\" stroke=\"#d5dce2\" stroke-width=\"1.5\" stroke-dasharray=\"4 6\"/><line x1=\"620\" y1=\"60\" x2=\"620\" y2=\"450\" stroke=\"#d5dce2\" stroke-width=\"1.5\" stroke-dasharray=\"4 6\"/><text x=\"80\" y=\"80\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Gas, communication, streetlight, tree root</text><rect x=\"80\" y=\"94\" width=\"180\" height=\"30\" rx=\"3\" fill=\"url(#b1)\"/><text x=\"272\" y=\"119\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.0 m</text><text x=\"80\" y=\"185\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Water lines and services</text><rect x=\"80\" y=\"199\" width=\"324\" height=\"30\" rx=\"3\" fill=\"url(#b1)\"/><text x=\"416\" y=\"224\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.8 m</text><text x=\"80\" y=\"290\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Transmission water lines</text><rect x=\"80\" y=\"304\" width=\"450\" height=\"30\" rx=\"3\" fill=\"url(#b2)\"/><text x=\"542\" y=\"329\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">2.5 m</text><text x=\"80\" y=\"395\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Drainage, hydrant, bus shelter</text><rect x=\"80\" y=\"409\" width=\"540\" height=\"30\" rx=\"3\" fill=\"#2f5677\" stroke=\"#1f3d57\" stroke-width=\"2\"/><text x=\"632\" y=\"434\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#1f3d57\">3.0 m</text><line x1=\"80\" y1=\"56\" x2=\"80\" y2=\"452\" stroke=\"#c47a1c\" stroke-width=\"6\" stroke-linecap=\"round\"/><text x=\"80\" y=\"480\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#8a5512\">Measured from power facility</text></svg>"
+        }
+      ],
+      "omitted": "No diagram of a street cross-section: the article gives no layout, depths or arrangement, so any placement would be invented. The 0.3 m vertical clearance and 1.22 m pole setback use different reference points, so they stay in the caption rather than the shared-scale chart."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Move the category labels and bars a few pixels right of x=80, or move the orange baseline left. The 6px stroke currently touches the first letter of each label.",
+        "Add small 1 m, 2 m and 3 m tick labels to the dashed gridlines at x=260, 440 and 620 so the shared scale is readable without the value labels.",
+        "Raise the label font from 28px to about 32px and shorten the first label, for example to 'Gas, comms, streetlight, tree root', so it stays readable at 360px.",
+        "Consider placing 'Measured from power facility' next to the top of the orange baseline so readers see the reference line first."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 8971,
+    "tokensOut": 4277
+  }
+]

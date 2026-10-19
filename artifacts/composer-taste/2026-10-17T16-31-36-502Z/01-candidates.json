@@ -1,0 +1,82 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 4,
+      "learningValue": 4,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 4,
+      "problems": [
+        "Church is small at thumbnail size"
+      ],
+      "reason": "Strongest choice: it shows both features the Examples paragraph names, the former fishpond in the foreground and the ruined church beyond, in their setting in the valley. The other two show only the church.",
+      "id": "6585802",
+      "total": 18,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 4,
+      "learningValue": 3,
+      "composition": 4,
+      "thumbnailClarity": 4,
+      "contextualFit": 3,
+      "problems": [
+        "Chancel has an intact-looking roof, so the ruin is less obvious than the caption implies"
+      ],
+      "reason": "A clear, well-framed view of St Martin's church with its graveyard. It shows only one of the two surviving features and does not convey the deserted village setting.",
+      "id": "13199240",
+      "total": 18,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 4,
+      "learningValue": 3,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 3,
+      "problems": [
+        "Interior view gives no sense of the village site"
+      ],
+      "reason": "The roofless interior plainly shows the church as a ruin. It is still a narrow architectural detail rather than an illustration of the deserted village.",
+      "id": "183989393",
+      "total": 16,
+      "accepted": false
+    }
+  ],
+  "model": "anthropic/claude-opus-5-5",
+  "images": [
+    {
+      "id": "6585802",
+      "title": "Wharram Percy Geograph.jpg",
+      "description": "Picture of Wharram Percey, from this image at Geograph.org.uk.\nSubmitted to that site by Paul Allison\nTaken in 1993\n\nDescription: Deserted Medieval Village, Looking north from old Fish Pond",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Wharram_Percy_Geograph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy_Geograph.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Wharram_Percy_Geograph.jpg/500px-Wharram_Percy_Geograph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "The original uploader was Nyh at English Wikipedia.",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "13199240",
+      "title": "Wharram Percy, St Martins Church - geograph.org.uk - 659805.jpg",
+      "description": "Ruin of St Martin's parish church, Wharram Percy, Ryedale, Yorkshire: view from the southeast, showing the chancel",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy,_St_Martins_Church_-_geograph.org.uk_-_659805.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg/500px-Wharram_Percy%2C_St_Martins_Church_-_geograph.org.uk_-_659805.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "dennis smith",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "183989393",
+      "title": "Wharram Percy Church.jpg",
+      "description": "The church interior, looking towards the tower",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Wharram_Percy_Church.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Wharram_Percy_Church.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f5/Wharram_Percy_Church.jpg/500px-Wharram_Percy_Church.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "HallCastleKing",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en"
+    }
+  ]
+}

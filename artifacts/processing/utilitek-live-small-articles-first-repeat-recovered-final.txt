@@ -1,0 +1,13 @@
+
+> second-brain-engine@0.1.0 test:live:utilitek
+> node --env-file-if-exists=.env.local scripts/performance/live-utilitek.mjs --resume artifacts/processing/utilitek-live/2026-10-17T03-11-10-244Z/report.json
+
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  20:16:56
+   Duration  82.53s (tests 100%)
+

@@ -1,0 +1,433 @@
+[
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C2",
+        "C3",
+        "C5",
+        "C6"
+      ],
+      "sections": [
+        {
+          "title": "City role and process overview",
+          "claims": [
+            "C7",
+            "C43"
+          ]
+        },
+        {
+          "title": "Design standards and minimum clearances",
+          "claims": [
+            "C29",
+            "C39",
+            "C14",
+            "C25",
+            "C15"
+          ]
+        },
+        {
+          "title": "Complete application workflow",
+          "claims": [
+            "C36",
+            "C37",
+            "C42",
+            "C12",
+            "C10",
+            "C13",
+            "C30",
+            "C9",
+            "C41",
+            "C11",
+            "C21",
+            "C19",
+            "C35",
+            "C27",
+            "C17",
+            "C26",
+            "C18",
+            "C22",
+            "C44",
+            "C28",
+            "C31",
+            "C32",
+            "C20",
+            "C23",
+            "C45",
+            "C8",
+            "C38"
+          ]
+        },
+        {
+          "title": "High pressure pipeline crossings and proximity agreements",
+          "claims": [
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "Related EPCOR work and reference materials",
+          "claims": [
+            "C40",
+            "C16"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "The City of Edmonton requires a Utility Line Assignment application, run by the Designer from preliminary design through circulation, conflict resolution, and permit filing, before ground disturbance for utility work in the road allowance.",
+    "readingOrderRationale": "The introduction defines the ULA, its scope, and why it matters before any procedure. Prerequisite design standards and clearance rules come next, since they shape the drawings submitted. The complete workflow then follows chronologically, keeping the composite procedure C37 and all its members together with the intervening City and stakeholder actions so no step appears out of sequence. The pipeline exception follows the general circulation it qualifies, and contextual EPCOR work plus source appendix material close the article.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 4,
+        "reason": "All 45 claims are used exactly once, headings trace to supplied claims, and scoped conditions (C6, C24, C29) are preserved."
+      },
+      "cohesion": {
+        "score": 2,
+        "reason": "The final section mixes C40, about EPCOR traffic signal and street light maintenance, with C16's ULA appendix samples; C40 has no explanatory connection to ULA reference materials, making the section a grab bag."
+      },
+      "flow": {
+        "score": 3,
+        "reason": "Definitions (C1, C4) precede scope and process detail, and the workflow follows the C37 sequence from preliminary design to permit filing. Only the closing section reads as an afterthought because C40 interrupts the reference-material focus of C16."
+      },
+      "headings": {
+        "score": 2,
+        "reason": "'Related EPCOR work and reference materials' is vague and only half-predicts its contents: C16 lists ULA samples, while C40 describes unrelated traffic signal work. Other headings are descriptive and distinct."
+      },
+      "balance": {
+        "score": 3,
+        "reason": "The large workflow section is acceptable because it preserves the C37 composite procedure with its stepOf members. The only imbalance is the thin final section pairing an off-topic claim with appendix material."
+      },
+      "introduction": {
+        "score": 4,
+        "reason": "C1, C4, C2, C3, C5, and C6 define ULA, its administering office, scope, purpose, and permit threshold; the body develops the process without repeating the introduction."
+      },
+      "blockingIssues": [
+        "C40 (EPCOR traffic signal and street light support) sits under 'Related EPCOR work and reference materials' despite having no connection to the ULA application process or to C16's appendix samples, creating a claim-to-heading mismatch."
+      ],
+      "fixes": [
+        "Rename the final section to a heading that honestly covers both claims, such as 'EPCOR services and ULA sample documents', and place C16 before C40 so the reference materials lead.",
+        "Alternatively, if a better contextual home exists for C40 in the broader article, move the whole C40 unit there and keep the final section focused on C16's appendix contents.",
+        "Within the workflow section, keep C36, C37, and C42 first to preserve the trigger-to-completion dependency order already established."
+      ]
+    },
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C2",
+        "C3",
+        "C5",
+        "C6"
+      ],
+      "sections": [
+        {
+          "title": "Design standards and minimum clearances",
+          "claims": [
+            "C29",
+            "C39",
+            "C14",
+            "C25",
+            "C15"
+          ]
+        },
+        {
+          "title": "Complete application workflow",
+          "claims": [
+            "C36",
+            "C37",
+            "C42",
+            "C12",
+            "C10",
+            "C13",
+            "C30",
+            "C9",
+            "C41",
+            "C11",
+            "C21",
+            "C19",
+            "C35",
+            "C27",
+            "C17",
+            "C26",
+            "C18",
+            "C22",
+            "C44",
+            "C28",
+            "C31",
+            "C32",
+            "C20",
+            "C23",
+            "C45",
+            "C8",
+            "C38"
+          ]
+        },
+        {
+          "title": "High pressure pipeline crossings and proximity agreements",
+          "claims": [
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "EPCOR traffic signal and street light services",
+          "claims": [
+            "C40"
+          ]
+        },
+        {
+          "title": "Sample documents in the source appendix",
+          "claims": [
+            "C16"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "The City of Edmonton requires a Utility Line Assignment application, circulated to stakeholders and culminating in a ULA permit, for any utility work in the road allowance involving ground disturbance.",
+    "readingOrderRationale": "The introduction defines ULA, its scope, purpose, and permit threshold. Prerequisite sections cover design standards, clearances, and drawing requirements before the complete workflow, which follows the C37 sequence from preliminary design through submission, City intake, stakeholder review, approval, condition resolution, and final filing. The pipeline exception follows the general circulation it qualifies. Related EPCOR work and appendix samples close the article as context and reference material.",
+    "problems": [
+      "The article outline omitted 2 claims (C7, C43). Nothing was reorganized."
+    ],
+    "review": null,
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C2",
+        "C3",
+        "C5",
+        "C6"
+      ],
+      "sections": [
+        {
+          "title": "Design standards and minimum clearances",
+          "claims": [
+            "C29",
+            "C39",
+            "C14",
+            "C25",
+            "C15"
+          ]
+        },
+        {
+          "title": "Complete application workflow",
+          "claims": [
+            "C7",
+            "C43",
+            "C36",
+            "C37",
+            "C42",
+            "C12",
+            "C10",
+            "C13",
+            "C30",
+            "C9",
+            "C41",
+            "C11",
+            "C21",
+            "C19",
+            "C35",
+            "C27",
+            "C17",
+            "C26",
+            "C18",
+            "C22",
+            "C44",
+            "C28",
+            "C31",
+            "C32",
+            "C20",
+            "C23",
+            "C45",
+            "C8",
+            "C38"
+          ]
+        },
+        {
+          "title": "High pressure pipeline crossings and proximity agreements",
+          "claims": [
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "EPCOR traffic signal and street light services",
+          "claims": [
+            "C40"
+          ]
+        },
+        {
+          "title": "Sample documents in the source appendix",
+          "claims": [
+            "C16"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "The City of Edmonton requires a Utility Line Assignment application, circulated to stakeholders and resolved before a ULA permit is issued, for any ground disturbance in the road allowance.",
+    "readingOrderRationale": "The introduction defines ULA, its scope, purpose, and permit threshold. Prerequisite design standards and clearances come before the complete workflow, which preserves the C37 composite with all its stepOf members in one ordered section. The pipeline exception follows the general circulation it qualifies, and contextual EPCOR services and appendix samples close the article.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 2,
+        "reason": "Most headings are supported, but 'EPCOR traffic signal and street light services' (C40) concerns EPCOR's service portfolio, not the ULA application process, so it falls outside the title's scope. All other claims are used once with attribution intact."
+      },
+      "cohesion": {
+        "score": 3,
+        "reason": "The workflow section coherently preserves the C37 composite, and the pipeline section (C24, C33, C34) is tightly related. The standards section mixes electrical code compliance (C29, C39), clearances (C14, C25), and drawing software standards (C15), which is acceptable but slightly loose. C40 sits alone with no topical tie to ULA."
+      },
+      "flow": {
+        "score": 3,
+        "reason": "Definitions (C1, C4) precede detail, and the workflow section orders claims by the actual process sequence from preliminary design (C42, C12) through circulation (C21, C35) to permit filing (C20, C45). The standalone C40 section interrupts flow between pipeline agreements and the appendix, since it is unrelated to either."
+      },
+      "headings": {
+        "score": 3,
+        "reason": "Headings are descriptive and distinct, e.g. 'High pressure pipeline crossings and proximity agreements' clearly predicts C24, C33, C34. 'EPCOR traffic signal and street light services' is accurate for C40 but signals content irrelevant to the article's subject."
+      },
+      "balance": {
+        "score": 3,
+        "reason": "The workflow section is large but justified by the C37 composite. The single-claim C40 section is needless fragmentation of tangential material, and the appendix section (C16) is small but has distinct scope, which is acceptable."
+      },
+      "introduction": {
+        "score": 4,
+        "reason": "C1, C4, C2, C3, C5, and C6 define ULA, its administering office, scope, purpose, and benefits without duplicating body detail; the body then develops the procedure."
+      },
+      "blockingIssues": [
+        "C40 (EPCOR traffic signal and street light services) is unrelated to the ULA application process and cannot support its own heading in this article; it is a material scope mismatch."
+      ],
+      "fixes": [
+        "Move C40 out of this article to the EPCOR article, or if it must remain, merge it with C29 under a heading such as 'EPCOR responsibilities' so the section has more than one supported claim; do not split any C37 composite member.",
+        "Optionally tighten the 'Design standards and minimum clearances' section by ordering C29 and C39 (code compliance) before C14 and C25 (clearances) and C15 (drawing standards) to move from general requirements to specifics."
+      ]
+    },
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C1",
+        "C4",
+        "C2",
+        "C3",
+        "C5",
+        "C6"
+      ],
+      "sections": [
+        {
+          "title": "Design standards and minimum clearances",
+          "claims": [
+            "C39",
+            "C14",
+            "C25",
+            "C15"
+          ]
+        },
+        {
+          "title": "EPCOR responsibilities and related services",
+          "claims": [
+            "C29",
+            "C40"
+          ]
+        },
+        {
+          "title": "Complete application workflow",
+          "claims": [
+            "C7",
+            "C43",
+            "C36",
+            "C37",
+            "C42",
+            "C12",
+            "C10",
+            "C13",
+            "C30",
+            "C9",
+            "C41",
+            "C11",
+            "C21",
+            "C19",
+            "C35",
+            "C27",
+            "C17",
+            "C26",
+            "C18",
+            "C22",
+            "C44",
+            "C28",
+            "C31",
+            "C32",
+            "C20",
+            "C23",
+            "C45",
+            "C8",
+            "C38"
+          ]
+        },
+        {
+          "title": "High pressure pipeline crossings and proximity agreements",
+          "claims": [
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "Sample documents in the source appendix",
+          "claims": [
+            "C16"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "The City of Edmonton requires a Utility Line Assignment application, circulated to stakeholders and resolved before permit issuance, for any ground disturbance in the road allowance, and designers must follow the full workflow, meet clearance and code standards, and apply directly to pipeline companies other than ATCO.",
+    "readingOrderRationale": "The introduction defines ULA, its scope, and its purpose. Supporting requirements come before the procedure: design standards, clearances, and drawing conventions, then EPCOR's compliance obligations and related services. The complete workflow follows in process order, preserving the C37 composite with all its members and the intervening City and stakeholder actions. The pipeline circulation exception follows the general workflow it qualifies, and the source appendix samples close the article.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 4,
+        "reason": "All 45 claims appear exactly once; headings and title are supported by their claims, and scoped conditions (City of Edmonton, EPCOR designers, ATCO-only circulation) are preserved."
+      },
+      "cohesion": {
+        "score": 3,
+        "reason": "Sections hold single topics; the large workflow section is one composite procedure (C37 and its stepOf members) under an accurate umbrella. C40 (traffic signals and street lights support) is tangential to the ULA process inside 'EPCOR responsibilities and related services'."
+      },
+      "flow": {
+        "score": 4,
+        "reason": "Definitions and purpose lead the introduction; the workflow section orders overview claims (C7, C43) before step-level claims (C42, C12, C13, C9, C21, C35, C26, C18, C22, C28, C20) matching the actual dependency sequence, with summary claims (C8, C38) closing."
+      },
+      "headings": {
+        "score": 4,
+        "reason": "Each H2 predicts its contents distinctly: 'Design standards and minimum clearances', 'Complete application workflow', 'High pressure pipeline crossings and proximity agreements', and 'Sample documents in the source appendix' are all descriptive and non-overlapping."
+      },
+      "balance": {
+        "score": 3,
+        "reason": "Scope is evidence-led and the composite workflow's size is justified, but C40 on EPCOR's traffic signal and street light support pads the EPCOR section without connecting to the ULA process."
+      },
+      "introduction": {
+        "score": 4,
+        "reason": "C1, C4, and C2 define the subject and scope; C3 and C5 give purpose and benefits; C6 adds the EPCOR proximity threshold. The body develops the process rather than repeating these claims."
+      },
+      "blockingIssues": [],
+      "fixes": [
+        "Keep C40 in the EPCOR section but frame it as context for why EPCOR designers use the ULA process, or accept it as the claim's only defensible home without expanding the section further.",
+        "Within 'Design standards and minimum clearances', order C39 and C15 (codes and drawing standards) before C14 and C25 (clearances) so general requirements precede specific clearance rules."
+      ]
+    },
+    "accepted": true
+  }
+]

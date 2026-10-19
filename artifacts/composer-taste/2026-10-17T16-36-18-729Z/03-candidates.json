@@ -1,0 +1,159 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 4,
+      "learningValue": 4,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 4,
+      "problems": [],
+      "improvements": [
+        "Caption should name Wormleighton, Warwickshire, and explain that lidar shows house plots and ridge and furrow beside the canal."
+      ],
+      "reason": "Strongest choice. The lidar view shows a named deserted village with its house platforms and surrounding ridge and furrow, linking desertion to the field patterns described in the section.",
+      "id": "175307008",
+      "total": 18,
+      "accepted": true
+    },
+    {
+      "subjectMatch": 3,
+      "learningValue": 3,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 3,
+      "problems": [],
+      "improvements": [
+        "Label it as a generic example of surviving ridge and furrow, not a deserted village."
+      ],
+      "reason": "Ridges are clearly visible in a grass field, which supports the ridge-and-furrow sentence. It shows no village remains, so it is weaker than the Wormleighton lidar.",
+      "id": "12654906",
+      "total": 15,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 2,
+      "learningValue": 2,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 2,
+      "problems": [
+        "Scottish rig near Airdrie, with no stated medieval date or link to village desertion."
+      ],
+      "reason": "The curved rigs are clear, but the site is outside the English context and has no stated medieval date.",
+      "id": "69925256",
+      "total": 12,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 1,
+      "learningValue": 1,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 1,
+      "problems": [
+        "Shows a ploughing match in Australia around 1900, not medieval fields or a deserted village."
+      ],
+      "reason": "Clear period photograph, but it is the wrong place and era for this section.",
+      "id": "5123700",
+      "total": 9,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 1,
+      "learningValue": 2,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 1,
+      "problems": [
+        "The subject is a Roman fort landscape, not a deserted medieval village."
+      ],
+      "reason": "Ridge and furrow is visible, but the file identifies a Roman fort, which would confuse readers.",
+      "id": "177557380",
+      "total": 10,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 1,
+      "learningValue": 2,
+      "composition": 3,
+      "thumbnailClarity": 3,
+      "contextualFit": 1,
+      "problems": [
+        "A hill landscape with no stated link to a deserted village."
+      ],
+      "reason": "The lidar shows field earthworks, but nothing ties the site to desertion.",
+      "id": "178530545",
+      "total": 10,
+      "accepted": false
+    }
+  ],
+  "model": "anthropic/claude-opus-5-5",
+  "images": [
+    {
+      "id": "5123700",
+      "title": "Ploughing match from The Powerhouse Museum Collection.jpg",
+      "description": "\"Ploughing Match\", Sydney, Australia, around 1900 – Silver gelatin dry plate glass negative in landscape format. The image depicts a ploughing competition at what appears to be an agricultural show. The competition is between teams of two-horse single-furrow mouldboard ploughs. Five teams are depicted in the image and numerous strips of alterate furrowed and unfurrowed land can be seen. One of the plough teams is depicted in the foregound of the image. The team consists of two horses harnessed to a single-furrow mouldboard plough which is hand controlled by a man walking behind the plough. A man can be seen in the foreground on the left side of the image, he is holding an axe and looking towards the plough team. Crowds of people can be seen in the background of the image. The crowds appear to be attending an agricultural show. Horse drawn vehicles and horses can also be seen in the background. A hill is depicted in the far background of the image. The caption, studio number and studio mark are inscribed on the reverse of the negative. 55/61 Tyrrell Inventory Number, 132 Kerry Studio Number.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Ploughing_match_from_The_Powerhouse_Museum_Collection.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ploughing_match_from_The_Powerhouse_Museum_Collection.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/Ploughing_match_from_The_Powerhouse_Museum_Collection.jpg/500px-Ploughing_match_from_The_Powerhouse_Museum_Collection.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Charles Kerry",
+      "license": "Public domain",
+      "licenseUrl": ""
+    },
+    {
+      "id": "12654906",
+      "title": "Cold Newton ridge and furrow.jpg",
+      "description": "Cold Newton ridge and furrow",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5b/Cold_Newton_ridge_and_furrow.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cold_Newton_ridge_and_furrow.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Cold_Newton_ridge_and_furrow.jpg/500px-Cold_Newton_ridge_and_furrow.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Matt Neale from UK",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "69925256",
+      "title": "Blackhillrig1.jpg",
+      "description": "An example of rig and furrow. This image is from the area around rough rig reservoir near Airdrie Scotland. Here you will find some of the best examples in the UK.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5d/Blackhillrig1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Blackhillrig1.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/Blackhillrig1.jpg/500px-Blackhillrig1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Kevthedev",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+    },
+    {
+      "id": "175307008",
+      "title": "Deserted Medieval Village, Wormleighton in Warwickshire.jpg",
+      "description": "A lidar image derived from Environmental Agency open source data.gov.uk data (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) via the houseprices.io lidar map.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/49/Deserted_Medieval_Village%2C_Wormleighton_in_Warwickshire.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Deserted_Medieval_Village,_Wormleighton_in_Warwickshire.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Deserted_Medieval_Village%2C_Wormleighton_in_Warwickshire.jpg/500px-Deserted_Medieval_Village%2C_Wormleighton_in_Warwickshire.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Dr John Wells",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    },
+    {
+      "id": "177557380",
+      "title": "Hunnum Roman fort and immediate landscape.jpg",
+      "description": "A lidar image derived from Environmental Agency open source data.gov.uk data (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) via the houseprices.io lidar map.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Hunnum_Roman_fort_and_immediate_landscape.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hunnum_Roman_fort_and_immediate_landscape.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Hunnum_Roman_fort_and_immediate_landscape.jpg/500px-Hunnum_Roman_fort_and_immediate_landscape.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Dr John Wells",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    },
+    {
+      "id": "178530545",
+      "title": "Heddon Hill west of Brandon in Northumberland.jpg",
+      "description": "A lidar image derived from Environmental Agency open source data.gov.uk data (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/) via the houseprices.io lidar map.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9f/Heddon_Hill_west_of_Brandon_in_Northumberland.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Heddon_Hill_west_of_Brandon_in_Northumberland.jpg",
+      "displayUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Heddon_Hill_west_of_Brandon_in_Northumberland.jpg/500px-Heddon_Hill_west_of_Brandon_in_Northumberland.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "creator": "Dr John Wells",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+    }
+  ]
+}

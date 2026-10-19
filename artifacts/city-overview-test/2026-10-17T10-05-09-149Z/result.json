@@ -1,0 +1,43 @@
+{
+  "plan": {
+    "pageId": "c687812a-7bdd-402f-814e-b40e9fbfa590",
+    "title": "City of Edmonton",
+    "claims": 11,
+    "childClaims": 11,
+    "childShare": 1,
+    "needsOverview": true,
+    "status": "planned",
+    "detail": null,
+    "sections": [
+      {
+        "title": "Overview",
+        "query": {
+          "entity": {
+            "type": "government_body",
+            "key": "city-of-edmonton"
+          },
+          "unitIds": [
+            "5d786253-9304-497d-a083-bfe8bad419cb",
+            "14157c42-f26c-48d4-98ef-683eaa80438a"
+          ],
+          "article": true
+        }
+      }
+    ]
+  },
+  "result": [
+    {
+      "title": "Overview",
+      "lines": [
+        {
+          "text": "The City of Edmonton requires a Utility Line Assignment (ULA) before utility assets are installed within the road allowance where a ground disturbance is required. In the ULA application process, the City processes each application, circulates it to all stakeholders, and advises the Designer of any conflicts or objections. The City then approves the ULA application and the proposed facility locations.",
+          "unitIds": [
+            "5d786253-9304-497d-a083-bfe8bad419cb",
+            "14157c42-f26c-48d4-98ef-683eaa80438a"
+          ]
+        }
+      ],
+      "model": "anthropic/claude-haiku-5-5"
+    }
+  ]
+}

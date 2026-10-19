@@ -1,0 +1,83 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "4d5d50b1-87e6-4946-9523-57091f2ab53d",
+            "a9c6098c-880b-47d1-b3af-b82d931865f7",
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+            "22183c15-3ed0-4962-8077-5a203bf1b7ab"
+          ],
+          "learningGoal": "Readers can compare the agreed minimum horizontal clearances at a glance and see which features need the most space from power facilities.",
+          "caption": "Agreed minimum horizontal clearances from power facilities, drawn to one scale in metres. Tree roots are measured to the root edge and bus shelters to the shelter edge. This is a comparison chart, not a layout or work instruction. The 0.3 m vertical clearance between power facilities and utilities (unless otherwise stipulated) and the 1.22 m power pole setback from the property line are covered in the text.",
+          "alt": "Bar chart titled Agreed horizontal minimums, measured from a vertical line representing the power facility. Gas lines, communication lines and streetlights need 1.0 m. The edge of a tree root needs 1.0 m. Water lines and services need 1.8 m. Transmission water lines need 2.5 m. Drainage lines, fire hydrants and the edge of bus shelters need 3.0 m, the longest bar.",
+          "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\"><title>Agreed minimum horizontal clearances from power facilities</title><desc>Bars on one scale: 1.0 m for gas, communication and streetlights; 1.0 m for the edge of a tree root; 1.8 m for water lines and services; 2.5 m for transmission water lines; 3.0 m for drainage lines, fire hydrants and the edge of bus shelters.</desc><defs><linearGradient id=\"b1\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9fb8cc\"/><stop offset=\"1\" stop-color=\"#86a3ba\"/></linearGradient><linearGradient id=\"b2\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#5f86a6\"/><stop offset=\"1\" stop-color=\"#4d7495\"/></linearGradient></defs><rect x=\"0\" y=\"0\" width=\"800\" height=\"520\" fill=\"#ffffff\"/><text x=\"80\" y=\"48\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#1f3d57\">Agreed horizontal minimums</text><line x1=\"260\" y1=\"104\" x2=\"260\" y2=\"438\" stroke=\"#e1e6ea\" stroke-width=\"1.5\" stroke-dasharray=\"4 6\"/><line x1=\"440\" y1=\"104\" x2=\"440\" y2=\"438\" stroke=\"#e1e6ea\" stroke-width=\"1.5\" stroke-dasharray=\"4 6\"/><line x1=\"620\" y1=\"104\" x2=\"620\" y2=\"438\" stroke=\"#e1e6ea\" stroke-width=\"1.5\" stroke-dasharray=\"4 6\"/><text x=\"80\" y=\"96\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Gas, communication, streetlight</text><rect x=\"80\" y=\"106\" width=\"180\" height=\"24\" rx=\"3\" fill=\"url(#b1)\"/><text x=\"272\" y=\"128\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.0 m</text><text x=\"80\" y=\"172\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Tree root edge</text><rect x=\"80\" y=\"182\" width=\"180\" height=\"24\" rx=\"3\" fill=\"url(#b1)\"/><text x=\"272\" y=\"204\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.0 m</text><text x=\"80\" y=\"248\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Water lines and services</text><rect x=\"80\" y=\"258\" width=\"324\" height=\"24\" rx=\"3\" fill=\"url(#b1)\"/><text x=\"416\" y=\"280\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.8 m</text><text x=\"80\" y=\"324\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Transmission water lines</text><rect x=\"80\" y=\"334\" width=\"450\" height=\"24\" rx=\"3\" fill=\"url(#b2)\"/><text x=\"542\" y=\"356\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">2.5 m</text><text x=\"80\" y=\"400\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Drainage, fire hydrant, bus shelter edge</text><rect x=\"80\" y=\"410\" width=\"540\" height=\"24\" rx=\"3\" fill=\"#2f5677\" stroke=\"#1f3d57\" stroke-width=\"2\"/><text x=\"632\" y=\"432\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#1f3d57\">3.0 m</text><line x1=\"80\" y1=\"104\" x2=\"80\" y2=\"446\" stroke=\"#c47a1c\" stroke-width=\"6\" stroke-linecap=\"round\"/><text x=\"80\" y=\"484\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#8a5512\">Measured from power facility</text></svg>"
+        }
+      ],
+      "omitted": "No street cross-section: the article gives no layout, depths or arrangement, so any placement would be invented. The 0.3 m vertical clearance and 1.22 m pole-to-property-line setback measure different things, so they stay in the caption, not the shared-scale chart."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 3,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [
+        "The 6px orange baseline at x=80 runs from y=104 to y=446. It crosses the first letters of the Tree root, Water, Transmission and Drainage labels, which also start at x=80."
+      ],
+      "fixes": [
+        "Shorten the orange line so it spans only each bar, or move the row labels to x=92 so they clear the stroke.",
+        "Label the gridlines at x=260, 440 and 620 as 1, 2 and 3 m, or remove them. Unlabeled lines add little.",
+        "Replace the gradients with flat fills; they add no information.",
+        "Consider 30–32px labels so text stays readable on narrow screens. The longest label has about 60px of spare width."
+      ]
+    },
+    "total": 16,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 12007,
+    "tokensOut": 4944
+  },
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "4d5d50b1-87e6-4946-9523-57091f2ab53d",
+            "a9c6098c-880b-47d1-b3af-b82d931865f7",
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+            "22183c15-3ed0-4962-8077-5a203bf1b7ab"
+          ],
+          "learningGoal": "Readers can compare the agreed minimum horizontal clearances on one scale and see which features need the most space from power facilities.",
+          "caption": "Agreed minimum horizontal clearances from power facilities, drawn to one scale in metres. Tree roots are measured to the edge of a tree root, and bus shelters to the edge of the shelter. This compares mutually agreed clearances; it is not a layout or work instruction. The 0.3 m vertical clearance between power facilities and utilities (unless otherwise stipulated) and the 1.22 m power pole setback from the property line measure different things and are covered in the text.",
+          "alt": "Bar chart titled Agreed horizontal minimums. Each bar starts at an orange line representing the power facility, with a scale marked 1 m, 2 m and 3 m. Gas lines, communication lines and streetlights need 1.0 m. The edge of a tree root needs 1.0 m. Water lines and water services need 1.8 m. Transmission water lines need 2.5 m. Drainage lines, fire hydrants and the edge of bus shelters need 3.0 m, the longest bar.",
+          "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\"><title>Agreed minimum horizontal clearances from power facilities</title><desc>Bars on one scale in metres: 1.0 m for gas lines, communication lines and streetlights; 1.0 m for the edge of a tree root; 1.8 m for water lines and services; 2.5 m for transmission water lines; 3.0 m for drainage lines, fire hydrants and the edge of bus shelters.</desc><rect x=\"0\" y=\"0\" width=\"800\" height=\"520\" fill=\"#ffffff\"/><text x=\"80\" y=\"66\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#1f3d57\">Agreed horizontal minimums</text><text x=\"96\" y=\"108\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Gas, communication, streetlight</text><rect x=\"83\" y=\"116\" width=\"177\" height=\"20\" rx=\"3\" fill=\"#93afc5\"/><text x=\"272\" y=\"135\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.0 m</text><text x=\"96\" y=\"172\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Edge of tree root</text><rect x=\"83\" y=\"180\" width=\"177\" height=\"20\" rx=\"3\" fill=\"#93afc5\"/><text x=\"272\" y=\"199\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.0 m</text><text x=\"96\" y=\"236\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Water lines and services</text><rect x=\"83\" y=\"244\" width=\"321\" height=\"20\" rx=\"3\" fill=\"#93afc5\"/><text x=\"416\" y=\"263\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">1.8 m</text><text x=\"96\" y=\"300\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Transmission water lines</text><rect x=\"83\" y=\"308\" width=\"447\" height=\"20\" rx=\"3\" fill=\"#577e9e\"/><text x=\"542\" y=\"327\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#2b3640\">2.5 m</text><text x=\"96\" y=\"364\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#2b3640\">Drainage, fire hydrant, bus shelter edge</text><rect x=\"83\" y=\"372\" width=\"537\" height=\"20\" rx=\"3\" fill=\"#2f5677\" stroke=\"#1f3d57\" stroke-width=\"2\"/><text x=\"632\" y=\"391\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" font-weight=\"bold\" fill=\"#1f3d57\">3.0 m</text><line x1=\"80\" y1=\"404\" x2=\"620\" y2=\"404\" stroke=\"#9aa6b1\" stroke-width=\"2\"/><line x1=\"260\" y1=\"404\" x2=\"260\" y2=\"414\" stroke=\"#9aa6b1\" stroke-width=\"2\"/><line x1=\"440\" y1=\"404\" x2=\"440\" y2=\"414\" stroke=\"#9aa6b1\" stroke-width=\"2\"/><line x1=\"620\" y1=\"404\" x2=\"620\" y2=\"414\" stroke=\"#9aa6b1\" stroke-width=\"2\"/><text x=\"260\" y=\"442\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#5a6773\">1 m</text><text x=\"440\" y=\"442\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#5a6773\">2 m</text><text x=\"620\" y=\"442\" text-anchor=\"middle\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#5a6773\">3 m</text><line x1=\"80\" y1=\"112\" x2=\"80\" y2=\"410\" stroke=\"#c47a1c\" stroke-width=\"6\" stroke-linecap=\"round\"/><text x=\"80\" y=\"478\" font-family=\"Helvetica, Arial, sans-serif\" font-size=\"28\" fill=\"#8a5512\">Measured from power facility</text></svg>"
+        }
+      ],
+      "omitted": "No street cross-section: the article gives no layout, depths or arrangement, so any placement would be invented. The 0.3 m vertical clearance and 1.22 m pole-to-property-line setback measure different things, so they stay in the caption, not the shared-scale chart. Row labels stay at 28px because the longest label would crowd the right margin at 30–32px."
+    },
+    "review": {
+      "usefulness": 4,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Make the bars taller, about 28–32px instead of 20px, so they remain visible and easy to compare on small screens.",
+        "Shorten the caption by moving the vertical clearance and pole setback note into one brief sentence. The current text is accurate but long for a figure caption.",
+        "Use a darker fill for the 1.0 m and 1.8 m bars, or add a thin outline, so the light blue bars contrast more clearly with the white background."
+      ]
+    },
+    "total": 18,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 12696,
+    "tokensOut": 5275
+  }
+]

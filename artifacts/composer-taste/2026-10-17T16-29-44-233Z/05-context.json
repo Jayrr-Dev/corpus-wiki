@@ -1,0 +1,28 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 3,
+    "problems": [],
+    "reason": "The photo shows the ruined St Martin's church named in P6, matching the caption and alt text. It shows the surviving church, which supports the paragraph, but it does not show the fishpond or earthworks the paragraph mentions. The caption repeats the excavation dates from the paragraph.",
+    "id": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+    "after": "P6",
+    "total": 16,
+    "accepted": false
+  },
+  "figure": {
+    "after": "P6",
+    "evidence": [
+      "P6"
+    ],
+    "learningGoal": "Shows readers what survives at England's best-known deserted medieval village: the ruined church named in the text.",
+    "caption": "Ruin of St Martin's church at Wharram Percy, excavated from 1948 to 1990, viewed from the southeast. Photo: dennis smith, CC BY-SA 2.0.",
+    "alt": "Ruin of St Martin's church, Wharram Percy, viewed from the southeast, showing the chancel.",
+    "svg": "",
+    "assetId": "2e0756f4-e75c-498c-b53f-71a48388dc61",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-haiku-5-5"
+}

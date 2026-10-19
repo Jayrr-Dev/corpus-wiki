@@ -1,0 +1,13 @@
+
+> second-brain-engine@0.1.0 test:synthetic
+> node scripts/performance/run.mjs --synthetic
+
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+
+ Test Files  13 passed (13)
+      Tests  86 passed (86)
+   Start at  18:54:00
+   Duration  29.48s (tests 92%, import 6%, transform 2%)
+

@@ -1,0 +1,221 @@
+{
+  "input": {
+    "lines": [
+      {
+        "author": "ai",
+        "lineId": "2d2fa216-10c1-473e-b4c3-c127cb99be86",
+        "content": "Utilitek Solutions Inc. is a privately held company headquartered in Edmonton, Canada. Its website presents it as an engineering consultancy serving utility and infrastructure projects in Edmonton, Alberta, and advertises more than twenty-five years of experience, a claim the company makes in its own marketing.",
+        "unitIds": [
+          "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+          "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+          "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+          "c097021e-1909-4844-baae-67a2d45c8f3c"
+        ],
+        "position": 0,
+        "needsRewrite": true,
+        "lineRevisionId": "a11ad872-cf84-41d2-9e59-8781e9be6fad"
+      },
+      {
+        "author": "ai",
+        "lineId": "7f9b3bbf-e5b4-4cb5-b8db-3c97c1c43d3a",
+        "content": "The information in this section is drawn from the company's public website statements. It does not describe an internal operating policy.",
+        "unitIds": [
+          "c471e597-321d-4a46-8c36-a2885a141da7",
+          "f423a5ae-f664-433b-a5db-d8ac36b021c2"
+        ],
+        "position": 1,
+        "needsRewrite": true,
+        "lineRevisionId": "bc400485-6cd3-4fbf-ad91-ace159097999"
+      }
+    ],
+    "title": "Company profile",
+    "units": [
+      {
+        "kind": "fact",
+        "unitId": "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+        "content": "Utilitek Solutions Inc. is a privately held company.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "26749a6d-d299-4c65-a6af-2585e7aa6605",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+        "content": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "8ecda8fe-c1d2-45cc-af96-ca913f26aedf",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "content": "Utilitek Solutions presents itself as an engineering consultancy serving utility and infrastructure projects in Edmonton, Alberta.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            },
+            {
+              "key": "edmonton",
+              "role": "mentioned",
+              "type": "place"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "82da8733-f0fc-471d-ae99-24c11c28d094",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "c097021e-1909-4844-baae-67a2d45c8f3c",
+        "content": "Utilitek Solutions advertises more than twenty-five years of experience, a company marketing claim.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "bc74bca1-c068-41e2-8eac-cc93ea585e57",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "c471e597-321d-4a46-8c36-a2885a141da7",
+        "content": "The Utilitek Solutions website snapshot is a labelled test document that summarizes public website statements, not an internal operating policy.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "3f449f39-612f-4ad5-bc02-95b88d2d6035",
+        "epistemicStatus": "established"
+      },
+      {
+        "kind": "fact",
+        "unitId": "f423a5ae-f664-433b-a5db-d8ac36b021c2",
+        "content": "The Utilitek Solutions website snapshot is a labelled test document summarizing public website statements, not an internal operating policy.",
+        "context": {
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "role": "subject",
+              "type": "company"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "fcc9c808-320d-428f-8fff-756f973fabfb",
+        "epistemicStatus": "established"
+      }
+    ],
+    "pageTitle": "Utilitek Solutions Inc.",
+    "sectionId": "418613d4-dd1d-484e-8e9f-eca7aab5dfac",
+    "sectionTitle": "Company profile",
+    "uncoveredUnitIds": [],
+    "pageContext": [
+      {
+        "section": "Overview",
+        "text": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada. The company lists four service areas: distribution system design, residential development support, utility power systems, and joint-use and infrastructure upgrades."
+      },
+      {
+        "section": "Services and specialties",
+        "text": "Distribution system design is the first of the four service areas that Utilitek Solutions lists. The work covers overhead and underground distribution networks, including pole-load analysis and conductor sizing. For urban, suburban, and rural settings, the company describes its distribution-network work as also including anchors, framing, and guyed structures.\n\nResidential development support covers the power infrastructure for housing developments. Utilitek Solutions coordinates feeder backbones, pad-mounted transformers, lighting, and individual lot services, along with permits and developer cost estimates. The company also offers lot-by-lot service plans.\n\nUtility power systems work covers substations, protection and control, and three-phase and single-phase distribution. The company's power-system offering also lists transformer installations and service laterals.\n\nProtection and control work involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation. The company's homepage lists protection and control, together with utility design, infrastructure upgrades, three-phase distribution, and transformer installation design, among its services.\n\nJoint-use and infrastructure upgrades include multi-utility coordination, asset reinforcement, and compliance. The company's website also lists shared-pole engineering as one of its specialisms.\n\nThe company's list of tools includes all of the following:\n- Microstation\n- PLS CADD\n- SPIDA Calc\n- PLS-Caisson\n- Sag10\n- PLS Pole\n- PLS Laminated Pole\n- Quick Pole"
+      },
+      {
+        "section": "Delivery sequence",
+        "text": "The published delivery sequence of Utilitek Solutions Inc. runs through four stages: assessment, design, implementation, and validation. Assessment is step 1, design is step 2, implementation is step 3, and validation is step 4.\n\nProtection work by Utilitek Solutions involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation.\n\nCompliance references are grouped on the company's website under IEEE, Canadian electrical-code/CSA, and Alberta requirements."
+      },
+      {
+        "section": "Safety management and reporting",
+        "text": "Incident reporting at Utilitek Solutions Inc. requires employees to report accidents, incidents causing injury or property damage, and near misses to their supervisor immediately. Supervisors report these events to management for submission to the applicable workers' compensation board, and senior management reports critical injuries to the appropriate authorities.\n\nTailgate meetings are daily safety meetings held at Utilitek job sites when two or more employees, subcontractor representatives, or client representatives are present. The meeting is documented at the beginning of each workday. Late arrivals are briefed on the topics and sign the form.\n\nSite-specific orientation is given to an employee who reports to a new Utilitek site. It covers site safety standards, applicable client procedures, first aid attendant names and station locations, and posted legislation. A supervisor or competent delegate conducts the orientation, and it is documented in the employee file.\n\nWorkplace inspections are documented, planned inspections that Utilitek conducts to identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections occur weekly on project sites and monthly at company premises, with supervisors and the health and safety representative involved."
+      },
+      {
+        "section": "Hazard control and protective equipment",
+        "text": "Hazard control at Utilitek Solutions Inc. follows an ordered approach: elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is attempted first, and personal protective equipment is treated as the last line of defense.\n\nUtilitek Solutions Inc. requires a job hazard analysis to be completed before work begins. In this pre-work assessment, workers break the job into sequential steps and identify hazards at each step. They review the hazards with affected workers, rank them by risk, document the assessment, and implement controls.\n\nPersonal protective equipment is equipment workers wear to protect themselves from hazards. Utilitek divides personal protective equipment into basic items worn at all times by all personnel and specialized items used for specific jobs or hazards. Employee-owned personal protective equipment is not allowed.\n\nUtilitek requires hearing protection for employees exposed to noise of 85 dB or greater, generally whenever voices must be raised to be heard. Exposure is measured with a sound level meter or identified by the contracting company."
+      },
+      {
+        "section": "Worker conduct, return to work, and chemical safety",
+        "text": "Behavior on Utilitek jobsites is governed by a company policy that defines unacceptable conduct and the corrective measures for it. Class A violations, including fighting, theft, willful destruction of property, drug and alcohol policy violations, and willful endangerment, warrant immediate termination. Class B violations, including dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination.\n\nThe modified-work program gives injured employees modified duties until they can return to their pre-accident job, where possible. Before modified duty starts, the employee and employer sign an agreement covering hours of work, reporting requirements, and the position. The employee provides medical progress reports every two weeks or as often as needed.\n\nEmployees receive training at orientation and as a refresher at least once every three years or upon program change. Records of this training are maintained.\n\nSafety data sheets for regulated chemicals are managed by a designated Safety Representative, who ensures that an SDS is available for each regulated chemical. The Safety Representative reviews SDSs for updates at least once every three years and keeps an up-to-date SDS log book at the shop in a clearly visible location."
+      }
+    ]
+  },
+  "revision": {
+    "revise": [
+      {
+        "lineId": "2d2fa216-10c1-473e-b4c3-c127cb99be86",
+        "text": "Utilitek Solutions Inc. is privately held. The company presents itself as an engineering consultancy serving utility and infrastructure projects, and it reports more than twenty-five years of experience in its own marketing.",
+        "unitIds": [
+          "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+          "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+          "c097021e-1909-4844-baae-67a2d45c8f3c"
+        ]
+      }
+    ],
+    "retire": [
+      "7f9b3bbf-e5b4-4cb5-b8db-3c97c1c43d3a"
+    ],
+    "add": [],
+    "omittedUnitIds": [
+      "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+      "c471e597-321d-4a46-8c36-a2885a141da7",
+      "f423a5ae-f664-433b-a5db-d8ac36b021c2"
+    ],
+    "modelVersion": "anthropic/claude-haiku-5-5",
+    "tokensIn": 15198,
+    "tokensOut": 2148
+  }
+}

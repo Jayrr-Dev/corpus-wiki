@@ -1,0 +1,12 @@
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+
+ Test Files  144 passed | 18 skipped (162)
+      Tests  927 passed | 54 skipped (981)
+   Start at  18:55:09
+   Duration  75.25s (tests 79%, import 18%, transform 3%, worker 1%)
+
+    Isolate  162 workers spawned · ~145ms startup each (spawn + environment, per file)
+             at least ~11.63s faster with isolate: false — reuses workers across files instead of one per file
+

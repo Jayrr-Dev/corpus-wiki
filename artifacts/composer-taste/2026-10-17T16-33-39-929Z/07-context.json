@@ -1,0 +1,32 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 4,
+    "problems": [],
+    "improvements": [
+      "The church in this 1993 photo appears to have a roof. Describe it as the church rather than \"ruined\" in the caption and alt text, or note that it was then partly roofed.",
+      "Mention the pond in the foreground of the caption so readers can find both features."
+    ],
+    "reason": "Verified metadata and the image show Wharram Percy from the old fishpond, with the pond and church both visible. They match the paragraph and differ from the East Lilling earthworks figure. The church's ruined state is hard to confirm at thumbnail size.",
+    "id": "6a3973af-8801-400e-82a6-245550023f0c",
+    "after": "P6",
+    "total": 17,
+    "accepted": true
+  },
+  "figure": {
+    "after": "P6",
+    "evidence": [
+      "P6"
+    ],
+    "learningGoal": "Shows two Wharram Percy features named in the text, the former fishpond and the ruined church, together in their valley setting.",
+    "caption": "Wharram Percy, North Yorkshire, in 1993, seen looking north from the old fishpond; the ruined church is visible in the distance.",
+    "alt": "A grassy valley at Wharram Percy seen from the old fishpond, which holds water, with the small ruined church visible in the distance.",
+    "svg": "",
+    "assetId": "6a3973af-8801-400e-82a6-245550023f0c",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-opus-5-5"
+}

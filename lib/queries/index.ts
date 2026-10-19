@@ -84,6 +84,16 @@ export const useLineRevisions = (o: ListOptions<"line_revisions"> = {}) =>
 export const useEntityDescriptionRevisions = (o: ListOptions<"entity_description_revisions"> = {}) =>
   useTableList("entity_description_revisions", { orderBy: "created_at", ascending: false, ...o });
 
+// ARTICLE SUGGESTIONS (/units?view=suggestions): the latest runs and every suggestion, newest first
+export const useSuggestionRuns = (o: ListOptions<"suggestion_runs"> = {}) => {
+  const space = useActiveSpace();
+  return useTableList("suggestion_runs", { orderBy: "created_at", ascending: false, limit: 5, ...o, filters: { ...o.filters, space_id: space.id } });
+};
+export const useArticleSuggestions = (o: ListOptions<"article_suggestions"> = {}) => {
+  const space = useActiveSpace();
+  return useTableList("article_suggestions", { orderBy: "created_at", ascending: false, limit: 1000, ...o, filters: { ...o.filters, space_id: space.id } });
+};
+
 // AI USAGE: one row per AI call (token log on /settings), newest first
 export const useAiCalls = (o: ListOptions<"ai_calls"> = {}) =>
   useTableList("ai_calls", { orderBy: "created_at", ascending: false, limit: 1000, ...o });

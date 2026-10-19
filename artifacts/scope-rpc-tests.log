@@ -1,0 +1,9 @@
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+
+ Test Files  1 passed (1)
+      Tests  43 passed (43)
+   Start at  17:06:42
+   Duration  303ms (transform 43%, import 32%, tests 21%, worker 3%)
+

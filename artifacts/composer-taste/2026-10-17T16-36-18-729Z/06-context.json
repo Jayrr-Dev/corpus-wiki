@@ -1,0 +1,33 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 4,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 4,
+    "problems": [],
+    "improvements": [
+      "Consider a crop or annotation marking the village earthworks so readers can tell them apart from the ridge and furrow.",
+      "Note in the caption that Wormleighton is not named in the text, or briefly say it was cleared for sheep pasture if a source supports this."
+    ],
+    "reason": "The lidar image clearly shows parallel ridge and furrow beside rectilinear village earthworks, which directly illustrates the paragraph's point about pasture conversion and surviving field patterns. It does not duplicate the Wharram Percy photograph.",
+    "id": "a5ccd68f-a312-4bf6-84df-652439ba2c08",
+    "after": "P4",
+    "total": 18,
+    "accepted": true
+  },
+  "figure": {
+    "after": "P4",
+    "evidence": [
+      "P1",
+      "P4"
+    ],
+    "learningGoal": "Shows how a deserted village survives only as earthworks, with ridge and furrow field patterns still visible around it.",
+    "caption": "Lidar image of the deserted medieval village at Wormleighton, Warwickshire, showing village earthworks and surrounding ridge and furrow.",
+    "alt": "Shaded lidar terrain image of fields near Wormleighton. Faint outlines of former village earthworks sit among parallel strips of ridge and furrow. A blue line marks a canal or watercourse that is not part of the village.",
+    "svg": "",
+    "assetId": "a5ccd68f-a312-4bf6-84df-652439ba2c08",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-opus-5-5"
+}

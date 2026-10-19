@@ -1,0 +1,76 @@
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+stdout | lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Upload stage timing {
+  eventId: 'event',
+  stage: 'reconcile',
+  status: 'succeeded',
+  durationMs: 0
+}
+
+stdout | lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Upload stage timing {
+  eventId: 'event',
+  stage: 'embeddings',
+  status: 'succeeded',
+  durationMs: 0
+}
+
+stdout | lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Upload stage timing {
+  eventId: 'event',
+  stage: 'duplicates',
+  status: 'succeeded',
+  durationMs: 0
+}
+
+stdout | lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Upload stage timing { eventId: 'event', stage: 'tidy', status: 'succeeded', durationMs: 0 }
+
+stdout | lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Upload stage timing {
+  eventId: 'event',
+  stage: 'place',
+  status: 'succeeded',
+  durationMs: 0
+}
+
+stdout | lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Upload stage timing {
+  eventId: 'event',
+  stage: 'hierarchy',
+  status: 'succeeded',
+  durationMs: 0
+}
+
+stdout | lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Processing run metrics {"eventId":"event","job":"knowledge","startedAt":"2026-10-17T03:06:41.713Z","finishedAt":"2026-10-17T03:06:41.721Z","durationMs":6,"status":"incomplete","metrics":{"step.reconcile":{"count":1,"durationMs":2,"failures":0,"tokensIn":0,"tokensOut":0},"step.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0}}}
+
+ ❯ lib/knowledge/entityDescriptions.test.ts (4 tests | 1 failed) 60093ms
+   × runs at most three disjoint description batches and waits for all saves before cards 60008ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  lib/knowledge/entityDescriptions.test.ts > runs at most three disjoint description batches and waits for all saves before cards
+Error: Test timed out in 60000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ lib/knowledge/entityDescriptions.test.ts:90:1
+     88| }
+     89|
+     90| it("runs at most three disjoint description batches and waits for all …
+       | ^
+     91|   const f = fixture();
+     92|   const started = gate();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 149 passed | 19 skipped (169)
+      Tests  1 failed | 973 passed | 55 skipped (1029)
+   Start at  20:05:26
+   Duration  135.20s (tests 85%, import 12%, transform 2%)
+
+    Isolate  169 workers spawned · ~191ms startup each (spawn + environment, per file)
+             at least ~15.97s faster with isolate: false — reuses workers across files instead of one per file
+

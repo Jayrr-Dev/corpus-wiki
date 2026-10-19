@@ -1,0 +1,1756 @@
+{
+  "states": [
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "5951cccc-0645-4134-a311-57b4b10e5d5e",
+          "content": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada. The company lists four service areas: distribution system design, residential development support, utility power systems, and joint-use and infrastructure upgrades.",
+          "unitIds": [
+            "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+            "dff0858d-d356-47da-9eeb-418cc1221e4a"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "a16526be-7d04-4b89-a754-63b29a2cd648"
+        }
+      ],
+      "title": "Overview",
+      "units": [
+        {
+          "kind": "fact",
+          "unitId": "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+          "content": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "8ecda8fe-c1d2-45cc-af96-ca913f26aedf",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "dff0858d-d356-47da-9eeb-418cc1221e4a",
+          "content": "Utilitek Solutions Inc. lists four service areas: distribution system design, residential development support, utility power systems, and joint-use and infrastructure upgrades.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "structure": {
+            "mode": null,
+            "type": "set",
+            "complete": false
+          },
+          "revisionId": "1757c03d-aa0c-408c-b5ab-29d16d9bd75a",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utilitek Solutions Inc.",
+      "sectionId": "dde5b2be-9077-4749-8673-255783bf6df4"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "2d2fa216-10c1-473e-b4c3-c127cb99be86",
+          "content": "Utilitek Solutions Inc. is privately held. The company presents itself as an engineering consultancy serving utility and infrastructure projects, and it reports more than twenty-five years of experience in its own marketing.",
+          "unitIds": [
+            "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+            "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+            "c097021e-1909-4844-baae-67a2d45c8f3c"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "a11ad872-cf84-41d2-9e59-8781e9be6fad"
+        }
+      ],
+      "title": "Company profile",
+      "units": [
+        {
+          "kind": "fact",
+          "unitId": "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+          "content": "Utilitek Solutions Inc. is a privately held company.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "26749a6d-d299-4c65-a6af-2585e7aa6605",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+          "content": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "8ecda8fe-c1d2-45cc-af96-ca913f26aedf",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+          "content": "Utilitek Solutions presents itself as an engineering consultancy serving utility and infrastructure projects in Edmonton, Alberta.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "edmonton",
+                "role": "mentioned",
+                "type": "place"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "82da8733-f0fc-471d-ae99-24c11c28d094",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "c097021e-1909-4844-baae-67a2d45c8f3c",
+          "content": "Utilitek Solutions advertises more than twenty-five years of experience, a company marketing claim.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "bc74bca1-c068-41e2-8eac-cc93ea585e57",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "c471e597-321d-4a46-8c36-a2885a141da7",
+          "content": "The Utilitek Solutions website snapshot is a labelled test document that summarizes public website statements, not an internal operating policy.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "3f449f39-612f-4ad5-bc02-95b88d2d6035",
+          "epistemicStatus": "established"
+        },
+        {
+          "kind": "fact",
+          "unitId": "f423a5ae-f664-433b-a5db-d8ac36b021c2",
+          "content": "The Utilitek Solutions website snapshot is a labelled test document summarizing public website statements, not an internal operating policy.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "fcc9c808-320d-428f-8fff-756f973fabfb",
+          "epistemicStatus": "established"
+        }
+      ],
+      "pageTitle": "Utilitek Solutions Inc.",
+      "sectionId": "418613d4-dd1d-484e-8e9f-eca7aab5dfac"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "02aaf026-dd6c-4407-ba78-d5a1fe07f9c5",
+          "content": "Distribution system design is the first of the four service areas that Utilitek Solutions lists. The work covers overhead and underground distribution networks, including pole-load analysis and conductor sizing. For urban, suburban, and rural settings, the company describes its distribution-network work as also including anchors, framing, and guyed structures.",
+          "unitIds": [
+            "3d96cac7-9d60-48f0-8750-6a57e7af27b3",
+            "b6414fc4-ab01-40db-9b4e-16365eaf1684",
+            "b7ba699c-7fca-40b4-a857-5eff46a95ac1",
+            "c2fdbc25-fefe-471c-ad8a-d72f5709ba46",
+            "dff0858d-d356-47da-9eeb-418cc1221e4a"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "39404e95-c5e6-4122-9f54-36bbbd183022"
+        },
+        {
+          "author": "ai",
+          "lineId": "e5fea8a8-30b7-40d0-b14b-4318f910ef4f",
+          "content": "Residential development support covers the power infrastructure for housing developments. Utilitek Solutions coordinates feeder backbones, pad-mounted transformers, lighting, and individual lot services, along with permits and developer cost estimates. The company also offers lot-by-lot service plans.",
+          "unitIds": [
+            "69960a5b-648a-4db5-875c-95839da8e95b",
+            "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+            "c4bee0f1-ddac-4e37-a03d-45874379f301",
+            "d21d87b5-a554-41b9-b71f-51c3d3399c8d"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "ebd45891-152c-4a73-bbc7-0e320e096f81"
+        },
+        {
+          "author": "ai",
+          "lineId": "a5955258-0bdd-4a49-92a3-0e46a4d24a0b",
+          "content": "Utility power systems work covers substations, protection and control, and three-phase and single-phase distribution. The company's power-system offering also lists transformer installations and service laterals.",
+          "unitIds": [
+            "1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+            "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280"
+          ],
+          "position": 2,
+          "needsRewrite": false,
+          "lineRevisionId": "1b7c4ee7-7002-4770-a594-70d812d7178f"
+        },
+        {
+          "author": "ai",
+          "lineId": "7304b1b5-be0e-4e69-a2d5-bdb288edbf2d",
+          "content": "Protection and control work involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation. The company's homepage lists protection and control, together with utility design, infrastructure upgrades, three-phase distribution, and transformer installation design, among its services.",
+          "unitIds": [
+            "28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+            "76384c7f-3bb3-4177-9b3e-4476cb53d737",
+            "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+            "bee278fa-1ced-4432-a598-2774ca0ec0a7"
+          ],
+          "position": 3,
+          "needsRewrite": false,
+          "lineRevisionId": "d4a3c8fe-ad07-4d88-aac9-c69a5eba7e5e"
+        },
+        {
+          "author": "ai",
+          "lineId": "cf71e9a3-b43f-4651-9c6a-cf2037c24e32",
+          "content": "Joint-use and infrastructure upgrades include multi-utility coordination, asset reinforcement, and compliance. The company's website also lists shared-pole engineering as one of its specialisms.",
+          "unitIds": [
+            "0c1e39a4-929b-456b-8918-ca83f8859fae",
+            "e58bf6c7-1138-447b-98b8-3f6d38baebb8"
+          ],
+          "position": 4,
+          "needsRewrite": false,
+          "lineRevisionId": "4b6ffc26-c164-4cd1-992d-746e0e9208c2"
+        },
+        {
+          "author": "ai",
+          "lineId": "7b5c1a90-5882-4301-b638-372fa81d6211",
+          "content": "The company's list of tools includes all of the following:\n- Microstation\n- PLS CADD\n- SPIDA Calc\n- PLS-Caisson\n- Sag10\n- PLS Pole\n- PLS Laminated Pole\n- Quick Pole",
+          "unitIds": [
+            "1e856fd5-7329-4440-8704-758927fa29f6"
+          ],
+          "position": 5,
+          "needsRewrite": false,
+          "lineRevisionId": "fa62c94b-0450-4887-b0f6-fd3c5b064346"
+        }
+      ],
+      "title": "Services and specialties",
+      "units": [
+        {
+          "kind": "fact",
+          "unitId": "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+          "content": "Utilitek Solutions Inc. offers residential development support, including backbone feeders, pad-mount transformers, and lot-by-lot service plans.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "f00b4fa6-50da-4ea8-882d-d2cafcc2e3a8",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "c2fdbc25-fefe-471c-ad8a-d72f5709ba46",
+          "content": "Utilitek Solutions Inc. offers distribution system design for overhead and underground networks, including pole loading and conductor sizing.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "30a94c2a-0f9f-411d-94eb-b99c9865ded9",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "dff0858d-d356-47da-9eeb-418cc1221e4a",
+          "content": "Utilitek Solutions Inc. lists four service areas: distribution system design, residential development support, utility power systems, and joint-use and infrastructure upgrades.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "structure": {
+            "mode": null,
+            "type": "set",
+            "complete": false
+          },
+          "revisionId": "1757c03d-aa0c-408c-b5ab-29d16d9bd75a",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "e58bf6c7-1138-447b-98b8-3f6d38baebb8",
+          "content": "Utilitek Solutions Inc. offers joint-use and infrastructure upgrades, including multi-utility coordination, asset reinforcement, and compliance.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "730d592e-98f7-4958-96a8-16b6bd0057ce",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+          "content": "Utilitek Solutions Inc. offers utility power systems work covering substations, protection and control, and three-phase and single-phase distribution.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "b24c2b3b-35a9-4ec0-8d7b-cb96175a0deb",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+          "content": "Utilitek Solutions' power-system offering lists transformer installations, service laterals, and single- and three-phase distribution.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "a4764211-d92a-4b91-924c-e6a0d774a5ec",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "1e856fd5-7329-4440-8704-758927fa29f6",
+          "content": "Utilitek Solutions lists these tools: Microstation, PLS CADD, SPIDA Calc, PLS-Caisson, Sag10, PLS Pole, PLS Laminated Pole, and Quick Pole.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "microstation",
+                "role": "mentioned",
+                "type": "tool"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "structure": {
+            "mode": "all",
+            "type": "set",
+            "complete": true
+          },
+          "revisionId": "df29e467-836c-4da1-b1e5-ffe3e09df1c8",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "3d96cac7-9d60-48f0-8750-6a57e7af27b3",
+          "content": "Utilitek Solutions describes distribution-network work for urban, suburban, and rural settings, including pole-load analysis, anchors, framing, guyed structures, and conductor sizing.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "e40bbc96-a1b0-4e2f-b19c-1a7489a5bf6e",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "69960a5b-648a-4db5-875c-95839da8e95b",
+          "content": "Utilitek Solutions coordinates feeder backbones, pad-mounted transformers, lighting, individual lot services, permits, and developer cost estimates for housing developments.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "bcb39e4e-ed77-44d4-b8c7-6f008238e70d",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+          "content": "Utilitek Solutions' homepage lists utility design, residential development support, protection and control, infrastructure upgrades, three-phase distribution, and transformer installation design as services.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "b3701823-ebad-43f7-ae95-35186e30c124",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "bee278fa-1ced-4432-a598-2774ca0ec0a7",
+          "content": "Protection work by Utilitek Solutions involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "scada",
+                "role": "mentioned",
+                "type": "equipment"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "85a73ad3-1f8d-422b-8fcd-30b04f60cb5a",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "0c1e39a4-929b-456b-8918-ca83f8859fae",
+          "content": "Utilitek Solutions' website lists shared-pole engineering as one of its specialisms.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "d5fad9ff-cd38-4a7b-943d-d84e55a30c46",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "76384c7f-3bb3-4177-9b3e-4476cb53d737",
+          "content": "Utilitek Solutions Inc.'s protection and control work involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "scada",
+                "role": "mentioned",
+                "type": "equipment"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "5eb246b1-1eb1-4f19-8717-3dda2abf95ba",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "b7ba699c-7fca-40b4-a857-5eff46a95ac1",
+          "content": "Utilitek Solutions Inc. designs overhead and underground distribution networks, including pole-load analysis and conductor sizing.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "68672a22-778c-459c-93b7-3f8694114c77",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "d21d87b5-a554-41b9-b71f-51c3d3399c8d",
+          "content": "Utilitek Solutions Inc.'s housing-development work coordinates feeder backbones, pad-mounted transformers, lighting, and individual lot services.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "b2be9f19-262d-491f-8daf-dc57438f621a",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+          "content": "Utilitek Solutions Inc.'s protection and control work involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "scada",
+                "role": "mentioned",
+                "type": "equipment"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "4109fbed-8581-405d-a80f-061623045370",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "b6414fc4-ab01-40db-9b4e-16365eaf1684",
+          "content": "Utilitek Solutions Inc. designs overhead and underground distribution networks, including pole-load analysis and conductor sizing.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "377eab1a-4e79-4332-b455-bd44da26bf77",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "c4bee0f1-ddac-4e37-a03d-45874379f301",
+          "content": "Utilitek Solutions Inc.'s housing-development work coordinates feeder backbones, pad-mounted transformers, lighting, and individual lot services.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "d3f948d8-f75d-4ffc-9890-7ac659a5b250",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utilitek Solutions Inc.",
+      "sectionId": "47a2d163-a67b-493e-8f60-89ab4ec9a9aa"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "a02a03ff-4d2c-4bfb-b72b-a3e877423bc5",
+          "content": "The published delivery sequence of Utilitek Solutions Inc. runs through four stages: assessment, design, implementation, and validation. Assessment is step 1, design is step 2, implementation is step 3, and validation is step 4.",
+          "unitIds": [
+            "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0",
+            "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+            "868ad190-4ecf-47ce-bb4d-5626470318d5",
+            "9ef6fa58-f1ed-490e-a12e-105e5a558e92",
+            "c8ab05b2-2e9f-411e-8104-668c877cdba2",
+            "ca6fbb9f-ebf7-4118-a1bb-038ec581e8a3",
+            "da343193-2d72-43d3-8ed4-952b4453850c",
+            "eee5c405-7cd2-4d44-bf1a-7bbf38ebe7b2",
+            "f9861c48-e582-4efa-819c-232b62028100"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "7963ee80-0fc6-4daa-9232-2b339e4b920e"
+        },
+        {
+          "author": "ai",
+          "lineId": "e18fac55-698f-4394-89a5-c7279007d9f1",
+          "content": "Protection work by Utilitek Solutions involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation.",
+          "unitIds": [
+            "bee278fa-1ced-4432-a598-2774ca0ec0a7"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "a5fe4684-9631-4f51-a788-ecf0d91d620f"
+        },
+        {
+          "author": "ai",
+          "lineId": "6d4042f6-2199-4e22-bee9-422c15520210",
+          "content": "Compliance references are grouped on the company's website under IEEE, Canadian electrical-code/CSA, and Alberta requirements.",
+          "unitIds": [
+            "699f631b-9180-4a4e-97a7-c8e234524775"
+          ],
+          "position": 2,
+          "needsRewrite": false,
+          "lineRevisionId": "183e512a-4592-46dd-ba35-e607112225fc"
+        }
+      ],
+      "title": "Delivery sequence",
+      "units": [
+        {
+          "kind": "procedure",
+          "unitId": "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0",
+          "content": "Utilitek Solutions' published delivery sequence is assessment, design, implementation, then validation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "structure": {
+            "mode": null,
+            "type": "sequence",
+            "complete": true
+          },
+          "revisionId": "1126560a-f981-40be-bc8c-bb87f1decc9b",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "bee278fa-1ced-4432-a598-2774ca0ec0a7",
+          "content": "Protection work by Utilitek Solutions involves relays, CT/PT equipment, SCADA, fault detection, and breaker operation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              },
+              {
+                "key": "scada",
+                "role": "mentioned",
+                "type": "equipment"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "memberOf": "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0",
+          "position": 1,
+          "revisionId": "85a73ad3-1f8d-422b-8fcd-30b04f60cb5a",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "fact",
+          "unitId": "699f631b-9180-4a4e-97a7-c8e234524775",
+          "content": "Utilitek Solutions' website groups its compliance references under IEEE, Canadian electrical-code/CSA, and Alberta requirements.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "structure": {
+            "mode": "all",
+            "type": "set",
+            "complete": true
+          },
+          "revisionId": "c8b9ba0e-ec65-4659-b70e-e31f571dde2c",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "9ef6fa58-f1ed-490e-a12e-105e5a558e92",
+          "content": "Utilitek Solutions' delivery sequence step 3 is implementation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "f44f9ddb-da6d-4519-a645-77f876252eee",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "c8ab05b2-2e9f-411e-8104-668c877cdba2",
+          "content": "Utilitek Solutions' delivery sequence step 1 is assessment.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "e814c27c-b2d9-4277-aecc-5210deb5d376",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "ca6fbb9f-ebf7-4118-a1bb-038ec581e8a3",
+          "content": "Utilitek Solutions' delivery sequence step 2 is design.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "0ac0e310-495a-499c-ac74-6622a5ef1243",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "da343193-2d72-43d3-8ed4-952b4453850c",
+          "content": "Utilitek Solutions' delivery sequence step 4 is validation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "b1df844b-d3b3-4a2c-8737-7acca767a53a",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "868ad190-4ecf-47ce-bb4d-5626470318d5",
+          "content": "Utilitek Solutions Inc.'s delivery sequence step 2 is design.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "d180710a-1f5b-4f55-8c4f-385650bbd8b7",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "eee5c405-7cd2-4d44-bf1a-7bbf38ebe7b2",
+          "content": "Utilitek Solutions Inc.'s delivery sequence step 3 is implementation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "7a4c041c-1391-4187-a94d-e11655eb88de",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "f9861c48-e582-4efa-819c-232b62028100",
+          "content": "Utilitek Solutions Inc.'s delivery sequence step 4 is validation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "revisionId": "b1b70842-67c9-48b9-ac0e-7dbb715c6534",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "procedure",
+          "unitId": "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+          "content": "Utilitek Solutions Inc.'s published delivery sequence is assessment, design, implementation, then validation.",
+          "context": {
+            "entities": [
+              {
+                "key": "utilitek-solutions-inc",
+                "role": "subject",
+                "type": "company"
+              }
+            ],
+            "applicability": {
+              "status": "unspecified",
+              "entities": [],
+              "conditions": null
+            }
+          },
+          "structure": {
+            "mode": null,
+            "type": "sequence",
+            "complete": true
+          },
+          "revisionId": "a7da0d1b-d9e7-4836-a5ba-c37c4a835e37",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utilitek Solutions Inc.",
+      "sectionId": "466d3244-d17d-4be2-a10c-b625488d9c7a"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "27c6e2de-e1d9-4be2-9d4e-1558c6efa496",
+          "content": "Incident reporting at Utilitek Solutions Inc. requires employees to report accidents, incidents causing injury or property damage, and near misses to their supervisor immediately. Supervisors report these events to management for submission to the applicable workers' compensation board, and senior management reports critical injuries to the appropriate authorities.",
+          "unitIds": [
+            "0341b487-bc3e-465e-a5a4-6ee5eabd0650",
+            "3a2bb6b7-139f-481a-a9fd-51f39ce80df2"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "be22ef8a-00b4-4638-b2f2-5eed4abf9c35"
+        },
+        {
+          "author": "ai",
+          "lineId": "ac824161-200f-435f-8432-8c344b3eb2c0",
+          "content": "Tailgate meetings are daily safety meetings held at Utilitek job sites when two or more employees, subcontractor representatives, or client representatives are present. The meeting is documented at the beginning of each workday. Late arrivals are briefed on the topics and sign the form.",
+          "unitIds": [
+            "1d603428-124e-4d10-8e21-1b22a8ce84e9",
+            "62fa568c-cacf-424f-b0c4-5695cee164e3"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "67ef39b7-f543-4181-8ef9-8ac8251ea97a"
+        },
+        {
+          "author": "ai",
+          "lineId": "2862abfc-6800-4a0f-94fc-793f604a674f",
+          "content": "Site-specific orientation is given to an employee who reports to a new Utilitek site. It covers site safety standards, applicable client procedures, first aid attendant names and station locations, and posted legislation. A supervisor or competent delegate conducts the orientation, and it is documented in the employee file.",
+          "unitIds": [
+            "7054f165-eb50-4595-9955-739ae3886b59",
+            "86b181ba-ad21-4974-ba6d-56ab1c82941e"
+          ],
+          "position": 2,
+          "needsRewrite": false,
+          "lineRevisionId": "b802a4d4-1d44-4249-b2d5-7264e0c06f70"
+        },
+        {
+          "author": "ai",
+          "lineId": "867e920c-93fe-4c3e-9d1e-d3ce4c9781ce",
+          "content": "Workplace inspections are documented, planned inspections that Utilitek conducts to identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections occur weekly on project sites and monthly at company premises, with supervisors and the health and safety representative involved.",
+          "unitIds": [
+            "beda91d5-3eb1-4339-9ff9-3b3bf3a85af7",
+            "d522ebe8-5cb6-4446-b23f-f2a1fca0194b"
+          ],
+          "position": 3,
+          "needsRewrite": false,
+          "lineRevisionId": "291c21ee-5f85-45ee-8635-a43c110d5493"
+        }
+      ],
+      "title": "Safety management and reporting",
+      "units": [
+        {
+          "kind": "definition",
+          "unitId": "0341b487-bc3e-465e-a5a4-6ee5eabd0650",
+          "content": "A Utilitek requirement that all employees immediately report accidents, incidents causing injury or property damage, and near misses to their supervisor. Supervisors report promptly to management for timely submission to the applicable worker's compensation board, and senior management reports critical injuries to appropriate authorities.",
+          "context": {
+            "entities": [
+              {
+                "key": "incident-reporting",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "5e3b029f-9ea3-4c4b-b14d-3fbb5a09de94",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "62fa568c-cacf-424f-b0c4-5695cee164e3",
+          "content": "A daily safety meeting conducted and documented at the beginning of each workday when two or more employees, subcontractor representatives, or client representatives are present at a job site. Late arrivals are briefed on the topics and acknowledge by signing the form.",
+          "context": {
+            "entities": [
+              {
+                "key": "tailgate-meeting",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "7271e81c-c6c4-4c66-9cfc-c503966a9da6",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "7054f165-eb50-4595-9955-739ae3886b59",
+          "content": "An orientation an employee receives when reporting to a new site, covering site safety standards, applicable client procedures, first aid attendant names and station locations, and posted legislation. Conducted by a supervisor or competent delegate and documented in the employee file.",
+          "context": {
+            "entities": [
+              {
+                "key": "site-specific-orientation",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "8164eea2-0ca9-4e25-bc1b-322d201b9d94",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "d522ebe8-5cb6-4446-b23f-f2a1fca0194b",
+          "content": "Documented, planned inspections Utilitek conducts to identify and correct unsafe conditions and behavior, covering premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work practices. Inspections occur weekly on project sites and monthly at company premises, with supervisors and the health and safety representative involved.",
+          "context": {
+            "entities": [
+              {
+                "key": "workplace-inspections",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "55aae5f8-4f2e-41d6-9170-10ebfdc28112",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "1d603428-124e-4d10-8e21-1b22a8ce84e9",
+          "content": "A daily safety meeting documented at the beginning of each workday when two or more employees, subcontractor representatives, or client representatives are present at a job site. Late arrivals are briefed on the topics and sign the form.",
+          "context": {
+            "entities": [
+              {
+                "key": "tailgate-meeting",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Applies to Utilitek Solutions Inc. job sites with two or more employees, subcontractor representatives, or client representatives present."
+            }
+          },
+          "revisionId": "37094de8-f78c-43f8-8f8c-cdf255a9b98e",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "3a2bb6b7-139f-481a-a9fd-51f39ce80df2",
+          "content": "The Utilitek process for employees to report accidents, incidents causing injury or property damage, and near misses to their supervisor immediately. Supervisors report to management for submission to the applicable workers' compensation board, and senior management reports critical injuries to appropriate authorities.",
+          "context": {
+            "entities": [
+              {
+                "key": "incident-reporting",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Describes the Utilitek Solutions Inc. incident reporting policy."
+            }
+          },
+          "revisionId": "dc018749-7337-4730-894b-28bf79a3248c",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "86b181ba-ad21-4974-ba6d-56ab1c82941e",
+          "content": "An orientation an employee receives when reporting to a new site. It covers site safety standards, applicable client procedures, first aid attendant names and station locations, and posted legislation. A supervisor or competent delegate conducts it, and it is documented in the employee file.",
+          "context": {
+            "entities": [
+              {
+                "key": "site-specific-orientation",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Applies when an employee reports to a new Utilitek Solutions Inc. site."
+            }
+          },
+          "revisionId": "02eac007-9785-4eaf-87ee-acbacbcfa0b6",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "beda91d5-3eb1-4339-9ff9-3b3bf3a85af7",
+          "content": "Documented, planned inspections to identify and correct unsafe conditions and behavior. They cover premises, job sites, buildings, temporary structures, excavations, tools, equipment, machinery, and work methods. Planned inspections occur weekly on project sites and monthly at company premises.",
+          "context": {
+            "entities": [
+              {
+                "key": "workplace-inspections",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Describes the Utilitek Solutions Inc. inspection policy."
+            }
+          },
+          "revisionId": "a86941a5-5248-4411-81af-19054398180a",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utilitek Solutions Inc.",
+      "sectionId": "c58a9233-73e7-4be5-a609-fc9d98a43a8e"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "5927e984-b041-43b8-acad-baeb5944e7cc",
+          "content": "Hazard control at Utilitek Solutions Inc. follows an ordered approach: elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is attempted first, and personal protective equipment is treated as the last line of defense.",
+          "unitIds": [
+            "b49ac251-3a59-423b-be1f-2c4446aa94a0",
+            "eebd59e5-a2ab-4d15-9965-c887bf9437a3"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "eff9e83a-5091-46fc-a17e-b5eb6cce9ec2"
+        },
+        {
+          "author": "ai",
+          "lineId": "5eb9d977-3e9a-4c9b-8b08-835203facc7f",
+          "content": "Utilitek Solutions Inc. requires a job hazard analysis to be completed before work begins. In this pre-work assessment, workers break the job into sequential steps and identify hazards at each step. They review the hazards with affected workers, rank them by risk, document the assessment, and implement controls.",
+          "unitIds": [
+            "ee699cab-d5bd-4f00-9ab6-a0ec09d9cfb5"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "b2e6da03-62a4-42b8-989c-364899c7633e"
+        },
+        {
+          "author": "ai",
+          "lineId": "4f967832-900a-4349-92fd-d0cc20a369eb",
+          "content": "Personal protective equipment is equipment workers wear to protect themselves from hazards. Utilitek divides personal protective equipment into basic items worn at all times by all personnel and specialized items used for specific jobs or hazards. Employee-owned personal protective equipment is not allowed.",
+          "unitIds": [
+            "8f538b48-13d8-48fd-a551-78c7a20b40fd"
+          ],
+          "position": 2,
+          "needsRewrite": false,
+          "lineRevisionId": "e0a20c88-c4e1-4438-9ac3-1cfb92d8930f"
+        },
+        {
+          "author": "ai",
+          "lineId": "dca19506-005b-4b0f-bb96-be6782039f63",
+          "content": "Utilitek requires hearing protection for employees exposed to noise of 85 dB or greater, generally whenever voices must be raised to be heard. Exposure is measured with a sound level meter or identified by the contracting company.",
+          "unitIds": [
+            "51051809-88af-4b5f-b989-b51b5d033e7c"
+          ],
+          "position": 3,
+          "needsRewrite": false,
+          "lineRevisionId": "f3199b87-1763-4b24-acc0-533a4045309f"
+        }
+      ],
+      "title": "Hazard control and protective equipment",
+      "units": [
+        {
+          "kind": "definition",
+          "unitId": "b49ac251-3a59-423b-be1f-2c4446aa94a0",
+          "content": "An ordered approach to hazard control: elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is attempted first; PPE is treated as the last line of defense.",
+          "context": {
+            "entities": [
+              {
+                "key": "hazard-control-hierarchy",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "d8f91ec5-d7ce-4d89-9146-260507524e56",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "ee699cab-d5bd-4f00-9ab6-a0ec09d9cfb5",
+          "content": "A pre-work assessment in which workers break a job into sequential steps, identify hazards at each step, review them with affected workers, rank hazards by risk, document the assessment, and implement controls. Utilitek requires it to be completed before work begins.",
+          "context": {
+            "entities": [
+              {
+                "key": "job-hazard-analysis",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Describes the Utilitek Solutions Inc. requirement for work hazard assessment."
+            }
+          },
+          "revisionId": "51b3d71e-2289-4581-8c96-22d4d66f4488",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "eebd59e5-a2ab-4d15-9965-c887bf9437a3",
+          "content": "An ordered approach to hazard control: elimination, substitution, isolation, engineering controls, administrative controls, and personal protective equipment. Elimination is tried first, and PPE is regarded as the last line of defense.",
+          "context": {
+            "entities": [
+              {
+                "key": "hazard-control-hierarchy",
+                "role": "subject",
+                "type": "concept"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Describes the hazard control order used by Utilitek Solutions Inc."
+            }
+          },
+          "revisionId": "752841d2-bbc5-440e-abd0-c845f8a3b8f3",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "51051809-88af-4b5f-b989-b51b5d033e7c",
+          "content": "Protective equipment Utilitek requires for employees exposed to noise of 85 dB or greater, generally whenever voices must be elevated to be heard. Exposure is measured by a sound level meter or identified by the contracting company.",
+          "context": {
+            "entities": [
+              {
+                "key": "hearing-protection",
+                "role": "subject",
+                "type": "equipment"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Applies to Utilitek Solutions Inc. employees exposed to noise of 85 dB or greater."
+            }
+          },
+          "revisionId": "0fe2f562-7848-443f-8972-fbfeaf7012e4",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "8f538b48-13d8-48fd-a551-78c7a20b40fd",
+          "content": "Equipment workers wear to protect themselves from hazards. Utilitek divides PPE into basic items worn at all times by all personnel and specialized items used for specific jobs or hazards. Employee-owned PPE is not allowed.",
+          "context": {
+            "entities": [
+              {
+                "key": "ppe",
+                "role": "subject",
+                "type": "equipment"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Describes Utilitek Solutions Inc. PPE categories and rules."
+            }
+          },
+          "revisionId": "b004f0ad-3f0c-421c-82e1-7cb0e13ea9f1",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utilitek Solutions Inc.",
+      "sectionId": "7be46497-5b9e-4c33-bb8b-e9760f334c94"
+    },
+    {
+      "lines": [
+        {
+          "author": "ai",
+          "lineId": "b34c5b35-446b-4798-ae5e-280cc04d4dbf",
+          "content": "Behavior on Utilitek jobsites is governed by a company policy that defines unacceptable conduct and the corrective measures for it. Class A violations, including fighting, theft, willful destruction of property, drug and alcohol policy violations, and willful endangerment, warrant immediate termination. Class B violations, including dishonesty, harassment, insubordination, unsafe behavior, and safety rule violations, require disciplinary action that may include termination.",
+          "unitIds": [
+            "4e2acd8f-c9fb-4e7e-a26c-113310f733db",
+            "d9d56d5d-8e99-41cc-8cf6-701092a9fa95"
+          ],
+          "position": 0,
+          "needsRewrite": false,
+          "lineRevisionId": "daa8cb31-5e86-44a5-83ad-1a9c24dfb892"
+        },
+        {
+          "author": "ai",
+          "lineId": "e1148f23-b40d-4519-a9da-94191548b122",
+          "content": "The modified-work program gives injured employees modified duties until they can return to their pre-accident job, where possible. Before modified duty starts, the employee and employer sign an agreement covering hours of work, reporting requirements, and the position. The employee provides medical progress reports every two weeks or as often as needed.",
+          "unitIds": [
+            "4fca88c3-d1f7-4f2d-9f0f-2183bff8c633",
+            "e5275d4f-c1aa-49a8-8623-c0d2292c49f4"
+          ],
+          "position": 1,
+          "needsRewrite": false,
+          "lineRevisionId": "76dc1fe0-9cd1-403d-a80e-185026fe5e2b"
+        },
+        {
+          "author": "ai",
+          "lineId": "46dfae48-24cb-4c20-a82a-8050ead5fb70",
+          "content": "Employees receive training at orientation and as a refresher at least once every three years or upon program change. Records of this training are maintained.",
+          "unitIds": [
+            "f18e81d2-168f-43b8-88c6-a5fd267015bd"
+          ],
+          "position": 2,
+          "needsRewrite": false,
+          "lineRevisionId": "62b6d6e7-9a3a-4abb-96b2-e7ec3b600ed2"
+        },
+        {
+          "author": "ai",
+          "lineId": "28d10f6e-bc74-4bc1-9690-629baf131730",
+          "content": "Safety data sheets for regulated chemicals are managed by a designated Safety Representative, who ensures that an SDS is available for each regulated chemical. The Safety Representative reviews SDSs for updates at least once every three years and keeps an up-to-date SDS log book at the shop in a clearly visible location.",
+          "unitIds": [
+            "992b6584-c730-4bc4-8abd-14dc08020a29",
+            "9983ac5f-b308-4417-b856-a3bac95ce004",
+            "f18e81d2-168f-43b8-88c6-a5fd267015bd"
+          ],
+          "position": 3,
+          "needsRewrite": false,
+          "lineRevisionId": "371d475f-0051-4aeb-9050-8dcac6b99713"
+        }
+      ],
+      "title": "Worker conduct, return to work, and chemical safety",
+      "units": [
+        {
+          "kind": "definition",
+          "unitId": "d9d56d5d-8e99-41cc-8cf6-701092a9fa95",
+          "content": "A Utilitek policy defining unacceptable behavior on its jobsites and corrective measures. Class A violations (fighting, theft, willful destruction of property, drug and alcohol policy violations, willful endangerment) warrant immediate termination; Class B violations (dishonesty, harassment, insubordination, unsafe behavior, safety rule violations) require disciplinary action that may include termination.",
+          "context": {
+            "entities": [
+              {
+                "key": "discipline-policy",
+                "role": "subject",
+                "type": "policy"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "137f55bf-aae1-4290-a20d-eaa6e5c5e8d4",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "e5275d4f-c1aa-49a8-8623-c0d2292c49f4",
+          "content": "A Utilitek program providing injured employees modified duties until they can return to their pre-accident job. Before starting, the employee and employer sign an agreement covering hours of work, reporting requirements, and the nature of the position. The employee supplies medical progress reports every two weeks or as frequently as needed.",
+          "context": {
+            "entities": [
+              {
+                "key": "modified-work-program",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "93801ca0-c289-468b-bcdf-af255b25a42d",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "f18e81d2-168f-43b8-88c6-a5fd267015bd",
+          "content": "Training Utilitek provides to all employees at orientation and as a refresher at least once every three years or upon program change, with records maintained. A designated Safety Representative ensures an SDS is available for all regulated chemicals, reviews them for updates at least every three years, and maintains an up-to-date SDS log book at the shop.",
+          "context": {
+            "entities": [
+              {
+                "key": "whmis-training-utilitek",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "d58d8a3d-cd34-4a4d-bbcd-45350cad4c41",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "9983ac5f-b308-4417-b856-a3bac95ce004",
+          "content": "Safety data sheets that Utilitek's designated Safety Representative ensures are available for all regulated chemicals and reviews for updates at least once every three years. Utilitek keeps an up-to-date SDS log book at the shop in a clearly visible location.",
+          "context": {
+            "entities": [
+              {
+                "key": "safety-data-sheets",
+                "role": "subject",
+                "type": "document"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": null
+            }
+          },
+          "revisionId": "9c20d8e2-1e2c-490c-b576-e48705db8cba",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "4e2acd8f-c9fb-4e7e-a26c-113310f733db",
+          "content": "A Utilitek Solutions Inc. policy that defines unacceptable behavior on its jobsites and the corrective measures for it. Class A violations warrant immediate termination. Class B violations require disciplinary action that may include termination.",
+          "context": {
+            "entities": [
+              {
+                "key": "discipline-policy",
+                "role": "subject",
+                "type": "policy"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Applies to Utilitek Solutions Inc. jobsites and the company's own policy."
+            }
+          },
+          "revisionId": "c48b7f9d-87a3-4245-b63e-fd842a66bfb6",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "4fca88c3-d1f7-4f2d-9f0f-2183bff8c633",
+          "content": "A program that gives injured employees modified duties until they can return to their pre-accident job, where possible. Before modified duty starts, the employee and employer sign an agreement on hours, reporting, and the position. The employee supplies medical progress reports every two weeks or as often as needed.",
+          "context": {
+            "entities": [
+              {
+                "key": "modified-work-program",
+                "role": "subject",
+                "type": "procedure"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Describes the Utilitek Solutions Inc. return-to-work program for injured employees."
+            }
+          },
+          "revisionId": "9a3af747-ed82-4479-bab1-c36eaca91b64",
+          "epistemicStatus": "supported"
+        },
+        {
+          "kind": "definition",
+          "unitId": "992b6584-c730-4bc4-8abd-14dc08020a29",
+          "content": "Safety data sheets for regulated chemicals. Utilitek's designated Safety Representative ensures an SDS is available for each regulated chemical and reviews SDSs for updates at least once every three years. An up-to-date SDS log book is kept at the shop.",
+          "context": {
+            "entities": [
+              {
+                "key": "safety-data-sheets",
+                "role": "subject",
+                "type": "document"
+              }
+            ],
+            "applicability": {
+              "status": "scoped",
+              "entities": [
+                {
+                  "key": "utilitek-solutions-inc",
+                  "type": "company"
+                }
+              ],
+              "conditions": "Describes the Utilitek Solutions Inc. SDS management practice."
+            }
+          },
+          "revisionId": "231e8729-e578-4f60-b37d-4baf1138eef5",
+          "epistemicStatus": "supported"
+        }
+      ],
+      "pageTitle": "Utilitek Solutions Inc.",
+      "sectionId": "1fa84a14-8b09-4d09-9246-61ff532ced0a"
+    }
+  ],
+  "revisions": [
+    {
+      "revise": [
+        {
+          "lineId": "5951cccc-0645-4134-a311-57b4b10e5d5e",
+          "text": "Utilitek Solutions Inc. is an engineering services company headquartered in Edmonton, Canada. The company lists four service areas: distribution system design, residential development support, utility power systems, and joint-use and infrastructure upgrades.",
+          "unitIds": [
+            "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+            "dff0858d-d356-47da-9eeb-418cc1221e4a"
+          ]
+        }
+      ],
+      "retire": [],
+      "add": [],
+      "omittedUnitIds": [],
+      "modelVersion": "anthropic/claude-haiku-5-5",
+      "tokensIn": 12135,
+      "tokensOut": 634
+    },
+    {
+      "revise": [
+        {
+          "lineId": "2d2fa216-10c1-473e-b4c3-c127cb99be86",
+          "text": "Utilitek Solutions Inc. is privately held. The company presents itself as an engineering consultancy serving utility and infrastructure projects, and it reports more than twenty-five years of experience in its own marketing.",
+          "unitIds": [
+            "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+            "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+            "c097021e-1909-4844-baae-67a2d45c8f3c"
+          ]
+        }
+      ],
+      "retire": [
+        "7f9b3bbf-e5b4-4cb5-b8db-3c97c1c43d3a"
+      ],
+      "add": [],
+      "omittedUnitIds": [
+        "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+        "c471e597-321d-4a46-8c36-a2885a141da7",
+        "f423a5ae-f664-433b-a5db-d8ac36b021c2"
+      ],
+      "modelVersion": "anthropic/claude-haiku-5-5",
+      "tokensIn": 15198,
+      "tokensOut": 2148
+    }
+  ]
+}

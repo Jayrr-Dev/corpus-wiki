@@ -1,0 +1,4 @@
+import {targetFromEnvironment} from '../scripts/db/targets.ts';const db=await targetFromEnvironment(process.env);
+try{console.log('section checkpoints',JSON.stringify(await db.query(`select state,count(*)::int sections from upload_steps where event_id='811105ea-fcfe-4ac4-9c7d-dc589b1501e4' and key like 'rebuild-section:811105ea-fcfe-4ac4-9c7d-dc589b1501e4:%' group by state`)));
+console.log('remaining',JSON.stringify(await db.query(`select s.id,p.title article,s.title,s.status,s.build_cancelled,s.building_since,length(s.body)::int characters,s.query,(select count(*)::int from lines l where l.section_id=s.id and l.retired_at is null) lines from sections s join pages p on p.id=s.page_id where s.space_id='21132c80-32b3-4ef2-9156-d9af60486173' and s.retired_at is null and p.retired_at is null and s.mode='generated' and s.status<>'current' order by s.building_since nulls last limit 12`)));
+}finally{await db.close();}

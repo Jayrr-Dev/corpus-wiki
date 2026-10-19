@@ -179,23 +179,106 @@ async function fetchSourceUnitIds(client: BrowserSupabase, sourceId: string): Pr
   return uniqueIds(rows.map((row) => row.unit_id));
 }
 
-export type SourceUsage = { units: number; articles: number; sections: number; lines: number };
+export type SourceUsage = { units: number; usedUnits: number; articles: number; sections: number; lines: number };
 
-// Reads every file's knowledge, article and line counts (source_usage view), by source id
+// Reads every file's knowledge, used-unit, article and line counts (source_usage view), by source id
 async function fetchSourceUsage(client: BrowserSupabase): Promise<Map<string, SourceUsage>> {
-  const { data, error } = await client.from("source_usage").select("source_id, unit_count, article_count, line_count, section_count");
+  const { data, error } = await client.from("source_usage").select("source_id, unit_count, used_unit_count, article_count, line_count, section_count");
   if (error) throw error;
   return new Map(
     (data ?? []).flatMap((row) =>
-      row.source_id ? [[row.source_id, { units: row.unit_count ?? 0, articles: row.article_count ?? 0, sections: row.section_count ?? 0, lines: row.line_count ?? 0 }] as const] : [],
+      row.source_id ? [[row.source_id, { units: row.unit_count ?? 0, usedUnits: row.used_unit_count ?? 0, articles: row.article_count ?? 0, sections: row.section_count ?? 0, lines: row.line_count ?? 0 }] as const] : [],
     ),
   );
+}
+
+export type KnowledgeUsage = { units: number; usedUnits: number };
+export type ArticleKnowledge = { pageId: string; title: string; slug: string; articleType: string; units: number };
+
+async function fetchKnowledgeUsage(client: BrowserSupabase): Promise<KnowledgeUsage> {
+  const { data, error } = await client.from("knowledge_usage").select("unit_count, used_unit_count").limit(1).maybeSingle();
+  if (error) throw error;
+  return { units: data?.unit_count ?? 0, usedUnits: data?.used_unit_count ?? 0 };
+}
+
+async function fetchArticleKnowledge(client: BrowserSupabase): Promise<ArticleKnowledge[]> {
+  const rows = await readPages((from, to) => client.from("article_knowledge").select("page_id, title, slug, article_type, unit_count").order("title").range(from, to));
+  return rows.flatMap((row) => {
+    if (!row.page_id || !row.title || !row.slug || !row.article_type) return [];
+    return [{ pageId: row.page_id, title: row.title, slug: row.slug, articleType: row.article_type, units: row.unit_count ?? 0 }];
+  });
+}
+
+// SPACE-WIDE knowledge totals, and each article's knowledge count (Units overview)
+export function useKnowledgeUsage(enabled = true): UseQueryResult<KnowledgeUsage> {
+  return useQuery({
+    queryKey: [...queryKeys.table("units"), "knowledge-usage"],
+    queryFn: () => fetchKnowledgeUsage(getBrowserSupabase()),
+    enabled,
+  });
+}
+
+export function useArticleKnowledge(enabled = true): UseQueryResult<ArticleKnowledge[]> {
+  return useQuery({
+    queryKey: [...queryKeys.table("pages"), "article-knowledge"],
+    queryFn: () => fetchArticleKnowledge(getBrowserSupabase()),
+    enabled,
+  });
+}
+
+export type ArticleUnitLink = { pageId: string; unitId: string };
+
+async function fetchArticleUnitLinks(client: BrowserSupabase): Promise<ArticleUnitLink[]> {
+  const rows = await readPages((from, to) => client.from("section_knowledge").select("page_id, unit_id").order("page_id").order("unit_id").range(from, to));
+  const seen = new Set<string>();
+  const links: ArticleUnitLink[] = [];
+  for (const row of rows) {
+    if (!row.page_id || !row.unit_id) continue;
+    const key = `${row.page_id}\0${row.unit_id}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    links.push({ pageId: row.page_id, unitId: row.unit_id });
+  }
+  return links;
+}
+
+// Units cited by live article sections, used to filter the units list by article
+export function useArticleUnitLinks(enabled = true): UseQueryResult<ArticleUnitLink[]> {
+  return useQuery({
+    queryKey: [...queryKeys.table("sections"), "article-unit-links"],
+    queryFn: () => fetchArticleUnitLinks(getBrowserSupabase()),
+    enabled,
+  });
+}
+
+export type SectionKnowledgeUnit = { id: string; title: string | null; content: string };
+export type SectionKnowledge = { sectionId: string; pageId: string; title: string; position: number; units: SectionKnowledgeUnit[] };
+
+async function fetchSectionKnowledge(client: BrowserSupabase): Promise<SectionKnowledge[]> {
+  const rows = await readPages((from, to) => client.from("section_knowledge").select("section_id, page_id, section_title, position, unit_id, unit_title, unit_content").order("page_id").order("position").order("unit_id").range(from, to));
+  const sections = new Map<string, SectionKnowledge>();
+  for (const row of rows) {
+    if (!row.section_id || !row.page_id || !row.section_title || row.position === null || !row.unit_id || !row.unit_content) continue;
+    const section = sections.get(row.section_id) ?? { sectionId: row.section_id, pageId: row.page_id, title: row.section_title, position: row.position, units: [] };
+    section.units.push({ id: row.unit_id, title: row.unit_title, content: row.unit_content });
+    sections.set(row.section_id, section);
+  }
+  return [...sections.values()];
+}
+
+// Knowledge cited by each live article section (Units overview)
+export function useSectionKnowledge(enabled = true): UseQueryResult<SectionKnowledge[]> {
+  return useQuery({
+    queryKey: [...queryKeys.table("sections"), "section-knowledge"],
+    queryFn: () => fetchSectionKnowledge(getBrowserSupabase()),
+    enabled,
+  });
 }
 
 // KNOWLEDGE AND ARTICLE COUNTS PER FILE (Sources list). Keyed under units so knowledge edits refresh it
 export function useSourceUsage(): UseQueryResult<Map<string, SourceUsage>> {
   return useQuery({
-    queryKey: [...queryKeys.table("units"), "source-usage", "with-sections"],
+    queryKey: [...queryKeys.table("units"), "source-usage", "with-used-units"],
     queryFn: () => fetchSourceUsage(getBrowserSupabase()),
   });
 }

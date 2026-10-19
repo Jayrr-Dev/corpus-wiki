@@ -1,0 +1,40 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "7b617b14-75a9-4869-9d7f-fd8555b1700a",
+          "evidence": [
+            "7b617b14-75a9-4869-9d7f-fd8555b1700a",
+            "1e0c95d0-f77e-4530-8480-1d5eea2d77ce"
+          ],
+          "learningGoal": "Shows that City ULA circulation reaches only ATCO Pipelines, so other pipeline companies hear about a project only through the Designer's direct application.",
+          "caption": "Two routes for pipeline notification. The City of Edmonton ULA administrator circulates applications only to ATCO Pipelines. Other pipeline companies learn of a project only if the Designer applies to them directly for a high pressure pipeline crossing and/or a proximity agreement.",
+          "alt": "Flow diagram. A Designer box on the left has two arrows. The upper solid arrow goes to a City ULA circulation box, then to ATCO Pipelines. The lower dashed arrow goes to a Direct application box, then to Other pipeline companies.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>Pipeline notification routes in the ULA process</title><desc>The City ULA circulation reaches ATCO Pipelines only; other pipeline companies require a direct application from the Designer.</desc><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='40' y='205' width='180' height='110' rx='10' fill='#eef1f4' stroke='#3a4652' stroke-width='3'/><text x='130' y='270' font-family='Helvetica, Arial, sans-serif' font-size='30' font-weight='bold' fill='#1f2933' text-anchor='middle'>Designer</text><rect x='300' y='50' width='210' height='110' rx='10' fill='#e8f0f8' stroke='#2f5d8a' stroke-width='3'/><text x='405' y='98' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>City ULA</text><text x='405' y='132' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>circulation</text><rect x='560' y='50' width='200' height='110' rx='10' fill='#e8f0f8' stroke='#2f5d8a' stroke-width='3'/><text x='660' y='98' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>ATCO</text><text x='660' y='132' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>Pipelines</text><rect x='300' y='330' width='210' height='140' rx='10' fill='#f7f0e8' stroke='#8a5a2b' stroke-width='3' stroke-dasharray='10 6'/><text x='405' y='390' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>Direct</text><text x='405' y='424' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>application</text><rect x='560' y='330' width='200' height='140' rx='10' fill='#f7f0e8' stroke='#8a5a2b' stroke-width='3' stroke-dasharray='10 6'/><text x='660' y='372' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>Other</text><text x='660' y='406' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>pipeline</text><text x='660' y='440' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2933' text-anchor='middle'>companies</text><line x1='220' y1='235' x2='291.5' y2='141.1' stroke='#2f5d8a' stroke-width='4'/><polygon points='300,130 297.1,145.3 285.9,136.9' fill='#2f5d8a'/><line x1='510' y1='105' x2='546' y2='105' stroke='#2f5d8a' stroke-width='4'/><polygon points='560,105 546,98 546,112' fill='#2f5d8a'/><line x1='220' y1='285' x2='291.25' y2='374.1' stroke='#8a5a2b' stroke-width='4' stroke-dasharray='10 6'/><polygon points='300,385 285.8,378.5 296.8,369.7' fill='#8a5a2b'/><line x1='510' y1='400' x2='546' y2='400' stroke='#8a5a2b' stroke-width='4' stroke-dasharray='10 6'/><polygon points='560,400 546,393 546,407' fill='#8a5a2b'/></svg>"
+        }
+      ],
+      "omitted": "The article already has twelve figures covering the flowchart, lanes, crossing clearances, stakeholder conflicts, permit conditions and the online form, so no further process or clearance diagrams were added. Pipeline notification was the only distinct relationship left unillustrated. No photograph was used because no image search tool is connected."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Add a short label such as \"ATCO only\" on the upper arrow so the diagram itself shows the key limit, not just the caption.",
+        "Consider labeling the lower route \"Crossing or proximity agreement\" in short text so readers see why the Designer applies directly.",
+        "Raise box text from 28px to about 32px; there is room in the boxes, and it would read at about 14px on narrow screens.",
+        "Shorten the caption's opening phrase so it starts with the key point: City circulation reaches only ATCO Pipelines."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 24665,
+    "tokensOut": 4091
+  }
+]

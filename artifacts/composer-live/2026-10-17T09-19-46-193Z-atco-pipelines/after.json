@@ -1,0 +1,134 @@
+{
+  "page": {
+    "id": "da95a98c-3701-4c49-b27d-3f43931dcf24",
+    "title": "ATCO Pipelines",
+    "slug": "atco-pipelines"
+  },
+  "result": {
+    "runId": "9a60d1bb-cf86-4349-9748-e9ca436cef2f",
+    "figures": 1,
+    "total": 17,
+    "selection": {
+      "selected": [
+        "Overview"
+      ],
+      "assessments": [
+        {
+          "section": "Overview",
+          "visuallyExplainable": true,
+          "useful": true,
+          "supported": true,
+          "distinct": true,
+          "priority": 4,
+          "learningGoal": "What does ATCO Pipelines' official logo look like, so readers can identify the company?",
+          "evidence": [
+            "69ca8903-8a40-4daa-8cb8-a595a09c3be6"
+          ],
+          "reason": "An exact-match official ATCO Pipelines logo is available and identifies the article subject in the introduction. No existing figure shows it."
+        },
+        {
+          "section": "Circulation to ATCO Pipelines",
+          "visuallyExplainable": false,
+          "useful": false,
+          "supported": true,
+          "distinct": false,
+          "priority": 2,
+          "learningGoal": "Which pipeline companies receive a City of Edmonton ULA application?",
+          "evidence": [
+            "d918d5c8-5ab4-4989-b355-6654e381bfc0"
+          ],
+          "reason": "The section states one simple routing rule that repeats the overview. A picture would add little beyond the text."
+        }
+      ]
+    }
+  },
+  "run": {
+    "id": "9a60d1bb-cf86-4349-9748-e9ca436cef2f",
+    "model": "anthropic/claude-opus-5-5",
+    "active": true,
+    "review": {
+      "fixes": [
+        "Consider a caption that ties the logo to the article's point, such as noting that ATCO Pipelines is the only pipeline company receiving City of Edmonton ULA circulations.",
+        "Alt text could name the company's wordmark more specifically if the logo includes text, but the current version is adequate."
+      ],
+      "problems": [],
+      "grounding": 4,
+      "restraint": 4,
+      "selection": {
+        "selected": [
+          "Overview"
+        ],
+        "assessments": [
+          {
+            "reason": "An exact-match official ATCO Pipelines logo is available and identifies the article subject in the introduction. No existing figure shows it.",
+            "useful": true,
+            "section": "Overview",
+            "distinct": true,
+            "evidence": [
+              "69ca8903-8a40-4daa-8cb8-a595a09c3be6"
+            ],
+            "priority": 4,
+            "supported": true,
+            "learningGoal": "What does ATCO Pipelines' official logo look like, so readers can identify the company?",
+            "visuallyExplainable": true
+          },
+          {
+            "reason": "The section states one simple routing rule that repeats the overview. A picture would add little beyond the text.",
+            "useful": false,
+            "section": "Circulation to ATCO Pipelines",
+            "distinct": false,
+            "evidence": [
+              "d918d5c8-5ab4-4989-b355-6654e381bfc0"
+            ],
+            "priority": 2,
+            "supported": true,
+            "learningGoal": "Which pipeline companies receive a City of Edmonton ULA application?",
+            "visuallyExplainable": false
+          }
+        ]
+      },
+      "usefulness": 3,
+      "visualDesign": 3,
+      "accessibility": 3
+    },
+    "page_id": "da95a98c-3701-4c49-b27d-3f43931dcf24",
+    "snapshot": {
+      "slug": "atco-pipelines",
+      "title": "ATCO Pipelines",
+      "paragraphs": [
+        {
+          "id": "69ca8903-8a40-4daa-8cb8-a595a09c3be6",
+          "text": "ATCO Pipelines is the only pipeline company that the City of Edmonton's Utility Line Assignment (ULA) application administrator circulates applications to. Other pipeline companies are not made aware of a project unless the designer applies to them directly for a high pressure pipeline crossing and/or proximity agreement.",
+          "section": "Overview",
+          "hasMedia": false,
+          "revisionId": "4e5350e6-3b79-47c0-af2f-23c90fdb82a2"
+        },
+        {
+          "id": "d918d5c8-5ab4-4989-b355-6654e381bfc0",
+          "text": "Circulation of a ULA application is limited to ATCO Pipelines: the City of Edmonton ULA application administrator sends the application only to that company. Other pipeline companies will not be aware of a project unless the designer applies directly to them for a high pressure pipeline crossing and/or proximity agreement.",
+          "section": "Circulation to ATCO Pipelines",
+          "hasMedia": false,
+          "revisionId": "1d496d9a-02b7-4b76-90d0-aa392878a921"
+        }
+      ]
+    },
+    "created_at": "2026-10-17T09:20:04.105272+00:00",
+    "composition": {
+      "figures": [
+        {
+          "alt": "Official logo of ATCO Pipelines.",
+          "svg": "",
+          "after": "69ca8903-8a40-4daa-8cb8-a595a09c3be6",
+          "assetId": "a56e3b9e-fcad-4009-8ae2-2f7ffa3a2590",
+          "caption": "ATCO Pipelines logo, shown for identification only.",
+          "evidence": [
+            "69ca8903-8a40-4daa-8cb8-a595a09c3be6"
+          ],
+          "learningGoal": "Identify ATCO Pipelines, the organization this article covers."
+        }
+      ],
+      "omitted": "Only the Overview was selected. The exact-match ATCO Pipelines logo identifies the subject. No spatial or mechanism drawing fits this text-only routing fact. The generic pipeline illustration and the clearance diagrams do not match the paragraph."
+    }
+  },
+  "textUnchanged": true
+}

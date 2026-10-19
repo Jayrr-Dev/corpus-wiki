@@ -1,0 +1,9 @@
+{
+  "model": "recraft/recraft-v4.1-pro-vector",
+  "mime": "image/svg+xml",
+  "file": "artifacts/composer-live/recraft-vector-test.svg",
+  "cost": null,
+  "bytes": 57414,
+  "prompt": "Clean professional vector illustration of a city planning team: three people gathered around a table with a simple miniature city model. Restrained muted blue, warm grey and soft orange palette, crisp layered shapes, soft gradients, generous white background, landscape composition, readable at thumbnail size. Friendly credible proportions. No text, labels, logos, numbers, measurements or watermarks. Conceptual editorial illustration, not a real city project.",
+  "validationPassed": true
+}

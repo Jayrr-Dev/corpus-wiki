@@ -1,0 +1,197 @@
+▲ Next.js 16.4.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.112:3000
+- Environments: .env.local
+✓ Ready in 3.7s
+✓ Running next.config.ts took 242ms
+- Experiments (use with caution):
+  · serverActions
+
+○ Compiling /login ...
+ GET /login?next=%2Fgraph 200 in 4.4s (next.js: 3.3s, proxy.ts: 188ms, application-code: 984ms)
+ GET / 200 in 5.3s (next.js: 3.1s, proxy.ts: 800ms, application-code: 1380ms)
+ GET /graph 200 in 5.3s (next.js: 3.5s, proxy.ts: 792ms, application-code: 1074ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 5.7s (next.js: 4.6s, proxy.ts: 592ms, application-code: 538ms)
+Upload articles ready {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  readyAt: '2026-10-19T00:33:21.459Z'
+}
+ POST / 200 in 1385ms (next.js: 7ms, proxy.ts: 181ms, application-code: 1197ms)
+  └─ ƒ refreshPendingStaleSections() in 948ms lib/server-actions/pages.ts
+ POST /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 1622ms (next.js: 34ms, proxy.ts: 141ms, application-code: 1447ms)
+  └─ ƒ refreshPendingStaleSections() in 1428ms lib/server-actions/pages.ts
+ POST /graph 200 in 2.1s (next.js: 13ms, proxy.ts: 133ms, application-code: 1952ms)
+  └─ ƒ refreshPendingStaleSections() in 1935ms lib/server-actions/pages.ts
+ GET /api/sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886/file 302 in 2.9s (next.js: 1326ms, proxy.ts: 134ms, application-code: 1484ms)
+ POST / 200 in 4.4s (next.js: 8ms, proxy.ts: 169ms, application-code: 4.2s)
+  └─ ƒ readSpaceWelcome() in 4193ms lib/server-actions/spaceWelcome.ts
+ POST /graph 200 in 713ms (next.js: 72ms, proxy.ts: 132ms, application-code: 509ms)
+  └─ ƒ graphHistory() in 497ms lib/server-actions/graphHistory.ts
+ POST /graph 200 in 554ms (next.js: 8ms, proxy.ts: 126ms, application-code: 420ms)
+  └─ ƒ planDescribePass() in 408ms lib/server-actions/entities.ts
+ POST /graph 200 in 5.3s (next.js: 7ms, proxy.ts: 127ms, application-code: 5.2s)
+  └─ ƒ describeBatch(["3d82f991-a672-40c4-84d7-55a6c91c459c","b553bf2d-0c12-4511-8451-603d591db84b","5a5cc75b-d1ed-4719-9256-dd22aac000ef","... 4 items not stringified"]) in 5158ms lib/server-actions/entities.ts
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'expand',
+  status: 'succeeded',
+  durationMs: 244642
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'embeddings-enrichment',
+  status: 'succeeded',
+  durationMs: 7059
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'hierarchy-enrichment',
+  status: 'succeeded',
+  durationMs: 27296
+}
+✓ Compiled in 743ms
+ GET /login?next=%2Fgraph 200 in 125ms (next.js: 57ms, proxy.ts: 23ms, application-code: 45ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 493ms (next.js: 77ms, proxy.ts: 174ms, application-code: 243ms)
+ GET / 200 in 484ms (next.js: 113ms, proxy.ts: 192ms, application-code: 180ms)
+ GET /graph 200 in 485ms (next.js: 125ms, proxy.ts: 284ms, application-code: 76ms)
+ GET / 200 in 263ms (next.js: 99ms, proxy.ts: 129ms, application-code: 35ms)
+ POST / 200 in 2.0s (next.js: 13ms, proxy.ts: 140ms, application-code: 1866ms)
+  └─ ƒ readSpaceWelcome() in 1813ms lib/server-actions/spaceWelcome.ts
+ GET /stakeholders 200 in 1320ms (next.js: 951ms, proxy.ts: 305ms, application-code: 64ms)
+ GET /upload 200 in 740ms (next.js: 525ms, proxy.ts: 184ms, application-code: 32ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 256ms (next.js: 39ms, proxy.ts: 185ms, application-code: 32ms)
+ GET /api/sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886/file 302 in 1970ms (next.js: 29ms, proxy.ts: 194ms, application-code: 1748ms)
+ GET /stakeholders 200 in 21.7s (next.js: 161ms, proxy.ts: 21.5s, application-code: 26ms)
+ GET /upload 200 in 1073ms (next.js: 57ms, proxy.ts: 986ms, application-code: 29ms)
+ GET /units 200 in 10.1s (next.js: 334ms, proxy.ts: 9.8s, application-code: 54ms)
+ GET /changes 200 in 6.8s (next.js: 630ms, proxy.ts: 6.1s, application-code: 27ms)
+ GET /units 200 in 5.0s (next.js: 16ms, proxy.ts: 4.9s, application-code: 34ms)
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'plan-enrichment',
+  status: 'succeeded',
+  durationMs: 336746
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  status: 'succeeded',
+  completed: 14,
+  total: 14,
+  durationMs: 17079
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '0cf0833e-9894-42ea-a9bf-62a36eeb1c9b',
+  status: 'succeeded',
+  completed: 17,
+  total: 17,
+  durationMs: 26620
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '0f568ca8-41e6-4a55-ab96-ed572849f427',
+  status: 'succeeded',
+  completed: 12,
+  total: 12,
+  durationMs: 39733
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '51647b32-d13e-43a0-938b-bd35cb91f8d6',
+  status: 'succeeded',
+  completed: 10,
+  total: 10,
+  durationMs: 22317
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '863458e8-cf61-46ac-a8a9-412178d18b37',
+  status: 'succeeded',
+  completed: 14,
+  total: 14,
+  durationMs: 22536
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  status: 'succeeded',
+  completed: 12,
+  total: 12,
+  durationMs: 24244
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  status: 'succeeded',
+  completed: 10,
+  total: 10,
+  durationMs: 53656
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '366a95b2-3c30-4366-b07e-7fa90ca8a466',
+  status: 'failed',
+  completed: 6,
+  total: 9,
+  durationMs: 110363
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  status: 'incomplete',
+  completed: 6,
+  total: 12,
+  durationMs: 13270
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  status: 'incomplete',
+  completed: 3,
+  total: 16,
+  durationMs: 58464
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages-enrichment',
+  status: 'failed',
+  durationMs: 134924
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-19T00:44:06.383Z","finishedAt":"2026-10-19T00:56:45.394Z","durationMs":759000,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":223,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":220,"durationMs":34171,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":279,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":435,"durationMs":56937,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":612,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.pages":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.articles-ready":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.describe":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":145,"durationMs":61924,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.profiles":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_candidates":{"count":3,"durationMs":1300,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.expand-entity":{"count":18,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.living_page_query_units":{"count":34,"durationMs":8601,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":25,"durationMs":3821,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":116,"durationMs":5,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":116,"durationMs":0,"failures":0,"tokensIn":306110,"tokensOut":0},"ai.cache.write":{"count":116,"durationMs":0,"failures":0,"tokensIn":162544,"tokensOut":0},"ai.knowledge_expansion":{"count":13,"durationMs":137378,"failures":0,"tokensIn":366038,"tokensOut":27303},"db.log_ai_call":{"count":117,"durationMs":18970,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_write":{"count":18,"durationMs":34673,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand-entity":{"count":34,"durationMs":229592,"failures":0,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":186,"durationMs":27176,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand":{"count":1,"durationMs":244643,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.articles-input":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_article_inputs":{"count":1,"durationMs":1584,"failures":0,"tokensIn":0,"tokensOut":0},"step.enrichment-input":{"count":1,"durationMs":1940,"failures":0,"tokensIn":0,"tokensOut":0},"db.missing_unit_embeddings":{"count":1,"durationMs":337,"failures":0,"tokensIn":0,"tokensOut":0},"queue.embedding":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.embeddings":{"count":1,"durationMs":1186,"failures":0,"tokensIn":1400,"tokensOut":0},"db.save_unit_embeddings":{"count":1,"durationMs":2657,"failures":0,"tokensIn":0,"tokensOut":0},"db.missing_passage_embeddings":{"count":1,"durationMs":238,"failures":0,"tokensIn":0,"tokensOut":0},"step.embeddings-enrichment":{"count":1,"durationMs":7060,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.enrichment-input":{"count":3,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.hierarchy-enrichment":{"count":1,"durationMs":27297,"failures":0,"tokensIn":0,"tokensOut":0},"step.pages":{"count":2,"durationMs":1491,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-input":{"count":1,"durationMs":482,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_workspace_settings":{"count":1,"durationMs":155,"failures":0,"tokensIn":0,"tokensOut":0},"db.article_index":{"count":1,"durationMs":225,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-proposal-batch":{"count":3,"durationMs":10977,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_proposals":{"count":1,"durationMs":4580,"failures":0,"tokensIn":10157,"tokensOut":548},"step.article-proposals":{"count":1,"durationMs":6448,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-keys":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":110,"durationMs":14044,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_update_discovery":{"count":4,"durationMs":8622,"failures":0,"tokensIn":21560,"tokensOut":516},"db.read_section_state":{"count":161,"durationMs":86934,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":52,"durationMs":10002,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_scope_review":{"count":4,"durationMs":73534,"failures":0,"tokensIn":77744,"tokensOut":12502},"step.article-scope":{"count":4,"durationMs":75001,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":4,"durationMs":2202,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline":{"count":10,"durationMs":53740,"failures":0,"tokensIn":423005,"tokensOut":6758},"step.outline-v1":{"count":20,"durationMs":136771,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline_review":{"count":10,"durationMs":78713,"failures":0,"tokensIn":140648,"tokensOut":8980},"step.article":{"count":8,"durationMs":640121,"failures":0,"tokensIn":0,"tokensOut":0},"db.retry.read_section_state":{"count":2,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.plan-enrichment":{"count":1,"durationMs":336748,"failures":0,"tokensIn":0,"tokensOut":0},"db.list_affected_sections":{"count":1,"durationMs":2065,"failures":0,"tokensIn":0,"tokensOut":0},"step.affected-sections":{"count":1,"durationMs":2065,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1215,"failures":0,"tokensIn":0,"tokensOut":0},"db.claim_section_build":{"count":107,"durationMs":14290,"failures":0,"tokensIn":0,"tokensOut":0},"db.section_build_write":{"count":124,"durationMs":19983,"failures":0,"tokensIn":0,"tokensOut":0},"step.rebuild-section":{"count":105,"durationMs":333724,"failures":1,"tokensIn":0,"tokensOut":0},"db.read_page_context":{"count":16,"durationMs":2193,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_article_structure":{"count":16,"durationMs":5905,"failures":0,"tokensIn":0,"tokensOut":0},"ai.independent_section_editorial_selection":{"count":18,"durationMs":36026,"failures":0,"tokensIn":94071,"tokensOut":1869},"ai.section_lines":{"count":30,"durationMs":147386,"failures":0,"tokensIn":383965,"tokensOut":21798},"ai.line_fact_check":{"count":13,"durationMs":21615,"failures":0,"tokensIn":63760,"tokensOut":1339},"ai.independent_section_editorial_review":{"count":13,"durationMs":30473,"failures":0,"tokensIn":70142,"tokensOut":2305},"step.pages-enrichment":{"count":1,"durationMs":134924,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":170,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":159,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Upload articles ready {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  readyAt: '2026-10-19T00:33:21.459Z'
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  status: 'succeeded',
+  completed: 6,
+  total: 6,
+  durationMs: 14007
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: '366a95b2-3c30-4366-b07e-7fa90ca8a466',
+  status: 'succeeded',
+  completed: 3,
+  total: 3,
+  durationMs: 42043
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: 'da404d37-e6ff-46c9-bf5f-d24b61e2df56',
+  status: 'succeeded',
+  completed: 11,
+  total: 11,
+  durationMs: 13008
+}
+Upload page build timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  pageId: 'f18aefc2-9341-40f0-b2ed-7a892d633154',
+  status: 'succeeded',
+  completed: 12,
+  total: 12,
+  durationMs: 14378
+}

@@ -1,0 +1,2462 @@
+{
+  "pageId": "0cf0833e-9894-42ea-a9bf-62a36eeb1c9b",
+  "knowledge": {
+    "entity": {
+      "id": "",
+      "type": "topic",
+      "key": "",
+      "name": "Enneagram Type Six (Loyalist)"
+    },
+    "units": [
+      {
+        "kind": "fact",
+        "unitId": "5e9747c8-89b4-44ca-a430-2e6f5d8cefe9",
+        "content": "Type Six, the Loyalist, is reliable, committed, defensive, and suspicious.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "36951a9f-8c99-4fac-baa6-159d37d569bd",
+        "epistemicStatus": "established"
+      },
+      {
+        "kind": "fact",
+        "unitId": "55aa405a-4280-40fa-babd-f32fc08d5e6d",
+        "content": "Personality Type Six at Level 7 is the Overreacting Dependent, characterized by inferiority.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "feecffb9-f29a-4014-b9d0-40c964712066",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "5b230c1b-67f0-4574-afc6-9cc0f8a58ddd",
+        "content": "Personality Type Six's self-reliance (Level 1), self-doubt (Level 4), and inferiority (Level 7) are internal symmetries; engagement (Level 2), defensiveness (Level 5), and paranoia (Level 8) are other symmetries; healthy cooperation (Level 3) parallels the desire to blame (Level 6) and masochistic self-defeat (Level 9).",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "a45f4eed-116c-4615-883f-570b25dcecdb",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "456eb78a-af3e-4cde-9063-097a88597c4b",
+        "content": "Personality Type Six has nine levels, running from healthy Level 1 (Valiant Hero) to unhealthy Level 9 (Self-Defeating Masochist).",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "697bd340-17bf-43aa-bd06-a3df4365c7ee",
+        "epistemicStatus": "established"
+      },
+      {
+        "kind": "fact",
+        "unitId": "63c91993-99c6-45b5-88ea-d8c252fd50d8",
+        "content": "As anxiety grows, average Enneagram Type Six individuals take on more commitments and feel pressured by others' expectations.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "a27c3aab-29ae-4bcd-86ba-8c5da90a65e4",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "definition",
+        "unitId": "62ebd2c2-f34a-4c2e-a3ee-5159d29deb4c",
+        "content": "Courage is the Virtue of Type Six, meaning the absence of fear, which differs from defying fear or aggressively toughening oneself up (counterphobia).",
+        "context": {
+          "entities": [
+            {
+              "key": "counterphobia",
+              "role": "mentioned",
+              "type": "concept"
+            },
+            {
+              "key": "courage",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "963c7b21-3870-417d-86c5-f01450e6dc79",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "5a59142e-b9e3-4430-a7d3-ee2dfab5e1fa",
+        "content": "Sixes need to learn that they can follow their own inner guidance without losing support from others.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "Enneagram Type Six"
+          }
+        },
+        "revisionId": "f83da72c-79d1-4edb-afd9-58421b032974",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "5d57c7ce-4981-4e02-8ff6-6b7445c937f1",
+        "content": "Type Six individuals distrust their own thinking and look to outside sources for guidance, judging those sources mainly by emotional reactions and intuitions.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "5a606819-9060-4d54-8845-a26c0541d7f7",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "procedure",
+        "unitId": "4ac66757-5047-4be9-b97e-82463f6b3a1c",
+        "content": "Enneagram Type Six people should examine their attitudes toward authority, including whether they reflexively rebel or seek it out.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "ee915839-b43f-4e5a-9c5f-ced70bc09c76",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "definition",
+        "unitId": "09ed1b0c-14f5-41c9-8cde-eba6cd98d400",
+        "content": "Basic Fear is the core fear that motivates an Enneagram type; for Type Six, it is being without support and guidance.",
+        "context": {
+          "entities": [
+            {
+              "key": "basic-fear",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "8c91a526-50fe-42fd-b5f0-ab33b518f826",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "039a36e6-b6b9-45a5-9065-6354d19c3c98",
+        "content": "Average Enneagram Type Six individuals begin to doubt themselves and seek reassurance, alliances, and authorities for security.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "5c446aa6-0bed-4217-8cbb-fc591762e9da",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "1d9ed6db-20a4-4b6d-a034-d9891447ef33",
+        "content": "Sixes want the approval and support of others.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "7e2abe43-9cf1-4755-9024-1aef660ff150",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "definition",
+        "unitId": "30d7a088-8b6c-4f43-8c5b-dfa2561bd09d",
+        "content": "Cowardice is the Fixation of Type Six, meaning a failure of confidence in one's ability to know and receive inner guidance, also called doubt.",
+        "context": {
+          "entities": [
+            {
+              "key": "cowardice",
+              "role": "subject",
+              "type": "concept"
+            },
+            {
+              "key": "enneagram-type-six",
+              "role": "object",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "226cd12a-92de-4102-bae7-9b6d4289acc6",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "1ba328bc-50bc-4317-97bd-f8c88aa2bdc3",
+        "content": "Enneagram Type Six is often plagued by doubt and can become emotionally attached to a plausible belief system.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "4b2eda3f-8685-48fa-9bab-bdedd79f76bb",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "2b608e85-5ebb-4348-83a4-db86e005324b",
+        "content": "The Six is the primary type of the Thinking Triad, is most out of touch with inner guidance, and overthinks while looking to beliefs or trusted others for reassurance.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "66a0bbc2-06a3-4ede-bda5-721ad5ca5e33",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "1cfe534b-c099-439a-8fcb-cc9c3d601419",
+        "content": "Enneagram Type Six individuals become depressed when they fear that they have made their allies or authority figures angry with them.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "be1fa3d9-255e-48fd-a75c-334c569e0fcd",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "0944848a-df10-42e3-aaba-3e4f0ad471ce",
+        "content": "Enneagram Type Six individuals can give orders because they fear that others' erratic conduct may disrupt the security and stability they seek, not from rigid inner standards.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "f251febd-d61c-4e7b-92bc-b8e294b97d56",
+        "epistemicStatus": "assumed"
+      },
+      {
+        "kind": "fact",
+        "unitId": "072dd705-3f07-4ec7-81d6-ccca8d084fd7",
+        "content": "Personality Type Six at Level 8 is the Paranoid Hysteric, characterized by paranoia.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "c41d376d-bffd-494f-b34e-120322ab1877",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "18b9040c-5340-4fff-a0be-e00191b28c11",
+        "content": "Personality Type Six at Level 5 is the Ambivalent Pessimist, characterized by defensiveness.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "c96f83dd-5dcd-4795-aec1-2f7e3db68a32",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "3523afaa-a05f-4936-ae1d-4ba427906f42",
+        "content": "Healthy Enneagram Type Six individuals are hardworking, dependable, cooperative, and committed to quality craftsmanship.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "49e3eb45-998f-481e-a358-9320b0cd46ed",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "8e157966-19aa-479d-9a29-835731c7cc5e",
+        "content": "Basic Desire of Enneagram Type Six is to have support and guidance.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "cbe31dc8-b015-48a0-a03d-dea5827f20a6",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "7f4dc82a-dd39-4f31-9979-d0e364add24e",
+        "content": "Sixes have the most difficulty connecting with the quiet mind or trusting their own inner guidance, so they look outside themselves for guidance and support.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "90477cd3-b5b5-482b-a098-1f51ed8df61d",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "6b407494-5580-49db-a18f-ff32abe0c78e",
+        "content": "Type Six fears are often based on things that might happen rather than on current reality.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "e4a2ae4c-60ab-4967-8ea8-99294b8e656c",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "7a2c55b8-93c6-429f-b7f8-bcb8de606dbb",
+        "content": "The antidote to Sixes' ambivalent attachment to others is courageous self-reliance.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "924779d8-79f2-4b67-a9b6-cde4e3664625",
+        "epistemicStatus": "unknown"
+      },
+      {
+        "kind": "fact",
+        "unitId": "809988ac-2e26-4c58-9bae-d93a9637ad32",
+        "content": "Type Six associates certain relationships, groups, and beliefs with its security and defends them even when they may harm it.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "60968bca-57e2-4d51-bf58-76321a6003a8",
+        "epistemicStatus": "established"
+      },
+      {
+        "kind": "fact",
+        "unitId": "8a8c7cc6-edef-41be-81a4-f0d3bc5ed376",
+        "content": "Type Six individuals in thinking mode entertain many ideas but cannot integrate them into their lives or evaluate them in a balanced way.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "6a46f435-24b6-4d42-9249-7d3d9ee79110",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "79261283-f450-4409-9118-85dddf8425b8",
+        "content": "The Six is the introverted feeling type in Jungian typology.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "0d343986-9ea4-401d-9548-018ae35e1cf2",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "69625a49-c880-4c87-9b27-41c1b8543cee",
+        "content": "Personality Type Six at Level 2 is the Engaging Person, characterized by engagement.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "0a244b50-a2fb-44d3-a3c3-dccc9f71de93",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "procedure",
+        "unitId": "68649d09-ef35-40a1-aed3-293e83972087",
+        "content": "Enneagram Type Six people should take responsibility for their mistakes rather than pass the buck, since most people respect that.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "6f7d1ee6-650b-47f1-b117-7c142650e777",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "956cba2e-6fa8-4f4e-8497-15a5e439e88a",
+        "content": "Type Six has the passion fear, the virtue courage, the fixation cowardice, and the holy idea Holy Faith.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "2f95a548-d5bc-4ba8-ad28-19e02a486dad",
+        "epistemicStatus": "established"
+      },
+      {
+        "kind": "fact",
+        "unitId": "97ec65c5-7380-40ea-b6df-1fd80daf186e",
+        "content": "Type Six individuals in duty mode often have frequent, powerful emotional reactions that they act on, because their thinking center is not engaged to provide perspective.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "d74e58df-046c-4dc2-a0d1-2219e03b79d9",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "981516ae-46f0-40b2-a525-c91230cc0eb4",
+        "content": "Type Six individuals in duty mode are active, service-oriented, committed, and highly responsible to what they feel they must do.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "103cc0f9-f606-4e76-89ec-1e10b663762c",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "93733365-e8a1-4ab5-9071-7b5996f63699",
+        "content": "Enneagram Type Six people tend to become edgy and blame others when they are upset or angry.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "f4631dad-de5e-4df5-8d4c-c6e701ef2df0",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "bd278cd5-8b6f-44a5-8b6f-08a2cd5940c3",
+        "content": "Anxiety tends to make Enneagram Sixes more pessimistic and negative about themselves and their prospects, with self-doubt and suspicion of others' motives.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "c178a9b5-26b3-4d7d-83ff-8c0cf2e49868",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "aa47fc68-fae8-481a-914d-b54ac1d0b66e",
+        "content": "Average Enneagram Type Sixes can act out average Type Nine behaviors with trusted intimates, shutting down and numbing out.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-nine",
+              "role": "object",
+              "type": "concept"
+            },
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "average Sixes with trusted intimates"
+          }
+        },
+        "revisionId": "b45e40e9-31a7-49d3-a516-c33cdb7ffed8",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "af3f8296-1f86-466e-8310-a6b9519995fb",
+        "content": "Sixes want partnerships that support their bid for independence, but they become anxious if a relationship becomes too merged or mushy.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "65971a96-6969-4e90-aade-2fe78565f349",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "bdc223e6-c01b-49bd-9392-b1ab185b9590",
+        "content": "Type Six organizes and systematizes its environment to make it predictable, but this activity does not reduce its fear.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "dc482c16-7e43-40f6-b28a-9eef9a923b39",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "c13cd33e-eb83-488e-aeec-e12356e35607",
+        "content": "Personality Type Six moves from healthy self-affirming equality, reliability, and cooperation through average self-doubt and defensiveness to unhealthy inferiority, paranoia, and self-defeating masochism.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "8af1322b-2d74-4d71-b8e3-2e3981d49208",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "e2605c37-713c-43f0-a3b3-d3918ecde5d7",
+        "content": "Unhealthy Enneagram Type Six individuals may become panicky, insecure, depressed, and paranoid, and may see others as enemies.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "21c1a2cb-0ae9-480b-bb8d-810796768907",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "bfeda9ad-a4c6-44a2-877b-f5252589a636",
+        "content": "Low functioning Enneagram Type Six individuals can more easily lose their tempers, sometimes erupting into hysterical reactions or even physical violence.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "04aba6ac-143d-4458-9fc8-3d404b352653",
+        "epistemicStatus": "assumed"
+      },
+      {
+        "kind": "fact",
+        "unitId": "cff4ebc4-4d03-4464-aa3c-b5470d490101",
+        "content": "Sixes ingratiate themselves by being playful and silly and by bantering and teasing people they want to draw a protective emotional response from.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "4caa3260-b733-444c-a2e0-81fbe66d6031",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "cb887775-b4f9-44c4-810b-69321a3cbcbc",
+        "content": "Sixes' characteristic temptation is to rely on others to help them become independent.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "bb1b3f5c-c54e-4b31-b33b-f705bd9acffd",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "dce69c46-2431-4fd1-bef6-b01768fc51e8",
+        "content": "Type Six needs most to learn from Three to be inner-directed and to respect oneself.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "dfa8aa7b-aed3-4541-86c6-5847b3fb70a0",
+        "epistemicStatus": "unknown"
+      },
+      {
+        "kind": "fact",
+        "unitId": "d5c85bc1-5e16-44ea-923c-7e09044942cb",
+        "content": "Artistic talent is not limited to Enneagram Type Four individuals, so Enneagram Type Six individuals can also be artists.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-four",
+              "role": "mentioned",
+              "type": "concept"
+            },
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "a778938b-d9b1-4a9e-bc13-af5c3b9de1b9",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "c117422e-87a7-4139-a99d-53a4920d2d9e",
+        "content": "Average Sixes tend to be performing artists, more often actors or musicians than poets and playwrights.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "e6a3701d-4ef3-480f-aceb-d6cd6064d076",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "f4d981e4-16c1-4967-bd9c-c22cc41f1bb1",
+        "content": "Personality Type Six's self-descriptions state the person is more vigilant about potential problems than most people.",
+        "context": {
+          "entities": [
+            {
+              "key": "personality-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "0abc7cab-c149-41a9-be2e-149765d8b1e2",
+        "epistemicStatus": "assumed"
+      },
+      {
+        "kind": "fact",
+        "unitId": "f80022f4-1c86-43ce-b063-b6052f28eaf9",
+        "content": "Enneagram Type Six lacks clear inner guidance and looks outside itself for direction and reassurance.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        },
+        "revisionId": "a7856096-83a1-4965-9b71-e294977e3c20",
+        "epistemicStatus": "established"
+      },
+      {
+        "kind": "fact",
+        "unitId": "fa711ecc-a852-4d2d-840f-d6d212d01b86",
+        "content": "Average Enneagram Type Sixes are often visibly anxious and self-doubting, yet they persevere and meet their commitments.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "average Sixes"
+          }
+        },
+        "revisionId": "0813a5cc-ed9a-4027-ae5f-d66ea10c2737",
+        "epistemicStatus": "supported"
+      },
+      {
+        "kind": "fact",
+        "unitId": "fbaa89ac-ad72-42e3-9f2d-81dedc219d4d",
+        "content": "When stress overwhelms their defenses, average Enneagram Type Sixes may move toward Three by hiding in work and projecting confidence.",
+        "context": {
+          "entities": [
+            {
+              "key": "enneagram-type-six",
+              "role": "subject",
+              "type": "concept"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "average Sixes under overwhelming stress"
+          }
+        },
+        "revisionId": "c35aaf64-67a0-496a-84b4-f2e114ec4695",
+        "epistemicStatus": "supported"
+      },
+      {
+        "unitId": "037ec67c-8a3f-44af-bcbd-8b5a39c2f890",
+        "revisionId": "90b0d43e-6fe9-46f3-828c-977ad0c33fee",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six has ten recommendations for handling anxiety, trust, responsibility, and reliance on outside support.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "043dcdea-7a7d-45eb-89be-e6ca44562ddc",
+        "revisionId": "148b6799-cfde-4871-b3d5-0ad9570bf73d",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Enneagram types change in behavior at different Levels, so a type's characteristics can become their opposite at unhealthy Levels.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "055b4a09-de42-4a7a-b4b9-cc9ec174318c",
+        "revisionId": "5e6390f7-ee25-49b1-975c-638443ae6b62",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six individuals relate well to people and unconsciously engage others' emotions so that others like them and form secure relationships with them.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "08c97c1e-92b1-45f9-8dd0-7d8f971fd7e6",
+        "revisionId": "d0290c63-8fbd-4dae-9c30-c4d58d5c3188",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Healthy Enneagram Type Sixes become emotionally stable, supportive, and reassuring, and their anxiety has largely resolved.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "healthy Sixes"
+          }
+        }
+      },
+      {
+        "unitId": "096c81a6-a8b7-49d0-97df-c3227d3ce1a3",
+        "revisionId": "2f7e37b9-79ff-48e3-9ed9-a5f162fdd7db",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Unhealthy Enneagram Type Sixes that move toward Three may become dishonest and unprincipled to preserve their position or security.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "unhealthy Sixes moving toward Three"
+          }
+        }
+      },
+      {
+        "unitId": "0d5ed36e-2853-4b3e-b9d8-0dce6bdfe661",
+        "revisionId": "5791d612-7034-4d78-bd69-46c76cfcac54",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Healthy Enneagram Type Sixes that move toward Nine find stable inner support and become grounded in their physical presence in the here and now.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-nine",
+              "role": "object"
+            },
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "healthy Sixes moving toward Nine"
+          }
+        }
+      },
+      {
+        "unitId": "115bee3e-c714-4873-a378-54d531bd1686",
+        "revisionId": "57051521-229d-4f3c-bbc6-88e322b7b328",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Enneagram Type Six individuals identify with certain beliefs or authority figures and internalize the values they learn from those sources of guidance.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "13adf282-0f54-40dc-a3a0-17d4c3a4dc6c",
+        "revisionId": "696c811d-b7be-4e6a-a139-0aadb2539a2f",
+        "kind": "definition",
+        "epistemicStatus": "supported",
+        "content": "The Levels of Development are the nine stages within each Enneagram type, forming a continuum from healthy to average to unhealthy states.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "mentioned"
+            },
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "16971ddc-a6be-4973-a340-a5a5f7b2e3bb",
+        "revisionId": "5a0c1414-6d6f-426e-a791-d3f32f8ff7ea",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Personality Type Six's self-descriptions state the person can be extremely prudent about a problem yet sometimes act impulsively to finish it.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "1f41c4b9-e681-4ef4-bc70-9fb6f279a4df",
+        "revisionId": "f3d933c1-a5d2-478c-99c3-fb8e55132aae",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Levels of Development are the key to describing personality types economically by revealing larger patterns beneath everyday confusion.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "1f491505-d5ba-4e6c-9146-b8cc17d5bf4c",
+        "revisionId": "e44859f7-4b63-4b03-bd2a-502eaea3be78",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Depression in Enneagram Type Six individuals is based on repressed anxiety, while depression in Enneagram Type Four individuals is based on repressed hatred toward the self and others.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-four",
+              "role": "object"
+            },
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "360b708a-6e70-4367-900e-85a8cb123859",
+        "revisionId": "920f4620-af3d-4681-91b6-d889dc9ff442",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Each personality type's Continuum has nine Levels, grouped as healthy (Levels 1 to 3), average (Levels 4 to 6), and unhealthy (Levels 7 to 9).",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "continuum",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "3861e082-69ed-4d2d-973e-4b98244bc5dc",
+        "revisionId": "2b1b4ac5-b1f1-486d-bd4e-9d17a2b12581",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six people should work on becoming more trusting and allow themselves to get close to a trustworthy person.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "3927480e-217d-44a4-a092-5ed3afc75b85",
+        "revisionId": "bc8208bf-3e2c-47be-bf83-93e0779bb82f",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Personality Type Six at Level 9 is the Self-Defeating Masochist, characterized by masochism.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "49bd251b-aad0-473f-8c8a-fba37615d519",
+        "revisionId": "55e4c5ec-3c6e-4d53-bfd4-9be47beab127",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Enneagram Type Six individuals are uncertain and rely on reassurance, back-up, familiar procedure, or previously tested ideas to help them make decisions.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "50641503-d1a5-40db-a5d1-4b7abe522faf",
+        "revisionId": "2e927813-94a8-47cf-a47f-ca98055eb037",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "In the Enneagram, personality disorders correspond only to certain Levels of each personality type, not to an entire type.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "subject"
+            },
+            {
+              "type": "concept",
+              "key": "personality-disorder",
+              "role": "object"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "51a43323-7e8e-4d2d-9399-810cbbbe3be5",
+        "revisionId": "63e74d7b-0c44-448c-b61a-8b5b26c35580",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six people should be fair with others and say what is on their mind, to avoid appearing indecisive or defensive.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "51c27235-9b6c-4803-b0a7-1314c818c3ae",
+        "revisionId": "aeb026c6-3d5f-462e-a2bc-581496c0e72e",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Healthy Type Six individuals develop themselves by integrating their thinking with their other two centers rather than identifying with one function.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "536aa1c9-38e0-4c30-ac90-7b56da53c53b",
+        "revisionId": "434e8f2c-b190-4fce-acbc-3e4a51c7bf21",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Healthy Enneagram Type Six individuals are engaging, friendly, reliable, and trustworthy, and they follow through on their commitments.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "537f76c5-1337-411f-a791-2f9e14914bfb",
+        "revisionId": "86da4488-7a58-429d-9436-64122ad9e639",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Others probably think better of Enneagram Type Six people than those people realize, and few people are out to get them.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "58a53c56-d910-4ef3-ad41-b3925b964805",
+        "revisionId": "aa03657c-ec5f-4f84-a7d9-c15ce789ccb3",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Basic Fear and Basic Desire are unique to each Enneagram personality type and produce that type's secondary fears, desires, and traits at each Level of Development.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "basic-desire",
+              "role": "subject"
+            },
+            {
+              "type": "concept",
+              "key": "basic-fear",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "5b99945a-0f84-4452-92c0-63150c95e1ff",
+        "revisionId": "1c74a317-4678-4a33-9acc-cb9617258e33",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Sixes seek security, safety, and an authority they can trust, because they lack a felt sense of inner guidance.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "648b9a3f-430b-4544-b8a9-bf9fa60a9dec",
+        "revisionId": "e52099b8-b026-4d34-a694-f5b77ee25df6",
+        "kind": "definition",
+        "epistemicStatus": "supported",
+        "content": "Levels of Development are the healthy, average, and unhealthy stages within each Enneagram personality type.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "object"
+            },
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "6d36f32d-0dae-4875-a390-c36f2e8090a6",
+        "revisionId": "67f390e2-7291-4bea-ade0-1ac52885e51b",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "The Enneagram indicates what each person's personality structure needs for growth and transformation, and each type requires its own prescriptions for growth.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "6eb7214e-1475-4c0a-9438-63bb7cd06d05",
+        "revisionId": "5dbdf68c-d2f8-45f3-954f-aff6aee615b6",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Sixes look to an idealized protective authority figure, often the father, for guidance and support in childhood.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "707c0fa7-5e03-4127-ab32-dc928dc8246c",
+        "revisionId": "193120ed-ea87-4123-9a6f-27705d16e57a",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Unhealthy Enneagram Type Six individuals may seek a stronger authority or belief for rescue, and may humiliate themselves before an authority figure.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "767aeb99-dd9d-400e-9e0f-76b904b88ae5",
+        "revisionId": "b8bb0fba-ac2e-48f7-88d9-5f7189f948e5",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Under stress, average Enneagram Type Six individuals may become indecisive, evasive, and passive-aggressive, giving mixed signals.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "79f2bf19-1aab-4f1e-90c2-a595543a68f6",
+        "revisionId": "411aa97d-d8ad-4a7b-b190-ada434e7ff5a",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Personality Type Six's self-descriptions cover loyalty, vigilance, reliability, self-doubt, trust issues, and prudence mixed with impulsiveness.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "8511dd08-4608-482e-bd88-79d5ea0f0e35",
+        "revisionId": "b3391e0c-bebb-47ea-b29c-516b74c48703",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "In the Enneagram, personality traits start to become inflexible and maladaptive at Level 5.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "8817f322-ef86-4b32-a93c-a0a0daae853e",
+        "revisionId": "f222fc88-99fc-41dc-932e-eea0ac10143a",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Enneagram Type Six individuals carry considerable anxious tension and are more aware of that tension.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "8a2abd8f-ba21-44b7-bf67-f5f455f8a666",
+        "revisionId": "4683a204-8054-4857-b9e2-a185e0a017aa",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six people should identify what makes them overreact under stress, since most feared outcomes have not come true.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "8ecfbe6e-711f-442b-b861-47c4a290bcf9",
+        "revisionId": "e92c543e-38c6-426a-b108-c2c78a1afea7",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six people should take a clear position in relationships and tell people how they feel about them.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "965e3f5f-1436-4b6a-9313-9b6fa6c96959",
+        "revisionId": "7967e1d8-0e1d-4a5c-9f05-931451275e99",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "The Enneagram has nine personality types grouped into three Triads of three types each.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "9e0387b0-a81c-4bcb-b4a7-aab05d82e47c",
+        "revisionId": "76247d6a-18d0-4e86-b733-bededf5620cb",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "The principal negative feelings in Enneagram Type Six individuals are fearfulness, suspicion, and anxiety.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "9e9fdfd3-a6e3-4996-982c-98594a520ee4",
+        "revisionId": "38e586a6-b1c1-484d-a953-1869a992c54c",
+        "kind": "definition",
+        "epistemicStatus": "supported",
+        "content": "The Enneagram describes eighty-one Levels of Development, which are nine Levels for each of nine personality types.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "a0f24895-080c-46b9-b725-a0245c5ba7fe",
+        "revisionId": "6390d625-128d-44a3-8c67-980a7a8a9adb",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Average Enneagram Type Six individuals feel anxious about the future and try to cover all the bases while still feeling insecure.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "a2743c67-d4f1-4d69-83c9-9780f672dbd1",
+        "revisionId": "7f69dbc4-8a04-49bf-9030-d6456462ee0b",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six people should develop a realistic belief in their own abilities and become grounded in their body to feel more secure.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "adee302f-ee58-4436-9db9-153469c1cbe3",
+        "revisionId": "22499da6-45b9-465b-b0c0-417fb54fa6c2",
+        "kind": "definition",
+        "epistemicStatus": "unknown",
+        "content": "Enneagram Types 1, 4, and 7 belong to the Frustration group, Types 2, 5, and 8 to the Rejection group, and Types 3, 6, and 9 to the Attachment group.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "dominant-affect-groups",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "ae405095-ead2-4457-82fd-a77ca954d1a9",
+        "revisionId": "ebdf4bb9-9c73-4c43-9394-c1439a11abac",
+        "kind": "definition",
+        "epistemicStatus": "established",
+        "content": "People fluctuate among the traits of their type along a continuum of nine Levels of Development, from high-functioning states to painful, potentially pathological ones.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "b1ecef76-7f89-44e4-a87e-15de3ab821de",
+        "revisionId": "33174e50-2049-4119-8257-c8ec7b0811f6",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Personality Type Six's self-descriptions state the person spends much time trying to understand who and what they can trust.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "b3e84996-b0be-45b4-9935-cad1b5ded28b",
+        "revisionId": "980c79f1-5bc2-4ecb-ad36-3ed083ee06f6",
+        "kind": "definition",
+        "epistemicStatus": "supported",
+        "content": "The Enneagram is a system of personality types that describes general patterns, which individuals vary from.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "baaf0dd8-45bd-4a10-999b-f631598dab71",
+        "revisionId": "3af69793-d9ef-41c5-a1f4-c28afefe6255",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Compliant Enneagram Types One, Two, and Six have the Thinking Center as their undeveloped third Center.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "hornevian-groups",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "general",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "c321a266-5bbb-44e5-8c2d-64cead86dd4b",
+        "revisionId": "b9af231b-ff0d-4f4e-b71c-8b590fd48724",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Each Level can be described both as an integral part of the entire personality type and as a discrete personality subtype unique to itself.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "df7b4e4e-70c3-417c-8028-fcf6d013dc3d",
+        "revisionId": "f843366d-db4e-47a6-a75f-4850f15284ed",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Enneagram Type Six individuals can be aggressive toward anyone who does not share their values, especially when they are more insecure.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "e1fa6a3b-5a83-44e3-8276-7cef7a20fb34",
+        "revisionId": "f51f4ada-767f-4c15-b481-54e41457ce57",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "The Enneagram Levels of Development are presented from the top down as a progressive deterioration toward increasing unhealth, for descriptive economy.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "levels-of-development",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "e7caef05-0928-4e12-a196-ecb384b92ee0",
+        "revisionId": "7e0b7876-7a34-4c29-9577-207b164741f1",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Personality Type Six at Level 4 is the Dutiful Loyalist, characterized by self-doubt.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "ed35f41f-e8c0-4b36-9e01-59330835d041",
+        "revisionId": "1c94648b-1941-4279-802c-e3da09426fb6",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Personality Type Six at Level 6 is the Authoritarian Rebel, characterized by blame.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "ee04ceff-1e0e-4d51-80c9-2d2a09f39fb0",
+        "revisionId": "a95cb1db-5157-4bd6-9f43-c9fa91236d71",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Personality Type Six's self-descriptions state the person is very committed to those who are committed to them.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "personality-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "ef0de1d5-22eb-434e-9987-be05a359fd31",
+        "revisionId": "94c8fe46-29c1-4d92-a506-f1bc7a71d42d",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Sixes are consciously assailed by anxiety, indecision, and doubts, and they look to trusted others, especially authority figures, for reassurance and confidence.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "f0f99123-07d7-4dd8-aadb-7819785d05ff",
+        "revisionId": "0f3fb9f7-e88d-4349-b961-46aaa6ffc81d",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Very unhealthy Enneagram Type Sixes may strike out violently at authorities or people who symbolize a great betrayal.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "scoped",
+            "entities": [],
+            "conditions": "very unhealthy Sixes"
+          }
+        }
+      },
+      {
+        "unitId": "f1a36f18-9318-4470-aa1a-e4da296e1aad",
+        "revisionId": "8ec6ec8f-e2ff-4143-a17c-92f56aa8da64",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Male Enneagram Type Sixes are more likely to commit irrational violence, while female Sixes more often use a charming false persona and target perceived oppressors in focused, personal ways.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "f2a3efad-0594-4158-9fb2-91f4f201a3ef",
+        "revisionId": "a6ee45ca-7c6e-4577-b1b1-37ff0889da80",
+        "kind": "fact",
+        "epistemicStatus": "supported",
+        "content": "Enneagram recommendations may help focus attention on typical problems and can be used in study groups, therapy, or family discussions.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "f2d0fa32-35aa-4ea6-9be5-222da49b7de6",
+        "revisionId": "86af6e50-8ead-4570-b2ef-33984961461c",
+        "kind": "fact",
+        "epistemicStatus": "assumed",
+        "content": "Average Enneagram Type Six individuals struggle with more volatile feelings and have difficulty putting them aside, although they seldom express those feelings to others.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      },
+      {
+        "unitId": "f7aa90e1-a3c1-4e26-b667-a5eed33d7835",
+        "revisionId": "592796c4-9aa7-49e4-b60d-7fd909cfec04",
+        "kind": "procedure",
+        "epistemicStatus": "supported",
+        "content": "Enneagram Type Six people should remember that anxiety is common and should be present to it, without using alcohol or other drugs to numb it.",
+        "context": {
+          "entities": [
+            {
+              "type": "concept",
+              "key": "enneagram-type-six",
+              "role": "subject"
+            }
+          ],
+          "applicability": {
+            "status": "unspecified",
+            "entities": [],
+            "conditions": null
+          }
+        }
+      }
+    ]
+  },
+  "plan": {
+    "title": "Enneagram Type Six (Loyalist) personality",
+    "sections": [
+      {
+        "title": "Levels of development in the Enneagram",
+        "claims": [
+          "C51",
+          "C57",
+          "C59",
+          "C61",
+          "C65",
+          "C72",
+          "C78",
+          "C84",
+          "C88",
+          "C92",
+          "C94"
+        ]
+      },
+      {
+        "title": "Type Six's place in the Enneagram",
+        "claims": [
+          "C82",
+          "C87",
+          "C91",
+          "C27"
+        ]
+      },
+      {
+        "title": "Basic fear and basic desire",
+        "claims": [
+          "C10",
+          "C70",
+          "C21",
+          "C71"
+        ]
+      },
+      {
+        "title": "Core terms: courage, cowardice, and passion",
+        "claims": [
+          "C6",
+          "C13",
+          "C30"
+        ]
+      },
+      {
+        "title": "Type Six across the levels",
+        "claims": [
+          "C38",
+          "C3",
+          "C28",
+          "C95",
+          "C19",
+          "C96",
+          "C2",
+          "C18",
+          "C63"
+        ]
+      },
+      {
+        "title": "Healthy expression of Type Six",
+        "claims": [
+          "C20",
+          "C68",
+          "C53",
+          "C67"
+        ]
+      },
+      {
+        "title": "Average expression, anxiety, and stress",
+        "claims": [
+          "C5",
+          "C48",
+          "C76",
+          "C79",
+          "C85",
+          "C102"
+        ]
+      },
+      {
+        "title": "Fear, pessimism, and suspicion",
+        "claims": [
+          "C23",
+          "C34",
+          "C83"
+        ]
+      },
+      {
+        "title": "Reliance on others and inner guidance",
+        "claims": [
+          "C7",
+          "C8",
+          "C22",
+          "C47",
+          "C42",
+          "C98",
+          "C11",
+          "C12"
+        ]
+      },
+      {
+        "title": "Thinking, decisions, and duty",
+        "claims": [
+          "C15",
+          "C26",
+          "C64",
+          "C37",
+          "C31",
+          "C32"
+        ]
+      },
+      {
+        "title": "Authority, belief systems, and doubt",
+        "claims": [
+          "C9",
+          "C14",
+          "C17",
+          "C25",
+          "C56",
+          "C74",
+          "C75"
+        ]
+      },
+      {
+        "title": "Anger, blame, and aggression",
+        "claims": [
+          "C33",
+          "C40",
+          "C93",
+          "C99",
+          "C100"
+        ]
+      },
+      {
+        "title": "Depression and unhealthy patterns",
+        "claims": [
+          "C16",
+          "C39",
+          "C60"
+        ]
+      },
+      {
+        "title": "Movement toward Types Three and Nine",
+        "claims": [
+          "C49",
+          "C35",
+          "C54",
+          "C43",
+          "C55"
+        ]
+      },
+      {
+        "title": "Relationships with others",
+        "claims": [
+          "C52",
+          "C41",
+          "C36",
+          "C69",
+          "C24"
+        ]
+      },
+      {
+        "title": "Artistic inclinations",
+        "claims": [
+          "C44",
+          "C45"
+        ]
+      },
+      {
+        "title": "Self-descriptions of Type Six",
+        "claims": [
+          "C46",
+          "C58",
+          "C77",
+          "C89",
+          "C97"
+        ]
+      },
+      {
+        "title": "Recommendations for growth",
+        "claims": [
+          "C73",
+          "C101",
+          "C29",
+          "C50",
+          "C62",
+          "C66",
+          "C80",
+          "C81",
+          "C86",
+          "C103"
+        ]
+      }
+    ],
+    "introduction": [
+      "C1",
+      "C4",
+      "C90"
+    ]
+  },
+  "review": {
+    "grounding": {
+      "score": 3,
+      "reason": "Each C ref appears once, and the headings match their claims. Some refs carry assumed or unknown status, and the outline keeps those labels in the claim data rather than stating them as settled fact."
+    },
+    "cohesion": {
+      "score": 2,
+      "reason": "The Movement section mixes Three and Nine refs (C49, C35, C54, C43, C55). The anxiety sections split related claims: C34 and C23 sit apart from C5, C48, and C85. C9, a recommendation, sits in the Authority section."
+    },
+    "flow": {
+      "score": 2,
+      "reason": "In the Movement section, C35 (toward Nine) sits between two Three refs, C54 and C43, so a reader must backtrack. The introduction and levels framework come before the level-specific claims, which is a sound order."
+    },
+    "headings": {
+      "score": 3,
+      "reason": "Most H2 labels are descriptive and distinct, such as Basic fear and basic desire and Core terms: courage, cowardice, and passion. The labels Fear, pessimism, and suspicion and Average expression, anxiety, and stress overlap in scope."
+    },
+    "balance": {
+      "score": 3,
+      "reason": "The outline has 17 sections, several with only two to three refs (Artistic inclinations, Type Six's place, Fear, pessimism, and suspicion). The Recommendations section has ten refs, which is fine, but the anxiety material is spread too thin."
+    },
+    "introduction": {
+      "score": 3,
+      "reason": "The introduction uses C1 and C4 to define the type and its levels, and C90 for the general Enneagram framing. It does not repeat the body claims, though C4's level summary previews the Levels section."
+    },
+    "blockingIssues": [],
+    "fixes": [
+      "Reorder the Movement section to group Three refs before Nine refs: C49, C54, C43, then C35, C55.",
+      "Merge Fear, pessimism, and suspicion (C23, C34, C83) into Average expression, anxiety, and stress, or give the merged section a single anxiety heading to remove the overlap with C5, C48, and C85.",
+      "Move C9 (examining attitudes toward authority) from Authority, belief systems, and doubt to Recommendations for growth, since it is a recommendation.",
+      "Consider moving C24 (courageous self-reliance antidote) from Relationships with others to Recommendations for growth, since it prescribes a response rather than describing relationships.",
+      "Consider moving C101 (how recommendations can be used) to the end of Recommendations for growth or to the introduction, since it describes the recommendations rather than giving one."
+    ]
+  },
+  "accepted": false,
+  "score": 16
+}

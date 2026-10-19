@@ -1,0 +1,24 @@
+[
+  {
+    "checks": [
+      {
+        "lines": 2,
+        "units": 3,
+        "identical": true,
+        "sectionId": "780726b5-70fb-44c4-8d1b-f7069e42c89a"
+      },
+      {
+        "lines": 1,
+        "units": 2,
+        "identical": true,
+        "sectionId": "d5733deb-ec41-45db-ae5b-6cbf6918cc46"
+      },
+      {
+        "lines": 0,
+        "units": 0,
+        "identical": true,
+        "sectionId": "2afbed00-1bfd-434a-8084-9b61572c7880"
+      }
+    ]
+  }
+]

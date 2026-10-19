@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-10-17T03:08:55.885Z",
+  "status": "passed",
+  "kind": "isolated PostgreSQL with deterministic extraction and section prose",
+  "liveAiCalls": 0,
+  "totals": {
+    "claims": 450,
+    "pages": 42,
+    "sections": 126,
+    "lines": 450
+  },
+  "results": [
+    {
+      "scenario": "short",
+      "claimsSubmitted": 72,
+      "pages": 8,
+      "sections": 24,
+      "lines": 72,
+      "cited_lines": 72,
+      "distinct_claims": 72,
+      "durationMs": 2239,
+      "repeatedRunIdempotent": true
+    },
+    {
+      "scenario": "long",
+      "claimsSubmitted": 192,
+      "pages": 16,
+      "sections": 48,
+      "lines": 192,
+      "cited_lines": 192,
+      "distinct_claims": 192,
+      "durationMs": 3796,
+      "repeatedRunIdempotent": true
+    },
+    {
+      "scenario": "update existing pages",
+      "claimsSubmitted": 24,
+      "pages": 8,
+      "sections": 24,
+      "lines": 96,
+      "cited_lines": 96,
+      "distinct_claims": 96
+    },
+    {
+      "scenario": "cancel and resume",
+      "claimsSubmitted": 54,
+      "completedSectionsReused": 3,
+      "pages": 6,
+      "sections": 18,
+      "lines": 54,
+      "cited_lines": 54,
+      "distinct_claims": 54,
+      "automaticContinuationStayedCancelled": true
+    },
+    {
+      "scenario": "Synthetic concurrent-a",
+      "claimsSubmitted": 54,
+      "pages": 6,
+      "sections": 18,
+      "lines": 54,
+      "cited_lines": 54,
+      "distinct_claims": 54,
+      "sharedRequestPeak": 3
+    },
+    {
+      "scenario": "Synthetic concurrent-b",
+      "claimsSubmitted": 54,
+      "pages": 6,
+      "sections": 18,
+      "lines": 54,
+      "cited_lines": 54,
+      "distinct_claims": 54,
+      "sharedRequestPeak": 3
+    }
+  ]
+}

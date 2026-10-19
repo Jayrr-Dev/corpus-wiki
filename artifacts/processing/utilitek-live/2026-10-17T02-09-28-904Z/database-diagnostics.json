@@ -1,0 +1,25 @@
+{
+  "source": "Supabase Management API project logs for the configured app project",
+  "windowStart": "2026-10-17T02:09:00Z",
+  "windowEnd": "2026-10-17T02:14:00Z",
+  "databaseCrashes": [
+    {
+      "timestamp": "2026-10-17T02:10:23.310Z",
+      "message": "Server process terminated by signal 11: Segmentation fault",
+      "statementType": "START_REPLICATION SLOT [redacted] LOGICAL"
+    },
+    {
+      "timestamp": "2026-10-17T02:12:16.133Z",
+      "message": "Server process terminated by signal 11: Segmentation fault",
+      "statementType": "START_REPLICATION SLOT [redacted] LOGICAL"
+    }
+  ],
+  "observedRecovery": [
+    "All server processes were terminated and reinitialized after each crash",
+    "Database logs recorded SQLSTATE 57P03 while connections were unavailable",
+    "App requests observed empty HTTP 400 errors and PGRST002 schema-cache errors",
+    "Completed upload checkpoints remained saved"
+  ],
+  "diagnosis": "The crashing processes were logical replication senders. The underlying database defect has not been identified.",
+  "appChange": "Bounded retries for empty error replies on token-fenced workflow operations; ordinary writes are not replayed"
+}

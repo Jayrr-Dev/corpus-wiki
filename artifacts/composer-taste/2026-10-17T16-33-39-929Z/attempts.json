@@ -1,0 +1,286 @@
+[
+  {
+    "visual": {
+      "accepted": false,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "Earthworks are low and partly read as uneven pasture at thumbnail size; a raking-light or aerial view would show building platforms more clearly.",
+            "Consider naming the county (North Yorkshire) in the caption for context."
+          ],
+          "reason": "The photo shows grassy humps and hollows with no buildings, matching the caption and the overview's point about earthworks. It differs from the Wharram Percy figure, though the low relief is only moderately clear when small.",
+          "id": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+          "after": "P1",
+          "total": 17,
+          "accepted": true
+        },
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 3,
+          "problems": [],
+          "improvements": [
+            "The pond shown holds water, so say 'the fishpond' rather than implying a dry former pond, or note that it was later re-flooded.",
+            "The church tower is small at thumbnail size; a tighter crop on the pond and church would help."
+          ],
+          "reason": "The authentic photo shows both features named in the paragraph, the pond and the church, in their valley setting. It differs from the East Lilling earthworks figure. The church is small but recognizable in the thumbnail.",
+          "id": "6a3973af-8801-400e-82a6-245550023f0c",
+          "after": "P6",
+          "total": 16,
+          "accepted": false
+        }
+      ],
+      "uninspected": [],
+      "problems": [
+        "P6: The authentic photo shows both features named in the paragraph, the pond and the church, in their valley setting. It differs from the East Lilling earthworks figure. The church is small but recognizable in the thumbnail. "
+      ]
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P1",
+          "evidence": [
+            "P1"
+          ],
+          "learningGoal": "Shows what a deserted medieval village looks like today: grassy earthworks with no standing buildings.",
+          "caption": "Grassy earthworks are all that remain of the medieval village of East Lilling, a typical deserted village site.",
+          "alt": "A grassy field with uneven humps and hollows, the earthwork remains of the abandoned village of East Lilling.",
+          "svg": "",
+          "assetId": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+          "assetType": "other"
+        },
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows the two Wharram Percy features the text names, the former fishpond and the ruined church, together in their valley setting.",
+          "caption": "Wharram Percy, North Yorkshire, in 1993, seen looking north from the old fishpond towards the ruined church.",
+          "alt": "A grassy valley seen from the site of the old fishpond at Wharram Percy, with the ruined church in the distance.",
+          "svg": "",
+          "assetId": "6a3973af-8801-400e-82a6-245550023f0c",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I added two photos, one for Overview and one for Examples. Reasons for desertion has no image because none of the ridge-and-furrow photos showed the pattern clearly enough to accept. A drawing would add little to that text."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [
+        "The Wharram Percy caption says \"ruined church\", but the asset description only says \"Looking north from old Fish Pond\". The church comes from the visual assessment, not the source metadata."
+      ],
+      "fixes": [
+        "For Wharram Percy, write \"seen looking north from the old fishpond\" and mention the church only as visible in the photo, as the visual assessment confirmed.",
+        "Add North Yorkshire to the East Lilling caption for location context.",
+        "Mention in the Wharram Percy alt text that the pond holds water, to match what the photo shows.",
+        "Consider a clearer ridge-and-furrow or aerial earthwork photo for Reasons for desertion if one becomes available."
+      ]
+    },
+    "total": 16,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 64400,
+    "tokensOut": 1253
+  },
+  {
+    "visual": {
+      "accepted": true,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "The humps are low-contrast in the thumbnail; consider wording the caption as 'low grassy humps and hollows' so readers know what to look for.",
+            "Metadata says only North Yorkshire in the caption context; confirm East Lilling's location is verified before publishing."
+          ],
+          "reason": "The image shows real earthworks at East Lilling with no standing buildings, matching the overview's 'no trace apart from earthworks'. The humps are subtle but visible at thumbnail size, and the image does not duplicate the Wharram Percy figure.",
+          "id": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+          "after": "P1",
+          "total": 17,
+          "accepted": true
+        },
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "The church in this 1993 photo appears to have a roof. Describe it as the church rather than \"ruined\" in the caption and alt text, or note that it was then partly roofed.",
+            "Mention the pond in the foreground of the caption so readers can find both features."
+          ],
+          "reason": "Verified metadata and the image show Wharram Percy from the old fishpond, with the pond and church both visible. They match the paragraph and differ from the East Lilling earthworks figure. The church's ruined state is hard to confirm at thumbnail size.",
+          "id": "6a3973af-8801-400e-82a6-245550023f0c",
+          "after": "P6",
+          "total": 17,
+          "accepted": true
+        }
+      ],
+      "uninspected": [],
+      "problems": []
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P1",
+          "evidence": [
+            "P1"
+          ],
+          "learningGoal": "Shows what a deserted medieval village looks like today: grassy earthworks with no standing buildings.",
+          "caption": "Grassy earthworks are all that remain of the medieval village of East Lilling, North Yorkshire, a typical deserted village site.",
+          "alt": "A grassy field with uneven humps and hollows, the earthwork remains of the abandoned village of East Lilling in North Yorkshire.",
+          "svg": "",
+          "assetId": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+          "assetType": "other"
+        },
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows two Wharram Percy features named in the text, the former fishpond and the ruined church, together in their valley setting.",
+          "caption": "Wharram Percy, North Yorkshire, in 1993, seen looking north from the old fishpond; the ruined church is visible in the distance.",
+          "alt": "A grassy valley at Wharram Percy seen from the old fishpond, which holds water, with the small ruined church visible in the distance.",
+          "svg": "",
+          "assetId": "6a3973af-8801-400e-82a6-245550023f0c",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I kept both photos and fixed their captions and alt text as requested. Reasons for desertion still has no image. Earlier ridge-and-furrow photos did not show the pattern clearly, and a drawing would add little to the text."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "For the Wharram Percy photo, the visual check says the church appears roofed in 1993. Call it 'the church' rather than 'ruined church' in the caption and alt text, or note it was partly roofed.",
+        "The East Lilling asset description does not state North Yorkshire. Confirm the location before publishing, or drop the county from the caption and alt text.",
+        "Describe the East Lilling earthworks as 'low grassy humps and hollows' in the caption so readers know what to look for.",
+        "Name the pond in the foreground of the Wharram Percy caption so readers can find both features."
+      ]
+    },
+    "total": 16,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 14443,
+    "tokensOut": 735
+  },
+  {
+    "visual": {
+      "accepted": false,
+      "grades": [
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 4,
+          "problems": [],
+          "improvements": [
+            "The earthworks are subtle at thumbnail size. A low-angle, raking-light shot would make the humps clearer.",
+            "Consider naming the location, North Yorkshire, in the caption."
+          ],
+          "reason": "The grassy field shows visible low humps and hollows matching the earthworks described in the Overview, with verified metadata naming East Lilling. It does not duplicate the Wharram Percy figure, though the relief is modest at small size.",
+          "id": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+          "after": "P1",
+          "total": 17,
+          "accepted": true
+        },
+        {
+          "subjectMatch": 4,
+          "learningValue": 3,
+          "composition": 3,
+          "thumbnailClarity": 3,
+          "contextualFit": 3,
+          "problems": [],
+          "improvements": [
+            "The pond in the image holds water, so it may be a later restored or re-dammed pond. Consider wording such as 'the pond on the site of the medieval fishpond'.",
+            "The church looks partly roofed in 1993. Avoid implying it is a roofless ruin, and consider noting that the tower survives.",
+            "The caption's 'in the foreground' is loose, because the pond sits in the middle ground behind trees. Consider 'from beside the old fishpond'."
+          ],
+          "reason": "Verified metadata and the pixels agree: the photo shows Wharram Percy's church and pond in their valley, matching the paragraph. It complements the East Lilling earthworks figure, and both features stay recognizable at thumbnail size.",
+          "id": "6a3973af-8801-400e-82a6-245550023f0c",
+          "after": "P6",
+          "total": 16,
+          "accepted": false
+        }
+      ],
+      "uninspected": [],
+      "problems": [
+        "P6: Verified metadata and the pixels agree: the photo shows Wharram Percy's church and pond in their valley, matching the paragraph. It complements the East Lilling earthworks figure, and both features stay recognizable at thumbnail size. "
+      ]
+    },
+    "composition": {
+      "figures": [
+        {
+          "after": "P1",
+          "evidence": [
+            "P1"
+          ],
+          "learningGoal": "Shows what a deserted medieval village looks like today: grassy earthworks with no standing buildings.",
+          "caption": "Low grassy humps and hollows are all that remain of the medieval village of East Lilling, a typical deserted village site.",
+          "alt": "A grassy field with low humps and hollows, the earthwork remains of the abandoned medieval village of East Lilling.",
+          "svg": "",
+          "assetId": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+          "assetType": "other"
+        },
+        {
+          "after": "P6",
+          "evidence": [
+            "P6"
+          ],
+          "learningGoal": "Shows two Wharram Percy features named in the text, the former fishpond and the church, together in their valley setting.",
+          "caption": "Wharram Percy, North Yorkshire, in 1993, looking north from the old fishpond in the foreground towards the church in the distance.",
+          "alt": "A grassy valley at Wharram Percy, with the old fishpond in the foreground and the small church visible in the distance.",
+          "svg": "",
+          "assetId": "6a3973af-8801-400e-82a6-245550023f0c",
+          "assetType": "other"
+        }
+      ],
+      "omitted": "I kept both photos and made the requested fixes. The East Lilling caption no longer gives a county because the asset does not confirm it. The Wharram Percy caption and alt text now say 'church', not 'ruined church'. Reasons for desertion still has no image: earlier ridge-and-furrow photos did not show the pattern clearly, and a drawing would add little to the text."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [
+        "Wharram Percy caption and alt text place the fishpond 'in the foreground'. The visual assessment says the pond sits in the middle ground behind trees, so the photo is described inaccurately."
+      ],
+      "fixes": [
+        "Reword the Wharram Percy caption and alt text to say 'looking north from beside the old fishpond towards the church', matching the asset description.",
+        "Consider 'the pond on the site of the former fishpond', since the water may come from a later restoration.",
+        "The East Lilling earthworks are subtle at small size. A raking-light photo could make the humps clearer if one is available."
+      ]
+    },
+    "total": 16,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 14505,
+    "tokensOut": 757
+  }
+]

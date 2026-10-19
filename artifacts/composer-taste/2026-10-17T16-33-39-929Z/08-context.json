@@ -1,0 +1,32 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 4,
+    "problems": [],
+    "improvements": [
+      "The earthworks are subtle at thumbnail size. A low-angle, raking-light shot would make the humps clearer.",
+      "Consider naming the location, North Yorkshire, in the caption."
+    ],
+    "reason": "The grassy field shows visible low humps and hollows matching the earthworks described in the Overview, with verified metadata naming East Lilling. It does not duplicate the Wharram Percy figure, though the relief is modest at small size.",
+    "id": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+    "after": "P1",
+    "total": 17,
+    "accepted": true
+  },
+  "figure": {
+    "after": "P1",
+    "evidence": [
+      "P1"
+    ],
+    "learningGoal": "Shows what a deserted medieval village looks like today: grassy earthworks with no standing buildings.",
+    "caption": "Low grassy humps and hollows are all that remain of the medieval village of East Lilling, a typical deserted village site.",
+    "alt": "A grassy field with low humps and hollows, the earthwork remains of the abandoned medieval village of East Lilling.",
+    "svg": "",
+    "assetId": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-opus-5-5"
+}

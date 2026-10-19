@@ -1,0 +1,1328 @@
+▲ Next.js 16.4.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.1.112:3000
+- Environments: .env.local
+✓ Ready in 3.9s
+✓ Running next.config.ts took 292ms
+○ Compiling instrumentation Node.js ...
+- Experiments (use with caution):
+  · serverActions
+
+○ Compiling /glossary ...
+ GET / 200 in 3.5s (next.js: 2.8s, proxy.ts: 537ms, application-code: 184ms)
+ GET /units 200 in 5.9s (next.js: 4.7s, proxy.ts: 897ms, application-code: 276ms)
+ GET /glossary 200 in 6.7s (next.js: 4.4s, proxy.ts: 502ms, application-code: 1886ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 7.2s (next.js: 6.1s, proxy.ts: 507ms, application-code: 582ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 1077ms (next.js: 310ms, proxy.ts: 157ms, application-code: 610ms)
+ POST /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 1009ms (next.js: 32ms, proxy.ts: 143ms, application-code: 835ms)
+  └─ ƒ refreshPendingStaleSections() in 812ms lib/server-actions/pages.ts
+ POST /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 875ms (next.js: 16ms, proxy.ts: 166ms, application-code: 692ms)
+  └─ ƒ refreshPendingStaleSections() in 678ms lib/server-actions/pages.ts
+ GET /api/sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886/file 302 in 2.7s (next.js: 1358ms, proxy.ts: 131ms, application-code: 1260ms)
+ GET /api/sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886/file 302 in 1017ms (next.js: 27ms, proxy.ts: 593ms, application-code: 397ms)
+ POST /glossary 200 in 98s (next.js: 13ms, proxy.ts: 14ms, application-code: 98s)
+  └─ ƒ refreshPendingStaleSections() in 97282ms lib/server-actions/pages.ts
+ POST /glossary 200 in 1488ms (next.js: 1147ms, proxy.ts: 15ms, application-code: 326ms)
+  └─ ƒ requestGlossaryGeneration(false) in 303ms lib/server-actions/glossary.ts
+✓ Compiled in 1715ms
+ GET /glossary 200 in 999ms (next.js: 351ms, proxy.ts: 33ms, application-code: 615ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 1029ms (next.js: 343ms, proxy.ts: 258ms, application-code: 428ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 489ms (next.js: 66ms, proxy.ts: 289ms, application-code: 134ms)
+✓ Compiled in 1071ms
+ GET /glossary 200 in 519ms (next.js: 397ms, proxy.ts: 17ms, application-code: 105ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 726ms (next.js: 324ms, proxy.ts: 292ms, application-code: 110ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 227ms (next.js: 12ms, proxy.ts: 133ms, application-code: 82ms)
+✓ Compiled in 1937ms
+ GET /glossary 200 in 821ms (next.js: 488ms, proxy.ts: 269ms, application-code: 65ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 701ms (next.js: 76ms, proxy.ts: 516ms, application-code: 109ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 505ms (next.js: 11ms, proxy.ts: 391ms, application-code: 103ms)
+✓ Compiled in 1107ms
+ GET /glossary 200 in 284ms (next.js: 135ms, proxy.ts: 12ms, application-code: 137ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 406ms (next.js: 52ms, proxy.ts: 265ms, application-code: 89ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 246ms (next.js: 11ms, proxy.ts: 138ms, application-code: 98ms)
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'snapshot',
+  durationMs: 421
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'relatedKnowledge',
+  durationMs: 4044
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'packing',
+  durationMs: 52
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'editorial',
+  durationMs: 7106
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'fragments',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'validation',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'factCheck',
+  durationMs: 4542
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'total',
+  durationMs: 24320
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 26124
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T21:59:06.674Z","finishedAt":"2026-10-18T21:59:37.729Z","durationMs":31055,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":218,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":27,"durationMs":4178,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":287,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1356,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":992,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":732,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":181,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":6,"durationMs":1116,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":505,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-scaffold":{"count":15,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_write":{"count":4,"durationMs":620,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":772,"failures":0,"tokensIn":0,"tokensOut":0},"db.list_page_sections":{"count":1,"durationMs":167,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":14,"durationMs":3489,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_snapshot":{"count":1,"durationMs":421,"failures":0,"tokensIn":0,"tokensOut":0},"queue.embedding":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.embeddings":{"count":1,"durationMs":1475,"failures":0,"tokensIn":1246,"tokensOut":0},"db.log_ai_call":{"count":5,"durationMs":1200,"failures":0,"tokensIn":0,"tokensOut":0},"db.similar_units":{"count":1,"durationMs":1996,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_related":{"count":1,"durationMs":391,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":1,"durationMs":153,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":4,"durationMs":1,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":4,"durationMs":0,"failures":0,"tokensIn":13456,"tokensOut":0},"ai.cache.write":{"count":4,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.page_editorial_review":{"count":1,"durationMs":6376,"failures":0,"tokensIn":65098,"tokensOut":664},"ai.line_fact_check":{"count":1,"durationMs":2422,"failures":0,"tokensIn":9341,"tokensOut":253},"ai.line_fact_confirm":{"count":2,"durationMs":3570,"failures":0,"tokensIn":3851,"tokensOut":171},"step.editorial-review":{"count":1,"durationMs":24321,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":2,"durationMs":311,"failures":0,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":25134,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":26125,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":149,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":172,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'snapshot',
+  durationMs: 320
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'relatedKnowledge',
+  durationMs: 3428
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'packing',
+  durationMs: 46
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'editorial',
+  durationMs: 6070
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'fragments',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'validation',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'factCheck',
+  durationMs: 4759
+}
+Page review timing {
+  pageId: '168ce95b-a553-4ed4-ad70-22cd3bcbc13a',
+  stage: 'total',
+  durationMs: 20860
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 23158
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T22:00:21.869Z","finishedAt":"2026-10-18T22:00:50.892Z","durationMs":29023,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":370,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":27,"durationMs":3713,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":354,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1268,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":969,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1847,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":139,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":5,"durationMs":742,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":499,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-scaffold":{"count":15,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_write":{"count":4,"durationMs":621,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":447,"failures":0,"tokensIn":0,"tokensOut":0},"db.list_page_sections":{"count":1,"durationMs":220,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":14,"durationMs":2374,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_snapshot":{"count":1,"durationMs":320,"failures":0,"tokensIn":0,"tokensOut":0},"queue.embedding":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.embeddings":{"count":1,"durationMs":1212,"failures":0,"tokensIn":1246,"tokensOut":0},"db.log_ai_call":{"count":4,"durationMs":658,"failures":0,"tokensIn":0,"tokensOut":0},"db.similar_units":{"count":1,"durationMs":1448,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_related":{"count":1,"durationMs":626,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":1,"durationMs":144,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":3,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":3,"durationMs":0,"failures":0,"tokensIn":12089,"tokensOut":0},"ai.cache.write":{"count":3,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.page_editorial_review":{"count":1,"durationMs":5775,"failures":0,"tokensIn":65098,"tokensOut":506},"ai.line_fact_check":{"count":1,"durationMs":2537,"failures":0,"tokensIn":9052,"tokensOut":156},"ai.line_fact_confirm":{"count":1,"durationMs":1853,"failures":0,"tokensIn":1828,"tokensOut":73},"step.editorial-review":{"count":1,"durationMs":20860,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":2,"durationMs":361,"failures":0,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":21767,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":23159,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":243,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":587,"failures":0,"tokensIn":0,"tokensOut":0}}}
+ GET /login 200 in 1476ms (next.js: 1299ms, proxy.ts: 6ms, application-code: 172ms)
+✓ Compiled in 1468ms
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 987ms (next.js: 440ms, proxy.ts: 474ms, application-code: 73ms)
+ GET /glossary 200 in 1216ms (next.js: 522ms, proxy.ts: 292ms, application-code: 402ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 244ms (next.js: 8ms, proxy.ts: 140ms, application-code: 97ms)
+ GET /login?next=%2Fgraph 200 in 111ms (next.js: 59ms, proxy.ts: 7ms, application-code: 45ms)
+✓ Compiled in 444ms
+ GET /login?next=%2Fgraph 200 in 120ms (next.js: 15ms, proxy.ts: 13ms, application-code: 92ms)
+ GET /glossary 200 in 131ms (next.js: 53ms, proxy.ts: 16ms, application-code: 62ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 246ms (next.js: 47ms, proxy.ts: 138ms, application-code: 61ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 215ms (next.js: 6ms, proxy.ts: 156ms, application-code: 54ms)
+✓ Compiled in 455ms
+ GET /login?next=%2Fgraph 200 in 79ms (next.js: 36ms, proxy.ts: 16ms, application-code: 26ms)
+ GET /glossary 200 in 433ms (next.js: 37ms, proxy.ts: 339ms, application-code: 57ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 617ms (next.js: 48ms, proxy.ts: 475ms, application-code: 94ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 204ms (next.js: 6ms, proxy.ts: 137ms, application-code: 61ms)
+✓ Compiled in 495ms
+ GET /login?next=%2Fgraph 200 in 149ms (next.js: 93ms, proxy.ts: 12ms, application-code: 44ms)
+ GET /glossary 200 in 156ms (next.js: 56ms, proxy.ts: 14ms, application-code: 86ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 390ms (next.js: 39ms, proxy.ts: 291ms, application-code: 61ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 209ms (next.js: 6ms, proxy.ts: 136ms, application-code: 68ms)
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'snapshot',
+  durationMs: 403
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'relatedKnowledge',
+  durationMs: 7015
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'packing',
+  durationMs: 31
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'editorial',
+  durationMs: 12296
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'fragments',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'validation',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'factCheck',
+  durationMs: 1625
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'save',
+  durationMs: 15630
+}
+Page review timing {
+  pageId: '864a3310-ae78-444f-b51f-77a688ab2453',
+  stage: 'total',
+  durationMs: 332314
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'snapshot',
+  durationMs: 205
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'relatedKnowledge',
+  durationMs: 3191
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'packing',
+  durationMs: 20
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'editorial',
+  durationMs: 4596
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'fragments',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'validation',
+  durationMs: 0
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'factCheck',
+  durationMs: 1443
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'save',
+  durationMs: 389
+}
+Page review timing {
+  pageId: '9d58bc03-8394-443b-a234-7d383f621080',
+  stage: 'total',
+  durationMs: 320717
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'total',
+  durationMs: 122535
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 779889
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T22:48:53.413Z","finishedAt":"2026-10-18T23:01:59.900Z","durationMs":786455,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":312,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":77,"durationMs":11762,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":276,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":43,"durationMs":6050,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1254,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1755,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":156,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":156,"durationMs":26882,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":3,"durationMs":2157,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-scaffold":{"count":9,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_write":{"count":53,"durationMs":28608,"failures":0,"tokensIn":0,"tokensOut":0},"db.claim_section_build":{"count":17,"durationMs":2800,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":108,"durationMs":25961,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_page_context":{"count":17,"durationMs":2993,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_article_structure":{"count":17,"durationMs":9014,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":157,"durationMs":4,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":157,"durationMs":0,"failures":0,"tokensIn":428121,"tokensOut":0},"ai.cache.write":{"count":157,"durationMs":0,"failures":0,"tokensIn":99646,"tokensOut":0},"ai.independent_section_editorial_selection":{"count":20,"durationMs":52985,"failures":0,"tokensIn":90195,"tokensOut":938},"db.log_ai_call":{"count":161,"durationMs":25522,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":35,"durationMs":5612,"failures":0,"tokensIn":0,"tokensOut":0},"ai.section_lines":{"count":38,"durationMs":245321,"failures":0,"tokensIn":393506,"tokensOut":48641},"ai.line_fact_check":{"count":38,"durationMs":64700,"failures":0,"tokensIn":192918,"tokensOut":4858},"ai.independent_section_editorial_review":{"count":34,"durationMs":58741,"failures":0,"tokensIn":182969,"tokensOut":3420},"ai.line_fact_confirm":{"count":5,"durationMs":9534,"failures":0,"tokensIn":9127,"tokensOut":482},"db.section_build_write":{"count":58,"durationMs":16248,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":36,"durationMs":639203,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":58,"durationMs":9188,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":4,"durationMs":1502,"failures":0,"tokensIn":0,"tokensOut":0},"db.list_page_sections":{"count":2,"durationMs":270,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_snapshot":{"count":2,"durationMs":608,"failures":0,"tokensIn":0,"tokensOut":0},"queue.embedding":{"count":4,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.embeddings":{"count":4,"durationMs":2482,"failures":0,"tokensIn":2401,"tokensOut":0},"db.similar_units":{"count":4,"durationMs":10560,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_related":{"count":2,"durationMs":1758,"failures":0,"tokensIn":0,"tokensOut":0},"ai.page_editorial_review":{"count":2,"durationMs":16163,"failures":0,"tokensIn":104779,"tokensOut":520},"db.retry.upload_workflow_write":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":3,"durationMs":775567,"failures":1,"tokensIn":0,"tokensOut":0},"db.living_page_query_units":{"count":34,"durationMs":9623,"failures":0,"tokensIn":0,"tokensOut":0},"db.article_knowledge_candidates":{"count":2,"durationMs":2864,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_update_discovery":{"count":4,"durationMs":26131,"failures":0,"tokensIn":44600,"tokensOut":2313},"step.article-coverage":{"count":2,"durationMs":46695,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":34,"durationMs":4774,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline":{"count":8,"durationMs":57419,"failures":0,"tokensIn":251124,"tokensOut":6032},"step.outline-v1":{"count":16,"durationMs":128956,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline_review":{"count":8,"durationMs":68504,"failures":0,"tokensIn":157663,"tokensOut":7754},"stage.editorial-review":{"count":1,"durationMs":778951,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":779890,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":192,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":735,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'total',
+  durationMs: 10704
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 12422
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:02:39.259Z","finishedAt":"2026-10-18T23:02:57.768Z","durationMs":18509,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":386,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3619,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":295,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1239,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1596,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":955,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":147,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":447,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":597,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":23,"durationMs":4317,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":23,"durationMs":2965,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":434,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":10168,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":455,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":10706,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":11613,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":12422,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":160,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":626,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'total',
+  durationMs: 10810
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 12540
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:03:38.857Z","finishedAt":"2026-10-18T23:03:55.831Z","durationMs":16973,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":334,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3787,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":306,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1330,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":264,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":846,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":121,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":613,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":450,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":23,"durationMs":4327,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":23,"durationMs":3062,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":534,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":10231,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":391,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":10811,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":11679,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":12540,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":154,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":167,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'total',
+  durationMs: 11236
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 13531
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:05:09.427Z","finishedAt":"2026-10-18T23:05:29.258Z","durationMs":19829,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":399,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3516,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":306,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1185,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1619,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1396,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":490,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":147,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":902,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":23,"durationMs":4604,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":23,"durationMs":3291,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":617,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":10688,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":419,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":11237,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":12421,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":13531,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":151,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":571,"failures":0,"tokensIn":0,"tokensOut":0}}}
+✓ Compiled in 646ms
+ GET /login?next=%2Fgraph 200 in 77ms (next.js: 35ms, proxy.ts: 14ms, application-code: 27ms)
+ GET /glossary 200 in 386ms (next.js: 36ms, proxy.ts: 294ms, application-code: 56ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 701ms (next.js: 51ms, proxy.ts: 438ms, application-code: 213ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 215ms (next.js: 16ms, proxy.ts: 147ms, application-code: 52ms)
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"knowledge","startedAt":"2026-10-18T23:07:49.100Z","finishedAt":"2026-10-18T23:07:53.280Z","durationMs":4180,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":370,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":7,"durationMs":1078,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":320,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":6,"durationMs":752,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":667,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":182,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":603,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":206,"failures":0,"tokensIn":0,"tokensOut":0}}}
+ POST /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 5.2s (next.js: 15ms, proxy.ts: 186ms, application-code: 5.0s)
+  └─ ƒ retryUpload("811105ea-fcfe-4ac4-9c7d-dc589b1501e4") in 4945ms lib/server-actions/upload.ts
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'snapshot',
+  durationMs: 303
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'relatedKnowledge',
+  durationMs: 3290
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'packing',
+  durationMs: 76
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'editorial',
+  durationMs: 8282
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'fragments',
+  durationMs: 0
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'validation',
+  durationMs: 0
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'factCheck',
+  durationMs: 1561
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'save',
+  durationMs: 1308
+}
+Page review timing {
+  pageId: 'a52342e6-2b6b-442f-9e15-a91cdc3b24de',
+  stage: 'total',
+  durationMs: 685143
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'snapshot',
+  durationMs: 394
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'relatedKnowledge',
+  durationMs: 3302
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'packing',
+  durationMs: 60
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'editorial',
+  durationMs: 8137
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'fragments',
+  durationMs: 0
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'validation',
+  durationMs: 0
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'factCheck',
+  durationMs: 1636
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'save',
+  durationMs: 1273
+}
+Page review timing {
+  pageId: 'bcfad1d9-f25d-47db-bb63-da4af4d8bafe',
+  stage: 'total',
+  durationMs: 663216
+}
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 220631
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 1573542
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:08:00.639Z","finishedAt":"2026-10-18T23:34:26.621Z","durationMs":1585936,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":341,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":130,"durationMs":24107,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":1593,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":71,"durationMs":12868,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":316,"durationMs":61426,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":398,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1023,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":4,"durationMs":682,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":3,"durationMs":1949,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":218,"durationMs":63044,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":74,"durationMs":10466,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":5,"durationMs":2322,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":72,"durationMs":12079,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":296,"durationMs":13,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":296,"durationMs":0,"failures":0,"tokensIn":792073,"tokensOut":0},"ai.cache.write":{"count":296,"durationMs":0,"failures":0,"tokensIn":209618,"tokensOut":0},"ai.article_outline":{"count":15,"durationMs":106298,"failures":0,"tokensIn":637019,"tokensOut":15910},"db.log_ai_call":{"count":300,"durationMs":54526,"failures":0,"tokensIn":0,"tokensOut":0},"step.outline-v1":{"count":29,"durationMs":225211,"failures":0,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":120,"durationMs":18402,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline_review":{"count":14,"durationMs":113597,"failures":0,"tokensIn":345148,"tokensOut":13553},"step.article-scaffold":{"count":85,"durationMs":1328193,"failures":1,"tokensIn":0,"tokensOut":0},"db.upload_workflow_write":{"count":120,"durationMs":33858,"failures":0,"tokensIn":0,"tokensOut":0},"db.claim_section_build":{"count":31,"durationMs":4952,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_page_context":{"count":31,"durationMs":4407,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_article_structure":{"count":31,"durationMs":19266,"failures":0,"tokensIn":0,"tokensOut":0},"ai.independent_section_editorial_selection":{"count":33,"durationMs":69818,"failures":0,"tokensIn":181013,"tokensOut":1065},"ai.section_lines":{"count":71,"durationMs":555600,"failures":0,"tokensIn":818974,"tokensOut":116538},"ai.line_fact_check":{"count":70,"durationMs":135705,"failures":0,"tokensIn":393285,"tokensOut":12684},"db.section_build_write":{"count":118,"durationMs":42469,"failures":0,"tokensIn":0,"tokensOut":0},"ai.line_fact_confirm":{"count":12,"durationMs":23034,"failures":0,"tokensIn":22107,"tokensOut":1023},"ai.independent_section_editorial_review":{"count":64,"durationMs":127252,"failures":0,"tokensIn":413674,"tokensOut":8819},"db.list_page_sections":{"count":2,"durationMs":254,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_snapshot":{"count":2,"durationMs":696,"failures":0,"tokensIn":0,"tokensOut":0},"queue.embedding":{"count":4,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.embeddings":{"count":4,"durationMs":3958,"failures":0,"tokensIn":2538,"tokensOut":0},"db.similar_units":{"count":4,"durationMs":5368,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_review_related":{"count":2,"durationMs":841,"failures":0,"tokensIn":0,"tokensOut":0},"ai.page_editorial_review":{"count":2,"durationMs":15922,"failures":0,"tokensIn":184857,"tokensOut":1396},"step.editorial-review":{"count":3,"durationMs":1568991,"failures":1,"tokensIn":0,"tokensOut":0},"db.living_page_query_units":{"count":51,"durationMs":7635,"failures":0,"tokensIn":0,"tokensOut":0},"db.article_knowledge_candidates":{"count":2,"durationMs":937,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_update_discovery":{"count":15,"durationMs":112007,"failures":0,"tokensIn":188886,"tokensOut":20034},"step.article-coverage":{"count":2,"durationMs":129437,"failures":0,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":1572321,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":1573542,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":173,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":256,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 115917
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 118689
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:34:56.599Z","finishedAt":"2026-10-18T23:37:03.398Z","durationMs":126796,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":772,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":4542,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":461,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1526,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1990,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":24,"durationMs":3824,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1393,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":147,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":1238,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":3621,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":2430,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":360,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":4,"durationMs":595,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":12,"durationMs":0,"failures":0,"tokensIn":48903,"tokensOut":0},"ai.cache.write":{"count":12,"durationMs":0,"failures":0,"tokensIn":4311,"tokensOut":0},"ai.article_outline":{"count":6,"durationMs":49070,"failures":0,"tokensIn":254001,"tokensOut":7390},"db.log_ai_call":{"count":12,"durationMs":2154,"failures":0,"tokensIn":0,"tokensOut":0},"step.outline-v1":{"count":12,"durationMs":104003,"failures":0,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":15,"durationMs":2792,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline_review":{"count":6,"durationMs":52181,"failures":0,"tokensIn":162040,"tokensOut":6817},"step.article-scaffold":{"count":1,"durationMs":115374,"failures":1,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":115917,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":117421,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":118690,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":185,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":640,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 9943
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 11536
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:37:39.785Z","finishedAt":"2026-10-18T23:37:56.379Z","durationMs":16595,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":375,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3510,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":287,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1138,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1268,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":797,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":153,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":544,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":443,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":4141,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":2575,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":379,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":9417,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":402,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":9946,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":10764,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":11536,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":190,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":142,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 11045
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 12958
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:38:39.836Z","finishedAt":"2026-10-18T23:38:58.095Z","durationMs":18259,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":368,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3365,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":310,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1160,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1268,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":946,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":151,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":450,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":732,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":4824,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":2828,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":633,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":10479,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":457,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":11046,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":12056,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":12959,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":171,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":274,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 9527
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 11589
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:40:09.878Z","finishedAt":"2026-10-18T23:40:26.764Z","durationMs":16886,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":403,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3396,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":373,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1188,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1169,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":963,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":148,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":474,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":778,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":3924,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":2528,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":376,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":8970,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":423,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":9528,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":10599,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":11590,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":157,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":304,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"knowledge","startedAt":"2026-10-18T23:42:02.755Z","finishedAt":"2026-10-18T23:42:10.034Z","durationMs":7279,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":417,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":7,"durationMs":1294,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":345,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":6,"durationMs":3145,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":940,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":1,"durationMs":372,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":401,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":582,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":154,"failures":0,"tokensIn":0,"tokensOut":0}}}
+ POST /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 8.6s (next.js: 94ms, proxy.ts: 433ms, application-code: 8.1s)
+  └─ ƒ retryUpload("811105ea-fcfe-4ac4-9c7d-dc589b1501e4") in 8079ms lib/server-actions/upload.ts
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 110666
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 113636
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:42:11.783Z","finishedAt":"2026-10-18T23:44:29.298Z","durationMs":137513,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":358,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":37,"durationMs":15405,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":1717,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":8304,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":26,"durationMs":10043,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":346,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1467,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":2,"durationMs":412,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":1600,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":5716,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":4568,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":400,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":3,"durationMs":422,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":12,"durationMs":1,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":12,"durationMs":0,"failures":0,"tokensIn":44515,"tokensOut":0},"ai.cache.write":{"count":12,"durationMs":0,"failures":0,"tokensIn":8903,"tokensOut":0},"ai.article_outline":{"count":6,"durationMs":41196,"failures":0,"tokensIn":337241,"tokensOut":6620},"db.log_ai_call":{"count":12,"durationMs":2143,"failures":0,"tokensIn":0,"tokensOut":0},"step.outline-v1":{"count":12,"durationMs":91293,"failures":0,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":15,"durationMs":2325,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline_review":{"count":6,"durationMs":47523,"failures":0,"tokensIn":182128,"tokensOut":6155},"step.article-scaffold":{"count":1,"durationMs":109953,"failures":1,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":110667,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":112714,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":113637,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":187,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":633,"failures":0,"tokensIn":0,"tokensOut":0}}}
+ GET / 200 in 603ms (next.js: 431ms, proxy.ts: 133ms, application-code: 39ms)
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 12788
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 16152
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:44:54.925Z","finishedAt":"2026-10-18T23:45:16.821Z","durationMs":21896,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":437,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":4310,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":321,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":2259,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":268,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":4,"durationMs":1213,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1305,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":182,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":1380,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":5417,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":4068,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":428,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":12123,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":405,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":12789,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":14536,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":16152,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":177,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":208,"failures":0,"tokensIn":0,"tokensOut":0}}}
+ POST / 200 in 2.8s (next.js: 7ms, proxy.ts: 138ms, application-code: 2.7s)
+  └─ ƒ readSpaceWelcome() in 2647ms lib/server-actions/spaceWelcome.ts
+ GET /p/enneagram-type-one-reformer 200 in 2.6s (next.js: 2.4s, proxy.ts: 137ms, application-code: 29ms)
+ POST /p/enneagram-type-one-reformer 200 in 369ms (next.js: 22ms, proxy.ts: 158ms, application-code: 189ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 175ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 1136ms (next.js: 8ms, proxy.ts: 162ms, application-code: 966ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 955ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 2.8s (next.js: 22ms, proxy.ts: 141ms, application-code: 2.6s)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 2637ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 944ms (next.js: 147ms, proxy.ts: 144ms, application-code: 653ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 642ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 826ms (next.js: 22ms, proxy.ts: 130ms, application-code: 674ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 665ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 942ms (next.js: 20ms, proxy.ts: 134ms, application-code: 788ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 778ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 328ms (next.js: 21ms, proxy.ts: 115ms, application-code: 193ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 184ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 779ms (next.js: 8ms, proxy.ts: 131ms, application-code: 641ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 632ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 825ms (next.js: 19ms, proxy.ts: 116ms, application-code: 690ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 681ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 284ms (next.js: 19ms, proxy.ts: 127ms, application-code: 137ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 130ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 780ms (next.js: 9ms, proxy.ts: 139ms, application-code: 632ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 623ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 748ms (next.js: 24ms, proxy.ts: 205ms, application-code: 519ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 511ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 929ms (next.js: 8ms, proxy.ts: 170ms, application-code: 751ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 742ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 796ms (next.js: 19ms, proxy.ts: 129ms, application-code: 648ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 638ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 314ms (next.js: 18ms, proxy.ts: 154ms, application-code: 142ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 135ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 769ms (next.js: 8ms, proxy.ts: 127ms, application-code: 634ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 626ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 1058ms (next.js: 48ms, proxy.ts: 120ms, application-code: 891ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 882ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 758ms (next.js: 19ms, proxy.ts: 116ms, application-code: 623ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 615ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 895ms (next.js: 20ms, proxy.ts: 146ms, application-code: 729ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 719ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 294ms (next.js: 22ms, proxy.ts: 136ms, application-code: 136ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 129ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 826ms (next.js: 8ms, proxy.ts: 139ms, application-code: 679ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 669ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 686ms (next.js: 18ms, proxy.ts: 130ms, application-code: 538ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 529ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 792ms (next.js: 10ms, proxy.ts: 137ms, application-code: 645ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 636ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 692ms (next.js: 19ms, proxy.ts: 138ms, application-code: 535ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 527ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 305ms (next.js: 18ms, proxy.ts: 129ms, application-code: 157ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 150ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 774ms (next.js: 8ms, proxy.ts: 136ms, application-code: 630ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 622ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 835ms (next.js: 19ms, proxy.ts: 143ms, application-code: 673ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 665ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 773ms (next.js: 18ms, proxy.ts: 137ms, application-code: 618ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 610ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 763ms (next.js: 11ms, proxy.ts: 131ms, application-code: 621ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 613ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 301ms (next.js: 19ms, proxy.ts: 118ms, application-code: 164ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 157ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 772ms (next.js: 9ms, proxy.ts: 133ms, application-code: 630ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 623ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 971ms (next.js: 21ms, proxy.ts: 125ms, application-code: 825ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 816ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 805ms (next.js: 24ms, proxy.ts: 130ms, application-code: 651ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 641ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 725ms (next.js: 19ms, proxy.ts: 149ms, application-code: 558ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 549ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 362ms (next.js: 62ms, proxy.ts: 137ms, application-code: 163ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 151ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 820ms (next.js: 10ms, proxy.ts: 131ms, application-code: 679ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 671ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 816ms (next.js: 18ms, proxy.ts: 133ms, application-code: 665ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 652ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 797ms (next.js: 8ms, proxy.ts: 120ms, application-code: 669ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 661ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 824ms (next.js: 37ms, proxy.ts: 144ms, application-code: 643ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 630ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 288ms (next.js: 19ms, proxy.ts: 129ms, application-code: 140ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 133ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 793ms (next.js: 10ms, proxy.ts: 122ms, application-code: 661ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 649ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 787ms (next.js: 17ms, proxy.ts: 136ms, application-code: 634ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 627ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 796ms (next.js: 8ms, proxy.ts: 144ms, application-code: 644ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 636ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 815ms (next.js: 20ms, proxy.ts: 138ms, application-code: 656ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 644ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 298ms (next.js: 20ms, proxy.ts: 130ms, application-code: 149ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 142ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 779ms (next.js: 10ms, proxy.ts: 121ms, application-code: 649ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 642ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 1207ms (next.js: 440ms, proxy.ts: 139ms, application-code: 629ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 620ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 775ms (next.js: 7ms, proxy.ts: 123ms, application-code: 644ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 637ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 698ms (next.js: 17ms, proxy.ts: 139ms, application-code: 541ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 533ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 285ms (next.js: 19ms, proxy.ts: 138ms, application-code: 128ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 122ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 795ms (next.js: 10ms, proxy.ts: 147ms, application-code: 639ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 632ms lib/server-actions/articleTopicLinks.ts
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 9293
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 11140
+}
+ POST /p/enneagram-type-one-reformer 200 in 813ms (next.js: 16ms, proxy.ts: 135ms, application-code: 662ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 653ms lib/server-actions/relatedArticles.ts
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:45:54.800Z","finishedAt":"2026-10-18T23:46:11.595Z","durationMs":16795,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":426,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3376,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":282,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1272,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1583,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":586,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":206,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":653,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":769,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":3524,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":2730,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":376,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":8741,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":394,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":9294,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":10312,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":11141,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":210,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":366,"failures":0,"tokensIn":0,"tokensOut":0}}}
+ POST /p/enneagram-type-one-reformer 200 in 777ms (next.js: 17ms, proxy.ts: 129ms, application-code: 632ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 625ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 650ms (next.js: 19ms, proxy.ts: 127ms, application-code: 504ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 497ms lib/server-actions/relatedArticles.ts
+ GET /graph 200 in 1613ms (next.js: 1447ms, proxy.ts: 128ms, application-code: 38ms)
+ POST /p/[slug] 200 in 367ms (next.js: 81ms, proxy.ts: 125ms, application-code: 161ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 147ms lib/server-actions/composer.ts
+ POST /graph 200 in 529ms (next.js: 8ms, proxy.ts: 136ms, application-code: 384ms)
+ POST /p/[slug] 200 in 795ms (next.js: 10ms, proxy.ts: 119ms, application-code: 665ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 652ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 951ms (next.js: 7ms, proxy.ts: 120ms, application-code: 824ms)
+ POST /p/[slug] 200 in 881ms (next.js: 83ms, proxy.ts: 124ms, application-code: 674ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 662ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 1061ms (next.js: 6ms, proxy.ts: 150ms, application-code: 905ms)
+ POST /p/[slug] 200 in 924ms (next.js: 25ms, proxy.ts: 117ms, application-code: 782ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 769ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 1092ms (next.js: 7ms, proxy.ts: 140ms, application-code: 944ms)
+ POST /p/[slug] 200 in 1572ms (next.js: 27ms, proxy.ts: 231ms, application-code: 1314ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 1303ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 1814ms (next.js: 7ms, proxy.ts: 225ms, application-code: 1582ms)
+ POST /p/[slug] 200 in 394ms (next.js: 27ms, proxy.ts: 142ms, application-code: 224ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 213ms lib/server-actions/composer.ts
+ POST /graph 200 in 559ms (next.js: 8ms, proxy.ts: 142ms, application-code: 410ms)
+ POST /p/[slug] 200 in 1078ms (next.js: 10ms, proxy.ts: 150ms, application-code: 918ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 907ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 1264ms (next.js: 8ms, proxy.ts: 151ms, application-code: 1104ms)
+ POST /p/[slug] 200 in 828ms (next.js: 18ms, proxy.ts: 133ms, application-code: 677ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 664ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 972ms (next.js: 6ms, proxy.ts: 126ms, application-code: 841ms)
+ POST /p/[slug] 200 in 321ms (next.js: 22ms, proxy.ts: 136ms, application-code: 163ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 153ms lib/server-actions/composer.ts
+ POST /graph 200 in 499ms (next.js: 6ms, proxy.ts: 161ms, application-code: 332ms)
+ POST /p/[slug] 200 in 784ms (next.js: 10ms, proxy.ts: 120ms, application-code: 654ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 641ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 945ms (next.js: 8ms, proxy.ts: 137ms, application-code: 801ms)
+ POST /p/[slug] 200 in 820ms (next.js: 19ms, proxy.ts: 121ms, application-code: 680ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 670ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 972ms (next.js: 6ms, proxy.ts: 137ms, application-code: 829ms)
+ POST /p/[slug] 200 in 808ms (next.js: 17ms, proxy.ts: 132ms, application-code: 659ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 648ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 975ms (next.js: 6ms, proxy.ts: 139ms, application-code: 830ms)
+ POST /p/[slug] 200 in 819ms (next.js: 21ms, proxy.ts: 118ms, application-code: 680ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 670ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 990ms (next.js: 8ms, proxy.ts: 147ms, application-code: 834ms)
+ POST /p/[slug] 200 in 303ms (next.js: 17ms, proxy.ts: 123ms, application-code: 163ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 153ms lib/server-actions/composer.ts
+ POST /graph 200 in 455ms (next.js: 6ms, proxy.ts: 133ms, application-code: 316ms)
+ POST /p/[slug] 200 in 760ms (next.js: 8ms, proxy.ts: 133ms, application-code: 619ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 607ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 981ms (next.js: 7ms, proxy.ts: 194ms, application-code: 781ms)
+ POST /p/[slug] 200 in 776ms (next.js: 17ms, proxy.ts: 115ms, application-code: 643ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 634ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 947ms (next.js: 5ms, proxy.ts: 158ms, application-code: 784ms)
+ POST /p/[slug] 200 in 862ms (next.js: 22ms, proxy.ts: 150ms, application-code: 689ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 676ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 1013ms (next.js: 6ms, proxy.ts: 127ms, application-code: 879ms)
+ POST /graph 200 in 2.0s (next.js: 151ms, proxy.ts: 145ms, application-code: 1743ms)
+  └─ ƒ graphHistory() in 1730ms lib/server-actions/graphHistory.ts
+ GET /p/enneagram-type-one-reformer 200 in 745ms (next.js: 43ms, proxy.ts: 6ms, application-code: 696ms)
+✓ Compiled in 1173ms
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 9580
+}
+ POST /p/enneagram-type-one-reformer 200 in 43s (next.js: 26ms, proxy.ts: 7ms, application-code: 43s)
+  └─ ƒ refreshPendingStaleSections() in 43347ms lib/server-actions/pages.ts
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 11466
+}
+ POST /p/enneagram-type-one-reformer 200 in 643ms (next.js: 66ms, proxy.ts: 8ms, application-code: 569ms)
+  └─ ƒ switchSpace("21132c80-32b3-4ef2-9156-d9af60486173") in 143ms lib/server-actions/spaces.ts
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:47:24.888Z","finishedAt":"2026-10-18T23:47:41.464Z","durationMs":16575,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":385,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":25,"durationMs":3353,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":334,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1193,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1257,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":860,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":151,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":539,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":653,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":19,"durationMs":3840,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":2501,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":616,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.outline-v1":{"count":12,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":9048,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":449,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":9581,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":10538,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":11466,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":151,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":151,"failures":0,"tokensIn":0,"tokensOut":0}}}
+ GET / 200 in 819ms (next.js: 19ms, proxy.ts: 124ms, application-code: 676ms)
+ POST /p/enneagram-type-one-reformer 200 in 1038ms (next.js: 154ms, proxy.ts: 138ms, application-code: 746ms)
+  └─ ƒ refreshPendingStaleSections() in 729ms lib/server-actions/pages.ts
+ GET / 200 in 794ms (next.js: 20ms, proxy.ts: 188ms, application-code: 586ms)
+✓ Compiled in 1867ms
+ GET /login?next=%2Fgraph 200 in 74ms (next.js: 29ms, proxy.ts: 16ms, application-code: 29ms)
+ GET /graph 200 in 354ms (next.js: 49ms, proxy.ts: 134ms, application-code: 172ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 355ms (next.js: 113ms, proxy.ts: 134ms, application-code: 108ms)
+ POST / 200 in 2.6s (next.js: 600ms, proxy.ts: 134ms, application-code: 1884ms)
+  └─ ƒ refreshPendingStaleSections() in 1865ms lib/server-actions/pages.ts
+ POST / 200 in 2.9s (next.js: 863ms, proxy.ts: 137ms, application-code: 1910ms)
+  └─ ƒ refreshPendingStaleSections() in 1884ms lib/server-actions/pages.ts
+ POST / 200 in 1844ms (next.js: 9ms, proxy.ts: 138ms, application-code: 1697ms)
+  └─ ƒ readSpaceWelcome() in 1677ms lib/server-actions/spaceWelcome.ts
+ POST / 200 in 1769ms (next.js: 9ms, proxy.ts: 141ms, application-code: 1620ms)
+  └─ ƒ readSpaceWelcome() in 1602ms lib/server-actions/spaceWelcome.ts
+ GET / 200 in 243ms (next.js: 9ms, proxy.ts: 130ms, application-code: 104ms)
+ GET / 200 in 220ms (next.js: 7ms, proxy.ts: 143ms, application-code: 70ms)
+✓ Compiled in 678ms
+ GET /login?next=%2Fgraph 200 in 380ms (next.js: 145ms, proxy.ts: 15ms, application-code: 220ms)
+ GET /graph 200 in 392ms (next.js: 165ms, proxy.ts: 139ms, application-code: 88ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 457ms (next.js: 55ms, proxy.ts: 313ms, application-code: 89ms)
+ POST / 200 in 2.8s (next.js: 146ms, proxy.ts: 140ms, application-code: 2.5s)
+  └─ ƒ readSpaceWelcome() in 2478ms lib/server-actions/spaceWelcome.ts
+ POST / 200 in 2.8s (next.js: 147ms, proxy.ts: 158ms, application-code: 2.5s)
+  └─ ƒ readSpaceWelcome() in 2452ms lib/server-actions/spaceWelcome.ts
+ GET / 200 in 404ms (next.js: 8ms, proxy.ts: 311ms, application-code: 85ms)
+ GET / 200 in 209ms (next.js: 6ms, proxy.ts: 124ms, application-code: 79ms)
+ GET /p/enneagram-type-one-reformer 200 in 259ms (next.js: 95ms, proxy.ts: 135ms, application-code: 29ms)
+ POST /p/enneagram-type-one-reformer 200 in 353ms (next.js: 8ms, proxy.ts: 147ms, application-code: 199ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 185ms lib/server-actions/composer.ts
+✓ Compiled in 1200ms
+ GET /login?next=%2Fgraph 200 in 62ms (next.js: 23ms, proxy.ts: 7ms, application-code: 32ms)
+ GET /graph 200 in 487ms (next.js: 151ms, proxy.ts: 148ms, application-code: 188ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 486ms (next.js: 69ms, proxy.ts: 124ms, application-code: 293ms)
+ GET / 200 in 471ms (next.js: 92ms, proxy.ts: 292ms, application-code: 87ms)
+ POST /p/enneagram-type-one-reformer 200 in 2.4s (next.js: 1229ms, proxy.ts: 143ms, application-code: 1024ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 981ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 2.4s (next.js: 39ms, proxy.ts: 149ms, application-code: 2.2s)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 2211ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 827ms (next.js: 21ms, proxy.ts: 136ms, application-code: 670ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 659ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 1016ms (next.js: 13ms, proxy.ts: 125ms, application-code: 878ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 867ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 826ms (next.js: 21ms, proxy.ts: 120ms, application-code: 684ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 674ms lib/server-actions/relatedArticles.ts
+ GET /p/enneagram-type-one-reformer 200 in 259ms (next.js: 9ms, proxy.ts: 180ms, application-code: 71ms)
+ POST /p/enneagram-type-one-reformer 200 in 326ms (next.js: 18ms, proxy.ts: 134ms, application-code: 174ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 166ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 826ms (next.js: 6ms, proxy.ts: 152ms, application-code: 668ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 660ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 882ms (next.js: 20ms, proxy.ts: 141ms, application-code: 720ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 710ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 325ms (next.js: 22ms, proxy.ts: 147ms, application-code: 156ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 146ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 1467ms (next.js: 8ms, proxy.ts: 138ms, application-code: 1321ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 1312ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 1933ms (next.js: 18ms, proxy.ts: 209ms, application-code: 1706ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 1697ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 890ms (next.js: 18ms, proxy.ts: 134ms, application-code: 738ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 729ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 1131ms (next.js: 19ms, proxy.ts: 147ms, application-code: 965ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 954ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 345ms (next.js: 19ms, proxy.ts: 137ms, application-code: 190ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 182ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 861ms (next.js: 9ms, proxy.ts: 119ms, application-code: 733ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 724ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 790ms (next.js: 17ms, proxy.ts: 136ms, application-code: 637ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 629ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 366ms (next.js: 53ms, proxy.ts: 143ms, application-code: 170ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 158ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 829ms (next.js: 40ms, proxy.ts: 124ms, application-code: 665ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 655ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 789ms (next.js: 50ms, proxy.ts: 136ms, application-code: 602ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 589ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 853ms (next.js: 10ms, proxy.ts: 198ms, application-code: 645ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 636ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 871ms (next.js: 27ms, proxy.ts: 141ms, application-code: 704ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 691ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 355ms (next.js: 26ms, proxy.ts: 149ms, application-code: 181ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 171ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 876ms (next.js: 11ms, proxy.ts: 172ms, application-code: 692ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 669ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 801ms (next.js: 72ms, proxy.ts: 138ms, application-code: 590ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 578ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 793ms (next.js: 12ms, proxy.ts: 121ms, application-code: 660ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 649ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 856ms (next.js: 23ms, proxy.ts: 143ms, application-code: 691ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 679ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 313ms (next.js: 25ms, proxy.ts: 143ms, application-code: 145ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 135ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 815ms (next.js: 10ms, proxy.ts: 132ms, application-code: 672ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 662ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 893ms (next.js: 21ms, proxy.ts: 148ms, application-code: 724ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 710ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 876ms (next.js: 94ms, proxy.ts: 137ms, application-code: 645ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 633ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 925ms (next.js: 21ms, proxy.ts: 126ms, application-code: 777ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 762ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 342ms (next.js: 23ms, proxy.ts: 128ms, application-code: 191ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 182ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 815ms (next.js: 12ms, proxy.ts: 130ms, application-code: 673ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 663ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 943ms (next.js: 23ms, proxy.ts: 326ms, application-code: 594ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 584ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 798ms (next.js: 9ms, proxy.ts: 119ms, application-code: 671ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 663ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 824ms (next.js: 19ms, proxy.ts: 132ms, application-code: 674ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 664ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 317ms (next.js: 19ms, proxy.ts: 130ms, application-code: 169ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 161ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 777ms (next.js: 9ms, proxy.ts: 138ms, application-code: 630ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 622ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 716ms (next.js: 19ms, proxy.ts: 139ms, application-code: 558ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 550ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 803ms (next.js: 10ms, proxy.ts: 127ms, application-code: 667ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 659ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 868ms (next.js: 18ms, proxy.ts: 145ms, application-code: 705ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 697ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 384ms (next.js: 117ms, proxy.ts: 124ms, application-code: 143ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 134ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 922ms (next.js: 9ms, proxy.ts: 130ms, application-code: 783ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 774ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 784ms (next.js: 28ms, proxy.ts: 123ms, application-code: 633ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 619ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 763ms (next.js: 10ms, proxy.ts: 119ms, application-code: 634ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 625ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 892ms (next.js: 19ms, proxy.ts: 114ms, application-code: 759ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 749ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 309ms (next.js: 19ms, proxy.ts: 141ms, application-code: 149ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 142ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 736ms (next.js: 9ms, proxy.ts: 113ms, application-code: 614ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 606ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 792ms (next.js: 17ms, proxy.ts: 126ms, application-code: 648ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 641ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 812ms (next.js: 19ms, proxy.ts: 135ms, application-code: 658ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 650ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 814ms (next.js: 18ms, proxy.ts: 143ms, application-code: 654ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 646ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 725ms (next.js: 52ms, proxy.ts: 481ms, application-code: 191ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 184ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 992ms (next.js: 10ms, proxy.ts: 123ms, application-code: 859ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 847ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 1597ms (next.js: 242ms, proxy.ts: 148ms, application-code: 1207ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 1198ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 798ms (next.js: 18ms, proxy.ts: 142ms, application-code: 638ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 630ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 853ms (next.js: 10ms, proxy.ts: 139ms, application-code: 704ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 692ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 334ms (next.js: 20ms, proxy.ts: 169ms, application-code: 144ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 136ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 935ms (next.js: 8ms, proxy.ts: 140ms, application-code: 786ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 777ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 787ms (next.js: 24ms, proxy.ts: 129ms, application-code: 634ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 623ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 814ms (next.js: 8ms, proxy.ts: 143ms, application-code: 663ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 653ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 1147ms (next.js: 873ms, proxy.ts: 116ms, application-code: 157ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 150ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 823ms (next.js: 42ms, proxy.ts: 122ms, application-code: 659ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 652ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 880ms (next.js: 19ms, proxy.ts: 147ms, application-code: 714ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 707ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 779ms (next.js: 18ms, proxy.ts: 117ms, application-code: 644ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 636ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 818ms (next.js: 17ms, proxy.ts: 163ms, application-code: 638ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 630ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 330ms (next.js: 17ms, proxy.ts: 138ms, application-code: 175ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 167ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 813ms (next.js: 9ms, proxy.ts: 123ms, application-code: 682ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 675ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 852ms (next.js: 18ms, proxy.ts: 122ms, application-code: 711ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 704ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 805ms (next.js: 17ms, proxy.ts: 138ms, application-code: 650ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 643ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 790ms (next.js: 21ms, proxy.ts: 123ms, application-code: 646ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 638ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 378ms (next.js: 107ms, proxy.ts: 127ms, application-code: 144ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 137ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 779ms (next.js: 7ms, proxy.ts: 132ms, application-code: 640ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 633ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 761ms (next.js: 19ms, proxy.ts: 123ms, application-code: 620ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 610ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 779ms (next.js: 8ms, proxy.ts: 142ms, application-code: 628ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 620ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 825ms (next.js: 21ms, proxy.ts: 128ms, application-code: 677ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 668ms lib/server-actions/relatedArticles.ts
+ GET /glossary 200 in 436ms (next.js: 272ms, proxy.ts: 119ms, application-code: 45ms)
+ POST /p/enneagram-type-one-reformer 200 in 321ms (next.js: 25ms, proxy.ts: 121ms, application-code: 176ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 150ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 763ms (next.js: 16ms, proxy.ts: 127ms, application-code: 620ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 609ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 792ms (next.js: 24ms, proxy.ts: 123ms, application-code: 645ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 632ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 786ms (next.js: 9ms, proxy.ts: 141ms, application-code: 636ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 628ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 295ms (next.js: 22ms, proxy.ts: 137ms, application-code: 136ms)
+ POST /glossary 200 in 324ms (next.js: 7ms, proxy.ts: 140ms, application-code: 178ms)
+  └─ ƒ requestGlossaryGeneration(false) in 168ms lib/server-actions/glossary.ts
+ GET /graph 200 in 805ms (next.js: 40ms, proxy.ts: 124ms, application-code: 641ms)
+ POST /graph 200 in 877ms (next.js: 7ms, proxy.ts: 199ms, application-code: 671ms)
+  └─ ƒ refreshPendingStaleSections() in 658ms lib/server-actions/pages.ts
+ POST /graph 200 in 1568ms (next.js: 7ms, proxy.ts: 118ms, application-code: 1443ms)
+  └─ ƒ graphHistory() in 1434ms lib/server-actions/graphHistory.ts
+ GET / 200 in 264ms (next.js: 77ms, proxy.ts: 156ms, application-code: 30ms)
+ POST / 200 in 1796ms (next.js: 9ms, proxy.ts: 131ms, application-code: 1656ms)
+  └─ ƒ readSpaceWelcome() in 1641ms lib/server-actions/spaceWelcome.ts
+ GET /p/enneagram-type-one-reformer 200 in 238ms (next.js: 60ms, proxy.ts: 139ms, application-code: 39ms)
+ POST /p/enneagram-type-one-reformer 200 in 331ms (next.js: 8ms, proxy.ts: 145ms, application-code: 177ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 169ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 340ms (next.js: 21ms, proxy.ts: 133ms, application-code: 187ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 178ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 905ms (next.js: 11ms, proxy.ts: 138ms, application-code: 757ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 747ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 2.3s (next.js: 19ms, proxy.ts: 135ms, application-code: 2.2s)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 2166ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 784ms (next.js: 477ms, proxy.ts: 145ms, application-code: 162ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 154ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 859ms (next.js: 11ms, proxy.ts: 136ms, application-code: 712ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 702ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 1168ms (next.js: 23ms, proxy.ts: 145ms, application-code: 1000ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 991ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 2.0s (next.js: 23ms, proxy.ts: 139ms, application-code: 1874ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 1865ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 336ms (next.js: 22ms, proxy.ts: 136ms, application-code: 178ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 169ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 922ms (next.js: 10ms, proxy.ts: 142ms, application-code: 771ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 762ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 904ms (next.js: 25ms, proxy.ts: 147ms, application-code: 731ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 715ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 354ms (next.js: 22ms, proxy.ts: 144ms, application-code: 188ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 177ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 887ms (next.js: 8ms, proxy.ts: 176ms, application-code: 703ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 695ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 913ms (next.js: 22ms, proxy.ts: 139ms, application-code: 753ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 743ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 450ms (next.js: 115ms, proxy.ts: 151ms, application-code: 183ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 175ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 797ms (next.js: 10ms, proxy.ts: 129ms, application-code: 658ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 647ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 895ms (next.js: 23ms, proxy.ts: 141ms, application-code: 731ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 720ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 803ms (next.js: 25ms, proxy.ts: 136ms, application-code: 642ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 631ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 784ms (next.js: 10ms, proxy.ts: 137ms, application-code: 638ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 630ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 297ms (next.js: 19ms, proxy.ts: 144ms, application-code: 135ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 127ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 799ms (next.js: 9ms, proxy.ts: 132ms, application-code: 658ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 650ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 794ms (next.js: 17ms, proxy.ts: 131ms, application-code: 646ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 639ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 817ms (next.js: 8ms, proxy.ts: 124ms, application-code: 686ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 678ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 819ms (next.js: 18ms, proxy.ts: 134ms, application-code: 666ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 658ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 320ms (next.js: 17ms, proxy.ts: 139ms, application-code: 164ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 157ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 816ms (next.js: 8ms, proxy.ts: 133ms, application-code: 674ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 664ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 813ms (next.js: 18ms, proxy.ts: 127ms, application-code: 668ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 660ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 761ms (next.js: 8ms, proxy.ts: 137ms, application-code: 616ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 608ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 784ms (next.js: 20ms, proxy.ts: 128ms, application-code: 635ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 627ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 281ms (next.js: 18ms, proxy.ts: 127ms, application-code: 136ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 129ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 783ms (next.js: 8ms, proxy.ts: 129ms, application-code: 645ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 638ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 854ms (next.js: 19ms, proxy.ts: 144ms, application-code: 691ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 682ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 777ms (next.js: 17ms, proxy.ts: 121ms, application-code: 638ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 630ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 815ms (next.js: 21ms, proxy.ts: 127ms, application-code: 667ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 660ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 281ms (next.js: 17ms, proxy.ts: 115ms, application-code: 149ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 143ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 805ms (next.js: 9ms, proxy.ts: 130ms, application-code: 666ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 658ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 948ms (next.js: 128ms, proxy.ts: 135ms, application-code: 685ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 677ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 818ms (next.js: 19ms, proxy.ts: 145ms, application-code: 654ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 645ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 659ms (next.js: 9ms, proxy.ts: 114ms, application-code: 536ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 528ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 317ms (next.js: 18ms, proxy.ts: 137ms, application-code: 162ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 155ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 817ms (next.js: 8ms, proxy.ts: 145ms, application-code: 664ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 656ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 795ms (next.js: 19ms, proxy.ts: 134ms, application-code: 642ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 635ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 780ms (next.js: 19ms, proxy.ts: 127ms, application-code: 635ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 627ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 791ms (next.js: 19ms, proxy.ts: 128ms, application-code: 644ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 636ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 321ms (next.js: 20ms, proxy.ts: 141ms, application-code: 161ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 152ms lib/server-actions/composer.ts
+✓ Compiled in 577ms
+ POST /p/enneagram-type-one-reformer 200 in 1036ms (next.js: 254ms, proxy.ts: 153ms, application-code: 630ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 619ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 828ms (next.js: 19ms, proxy.ts: 120ms, application-code: 689ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 676ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 768ms (next.js: 9ms, proxy.ts: 127ms, application-code: 631ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 623ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 925ms (next.js: 20ms, proxy.ts: 135ms, application-code: 770ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 745ms lib/server-actions/relatedArticles.ts
+ GET /p/enneagram-type-one-reformer 200 in 686ms (next.js: 13ms, proxy.ts: 123ms, application-code: 550ms)
+ POST /p/enneagram-type-one-reformer 200 in 824ms (next.js: 28ms, proxy.ts: 177ms, application-code: 619ms)
+  └─ ƒ refreshPendingStaleSections() in 611ms lib/server-actions/pages.ts
+ POST /p/enneagram-type-one-reformer 200 in 449ms (next.js: 21ms, proxy.ts: 281ms, application-code: 147ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 138ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 775ms (next.js: 9ms, proxy.ts: 133ms, application-code: 633ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 623ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 938ms (next.js: 20ms, proxy.ts: 137ms, application-code: 780ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 771ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 805ms (next.js: 24ms, proxy.ts: 131ms, application-code: 650ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 640ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 856ms (next.js: 26ms, proxy.ts: 122ms, application-code: 708ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 695ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 829ms (next.js: 22ms, proxy.ts: 140ms, application-code: 666ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 656ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 851ms (next.js: 21ms, proxy.ts: 141ms, application-code: 689ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 680ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 845ms (next.js: 20ms, proxy.ts: 133ms, application-code: 692ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 683ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 738ms (next.js: 441ms, proxy.ts: 139ms, application-code: 158ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 149ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 783ms (next.js: 11ms, proxy.ts: 131ms, application-code: 641ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 633ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 734ms (next.js: 19ms, proxy.ts: 142ms, application-code: 573ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 563ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 314ms (next.js: 21ms, proxy.ts: 138ms, application-code: 156ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 147ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 812ms (next.js: 10ms, proxy.ts: 137ms, application-code: 665ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 656ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 798ms (next.js: 26ms, proxy.ts: 180ms, application-code: 592ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 582ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 835ms (next.js: 11ms, proxy.ts: 141ms, application-code: 683ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 670ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 876ms (next.js: 22ms, proxy.ts: 114ms, application-code: 740ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 728ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 302ms (next.js: 23ms, proxy.ts: 135ms, application-code: 144ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 136ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 794ms (next.js: 10ms, proxy.ts: 141ms, application-code: 643ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 633ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 751ms (next.js: 20ms, proxy.ts: 129ms, application-code: 602ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 593ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 1323ms (next.js: 22ms, proxy.ts: 625ms, application-code: 676ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 665ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 873ms (next.js: 20ms, proxy.ts: 123ms, application-code: 731ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 721ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 308ms (next.js: 19ms, proxy.ts: 120ms, application-code: 169ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 160ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 791ms (next.js: 9ms, proxy.ts: 135ms, application-code: 648ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 639ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 837ms (next.js: 20ms, proxy.ts: 128ms, application-code: 689ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 680ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 778ms (next.js: 23ms, proxy.ts: 139ms, application-code: 617ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 607ms lib/server-actions/articleTopicLinks.ts
+✓ Compiled in 706ms
+ POST /p/enneagram-type-one-reformer 200 in 1493ms (next.js: 662ms, proxy.ts: 129ms, application-code: 703ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 691ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 319ms (next.js: 23ms, proxy.ts: 137ms, application-code: 158ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 147ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 826ms (next.js: 11ms, proxy.ts: 158ms, application-code: 658ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 646ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 860ms (next.js: 28ms, proxy.ts: 135ms, application-code: 697ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 686ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 826ms (next.js: 10ms, proxy.ts: 131ms, application-code: 685ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 676ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 900ms (next.js: 24ms, proxy.ts: 127ms, application-code: 749ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 739ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 329ms (next.js: 25ms, proxy.ts: 150ms, application-code: 154ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 145ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 788ms (next.js: 10ms, proxy.ts: 123ms, application-code: 654ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 645ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 891ms (next.js: 51ms, proxy.ts: 148ms, application-code: 692ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 681ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 809ms (next.js: 21ms, proxy.ts: 139ms, application-code: 649ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 640ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 804ms (next.js: 11ms, proxy.ts: 137ms, application-code: 656ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 642ms lib/server-actions/relatedArticles.ts
+✓ Compiled in 513ms
+ POST /p/enneagram-type-one-reformer 200 in 830ms (next.js: 480ms, proxy.ts: 186ms, application-code: 165ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 155ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 762ms (next.js: 9ms, proxy.ts: 126ms, application-code: 627ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 619ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 699ms (next.js: 17ms, proxy.ts: 130ms, application-code: 552ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 544ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 787ms (next.js: 7ms, proxy.ts: 127ms, application-code: 653ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 645ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 836ms (next.js: 16ms, proxy.ts: 145ms, application-code: 674ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 666ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 305ms (next.js: 19ms, proxy.ts: 137ms, application-code: 149ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 140ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 763ms (next.js: 7ms, proxy.ts: 127ms, application-code: 629ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 620ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 860ms (next.js: 22ms, proxy.ts: 133ms, application-code: 706ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 695ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 302ms (next.js: 21ms, proxy.ts: 132ms, application-code: 149ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 140ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 296ms (next.js: 8ms, proxy.ts: 138ms, application-code: 149ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 139ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 763ms (next.js: 8ms, proxy.ts: 126ms, application-code: 629ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 621ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 817ms (next.js: 20ms, proxy.ts: 129ms, application-code: 668ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 657ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 414ms (next.js: 119ms, proxy.ts: 142ms, application-code: 153ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 144ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 793ms (next.js: 10ms, proxy.ts: 131ms, application-code: 652ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 643ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 834ms (next.js: 18ms, proxy.ts: 141ms, application-code: 675ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 666ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-type-one-reformer 200 in 326ms (next.js: 19ms, proxy.ts: 149ms, application-code: 158ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 149ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 773ms (next.js: 8ms, proxy.ts: 128ms, application-code: 638ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 630ms lib/server-actions/articleTopicLinks.ts
+ GET /graph 200 in 199ms (next.js: 41ms, proxy.ts: 132ms, application-code: 27ms)
+ POST /p/enneagram-type-one-reformer 200 in 951ms (next.js: 23ms, proxy.ts: 110ms, application-code: 819ms)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 798ms lib/server-actions/relatedArticles.ts
+✓ Compiled in 573ms
+ POST /graph 200 in 2.6s (next.js: 385ms, proxy.ts: 425ms, application-code: 1827ms)
+  └─ ƒ graphHistory() in 1816ms lib/server-actions/graphHistory.ts
+ GET /graph 200 in 794ms (next.js: 100ms, proxy.ts: 209ms, application-code: 485ms)
+ POST /graph 200 in 842ms (next.js: 10ms, proxy.ts: 126ms, application-code: 705ms)
+  └─ ƒ refreshPendingStaleSections() in 698ms lib/server-actions/pages.ts
+ POST /graph 200 in 1545ms (next.js: 12ms, proxy.ts: 136ms, application-code: 1397ms)
+  └─ ƒ graphHistory() in 1384ms lib/server-actions/graphHistory.ts
+✓ Compiled in 479ms
+✓ Compiled in 603ms
+ GET / 200 in 842ms (next.js: 51ms, proxy.ts: 763ms, application-code: 27ms)
+ GET /graph 200 in 1090ms (next.js: 39ms, proxy.ts: 290ms, application-code: 761ms)
+ GET /p/enneagram-type-one-reformer 200 in 225ms (next.js: 45ms, proxy.ts: 136ms, application-code: 44ms)
+ POST / 200 in 4.5s (next.js: 17ms, proxy.ts: 1681ms, application-code: 2.8s)
+  └─ ƒ readSpaceWelcome() in 2783ms lib/server-actions/spaceWelcome.ts
+ POST /p/enneagram-type-one-reformer 200 in 1160ms (next.js: 24ms, proxy.ts: 596ms, application-code: 539ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 524ms lib/server-actions/composer.ts
+ POST /graph 200 in 2.0s (next.js: 12ms, proxy.ts: 552ms, application-code: 1482ms)
+  └─ ƒ refreshPendingStaleSections() in 1473ms lib/server-actions/pages.ts
+ POST /p/enneagram-type-one-reformer 200 in 374ms (next.js: 16ms, proxy.ts: 142ms, application-code: 216ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 207ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 332ms (next.js: 26ms, proxy.ts: 154ms, application-code: 152ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 139ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 922ms (next.js: 11ms, proxy.ts: 135ms, application-code: 777ms)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 766ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-type-one-reformer 200 in 6.6s (next.js: 23ms, proxy.ts: 132ms, application-code: 6.4s)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 6396ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 9.7s (next.js: 6ms, proxy.ts: 198ms, application-code: 9.4s)
+  └─ ƒ graphHistory() in 9434ms lib/server-actions/graphHistory.ts
+ POST /p/enneagram-type-one-reformer 200 in 5.4s (next.js: 20ms, proxy.ts: 4.7s, application-code: 654ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 646ms lib/server-actions/composer.ts
+ GET /p/enneagram-centers-and-triads 200 in 615ms (next.js: 24ms, proxy.ts: 563ms, application-code: 28ms)
+ POST /p/enneagram-centers-and-triads 200 in 959ms (next.js: 12ms, proxy.ts: 205ms, application-code: 742ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 727ms lib/server-actions/composer.ts
+ POST /p/enneagram-type-one-reformer 200 in 5.7s (next.js: 25ms, proxy.ts: 298ms, application-code: 5.4s)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 5411ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-centers-and-triads 200 in 3.3s (next.js: 22ms, proxy.ts: 1030ms, application-code: 2.3s)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 2249ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 17.2s (next.js: 5ms, proxy.ts: 476ms, application-code: 16.8s)
+  └─ ƒ graphHistory() in 16739ms lib/server-actions/graphHistory.ts
+ POST /p/enneagram-centers-and-triads 200 in 14.4s (next.js: 20ms, proxy.ts: 310ms, application-code: 14.1s)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 14042ms lib/server-actions/relatedArticles.ts
+ GET /p/typing-and-mistyping 200 in 12.3s (next.js: 23ms, proxy.ts: 12.3s, application-code: 36ms)
+ POST /p/typing-and-mistyping 200 in 1290ms (next.js: 14ms, proxy.ts: 337ms, application-code: 939ms)
+  └─ ƒ readArticleIllustrations("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 929ms lib/server-actions/composer.ts
+✓ Compiled in 493ms
+✓ Compiled in 583ms
+ POST /p/typing-and-mistyping 200 in 5.1s (next.js: 21ms, proxy.ts: 825ms, application-code: 4.3s)
+  └─ ƒ readArticleTopicLinks("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 4246ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 13.5s (next.js: 8ms, proxy.ts: 4.6s, application-code: 8.9s)
+  └─ ƒ graphHistory() in 8861ms lib/server-actions/graphHistory.ts
+ POST /p/typing-and-mistyping 200 in 10.5s (next.js: 26ms, proxy.ts: 151ms, application-code: 10.3s)
+  └─ ƒ readRelatedArticles("bcfad1d9-f25d-47db-bb63-da4af4d8bafe") in 10293ms lib/server-actions/relatedArticles.ts
+ POST /p/typing-and-mistyping 200 in 788ms (next.js: 53ms, proxy.ts: 365ms, application-code: 370ms)
+  └─ ƒ readArticleIllustrations("f68545c5-5d08-4780-baaa-4f672f2108e0") in 357ms lib/server-actions/composer.ts
+ POST /graph 200 in 8.0s (next.js: 97ms, proxy.ts: 136ms, application-code: 7.7s)
+  └─ ƒ graphHistory() in 7710ms lib/server-actions/graphHistory.ts
+ POST /p/typing-and-mistyping 200 in 2.4s (next.js: 10ms, proxy.ts: 164ms, application-code: 2.2s)
+  └─ ƒ readArticleTopicLinks("f68545c5-5d08-4780-baaa-4f672f2108e0") in 2220ms lib/server-actions/articleTopicLinks.ts
+ POST /p/typing-and-mistyping 200 in 13.1s (next.js: 23ms, proxy.ts: 181ms, application-code: 12.9s)
+  └─ ƒ readRelatedArticles("f68545c5-5d08-4780-baaa-4f672f2108e0") in 12898ms lib/server-actions/relatedArticles.ts
+ POST /p/typing-and-mistyping 200 in 15.2s (next.js: 106ms, proxy.ts: 13.3s, application-code: 1855ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1845ms lib/server-actions/composer.ts
+ POST /p/typing-and-mistyping 200 in 5.9s (next.js: 21ms, proxy.ts: 3.4s, application-code: 2.5s)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 2528ms lib/server-actions/articleTopicLinks.ts
+ POST /p/typing-and-mistyping 200 in 6.6s (next.js: 19ms, proxy.ts: 177ms, application-code: 6.4s)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 6384ms lib/server-actions/relatedArticles.ts
+ POST /p/typing-and-mistyping 200 in 2.2s (next.js: 21ms, proxy.ts: 418ms, application-code: 1790ms)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1779ms lib/server-actions/articleTopicLinks.ts
+ POST /p/typing-and-mistyping 200 in 1492ms (next.js: 24ms, proxy.ts: 146ms, application-code: 1321ms)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1312ms lib/server-actions/relatedArticles.ts
+ POST /p/typing-and-mistyping 200 in 2.1s (next.js: 22ms, proxy.ts: 152ms, application-code: 1884ms)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1876ms lib/server-actions/articleTopicLinks.ts
+ POST /p/typing-and-mistyping 200 in 1410ms (next.js: 22ms, proxy.ts: 146ms, application-code: 1241ms)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1231ms lib/server-actions/relatedArticles.ts
+ POST /p/typing-and-mistyping 200 in 569ms (next.js: 20ms, proxy.ts: 201ms, application-code: 348ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 339ms lib/server-actions/composer.ts
+ POST /p/typing-and-mistyping 200 in 500ms (next.js: 9ms, proxy.ts: 137ms, application-code: 355ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 346ms lib/server-actions/composer.ts
+ POST /p/typing-and-mistyping 200 in 318ms (next.js: 20ms, proxy.ts: 143ms, application-code: 155ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 147ms lib/server-actions/composer.ts
+ POST /p/typing-and-mistyping 200 in 561ms (next.js: 10ms, proxy.ts: 146ms, application-code: 404ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 397ms lib/server-actions/composer.ts
+ POST /p/typing-and-mistyping 200 in 701ms (next.js: 23ms, proxy.ts: 258ms, application-code: 421ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 413ms lib/server-actions/composer.ts
+ POST /p/typing-and-mistyping 200 in 12.0s (next.js: 8ms, proxy.ts: 262ms, application-code: 11.7s)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 11677ms lib/server-actions/articleTopicLinks.ts
+ POST /p/typing-and-mistyping 200 in 10.6s (next.js: 23ms, proxy.ts: 424ms, application-code: 10.1s)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 10125ms lib/server-actions/relatedArticles.ts
+ POST /p/typing-and-mistyping 200 in 1103ms (next.js: 23ms, proxy.ts: 565ms, application-code: 515ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 502ms lib/server-actions/composer.ts
+ GET /p/essence-and-personality-in-the-enneagram 200 in 261ms (next.js: 22ms, proxy.ts: 205ms, application-code: 35ms)
+ POST /p/typing-and-mistyping 200 in 4.1s (next.js: 22ms, proxy.ts: 191ms, application-code: 3.8s)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 3830ms lib/server-actions/articleTopicLinks.ts
+ POST /p/essence-and-personality-in-the-enneagram 200 in 6.5s (next.js: 11ms, proxy.ts: 181ms, application-code: 6.3s)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 6310ms lib/server-actions/relatedArticles.ts
+ POST /p/essence-and-personality-in-the-enneagram 200 in 558ms (next.js: 22ms, proxy.ts: 276ms, application-code: 260ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 251ms lib/server-actions/composer.ts
+ POST /p/essence-and-personality-in-the-enneagram 200 in 1511ms (next.js: 10ms, proxy.ts: 132ms, application-code: 1370ms)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1357ms lib/server-actions/articleTopicLinks.ts
+ POST /p/essence-and-personality-in-the-enneagram 200 in 6.7s (next.js: 23ms, proxy.ts: 379ms, application-code: 6.3s)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 6306ms lib/server-actions/relatedArticles.ts
+ GET /p/enneagram-levels-of-development 200 in 424ms (next.js: 30ms, proxy.ts: 357ms, application-code: 37ms)
+ POST /p/enneagram-levels-of-development 200 in 546ms (next.js: 13ms, proxy.ts: 153ms, application-code: 380ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 370ms lib/server-actions/composer.ts
+ POST /p/enneagram-levels-of-development 200 in 3.0s (next.js: 13ms, proxy.ts: 263ms, application-code: 2.7s)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 2683ms lib/server-actions/articleTopicLinks.ts
+✓ Compiled in 616ms
+ POST /p/enneagram-levels-of-development 200 in 7.1s (next.js: 23ms, proxy.ts: 158ms, application-code: 6.9s)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 6859ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-levels-of-development 200 in 370ms (next.js: 28ms, proxy.ts: 159ms, application-code: 183ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 173ms lib/server-actions/composer.ts
+ POST /p/enneagram-levels-of-development 200 in 1034ms (next.js: 9ms, proxy.ts: 147ms, application-code: 877ms)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 865ms lib/server-actions/articleTopicLinks.ts
+ POST /p/enneagram-levels-of-development 200 in 1393ms (next.js: 22ms, proxy.ts: 148ms, application-code: 1223ms)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1211ms lib/server-actions/relatedArticles.ts
+ POST /p/enneagram-levels-of-development 200 in 326ms (next.js: 25ms, proxy.ts: 147ms, application-code: 154ms)
+  └─ ƒ readArticleIllustrations("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 144ms lib/server-actions/composer.ts
+ POST /p/enneagram-levels-of-development 200 in 1086ms (next.js: 10ms, proxy.ts: 138ms, application-code: 938ms)
+  └─ ƒ readArticleTopicLinks("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 927ms lib/server-actions/articleTopicLinks.ts
+ GET /graph 200 in 256ms (next.js: 66ms, proxy.ts: 126ms, application-code: 64ms)
+ POST /p/[slug] 200 in 819ms (next.js: 11ms, proxy.ts: 207ms, application-code: 601ms)
+  └─ ƒ readArticleIllustrations("9d58bc03-8394-443b-a234-7d383f621080") in 588ms lib/server-actions/composer.ts
+ POST /p/enneagram-levels-of-development 200 in 1679ms (next.js: 21ms, proxy.ts: 151ms, application-code: 1506ms)
+  └─ ƒ readRelatedArticles("a52342e6-2b6b-442f-9e15-a91cdc3b24de") in 1487ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 1076ms (next.js: 80ms, proxy.ts: 153ms, application-code: 843ms)
+ POST /p/[slug] 200 in 1144ms (next.js: 59ms, proxy.ts: 142ms, application-code: 943ms)
+  └─ ƒ readArticleTopicLinks("9d58bc03-8394-443b-a234-7d383f621080") in 930ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 1444ms (next.js: 7ms, proxy.ts: 275ms, application-code: 1162ms)
+ POST /p/[slug] 200 in 5.1s (next.js: 22ms, proxy.ts: 133ms, application-code: 5.0s)
+  └─ ƒ readRelatedArticles("9d58bc03-8394-443b-a234-7d383f621080") in 4969ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 5.4s (next.js: 7ms, proxy.ts: 283ms, application-code: 5.2s)
+ POST /p/[slug] 200 in 820ms (next.js: 475ms, proxy.ts: 166ms, application-code: 180ms)
+  └─ ƒ readArticleIllustrations("366a95b2-3c30-4366-b07e-7fa90ca8a466") in 169ms lib/server-actions/composer.ts
+ POST /graph 200 in 1397ms (next.js: 93ms, proxy.ts: 473ms, application-code: 831ms)
+ POST /p/[slug] 200 in 1466ms (next.js: 8ms, proxy.ts: 146ms, application-code: 1311ms)
+  └─ ƒ readArticleTopicLinks("366a95b2-3c30-4366-b07e-7fa90ca8a466") in 1299ms lib/server-actions/articleTopicLinks.ts
+ POST /graph 200 in 1669ms (next.js: 9ms, proxy.ts: 176ms, application-code: 1483ms)
+✓ Compiled in 548ms
+ POST /p/[slug] 200 in 60s (next.js: 54ms, proxy.ts: 149ms, application-code: 60s)
+  └─ ƒ readRelatedArticles("366a95b2-3c30-4366-b07e-7fa90ca8a466") in 60015ms lib/server-actions/relatedArticles.ts
+ POST /graph 200 in 60s (next.js: 8ms, proxy.ts: 142ms, application-code: 60s)
+ GET /graph 500 in 60s (next.js: 9ms, proxy.ts: 171ms, application-code: 60s)
+✓ Compiled in 537ms
+ POST /graph 404 in 2.6min (next.js: -19.4ms, proxy.ts: 2.6min, application-code: 22ms)
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 18115
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 21913
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-19T00:05:20.290Z","finishedAt":"2026-10-19T00:05:53.183Z","durationMs":32892,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":226,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":14,"durationMs":2580,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":309,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":9,"durationMs":1219,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1245,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":2,"durationMs":1928,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":6,"durationMs":1313,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":270,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":1911,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":21,"durationMs":5505,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":21,"durationMs":3472,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":599,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":1,"durationMs":269,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline":{"count":1,"durationMs":5874,"failures":1,"tokensIn":0,"tokensOut":0},"db.log_ai_call":{"count":1,"durationMs":152,"failures":0,"tokensIn":0,"tokensOut":0},"step.outline-v1":{"count":1,"durationMs":6325,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":5,"durationMs":4572,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scaffold":{"count":1,"durationMs":17330,"failures":1,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":18116,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":20529,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":21914,"failures":1,"tokensIn":0,"tokensOut":0},"db.retry.finish_upload_step":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":125,"failures":0,"tokensIn":0,"tokensOut":0},"cancel.drain":{"count":1,"durationMs":5145,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":1187,"failures":0,"tokensIn":0,"tokensOut":0}}}
+✓ Compiled in 702ms
+ GET /login?next=%2Fgraph 200 in 113ms (next.js: 51ms, proxy.ts: 22ms, application-code: 40ms)
+ GET / 200 in 635ms (next.js: 44ms, proxy.ts: 373ms, application-code: 218ms)
+ GET /graph 200 in 626ms (next.js: 92ms, proxy.ts: 370ms, application-code: 164ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 640ms (next.js: 184ms, proxy.ts: 376ms, application-code: 80ms)
+✓ Compiled in 691ms
+ GET /login?next=%2Fgraph 200 in 117ms (next.js: 58ms, proxy.ts: 23ms, application-code: 36ms)
+ GET / 200 in 656ms (next.js: 48ms, proxy.ts: 277ms, application-code: 331ms)
+ GET /graph 200 in 652ms (next.js: 127ms, proxy.ts: 267ms, application-code: 258ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 657ms (next.js: 268ms, proxy.ts: 267ms, application-code: 122ms)
+✓ Compiled in 601ms
+ GET /login?next=%2Fgraph 200 in 113ms (next.js: 56ms, proxy.ts: 21ms, application-code: 36ms)
+ GET /graph 200 in 559ms (next.js: 148ms, proxy.ts: 341ms, application-code: 70ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 569ms (next.js: 105ms, proxy.ts: 323ms, application-code: 141ms)
+ GET / 200 in 648ms (next.js: 45ms, proxy.ts: 322ms, application-code: 281ms)
+✓ Compiled in 689ms
+ GET /login?next=%2Fgraph 200 in 113ms (next.js: 58ms, proxy.ts: 19ms, application-code: 36ms)
+ GET / 200 in 468ms (next.js: 45ms, proxy.ts: 162ms, application-code: 262ms)
+ GET /graph 200 in 460ms (next.js: 79ms, proxy.ts: 172ms, application-code: 210ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 475ms (next.js: 210ms, proxy.ts: 167ms, application-code: 98ms)
+Upload articles ready {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  readyAt: '2026-10-19T00:33:21.459Z'
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'expand',
+  status: 'failed',
+  durationMs: 1409
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-19T00:37:26.413Z","finishedAt":"2026-10-19T00:37:32.571Z","durationMs":6158,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":192,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":15,"durationMs":1838,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":310,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":13,"durationMs":1615,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":198,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.pages":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.articles-ready":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.describe":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.profiles":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_candidates":{"count":1,"durationMs":188,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.expand-entity":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.living_page_query_units":{"count":1,"durationMs":191,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand-entity":{"count":1,"durationMs":863,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":2,"durationMs":231,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand":{"count":1,"durationMs":1410,"failures":1,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":1,"durationMs":123,"failures":0,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":185,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":431,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":244,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Upload articles ready {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  readyAt: '2026-10-19T00:33:21.459Z'
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'expand',
+  status: 'failed',
+  durationMs: 1647
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-19T00:38:11.872Z","finishedAt":"2026-10-19T00:38:19.208Z","durationMs":7336,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":302,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":15,"durationMs":2021,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":302,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":13,"durationMs":1675,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":911,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.pages":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.articles-ready":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.describe":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.profiles":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_candidates":{"count":1,"durationMs":307,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.expand-entity":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":1,"durationMs":145,"failures":0,"tokensIn":0,"tokensOut":0},"db.living_page_query_units":{"count":1,"durationMs":223,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand-entity":{"count":1,"durationMs":936,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":2,"durationMs":279,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand":{"count":1,"durationMs":1647,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":138,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":475,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":156,"failures":0,"tokensIn":0,"tokensOut":0}}}
+✓ Compiled in 6.7s
+ GET /login?next=%2Fgraph 200 in 256ms (next.js: 199ms, proxy.ts: 19ms, application-code: 37ms)
+ GET / 200 in 537ms (next.js: 58ms, proxy.ts: 314ms, application-code: 166ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 718ms (next.js: 112ms, proxy.ts: 336ms, application-code: 270ms)
+ GET /graph 200 in 858ms (next.js: 210ms, proxy.ts: 413ms, application-code: 235ms)
+Upload articles ready {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  readyAt: '2026-10-19T00:33:21.459Z'
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'expand',
+  status: 'failed',
+  durationMs: 16616
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-19T00:40:56.712Z","finishedAt":"2026-10-19T00:41:18.192Z","durationMs":21480,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":206,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":28,"durationMs":3672,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":297,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":15,"durationMs":1894,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":212,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.pages":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.articles-ready":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.describe":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.profiles":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_candidates":{"count":1,"durationMs":195,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.expand-entity":{"count":13,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":4,"durationMs":538,"failures":0,"tokensIn":0,"tokensOut":0},"db.living_page_query_units":{"count":2,"durationMs":411,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":1,"durationMs":136,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":1,"durationMs":0,"failures":0,"tokensIn":5308,"tokensOut":0},"ai.cache.write":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.knowledge_expansion":{"count":1,"durationMs":9846,"failures":0,"tokensIn":26974,"tokensOut":1777},"db.log_ai_call":{"count":1,"durationMs":161,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand-entity":{"count":2,"durationMs":14166,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":3,"durationMs":418,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand":{"count":1,"durationMs":16617,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":171,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":485,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":151,"failures":0,"tokensIn":0,"tokensOut":0}}}
+Upload articles ready {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  readyAt: '2026-10-19T00:33:21.459Z'
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'expand',
+  status: 'failed',
+  durationMs: 4450
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-19T00:41:57.806Z","finishedAt":"2026-10-19T00:42:16.089Z","durationMs":18283,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":1837,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":28,"durationMs":6072,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":3111,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":13,"durationMs":2410,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":3,"durationMs":868,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1209,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.pages":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.articles-ready":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.describe":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.profiles":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.page_candidates":{"count":1,"durationMs":545,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.expand-entity":{"count":14,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.living_page_query_units":{"count":1,"durationMs":882,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand-entity":{"count":1,"durationMs":1695,"failures":1,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":2,"durationMs":291,"failures":0,"tokensIn":0,"tokensOut":0},"step.expand":{"count":1,"durationMs":4451,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":221,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":839,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":176,"failures":0,"tokensIn":0,"tokensOut":0}}}
+✓ Compiled in 1227ms
+ GET /login?next=%2Fgraph 200 in 158ms (next.js: 110ms, proxy.ts: 18ms, application-code: 30ms)
+ GET /graph 200 in 571ms (next.js: 68ms, proxy.ts: 188ms, application-code: 314ms)
+ GET /sources/4d1ebe80-779e-4c7f-9e30-80a47c8af886 200 in 580ms (next.js: 127ms, proxy.ts: 209ms, application-code: 244ms)
+ GET / 200 in 583ms (next.js: 241ms, proxy.ts: 213ms, application-code: 129ms)

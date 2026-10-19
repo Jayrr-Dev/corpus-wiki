@@ -1,0 +1,117 @@
+{
+  "source": "3.1 Utility Line Assignment (ULA ) Application.docx",
+  "claims": 8,
+  "calls": [
+    {
+      "purpose": "upload_domain_plan",
+      "status": "ok"
+    },
+    {
+      "purpose": "place_topics",
+      "status": "ok"
+    },
+    {
+      "purpose": "independent_upload_domain_review",
+      "status": "ok"
+    },
+    {
+      "purpose": "place_topics",
+      "status": "ok"
+    },
+    {
+      "purpose": "independent_upload_domain_review",
+      "status": "ok"
+    },
+    {
+      "purpose": "place_topics",
+      "status": "ok"
+    },
+    {
+      "purpose": "independent_upload_domain_review",
+      "status": "ok"
+    },
+    {
+      "purpose": "place_topics",
+      "status": "ok"
+    },
+    {
+      "purpose": "independent_upload_domain_review",
+      "status": "ok"
+    },
+    {
+      "purpose": "place_topics",
+      "status": "ok"
+    },
+    {
+      "purpose": "independent_upload_domain_review",
+      "status": "ok"
+    },
+    {
+      "purpose": "place_topics",
+      "status": "ok"
+    },
+    {
+      "purpose": "independent_upload_domain_review",
+      "status": "ok"
+    }
+  ],
+  "createdDomains": [],
+  "placements": [
+    {
+      "content": "A City of Edmonton process for assigning utility lines, shown as a flowchart with lanes for the Designer, Drafting Tech, City of Edmonton, Stakeholders, and Data. The Designer completes a preliminary design, determines whether a ULA is required, confirms the drawing is accurate, submits the ULA application form online, receives the ULA permit, resolves any stakeholder conditions, and finalizes the design and files the permit.",
+      "domains": [
+        "EPCOR/Utility Line Assignment/ULA Process Map"
+      ],
+      "reason": "Both claims describe the full City of Edmonton ULA sequence across all lanes, so they belong in the process map that holds the overall sequence. Both claims summarize the full City of Edmonton ULA sequence across all lanes, which fits the process map's overall-sequence role. Detailed steps stay in their phase subjects."
+    },
+    {
+      "content": "The 3.1 Utility Line Assignment (ULA) application process flowchart runs across Designer, Drafting Tech, City of Edmonton, Stakeholders, and Data lanes, with the Designer lane proceeding from completing the preliminary design through investigating whether a ULA is required, confirming the drawing is accurate, completing the ULA application form online, receiving the ULA permit, resolving stakeholder conditions, and finalizing the design and filing the ULA permit.",
+      "domains": [
+        "EPCOR/Utility Line Assignment/ULA Process Map"
+      ],
+      "reason": "Both claims describe the full City of Edmonton ULA sequence across all lanes, so they belong in the process map that holds the overall sequence. Both claims summarize the full City of Edmonton ULA sequence across all lanes, which fits the process map's overall-sequence role. Detailed steps stay in their phase subjects."
+    },
+    {
+      "content": "In the ULA application process flowchart, the Data lane contains Microstation EO entries and Outlook, Adobe, and the COE ULA Website.",
+      "domains": [
+        "EPCOR/Utility Line Assignment/Application Submission"
+      ],
+      "reason": "These claims cover the online form the Designer completes and the Data lane tools used in the submission workflow. C4 describes the online form the Designer completes, matching existing submission claims. C3 lists workflow-wide tools such as the COE ULA website, which fit the submission step."
+    },
+    {
+      "content": "The form the Designer completes online as part of the City of Edmonton ULA application process, after confirming the drawing is accurate; if the drawing is not accurate, the Designer sends a resolution to the City of Edmonton instead.",
+      "domains": [
+        "EPCOR/Utility Line Assignment/Application Submission"
+      ],
+      "reason": "These claims cover the online form the Designer completes and the Data lane tools used in the submission workflow. C4 describes the online form the Designer completes, matching existing submission claims. C3 lists workflow-wide tools such as the COE ULA website, which fit the submission step."
+    },
+    {
+      "content": "The first step in the City of Edmonton ULA application process, where the Designer completes an initial design before investigating whether a ULA is required.",
+      "domains": [
+        "EPCOR/Utility Line Assignment/Drawing Preparation"
+      ],
+      "reason": "This is the Designer's first step, completing the preliminary design before deciding whether a ULA is required, which matches existing drawing-stage claims. C6 describes the Designer's preliminary design before the ULA decision. This matches the existing preliminary design claim already filed in Drawing Preparation."
+    },
+    {
+      "content": "Conditions raised by stakeholders during the City of Edmonton ULA application process. The process includes a decision point on stakeholder conditions, and the Designer must resolve any conditions with the stakeholder before finalizing the design and filing the ULA permit.",
+      "domains": [
+        "EPCOR/Utility Line Assignment/Stakeholder Circulation/Stakeholder Conflicts"
+      ],
+      "reason": "This claim covers stakeholder conditions and the Designer's duty to resolve them before finalizing the design. C5 covers stakeholder conditions and the Designer's duty to resolve them before filing. It matches E11 and E23 in this conflicts subdomain."
+    },
+    {
+      "content": "In the City of Edmonton ULA application process, the permit the Designer receives after submitting the ULA application form. The Designer must resolve stakeholder conditions, then finalize the design and file the ULA permit to complete the application.",
+      "domains": [
+        "EPCOR/Utility Line Assignment/Permit and Filing"
+      ],
+      "reason": "This claim describes receiving the ULA permit and finalizing and filing it to complete the application. C7 describes receiving the ULA permit and filing it to complete the application. This matches existing permit claims such as E21 and E13."
+    },
+    {
+      "content": "The appendix of the 3.1 Utility Line Assignment (ULA) Application document contains a sample ULA application form, a sample ULA permit, sample ULA circulation responses, sample ULA application drawings, and a ULA memo.",
+      "domains": [
+        "EPCOR/Utility Line Assignment"
+      ],
+      "reason": "The appendix samples cover the whole ULA application, so they sit at the Utility Line Assignment level rather than in one phase. C8 describes sample documents that cover the whole ULA application, not one phase. The Utility Line Assignment level is the correct scope."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "kind": "read-only verification of live empty-article update",
+  "pageId": "4ae929a5-86c8-4cf3-a587-a4d6c65fdd88",
+  "initialSections": 0,
+  "sections": [
+    {
+      "id": "89632abd-017b-43c8-89e7-dc3bb2cde48d",
+      "title": "Clearances from tree roots, property lines, and vertical separation",
+      "lines": 1,
+      "cited_lines": 1
+    },
+    {
+      "id": "75b1320a-29fa-44bc-be7f-6acb8e87c9be",
+      "title": "Crossing clearances between utility lines",
+      "lines": 1,
+      "cited_lines": 1
+    },
+    {
+      "id": "5108f22c-7ca4-459d-af4e-d8d8782b28af",
+      "title": "Horizontal clearances from drainage, hydrants, and bus shelters",
+      "lines": 1,
+      "cited_lines": 1
+    },
+    {
+      "id": "f956af6b-7301-4de2-be6e-69abb8728656",
+      "title": "Horizontal clearances from gas, communication, and streetlights",
+      "lines": 1,
+      "cited_lines": 1
+    },
+    {
+      "id": "e6707489-584f-4add-bff7-acaee65a01cc",
+      "title": "Horizontal clearances from water lines",
+      "lines": 1,
+      "cited_lines": 1
+    }
+  ],
+  "lines": 5,
+  "citedLines": 5,
+  "verificationCorrection": "Initial harness selected section_lines.id instead of line_id after the update had completed; corrected the query without repeating generation."
+}

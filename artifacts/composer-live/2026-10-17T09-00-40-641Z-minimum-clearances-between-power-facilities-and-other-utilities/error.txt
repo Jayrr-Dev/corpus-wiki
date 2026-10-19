@@ -1,0 +1,4 @@
+Error: Composer's illustrations did not pass review after three attempts. No new illustrations were saved.
+    at reviewedComposition (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/review.ts:104:8)
+    at async composeLivePage (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/live.ts:69:17)
+    at async file:///C:/Users/Main/Documents/Projects/second-brain-engine/scripts/live-composer.ts:41:22

@@ -1,0 +1,32 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 4,
+    "problems": [],
+    "improvements": [
+      "The church ruin is small at thumbnail size. Consider a slightly larger display or a crop that tightens on the pond and church.",
+      "The alt text says the church is partly ruined; at this scale its roofless state is hard to confirm. Keep the alt wording cautious."
+    ],
+    "reason": "The photo matches the paragraph's two named remains: the pond in the foreground and the stone church beyond it in an open valley. Both stay recognizable at thumbnail size, and the image does not duplicate the Wormleighton lidar figure.",
+    "id": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+    "after": "P6",
+    "total": 17,
+    "accepted": true
+  },
+  "figure": {
+    "after": "P6",
+    "evidence": [
+      "P6"
+    ],
+    "learningGoal": "Shows the two visible remains named in the text, the fishpond and the church, in the empty valley at Wharram Percy.",
+    "caption": "Wharram Percy deserted medieval village, looking north from the old fishpond toward the church ruin, photographed in 1993.",
+    "alt": "Grassy valley with a water-filled fishpond in the foreground and the partly ruined stone church of Wharram Percy beyond it.",
+    "svg": "",
+    "assetId": "cd0bc4fd-d7d9-4d3f-ba93-261a81eadb7e",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-opus-5-5"
+}

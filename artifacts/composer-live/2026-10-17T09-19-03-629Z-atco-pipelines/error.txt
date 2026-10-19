@@ -1,0 +1,6 @@
+Error: Composer candidate has invalid evidence.
+    at selectCandidateSections (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/candidates.ts:57:143)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async reviewedComposition (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/review.ts:31:6)
+    at async composeLivePage (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/live.ts:71:17)
+    at async file:///C:/Users/Main/Documents/Projects/second-brain-engine/scripts/live-composer.ts:41:22

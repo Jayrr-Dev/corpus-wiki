@@ -1,0 +1,88 @@
+
+> second-brain-engine@0.1.0 test:live:utilitek
+> node --env-file-if-exists=.env.local scripts/performance/live-utilitek.mjs
+
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Upload stage timing {
+  eventId: '65238e98-a58d-425a-b187-d927d3eb3f27',
+  stage: 'reconcile',
+  status: 'succeeded',
+  durationMs: 29183
+}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Upload stage timing {
+  eventId: '65238e98-a58d-425a-b187-d927d3eb3f27',
+  stage: 'embeddings',
+  status: 'succeeded',
+  durationMs: 6161
+}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Upload stage timing {
+  eventId: '65238e98-a58d-425a-b187-d927d3eb3f27',
+  stage: 'duplicates',
+  status: 'succeeded',
+  durationMs: 2992
+}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Upload stage timing {
+  eventId: '65238e98-a58d-425a-b187-d927d3eb3f27',
+  stage: 'tidy',
+  status: 'failed',
+  durationMs: 12556
+}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+stderr | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Could not log the AI call: Error: log_ai_call: 400 Bad Request
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:43:17)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at logSafely (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/callLog.ts:50:5)
+    at chatJsonOnce (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:275:5)
+    at chatJsonAnswer (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:235:18)
+    at processingSpan (C:/Users/Main/Documents/Projects/second-brain-engine/lib/processing/metrics.ts:25:24)
+    at workflowStep (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ingest/workflowContext.ts:43:20)
+    at cleanUpEntities (C:/Users/Main/Documents/Projects/second-brain-engine/lib/knowledge/entityCleanup.ts:43:20)
+    at Object.entityTidier (C:/Users/Main/Documents/Projects/second-brain-engine/lib/server/deps.ts:72:55)
+    at C:/Users/Main/Documents/Projects/second-brain-engine/lib/ingest/workflow.ts:141:22
+
+Processing run metrics {"eventId":"65238e98-a58d-425a-b187-d927d3eb3f27","job":"articles","startedAt":"2026-10-17T02:09:31.310Z","finishedAt":"2026-10-17T02:10:27.289Z","durationMs":55979,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":208,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":9,"durationMs":1928,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":19,"durationMs":3815,"failures":0,"tokensIn":0,"tokensOut":0},"db.set_event_status":{"count":1,"durationMs":136,"failures":0,"tokensIn":0,"tokensOut":0},"db.reconciliation_input":{"count":1,"durationMs":1002,"failures":0,"tokensIn":0,"tokensOut":0},"step.reconciliation-input":{"count":1,"durationMs":1002,"failures":0,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":11,"durationMs":3840,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":1,"durationMs":121,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":2,"durationMs":266,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":4,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.reconciliation":{"count":2,"durationMs":21507,"failures":1,"tokensIn":125578,"tokensOut":6011},"db.log_ai_call":{"count":6,"durationMs":1547,"failures":0,"tokensIn":0,"tokensOut":0},"step.extract":{"count":1,"durationMs":21959,"failures":0,"tokensIn":0,"tokensOut":0},"ai.entity_duplicate_review":{"count":1,"durationMs":2420,"failures":0,"tokensIn":4023,"tokensOut":66},"step.name-duplicate-v1":{"count":1,"durationMs":2687,"failures":0,"tokensIn":0,"tokensOut":0},"step.extraction":{"count":1,"durationMs":25392,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_write":{"count":2,"durationMs":1604,"failures":0,"tokensIn":0,"tokensOut":0},"step.reconcile":{"count":1,"durationMs":29184,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":1,"durationMs":151,"failures":0,"tokensIn":0,"tokensOut":0},"db.missing_unit_embeddings":{"count":2,"durationMs":323,"failures":0,"tokensIn":0,"tokensOut":0},"queue.embedding":{"count":2,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"ai.embeddings":{"count":2,"durationMs":2777,"failures":0,"tokensIn":718,"tokensOut":0},"db.save_unit_embeddings":{"count":1,"durationMs":509,"failures":0,"tokensIn":0,"tokensOut":0},"db.missing_passage_embeddings":{"count":1,"durationMs":246,"failures":0,"tokensIn":0,"tokensOut":0},"db.save_passage_embeddings":{"count":1,"durationMs":1339,"failures":0,"tokensIn":0,"tokensOut":0},"step.embeddings":{"count":1,"durationMs":6162,"failures":0,"tokensIn":0,"tokensOut":0},"db.unit_vectors":{"count":1,"durationMs":962,"failures":0,"tokensIn":0,"tokensOut":0},"step.duplicates":{"count":1,"durationMs":2992,"failures":0,"tokensIn":0,"tokensOut":0},"db.entity_cleanup_input":{"count":1,"durationMs":451,"failures":0,"tokensIn":0,"tokensOut":0},"db.event_touched_entities":{"count":1,"durationMs":164,"failures":0,"tokensIn":0,"tokensOut":0},"ai.entity_cleanup":{"count":1,"durationMs":9015,"failures":0,"tokensIn":7619,"tokensOut":1658},"step.tidy":{"count":2,"durationMs":22414,"failures":1,"tokensIn":0,"tokensOut":0},"db.retry.finish_upload_step":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":1,"durationMs":135,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":136,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_knowledge_result":{"count":1,"durationMs":136,"failures":0,"tokensIn":0,"tokensOut":0}}}
+
+stdout | test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+Utilitek live test result {"status":"incomplete","durationMs":59477,"aiCalls":6,"output":{"sourcePassages":14,"touchedUnits":16,"affectedPages":0,"affectedSections":0,"glossary":{"status":"generating","completed_batches":2,"total_batches":10,"generated_at":"2026-10-17T02:10:03.72577+00:00"},"openWorkspaceExceptions":0},"reportPath":"C:\\Users\\Main\\Documents\\Projects\\second-brain-engine\\artifacts\\processing\\utilitek-live\\2026-10-17T02-09-28-904Z\\report.json"}
+
+ ❯ test/performance/utilitekLive.test.ts (1 test | 1 failed) 62258ms
+   × processes a Utilitek website fixture with the live app services 62257ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/performance/utilitekLive.test.ts > processes a Utilitek website fixture with the live app services
+AssertionError: Live processing failed; the saved report identifies the unfinished stage: expected 'tidy: finish_upload_step: 400 Bad Req…' to be null
+
+- Expected:
+null
+
++ Received:
+"tidy: finish_upload_step: 400 Bad Request"
+
+ ❯ test/performance/utilitekLive.test.ts:112:102
+    110|     expect(result.workflow).toBeDefined();
+    111|     expect(result.workflow?.state).not.toBe("running");
+    112|     expect(result.error, "Live processing failed; the saved report ide…
+       |                                                                                                      ^
+    113|     if (!result.workflow?.waiting) expect(result.workflow?.state).toBe…
+    114|   } catch (error) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:09:25
+   Duration  62.53s (tests 100%)
+

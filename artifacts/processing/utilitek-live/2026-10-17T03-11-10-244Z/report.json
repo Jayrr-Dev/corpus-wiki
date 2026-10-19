@@ -1,0 +1,4319 @@
+{
+  "kind": "live app pipeline; real AI and configured workspace",
+  "runId": "2026-10-17T03-11-10-244Z",
+  "status": "complete",
+  "sourceUrls": [
+    "https://www.utiliteksolutions.ca/",
+    "https://www.utiliteksolutions.ca/expertise"
+  ],
+  "stages": [
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "reconcile",
+      "status": "succeeded",
+      "durationMs": 11649,
+      "recordedAt": "2026-10-17T03:11:24.796Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "embeddings",
+      "status": "succeeded",
+      "durationMs": 11385,
+      "recordedAt": "2026-10-17T03:11:36.717Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "duplicates",
+      "status": "succeeded",
+      "durationMs": 3642,
+      "recordedAt": "2026-10-17T03:11:40.832Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "tidy",
+      "status": "succeeded",
+      "durationMs": 8798,
+      "recordedAt": "2026-10-17T03:11:50.021Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "place",
+      "status": "succeeded",
+      "durationMs": 2515,
+      "recordedAt": "2026-10-17T03:11:53.005Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "hierarchy",
+      "status": "succeeded",
+      "durationMs": 739,
+      "recordedAt": "2026-10-17T03:11:54.298Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "plan",
+      "status": "succeeded",
+      "durationMs": 8676,
+      "recordedAt": "2026-10-17T03:12:03.364Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "pages",
+      "status": "succeeded",
+      "durationMs": 1623,
+      "recordedAt": "2026-10-17T03:12:05.380Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "articles-ready",
+      "status": "succeeded",
+      "durationMs": 1359,
+      "recordedAt": "2026-10-17T03:12:07.533Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "describe",
+      "status": "succeeded",
+      "durationMs": 6119,
+      "recordedAt": "2026-10-17T03:12:14.032Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "profiles",
+      "status": "succeeded",
+      "durationMs": 10912,
+      "recordedAt": "2026-10-17T03:12:25.380Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "expand",
+      "status": "succeeded",
+      "durationMs": 30971,
+      "recordedAt": "2026-10-17T03:12:56.788Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "hierarchy-enrichment",
+      "status": "succeeded",
+      "durationMs": 1433,
+      "recordedAt": "2026-10-17T03:12:58.660Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "plan-enrichment",
+      "status": "succeeded",
+      "durationMs": 9668,
+      "recordedAt": "2026-10-17T03:13:08.723Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "pageId": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+      "status": "succeeded",
+      "completed": 7,
+      "total": 7,
+      "durationMs": 9029,
+      "recordedAt": "2026-10-17T03:13:19.031Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "pageId": "4ec35e88-e49a-4576-b43e-90425bf388e3",
+      "status": "succeeded",
+      "completed": 30,
+      "total": 30,
+      "durationMs": 37734,
+      "recordedAt": "2026-10-17T03:13:47.736Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "pages-enrichment",
+      "status": "succeeded",
+      "durationMs": 45094,
+      "recordedAt": "2026-10-17T03:13:54.198Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "glossary",
+      "status": "failed",
+      "durationMs": 3967,
+      "recordedAt": "2026-10-17T03:13:58.577Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "glossary",
+      "status": "failed",
+      "durationMs": 4161,
+      "recordedAt": "2026-10-17T03:14:40.271Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "glossary",
+      "status": "failed",
+      "durationMs": 13606,
+      "recordedAt": "2026-10-17T03:16:35.029Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "glossary",
+      "status": "succeeded",
+      "durationMs": 31313,
+      "recordedAt": "2026-10-17T03:17:37.005Z"
+    },
+    {
+      "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+      "stage": "curate",
+      "status": "succeeded",
+      "durationMs": 39326,
+      "recordedAt": "2026-10-17T03:18:16.753Z"
+    }
+  ],
+  "aiCalls": [
+    {
+      "purpose": "reconciliation",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 75082,
+      "completionTokens": 1064,
+      "durationMs": 7524,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:11:23.384Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 641,
+      "completionTokens": 0,
+      "durationMs": 3387,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:11:29.017Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 157,
+      "completionTokens": 0,
+      "durationMs": 6036,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:11:36.163Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_cleanup",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 8387,
+      "completionTokens": 1425,
+      "durationMs": 7081,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:11:49.726Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "place_topics",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3810,
+      "completionTokens": 150,
+      "durationMs": 1582,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:11:52.407Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_proposals",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 5977,
+      "completionTokens": 519,
+      "durationMs": 3391,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:11:59.295Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3084,
+      "completionTokens": 116,
+      "durationMs": 1555,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:12:01.769Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "describe_entities",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3128,
+      "completionTokens": 769,
+      "durationMs": 3858,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:12:13.032Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_profiles",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 7092,
+      "completionTokens": 1570,
+      "durationMs": 6748,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:12:22.837Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "knowledge_expansion",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 35519,
+      "completionTokens": 7261,
+      "durationMs": 24157,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:12:53.985Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_proposals",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 5895,
+      "completionTokens": 688,
+      "durationMs": 4624,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:13:04.929Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3143,
+      "completionTokens": 281,
+      "durationMs": 2439,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:13:08.315Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 2591,
+      "completionTokens": 97,
+      "durationMs": 2666,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:16:28.290Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3433,
+      "completionTokens": 103,
+      "durationMs": 1469,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:16:30.481Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4191,
+      "completionTokens": 104,
+      "durationMs": 1322,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:16:32.453Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 2639,
+      "completionTokens": 105,
+      "durationMs": 1440,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:16:34.517Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3525,
+      "completionTokens": 113,
+      "durationMs": 1659,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:11.623Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3018,
+      "completionTokens": 367,
+      "durationMs": 2215,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:14.456Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3950,
+      "completionTokens": 128,
+      "durationMs": 1192,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:16.294Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 6789,
+      "completionTokens": 520,
+      "durationMs": 3306,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:20.174Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3569,
+      "completionTokens": 591,
+      "durationMs": 3450,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:24.262Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 15989,
+      "completionTokens": 117,
+      "durationMs": 1565,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:26.454Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "glossary_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 8087,
+      "completionTokens": 114,
+      "durationMs": 1924,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:29.050Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 1714,
+      "completionTokens": 0,
+      "durationMs": 1419,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:35.043Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_structure_review",
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "high",
+      "promptTokens": 10608,
+      "completionTokens": 1592,
+      "durationMs": 14928,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:54.582Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 1085,
+      "completionTokens": 0,
+      "durationMs": 1547,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:17:59.477Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_editorial_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 38733,
+      "completionTokens": 2391,
+      "durationMs": 12216,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:18:12.605Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 5248,
+      "completionTokens": 377,
+      "durationMs": 2751,
+      "status": "ok",
+      "recordedAt": "2026-10-17T03:18:15.600Z",
+      "loggingAttempts": 1
+    }
+  ],
+  "attempts": [
+    {
+      "startedAt": "2026-10-17T03:11:10.245Z",
+      "finishedAt": "2026-10-17T03:13:59.677Z",
+      "durationMs": 169431,
+      "result": {
+        "status": "applied",
+        "changeSetId": "9c62d865-1df0-409f-908b-5defd05c2f34",
+        "error": "glossary: get_glossary_auto_decide: invalid memory alloc request size 1858142211",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:9c2c7e73-89de-49fe-9559-0304d828724c:d0a37c63-9e30-408c-a8c5-0647d1468442:9857563d-9246-4744-9089-9ef36fd869aa",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place:28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:7f4a70de76c5ebda",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-ready",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "enrichment-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:9ddd344dc45fea98",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:780726b5-70fb-44c4-8d1b-f7069e42c89a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d5733deb-ec41-45db-ae5b-6cbf6918cc46",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:db3d274e-b7e5-45b7-907e-63fa6d0da696",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:11b1f3db-6542-4b4b-b5a4-9e0b449b0837",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2cf75d47-fe51-4c09-a17d-ece2cdeeaeef",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2e738632-a544-4ae8-8db4-a84699a8d868",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:83cbce44-b4ad-4f99-9d3e-53f707fd04a4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5bc0ee5b-8eca-4b3c-8799-0893e6deed6f",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e2eac608-f841-4736-9ee7-3013822e1bc3",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9b765188-c71d-47e3-b855-3758db94938a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:55367675-9d5b-45b2-a4c4-01969a91aad8",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f7e54f1c-5bec-48c0-82d2-8fdf066b7f8c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cd9aaff6-b2e0-44c0-ac73-03404ac8e88e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:70b016bb-7f73-4c5c-9282-5e6540519d1a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2afbed00-1bfd-434a-8084-9b61572c7880",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3bb47f93-1ba1-44e2-8f51-6236373dd0b1",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0587131a-45b0-4d91-84e6-3f45a1b00966",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6350d2e7-9bfd-4c94-8391-df22092ce557",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6bbbbf74-1ad1-49ca-b3cd-ae53a6081c9d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5d0604bd-dcfb-4f96-b157-ed9b3fd2114e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e446c81e-2e9e-469b-bb5b-6ff4a5597f52",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:721714ea-fe8d-4ddf-90e1-d06da4439e2d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:65066cd2-6686-44eb-aaf4-60437c3b4569",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:71eab6a8-4abf-4d82-baf5-2812117ddd20",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:63bae489-a9a8-4b45-9041-28b31c89780c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f719f2f8-2fc1-4e80-a802-786232fb8995",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cc89580a-46ff-4b2f-bbd2-eaa2b6ca4947",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d7b0ebae-7a8b-4a2c-87cd-52185ab27d75",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3f9d88d0-0916-45ad-bc38-b308fdc634c7",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:74ae6550-1881-4aa8-af20-158b86fa1ba0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e97eb808-245c-43fb-b288-e8beea4fa917",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:41ae1fc8-8adb-4124-9bcb-f68a068dc140",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:ab3992e3-2e32-4efb-8863-f805152ed0ac",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:936738fa-2413-4081-964f-be4bca424355",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e8b104ff-5b4f-469b-97db-239e8b525804",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2d93b2f8-be2a-4ead-86db-f655b198111c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9a91e11a-b67b-4ed9-962c-6df10f048be0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": "get_glossary_auto_decide: invalid memory alloc request size 1858142211",
+              "state": "failed",
+              "attempts": 1
+            }
+          ],
+          "waiting": false,
+          "event_id": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+          "progress": null,
+          "updated_at": "2026-10-17T03:13:58.904451+00:00",
+          "lease_until": null,
+          "change_set_id": "9c62d865-1df0-409f-908b-5defd05c2f34",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "timeToArticlesMs": 57288,
+      "metrics": {
+        "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+        "job": "articles",
+        "startedAt": "2026-10-17T03:11:12.882Z",
+        "finishedAt": "2026-10-17T03:13:59.082Z",
+        "durationMs": 166200,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 129,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 78,
+            "durationMs": 11358,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 187,
+            "durationMs": 31463,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.set_event_status": {
+            "count": 1,
+            "durationMs": 138,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.reconciliation_input": {
+            "count": 1,
+            "durationMs": 984,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.reconciliation-input": {
+            "count": 1,
+            "durationMs": 984,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 75,
+            "durationMs": 11049,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.report_upload_progress": {
+            "count": 40,
+            "durationMs": 5202,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 5,
+            "durationMs": 654,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 10,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.reconciliation": {
+            "count": 1,
+            "durationMs": 7524,
+            "failures": 0,
+            "tokensIn": 75082,
+            "tokensOut": 1064
+          },
+          "db.log_ai_call": {
+            "count": 12,
+            "durationMs": 2692,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.extract": {
+            "count": 1,
+            "durationMs": 7779,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.extraction": {
+            "count": 1,
+            "durationMs": 8197,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_write": {
+            "count": 6,
+            "durationMs": 3086,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.reconcile": {
+            "count": 1,
+            "durationMs": 11650,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 320,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_unit_embeddings": {
+            "count": 2,
+            "durationMs": 293,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.embedding": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.embeddings": {
+            "count": 2,
+            "durationMs": 9423,
+            "failures": 0,
+            "tokensIn": 798,
+            "tokensOut": 0
+          },
+          "db.save_unit_embeddings": {
+            "count": 1,
+            "durationMs": 546,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_passage_embeddings": {
+            "count": 1,
+            "durationMs": 172,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.save_passage_embeddings": {
+            "count": 1,
+            "durationMs": 227,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.embeddings": {
+            "count": 1,
+            "durationMs": 11385,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.unit_vectors": {
+            "count": 1,
+            "durationMs": 1335,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.duplicates": {
+            "count": 1,
+            "durationMs": 3643,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.entity_cleanup_input": {
+            "count": 1,
+            "durationMs": 179,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.event_touched_entities": {
+            "count": 3,
+            "durationMs": 438,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_cleanup": {
+            "count": 1,
+            "durationMs": 7081,
+            "failures": 0,
+            "tokensIn": 8387,
+            "tokensOut": 1425
+          },
+          "step.tidy": {
+            "count": 2,
+            "durationMs": 16013,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_unplaced_claims": {
+            "count": 1,
+            "durationMs": 204,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.place_topics": {
+            "count": 1,
+            "durationMs": 1582,
+            "failures": 0,
+            "tokensIn": 3810,
+            "tokensOut": 150
+          },
+          "step.place": {
+            "count": 2,
+            "durationMs": 4226,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 9,
+            "durationMs": 4810,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.organize_entity_context": {
+            "count": 6,
+            "durationMs": 2894,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.hierarchy": {
+            "count": 1,
+            "durationMs": 740,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_event_units": {
+            "count": 1,
+            "durationMs": 121,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_workspace_settings": {
+            "count": 4,
+            "durationMs": 504,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.article_index": {
+            "count": 2,
+            "durationMs": 329,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_proposals": {
+            "count": 2,
+            "durationMs": 8015,
+            "failures": 0,
+            "tokensIn": 11872,
+            "tokensOut": 1207
+          },
+          "step.article-proposals": {
+            "count": 2,
+            "durationMs": 9103,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.article-keys": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_update_discovery": {
+            "count": 2,
+            "durationMs": 3994,
+            "failures": 0,
+            "tokensIn": 6227,
+            "tokensOut": 397
+          },
+          "step.article": {
+            "count": 2,
+            "durationMs": 6123,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.plan": {
+            "count": 1,
+            "durationMs": 8677,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.list_affected_sections": {
+            "count": 2,
+            "durationMs": 804,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.affected-sections": {
+            "count": 2,
+            "durationMs": 804,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.pages": {
+            "count": 1,
+            "durationMs": 1624,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_article_inputs": {
+            "count": 2,
+            "durationMs": 281,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.articles-input": {
+            "count": 1,
+            "durationMs": 153,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.articles-ready": {
+            "count": 1,
+            "durationMs": 1359,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.describe_entities": {
+            "count": 1,
+            "durationMs": 3858,
+            "failures": 0,
+            "tokensIn": 3128,
+            "tokensOut": 769
+          },
+          "step.describe": {
+            "count": 2,
+            "durationMs": 11669,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.entity_profile_evidence": {
+            "count": 1,
+            "durationMs": 200,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.profiles": {
+            "count": 4,
+            "durationMs": 12111,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_profiles": {
+            "count": 1,
+            "durationMs": 6748,
+            "failures": 0,
+            "tokensIn": 7092,
+            "tokensOut": 1570
+          },
+          "step.profiles-draft": {
+            "count": 1,
+            "durationMs": 7047,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.web": {
+            "count": 1,
+            "durationMs": 264,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.stakeholder-web": {
+            "count": 1,
+            "durationMs": 724,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_query_units": {
+            "count": 1,
+            "durationMs": 216,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.knowledge_expansion": {
+            "count": 1,
+            "durationMs": 24157,
+            "failures": 0,
+            "tokensIn": 35519,
+            "tokensOut": 7261
+          },
+          "step.expand-entity": {
+            "count": 1,
+            "durationMs": 30507,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.expand": {
+            "count": 1,
+            "durationMs": 30971,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.articles-input": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.enrichment-input": {
+            "count": 1,
+            "durationMs": 273,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.hierarchy-enrichment": {
+            "count": 1,
+            "durationMs": 1433,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.enrichment-input": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.plan-enrichment": {
+            "count": 1,
+            "durationMs": 9668,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_section_build": {
+            "count": 37,
+            "durationMs": 4785,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_section_state": {
+            "count": 37,
+            "durationMs": 6651,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.section_build_write": {
+            "count": 37,
+            "durationMs": 5273,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.rebuild-section": {
+            "count": 37,
+            "durationMs": 27139,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.pages_needing_editorial_review": {
+            "count": 1,
+            "durationMs": 463,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.editorial-review": {
+            "count": 1,
+            "durationMs": 463,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.assert_upload_lease": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.page_candidates": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.pages-enrichment": {
+            "count": 1,
+            "durationMs": 45095,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_glossary_generation": {
+            "count": 1,
+            "durationMs": 171,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_glossary_auto_decide": {
+            "count": 1,
+            "durationMs": 112,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 3967,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 136,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 129,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 121,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T03:14:30.085Z",
+      "finishedAt": "2026-10-17T03:14:41.683Z",
+      "durationMs": 11597,
+      "result": {
+        "status": "applied",
+        "changeSetId": "9c62d865-1df0-409f-908b-5defd05c2f34",
+        "error": "glossary: get_glossary_auto_decide: invalid memory alloc request size 1858142211",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:9c2c7e73-89de-49fe-9559-0304d828724c:d0a37c63-9e30-408c-a8c5-0647d1468442:9857563d-9246-4744-9089-9ef36fd869aa",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place:28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:7f4a70de76c5ebda",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-ready",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "enrichment-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:9ddd344dc45fea98",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:780726b5-70fb-44c4-8d1b-f7069e42c89a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d5733deb-ec41-45db-ae5b-6cbf6918cc46",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:db3d274e-b7e5-45b7-907e-63fa6d0da696",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:11b1f3db-6542-4b4b-b5a4-9e0b449b0837",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2cf75d47-fe51-4c09-a17d-ece2cdeeaeef",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2e738632-a544-4ae8-8db4-a84699a8d868",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:83cbce44-b4ad-4f99-9d3e-53f707fd04a4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5bc0ee5b-8eca-4b3c-8799-0893e6deed6f",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e2eac608-f841-4736-9ee7-3013822e1bc3",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9b765188-c71d-47e3-b855-3758db94938a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:55367675-9d5b-45b2-a4c4-01969a91aad8",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f7e54f1c-5bec-48c0-82d2-8fdf066b7f8c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cd9aaff6-b2e0-44c0-ac73-03404ac8e88e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:70b016bb-7f73-4c5c-9282-5e6540519d1a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2afbed00-1bfd-434a-8084-9b61572c7880",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3bb47f93-1ba1-44e2-8f51-6236373dd0b1",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0587131a-45b0-4d91-84e6-3f45a1b00966",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6350d2e7-9bfd-4c94-8391-df22092ce557",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6bbbbf74-1ad1-49ca-b3cd-ae53a6081c9d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5d0604bd-dcfb-4f96-b157-ed9b3fd2114e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e446c81e-2e9e-469b-bb5b-6ff4a5597f52",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:721714ea-fe8d-4ddf-90e1-d06da4439e2d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:65066cd2-6686-44eb-aaf4-60437c3b4569",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:71eab6a8-4abf-4d82-baf5-2812117ddd20",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:63bae489-a9a8-4b45-9041-28b31c89780c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f719f2f8-2fc1-4e80-a802-786232fb8995",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cc89580a-46ff-4b2f-bbd2-eaa2b6ca4947",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d7b0ebae-7a8b-4a2c-87cd-52185ab27d75",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3f9d88d0-0916-45ad-bc38-b308fdc634c7",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:74ae6550-1881-4aa8-af20-158b86fa1ba0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e97eb808-245c-43fb-b288-e8beea4fa917",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:41ae1fc8-8adb-4124-9bcb-f68a068dc140",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:ab3992e3-2e32-4efb-8863-f805152ed0ac",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:936738fa-2413-4081-964f-be4bca424355",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e8b104ff-5b4f-469b-97db-239e8b525804",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2d93b2f8-be2a-4ead-86db-f655b198111c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9a91e11a-b67b-4ed9-962c-6df10f048be0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": "get_glossary_auto_decide: invalid memory alloc request size 1858142211",
+              "state": "failed",
+              "attempts": 2
+            }
+          ],
+          "waiting": false,
+          "event_id": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+          "progress": null,
+          "updated_at": "2026-10-17T03:14:40.598446+00:00",
+          "lease_until": null,
+          "change_set_id": "9c62d865-1df0-409f-908b-5defd05c2f34",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "timeToArticlesMs": 0,
+      "metrics": {
+        "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+        "job": "articles",
+        "startedAt": "2026-10-17T03:14:30.993Z",
+        "finishedAt": "2026-10-17T03:14:40.803Z",
+        "durationMs": 9809,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 414,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 16,
+            "durationMs": 2381,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 308,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 18,
+            "durationMs": 2391,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.plan": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.pages": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.articles-ready": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.expand": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.plan-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.pages-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_glossary_generation": {
+            "count": 1,
+            "durationMs": 204,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_glossary_auto_decide": {
+            "count": 1,
+            "durationMs": 188,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 4162,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 1,
+            "durationMs": 112,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 146,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 127,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 145,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T03:16:16.326Z",
+      "finishedAt": "2026-10-17T03:16:39.352Z",
+      "durationMs": 23025,
+      "result": {
+        "status": "applied",
+        "changeSetId": "9c62d865-1df0-409f-908b-5defd05c2f34",
+        "error": "glossary: get_glossary_auto_decide: 400 Bad Request",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:9c2c7e73-89de-49fe-9559-0304d828724c:d0a37c63-9e30-408c-a8c5-0647d1468442:9857563d-9246-4744-9089-9ef36fd869aa",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place:28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:7f4a70de76c5ebda",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-ready",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "enrichment-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:9ddd344dc45fea98",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:780726b5-70fb-44c4-8d1b-f7069e42c89a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d5733deb-ec41-45db-ae5b-6cbf6918cc46",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:db3d274e-b7e5-45b7-907e-63fa6d0da696",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:11b1f3db-6542-4b4b-b5a4-9e0b449b0837",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2cf75d47-fe51-4c09-a17d-ece2cdeeaeef",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2e738632-a544-4ae8-8db4-a84699a8d868",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:83cbce44-b4ad-4f99-9d3e-53f707fd04a4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5bc0ee5b-8eca-4b3c-8799-0893e6deed6f",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e2eac608-f841-4736-9ee7-3013822e1bc3",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9b765188-c71d-47e3-b855-3758db94938a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:55367675-9d5b-45b2-a4c4-01969a91aad8",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f7e54f1c-5bec-48c0-82d2-8fdf066b7f8c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cd9aaff6-b2e0-44c0-ac73-03404ac8e88e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:70b016bb-7f73-4c5c-9282-5e6540519d1a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2afbed00-1bfd-434a-8084-9b61572c7880",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3bb47f93-1ba1-44e2-8f51-6236373dd0b1",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0587131a-45b0-4d91-84e6-3f45a1b00966",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6350d2e7-9bfd-4c94-8391-df22092ce557",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6bbbbf74-1ad1-49ca-b3cd-ae53a6081c9d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5d0604bd-dcfb-4f96-b157-ed9b3fd2114e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e446c81e-2e9e-469b-bb5b-6ff4a5597f52",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:721714ea-fe8d-4ddf-90e1-d06da4439e2d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:65066cd2-6686-44eb-aaf4-60437c3b4569",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:71eab6a8-4abf-4d82-baf5-2812117ddd20",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:63bae489-a9a8-4b45-9041-28b31c89780c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f719f2f8-2fc1-4e80-a802-786232fb8995",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cc89580a-46ff-4b2f-bbd2-eaa2b6ca4947",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d7b0ebae-7a8b-4a2c-87cd-52185ab27d75",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3f9d88d0-0916-45ad-bc38-b308fdc634c7",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:74ae6550-1881-4aa8-af20-158b86fa1ba0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e97eb808-245c-43fb-b288-e8beea4fa917",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:41ae1fc8-8adb-4124-9bcb-f68a068dc140",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:ab3992e3-2e32-4efb-8863-f805152ed0ac",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:936738fa-2413-4081-964f-be4bca424355",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e8b104ff-5b4f-469b-97db-239e8b525804",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2d93b2f8-be2a-4ead-86db-f655b198111c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9a91e11a-b67b-4ed9-962c-6df10f048be0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": "get_glossary_auto_decide: 400 Bad Request",
+              "state": "failed",
+              "attempts": 3
+            }
+          ],
+          "waiting": false,
+          "event_id": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+          "progress": null,
+          "updated_at": "2026-10-17T03:16:38.251694+00:00",
+          "lease_until": null,
+          "change_set_id": "9c62d865-1df0-409f-908b-5defd05c2f34",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "timeToArticlesMs": 0,
+      "metrics": {
+        "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+        "job": "articles",
+        "startedAt": "2026-10-17T03:16:16.772Z",
+        "finishedAt": "2026-10-17T03:16:38.478Z",
+        "durationMs": 21706,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 154,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 16,
+            "durationMs": 2125,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 301,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 21,
+            "durationMs": 3811,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.plan": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.pages": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.articles-ready": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.expand": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.plan-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.pages-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_glossary_generation": {
+            "count": 1,
+            "durationMs": 114,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_glossary_auto_decide": {
+            "count": 5,
+            "durationMs": 1404,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 1,
+            "durationMs": 144,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 4,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.glossary_duplicate_review": {
+            "count": 4,
+            "durationMs": 6897,
+            "failures": 0,
+            "tokensIn": 12854,
+            "tokensOut": 409
+          },
+          "db.log_ai_call": {
+            "count": 4,
+            "durationMs": 490,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.apply_glossary_auto_decision": {
+            "count": 4,
+            "durationMs": 930,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 13607,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 2,
+            "durationMs": 2738,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.finish_upload_step": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 145,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 154,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 147,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T03:17:00.724Z",
+      "finishedAt": "2026-10-17T03:18:19.064Z",
+      "durationMs": 78339,
+      "result": {
+        "status": "applied",
+        "changeSetId": "9c62d865-1df0-409f-908b-5defd05c2f34",
+        "error": null,
+        "workflow": {
+          "error": null,
+          "state": "complete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:9c2c7e73-89de-49fe-9559-0304d828724c:d0a37c63-9e30-408c-a8c5-0647d1468442:9857563d-9246-4744-9089-9ef36fd869aa",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place:28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:7f4a70de76c5ebda",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "articles-ready",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:42a55928-7627-4d4e-a5e9-172ca13d89cd:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "enrichment-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "hierarchy-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0:9ddd344dc45fea98",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:780726b5-70fb-44c4-8d1b-f7069e42c89a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d5733deb-ec41-45db-ae5b-6cbf6918cc46",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:db3d274e-b7e5-45b7-907e-63fa6d0da696",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:11b1f3db-6542-4b4b-b5a4-9e0b449b0837",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2cf75d47-fe51-4c09-a17d-ece2cdeeaeef",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2e738632-a544-4ae8-8db4-a84699a8d868",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:83cbce44-b4ad-4f99-9d3e-53f707fd04a4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5bc0ee5b-8eca-4b3c-8799-0893e6deed6f",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e2eac608-f841-4736-9ee7-3013822e1bc3",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9b765188-c71d-47e3-b855-3758db94938a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:55367675-9d5b-45b2-a4c4-01969a91aad8",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f7e54f1c-5bec-48c0-82d2-8fdf066b7f8c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cd9aaff6-b2e0-44c0-ac73-03404ac8e88e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:70b016bb-7f73-4c5c-9282-5e6540519d1a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2afbed00-1bfd-434a-8084-9b61572c7880",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3bb47f93-1ba1-44e2-8f51-6236373dd0b1",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:0587131a-45b0-4d91-84e6-3f45a1b00966",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6350d2e7-9bfd-4c94-8391-df22092ce557",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:6bbbbf74-1ad1-49ca-b3cd-ae53a6081c9d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:5d0604bd-dcfb-4f96-b157-ed9b3fd2114e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e446c81e-2e9e-469b-bb5b-6ff4a5597f52",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:721714ea-fe8d-4ddf-90e1-d06da4439e2d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:65066cd2-6686-44eb-aaf4-60437c3b4569",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:71eab6a8-4abf-4d82-baf5-2812117ddd20",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:63bae489-a9a8-4b45-9041-28b31c89780c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:f719f2f8-2fc1-4e80-a802-786232fb8995",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:cc89580a-46ff-4b2f-bbd2-eaa2b6ca4947",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:d7b0ebae-7a8b-4a2c-87cd-52185ab27d75",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:3f9d88d0-0916-45ad-bc38-b308fdc634c7",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:74ae6550-1881-4aa8-af20-158b86fa1ba0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e97eb808-245c-43fb-b288-e8beea4fa917",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:41ae1fc8-8adb-4124-9bcb-f68a068dc140",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:ab3992e3-2e32-4efb-8863-f805152ed0ac",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:936738fa-2413-4081-964f-be4bca424355",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:e8b104ff-5b4f-469b-97db-239e8b525804",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:2d93b2f8-be2a-4ead-86db-f655b198111c",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:enrichment:a910b239-b659-4c54-85e7-ecf8c9eb71a0:9a91e11a-b67b-4ed9-962c-6df10f048be0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages-enrichment",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 4
+            },
+            {
+              "key": "curate",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            }
+          ],
+          "waiting": false,
+          "event_id": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+          "progress": null,
+          "updated_at": "2026-10-17T03:18:17.253961+00:00",
+          "lease_until": null,
+          "change_set_id": "9c62d865-1df0-409f-908b-5defd05c2f34",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "timeToArticlesMs": 0,
+      "metrics": {
+        "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+        "job": "articles",
+        "startedAt": "2026-10-17T03:17:01.272Z",
+        "finishedAt": "2026-10-17T03:18:17.787Z",
+        "durationMs": 76515,
+        "status": "succeeded",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 138,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 17,
+            "durationMs": 2189,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 285,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 34,
+            "durationMs": 6716,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.plan": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.pages": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.articles-ready": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.expand": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.plan-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.pages-enrichment": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_glossary_generation": {
+            "count": 1,
+            "durationMs": 135,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_glossary_auto_decide": {
+            "count": 11,
+            "durationMs": 4333,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 2,
+            "durationMs": 247,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 10,
+            "durationMs": 1,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.glossary_duplicate_review": {
+            "count": 7,
+            "durationMs": 15311,
+            "failures": 0,
+            "tokensIn": 44927,
+            "tokensOut": 1950
+          },
+          "db.log_ai_call": {
+            "count": 12,
+            "durationMs": 1992,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.apply_glossary_auto_decision": {
+            "count": 7,
+            "durationMs": 1422,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.get_glossary_auto_decide": {
+            "count": 3,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.assert_upload_lease": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_glossary_embeddings": {
+            "count": 1,
+            "durationMs": 236,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.embedding": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.embeddings": {
+            "count": 2,
+            "durationMs": 2966,
+            "failures": 0,
+            "tokensIn": 2799,
+            "tokensOut": 0
+          },
+          "db.save_glossary_embeddings": {
+            "count": 1,
+            "durationMs": 1832,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 31314,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 2,
+            "durationMs": 426,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_event_units": {
+            "count": 1,
+            "durationMs": 159,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.list_affected_sections": {
+            "count": 1,
+            "durationMs": 380,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_workspace_settings": {
+            "count": 2,
+            "durationMs": 300,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.curator_snapshot": {
+            "count": 2,
+            "durationMs": 3908,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_ai_role_instructions": {
+            "count": 1,
+            "durationMs": 177,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.page_structure_review": {
+            "count": 1,
+            "durationMs": 14928,
+            "failures": 0,
+            "tokensIn": 10608,
+            "tokensOut": 1592
+          },
+          "stage.curator.structure": {
+            "count": 1,
+            "durationMs": 17213,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.curator.overviews": {
+            "count": 1,
+            "durationMs": 2625,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_snapshot": {
+            "count": 1,
+            "durationMs": 281,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.similar_units": {
+            "count": 1,
+            "durationMs": 293,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_related": {
+            "count": 1,
+            "durationMs": 336,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.page_editorial_review": {
+            "count": 1,
+            "durationMs": 12216,
+            "failures": 0,
+            "tokensIn": 38733,
+            "tokensOut": 2391
+          },
+          "ai.line_fact_check": {
+            "count": 1,
+            "durationMs": 2751,
+            "failures": 0,
+            "tokensIn": 5248,
+            "tokensOut": 377
+          },
+          "db.upload_workflow_write": {
+            "count": 1,
+            "durationMs": 962,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.curator.dispatch": {
+            "count": 1,
+            "durationMs": 19107,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.curate": {
+            "count": 1,
+            "durationMs": 39326,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 200,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 386,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 160,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.utiliteksolutions.ca/",
+      "title": "Utilitek Solutions | Leading Electrical Engineering Consulting in Edmonton, Alberta",
+      "fetchedAt": "2026-10-17T03:11:10.245Z",
+      "characters": 99254,
+      "sha256": "7194535fa8f520a56e8153cfb752d3e4c29bad40ff21aca412ac95b504f20dde"
+    },
+    {
+      "url": "https://www.utiliteksolutions.ca/expertise",
+      "title": "Electrical Engineering Expertise | Distribution Systems &amp; Grid Modernization | Utilitek | Utilitek Solutions",
+      "fetchedAt": "2026-10-17T03:11:10.245Z",
+      "characters": 152307,
+      "sha256": "fc85ea0ab72c5f7ca9861449b87b4231d544e7aab2e8c8b7ec3d11bba3416be8"
+    }
+  ],
+  "syntheticProjects": 0,
+  "fixture": "small-six-facts-v1",
+  "inputPath": "C:\\Users\\Main\\Documents\\Projects\\second-brain-engine\\artifacts\\processing\\utilitek-live\\2026-10-17T03-11-10-244Z\\utilitek-website-live-test.md",
+  "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+  "sourceId": "3273c2ce-cbc4-4a20-b4b4-04bd88d6bd9c",
+  "articlesReadyAt": "2026-10-17T03:12:07.533Z",
+  "timeToArticlesMs": 57288,
+  "networkErrors": [
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T03:13:48.649Z"
+    },
+    {
+      "path": "/rest/v1/rpc/page_candidates",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:13:49.826Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:13:51.012Z"
+    },
+    {
+      "path": "/rest/v1/rpc/page_candidates",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:13:52.095Z"
+    },
+    {
+      "path": "/rest/v1/rpc/get_glossary_auto_decide",
+      "status": 500,
+      "statusText": "Internal Server Error",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"XX000\",\"details\":null,\"hint\":null,\"message\":\"invalid memory alloc request size 1858142211\"}",
+      "recordedAt": "2026-10-17T03:13:58.577Z"
+    },
+    {
+      "path": "/rest/v1/rpc/get_glossary_auto_decide",
+      "status": 500,
+      "statusText": "Internal Server Error",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"XX000\",\"details\":null,\"hint\":null,\"message\":\"invalid memory alloc request size 1858142211\"}",
+      "recordedAt": "2026-10-17T03:14:40.270Z"
+    },
+    {
+      "path": "/rest/v1/rpc/get_glossary_auto_decide",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T03:16:35.029Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:16:36.258Z"
+    },
+    {
+      "path": "/rest/v1/rpc/get_glossary_auto_decide",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T03:17:29.513Z"
+    },
+    {
+      "path": "/rest/v1/rpc/get_glossary_auto_decide",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T03:17:30.099Z"
+    },
+    {
+      "path": "/rest/v1/rpc/get_glossary_auto_decide",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:17:32.000Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T03:17:32.230Z"
+    }
+  ],
+  "metrics": {
+    "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+    "job": "articles",
+    "startedAt": "2026-10-17T03:17:01.272Z",
+    "finishedAt": "2026-10-17T03:18:17.787Z",
+    "durationMs": 76515,
+    "status": "succeeded",
+    "metrics": {
+      "db.claim_upload_workflow": {
+        "count": 1,
+        "durationMs": 138,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.start_upload_step": {
+        "count": 17,
+        "durationMs": 2189,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.reconcile": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_workflow_waiting": {
+        "count": 2,
+        "durationMs": 285,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.assert_upload_lease": {
+        "count": 34,
+        "durationMs": 6716,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.embeddings": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.duplicates": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.tidy": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.place": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.hierarchy": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.plan": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.pages": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.articles-ready": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.describe": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.profiles": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.expand": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.hierarchy-enrichment": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.plan-enrichment": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.pages-enrichment": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.claim_glossary_generation": {
+        "count": 1,
+        "durationMs": 135,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_glossary_auto_decide": {
+        "count": 11,
+        "durationMs": 4333,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_role_memory": {
+        "count": 2,
+        "durationMs": 247,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "queue.chat": {
+        "count": 10,
+        "durationMs": 1,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.glossary_duplicate_review": {
+        "count": 7,
+        "durationMs": 15311,
+        "failures": 0,
+        "tokensIn": 44927,
+        "tokensOut": 1950
+      },
+      "db.log_ai_call": {
+        "count": 12,
+        "durationMs": 1992,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.apply_glossary_auto_decision": {
+        "count": 7,
+        "durationMs": 1422,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.retry.get_glossary_auto_decide": {
+        "count": 3,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.retry.assert_upload_lease": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.missing_glossary_embeddings": {
+        "count": 1,
+        "durationMs": 236,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "queue.embedding": {
+        "count": 2,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.embeddings": {
+        "count": 2,
+        "durationMs": 2966,
+        "failures": 0,
+        "tokensIn": 2799,
+        "tokensOut": 0
+      },
+      "db.save_glossary_embeddings": {
+        "count": 1,
+        "durationMs": 1832,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.glossary": {
+        "count": 1,
+        "durationMs": 31314,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.finish_upload_step": {
+        "count": 2,
+        "durationMs": 426,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.living_page_event_units": {
+        "count": 1,
+        "durationMs": 159,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.list_affected_sections": {
+        "count": 1,
+        "durationMs": 380,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_workspace_settings": {
+        "count": 2,
+        "durationMs": 300,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.curator_snapshot": {
+        "count": 2,
+        "durationMs": 3908,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_ai_role_instructions": {
+        "count": 1,
+        "durationMs": 177,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.page_structure_review": {
+        "count": 1,
+        "durationMs": 14928,
+        "failures": 0,
+        "tokensIn": 10608,
+        "tokensOut": 1592
+      },
+      "stage.curator.structure": {
+        "count": 1,
+        "durationMs": 17213,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "stage.curator.overviews": {
+        "count": 1,
+        "durationMs": 2625,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_review_snapshot": {
+        "count": 1,
+        "durationMs": 281,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.similar_units": {
+        "count": 1,
+        "durationMs": 293,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_review_related": {
+        "count": 1,
+        "durationMs": 336,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.page_editorial_review": {
+        "count": 1,
+        "durationMs": 12216,
+        "failures": 0,
+        "tokensIn": 38733,
+        "tokensOut": 2391
+      },
+      "ai.line_fact_check": {
+        "count": 1,
+        "durationMs": 2751,
+        "failures": 0,
+        "tokensIn": 5248,
+        "tokensOut": 377
+      },
+      "db.upload_workflow_write": {
+        "count": 1,
+        "durationMs": 962,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "stage.curator.dispatch": {
+        "count": 1,
+        "durationMs": 19107,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.curate": {
+        "count": 1,
+        "durationMs": 39326,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.release_upload_workflow": {
+        "count": 1,
+        "durationMs": 200,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.read_upload_workflows": {
+        "count": 1,
+        "durationMs": 386,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_knowledge_result": {
+        "count": 1,
+        "durationMs": 160,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      }
+    }
+  },
+  "output": {
+    "sourcePassages": 3,
+    "touchedUnits": 6,
+    "affectedPages": 2,
+    "affectedSections": 20,
+    "sourceUsage": {
+      "unit_count": 4,
+      "article_count": 0,
+      "line_count": 0
+    },
+    "articleReviews": [
+      {
+        "verdict": "update_existing",
+        "reason": "The proposer sent these claims to an existing article.",
+        "decided_by": "rule",
+        "result_page_id": "4ec35e88-e49a-4576-b43e-90425bf388e3"
+      },
+      {
+        "verdict": "update_existing",
+        "reason": "The proposer sent these claims to an existing article.",
+        "decided_by": "rule",
+        "result_page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3"
+      }
+    ],
+    "glossary": {
+      "status": "ready",
+      "completed_batches": 14,
+      "total_batches": 14,
+      "generated_at": "2026-10-17T03:13:54.097737+00:00"
+    },
+    "openWorkspaceExceptions": 0
+  }
+}

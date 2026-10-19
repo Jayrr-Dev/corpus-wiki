@@ -1,0 +1,42 @@
+{
+  "page": {
+    "id": "15a53755-136b-4c25-915e-8dcad8315ac8",
+    "title": "Minimum clearances between power facilities and other utilities",
+    "slug": "minimum-clearances-between-power-facilities-and-other-utilities"
+  },
+  "snapshot": {
+    "slug": "minimum-clearances-between-power-facilities-and-other-utilities",
+    "title": "Minimum clearances between power facilities and other utilities",
+    "paragraphs": [
+      {
+        "id": "4d5d50b1-87e6-4946-9523-57091f2ab53d",
+        "text": "Mutually agreed clearances set the minimum distances that power facilities keep from other utilities and structures. They cover horizontal spacing from water, gas, communication, and drainage lines, streetlights, fire hydrants, bus shelters, and tree roots, as well as vertical spacing between utilities and horizontal setbacks from property lines. Horizontal distances under these clearances range from 1.0m to 3.0m, and the largest, 3.0m, applies to drainage lines, fire hydrants, and the edge of bus shelters.",
+        "section": "Overview",
+        "hasMedia": false,
+        "revisionId": "70043f02-3fa5-481a-ad18-dc33453e39e4"
+      },
+      {
+        "id": "a9c6098c-880b-47d1-b3af-b82d931865f7",
+        "text": "Mutually agreed clearances require a minimum horizontal clearance of 1.8m between power facilities and water lines, including water services. For transmission water lines, the minimum increases to 2.5m. Gas lines, communication lines, and streetlights require a minimum horizontal clearance of 1.0m from power facilities under the same agreed clearances.",
+        "section": "Horizontal clearances to water, gas, and communication lines",
+        "hasMedia": false,
+        "revisionId": "7731c5e7-3933-4042-a284-80b7b7c0f90a"
+      },
+      {
+        "id": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+        "text": "Mutually agreed clearances require a minimum horizontal distance of 3.0m between power facilities and drainage lines, fire hydrants, and the edge of bus shelters.",
+        "section": "Clearances to drainage lines, fire hydrants, and bus shelters",
+        "hasMedia": false,
+        "revisionId": "795eb927-1b98-490e-acbc-bfc0caa0f929"
+      },
+      {
+        "id": "22183c15-3ed0-4962-8077-5a203bf1b7ab",
+        "text": "Mutually agreed clearances set a minimum horizontal distance of 1.0m between power facilities and the edge of a tree root. They also set a minimum vertical clearance of 0.3m between power facilities and utilities, unless otherwise stipulated. For a power pole, the minimum horizontal clearance from the property line is 1.22m.",
+        "section": "Tree roots, vertical clearances, and property line setbacks",
+        "hasMedia": false,
+        "revisionId": "64dd2cef-4669-4681-aa3e-45c4a62d5019"
+      }
+    ]
+  },
+  "previous": null
+}

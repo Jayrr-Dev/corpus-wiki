@@ -1,0 +1,43 @@
+{
+  "briefVersion": "spatial-illustration-user-references-v1",
+  "referenceInterpretation": "Show recognizable physical objects, their surroundings, clearance/access space, and dimension arrows terminating on the stated reference features. Plans, elevations, sections, annotated photography and restrained 3D rendering fit. A numeric comparison chart alone does not satisfy this physical illustration brief. Reference-image measurements are not evidence for the live article.",
+  "article": "Minimum clearances between power facilities and other utilities",
+  "pageId": "15a53755-136b-4c25-915e-8dcad8315ac8",
+  "activeRunId": "7fbeef8a-5ccb-46dd-89c0-8f5a7c38332a",
+  "automatedReview": { "total": 17, "outOf": 20, "method": "Separate model call reviewing SVG code against live paragraph evidence; not rendered vision." },
+  "primaryAgentReview": {
+    "total": 18,
+    "outOf": 20,
+    "scores": { "usefulness": 4, "grounding": 4, "restraint": 4, "visualDesign": 3, "accessibility": 3 },
+    "verdict": "Pass as an object-based 2D engineering illustration. This meets the spatial intent of the supplied examples substantially better than the retired bar chart.",
+    "observed": [
+      "One figure contains two clearly separate underground examples, rather than an invented complete site layout.",
+      "The left scene depicts a tree and visible roots. The 1.0 m dimension spans horizontally from the root-edge projection to the nearest side of the orange power-facility symbol.",
+      "The right scene depicts the bottom surface of a power facility and the top of another utility. The 0.3 m dimension is drawn vertically between those surfaces.",
+      "The caption states mutually agreed minimums, illustrative and not to scale, and preserves the vertical-clearance qualification unless otherwise stipulated.",
+      "The figure follows the article paragraph that discusses these relationships. Other numbers were omitted rather than copied from reference images or forced into one drawing.",
+      "The authenticated image loads in the actual app. The existing viewer opens it and zooms on a 360px layout; horizontal panning is necessary after zoom.",
+      "Live removal hides the figure, and Undo removal restores the same figure. Article paragraphs remain unchanged."
+    ],
+    "limitations": [
+      "The power facilities are generic cross-section symbols. This is an explanatory schematic, not a site-specific construction drawing.",
+      "The tree is stylized, and the small labels benefit from enlargement on phones.",
+      "Raster image generation and licensed online-asset acquisition remain unconnected to the application. This run tests original SVG only.",
+      "The primary review checks consistency with stored article text, not independent engineering or regulatory verification."
+    ],
+    "screenshots": ["spatial-clearance-desktop.png", "spatial-clearance-mobile-zoom.png"]
+  },
+  "retiredDirection": {
+    "type": "Numeric horizontal-clearance bar chart",
+    "initialPrimaryGradeBeforeReferenceClarification": 17,
+    "retrospectiveGradeAgainstSuppliedSpatialBrief": 14,
+    "verdict": "Rejected and retired. Correct comparison values do not substitute for showing physical objects, spaces and measurement endpoints.",
+    "historyPreserved": true
+  },
+  "ulaLiveAttempt": {
+    "pageId": "b3c755f1-fda1-463d-80e7-9029ba8f81d3",
+    "saved": false,
+    "reason": "The ULA article changed during both generation attempts. The snapshot guard rejected the saves; no Composer illustration was attached to outdated ULA text."
+  },
+  "checks": { "composerTestsPassed": 21, "anonymousImageRequest": "Redirects to sign-in; does not return the illustration", "removeAndUndo": "Verified in the live browser", "articleTextUnchanged": true }
+}

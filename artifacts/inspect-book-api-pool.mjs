@@ -1,0 +1,2 @@
+const ref=new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split('.')[0];
+const r=await fetch(`https://api.supabase.com/v1/projects/${ref}/postgrest`,{headers:{Authorization:`Bearer ${process.env.SUPABASE_ACCESS_TOKEN}`},signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error(`Config ${r.status}`);const c=await r.json();console.log(JSON.stringify({ref,db_pool:c.db_pool,db_pool_acquisition_timeout:c.db_pool_acquisition_timeout,max_rows:c.max_rows}));

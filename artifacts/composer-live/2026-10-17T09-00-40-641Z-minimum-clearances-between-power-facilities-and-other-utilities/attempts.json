@@ -1,0 +1,115 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3"
+          ],
+          "learningGoal": "Readers see the 3.0m minimum horizontal gap between a power facility, shown as a power pole, and both the edge of a bus shelter and a fire hydrant.",
+          "caption": "Illustrative street elevation, not to scale. Mutually agreed clearances keep power facilities at least 3.0m horizontally from the edge of a bus shelter and from a fire hydrant. The same 3.0m minimum applies to drainage lines, which are not shown. This is an example, not a design instruction.",
+          "alt": "Side view of a street with a bus shelter on the left, a power pole in the middle and a fire hydrant on the right. Shaded gaps with dimension arrows show at least 3.0 metres from the shelter's edge to the pole and from the pole to the hydrant.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>Clearances from a power pole to a bus shelter and fire hydrant</title><desc>Not-to-scale elevation showing 3.0 m minimum horizontal clearances.</desc><defs><linearGradient id='p' x1='0' x2='1'><stop offset='0' stop-color='#6b5a48'/><stop offset='1' stop-color='#9a8468'/></linearGradient></defs><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='300' y='250' width='92' height='180' fill='#f2c46d' opacity='0.3'/><rect x='408' y='340' width='92' height='90' fill='#f2c46d' opacity='0.3'/><rect x='40' y='430' width='720' height='14' fill='#c9c3b8'/><line x1='40' y1='430' x2='760' y2='430' stroke='#555' stroke-width='2'/><polygon points='205,280 310,272 310,284 205,290' fill='#7a8792'/><rect x='214' y='288' width='6' height='142' fill='#5d6870'/><rect x='294' y='284' width='6' height='146' fill='#5d6870'/><rect x='220' y='300' width='74' height='110' fill='#cfe3ee' stroke='#8aa4b2' stroke-width='2'/><rect x='228' y='380' width='58' height='8' fill='#8a7a66'/><rect x='392' y='80' width='16' height='350' fill='url(#p)'/><rect x='350' y='108' width='100' height='8' fill='#6b5a48'/><circle cx='358' cy='104' r='5' fill='#aab'/><circle cx='442' cy='104' r='5' fill='#aab'/><rect x='504' y='378' width='32' height='52' rx='4' fill='#c0392b'/><path d='M500 378 Q520 356 540 378 Z' fill='#a93226'/><rect x='494' y='394' width='10' height='12' fill='#a93226'/><rect x='536' y='394' width='10' height='12' fill='#a93226'/><g stroke='#333' stroke-width='1.5' stroke-dasharray='5 4'><line x1='300' y1='280' x2='300' y2='232'/><line x1='392' y1='250' x2='392' y2='232'/><line x1='408' y1='330' x2='408' y2='322'/><line x1='500' y1='370' x2='500' y2='322'/></g><g stroke='#222' stroke-width='2'><line x1='310' y1='240' x2='382' y2='240'/><line x1='418' y1='330' x2='490' y2='330'/></g><g fill='#222'><polygon points='300,240 312,234 312,246'/><polygon points='392,240 380,234 380,246'/><polygon points='408,330 420,324 420,336'/><polygon points='500,330 488,324 488,336'/></g><g font-family='Arial, sans-serif' font-size='28' fill='#222'><text x='346' y='222' text-anchor='middle' font-weight='bold'>3.0 m</text><text x='454' y='312' text-anchor='middle' font-weight='bold'>3.0 m</text><text x='40' y='200'>Bus shelter</text><text x='590' y='110'>Power pole</text><text x='590' y='400'>Fire hydrant</text><text x='40' y='490' fill='#555'>Not to scale</text></g><g stroke='#444' stroke-width='1.5' fill='none'><line x1='150' y1='210' x2='230' y2='280'/><line x1='585' y1='118' x2='410' y2='160'/><line x1='585' y1='392' x2='548' y2='398'/></g></svg>"
+        }
+      ],
+      "omitted": "Drainage lines are named in the caption but not drawn, because the source does not say where on a buried drainage line the 3.0m measurement starts. No other section was selected."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Measure the hydrant gap to the hydrant body's nearest edge (x=504) or its outlet nozzle (x=494), not to the cap edge at x=500, and state the reference point consistently.",
+        "The shelter dimension starts at the roof edge (x=310 overhang), but the dimension line starts at the post (x=300). Decide which counts as the shelter edge and align the extension line with it.",
+        "Raise the label size from 28px toward 32px and shorten the leader lines so the labels stay readable on mobile.",
+        "Consider changing 'Power pole' to 'Power facility (pole)' so the label matches the source's general term."
+      ]
+    },
+    "total": 16,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 10618,
+    "tokensOut": 3032
+  },
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3"
+          ],
+          "learningGoal": "Readers see that the 3.0m minimum is a horizontal gap measured from the power facility to the edge of a bus shelter and to the nearest point of a fire hydrant.",
+          "caption": "Illustrative street elevation, not to scale. Mutually agreed clearances keep power facilities at least 3.0m horizontally from the edge of a bus shelter and from a fire hydrant. Here, the gaps run from the pole's facing side to the shelter's nearest edge and to the hydrant's nearest outlet. The same 3.0m minimum applies to drainage lines, which are not shown. This is one example, not a design instruction.",
+          "alt": "Side view of a street with a bus shelter on the left, a power pole labelled as the power facility in the middle, and a fire hydrant on the right. Shaded gaps with dimension arrows show at least 3.0 metres from the shelter's nearest edge to the pole and from the pole to the hydrant's nearest outlet.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>Clearances from a power facility to a bus shelter and fire hydrant</title><desc>Not-to-scale elevation showing 3.0 m minimum horizontal clearances to the shelter edge and the hydrant's nearest outlet.</desc><defs><linearGradient id='p' x1='0' x2='1'><stop offset='0' stop-color='#6b5a48'/><stop offset='1' stop-color='#9a8468'/></linearGradient></defs><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='300' y='250' width='92' height='180' fill='#f2c46d' opacity='0.3'/><rect x='408' y='340' width='92' height='90' fill='#f2c46d' opacity='0.3'/><rect x='40' y='430' width='720' height='14' fill='#c9c3b8'/><line x1='40' y1='430' x2='760' y2='430' stroke='#555' stroke-width='2'/><polygon points='205,280 300,272 300,284 205,290' fill='#7a8792'/><rect x='214' y='288' width='6' height='142' fill='#5d6870'/><rect x='294' y='284' width='6' height='146' fill='#5d6870'/><rect x='220' y='300' width='74' height='110' fill='#cfe3ee' stroke='#8aa4b2' stroke-width='2'/><rect x='228' y='380' width='58' height='8' fill='#8a7a66'/><rect x='392' y='90' width='16' height='340' fill='url(#p)'/><rect x='350' y='116' width='100' height='8' fill='#6b5a48'/><circle cx='358' cy='112' r='5' fill='#99a'/><circle cx='442' cy='112' r='5' fill='#99a'/><rect x='510' y='378' width='32' height='52' rx='4' fill='#c0392b'/><path d='M506 378 Q526 356 546 378 Z' fill='#a93226'/><rect x='500' y='394' width='10' height='12' fill='#a93226'/><rect x='542' y='394' width='10' height='12' fill='#a93226'/><g stroke='#333' stroke-width='1.5' stroke-dasharray='5 4'><line x1='300' y1='270' x2='300' y2='230'/><line x1='392' y1='250' x2='392' y2='230'/><line x1='408' y1='338' x2='408' y2='320'/><line x1='500' y1='392' x2='500' y2='320'/></g><g stroke='#222' stroke-width='2'><line x1='310' y1='240' x2='382' y2='240'/><line x1='418' y1='330' x2='490' y2='330'/></g><g fill='#222'><polygon points='300,240 312,234 312,246'/><polygon points='392,240 380,234 380,246'/><polygon points='408,330 420,324 420,336'/><polygon points='500,330 488,324 488,336'/></g><g font-family='Arial, sans-serif' font-size='32' fill='#222'><text x='346' y='220' text-anchor='middle' font-weight='bold'>3.0 m</text><text x='454' y='312' text-anchor='middle' font-weight='bold'>3.0 m</text><text x='40' y='190'>Bus shelter</text><text x='400' y='64' text-anchor='middle'>Power facility (pole)</text><text x='590' y='392'>Fire</text><text x='590' y='426'>hydrant</text></g><text x='40' y='495' font-family='Arial, sans-serif' font-size='28' fill='#555'>Not to scale</text><g stroke='#444' stroke-width='1.5' fill='none'><line x1='130' y1='202' x2='215' y2='276'/><line x1='400' y1='72' x2='400' y2='88'/><line x1='584' y1='402' x2='556' y2='400'/></g></svg>"
+        }
+      ],
+      "omitted": "Revised the existing figure only. The shelter roof now ends flush with its post, so one edge is measured; the hydrant gap ends at its nearest outlet. Drainage lines stay out of the drawing because the source does not say where the measurement on a buried drainage line starts. No other section was selected."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 3,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Make the two dimension arrows equal in length or state more clearly that the drawing is not to scale. They span the same 92px now, which is fine, but the left gap has a taller shaded zone that may imply a different clearance.",
+        "Label the hydrant leader line endpoint more precisely; it ends near the outlet but not on the hydrant body edge.",
+        "Consider saying \"at least 3.0 m\" or \"min 3.0 m\" in the labels so they read as minimums, not exact distances.",
+        "Shorten the caption by removing the final sentence about design instruction, or merge it with the not-to-scale note."
+      ]
+    },
+    "total": 15,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 12697,
+    "tokensOut": 3303
+  },
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3"
+          ],
+          "learningGoal": "Readers see that the 3.0m minimum is a horizontal gap measured from the power facility to the edge of a bus shelter and to a fire hydrant.",
+          "caption": "Illustrative street elevation: one example, not to scale and not a design instruction. Mutually agreed clearances keep power facilities at least 3.0m horizontally from the edge of a bus shelter and from a fire hydrant. The same minimum applies to drainage lines, which are not shown.",
+          "alt": "Side view of a street with a bus shelter on the left, a power pole in the middle, and a fire hydrant on the right. Equal shaded gaps with dimension arrows mark a minimum of 3.0 metres from the shelter's nearest edge to the pole and from the pole to the hydrant's nearest outlet.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>Clearances from a power facility to a bus shelter and fire hydrant</title><desc>Not-to-scale elevation showing minimum 3.0 m horizontal clearances to the shelter edge and the hydrant.</desc><defs><linearGradient id='p' x1='0' x2='1'><stop offset='0' stop-color='#6b5a48'/><stop offset='1' stop-color='#9a8468'/></linearGradient></defs><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='300' y='340' width='92' height='90' fill='#f2c46d' opacity='0.3'/><rect x='408' y='340' width='92' height='90' fill='#f2c46d' opacity='0.3'/><rect x='40' y='430' width='720' height='14' fill='#c9c3b8'/><line x1='40' y1='430' x2='760' y2='430' stroke='#555' stroke-width='2'/><polygon points='205,280 300,272 300,284 205,290' fill='#7a8792'/><rect x='214' y='288' width='6' height='142' fill='#5d6870'/><rect x='294' y='284' width='6' height='146' fill='#5d6870'/><rect x='220' y='300' width='74' height='110' fill='#cfe3ee' stroke='#8aa4b2' stroke-width='2'/><rect x='228' y='380' width='58' height='8' fill='#8a7a66'/><rect x='392' y='90' width='16' height='340' fill='url(#p)'/><rect x='350' y='116' width='100' height='8' fill='#6b5a48'/><circle cx='358' cy='112' r='5' fill='#99a'/><circle cx='442' cy='112' r='5' fill='#99a'/><rect x='510' y='378' width='32' height='52' rx='4' fill='#c0392b'/><path d='M506 378 Q526 356 546 378 Z' fill='#a93226'/><rect x='500' y='394' width='10' height='12' fill='#a93226'/><rect x='542' y='394' width='10' height='12' fill='#a93226'/><g stroke='#333' stroke-width='1.5' stroke-dasharray='5 4'><line x1='300' y1='340' x2='300' y2='320'/><line x1='392' y1='340' x2='392' y2='320'/><line x1='408' y1='340' x2='408' y2='320'/><line x1='500' y1='392' x2='500' y2='320'/></g><g stroke='#222' stroke-width='2'><line x1='310' y1='330' x2='382' y2='330'/><line x1='418' y1='330' x2='490' y2='330'/></g><g fill='#222'><polygon points='300,330 312,324 312,336'/><polygon points='392,330 380,324 380,336'/><polygon points='408,330 420,324 420,336'/><polygon points='500,330 488,324 488,336'/></g><g font-family='Arial, sans-serif' font-size='28' fill='#222' font-weight='bold'><text x='300' y='266' text-anchor='middle'>min</text><text x='300' y='298' text-anchor='middle'>3.0 m</text><text x='500' y='266' text-anchor='middle'>min</text><text x='500' y='298' text-anchor='middle'>3.0 m</text></g><g font-family='Arial, sans-serif' font-size='30' fill='#222'><text x='40' y='190'>Bus shelter</text><text x='400' y='64' text-anchor='middle'>Power facility (pole)</text><text x='590' y='392'>Fire</text><text x='590' y='426'>hydrant</text></g><text x='40' y='495' font-family='Arial, sans-serif' font-size='28' fill='#555'>Not to scale</text><g stroke='#444' stroke-width='1.5' fill='none'><line x1='130' y1='202' x2='215' y2='276'/><line x1='400' y1='72' x2='400' y2='88'/><line x1='584' y1='400' x2='542' y2='400'/></g></svg>"
+        }
+      ],
+      "omitted": "Revised the existing figure only. Both shaded gaps now match, labels read as minimums, and the hydrant leader ends on the hydrant body. Drainage lines stay out because the source does not say where their measurement starts. No other section was selected."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 3,
+      "visualDesign": 2,
+      "accessibility": 3,
+      "problems": [
+        "The left 'min 3.0 m' label is centred at x=300, so its second line (about y 278–298) overlaps the shelter roof polygon (y 272–290) and the right post top.",
+        "The bus shelter leader line ends at (215,276), near the overlapping left dimension label and roof, which makes that corner cluttered."
+      ],
+      "fixes": [
+        "Centre each dimension label over its gap, at about x=346 and x=454, and place it above the arrows, clear of the shelter roof.",
+        "Move the bus shelter label or its leader so the line ends on the shelter roof or post without passing near the dimension text.",
+        "Consider placing both labels on one row, such as y≈250, so the equal 3.0m minimums read as a pair."
+      ]
+    },
+    "total": 15,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 12846,
+    "tokensOut": 2740
+  }
+]

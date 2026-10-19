@@ -1,0 +1,40 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "7b617b14-75a9-4869-9d7f-fd8555b1700a",
+          "evidence": [
+            "7b617b14-75a9-4869-9d7f-fd8555b1700a",
+            "1e0c95d0-f77e-4530-8480-1d5eea2d77ce"
+          ],
+          "learningGoal": "Shows that the City circulates ULA applications only to ATCO Pipelines, so the Designer must contact other pipeline companies directly.",
+          "caption": "Simplified notification paths. The City ULA administrator circulates applications only to ATCO Pipelines. Other pipeline companies learn of a project only if the Designer applies to them directly for a high pressure pipeline crossing and/or a proximity agreement.",
+          "alt": "Diagram with four boxes. An arrow runs from Designer to the City ULA administrator, and a second arrow labeled circulates runs from the City to ATCO Pipelines. A crossed-out dashed line labeled not circulated runs from the City to Other pipeline companies. A solid arrow labeled applies directly runs from Designer to Other pipeline companies.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>ULA pipeline company notification paths</title><desc>The City circulates to ATCO Pipelines only; the Designer applies directly to other pipeline companies.</desc><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='40' y='230' width='190' height='100' rx='10' fill='#e8eef5' stroke='#2f4f6f' stroke-width='3'/><text x='135' y='290' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2f40' text-anchor='middle'>Designer</text><rect x='270' y='90' width='230' height='100' rx='10' fill='#f1f1ee' stroke='#555' stroke-width='3'/><text x='385' y='132' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#222' text-anchor='middle'>City ULA</text><text x='385' y='168' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#222' text-anchor='middle'>administrator</text><rect x='600' y='90' width='160' height='100' rx='10' fill='#f4ece0' stroke='#8a6a3a' stroke-width='3'/><text x='680' y='132' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#4a3615' text-anchor='middle'>ATCO</text><text x='680' y='168' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#4a3615' text-anchor='middle'>Pipelines</text><rect x='400' y='380' width='360' height='100' rx='10' fill='#f4ece0' stroke='#8a6a3a' stroke-width='3' stroke-dasharray='0'/><text x='580' y='422' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#4a3615' text-anchor='middle'>Other pipeline</text><text x='580' y='458' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#4a3615' text-anchor='middle'>companies</text><polyline points='135,230 135,140 258,140' fill='none' stroke='#333' stroke-width='3'/><polygon points='270,140 256,132 256,148' fill='#333'/><line x1='500' y1='140' x2='588' y2='140' stroke='#333' stroke-width='3'/><polygon points='600,140 586,132 586,148' fill='#333'/><text x='550' y='78' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#333' text-anchor='middle'>circulates</text><line x1='440' y1='190' x2='520' y2='380' stroke='#999' stroke-width='3' stroke-dasharray='10 8'/><line x1='466' y1='271' x2='494' y2='299' stroke='#a33' stroke-width='4'/><line x1='494' y1='271' x2='466' y2='299' stroke='#a33' stroke-width='4'/><text x='540' y='295' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#666'>not circulated</text><polyline points='135,330 135,430 388,430' fill='none' stroke='#2f4f6f' stroke-width='4'/><polygon points='400,430 386,421 386,439' fill='#2f4f6f'/><text x='160' y='415' font-family='Helvetica, Arial, sans-serif' font-size='28' fill='#1f2f40'>applies directly</text></svg>"
+        }
+      ],
+      "omitted": "No further figures. Existing figures already cover the process flow, flowchart lanes, stakeholder responses, permit conditions and the 0.3 m crossing clearance; more would repeat them. Drawing standards, the appendix list, governing codes and EPCOR streetlight support are lists or facts that a picture would not clarify."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Label the Designer-to-City arrow, for example \"applies\", so readers know what that path means.",
+        "Move \"circulates\" closer to its arrow. At y=78 it sits about 60px above the line and spans both box tops, which weakens the link between label and path.",
+        "Raise label size from 28px to about 32px. At 28px, text drops to about 12.6px on a 360px screen.",
+        "Remove the redundant stroke-dasharray='0' on the Other pipeline companies box."
+      ]
+    },
+    "total": 17,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 26798,
+    "tokensOut": 4828
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "page": {
+    "id": "da95a98c-3701-4c49-b27d-3f43931dcf24",
+    "title": "ATCO Pipelines",
+    "slug": "atco-pipelines"
+  },
+  "snapshot": {
+    "slug": "atco-pipelines",
+    "title": "ATCO Pipelines",
+    "paragraphs": [
+      {
+        "id": "69ca8903-8a40-4daa-8cb8-a595a09c3be6",
+        "text": "ATCO Pipelines is the only pipeline company that the City of Edmonton's Utility Line Assignment (ULA) application administrator circulates applications to. Other pipeline companies are not made aware of a project unless the designer applies to them directly for a high pressure pipeline crossing and/or proximity agreement.",
+        "section": "Overview",
+        "hasMedia": false,
+        "revisionId": "4e5350e6-3b79-47c0-af2f-23c90fdb82a2"
+      },
+      {
+        "id": "d918d5c8-5ab4-4989-b355-6654e381bfc0",
+        "text": "Circulation of a ULA application is limited to ATCO Pipelines: the City of Edmonton ULA application administrator sends the application only to that company. Other pipeline companies will not be aware of a project unless the designer applies directly to them for a high pressure pipeline crossing and/or proximity agreement.",
+        "section": "Circulation to ATCO Pipelines",
+        "hasMedia": false,
+        "revisionId": "1d496d9a-02b7-4b76-90d0-aa392878a921"
+      }
+    ]
+  },
+  "previous": null
+}

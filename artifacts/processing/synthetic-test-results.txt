@@ -1,0 +1,7 @@
+
+> second-brain-engine@0.1.0 test:synthetic
+> node scripts/performance/run.mjs --synthetic
+
+
+ RUN  v5.0.2 C:/Users/Main/Documents/Projects/second-brain-engine
+

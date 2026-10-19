@@ -1,0 +1,606 @@
+Section kept supported detail for page editorial review {
+  page: 'Enneagram',
+  section: 'Types, centers and Triads',
+  issues: [
+    'Editorial: Repeats the earlier clause that each Triad is a group of three types. The nine-type count adds little and can be cut.',
+    "Editorial: Restates the previous sentence's point about nine ways the centers can be scrambled. Merge the two sentences into one."
+  ]
+}
+Section kept supported detail for page editorial review {
+  page: 'Enneagram',
+  section: 'Stages and paths of growth',
+  issues: [
+    "Editorial: Repeats the 'Essence, personality and ego' section, which already says the Enneagram works to separate personality from Essence and gives a path to fulfillment. Keep only the new idea of surrendering the ego to the greater Self."
+  ]
+}
+A background task failed in its space: claim_composer_job: TimeoutError: The operation was aborted due to timeout
+Could not log the AI call: Error: log_ai_call: TimeoutError: The operation was aborted due to timeout
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:141:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async logSafely (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/callLog.ts:28:3)
+    at async chatJsonOnce (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:297:3)
+    at async chatJsonAnswer (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:254:14)
+    at async write (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:145:18)
+    at async TokenFactorySectionWriter.reviseSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:205:18)
+    at async rewriteLines (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/index.ts:267:30)
+    at async buildClaimedSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/index.ts:227:67)
+    at async rebuildSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/index.ts:207:15)
+A background task failed in its space: claim_composer_job: TimeoutError: The operation was aborted due to timeout
+Automatic Composer assessment failed: worker_spaces: TimeoutError: The operation was aborted due to timeout
+Could not read the Reviewer memory: Error: get_role_memory: Bad Gateway
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:141:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async savedEntries (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/memory.ts:73:18)
+    at async openRoleMemory (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/memory.ts:60:11)
+    at async chatJson (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:233:17)
+    at async checkLines (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/lineCheck.ts:56:41)
+    at async check (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:176:20)
+    at async TokenFactorySectionWriter.reviseSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:211:14)
+    at async rewriteLines (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/index.ts:267:30)
+    at async buildClaimedSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/index.ts:227:67)
+Automatic Composer assessment failed: worker_spaces: TimeoutError: The operation was aborted due to timeout
+Automatic Composer assessment failed: worker_spaces: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-US"> <!--<![endif]-->
+<head>
+
+<title>supabase.co | 520: Web server is returning an unknown error</title>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" id="cf_styles-css" href="/cdn-cgi/styles/main.css" />
+</head>
+<body>
+<div id="cf-wrapper">
+    <div id="cf-error-details" class="p-0">
+        <header class="mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-8">
+            <h1 class="inline-block sm:block sm:mb-2 font-light text-60 lg:text-4xl text-black-dark leading-tight mr-2">
+                <span class="inline-block">Web server is returning an unknown error</span>
+                <span class="code-label">Error code 520</span>
+            </h1>
+            <div>
+                Visit <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">cloudflare.com</a> for more information.
+            </div>
+            <div class="mt-3">2026-10-19 00:00:55 UTC</div>
+        </header>
+        <div class="my-8 bg-gradient-gray">
+            <div class="w-240 lg:w-full mx-auto">
+                <div class="clearfix md:px-8">
+                    <div id="cf-browser-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-browser block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">You</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Browser
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-cloudflare-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    <span class="cf-icon-cloud block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    </a>
+  </div>
+  <span class="md:block w-full truncate">Calgary</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    Cloudflare
+  </a>
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-host-status" class="cf-error-source relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-server block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-error w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">qeuvxnvwommyjdzxoodd.supabase.co</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Host
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-red-error">Error</span>
+  
+</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-240 lg:w-full mx-auto mb-8 lg:px-8">
+            <div class="clearfix">
+                <div class="w-1/2 md:w-full float-left pr-6 md:pb-10 md:pr-0 leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What happened?</h2>
+                    <p>There is an unknown connection issue between Cloudflare and the origin web server. As a result, the web page can not be displayed.</p>
+                </div>
+                <div class="w-1/2 md:w-full float-left leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What can I do?</h2>
+                    
+                <h3 class="text-15 font-semibold mb-2">If you are a visitor of this website:</h3>
+                <p class="mb-6">Please try again in a few minutes.</p>
+
+                <h3 class="text-15 font-semibold mb-2">If you are the owner of this website:</h3>
+                <p><span>There is an issue between Cloudflare's cache and your origin web server. Cloudflare monitors for these errors and automatically investigates the cause. To help support the investigation, you can pull the corresponding error log from your web server and submit it our support team.  Please include the Ray ID (which is at the bottom of this error page).</span> <a rel="noopener noreferrer" href=   "https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-520/">Additional troubleshooting resources</a>.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf-error-footer cf-wrapper w-240 lg:w-full py-10 sm:py-4 sm:px-8 mx-auto text-center sm:text-left border-solid border-0 border-t border-gray-300">
+    <p class="text-13">
+      <span class="cf-footer-item sm:block sm:mb-1">Cloudflare Ray ID: <strong class="font-semibold">a4cb80c7c8b1bede</strong></span>
+      <span class="cf-footer-separator sm:hidden">&bull;</span>
+      <span id="cf-footer-item-ip" class="cf-footer-item hidden sm:block sm:mb-1">
+        Your IP:
+        <button type="button" id="cf-footer-ip-reveal" class="cf-footer-ip-reveal-btn">Click to reveal</button>
+        <span class="hidden" id="cf-footer-ip">108.173.10.1</span>
+        <span class="cf-footer-separator sm:hidden">&bull;</span>
+      </span>
+      <span class="cf-footer-item sm:block sm:mb-1"><span>Performance &amp; security by</span> <a rel="noopener noreferrer" href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_520&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" id="brand_link" target="_blank">Cloudflare</a></span>
+      
+    </p>
+    <script>(function(){function d(){var b=a.getElementById("cf-footer-item-ip"),c=a.getElementById("cf-footer-ip-reveal");b&&"classList"in b&&(b.classList.remove("hidden"),c.addEventListener("click",function(){c.classList.add("hidden");a.getElementById("cf-footer-ip").classList.remove("hidden")}))}var a=document;document.addEventListener&&a.addEventListener("DOMContentLoaded",d)})();</script>
+  </div><!-- /.error-footer -->
+
+    </div>
+</div>
+</body>
+</html>
+Could not log the AI call: Error: log_ai_call: TimeoutError: The operation was aborted due to timeout
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:141:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async logSafely (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/callLog.ts:28:3)
+    at async chatJsonOnce (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:297:3)
+    at async chatJsonAnswer (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:254:14)
+    at async checkLines (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/lineCheck.ts:56:41)
+    at async check (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:176:20)
+    at async TokenFactorySectionWriter.reviseSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:211:14)
+    at async rewriteLines (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/index.ts:267:30)
+    at async buildClaimedSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/index.ts:227:67)
+Could not read the Reviewer memory: Error: get_role_memory: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-US"> <!--<![endif]-->
+<head>
+
+<title>supabase.co | 525: SSL handshake failed</title>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" id="cf_styles-css" href="/cdn-cgi/styles/main.css" />
+</head>
+<body>
+<div id="cf-wrapper">
+    <div id="cf-error-details" class="p-0">
+        <header class="mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-8">
+            <h1 class="inline-block sm:block sm:mb-2 font-light text-60 lg:text-4xl text-black-dark leading-tight mr-2">
+                <span class="inline-block">SSL handshake failed</span>
+                <span class="code-label">Error code 525</span>
+            </h1>
+            <div>
+                Visit <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">cloudflare.com</a> for more information.
+            </div>
+            <div class="mt-3">2026-10-19 00:01:24 UTC</div>
+        </header>
+        <div class="my-8 bg-gradient-gray">
+            <div class="w-240 lg:w-full mx-auto">
+                <div class="clearfix md:px-8">
+                    <div id="cf-browser-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-browser block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">You</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Browser
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-cloudflare-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    <span class="cf-icon-cloud block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    </a>
+  </div>
+  <span class="md:block w-full truncate">Calgary</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    Cloudflare
+  </a>
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-host-status" class="cf-error-source relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-server block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-error w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">qeuvxnvwommyjdzxoodd.supabase.co</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Host
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-red-error">Error</span>
+  
+</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-240 lg:w-full mx-auto mb-8 lg:px-8">
+            <div class="clearfix">
+                <div class="w-1/2 md:w-full float-left pr-6 md:pb-10 md:pr-0 leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What happened?</h2>
+                    <p>The SSL/TLS handshake between Cloudflare and the origin web server failed.</p>
+                </div>
+                <div class="w-1/2 md:w-full float-left leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What can I do?</h2>
+                    
+                <h3 class="text-15 font-semibold mb-2">If you're a visitor of this website:</h3>
+                <p class="mb-6">Please try again in a few minutes.</p>
+
+                <h3 class="text-15 font-semibold mb-2">If you're the owner of this website:</h3>
+                <p>Please refer to the <a rel="noopener noreferrer" href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-525/">Error 525</a> article:</p>
+                <ul class="ml-4">
+                  <li>Verify a valid SSL certificate is installed on your origin server. If none exists, install a free <a rel="noopener noreferrer" href="https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/">Cloudflare Origin CA certificate</a>.</li>
+                  <li>Check <a rel="noopener noreferrer" href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-525/#diagnose-with-origin-analytics">Origin Analytics</a>.</li>
+                  <li>Ensure port 443 is open and your origin supports SNI.</li>
+                  <li>Review your server's <a rel="noopener noreferrer" href="https://developers.cloudflare.com/ssl/edge-certificates/additional-options/cipher-suites/">cipher suites</a> for compatibility with Cloudflare.</li>
+                </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf-error-footer cf-wrapper w-240 lg:w-full py-10 sm:py-4 sm:px-8 mx-auto text-center sm:text-left border-solid border-0 border-t border-gray-300">
+    <p class="text-13">
+      <span class="cf-footer-item sm:block sm:mb-1">Cloudflare Ray ID: <strong class="font-semibold">a4cb81fe89dabf08</strong></span>
+      <span class="cf-footer-separator sm:hidden">&bull;</span>
+      <span id="cf-footer-item-ip" class="cf-footer-item hidden sm:block sm:mb-1">
+        Your IP:
+        <button type="button" id="cf-footer-ip-reveal" class="cf-footer-ip-reveal-btn">Click to reveal</button>
+        <span class="hidden" id="cf-footer-ip">108.173.10.1</span>
+        <span class="cf-footer-separator sm:hidden">&bull;</span>
+      </span>
+      <span class="cf-footer-item sm:block sm:mb-1"><span>Performance &amp; security by</span> <a rel="noopener noreferrer" href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" id="brand_link" target="_blank">Cloudflare</a></span>
+      
+    </p>
+    <script>(function(){function d(){var b=a.getElementById("cf-footer-item-ip"),c=a.getElementById("cf-footer-ip-reveal");b&&"classList"in b&&(b.classList.remove("hidden"),c.addEventListener("click",function(){c.classList.add("hidden");a.getElementById("cf-footer-ip").classList.remove("hidden")}))}var a=document;document.addEventListener&&a.addEventListener("DOMContentLoaded",d)})();</script>
+  </div><!-- /.error-footer -->
+
+    </div>
+</div>
+</body>
+</html>
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:141:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async savedEntries (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/memory.ts:73:18)
+    at async openRoleMemory (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/memory.ts:60:11)
+    at async chatJson (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:233:17)
+    at async eval (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/lineCheck.ts:137:19)
+    at async Promise.all (index 2)
+    at async checkLines (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/lineCheck.ts:132:18)
+    at async check (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:176:20)
+    at async TokenFactorySectionWriter.reviseSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:211:14)
+Automatic Composer assessment failed: worker_spaces: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-US"> <!--<![endif]-->
+<head>
+
+<title>supabase.co | 525: SSL handshake failed</title>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" id="cf_styles-css" href="/cdn-cgi/styles/main.css" />
+</head>
+<body>
+<div id="cf-wrapper">
+    <div id="cf-error-details" class="p-0">
+        <header class="mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-8">
+            <h1 class="inline-block sm:block sm:mb-2 font-light text-60 lg:text-4xl text-black-dark leading-tight mr-2">
+                <span class="inline-block">SSL handshake failed</span>
+                <span class="code-label">Error code 525</span>
+            </h1>
+            <div>
+                Visit <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">cloudflare.com</a> for more information.
+            </div>
+            <div class="mt-3">2026-10-19 00:01:24 UTC</div>
+        </header>
+        <div class="my-8 bg-gradient-gray">
+            <div class="w-240 lg:w-full mx-auto">
+                <div class="clearfix md:px-8">
+                    <div id="cf-browser-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-browser block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">You</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Browser
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-cloudflare-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    <span class="cf-icon-cloud block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    </a>
+  </div>
+  <span class="md:block w-full truncate">Calgary</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    Cloudflare
+  </a>
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-host-status" class="cf-error-source relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-server block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-error w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">qeuvxnvwommyjdzxoodd.supabase.co</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Host
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-red-error">Error</span>
+  
+</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-240 lg:w-full mx-auto mb-8 lg:px-8">
+            <div class="clearfix">
+                <div class="w-1/2 md:w-full float-left pr-6 md:pb-10 md:pr-0 leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What happened?</h2>
+                    <p>The SSL/TLS handshake between Cloudflare and the origin web server failed.</p>
+                </div>
+                <div class="w-1/2 md:w-full float-left leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What can I do?</h2>
+                    
+                <h3 class="text-15 font-semibold mb-2">If you're a visitor of this website:</h3>
+                <p class="mb-6">Please try again in a few minutes.</p>
+
+                <h3 class="text-15 font-semibold mb-2">If you're the owner of this website:</h3>
+                <p>Please refer to the <a rel="noopener noreferrer" href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-525/">Error 525</a> article:</p>
+                <ul class="ml-4">
+                  <li>Verify a valid SSL certificate is installed on your origin server. If none exists, install a free <a rel="noopener noreferrer" href="https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/">Cloudflare Origin CA certificate</a>.</li>
+                  <li>Check <a rel="noopener noreferrer" href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-525/#diagnose-with-origin-analytics">Origin Analytics</a>.</li>
+                  <li>Ensure port 443 is open and your origin supports SNI.</li>
+                  <li>Review your server's <a rel="noopener noreferrer" href="https://developers.cloudflare.com/ssl/edge-certificates/additional-options/cipher-suites/">cipher suites</a> for compatibility with Cloudflare.</li>
+                </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf-error-footer cf-wrapper w-240 lg:w-full py-10 sm:py-4 sm:px-8 mx-auto text-center sm:text-left border-solid border-0 border-t border-gray-300">
+    <p class="text-13">
+      <span class="cf-footer-item sm:block sm:mb-1">Cloudflare Ray ID: <strong class="font-semibold">a4cb8183bf8201de</strong></span>
+      <span class="cf-footer-separator sm:hidden">&bull;</span>
+      <span id="cf-footer-item-ip" class="cf-footer-item hidden sm:block sm:mb-1">
+        Your IP:
+        <button type="button" id="cf-footer-ip-reveal" class="cf-footer-ip-reveal-btn">Click to reveal</button>
+        <span class="hidden" id="cf-footer-ip">108.173.10.1</span>
+        <span class="cf-footer-separator sm:hidden">&bull;</span>
+      </span>
+      <span class="cf-footer-item sm:block sm:mb-1"><span>Performance &amp; security by</span> <a rel="noopener noreferrer" href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_525&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" id="brand_link" target="_blank">Cloudflare</a></span>
+      
+    </p>
+    <script>(function(){function d(){var b=a.getElementById("cf-footer-item-ip"),c=a.getElementById("cf-footer-ip-reveal");b&&"classList"in b&&(b.classList.remove("hidden"),c.addEventListener("click",function(){c.classList.add("hidden");a.getElementById("cf-footer-ip").classList.remove("hidden")}))}var a=document;document.addEventListener&&a.addEventListener("DOMContentLoaded",d)})();</script>
+  </div><!-- /.error-footer -->
+
+    </div>
+</div>
+</body>
+</html>
+Could not log the AI call: Error: log_ai_call: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-US"> <!--<![endif]-->
+<head>
+
+<title>supabase.co | 521: Web server is down</title>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" id="cf_styles-css" href="/cdn-cgi/styles/main.css" />
+</head>
+<body>
+<div id="cf-wrapper">
+    <div id="cf-error-details" class="p-0">
+        <header class="mx-auto pt-10 lg:pt-6 lg:px-8 w-240 lg:w-full mb-8">
+            <h1 class="inline-block sm:block sm:mb-2 font-light text-60 lg:text-4xl text-black-dark leading-tight mr-2">
+                <span class="inline-block">Web server is down</span>
+                <span class="code-label">Error code 521</span>
+            </h1>
+            <div>
+                Visit <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_521&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">cloudflare.com</a> for more information.
+            </div>
+            <div class="mt-3">2026-10-19 00:01:24 UTC</div>
+        </header>
+        <div class="my-8 bg-gradient-gray">
+            <div class="w-240 lg:w-full mx-auto">
+                <div class="clearfix md:px-8">
+                    <div id="cf-browser-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-browser block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">You</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Browser
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-cloudflare-status" class=" relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_521&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    <span class="cf-icon-cloud block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-ok w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    </a>
+  </div>
+  <span class="md:block w-full truncate">Calgary</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  <a href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_521&utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" target="_blank" rel="noopener noreferrer">
+    Cloudflare
+  </a>
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-green-success">Working</span>
+  
+</div>
+                    <div id="cf-host-status" class="cf-error-source relative w-1/3 md:w-full py-15 md:p-0 md:py-8 md:text-left md:border-solid md:border-0 md:border-b md:border-gray-400 overflow-hidden float-left md:float-none text-center">
+  <div class="relative mb-10 md:m-0">
+    
+    <span class="cf-icon-server block md:hidden h-20 bg-center bg-no-repeat"></span>
+    <span class="cf-icon-error w-12 h-12 absolute left-1/2 md:left-auto md:right-0 md:top-0 -ml-6 -bottom-4"></span>
+    
+  </div>
+  <span class="md:block w-full truncate">qeuvxnvwommyjdzxoodd.supabase.co</span>
+  <h3 class="md:inline-block mt-3 md:mt-0 text-2xl text-gray-600 font-light leading-1.3">
+  
+    Host
+  
+  </h3>
+  
+  <span class="leading-1.3 text-2xl text-red-error">Error</span>
+  
+</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-240 lg:w-full mx-auto mb-8 lg:px-8">
+            <div class="clearfix">
+                <div class="w-1/2 md:w-full float-left pr-6 md:pb-10 md:pr-0 leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What happened?</h2>
+                    <p>The web server is not returning a connection. As a result, the web page is not displaying.</p>
+                </div>
+                <div class="w-1/2 md:w-full float-left leading-relaxed">
+                    <h2 class="text-3xl font-normal leading-1.3 mb-4">What can I do?</h2>
+                    
+                <h3 class="text-15 font-semibold mb-2">If you are a visitor of this website:</h3>
+                <p class="mb-6">Please try again in a few minutes.</p>
+
+                <h3 class="text-15 font-semibold mb-2">If you are the owner of this website:</h3>
+                <p><span>Contact your hosting provider letting them know your web server is not responding.</span> <a rel="noopener noreferrer" href="https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-521/">Additional troubleshooting information</a>.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cf-error-footer cf-wrapper w-240 lg:w-full py-10 sm:py-4 sm:px-8 mx-auto text-center sm:text-left border-solid border-0 border-t border-gray-300">
+    <p class="text-13">
+      <span class="cf-footer-item sm:block sm:mb-1">Cloudflare Ray ID: <strong class="font-semibold">a4cb820dbd8538f2</strong></span>
+      <span class="cf-footer-separator sm:hidden">&bull;</span>
+      <span id="cf-footer-item-ip" class="cf-footer-item hidden sm:block sm:mb-1">
+        Your IP:
+        <button type="button" id="cf-footer-ip-reveal" class="cf-footer-ip-reveal-btn">Click to reveal</button>
+        <span class="hidden" id="cf-footer-ip">108.173.10.1</span>
+        <span class="cf-footer-separator sm:hidden">&bull;</span>
+      </span>
+      <span class="cf-footer-item sm:block sm:mb-1"><span>Performance &amp; security by</span> <a rel="noopener noreferrer" href="https://www.cloudflare.com/5xx-error-landing?utm_source=errorcode_521&#38;utm_campaign=qeuvxnvwommyjdzxoodd.supabase.co" id="brand_link" target="_blank">Cloudflare</a></span>
+      
+    </p>
+    <script>(function(){function d(){var b=a.getElementById("cf-footer-item-ip"),c=a.getElementById("cf-footer-ip-reveal");b&&"classList"in b&&(b.classList.remove("hidden"),c.addEventListener("click",function(){c.classList.add("hidden");a.getElementById("cf-footer-ip").classList.remove("hidden")}))}var a=document;document.addEventListener&&a.addEventListener("DOMContentLoaded",d)})();</script>
+  </div><!-- /.error-footer -->
+
+    </div>
+</div>
+</body>
+</html>
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:141:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async logSafely (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/callLog.ts:28:3)
+    at async chatJsonOnce (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:305:3)
+    at async chatJsonAnswer (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ai/chat.ts:254:14)
+    at async eval (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/lineCheck.ts:137:19)
+    at async Promise.all (index 2)
+    at async checkLines (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/lineCheck.ts:132:18)
+    at async check (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:176:20)
+    at async TokenFactorySectionWriter.reviseSection (C:/Users/Main/Documents/Projects/second-brain-engine/lib/living-page/writers/tokenFactory.ts:211:14)
+Page review timing {
+  pageId: 'c3b05125-eb88-441d-a118-9fffbbcd9cff',
+  stage: 'total',
+  durationMs: 751008
+}
+Upload stage timing {
+  eventId: '811105ea-fcfe-4ac4-9c7d-dc589b1501e4',
+  stage: 'pages',
+  status: 'failed',
+  durationMs: 753107
+}
+Processing run metrics {"eventId":"811105ea-fcfe-4ac4-9c7d-dc589b1501e4","job":"articles","startedAt":"2026-10-18T23:48:46.840Z","finishedAt":"2026-10-19T00:01:25.474Z","durationMs":758618,"status":"failed","metrics":{"db.claim_upload_workflow":{"count":1,"durationMs":444,"failures":0,"tokensIn":0,"tokensOut":0},"db.start_upload_step":{"count":37,"durationMs":6886,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.reconcile":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.upload_workflow_waiting":{"count":2,"durationMs":297,"failures":0,"tokensIn":0,"tokensOut":0},"db.assert_upload_lease":{"count":28,"durationMs":4251,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.duplicates":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.tidy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.embeddings-cleaned":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.place":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.verify_upload_topic_coverage":{"count":1,"durationMs":1607,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.hierarchy":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.plan":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.affected-sections":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_upload_workflows":{"count":1,"durationMs":360,"failures":0,"tokensIn":0,"tokensOut":0},"db.report_upload_progress":{"count":2,"durationMs":297,"failures":0,"tokensIn":0,"tokensOut":0},"db.heartbeat_upload_workflow":{"count":90,"durationMs":362768,"failures":0,"tokensIn":0,"tokensOut":0},"db.pages_needing_editorial_review":{"count":1,"durationMs":696,"failures":0,"tokensIn":0,"tokensOut":0},"checkpoint.hit.article-coverage":{"count":1,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_state":{"count":47,"durationMs":14658,"failures":0,"tokensIn":0,"tokensOut":0},"db.composer_section_has_images":{"count":19,"durationMs":2501,"failures":0,"tokensIn":0,"tokensOut":0},"db.get_role_memory":{"count":25,"durationMs":195281,"failures":0,"tokensIn":0,"tokensOut":0},"queue.chat":{"count":79,"durationMs":2,"failures":0,"tokensIn":0,"tokensOut":0},"ai.cache.read":{"count":79,"durationMs":0,"failures":0,"tokensIn":193205,"tokensOut":0},"ai.cache.write":{"count":79,"durationMs":0,"failures":0,"tokensIn":60810,"tokensOut":0},"ai.article_scope_review":{"count":1,"durationMs":29473,"failures":0,"tokensIn":34904,"tokensOut":5405},"db.log_ai_call":{"count":80,"durationMs":179257,"failures":0,"tokensIn":0,"tokensOut":0},"step.article-scope":{"count":1,"durationMs":29790,"failures":0,"tokensIn":0,"tokensOut":0},"db.finish_upload_step":{"count":27,"durationMs":6358,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_article_structure":{"count":1,"durationMs":1356,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline":{"count":2,"durationMs":10217,"failures":0,"tokensIn":52598,"tokensOut":1190},"step.outline-v1":{"count":4,"durationMs":26675,"failures":0,"tokensIn":0,"tokensOut":0},"ai.article_outline_review":{"count":2,"durationMs":15342,"failures":0,"tokensIn":28024,"tokensOut":1862},"step.article-scaffold":{"count":20,"durationMs":740342,"failures":1,"tokensIn":0,"tokensOut":0},"db.upload_workflow_write":{"count":21,"durationMs":9328,"failures":0,"tokensIn":0,"tokensOut":0},"db.claim_section_build":{"count":10,"durationMs":2357,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_page_context":{"count":10,"durationMs":1585,"failures":0,"tokensIn":0,"tokensOut":0},"db.read_section_article_structure":{"count":10,"durationMs":6990,"failures":0,"tokensIn":0,"tokensOut":0},"ai.independent_section_editorial_selection":{"count":10,"durationMs":20015,"failures":0,"tokensIn":48045,"tokensOut":196},"ai.section_lines":{"count":21,"durationMs":142826,"failures":0,"tokensIn":219210,"tokensOut":27857},"ai.line_fact_check":{"count":21,"durationMs":36792,"failures":0,"tokensIn":92137,"tokensOut":2838},"ai.independent_section_editorial_review":{"count":20,"durationMs":37162,"failures":0,"tokensIn":108426,"tokensOut":1933},"db.section_build_write":{"count":37,"durationMs":27269,"failures":0,"tokensIn":0,"tokensOut":0},"ai.line_fact_confirm":{"count":3,"durationMs":4046,"failures":1,"tokensIn":3365,"tokensOut":160},"db.retry.heartbeat_upload_workflow":{"count":4,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"db.retry.get_role_memory":{"count":2,"durationMs":0,"failures":0,"tokensIn":0,"tokensOut":0},"step.editorial-review":{"count":1,"durationMs":751008,"failures":1,"tokensIn":0,"tokensOut":0},"stage.editorial-review":{"count":1,"durationMs":752352,"failures":1,"tokensIn":0,"tokensOut":0},"step.pages":{"count":1,"durationMs":753107,"failures":1,"tokensIn":0,"tokensOut":0},"db.release_upload_workflow":{"count":2,"durationMs":275,"failures":0,"tokensIn":0,"tokensOut":0},"cancel.drain":{"count":1,"durationMs":30293,"failures":0,"tokensIn":0,"tokensOut":0}}}
+C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:141
+				throw new Error(`${fn}: ${message}`);
+				      ^
+
+Error: release_upload_workflow: Bad Gateway
+    at Object.call (C:/Users/Main/Documents/Projects/second-brain-engine/lib/db/rpc.ts:141:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async release (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ingest/workflow.ts:198:24)
+    at async runUploadWorkflowAs (C:/Users/Main/Documents/Projects/second-brain-engine/lib/ingest/workflow.ts:189:3)
+    at async eval (C:/Users/Main/Documents/Projects/second-brain-engine/lib/processing/metrics.ts:47:19)
+    at async file:///C:/Users/Main/Documents/Projects/second-brain-engine/artifacts/finish-scoped-book.mjs:18:16
+    at async file:///C:/Users/Main/Documents/Projects/second-brain-engine/artifacts/finish-scoped-book.mjs:16:2
+
+Node.js v22.23.2

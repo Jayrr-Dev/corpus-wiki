@@ -1,0 +1,79 @@
+[
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+            "4d5d50b1-87e6-4946-9523-57091f2ab53d"
+          ],
+          "learningGoal": "Readers see that the 3.0 m minimum is a clear horizontal gap measured between the facing outer edges of a power facility and a fire hydrant.",
+          "caption": "Illustrative elevation, not to scale and not a construction design. Under the mutually agreed clearances, a power facility keeps a minimum horizontal distance of 3.0 m from a fire hydrant. The same 3.0 m minimum also applies to drainage lines and the edge of bus shelters.",
+          "alt": "Side view of a grey power cabinet on the left and a red fire hydrant on the right, both on a ground line. Dashed extension lines rise from the cabinet's right edge and the hydrant's left edge. A lightly shaded gap between them carries a double-ended arrow labelled 3.0 m minimum.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>3.0 m clearance between a power facility and a fire hydrant</title><desc>Illustrative elevation, not to scale.</desc><defs><linearGradient id='cab' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#b9c2ca'/><stop offset='0.7' stop-color='#9aa5af'/><stop offset='1' stop-color='#7f8a94'/></linearGradient><linearGradient id='hyd' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#d9473b'/><stop offset='0.6' stop-color='#b8322a'/><stop offset='1' stop-color='#8e2620'/></linearGradient></defs><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='300' y='170' width='260' height='250' fill='#e3eef7'/><rect x='0' y='420' width='800' height='60' fill='#ece7dd'/><line x1='40' y1='420' x2='760' y2='420' stroke='#6b6255' stroke-width='3'/><rect x='130' y='412' width='190' height='10' fill='#a9a39a'/><rect x='140' y='210' width='160' height='204' rx='4' fill='url(#cab)' stroke='#4d5660' stroke-width='2'/><path d='M132 210 L308 210 L300 196 L140 196 Z' fill='#8b96a0' stroke='#4d5660' stroke-width='2'/><line x1='220' y1='222' x2='220' y2='402' stroke='#5f6a74' stroke-width='2'/><rect x='200' y='300' width='8' height='22' rx='2' fill='#4d5660'/><rect x='232' y='300' width='8' height='22' rx='2' fill='#4d5660'/><rect x='158' y='232' width='44' height='10' fill='#7f8a94'/><path d='M572 420 L572 300 Q572 290 582 290 L618 290 Q628 290 628 300 L628 420 Z' fill='url(#hyd)' stroke='#6e1d18' stroke-width='2'/><path d='M564 290 L636 290 L636 280 L564 280 Z' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><path d='M574 280 Q574 248 600 244 Q626 248 626 280 Z' fill='url(#hyd)' stroke='#6e1d18' stroke-width='2'/><rect x='593' y='232' width='14' height='14' fill='#8e2620' stroke='#6e1d18' stroke-width='2'/><rect x='556' y='330' width='16' height='26' rx='3' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><rect x='628' y='330' width='16' height='26' rx='3' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><circle cx='600' cy='350' r='12' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><rect x='560' y='410' width='80' height='10' fill='#8e2620' stroke='#6e1d18' stroke-width='2'/><line x1='300' y1='160' x2='300' y2='420' stroke='#2c3e50' stroke-width='2' stroke-dasharray='6 5'/><line x1='556' y1='160' x2='556' y2='420' stroke='#2c3e50' stroke-width='2' stroke-dasharray='6 5'/><line x1='312' y1='180' x2='544' y2='180' stroke='#2c3e50' stroke-width='3'/><polygon points='302,180 318,172 318,188' fill='#2c3e50'/><polygon points='554,180 538,172 538,188' fill='#2c3e50'/><text x='428' y='140' text-anchor='middle' font-family='Arial, sans-serif' font-size='40' font-weight='bold' fill='#1f3448'>3.0 m</text><text x='220' y='170' text-anchor='middle' font-family='Arial, sans-serif' font-size='28' fill='#333'>Power facility</text><text x='660' y='210' text-anchor='middle' font-family='Arial, sans-serif' font-size='28' fill='#333'>Fire hydrant</text><text x='428' y='465' text-anchor='middle' font-family='Arial, sans-serif' font-size='28' fill='#555'>minimum clear gap</text></svg>"
+        }
+      ],
+      "omitted": "Bus shelters and drainage lines are named in the caption, not drawn, to keep one clear comparison. Other sections are outside the requested placement; the existing water-line and tree-root/vertical figures stay unchanged."
+    },
+    "review": {
+      "usefulness": 3,
+      "grounding": 3,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [
+        "The \"Power facility\" label, centered at x=220 with a width of about 215px, spans roughly x=112–328 at y=150–170. It crosses the dashed extension line at x=300, which runs from y=160 to 420.",
+        "The cabinet's concrete pad (x=130–320) and roof overhang (to x=308) extend past the x=300 reference line. The arrow does not measure from the cabinet's outermost facing edge, which weakens the facing-outer-edges goal."
+      ],
+      "fixes": [
+        "Move \"Power facility\" left or higher, such as text-anchor end at x=290 or y=120, so it clears the extension line.",
+        "Trim the pad and roof to end at x=300, or move the extension line to the pad's outer edge, so the gap starts at the cabinet's true outer face.",
+        "Make the shaded gap end at x=556 to match the hydrant extension line, not x=560.",
+        "Optionally move \"Fire hydrant\" closer to the hydrant or add a short leader line."
+      ]
+    },
+    "total": 16,
+    "validation": [],
+    "accepted": false,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 11508,
+    "tokensOut": 3035
+  },
+  {
+    "composition": {
+      "figures": [
+        {
+          "after": "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+          "evidence": [
+            "5bf8042b-3b78-41e6-8da3-702586eed1d3",
+            "4d5d50b1-87e6-4946-9523-57091f2ab53d"
+          ],
+          "learningGoal": "Readers see that the 3.0 m minimum is a clear horizontal gap measured between the facing outer edges of a power facility and a fire hydrant.",
+          "caption": "Illustrative example, not to scale and not a construction design. Under the mutually agreed clearances, a power facility keeps a minimum horizontal distance of 3.0 m from a fire hydrant. The same 3.0 m minimum also applies to drainage lines and the edge of bus shelters.",
+          "alt": "Side view of a grey power cabinet on a pad at left and a red fire hydrant at right, both on a ground line. Dashed extension lines rise from the cabinet's outer right face and the hydrant's outermost left nozzle. A lightly shaded gap between them carries a double-ended arrow labelled 3.0 m, with the words minimum clear gap below.",
+          "svg": "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'><title>3.0 m clearance between a power facility and a fire hydrant</title><desc>Illustrative elevation, not to scale.</desc><defs><linearGradient id='cab' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#b9c2ca'/><stop offset='0.7' stop-color='#9aa5af'/><stop offset='1' stop-color='#7f8a94'/></linearGradient><linearGradient id='hyd' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='#d9473b'/><stop offset='0.6' stop-color='#b8322a'/><stop offset='1' stop-color='#8e2620'/></linearGradient></defs><rect x='0' y='0' width='800' height='520' fill='#ffffff'/><rect x='300' y='170' width='256' height='250' fill='#e3eef7'/><rect x='0' y='420' width='800' height='60' fill='#ece7dd'/><line x1='40' y1='420' x2='760' y2='420' stroke='#6b6255' stroke-width='3'/><rect x='130' y='412' width='170' height='10' fill='#a9a39a'/><rect x='140' y='210' width='160' height='202' rx='4' fill='url(#cab)' stroke='#4d5660' stroke-width='2'/><path d='M136 210 L300 210 L296 196 L144 196 Z' fill='#8b96a0' stroke='#4d5660' stroke-width='2'/><line x1='220' y1='222' x2='220' y2='402' stroke='#5f6a74' stroke-width='2'/><rect x='200' y='300' width='8' height='22' rx='2' fill='#4d5660'/><rect x='232' y='300' width='8' height='22' rx='2' fill='#4d5660'/><rect x='158' y='232' width='44' height='10' fill='#7f8a94'/><path d='M572 420 L572 300 Q572 290 582 290 L618 290 Q628 290 628 300 L628 420 Z' fill='url(#hyd)' stroke='#6e1d18' stroke-width='2'/><path d='M564 290 L636 290 L636 280 L564 280 Z' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><path d='M574 280 Q574 248 600 244 Q626 248 626 280 Z' fill='url(#hyd)' stroke='#6e1d18' stroke-width='2'/><rect x='593' y='232' width='14' height='14' fill='#8e2620' stroke='#6e1d18' stroke-width='2'/><rect x='556' y='330' width='16' height='26' rx='3' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><rect x='628' y='330' width='16' height='26' rx='3' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><circle cx='600' cy='350' r='12' fill='#a52c25' stroke='#6e1d18' stroke-width='2'/><rect x='560' y='410' width='80' height='10' fill='#8e2620' stroke='#6e1d18' stroke-width='2'/><line x1='300' y1='160' x2='300' y2='420' stroke='#2c3e50' stroke-width='2' stroke-dasharray='6 5'/><line x1='556' y1='160' x2='556' y2='420' stroke='#2c3e50' stroke-width='2' stroke-dasharray='6 5'/><line x1='312' y1='180' x2='544' y2='180' stroke='#2c3e50' stroke-width='3'/><polygon points='302,180 318,172 318,188' fill='#2c3e50'/><polygon points='554,180 538,172 538,188' fill='#2c3e50'/><text x='428' y='145' text-anchor='middle' font-family='Arial, sans-serif' font-size='40' font-weight='bold' fill='#1f3448'>3.0 m</text><text x='205' y='145' text-anchor='middle' font-family='Arial, sans-serif' font-size='28' fill='#333'>Power facility</text><text x='620' y='145' text-anchor='middle' font-family='Arial, sans-serif' font-size='28' fill='#333'>Fire hydrant</text><text x='428' y='465' text-anchor='middle' font-family='Arial, sans-serif' font-size='28' fill='#555'>minimum clear gap</text></svg>"
+        }
+      ],
+      "omitted": "Bus shelters and drainage lines appear only in the caption to keep one clear comparison. The existing water-line and tree-root/vertical figures stay unchanged; other sections were outside the requested placement."
+    },
+    "review": {
+      "usefulness": 4,
+      "grounding": 4,
+      "restraint": 4,
+      "visualDesign": 3,
+      "accessibility": 3,
+      "problems": [],
+      "fixes": [
+        "Increase the 28px object labels and the 'minimum clear gap' label to about 32px so they stay readable at narrow widths.",
+        "Consider a darker fill for 'minimum clear gap' instead of #555 for stronger contrast on the beige ground band."
+      ]
+    },
+    "total": 18,
+    "validation": [],
+    "accepted": true,
+    "model": "anthropic/claude-opus-5-5",
+    "tokensIn": 13765,
+    "tokensOut": 3105
+  }
+]

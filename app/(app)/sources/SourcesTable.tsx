@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { UploaderName } from "@/app/(app)/_components/ActorName";
-import { SourceState } from "./SourceState";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
+import { countColumn, dateColumn, linkColumn, textColumn } from "@/app/(app)/_components/columns";
 import { Tooltip } from "@/components/standard/tooltip";
 import { useSourceRuns } from "@/components/upload/useUnfinishedSources";
-import { countColumn, dateColumn, linkColumn, textColumn } from "@/app/(app)/_components/columns";
+import { useMemo, useState } from "react";
+import { SourceState } from "./SourceState";
 
 import { EmptyState } from "@/components/EmptyState";
 import { DataTable } from "@/components/data-table";
@@ -17,9 +17,9 @@ import type { Tables } from "@/lib/database/types";
 import { sourceState } from "@/lib/knowledge/evidence";
 import { useShiftEvents, useSources } from "@/lib/queries";
 import { type SourceUsage, useSourceUsage } from "@/lib/queries/screens";
-import { SourceRowMenu } from "./SourceRowMenu";
 import { ExternalReviewHistory } from "./ExternalReviewHistory";
 import { ReviewSavedSources } from "./ReviewSavedSources";
+import { SourceRowMenu } from "./SourceRowMenu";
 
 type Source = Tables<"sources">;
 const SOURCE_TABS = [
@@ -43,6 +43,7 @@ function sourceColumns(usage: Map<string, SourceUsage> | undefined, uploads: Upl
     )),
     linkColumn<Source>("title", "Title", (source) => source.title, (source) => `/sources/${source.id}`),
     countColumn<Source>("knowledge", "Knowledge", (source) => (usage ? (usage.get(source.id)?.units ?? 0) : null)),
+    countColumn<Source>("used", "Used", (source) => (usage ? (usage.get(source.id)?.usedUnits ?? 0) : null)),
     countColumn<Source>("articles", "Articles", (source) => (usage ? (usage.get(source.id)?.articles ?? 0) : null)),
     countColumn<Source>("sections", "Sections", (source) => (usage ? (usage.get(source.id)?.sections ?? 0) : null)),
     countColumn<Source>("lines", "Lines", (source) => (usage ? (usage.get(source.id)?.lines ?? 0) : null)),

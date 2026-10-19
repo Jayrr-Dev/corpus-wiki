@@ -1,0 +1,9 @@
+{
+  "baselineEstimatedUsd": 0.747624,
+  "optimizedEstimatedUsd": 0.229676,
+  "reductionPercent": 69.27920987020212,
+  "baselineVisualGrade": 17,
+  "optimizedVisualGrade": 17,
+  "otherTestRunsEstimatedUsd": 1.051124,
+  "note": "Same article and section, original selection task replayed with pre-baseline asset availability, same models/rubric. Different search count; one sample, not a guaranteed saving. App list-price estimates, not provider billing."
+}

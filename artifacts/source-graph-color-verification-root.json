@@ -1,0 +1,416 @@
+{
+  "spaceId": "21132c80-32b3-4ef2-9156-d9af60486173",
+  "sourceNodes": 1877,
+  "uncoloredSourceNodes": 0,
+  "activeColorGroups": 69,
+  "distinctColors": 54,
+  "legacyWorkspaceGroups": 0,
+  "colors": {
+    "stale": 118,
+    "graph-cyan": 122,
+    "needs-you": 107,
+    "applied-light": 7,
+    "graph-rose-dark": 25,
+    "graph-rose": 129,
+    "graph-pink": 109,
+    "graph-lavender": 19,
+    "graph-pink-dark": 9,
+    "applied-dark": 15,
+    "graph-aqua": 25,
+    "failed": 43,
+    "graph-teal": 128,
+    "graph-lime": 116,
+    "graph-indigo": 22,
+    "graph-coral": 154,
+    "graph-yellow": 28,
+    "link-dark": 18,
+    "graph-scarlet": 28,
+    "graph-copper": 106,
+    "graph-purple": 123,
+    "graph-violet-dark": 13,
+    "applied": 52,
+    "graph-chartreuse": 44,
+    "stale-dark": 8,
+    "graph-peach": 38,
+    "graph-rose-light": 20,
+    "graph-sky": 21,
+    "graph-emerald": 16,
+    "graph-blush": 5,
+    "graph-purple-dark": 19,
+    "graph-cyan-dark": 12,
+    "graph-sand": 7,
+    "failed-light": 4,
+    "failed-dark": 4,
+    "graph-lime-light": 8,
+    "stale-light": 3,
+    "graph-teal-dark": 17,
+    "graph-lime-dark": 13,
+    "graph-violet": 23,
+    "graph-amber": 17,
+    "needs-you-dark": 5,
+    "graph-purple-light": 8,
+    "graph-mint": 6,
+    "graph-copper-dark": 6,
+    "graph-cyan-light": 11,
+    "graph-magenta": 6,
+    "graph-pink-light": 13,
+    "graph-copper-light": 5,
+    "graph-teal-light": 6,
+    "graph-violet-light": 3,
+    "needs-you-light": 4,
+    "link-light": 7,
+    "graph-slate": 2
+  },
+  "groups": [
+    {
+      "query": "domain:Enneagram/Art and creativity",
+      "color": "link-light",
+      "sourceNodes": 7
+    },
+    {
+      "query": "domain:Enneagram/Awareness and presence",
+      "color": "link-dark",
+      "sourceNodes": 18
+    },
+    {
+      "query": "domain:Enneagram/Basic Fear and Basic Desire",
+      "color": "applied",
+      "sourceNodes": 14
+    },
+    {
+      "query": "domain:Enneagram/Childhood Patterns",
+      "color": "graph-violet",
+      "sourceNodes": 18
+    },
+    {
+      "query": "domain:Enneagram/Defense mechanisms",
+      "color": "needs-you",
+      "sourceNodes": 7
+    },
+    {
+      "query": "domain:Enneagram/Definition and purpose",
+      "color": "graph-teal",
+      "sourceNodes": 19
+    },
+    {
+      "query": "domain:Enneagram/Dominant affects/Antidotes",
+      "color": "graph-pink-light",
+      "sourceNodes": 13
+    },
+    {
+      "query": "domain:Enneagram/Dominant affects/Type patterns",
+      "color": "graph-pink-dark",
+      "sourceNodes": 9
+    },
+    {
+      "query": "domain:Enneagram/Dominant affects",
+      "color": "graph-pink",
+      "sourceNodes": 13
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Antisocial and Dependent Personality Disorders",
+      "color": "stale-light",
+      "sourceNodes": 3
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Avoidant Personality Disorder",
+      "color": "stale-dark",
+      "sourceNodes": 8
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Disorder levels",
+      "color": "graph-blush",
+      "sourceNodes": 5
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Histrionic Personality Disorder",
+      "color": "graph-sand",
+      "sourceNodes": 7
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Manic episode",
+      "color": "graph-slate",
+      "sourceNodes": 2
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Narcissistic Personality Disorder",
+      "color": "applied-light",
+      "sourceNodes": 7
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Obsessive-Compulsive Personality Disorder",
+      "color": "applied-dark",
+      "sourceNodes": 15
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Passive-aggressive Personality Disorder",
+      "color": "needs-you-light",
+      "sourceNodes": 4
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Personality disorder and trait definitions",
+      "color": "needs-you-dark",
+      "sourceNodes": 5
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV/Schizotypal Personality Disorder",
+      "color": "failed-light",
+      "sourceNodes": 4
+    },
+    {
+      "query": "domain:Enneagram/Enneagram and DSM-IV",
+      "color": "stale",
+      "sourceNodes": 11
+    },
+    {
+      "query": "domain:Enneagram/Enneagram Institute contacts and referrals",
+      "color": "graph-cyan",
+      "sourceNodes": 4
+    },
+    {
+      "query": "domain:Enneagram/Growth by primary and secondary types",
+      "color": "graph-copper",
+      "sourceNodes": 10
+    },
+    {
+      "query": "domain:Enneagram/Hornevian and Harmonic groups",
+      "color": "graph-lime",
+      "sourceNodes": 14
+    },
+    {
+      "query": "domain:Enneagram/Integration and disintegration",
+      "color": "graph-rose",
+      "sourceNodes": 29
+    },
+    {
+      "query": "domain:Enneagram/Jungian typology",
+      "color": "graph-purple",
+      "sourceNodes": 5
+    },
+    {
+      "query": "domain:Enneagram/Levels of Development/Core traits by level",
+      "color": "failed-dark",
+      "sourceNodes": 4
+    },
+    {
+      "query": "domain:Enneagram/Levels of Development/Development of the Levels model",
+      "color": "graph-teal-light",
+      "sourceNodes": 6
+    },
+    {
+      "query": "domain:Enneagram/Levels of Development/Level descriptions",
+      "color": "graph-teal-dark",
+      "sourceNodes": 17
+    },
+    {
+      "query": "domain:Enneagram/Levels of Development",
+      "color": "failed",
+      "sourceNodes": 28
+    },
+    {
+      "query": "domain:Enneagram/Missing Piece",
+      "color": "graph-scarlet",
+      "sourceNodes": 13
+    },
+    {
+      "query": "domain:Enneagram/Origins and history/Ancient and mystical sources",
+      "color": "graph-cyan-light",
+      "sourceNodes": 11
+    },
+    {
+      "query": "domain:Enneagram/Origins and history/Gurdjieff and misattribution",
+      "color": "graph-cyan-dark",
+      "sourceNodes": 12
+    },
+    {
+      "query": "domain:Enneagram/Origins and history/Ichazo and the Arica School",
+      "color": "graph-violet-dark",
+      "sourceNodes": 13
+    },
+    {
+      "query": "domain:Enneagram/Origins and history/Modern developers",
+      "color": "graph-purple-light",
+      "sourceNodes": 8
+    },
+    {
+      "query": "domain:Enneagram/Origins and history",
+      "color": "graph-coral",
+      "sourceNodes": 4
+    },
+    {
+      "query": "domain:Enneagram/Origins of type and parenting",
+      "color": "graph-peach",
+      "sourceNodes": 18
+    },
+    {
+      "query": "domain:Enneagram/Passions, virtues, and Holy Ideas/Holy Ideas",
+      "color": "graph-purple-dark",
+      "sourceNodes": 19
+    },
+    {
+      "query": "domain:Enneagram/Passions, virtues, and Holy Ideas",
+      "color": "graph-amber",
+      "sourceNodes": 17
+    },
+    {
+      "query": "domain:Enneagram/Paths of transformation",
+      "color": "graph-yellow",
+      "sourceNodes": 28
+    },
+    {
+      "query": "domain:Enneagram/Personality and Essence/Essence",
+      "color": "graph-rose-light",
+      "sourceNodes": 20
+    },
+    {
+      "query": "domain:Enneagram/Personality and Essence/Essential qualities",
+      "color": "graph-rose-dark",
+      "sourceNodes": 25
+    },
+    {
+      "query": "domain:Enneagram/Personality and Essence/Formatory apparatus and scrambled Centers",
+      "color": "graph-lime-light",
+      "sourceNodes": 8
+    },
+    {
+      "query": "domain:Enneagram/Personality and Essence/Personality",
+      "color": "graph-lime-dark",
+      "sourceNodes": 13
+    },
+    {
+      "query": "domain:Enneagram/Personality and Essence",
+      "color": "graph-chartreuse",
+      "sourceNodes": 44
+    },
+    {
+      "query": "domain:Enneagram/Self-knowledge and understanding others",
+      "color": "graph-emerald",
+      "sourceNodes": 16
+    },
+    {
+      "query": "domain:Enneagram/Stages of Enneagram work/Personal work and transformation",
+      "color": "graph-copper-light",
+      "sourceNodes": 5
+    },
+    {
+      "query": "domain:Enneagram/Stages of Enneagram work",
+      "color": "graph-mint",
+      "sourceNodes": 6
+    },
+    {
+      "query": "domain:Enneagram/Training and publications",
+      "color": "graph-violet-light",
+      "sourceNodes": 3
+    },
+    {
+      "query": "domain:Enneagram/Triads and intelligence centers/Diagram symbols and shorthand",
+      "color": "graph-copper-dark",
+      "sourceNodes": 6
+    },
+    {
+      "query": "domain:Enneagram/Triads and intelligence centers/Intelligence centers",
+      "color": "applied",
+      "sourceNodes": 38
+    },
+    {
+      "query": "domain:Enneagram/Triads and intelligence centers/Third Center",
+      "color": "graph-violet",
+      "sourceNodes": 5
+    },
+    {
+      "query": "domain:Enneagram/Triads and intelligence centers",
+      "color": "graph-aqua",
+      "sourceNodes": 25
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Eight",
+      "color": "needs-you",
+      "sourceNodes": 100
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Five",
+      "color": "graph-teal",
+      "sourceNodes": 109
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Four",
+      "color": "graph-pink",
+      "sourceNodes": 96
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Nine",
+      "color": "stale",
+      "sourceNodes": 107
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type One",
+      "color": "graph-cyan",
+      "sourceNodes": 118
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Seven",
+      "color": "graph-copper",
+      "sourceNodes": 96
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Six",
+      "color": "graph-lime",
+      "sourceNodes": 102
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Three",
+      "color": "graph-rose",
+      "sourceNodes": 100
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions/Type Two",
+      "color": "graph-purple",
+      "sourceNodes": 118
+    },
+    {
+      "query": "domain:Enneagram/Type descriptions",
+      "color": "graph-sky",
+      "sourceNodes": 21
+    },
+    {
+      "query": "domain:Enneagram/Type structure and individuality",
+      "color": "graph-indigo",
+      "sourceNodes": 22
+    },
+    {
+      "query": "domain:Enneagram/Typing and identifying type/Book examples",
+      "color": "failed",
+      "sourceNodes": 15
+    },
+    {
+      "query": "domain:Enneagram/Typing and identifying type/Checking a chosen type",
+      "color": "graph-scarlet",
+      "sourceNodes": 15
+    },
+    {
+      "query": "domain:Enneagram/Typing and identifying type/Misidentifying type",
+      "color": "graph-coral",
+      "sourceNodes": 150
+    },
+    {
+      "query": "domain:Enneagram/Typing and identifying type/Questionnaire and self-typing",
+      "color": "graph-peach",
+      "sourceNodes": 20
+    },
+    {
+      "query": "domain:Enneagram/Typing and identifying type",
+      "color": "graph-lavender",
+      "sourceNodes": 19
+    },
+    {
+      "query": "domain:Enneagram/Wings",
+      "color": "graph-magenta",
+      "sourceNodes": 6
+    },
+    {
+      "query": "domain:Enneagram",
+      "color": "link",
+      "sourceNodes": 0
+    }
+  ]
+}

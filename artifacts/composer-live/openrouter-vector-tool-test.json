@@ -1,0 +1,13 @@
+{
+  "asset": {
+    "id": "c12394cb-e5d5-4894-82fb-51a918a54503",
+    "storage_path": "generated/vector/c12394cb-e5d5-4894-82fb-51a918a54503.svg",
+    "media_url": "/api/assets/c12394cb-e5d5-4894-82fb-51a918a54503/vector",
+    "model": "recraft/recraft-v4.1-pro-vector",
+    "deleted_at": null
+  },
+  "generationCalls": 1,
+  "repeatedToolCallReusedAsset": true,
+  "bytes": 57414,
+  "articleUnchanged": true
+}

@@ -1,0 +1,7 @@
+Error: Composer selected an unavailable asset or ambiguous medium.
+    at composeArticle (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/compose.ts:53:243)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async reviewedComposition (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/review.ts:49:16)
+    at async composeClaimedPage (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/live.ts:141:17)
+    at async runComposerClaim (C:/Users/Main/Documents/Projects/second-brain-engine/lib/composer/jobs.ts:28:10)
+    at async file:///C:/Users/Main/Documents/Projects/second-brain-engine/scripts/live-composer.ts:41:22

@@ -1,0 +1,41 @@
+{
+  "plan": {
+    "pageId": "c687812a-7bdd-402f-814e-b40e9fbfa590",
+    "title": "City of Edmonton",
+    "claims": 11,
+    "childClaims": 11,
+    "childShare": 1,
+    "needsOverview": true,
+    "status": "planned",
+    "detail": null,
+    "sections": [
+      {
+        "title": "Overview",
+        "query": {
+          "entity": {
+            "type": "government_body",
+            "key": "city-of-edmonton"
+          },
+          "unitIds": [
+            "5d786253-9304-497d-a083-bfe8bad419cb"
+          ],
+          "article": true
+        }
+      }
+    ]
+  },
+  "result": [
+    {
+      "title": "Overview",
+      "lines": [
+        {
+          "text": "The City of Edmonton has defined responsibilities in the ULA application process. It processes each ULA application and circulates it to all stakeholders. The City advises the Designer of any conflicts or objections. It also approves the ULA application and the proposed facility locations.",
+          "unitIds": [
+            "5d786253-9304-497d-a083-bfe8bad419cb"
+          ]
+        }
+      ],
+      "model": "anthropic/claude-haiku-5-5"
+    }
+  ]
+}

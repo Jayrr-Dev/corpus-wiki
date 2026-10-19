@@ -1,0 +1,5440 @@
+{
+  "kind": "live app pipeline; real AI and configured workspace",
+  "runId": "2026-10-17T02-09-28-904Z",
+  "status": "complete",
+  "sourceUrls": [
+    "https://www.utiliteksolutions.ca/",
+    "https://www.utiliteksolutions.ca/expertise"
+  ],
+  "stages": [
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "reconcile",
+      "status": "succeeded",
+      "durationMs": 29183,
+      "recordedAt": "2026-10-17T02:10:00.856Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "embeddings",
+      "status": "succeeded",
+      "durationMs": 6161,
+      "recordedAt": "2026-10-17T02:10:07.989Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "duplicates",
+      "status": "succeeded",
+      "durationMs": 2992,
+      "recordedAt": "2026-10-17T02:10:11.473Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "tidy",
+      "status": "failed",
+      "durationMs": 12556,
+      "recordedAt": "2026-10-17T02:10:24.440Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "tidy",
+      "status": "succeeded",
+      "durationMs": 12497,
+      "recordedAt": "2026-10-17T02:11:33.103Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "place",
+      "status": "succeeded",
+      "durationMs": 10392,
+      "recordedAt": "2026-10-17T02:11:44.103Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "describe",
+      "status": "succeeded",
+      "durationMs": 5660,
+      "recordedAt": "2026-10-17T02:11:50.341Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "profiles",
+      "status": "failed",
+      "durationMs": 44471,
+      "recordedAt": "2026-10-17T02:12:35.213Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "profiles",
+      "status": "succeeded",
+      "durationMs": 2032,
+      "recordedAt": "2026-10-17T02:17:05.886Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "hierarchy",
+      "status": "succeeded",
+      "durationMs": 1562,
+      "recordedAt": "2026-10-17T02:17:07.891Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "glossary",
+      "status": "failed",
+      "durationMs": 324,
+      "recordedAt": "2026-10-17T02:17:08.640Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "glossary",
+      "status": "failed",
+      "durationMs": 12529,
+      "recordedAt": "2026-10-17T02:21:47.535Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "glossary",
+      "status": "succeeded",
+      "durationMs": 6768,
+      "recordedAt": "2026-10-17T02:23:04.607Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "expand",
+      "status": "succeeded",
+      "durationMs": 53216,
+      "recordedAt": "2026-10-17T02:23:58.223Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "plan",
+      "status": "succeeded",
+      "durationMs": 21575,
+      "recordedAt": "2026-10-17T02:24:20.188Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "pages",
+      "status": "succeeded",
+      "durationMs": 1857,
+      "recordedAt": "2026-10-17T02:24:22.490Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "curate",
+      "status": "succeeded",
+      "durationMs": 183587,
+      "recordedAt": "2026-10-17T02:27:26.450Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "plan",
+      "status": "failed",
+      "durationMs": 14649,
+      "recordedAt": "2026-10-17T02:28:34.052Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "plan",
+      "status": "failed",
+      "durationMs": 15274,
+      "recordedAt": "2026-10-17T02:30:10.371Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "plan",
+      "status": "succeeded",
+      "durationMs": 6280,
+      "recordedAt": "2026-10-17T02:33:26.277Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "pages",
+      "status": "succeeded",
+      "durationMs": 1473,
+      "recordedAt": "2026-10-17T02:33:28.157Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "pageId": "73963b81-1961-4b0d-8865-aea76fbcb3a3",
+      "status": "succeeded",
+      "completed": 6,
+      "total": 6,
+      "durationMs": 65931,
+      "recordedAt": "2026-10-17T02:36:09.212Z"
+    },
+    {
+      "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+      "stage": "pages",
+      "status": "succeeded",
+      "durationMs": 85729,
+      "recordedAt": "2026-10-17T02:36:28.236Z"
+    }
+  ],
+  "aiCalls": [
+    {
+      "purpose": "reconciliation",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 62029,
+      "completionTokens": 2593,
+      "durationMs": 10442,
+      "status": "error",
+      "recordedAt": "2026-10-17T02:09:44.555Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "reconciliation",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 63549,
+      "completionTokens": 3418,
+      "durationMs": 11065,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:09:55.768Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4023,
+      "completionTokens": 66,
+      "durationMs": 2420,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:09:58.827Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 337,
+      "completionTokens": 0,
+      "durationMs": 2022,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:10:04.369Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 381,
+      "completionTokens": 0,
+      "durationMs": 755,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:10:06.350Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_cleanup",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 7619,
+      "completionTokens": 1658,
+      "durationMs": 9015,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:10:23.276Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_cleanup",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 7619,
+      "completionTokens": 1663,
+      "durationMs": 8262,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:11:30.494Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "place_topics",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4517,
+      "completionTokens": 816,
+      "durationMs": 5540,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:11:40.247Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "domain_duplicate_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 3223,
+      "completionTokens": 99,
+      "durationMs": 1840,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:11:42.900Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "describe_entities",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3824,
+      "completionTokens": 395,
+      "durationMs": 2479,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:11:48.520Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_profiles",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 8366,
+      "completionTokens": 654,
+      "durationMs": 3316,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:11:55.799Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_profile_kinds",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 1522,
+      "completionTokens": 94,
+      "durationMs": 2625,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:11:59.243Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_web_queries",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 1543,
+      "completionTokens": 36,
+      "durationMs": 2014,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:12:03.682Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "entity_web_profiles",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 4772,
+      "completionTokens": 293,
+      "durationMs": 3380,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:12:08.719Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "external_source_justification",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": null,
+      "completionTokens": null,
+      "durationMs": 5211,
+      "status": "error",
+      "recordedAt": "2026-10-17T02:12:18.620Z",
+      "loggingAttempts": 6
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 5102,
+      "completionTokens": 0,
+      "durationMs": 2621,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:21:44.225Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 2455,
+      "completionTokens": 0,
+      "durationMs": 1802,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:23:03.360Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "knowledge_expansion",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 30099,
+      "completionTokens": 8000,
+      "durationMs": 30030,
+      "status": "cut_off",
+      "recordedAt": "2026-10-17T02:23:38.264Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "knowledge_expansion",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 30099,
+      "completionTokens": 5560,
+      "durationMs": 18649,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:23:57.049Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_proposals",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6844,
+      "completionTokens": 702,
+      "durationMs": 4284,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:24:05.504Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3522,
+      "completionTokens": 1778,
+      "durationMs": 8166,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:24:14.299Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3909,
+      "completionTokens": 962,
+      "durationMs": 5217,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:24:19.662Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_structure_review",
+      "model": "anthropic/claude-opus-5-5",
+      "reasoningEffort": "high",
+      "promptTokens": 11951,
+      "completionTokens": 1911,
+      "durationMs": 19695,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:24:44.206Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6032,
+      "completionTokens": 1620,
+      "durationMs": 7624,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:24:56.409Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6736,
+      "completionTokens": 1697,
+      "durationMs": 7604,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:25:04.157Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3131,
+      "completionTokens": 117,
+      "durationMs": 1832,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:25:12.522Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2960,
+      "completionTokens": 389,
+      "durationMs": 3026,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:25:21.215Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3096,
+      "completionTokens": 462,
+      "durationMs": 2508,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:25:24.085Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 7859,
+      "completionTokens": 954,
+      "durationMs": 5826,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:25:41.690Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3939,
+      "completionTokens": 347,
+      "durationMs": 2014,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:25:44.010Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6761,
+      "completionTokens": 311,
+      "durationMs": 4043,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:26:04.644Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2622,
+      "completionTokens": 49,
+      "durationMs": 1381,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:26:06.207Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 1115,
+      "completionTokens": 0,
+      "durationMs": 10203,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:26:18.621Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_editorial_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 44558,
+      "completionTokens": 3162,
+      "durationMs": 15906,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:26:36.945Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 7077,
+      "completionTokens": 450,
+      "durationMs": 2367,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:26:39.461Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 1092,
+      "completionTokens": 0,
+      "durationMs": 645,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:26:42.006Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_editorial_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 34519,
+      "completionTokens": 4095,
+      "durationMs": 20117,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:27:02.818Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 4693,
+      "completionTokens": 325,
+      "durationMs": 2249,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:27:05.393Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_proposals",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6718,
+      "completionTokens": 705,
+      "durationMs": 4601,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:27:11.922Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2679,
+      "completionTokens": 128,
+      "durationMs": 1690,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:27:14.395Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3522,
+      "completionTokens": 1682,
+      "durationMs": 7845,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:28:28.908Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 4072,
+      "completionTokens": 974,
+      "durationMs": 4637,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:28:33.697Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3522,
+      "completionTokens": 1232,
+      "durationMs": 6391,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:30:03.001Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 4067,
+      "completionTokens": 1653,
+      "durationMs": 6843,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:30:09.986Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "article_update_discovery",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3730,
+      "completionTokens": 608,
+      "durationMs": 3613,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:33:25.404Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 5871,
+      "completionTokens": 802,
+      "durationMs": 6120,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:12.215Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2770,
+      "completionTokens": 49,
+      "durationMs": 1340,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:13.909Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6592,
+      "completionTokens": 1338,
+      "durationMs": 8396,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:26.317Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 3871,
+      "completionTokens": 88,
+      "durationMs": 1530,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:28.022Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6068,
+      "completionTokens": 706,
+      "durationMs": 5484,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:37.246Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2615,
+      "completionTokens": 49,
+      "durationMs": 1157,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:38.593Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6134,
+      "completionTokens": 766,
+      "durationMs": 5833,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:48.355Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2661,
+      "completionTokens": 49,
+      "durationMs": 1442,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:50.172Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6193,
+      "completionTokens": 511,
+      "durationMs": 3458,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:57.364Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2664,
+      "completionTokens": 49,
+      "durationMs": 1146,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:35:58.643Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "section_lines",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 6276,
+      "completionTokens": 534,
+      "durationMs": 4103,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:36:06.651Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 2654,
+      "completionTokens": 49,
+      "durationMs": 1286,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:36:08.097Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "embeddings",
+      "model": "Qwen/Qwen3-Embedding-8B",
+      "reasoningEffort": "none",
+      "promptTokens": 1055,
+      "completionTokens": 0,
+      "durationMs": 709,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:36:10.741Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "page_editorial_review",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "low",
+      "promptTokens": 32903,
+      "completionTokens": 1330,
+      "durationMs": 7504,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:36:19.133Z",
+      "loggingAttempts": 1
+    },
+    {
+      "purpose": "line_fact_check",
+      "model": "anthropic/claude-haiku-5-5",
+      "reasoningEffort": "medium",
+      "promptTokens": 5905,
+      "completionTokens": 1247,
+      "durationMs": 5297,
+      "status": "ok",
+      "recordedAt": "2026-10-17T02:36:25.228Z",
+      "loggingAttempts": 1
+    }
+  ],
+  "attempts": [
+    {
+      "startedAt": "2026-10-17T02:09:28.906Z",
+      "finishedAt": "2026-10-17T02:10:28.384Z",
+      "durationMs": 59477,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": "tidy: finish_upload_step: 400 Bad Request",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "running",
+              "attempts": 1
+            },
+            {
+              "key": "tidy",
+              "error": "finish_upload_step: 400 Bad Request",
+              "state": "failed",
+              "attempts": 1
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:10:27.032654+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:11:11.315Z",
+      "finishedAt": "2026-10-17T02:12:36.533Z",
+      "durationMs": 85217,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": "profiles: assert_upload_lease: 400 Bad Request",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": "assert_upload_lease: 400 Bad Request",
+              "state": "failed",
+              "attempts": 1
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:12:35.495722+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:11:14.978Z",
+        "finishedAt": "2026-10-17T02:12:35.757Z",
+        "durationMs": 80779,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 3355,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 19,
+            "durationMs": 4048,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 363,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 38,
+            "durationMs": 6011,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.entity_cleanup_input": {
+            "count": 1,
+            "durationMs": 384,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.event_touched_entities": {
+            "count": 3,
+            "durationMs": 741,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 9,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_cleanup": {
+            "count": 1,
+            "durationMs": 8262,
+            "failures": 0,
+            "tokensIn": 7619,
+            "tokensOut": 1663
+          },
+          "db.log_ai_call": {
+            "count": 14,
+            "durationMs": 9595,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.tidy": {
+            "count": 2,
+            "durationMs": 20931,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 16,
+            "durationMs": 2617,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_write": {
+            "count": 4,
+            "durationMs": 3011,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_unplaced_claims": {
+            "count": 1,
+            "durationMs": 553,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.place_topics": {
+            "count": 1,
+            "durationMs": 5540,
+            "failures": 0,
+            "tokensIn": 4517,
+            "tokensOut": 816
+          },
+          "step.place": {
+            "count": 2,
+            "durationMs": 16068,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 3,
+            "durationMs": 533,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.domain_duplicate_review": {
+            "count": 1,
+            "durationMs": 1840,
+            "failures": 0,
+            "tokensIn": 3223,
+            "tokensOut": 99
+          },
+          "step.name-duplicate-v1": {
+            "count": 1,
+            "durationMs": 2206,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.describe_entities": {
+            "count": 1,
+            "durationMs": 2479,
+            "failures": 0,
+            "tokensIn": 3824,
+            "tokensOut": 395
+          },
+          "step.describe": {
+            "count": 2,
+            "durationMs": 10773,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_workspace_settings": {
+            "count": 5,
+            "durationMs": 708,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.entity_profile_evidence": {
+            "count": 1,
+            "durationMs": 248,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.profiles": {
+            "count": 4,
+            "durationMs": 48855,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_profiles": {
+            "count": 1,
+            "durationMs": 3316,
+            "failures": 0,
+            "tokensIn": 8366,
+            "tokensOut": 654
+          },
+          "step.profiles-draft": {
+            "count": 1,
+            "durationMs": 3579,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_profile_kinds": {
+            "count": 1,
+            "durationMs": 2625,
+            "failures": 0,
+            "tokensIn": 1522,
+            "tokensOut": 94
+          },
+          "step.profile-kinds": {
+            "count": 1,
+            "durationMs": 2756,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.web": {
+            "count": 2,
+            "durationMs": 9832,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_web_queries": {
+            "count": 1,
+            "durationMs": 2014,
+            "failures": 0,
+            "tokensIn": 1543,
+            "tokensOut": 36
+          },
+          "queue.search": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "request.search": {
+            "count": 2,
+            "durationMs": 2006,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.entity_web_profiles": {
+            "count": 1,
+            "durationMs": 3380,
+            "failures": 0,
+            "tokensIn": 4772,
+            "tokensOut": 293
+          },
+          "queue.web": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_ai_role_instructions": {
+            "count": 1,
+            "durationMs": 140,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.external_source_justification": {
+            "count": 1,
+            "durationMs": 5211,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.log_ai_call": {
+            "count": 5,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.web-save": {
+            "count": 1,
+            "durationMs": 23677,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.stakeholder-web": {
+            "count": 1,
+            "durationMs": 34794,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 142,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "cancel.drain": {
+            "count": 1,
+            "durationMs": 16862,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 124,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 152,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:17:00.228Z",
+      "finishedAt": "2026-10-17T02:17:34.283Z",
+      "durationMs": 34054,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": "glossary: ",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": "",
+              "state": "failed",
+              "attempts": 1
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:17:33.324415+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:17:00.862Z",
+        "finishedAt": "2026-10-17T02:17:33.578Z",
+        "durationMs": 32716,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 261,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 16,
+            "durationMs": 2422,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 373,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 25,
+            "durationMs": 10803,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 3,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles-draft": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_workspace_settings": {
+            "count": 1,
+            "durationMs": 121,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.web": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.web-save": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.stakeholder-web": {
+            "count": 1,
+            "durationMs": 839,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.profiles": {
+            "count": 1,
+            "durationMs": 2033,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 9,
+            "durationMs": 9006,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 1,
+            "durationMs": 287,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.organize_entity_context": {
+            "count": 1,
+            "durationMs": 978,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.hierarchy": {
+            "count": 1,
+            "durationMs": 1563,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 325,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.finish_upload_step": {
+            "count": 6,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.assert_upload_lease": {
+            "count": 5,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 160,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 137,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 146,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:21:31.014Z",
+      "finishedAt": "2026-10-17T02:21:54.022Z",
+      "durationMs": 23006,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": "glossary: missing_glossary_embeddings: 400 Bad Request",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": "missing_glossary_embeddings: 400 Bad Request",
+              "state": "failed",
+              "attempts": 2
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:21:52.802816+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:21:31.805Z",
+        "finishedAt": "2026-10-17T02:21:53.130Z",
+        "durationMs": 21325,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 229,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 9,
+            "durationMs": 1312,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 442,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 17,
+            "durationMs": 5834,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_glossary_generation": {
+            "count": 1,
+            "durationMs": 144,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.publish_glossary_meanings": {
+            "count": 1,
+            "durationMs": 1576,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_glossary_embeddings": {
+            "count": 2,
+            "durationMs": 954,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.embedding": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.embeddings": {
+            "count": 1,
+            "durationMs": 2621,
+            "failures": 0,
+            "tokensIn": 5102,
+            "tokensOut": 0
+          },
+          "db.log_ai_call": {
+            "count": 1,
+            "durationMs": 190,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.save_glossary_embeddings": {
+            "count": 1,
+            "durationMs": 2567,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.assert_upload_lease": {
+            "count": 3,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 12531,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 3,
+            "durationMs": 4340,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.retry.finish_upload_step": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 141,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 151,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 195,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:22:53.742Z",
+      "finishedAt": "2026-10-17T02:27:27.813Z",
+      "durationMs": 274069,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": null,
+        "workflow": {
+          "error": null,
+          "state": "complete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:40b098068918a78d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "editorial-review:7d20a269-24f1-4e7f-9f91-4f91b9386653",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:claims:5554665a8db98969",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:claims:5554665a8db98969:0:817f776425d4e834",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "curate",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:27:26.741346+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:22:54.882Z",
+        "finishedAt": "2026-10-17T02:27:27.027Z",
+        "durationMs": 272145,
+        "status": "succeeded",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 192,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 20,
+            "durationMs": 3048,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 300,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 100,
+            "durationMs": 17920,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_glossary_generation": {
+            "count": 1,
+            "durationMs": 122,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.missing_glossary_embeddings": {
+            "count": 1,
+            "durationMs": 266,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.embedding": {
+            "count": 3,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.embeddings": {
+            "count": 3,
+            "durationMs": 12650,
+            "failures": 0,
+            "tokensIn": 4662,
+            "tokensOut": 0
+          },
+          "db.log_ai_call": {
+            "count": 24,
+            "durationMs": 4170,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.save_glossary_embeddings": {
+            "count": 1,
+            "durationMs": 1114,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.glossary": {
+            "count": 1,
+            "durationMs": 6770,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 12,
+            "durationMs": 1808,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 3,
+            "durationMs": 460,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.organize_entity_context": {
+            "count": 3,
+            "durationMs": 1568,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_query_units": {
+            "count": 37,
+            "durationMs": 6020,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 9,
+            "durationMs": 2353,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 21,
+            "durationMs": 1,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.knowledge_expansion": {
+            "count": 2,
+            "durationMs": 48679,
+            "failures": 1,
+            "tokensIn": 60198,
+            "tokensOut": 13560
+          },
+          "step.expand-entity": {
+            "count": 1,
+            "durationMs": 52800,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.expand": {
+            "count": 1,
+            "durationMs": 53217,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_event_units": {
+            "count": 1,
+            "durationMs": 139,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_workspace_settings": {
+            "count": 4,
+            "durationMs": 518,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.article_index": {
+            "count": 2,
+            "durationMs": 531,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_proposals": {
+            "count": 2,
+            "durationMs": 8885,
+            "failures": 0,
+            "tokensIn": 13562,
+            "tokensOut": 1407
+          },
+          "step.article-proposals": {
+            "count": 2,
+            "durationMs": 10956,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_update_discovery": {
+            "count": 8,
+            "durationMs": 37667,
+            "failures": 0,
+            "tokensIn": 32065,
+            "tokensOut": 7153
+          },
+          "step.article": {
+            "count": 2,
+            "durationMs": 16313,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.plan": {
+            "count": 1,
+            "durationMs": 21576,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.list_affected_sections": {
+            "count": 1,
+            "durationMs": 419,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.affected-sections": {
+            "count": 1,
+            "durationMs": 419,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.report_upload_progress": {
+            "count": 1,
+            "durationMs": 136,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.pages": {
+            "count": 1,
+            "durationMs": 1858,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.curator_snapshot": {
+            "count": 5,
+            "durationMs": 8757,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_ai_role_instructions": {
+            "count": 1,
+            "durationMs": 122,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.page_structure_review": {
+            "count": 1,
+            "durationMs": 19695,
+            "failures": 0,
+            "tokensIn": 11951,
+            "tokensOut": 1911
+          },
+          "db.upload_workflow_write": {
+            "count": 4,
+            "durationMs": 2387,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.list_page_sections": {
+            "count": 2,
+            "durationMs": 301,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_section_build": {
+            "count": 14,
+            "durationMs": 2148,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_section_state": {
+            "count": 14,
+            "durationMs": 29279,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.section_build_write": {
+            "count": 20,
+            "durationMs": 3523,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_page_context": {
+            "count": 2,
+            "durationMs": 326,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.section_lines": {
+            "count": 2,
+            "durationMs": 9869,
+            "failures": 0,
+            "tokensIn": 14620,
+            "tokensOut": 1265
+          },
+          "ai.line_fact_check": {
+            "count": 4,
+            "durationMs": 8011,
+            "failures": 0,
+            "tokensIn": 18331,
+            "tokensOut": 1171
+          },
+          "db.pages_needing_editorial_review": {
+            "count": 2,
+            "durationMs": 832,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_snapshot": {
+            "count": 2,
+            "durationMs": 836,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.similar_units": {
+            "count": 2,
+            "durationMs": 1067,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_related": {
+            "count": 2,
+            "durationMs": 840,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.page_editorial_review": {
+            "count": 2,
+            "durationMs": 36023,
+            "failures": 0,
+            "tokensIn": 79077,
+            "tokensOut": 7257
+          },
+          "db.auto_accept_exceptions": {
+            "count": 1,
+            "durationMs": 177,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.editorial-review": {
+            "count": 1,
+            "durationMs": 32714,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.curate": {
+            "count": 1,
+            "durationMs": 183587,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 170,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 128,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 156,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:28:13.762Z",
+      "finishedAt": "2026-10-17T02:28:35.591Z",
+      "durationMs": 21828,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:40b098068918a78d: Retrying an article-planning validation failure previously recorded as a rejection.\npages: Retrying an article-planning validation failure previously recorded as a rejection.\narticle:65238e98-a58d-425a-b187-d927d3eb3f27:0:d2373bb62e9178d0: The update cited an unknown or repeated claim. No new sections were added.\nplan: The update cited an unknown or repeated claim. No new sections were added.",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "editorial-review:7d20a269-24f1-4e7f-9f91-4f91b9386653",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:claims:5554665a8db98969",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:claims:5554665a8db98969:0:817f776425d4e834",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "curate",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:40b098068918a78d",
+              "error": "Retrying an article-planning validation failure previously recorded as a rejection.",
+              "state": "failed",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": "Retrying an article-planning validation failure previously recorded as a rejection.",
+              "state": "failed",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:d2373bb62e9178d0",
+              "error": "The update cited an unknown or repeated claim. No new sections were added.",
+              "state": "failed",
+              "attempts": 1
+            },
+            {
+              "key": "plan",
+              "error": "The update cited an unknown or repeated claim. No new sections were added.",
+              "state": "failed",
+              "attempts": 2
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:28:34.365732+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:28:15.085Z",
+        "finishedAt": "2026-10-17T02:28:34.631Z",
+        "durationMs": 19546,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 550,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 13,
+            "durationMs": 2142,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 399,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 13,
+            "durationMs": 1966,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.glossary": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.expand": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 1,
+            "durationMs": 361,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_event_units": {
+            "count": 1,
+            "durationMs": 155,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.article-proposals": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 1,
+            "durationMs": 147,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_update_discovery": {
+            "count": 2,
+            "durationMs": 12482,
+            "failures": 0,
+            "tokensIn": 7594,
+            "tokensOut": 2656
+          },
+          "db.log_ai_call": {
+            "count": 2,
+            "durationMs": 301,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.article": {
+            "count": 1,
+            "durationMs": 13184,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 2,
+            "durationMs": 350,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.plan": {
+            "count": 1,
+            "durationMs": 14651,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 134,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 155,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 141,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:29:51.028Z",
+      "finishedAt": "2026-10-17T02:30:11.680Z",
+      "durationMs": 20651,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": "pages: Retrying an article-planning validation failure previously recorded as a rejection.\narticle:65238e98-a58d-425a-b187-d927d3eb3f27:0:d2373bb62e9178d0: The update cited an unknown claim (\"Utilitek Solutions lists these tools: Microstation, PLS CADD, SPIDA Calc, PLS-Caisson, Sag10, PLS Pole, PLS Laminated Pole, and Quick Pole. [C2]\"). Use C1 through C14. No new sections were added.\nplan: The update cited an unknown claim (\"Utilitek Solutions lists these tools: Microstation, PLS CADD, SPIDA Calc, PLS-Caisson, Sag10, PLS Pole, PLS Laminated Pole, and Quick Pole. [C2]\"). Use C1 through C14. No new sections were added.",
+        "workflow": {
+          "error": null,
+          "state": "incomplete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "editorial-review:7d20a269-24f1-4e7f-9f91-4f91b9386653",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:claims:5554665a8db98969",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:claims:5554665a8db98969:0:817f776425d4e834",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "curate",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": "Retrying an article-planning validation failure previously recorded as a rejection.",
+              "state": "failed",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:40b098068918a78d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:d2373bb62e9178d0",
+              "error": "The update cited an unknown claim (\"Utilitek Solutions lists these tools: Microstation, PLS CADD, SPIDA Calc, PLS-Caisson, Sag10, PLS Pole, PLS Laminated Pole, and Quick Pole. [C2]\"). Use C1 through C14. No new sections were added.",
+              "state": "failed",
+              "attempts": 2
+            },
+            {
+              "key": "plan",
+              "error": "The update cited an unknown claim (\"Utilitek Solutions lists these tools: Microstation, PLS CADD, SPIDA Calc, PLS-Caisson, Sag10, PLS Pole, PLS Laminated Pole, and Quick Pole. [C2]\"). Use C1 through C14. No new sections were added.",
+              "state": "failed",
+              "attempts": 3
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:30:10.681856+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:29:51.671Z",
+        "finishedAt": "2026-10-17T02:30:10.910Z",
+        "durationMs": 19238,
+        "status": "failed",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 182,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 14,
+            "durationMs": 2009,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 273,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 13,
+            "durationMs": 1928,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.glossary": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.expand": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 1,
+            "durationMs": 148,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_event_units": {
+            "count": 1,
+            "durationMs": 120,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.article-proposals": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.article-keys": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 3,
+            "durationMs": 494,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 1,
+            "durationMs": 139,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 2,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_update_discovery": {
+            "count": 2,
+            "durationMs": 13234,
+            "failures": 0,
+            "tokensIn": 7589,
+            "tokensOut": 2885
+          },
+          "db.log_ai_call": {
+            "count": 2,
+            "durationMs": 280,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.article": {
+            "count": 1,
+            "durationMs": 13846,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.plan": {
+            "count": 1,
+            "durationMs": 15276,
+            "failures": 1,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 148,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 116,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 143,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:33:15.823Z",
+      "finishedAt": "2026-10-17T02:33:29.871Z",
+      "durationMs": 14047,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": null,
+        "workflow": {
+          "error": null,
+          "state": "complete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "affected-sections:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "editorial-review:7d20a269-24f1-4e7f-9f91-4f91b9386653",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:claims:5554665a8db98969",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:claims:5554665a8db98969:0:817f776425d4e834",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "curate",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:40b098068918a78d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:d2373bb62e9178d0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 4
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:33:28.766395+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:33:16.528Z",
+        "finishedAt": "2026-10-17T02:33:28.990Z",
+        "durationMs": 12462,
+        "status": "succeeded",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 209,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 17,
+            "durationMs": 2349,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 277,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 16,
+            "durationMs": 2232,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.glossary": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.expand": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 2,
+            "durationMs": 357,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.living_page_event_units": {
+            "count": 1,
+            "durationMs": 146,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.article-proposals": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.article-keys": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 1,
+            "durationMs": 148,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.article_update_discovery": {
+            "count": 1,
+            "durationMs": 3613,
+            "failures": 0,
+            "tokensIn": 3730,
+            "tokensOut": 608
+          },
+          "db.log_ai_call": {
+            "count": 1,
+            "durationMs": 142,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_write": {
+            "count": 2,
+            "durationMs": 454,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.article": {
+            "count": 1,
+            "durationMs": 4807,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 3,
+            "durationMs": 404,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.plan": {
+            "count": 1,
+            "durationMs": 6281,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.affected-sections": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.report_upload_progress": {
+            "count": 1,
+            "durationMs": 183,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.organize_entity_context": {
+            "count": 1,
+            "durationMs": 626,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.pages": {
+            "count": 1,
+            "durationMs": 1474,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.curate": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 155,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 129,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 132,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    },
+    {
+      "startedAt": "2026-10-17T02:34:57.863Z",
+      "finishedAt": "2026-10-17T02:36:30.475Z",
+      "durationMs": 92610,
+      "result": {
+        "status": "applied",
+        "changeSetId": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+        "error": null,
+        "workflow": {
+          "error": null,
+          "state": "complete",
+          "steps": [
+            {
+              "key": "reconciliation-input",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extract:d9122af2-bcaa-4fa1-8dfa-cd6ea359e7e0:2c347524-7f06-461c-b303-809cd94f9544:d85a36c8-7d0c-4878-bd8e-8f34a7da2d46:5b1b7889-315e-4a8b-ae8b-1bef628aa43b:ea92bd72-bb89-4f10-8613-fedea3dcb14f:33adb680-5cb1-4e98-82e2-620102f0b3fa:cab57d61-847a-4385-9f0f-f01a76dc378c:9d1f7eb5-ce74-4d5f-ad46-69fb2150dc2f:a45469f1-dd99-4c6f-838e-99d00f0269d1:e2275f53-13fb-4550-aa0c-4d661a8cc85d:d027e7e1-a1ff-4dba-91b0-659a7b58d1a6:0a3e0505-6852-46c5-8607-208e67c5cb2a:b282a96d-51e1-447d-af90-3fb3c068a07b:fc0bd5e7-ebeb-4675-bfe1-8dfb5c19a32b",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:entity:77764128366e000d3701946827fc6c74f512c5c699475c7ed21a9f82d9098e91",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "extraction",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "reconcile",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "embeddings",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "duplicates",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "tidy:706d9c4d-b163-4d0e-a028-f25d6b870ed4",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "tidy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "place:1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "name-duplicate-v1:domain:da485c964ede32a9c78c32bd49adf966e31e625705bd5c0799930d7c9ba44367",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "place",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "describe",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles-draft:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profile-kinds:v1:fea6515082e6cc201ca3a8f414bacb86b2c37c4c775bfaab58b428848d222964",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:kinds",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles:1c5c5d08-54c6-47b2-a617-142760210f0d:42a55928-7627-4d4e-a5e9-172ca13d89cd:68949723-ce44-4fd1-aea2-bb4bfdfe3a76:cb0d515a-72fd-4be3-a75c-e1074102ba8c:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "web-save:68949723-ce44-4fd1-aea2-bb4bfdfe3a76",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "profiles",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "hierarchy",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "glossary",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            },
+            {
+              "key": "expand-entity:fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "expand",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "editorial-review:7d20a269-24f1-4e7f-9f91-4f91b9386653",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-proposals:claims:5554665a8db98969",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:claims:5554665a8db98969:0:817f776425d4e834",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "curate",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:40b098068918a78d",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article-keys:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "article:65238e98-a58d-425a-b187-d927d3eb3f27:0:d2373bb62e9178d0",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            },
+            {
+              "key": "plan",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 4
+            },
+            {
+              "key": "affected-sections:65238e98-a58d-425a-b187-d927d3eb3f27",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 2
+            },
+            {
+              "key": "rebuild-section:65238e98-a58d-425a-b187-d927d3eb3f27:e7f10e92-223d-4fa4-985b-9a988a001e4e",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:65238e98-a58d-425a-b187-d927d3eb3f27:f2b8d5f8-8a75-405f-b7d0-7bd01fb53caf",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:65238e98-a58d-425a-b187-d927d3eb3f27:d942f658-287b-458f-8eb4-759eea4e9fa7",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:65238e98-a58d-425a-b187-d927d3eb3f27:30e0bc8d-d7a7-42e2-91b5-b06212e11076",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:65238e98-a58d-425a-b187-d927d3eb3f27:ab526aab-cd2c-4e66-851f-2fc985605a56",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "rebuild-section:65238e98-a58d-425a-b187-d927d3eb3f27:e5fd9d43-c50e-4523-8218-55ccb098672a",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "editorial-review:73963b81-1961-4b0d-8865-aea76fbcb3a3",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 1
+            },
+            {
+              "key": "pages",
+              "error": null,
+              "state": "succeeded",
+              "attempts": 3
+            }
+          ],
+          "waiting": false,
+          "event_id": "65238e98-a58d-425a-b187-d927d3eb3f27",
+          "progress": null,
+          "updated_at": "2026-10-17T02:36:28.911036+00:00",
+          "lease_until": null,
+          "change_set_id": "b53ac3ad-9c67-4b0e-ade8-bb94d03d7747",
+          "cancel_requested": false,
+          "resume_requested": false
+        }
+      },
+      "metrics": {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "job": "articles",
+        "startedAt": "2026-10-17T02:34:58.623Z",
+        "finishedAt": "2026-10-17T02:36:29.287Z",
+        "durationMs": 90664,
+        "status": "succeeded",
+        "metrics": {
+          "db.claim_upload_workflow": {
+            "count": 1,
+            "durationMs": 144,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.start_upload_step": {
+            "count": 21,
+            "durationMs": 2862,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.reconcile": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_workflow_waiting": {
+            "count": 2,
+            "durationMs": 252,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.assert_upload_lease": {
+            "count": 50,
+            "durationMs": 8045,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.embeddings": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.duplicates": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.tidy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.place": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.describe": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.profiles": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.hierarchy": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.glossary": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.expand": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.plan": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.list_affected_sections": {
+            "count": 1,
+            "durationMs": 358,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.affected-sections": {
+            "count": 1,
+            "durationMs": 358,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.finish_upload_step": {
+            "count": 9,
+            "durationMs": 1365,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.report_upload_progress": {
+            "count": 7,
+            "durationMs": 944,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.claim_section_build": {
+            "count": 6,
+            "durationMs": 773,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_section_state": {
+            "count": 6,
+            "durationMs": 12169,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_page_context": {
+            "count": 6,
+            "durationMs": 812,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.get_role_memory": {
+            "count": 5,
+            "durationMs": 844,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.chat": {
+            "count": 14,
+            "durationMs": 1,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.section_lines": {
+            "count": 6,
+            "durationMs": 33394,
+            "failures": 0,
+            "tokensIn": 37134,
+            "tokensOut": 4657
+          },
+          "db.log_ai_call": {
+            "count": 15,
+            "durationMs": 2666,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.line_fact_check": {
+            "count": 7,
+            "durationMs": 13198,
+            "failures": 0,
+            "tokensIn": 23140,
+            "tokensOut": 1580
+          },
+          "db.section_build_write": {
+            "count": 24,
+            "durationMs": 3626,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.rebuild-section": {
+            "count": 6,
+            "durationMs": 62711,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.pages_needing_editorial_review": {
+            "count": 1,
+            "durationMs": 296,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_snapshot": {
+            "count": 1,
+            "durationMs": 260,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "queue.embedding": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.embeddings": {
+            "count": 1,
+            "durationMs": 709,
+            "failures": 0,
+            "tokensIn": 1055,
+            "tokensOut": 0
+          },
+          "db.similar_units": {
+            "count": 1,
+            "durationMs": 424,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_review_related": {
+            "count": 1,
+            "durationMs": 324,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "ai.page_editorial_review": {
+            "count": 1,
+            "durationMs": 7504,
+            "failures": 0,
+            "tokensIn": 32903,
+            "tokensOut": 1330
+          },
+          "db.upload_workflow_write": {
+            "count": 1,
+            "durationMs": 944,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.editorial-review": {
+            "count": 1,
+            "durationMs": 16597,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "stage.editorial-review": {
+            "count": 1,
+            "durationMs": 17261,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.page_candidates": {
+            "count": 1,
+            "durationMs": 445,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.organize_entity_context": {
+            "count": 1,
+            "durationMs": 898,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "step.pages": {
+            "count": 1,
+            "durationMs": 85730,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "checkpoint.hit.curate": {
+            "count": 1,
+            "durationMs": 0,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.release_upload_workflow": {
+            "count": 1,
+            "durationMs": 171,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.read_upload_workflows": {
+            "count": 1,
+            "durationMs": 181,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          },
+          "db.upload_knowledge_result": {
+            "count": 1,
+            "durationMs": 193,
+            "failures": 0,
+            "tokensIn": 0,
+            "tokensOut": 0
+          }
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://www.utiliteksolutions.ca/",
+      "title": "Utilitek Solutions | Leading Electrical Engineering Consulting in Edmonton, Alberta",
+      "fetchedAt": "2026-10-17T02:09:28.906Z",
+      "characters": 99254,
+      "sha256": "7194535fa8f520a56e8153cfb752d3e4c29bad40ff21aca412ac95b504f20dde"
+    },
+    {
+      "url": "https://www.utiliteksolutions.ca/expertise",
+      "title": "Electrical Engineering Expertise | Distribution Systems &amp; Grid Modernization | Utilitek | Utilitek Solutions",
+      "fetchedAt": "2026-10-17T02:09:28.906Z",
+      "characters": 152307,
+      "sha256": "fc85ea0ab72c5f7ca9861449b87b4231d544e7aab2e8c8b7ec3d11bba3416be8"
+    }
+  ],
+  "inputPath": "C:\\Users\\Main\\Documents\\Projects\\second-brain-engine\\artifacts\\processing\\utilitek-live\\2026-10-17T02-09-28-904Z\\utilitek-website-live-test.md",
+  "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+  "sourceId": "21871621-4785-43a6-aafb-2dde314b476f",
+  "metrics": {
+    "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+    "job": "articles",
+    "startedAt": "2026-10-17T02:34:58.623Z",
+    "finishedAt": "2026-10-17T02:36:29.287Z",
+    "durationMs": 90664,
+    "status": "succeeded",
+    "metrics": {
+      "db.claim_upload_workflow": {
+        "count": 1,
+        "durationMs": 144,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.start_upload_step": {
+        "count": 21,
+        "durationMs": 2862,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.reconcile": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_workflow_waiting": {
+        "count": 2,
+        "durationMs": 252,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.assert_upload_lease": {
+        "count": 50,
+        "durationMs": 8045,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.embeddings": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.duplicates": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.tidy": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.place": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.describe": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.profiles": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.hierarchy": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.glossary": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.expand": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.plan": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.list_affected_sections": {
+        "count": 1,
+        "durationMs": 358,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.affected-sections": {
+        "count": 1,
+        "durationMs": 358,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.finish_upload_step": {
+        "count": 9,
+        "durationMs": 1365,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.report_upload_progress": {
+        "count": 7,
+        "durationMs": 944,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.claim_section_build": {
+        "count": 6,
+        "durationMs": 773,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.read_section_state": {
+        "count": 6,
+        "durationMs": 12169,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.read_page_context": {
+        "count": 6,
+        "durationMs": 812,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.get_role_memory": {
+        "count": 5,
+        "durationMs": 844,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "queue.chat": {
+        "count": 14,
+        "durationMs": 1,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.section_lines": {
+        "count": 6,
+        "durationMs": 33394,
+        "failures": 0,
+        "tokensIn": 37134,
+        "tokensOut": 4657
+      },
+      "db.log_ai_call": {
+        "count": 15,
+        "durationMs": 2666,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.line_fact_check": {
+        "count": 7,
+        "durationMs": 13198,
+        "failures": 0,
+        "tokensIn": 23140,
+        "tokensOut": 1580
+      },
+      "db.section_build_write": {
+        "count": 24,
+        "durationMs": 3626,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.rebuild-section": {
+        "count": 6,
+        "durationMs": 62711,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.pages_needing_editorial_review": {
+        "count": 1,
+        "durationMs": 296,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_review_snapshot": {
+        "count": 1,
+        "durationMs": 260,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "queue.embedding": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.embeddings": {
+        "count": 1,
+        "durationMs": 709,
+        "failures": 0,
+        "tokensIn": 1055,
+        "tokensOut": 0
+      },
+      "db.similar_units": {
+        "count": 1,
+        "durationMs": 424,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_review_related": {
+        "count": 1,
+        "durationMs": 324,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "ai.page_editorial_review": {
+        "count": 1,
+        "durationMs": 7504,
+        "failures": 0,
+        "tokensIn": 32903,
+        "tokensOut": 1330
+      },
+      "db.upload_workflow_write": {
+        "count": 1,
+        "durationMs": 944,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.editorial-review": {
+        "count": 1,
+        "durationMs": 16597,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "stage.editorial-review": {
+        "count": 1,
+        "durationMs": 17261,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.page_candidates": {
+        "count": 1,
+        "durationMs": 445,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.organize_entity_context": {
+        "count": 1,
+        "durationMs": 898,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "step.pages": {
+        "count": 1,
+        "durationMs": 85730,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "checkpoint.hit.curate": {
+        "count": 1,
+        "durationMs": 0,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.release_upload_workflow": {
+        "count": 1,
+        "durationMs": 171,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.read_upload_workflows": {
+        "count": 1,
+        "durationMs": 181,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      },
+      "db.upload_knowledge_result": {
+        "count": 1,
+        "durationMs": 193,
+        "failures": 0,
+        "tokensIn": 0,
+        "tokensOut": 0
+      }
+    }
+  },
+  "output": {
+    "sourcePassages": 14,
+    "touchedUnits": 35,
+    "affectedPages": 1,
+    "affectedSections": 6,
+    "sourceUsage": {
+      "unit_count": 14,
+      "article_count": 1,
+      "line_count": 7
+    },
+    "articleReviews": [
+      {
+        "verdict": "reject",
+        "reason": "Nothing was written because this step failed: The update cited an unknown or repeated claim. No new sections were added.",
+        "decided_by": "rule",
+        "result_page_id": null
+      },
+      {
+        "verdict": "update_existing",
+        "reason": "The proposer sent these claims to an existing article.",
+        "decided_by": "rule",
+        "result_page_id": "73963b81-1961-4b0d-8865-aea76fbcb3a3"
+      }
+    ],
+    "glossary": {
+      "status": "ready",
+      "completed_batches": 0,
+      "total_batches": 10,
+      "generated_at": "2026-10-17T02:21:41.018646+00:00"
+    },
+    "openWorkspaceExceptions": 0
+  },
+  "networkErrors": [
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T02:12:18.618Z"
+    },
+    {
+      "path": "/rest/v1/rpc/log_ai_call",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:12:20.225Z"
+    },
+    {
+      "path": "/rest/v1/rpc/log_ai_call",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:12:22.544Z"
+    },
+    {
+      "path": "/rest/v1/rpc/log_ai_call",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:12:24.188Z"
+    },
+    {
+      "path": "/rest/v1/rpc/log_ai_call",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:12:27.118Z"
+    },
+    {
+      "path": "/rest/v1/rpc/log_ai_call",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:12:30.480Z"
+    },
+    {
+      "path": "/rest/v1/units",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T02:17:08.639Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:10.095Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:12.342Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:13.068Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:14.583Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:14.868Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:16.413Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:16.561Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:18.700Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:19.929Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:22.548Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:17:24.974Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T02:21:47.532Z"
+    },
+    {
+      "path": "/rest/v1/rpc/missing_glossary_embeddings",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"\",\"details\":null,\"hint\":null,\"message\":\"\"}",
+      "recordedAt": "2026-10-17T02:21:47.534Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:21:48.817Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:21:49.728Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:21:51.255Z"
+    },
+    {
+      "path": "/rest/v1/rpc/finish_upload_step",
+      "status": 503,
+      "statusText": "Service Unavailable",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}",
+      "recordedAt": "2026-10-17T02:21:51.977Z"
+    },
+    {
+      "path": "/rest/v1/rpc/assert_upload_lease",
+      "status": 400,
+      "statusText": "Bad Request",
+      "contentType": "application/json; charset=utf-8",
+      "body": "{\"code\":\"P0001\",\"details\":null,\"hint\":null,\"message\":\"Upload ownership expired. Resume the upload to continue.\"}",
+      "recordedAt": "2026-10-17T02:36:29.077Z"
+    }
+  ]
+}

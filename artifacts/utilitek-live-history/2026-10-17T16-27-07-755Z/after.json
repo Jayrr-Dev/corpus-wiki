@@ -1,0 +1,51 @@
+{
+  "lines": [
+    {
+      "author": "ai",
+      "lineId": "8820c91c-8156-45cc-a19a-419046f191db",
+      "content": "Utilitek Solutions Inc. has helped modernize electrical distribution systems since 2014, according to its LinkedIn profile.",
+      "unitIds": [
+        "e8f11593-d2b4-426b-9362-9a80f89e3f25"
+      ],
+      "position": 0,
+      "needsRewrite": false,
+      "lineRevisionId": "9b2eeb19-7eb5-4f6b-9e0b-fe0232085742"
+    }
+  ],
+  "title": "History",
+  "units": [
+    {
+      "kind": "fact",
+      "unitId": "e8f11593-d2b4-426b-9362-9a80f89e3f25",
+      "content": "Utilitek Solutions Inc. states on its LinkedIn company profile that it has helped modernize electrical distribution systems since 2014.",
+      "context": {
+        "entities": [
+          {
+            "key": "utilitek-solutions-inc",
+            "role": "subject",
+            "type": "company"
+          },
+          {
+            "key": "electrical-distribution-modernization",
+            "role": "object",
+            "type": "concept"
+          }
+        ],
+        "applicability": {
+          "status": "scoped",
+          "entities": [
+            {
+              "key": "utilitek-solutions-inc",
+              "type": "company"
+            }
+          ],
+          "conditions": "Company self-reported claim from its LinkedIn profile; not independently verified"
+        }
+      },
+      "revisionId": "b67a13aa-1acd-4cc6-8aee-c050e72d23a7",
+      "epistemicStatus": "supported"
+    }
+  ],
+  "pageTitle": "Utilitek Solutions Inc.",
+  "sectionId": "ab4f948a-3012-4850-a4b4-ddba6e292a11"
+}

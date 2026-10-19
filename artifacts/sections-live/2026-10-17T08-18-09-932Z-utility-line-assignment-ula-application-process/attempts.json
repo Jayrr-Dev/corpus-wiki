@@ -1,0 +1,535 @@
+[
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C4",
+        "C1",
+        "C2",
+        "C8",
+        "C5"
+      ],
+      "sections": [
+        {
+          "title": "Designer workflow, tools, and permit filing",
+          "claims": [
+            "C37",
+            "C42",
+            "C43",
+            "C9",
+            "C12",
+            "C41",
+            "C30",
+            "C31",
+            "C20",
+            "C22",
+            "C38"
+          ]
+        },
+        {
+          "title": "Drafting and drawing standards",
+          "claims": [
+            "C13",
+            "C15"
+          ]
+        },
+        {
+          "title": "Clearances and design standards",
+          "claims": [
+            "C14",
+            "C25",
+            "C39",
+            "C29"
+          ]
+        },
+        {
+          "title": "Application intake and City circulation",
+          "claims": [
+            "C21",
+            "C19"
+          ]
+        },
+        {
+          "title": "Utilities and pipeline companies in the process",
+          "claims": [
+            "C6",
+            "C40",
+            "C3",
+            "C24",
+            "C33",
+            "C34"
+          ]
+        },
+        {
+          "title": "Stakeholder review and objections",
+          "claims": [
+            "C35",
+            "C32",
+            "C26",
+            "C27",
+            "C17"
+          ]
+        },
+        {
+          "title": "Resolving stakeholder conditions",
+          "claims": [
+            "C44",
+            "C28"
+          ]
+        },
+        {
+          "title": "Permit approval and issuance",
+          "claims": [
+            "C18",
+            "C7",
+            "C45"
+          ]
+        },
+        {
+          "title": "Process map and reference documents",
+          "claims": [
+            "C36",
+            "C10",
+            "C16",
+            "C11",
+            "C23"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "The City of Edmonton's ULA application process is required before ground disturbance in the road allowance, and it coordinates designers, drafters, stakeholders, and the City to produce a ULA permit.",
+    "readingOrderRationale": "The introduction defines the process and its purpose. The body then follows the designer's workflow, drawing and clearance standards, notification and circulation, stakeholder review and conditions, permit approval, and finally reference documents. The stepOf claims stay with their parent flowchart claim.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 3,
+        "reason": "All 45 claims appear once, and the headings match most claim content. Some attributions are weakened because C19 and C7 overlap with C18 on approval and permit issuance."
+      },
+      "cohesion": {
+        "score": 2,
+        "reason": "The Designer workflow section mixes preliminary design, tools, form submission, and file storage. Utilities and pipeline companies includes C40 on EPCOR traffic signals, which is unrelated to ULA application steps."
+      },
+      "flow": {
+        "score": 1,
+        "reason": "Step order breaks. C17 (step 6) follows C26 (step 8). C18 (step 9) sits in a section after C28 (step 11). C24 explains ATCO-only circulation before C33 and C34 define the terms."
+      },
+      "headings": {
+        "score": 3,
+        "reason": "Most headings are distinct and descriptive. Utilities and pipeline companies is broad, and Process map and reference documents does not fit C23, an action step."
+      },
+      "balance": {
+        "score": 2,
+        "reason": "Section sizes vary without clear cause. Designer workflow holds 11 claims while Drafting and Resolving conditions hold two each. Several claims sit in sections where they do not belong."
+      },
+      "introduction": {
+        "score": 3,
+        "reason": "The introduction defines ULA, its scope, the process, and its benefits. C8 repeats the process steps that the Designer section covers in detail."
+      },
+      "blockingIssues": [
+        "Section 8 (Permit approval and issuance) follows Resolving stakeholder conditions, but C18 (step 9 approval) precedes step 11 (C28). Chronology is out of order.",
+        "C17 (stakeholder conflict routes to step 6) appears after C26 (step 8) in Stakeholder review, which breaks step order.",
+        "C40 (EPCOR maintains traffic signals and street lights) is unrelated to ULA and appears in Utilities and pipeline companies.",
+        "C19 (City approves application and proposed locations) sits in Application intake and City circulation, though it describes approval and belongs with C18 and C7.",
+        "C23 (scanned copy added to project file) is a filing step placed under Process map and reference documents rather than Designer workflow or permit filing."
+      ],
+      "fixes": [
+        "Move C19 to Permit approval and issuance, beside C18 and C7, and keep C21 in intake.",
+        "Move C17 to Stakeholder review after C27 or before C26, and place it after the step 6 reference in order.",
+        "Move C40 out of the ULA outline or to a separate section; it does not explain the application process.",
+        "Move C33 and C34 above C24 in the pipeline section so definitions come before the ATCO circulation detail.",
+        "Move C23 to the end of Designer workflow, where filing the permit occurs.",
+        "Move C6 (1 m EPCOR permit trigger) to the introduction or a scope section near C1 and C2.",
+        "Move C38 (flowchart Data lane tools) to Process map and reference documents with C10, C11, and C36.",
+        "Reorder permit sections so C18 (step 9 approval) comes before the stakeholder conditions section, or retitle the sections to reflect the step sequence.",
+        "Split Designer workflow into preliminary design and application submission, and keep C30, C31, C20, and C22 in the sequence they occur."
+      ]
+    },
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C4",
+        "C1",
+        "C2",
+        "C8",
+        "C6",
+        "C5"
+      ],
+      "sections": [
+        {
+          "title": "Preliminary design and permit determination",
+          "claims": [
+            "C42",
+            "C12"
+          ]
+        },
+        {
+          "title": "Clearances and design standards",
+          "claims": [
+            "C14",
+            "C25",
+            "C39",
+            "C29"
+          ]
+        },
+        {
+          "title": "Drawing preparation and accuracy check",
+          "claims": [
+            "C13",
+            "C15",
+            "C10",
+            "C30"
+          ]
+        },
+        {
+          "title": "Application form and online submission",
+          "claims": [
+            "C11",
+            "C9",
+            "C41"
+          ]
+        },
+        {
+          "title": "City intake and circulation",
+          "claims": [
+            "C21",
+            "C3"
+          ]
+        },
+        {
+          "title": "Stakeholder review and objections",
+          "claims": [
+            "C35",
+            "C17",
+            "C27",
+            "C32",
+            "C26"
+          ]
+        },
+        {
+          "title": "Pipeline company applications",
+          "claims": [
+            "C33",
+            "C34",
+            "C24"
+          ]
+        },
+        {
+          "title": "Permit approval and issuance",
+          "claims": [
+            "C7",
+            "C19",
+            "C18",
+            "C45"
+          ]
+        },
+        {
+          "title": "Receiving the permit and resolving conditions",
+          "claims": [
+            "C22",
+            "C44",
+            "C28",
+            "C31"
+          ]
+        },
+        {
+          "title": "Finalizing the design and filing the permit",
+          "claims": [
+            "C20",
+            "C23"
+          ]
+        },
+        {
+          "title": "ULA process flowchart and reference documents",
+          "claims": [
+            "C36",
+            "C37",
+            "C43",
+            "C38",
+            "C16"
+          ]
+        },
+        {
+          "title": "Related EPCOR services",
+          "claims": [
+            "C40"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "Utility Line Assignment (ULA) is the City of Edmonton application process that coordinates and permits utility work in road allowances where ground disturbance is required, from design through permit filing.",
+    "readingOrderRationale": "The introduction defines the process and its scope. The body follows the designer's steps in sequence: preliminary design, drawings, submission, City intake, stakeholder review, pipeline notices, approval, conditions, and filing. Flowchart documentation and the unrelated EPCOR service claim come last.",
+    "problems": [
+      "C9 must stay with its parent C37.",
+      "C12 must stay with its parent C37.",
+      "C20 must stay with its parent C37.",
+      "C22 must stay with its parent C37.",
+      "C30 must stay with its parent C37.",
+      "C31 must stay with its parent C37."
+    ],
+    "review": null,
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C4",
+        "C1",
+        "C2",
+        "C6",
+        "C5"
+      ],
+      "sections": [
+        {
+          "title": "Designer steps from preliminary design to permit filing",
+          "claims": [
+            "C8",
+            "C37",
+            "C43",
+            "C38",
+            "C42",
+            "C12",
+            "C30",
+            "C9",
+            "C41",
+            "C22",
+            "C31",
+            "C20"
+          ]
+        },
+        {
+          "title": "Drafting and drawing standards",
+          "claims": [
+            "C13",
+            "C10",
+            "C15"
+          ]
+        },
+        {
+          "title": "Clearances and design requirements",
+          "claims": [
+            "C39",
+            "C29",
+            "C14",
+            "C25"
+          ]
+        },
+        {
+          "title": "City intake and utility notification",
+          "claims": [
+            "C21",
+            "C3"
+          ]
+        },
+        {
+          "title": "Pipeline company applications",
+          "claims": [
+            "C33",
+            "C34",
+            "C24"
+          ]
+        },
+        {
+          "title": "Stakeholder review and objections",
+          "claims": [
+            "C35",
+            "C32",
+            "C17",
+            "C27",
+            "C26"
+          ]
+        },
+        {
+          "title": "Permit approval, issuance, and filing",
+          "claims": [
+            "C19",
+            "C18",
+            "C7",
+            "C45",
+            "C23"
+          ]
+        },
+        {
+          "title": "Resolving stakeholder conditions",
+          "claims": [
+            "C44",
+            "C28"
+          ]
+        },
+        {
+          "title": "ULA process map and reference documents",
+          "claims": [
+            "C36",
+            "C16",
+            "C11"
+          ]
+        },
+        {
+          "title": "EPCOR traffic signal and street light support",
+          "claims": [
+            "C40"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "A Utility Line Assignment (ULA) permit from the City of Edmonton is required before ground-disturbing utility work in the road allowance, and the application runs from the Designer's preliminary design through circulation, stakeholder conditions, approval, and filing.",
+    "readingOrderRationale": "The introduction defines the ULA and its scope. The Designer's steps come next because they form the core sequence and keep the flowchart steps together. Later sections follow the City's circulation, stakeholder review, approval, and resolution order, and reference material and unrelated EPCOR services come last.",
+    "problems": [],
+    "review": {
+      "grounding": {
+        "score": 2,
+        "reason": "C3 says the ULA informs all other utilities, but C24 and C33 say the City circulates only to ATCO Pipelines. The outline places them in different sections without reconciling or attributing the conflict. C7 repeats C1, and C37 and C43 both describe the flowchart."
+      },
+      "cohesion": {
+        "score": 1,
+        "reason": "The EPCOR section contains only C40, which concerns traffic signal and street light maintenance, not ULA. C38 (Data lane tools) sits in Designer steps, and C31 (receiving stakeholder conflicts) sits in Designer steps rather than Resolving stakeholder conditions."
+      },
+      "flow": {
+        "score": 2,
+        "reason": "Designer steps include post-approval actions, C22 (receive permit) and C20 (step 12 permit number), before stakeholder review and approval. C42 (first step) follows C12 and C30 instead of preceding them. C26 (step 8) follows C27 even though C35 already cites step 8."
+      },
+      "headings": {
+        "score": 3,
+        "reason": "Most H2 labels are descriptive and distinct, such as Pipeline company applications and Permit approval, issuance, and filing. The label EPCOR traffic signal and street light support does not predict a ULA topic and should be dropped or moved."
+      },
+      "balance": {
+        "score": 2,
+        "reason": "The single-claim EPCOR section is padding that does not fit the subject. The Designer section holds twelve claims, mixing preliminary design, tools, permit receipt and conflict resolution, so it is overloaded while other sections are thin."
+      },
+      "introduction": {
+        "score": 2,
+        "reason": "The introduction defines ULA (C4, C1, C2) and gives its purpose (C5), but includes C6, a specific 1m EPCOR permit threshold. That detail belongs in a permit requirement section, not the introduction."
+      },
+      "blockingIssues": [
+        "Move or remove C40 (EPCOR traffic signal and street light maintenance). It is not part of the ULA process and makes the final section a grab bag.",
+        "Reconcile C3 (informs all other utilities) with C24 and C33 (circulated only to ATCO Pipelines). Attribute the scope limit or state the conflict in the pipeline section.",
+        "Move C22 and C20 out of Designer steps into Permit approval, issuance, and filing, after C18 and C45, because they occur after stakeholder review.",
+        "Move C31 out of Designer steps into Resolving stakeholder conditions with C28 and C44, since it concerns resolving stakeholder conflicts."
+      ],
+      "fixes": [
+        "Move C40 out of this article, or into a separate EPCOR article, and delete the EPCOR section.",
+        "Move C38 (Data lane tools) to ULA process map and reference documents, beside C36, C16 and C11.",
+        "Reorder Designer steps as C42, C12, C30, C8, C37, C43, C9, C41, then the permit receipt steps, so preliminary design precedes the accuracy check and form submission.",
+        "Move C6 out of the introduction into a permit requirement section with C1 and C2, or into Permit approval, issuance, and filing.",
+        "Remove C7 as a duplicate of C1, or keep only its permit-number detail (C18 covers it), and drop the duplicate flowchart summary C43 or C37.",
+        "Place C26 directly after C35 in Stakeholder review and objections, so step 8 follows the review step that leads to it.",
+        "Check C13 (EPCOR construction drawing standard) against C15 (D&T Construction Drawing Standard Rev. A); if they differ, state both and attribute each. Move C10 (marker A) to the process map section."
+      ]
+    },
+    "accepted": false
+  },
+  {
+    "plan": {
+      "title": "Utility Line Assignment (ULA) application process",
+      "introduction": [
+        "C4",
+        "C1",
+        "C2",
+        "C8",
+        "C5"
+      ],
+      "sections": [
+        {
+          "title": "Designer steps in the ULA workflow",
+          "claims": [
+            "C37",
+            "C42",
+            "C12",
+            "C30",
+            "C41",
+            "C9",
+            "C22",
+            "C31",
+            "C20",
+            "C23",
+            "C38"
+          ]
+        },
+        {
+          "title": "Drafting and drawing standards",
+          "claims": [
+            "C13",
+            "C15",
+            "C10"
+          ]
+        },
+        {
+          "title": "Design and clearance requirements",
+          "claims": [
+            "C39",
+            "C29",
+            "C14",
+            "C25"
+          ]
+        },
+        {
+          "title": "Permit trigger and City intake",
+          "claims": [
+            "C6",
+            "C36",
+            "C21"
+          ]
+        },
+        {
+          "title": "Circulation to utilities and pipeline companies",
+          "claims": [
+            "C3",
+            "C33",
+            "C34",
+            "C24"
+          ]
+        },
+        {
+          "title": "Stakeholder review and objections",
+          "claims": [
+            "C35",
+            "C17",
+            "C27",
+            "C32",
+            "C26"
+          ]
+        },
+        {
+          "title": "City approval and permit issuance",
+          "claims": [
+            "C19",
+            "C18",
+            "C7",
+            "C45"
+          ]
+        },
+        {
+          "title": "Resolving stakeholder conditions",
+          "claims": [
+            "C44",
+            "C28"
+          ]
+        },
+        {
+          "title": "Other EPCOR services",
+          "claims": [
+            "C40"
+          ]
+        },
+        {
+          "title": "Flowchart and reference documents",
+          "claims": [
+            "C43",
+            "C16",
+            "C11"
+          ]
+        }
+      ]
+    },
+    "centralMessage": "A ULA permit is the City of Edmonton's required application before ground disturbance in the road allowance, and designers must resolve stakeholder conflicts before the permit is filed.",
+    "readingOrderRationale": "The designer workflow comes first because its flowchart parent and member steps must stay together. The other sections follow the process from intake and circulation through approval, conditions, and reference material.",
+    "problems": [
+      "\"Other EPCOR services\" is a vague or introductory heading; name its actual topic."
+    ],
+    "review": null,
+    "accepted": false
+  }
+]

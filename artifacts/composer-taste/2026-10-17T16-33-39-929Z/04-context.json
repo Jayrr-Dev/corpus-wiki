@@ -1,0 +1,32 @@
+{
+  "grade": {
+    "subjectMatch": 4,
+    "learningValue": 3,
+    "composition": 3,
+    "thumbnailClarity": 3,
+    "contextualFit": 4,
+    "problems": [],
+    "improvements": [
+      "Earthworks are low and partly read as uneven pasture at thumbnail size; a raking-light or aerial view would show building platforms more clearly.",
+      "Consider naming the county (North Yorkshire) in the caption for context."
+    ],
+    "reason": "The photo shows grassy humps and hollows with no buildings, matching the caption and the overview's point about earthworks. It differs from the Wharram Percy figure, though the low relief is only moderately clear when small.",
+    "id": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+    "after": "P1",
+    "total": 17,
+    "accepted": true
+  },
+  "figure": {
+    "after": "P1",
+    "evidence": [
+      "P1"
+    ],
+    "learningGoal": "Shows what a deserted medieval village looks like today: grassy earthworks with no standing buildings.",
+    "caption": "Grassy earthworks are all that remain of the medieval village of East Lilling, a typical deserted village site.",
+    "alt": "A grassy field with uneven humps and hollows, the earthwork remains of the abandoned village of East Lilling.",
+    "svg": "",
+    "assetId": "6e30be5e-f26c-4312-bcee-5d16c45cc1d5",
+    "assetType": "other"
+  },
+  "model": "anthropic/claude-opus-5-5"
+}

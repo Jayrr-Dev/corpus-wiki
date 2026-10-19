@@ -1,0 +1,154 @@
+{
+  "grades": [
+    {
+      "subjectMatch": 3,
+      "learningValue": 2,
+      "composition": 2,
+      "thumbnailClarity": 3,
+      "contextualFit": 3,
+      "problems": [
+        "Shows a ruined church interior, not village earthworks or settlement traces",
+        "Information board and dark stonework add clutter"
+      ],
+      "reason": "Strongest of the two. The ruined arcade and window tracery fit the paragraph on Wharram Percy's ruined church. It is the only image that shows a surviving medieval fabric, but it does not show the village itself.",
+      "id": "130498446",
+      "total": 13,
+      "accepted": false
+    },
+    {
+      "subjectMatch": 1,
+      "learningValue": 1,
+      "composition": 2,
+      "thumbnailClarity": 3,
+      "contextualFit": 1,
+      "problems": [
+        "Pixels show a largely intact church with a roof and tower, not the roofless ruin described for Wharram Percy",
+        "Caption and metadata do not match the visible building",
+        "Shows no deserted village traces"
+      ],
+      "reason": "Reject. The visible building does not match the Wharram Percy caption, so the image could mislead readers. It also adds no evidence about desertion.",
+      "id": "130498825",
+      "total": 8,
+      "accepted": false
+    },
+    {
+      "id": "14125249",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Image could not be downloaded and inspected."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "130498323",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Image could not be downloaded and inspected."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "138773064",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Image could not be downloaded and inspected."
+      ],
+      "reason": "No pixel review available."
+    },
+    {
+      "id": "163184034",
+      "accepted": false,
+      "total": 0,
+      "subjectMatch": 0,
+      "learningValue": 0,
+      "composition": 0,
+      "thumbnailClarity": 0,
+      "contextualFit": 0,
+      "problems": [
+        "Image could not be downloaded and inspected."
+      ],
+      "reason": "No pixel review available."
+    }
+  ],
+  "model": "anthropic/claude-haiku-5-5",
+  "images": [
+    {
+      "id": "14125249",
+      "title": "View along Deep Dale to Wharram Percy - geograph.org.uk - 1389495.jpg",
+      "description": "View along Deep Dale to Wharram Percy Looking along Deep Dale from The Wolds Way, the ruins of the church at Wharram Percy can be seen in the distance.",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e3/View_along_Deep_Dale_to_Wharram_Percy_-_geograph.org.uk_-_1389495.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:View_along_Deep_Dale_to_Wharram_Percy_-_geograph.org.uk_-_1389495.jpg",
+      "creator": "Dr Patty McAlpin",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "130498323",
+      "title": "The ruins of Wharram Percy church from the south - geograph.org.uk - 4611607.jpg",
+      "description": "The ruins of Wharram Percy church from the south",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2a/The_ruins_of_Wharram_Percy_church_from_the_south_-_geograph.org.uk_-_4611607.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_ruins_of_Wharram_Percy_church_from_the_south_-_geograph.org.uk_-_4611607.jpg",
+      "creator": "David Smith",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "130498446",
+      "title": "Interior (nave) of the ruins of Wharram Percy church - geograph.org.uk - 4611614.jpg",
+      "description": "Interior (nave) of the ruins of Wharram Percy church",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/07/Interior_%28nave%29_of_the_ruins_of_Wharram_Percy_church_-_geograph.org.uk_-_4611614.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Interior_(nave)_of_the_ruins_of_Wharram_Percy_church_-_geograph.org.uk_-_4611614.jpg",
+      "creator": "David Smith",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "130498825",
+      "title": "The north wall of Wharram Percy church - geograph.org.uk - 4611660.jpg",
+      "description": "The north wall of Wharram Percy church",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/3/38/The_north_wall_of_Wharram_Percy_church_-_geograph.org.uk_-_4611660.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_north_wall_of_Wharram_Percy_church_-_geograph.org.uk_-_4611660.jpg",
+      "creator": "David Smith",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "138773064",
+      "title": "St.Martin's church ruins - geograph.org.uk - 5524496.jpg",
+      "description": "St.Martin's church ruins",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/St.Martin%27s_church_ruins_-_geograph.org.uk_-_5524496.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:St.Martin%27s_church_ruins_-_geograph.org.uk_-_5524496.jpg",
+      "creator": "Richard Croft",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    },
+    {
+      "id": "163184034",
+      "title": "Ruins of St. Martin's Church, Wharram Percy - geograph.org.uk - 7515771.jpg",
+      "description": "Ruins of St. Martin's Church, Wharram Percy",
+      "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/0/07/Ruins_of_St._Martin%27s_Church%2C_Wharram_Percy_-_geograph.org.uk_-_7515771.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ruins_of_St._Martin%27s_Church,_Wharram_Percy_-_geograph.org.uk_-_7515771.jpg",
+      "creator": "Chris Heaton",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+    }
+  ]
+}
