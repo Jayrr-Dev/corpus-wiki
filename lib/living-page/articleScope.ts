@@ -8,7 +8,10 @@ import type { SectionUnit } from "./types";
 // edit knowledge, or broaden the article's approved scope here.
 export async function selectArticleScope(settings: TokenFactorySettings, title: string, scope: string | null | undefined,
   units: SectionUnit[]): Promise<{ excludedIds: string[]; tokensIn: number | null; tokensOut: number | null }> {
-  if (!scope?.trim() || !units.length) return { excludedIds: [], tokensIn: 0, tokensOut: 0 };
+  if (!scope?.trim() || !units.length) {
+    console.info("Article scope review skipped", { title, units: units.length, reason: scope?.trim() ? "no evidence" : "no scope" });
+    return { excludedIds: [], tokensIn: 0, tokensOut: 0 };
+  }
   const parent = new Map(units.map(unit => [unit.unitId, unit.unitId]));
   const root = (id: string): string => parent.get(id) === id ? id : root(parent.get(id)!);
   for (const unit of units) if (unit.memberOf && parent.has(unit.memberOf)) {
@@ -25,6 +28,8 @@ export async function selectArticleScope(settings: TokenFactorySettings, title: 
     decision: z.enum(["in_scope", "outside_scope"]), reason: z.string().trim().min(1),
   })) });
   const key = createHash("sha256").update(JSON.stringify({ title, scope, groups })).digest("hex");
+  const started = performance.now();
+  console.info("Article scope review started", { title, units: units.length, groups: groups.length });
   const answer = await workflowStep(`article-scope:v1:${key}`, async () => {
     const result = await chatJson(settings, { name: "article_scope_review", subject: title, schema,
       jsonSchema: z.toJSONSchema(schema), maxTokens: ANSWER_TOKEN_BUDGET,
@@ -36,6 +41,7 @@ export async function selectArticleScope(settings: TokenFactorySettings, title: 
     return result;
   });
   const excluded = new Set(answer.value.groups.filter(group => group.decision === "outside_scope").map(group => group.ref));
-  return { excludedIds: groups.filter(group => excluded.has(group.ref)).flatMap(group => group.claims.map(claim => claim.id)),
-    tokensIn: answer.tokensIn, tokensOut: answer.tokensOut };
+  const excludedIds = groups.filter(group => excluded.has(group.ref)).flatMap(group => group.claims.map(claim => claim.id));
+  console.info("Article scope review finished", { title, durationMs: Math.round(performance.now() - started), groups: groups.length, excludedGroups: excluded.size, excludedUnits: excludedIds.length });
+  return { excludedIds, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut };
 }

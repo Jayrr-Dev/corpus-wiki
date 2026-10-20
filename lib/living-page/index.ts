@@ -5,6 +5,7 @@ import { commitAsRole, commitTextPatchSet, submitChangeSet } from "@/lib/change-
 import type { DbRpc } from "@/lib/db/rpc";
 import { assertActiveUpload, reportUploadProgress, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import type { UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { processingCancellation } from "@/lib/processing/cancellation";
 import { processingSpan } from "@/lib/processing/metrics";
 import { createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
@@ -12,13 +13,13 @@ import type { ArticleStructureMemory } from "./articleStructureMemory";
 import type { SectionProgress } from "./buildProgress";
 import { cancellableBuildDb, SectionBuildCancelled } from "./cancelBuild";
 import { IncompleteSectionEvidence } from "./draftEvidence";
-import { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
+import { needsRewrite, releaseIrrelevantClaims, revisionToActions, uncoveredUnitIds } from "./plan";
 import type { FinishedSectionBuild, PageContextSection, SectionRef, SectionReviseInput, SectionRevision, SectionState } from "./types";
 import { FakeSectionWriter } from "./writers/fake";
 import { TokenFactorySectionWriter } from "./writers/tokenFactory";
 
 export { commitLineEdit } from "./editLine";
-export { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
+export { needsRewrite, releaseIrrelevantClaims, revisionToActions, uncoveredUnitIds } from "./plan";
 export { MIN_CLAIMS_FOR_PAGE, pageProposalActions, proposePages, type PageCandidate } from "./proposePages";
 export type * from "./types";
 export { FakeSectionWriter } from "./writers/fake";
@@ -171,7 +172,10 @@ export async function rebuildUploadSection(db: DbRpc, writer: SectionWriter, sec
 // Builds every generated section of one page (used after a page is created); no change notes
 export async function rebuildPage(db: DbRpc, writer: SectionWriter, pageId: string): Promise<void> {
   const sections = await db.call<SectionRef[]>("list_page_sections", { p_page_id: pageId });
-  for (const section of sections) await rebuildUploadSection(db, writer, section.sectionId, null);
+  for (const section of sections) {
+    processingCancellation.getStore()?.throwIfAborted();
+    await rebuildUploadSection(db, writer, section.sectionId, null);
+  }
   if (sections.length) await writer.reviewSections?.(sections.map((section) => section.sectionId));
 }
 
@@ -223,7 +227,9 @@ async function buildClaimedSection(
     progress?.step("Reading the claims this section cites…");
     const loaded = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
     const state = writer.prepareSection ? await writer.prepareSection(loaded) : loaded;
-    const written = needsRewrite(state) ? await rewriteLines(db, writer, state, eventId, progress, cancellable, options) : null;
+    const rewrite = needsRewrite(state);
+    if (!rewrite && !state.lines.some(line => line.content.trim())) console.warn("Section build skipped rewrite but the section has no text", { sectionId, title: state.title, page: state.pageTitle, units: state.units.length, lines: state.lines.length });
+    const written = rewrite ? await rewriteLines(db, writer, state, eventId, progress, cancellable, options) : null;
     progress?.step("Finishing up…");
     await assertActiveUpload();
     return await db.call<FinishedSectionBuild>("finish_section_build", {
@@ -260,6 +266,7 @@ async function rewriteLines(
   const [pageContext, articleStructure] = await Promise.all([readPageContext(db, state.sectionId), readStructureContext(db, state.sectionId)]);
   const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}), ...(articleStructure ? { articleStructure } : {}), ...(options?.skipEditorialReview ? { skipEditorialReview: true } : {}) };
   const flagged = state.lines.filter((line) => line.needsRewrite).length;
+  console.info("Section rewrite started", { sectionId: state.sectionId, page: state.pageTitle, section: state.title, flagged, uncovered: input.uncoveredUnitIds.length, units: state.units.length });
   progress?.step(writingStep(flagged, input.uncoveredUnitIds.length));
   const revision = progress ? await writer.reviseSection(input, progress) : await writer.reviseSection(input);
   if (cancellable) await db.call("assert_section_build");
@@ -280,7 +287,24 @@ async function rewriteLines(
   if (state.units.some(unit => !covered.has(unit.unitId) && !omitted.has(unit.unitId))) {
     throw new Error("The section draft omitted saved knowledge. It remains unfinished; retry the update.");
   }
-  if (actions.length === 0) return { applied: 0, modelVersion: revision.modelVersion };
+  const queryAction = releaseIrrelevantClaims(state.sectionId, state.query, omitted, covered);
+  if (actions.length === 0 && !queryAction) {
+    console.warn("Section writer returned no savable lines", { sectionId: state.sectionId, page: state.pageTitle, section: state.title, revise: revision.revise.length, add: revision.add.length, retire: revision.retire.length, omitted: revision.omittedUnitIds?.length ?? 0 });
+    return { applied: 0, modelVersion: revision.modelVersion };
+  }
+  let applied = 0;
+  if (queryAction) {
+    progress?.step("Removing claims this section already states…");
+    const released = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai", operationKey: `section:${state.sectionId}:release` }, {
+      summary: `Removed claims already stated in "${state.title}"`,
+      actions: [queryAction],
+      trace: { modelVersion: revision.modelVersion, promptVersion: writer.promptVersion ?? null, tokensIn: revision.tokensIn ?? null, tokensOut: revision.tokensOut ?? null },
+    });
+    const removed = await commitAsRole(db, "write_articles", released.changeSetId);
+    if (removed.status === "rejected" || removed.rejected > 0) throw new Error("A claim this section already states could not be removed. Review its change set in Changes before retrying.");
+    applied += removed.applied;
+  }
+  if (!actions.length) return { applied, modelVersion: revision.modelVersion };
   progress?.step(`Saving ${actions.length} change${actions.length === 1 ? "" : "s"}…`);
   const draft = {
     summary: `Rewrote ${actions.length} line${actions.length === 1 ? "" : "s"} of "${state.title}"`,
@@ -293,7 +317,7 @@ async function rewriteLines(
     : await commitAsRole(db, "write_articles", changeSetId);
   // Held changes (a person's line the AI wants to change) wait on Exceptions; only a refused change is a failure
   if (result.status === "rejected" || result.rejected > 0) throw new Error("The section update was not fully applied. Review its change set in Changes before retrying.");
-  return { applied: result.applied, modelVersion: revision.modelVersion };
+  return { applied: applied + result.applied, modelVersion: revision.modelVersion };
 }
 
 // What the page's other sections say, for the writer; a database without read_page_context gives none

@@ -36,6 +36,7 @@ it("does not show missing usage, unknown pricing or invalid counts as free calls
   expect(estimateCost("claude-haiku-5-5", -1, 200)).toBeNull();
   expect(estimateCost("claude-haiku-5-5", 100, 200, { cache_read_input_tokens: 200 })).toBeNull();
   expect(priceFor("openrouter/anthropic/claude-opus-5-5")).toBeNull();
+  expect(estimateCost("openrouter/inception/mercury-3", 61_390, 28_331)).toBeCloseTo(0.01605485);
   expect(priceFor("cerebras/gpt-oss-120b")).toBeNull();
   expect(priceFor("anthropic/claude-haiku-4-5-20251001")?.inputPerM).toBe(1);
 });

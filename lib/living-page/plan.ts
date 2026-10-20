@@ -1,4 +1,4 @@
-import type { DraftAction } from "@/lib/ai/types";
+import type { DraftAction, SectionQuery } from "@/lib/ai/types";
 import { unsupportedProseNumbers, withSupportedCharts } from "./blocks";
 import type { SectionRevision, SectionState } from "./types";
 
@@ -19,6 +19,16 @@ export function uncoveredUnitIds(state: SectionState): string[] {
 // True when the section has a flagged line or an uncovered claim
 export function needsRewrite(state: SectionState): boolean {
   return state.lines.some((line) => line.needsRewrite) || uncoveredUnitIds(state).length > 0;
+}
+
+// A claim the review left out, and that no surviving line still cites, leaves the
+// section. The stored claim stays; this section stops trying to write it again.
+export function releaseIrrelevantClaims(sectionId: string, query: SectionQuery | null | undefined, omitted: ReadonlySet<string>, stillCited: ReadonlySet<string>): DraftAction | null {
+  const unitIds = query?.unitIds;
+  if (!unitIds?.length || !omitted.size) return null;
+  const next = unitIds.filter((id) => !omitted.has(id) || stillCited.has(id));
+  if (next.length === unitIds.length) return null;
+  return { type: "update_section_query", targetId: sectionId, expectedRevisionId: null, passageIds: [], speechAct: null, input: { query: { ...query, unitIds: next }, fromQuery: query } };
 }
 
 // A line dropped because its prose states numbers its cited claims do not

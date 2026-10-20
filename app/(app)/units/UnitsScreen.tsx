@@ -3,12 +3,16 @@
 import { ActorName } from "@/app/(app)/_components/ActorName";
 import { EvidenceBadge } from "@/app/(app)/_components/bits";
 import { dateColumn, textColumn } from "@/app/(app)/_components/columns";
+import { formatCount } from "@/app/(app)/_lib/format";
 import { useHydrated } from "@/app/(app)/_lib/hydrated";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { DataTable } from "@/components/data-table";
 import { EmptyState } from "@/components/EmptyState";
 import { StatusGlyph, UnitIcon } from "@/components/icons";
 import { menuColumn } from "@/components/row-menu/RowMenu";
+import { useSuggestionAttentionCount } from "@/components/shell/useSuggestionAttentionCount";
+import { InfoPopover } from "@/components/standard/info-popover";
+import { PopoverDescription } from "@/components/ui/popover";
 import { contextDescription } from "@/lib/knowledge/contextSelection";
 import { useDomains, useEntities, usePages, useUnitDomains, useUnitEntities } from "@/lib/queries";
 import { type UnitSummary, useArticleUnitLinks, useUnitSummaries } from "@/lib/queries/screens";
@@ -86,6 +90,7 @@ export function UnitsScreen() {
   const { data: domains = [] } = useDomains();
   const { data: entities = [] } = useEntities();
   const { data: pages = [] } = usePages();
+  const suggestionCount = useSuggestionAttentionCount();
   const activeOrigin = overview || unused || suggestions ? "" : (filterState.filters.origin ?? "internal");
   const tabClass = (active: boolean) => `border-b-2 px-3 py-2.5 text-panel ${active ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`;
   const tabHref = (tab: "overview" | "unused" | "suggestions" | "internal" | "external") => {
@@ -103,7 +108,6 @@ export function UnitsScreen() {
       <nav data-tour="units-origin" aria-label="Unit views" className="flex gap-1 border-b">
         <Link href={tabHref("overview")} aria-current={overview ? "page" : undefined} className={tabClass(overview)}>Overview</Link>
         <Link href={tabHref("unused")} aria-current={unused ? "page" : undefined} className={tabClass(unused)}>Unused</Link>
-        <Link href={tabHref("suggestions")} aria-current={suggestions ? "page" : undefined} className={tabClass(suggestions)}>Suggestions</Link>
         {(["internal", "external"] as const).map((origin) => (
           <Link key={origin} href={tabHref(origin)}
             aria-current={activeOrigin === origin ? "page" : undefined}
@@ -111,6 +115,22 @@ export function UnitsScreen() {
             {origin === "internal" ? "Internal" : "External"}
           </Link>
         ))}
+        <span className="ml-auto flex shrink-0 items-center gap-1.5 border-l pl-1">
+          <Link href={tabHref("suggestions")} aria-current={suggestions ? "page" : undefined} className={`${tabClass(suggestions)} inline-flex items-center gap-1.5`}>
+            Suggestions
+            <span className={`font-mono tabular-nums ${suggestionCount ? "text-needs-you" : "text-muted-foreground"}`}>{suggestionCount === null ? "—" : formatCount(suggestionCount)}</span>
+          </Link>
+          <InfoPopover label="About suggestions">
+            <PopoverDescription>A run proposes articles from knowledge no article cites.</PopoverDescription>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              <li>Groups by meaning, links, shared entities, domains, and sources.</li>
+              <li>The AI names a new article, or merges a group into an existing one.</li>
+              <li>Nothing changes until you accept. Run all accepts every open suggestion.</li>
+              <li>Accepted work goes through Changes and can be undone.</li>
+              <li>The Curator leaves knowledge in an open suggestion alone.</li>
+            </ul>
+          </InfoPopover>
+        </span>
       </nav>
       {overview ? <UnitsOverview /> : unused ? <UnusedUnits /> : suggestions ? <SuggestionsTab /> : (
         <>

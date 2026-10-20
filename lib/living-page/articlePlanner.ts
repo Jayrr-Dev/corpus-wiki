@@ -43,9 +43,9 @@ export async function loadArticleKnowledge(client: AdminSupabase, entityId: stri
 }
 
 // Both automatic planning and explicit updates use the reviewed evidence-led builder.
-export async function planArticle(settings: TokenFactorySettings, knowledge: ArticleKnowledge, subject?: string, editorialNote?: string, options: { onAttempt?: (attempt: Attempt) => void } = {}) {
+export async function planArticle(settings: TokenFactorySettings, knowledge: ArticleKnowledge, subject?: string, editorialNote?: string, options: { onAttempt?: (attempt: Attempt) => void; skipReview?: boolean } = {}) {
   const result = await buildOutline(settings, knowledge, {
-    subject, editorialNote, systemInstructions: skillInstructions(["plan_articles"], settings.skills), onAttempt: options.onAttempt,
+    subject, editorialNote, systemInstructions: skillInstructions(["plan_articles"], settings.skills), onAttempt: options.onAttempt, skipReview: options.skipReview,
   });
   const rationale = result.attempts.at(-1)?.readingOrderRationale;
   return { plan: result.plan, ...(rationale ? { rationale } : {}), tokensIn: result.tokensIn, tokensOut: result.tokensOut };

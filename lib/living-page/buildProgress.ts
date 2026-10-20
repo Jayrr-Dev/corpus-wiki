@@ -81,14 +81,47 @@ const ADD_ITEM = new RegExp(String.raw`\{\s*"text"\s*:\s*"${STRING_BODY}`, "g");
 
 // The revise and add lists by line ref (L1..) and order, from however much of the answer has arrived
 export function partialSectionAnswer(content: string): { revised: { line: string; text: string }[]; added: string[] } {
-  const reviseAt = keyIndex(content, "revise");
-  const addAt = keyIndex(content, "add");
-  const end = (start: number) => [reviseAt, addAt, keyIndex(content, "retire")].filter((at) => at > start).reduce((min, at) => Math.min(min, at), content.length);
-  const revisePart = reviseAt < 0 ? "" : content.slice(reviseAt, end(reviseAt));
-  const addPart = addAt < 0 ? "" : content.slice(addAt, end(addAt));
+  const { revisePart, addPart } = sectionParts(content);
   return {
     revised: [...revisePart.matchAll(REVISE_ITEM)].map((match) => ({ line: match[1] ?? "", text: decodePartialString(match[2] ?? "") })),
     added: [...addPart.matchAll(ADD_ITEM)].map((match) => decodePartialString(match[1] ?? "")),
+  };
+}
+
+// A line whose text and claims have both closed. The unfinished tail is left out,
+// and a whole answer that already parses is left out too: the caller checks that in one batch.
+const COMPLETE_REVISE = new RegExp(String.raw`\{\s*"line"\s*:\s*"([^"]*)"\s*,\s*"text"\s*:\s*"${STRING_BODY}"\s*,\s*"claims"\s*:\s*(\[[^\[\]]*\])\s*\}`, "g");
+const COMPLETE_ADD = new RegExp(String.raw`\{\s*"text"\s*:\s*"${STRING_BODY}"\s*,\s*"claims"\s*:\s*(\[[^\[\]]*\])\s*\}`, "g");
+export type CompleteStreamLines = { revised: { line: string; text: string; claims: string[] }[]; added: { text: string; claims: string[] }[] };
+
+export function completeStreamLines(content: string): CompleteStreamLines {
+  try { JSON.parse(content); return { revised: [], added: [] }; } catch { /* the answer is still arriving */ }
+  const { revisePart, addPart } = sectionParts(content);
+  const claimsOf = (raw: string): string[] | null => {
+    try {
+      const value = JSON.parse(raw) as unknown;
+      return Array.isArray(value) && value.every((item) => typeof item === "string") ? value : null;
+    } catch { return null; }
+  };
+  return {
+    revised: [...revisePart.matchAll(COMPLETE_REVISE)].flatMap((match) => {
+      const claims = claimsOf(match[3] ?? "");
+      return claims ? [{ line: match[1] ?? "", text: decodePartialString(match[2] ?? ""), claims }] : [];
+    }),
+    added: [...addPart.matchAll(COMPLETE_ADD)].flatMap((match) => {
+      const claims = claimsOf(match[2] ?? "");
+      return claims ? [{ text: decodePartialString(match[1] ?? ""), claims }] : [];
+    }),
+  };
+}
+
+function sectionParts(content: string): { revisePart: string; addPart: string } {
+  const reviseAt = keyIndex(content, "revise");
+  const addAt = keyIndex(content, "add");
+  const end = (start: number) => [reviseAt, addAt, keyIndex(content, "retire")].filter((at) => at > start).reduce((min, at) => Math.min(min, at), content.length);
+  return {
+    revisePart: reviseAt < 0 ? "" : content.slice(reviseAt, end(reviseAt)),
+    addPart: addAt < 0 ? "" : content.slice(addAt, end(addAt)),
   };
 }
 

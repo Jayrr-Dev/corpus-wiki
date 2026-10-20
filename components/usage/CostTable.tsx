@@ -63,7 +63,7 @@ export function CostTable({ activeModel }: { activeModel: string }) {
       )}
       <DataTable query={{ data: rows, isPending: false, error: calls.error }} columns={COLUMNS} getRowId={(row) => row.model} pageSize={25} filterPlaceholder="Search models…" emptyState={null} />
       {unknownCalls > 0 && <p className="text-xs text-muted-foreground">{unknownCalls.toLocaleString("en-US")} calls have unknown cost and are excluded from the amounts shown.</p>}
-      <p className="text-xs text-faint">Provider list prices in US dollars, checked {PRICES_CHECKED_ON}. Spent covers all-time logged usage in this space. Cache reads and writes use their own rates when recorded. Haiku 5.5 requests over 100,000 input tokens use $0.50 input and $2.50 output per million. Reasoning is included in output. Calls without usage or prices are excluded; older calls may lack cache details. Your provider invoice is the source of truth.</p>
+      <p className="text-xs text-faint">Provider list prices in US dollars, checked {PRICES_CHECKED_ON}. Mercury 3 uses its current OpenRouter launch price, $0.10 input and $0.35 output per million. Spent covers all-time logged usage in this space. Cache reads and writes use their own rates when recorded. Haiku 5.5 requests over 100,000 input tokens use $0.50 input and $2.50 output per million. Reasoning is included in output. Calls without usage or prices are excluded; older calls may lack cache details. Your provider invoice is the source of truth.</p>
     </div>
   );
 }

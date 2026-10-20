@@ -71,6 +71,13 @@ it("constrains omissions to supplied refs and actual nonempty other sections", a
     expect(schema.safeParse({ omit: [{ ...valid, ...changed }] }).success).toBe(false);
   }
 });
+it("can drop a claim the current section already states in full", async () => {
+  answer("already_covered", "Evidence needed");
+  const section = { ...input, sectionTitle: "Evidence needed", lines: [{ lineId: "kept", lineRevisionId: "r", author: "ai" as const, content: "A type is identified from the whole pattern.", position: 0, needsRewrite: false, unitIds: ["stated"] }] };
+  expect(await selectEditorialClaims({ apiKey: "test" }, section)).toMatchObject({ omittedUnitIds: ["fact"] });
+  const schema = vi.mocked(chatJson).mock.calls[0]![1].schema;
+  expect(schema.safeParse({ omit: [{ ref: "C1", reason: "already_covered", contextSection: "Evidence needed", explanation: "The current paragraphs state it." }] }).success).toBe(true);
+});
 it("can recognize an uncovered duplicate without changing a protected paragraph", async () => {
   answer("already_covered", "Overview", "C2");
   const units = [{ ...input.units[0]!, unitId: "protected" }, input.units[0]!];

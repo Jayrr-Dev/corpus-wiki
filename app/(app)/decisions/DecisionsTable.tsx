@@ -14,8 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/standard/tooltip";
 import { estimateCost, formatUsd } from "@/lib/ai/pricing";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { useActions, useChangeContexts, useChangeSets } from "@/lib/queries";
-import { CHANGE_TYPE_LABEL, describeChange, EMPTY_CONTEXT } from "../changes/describeChange";
+import { useActions, useChangeSets } from "@/lib/queries";
+import { CHANGE_TYPE_LABEL } from "../changes/describeChange";
 import { useExceptionData } from "../exceptions/ExceptionsScreen";
 import { ExceptionDialog } from "../exceptions/ExceptionDialog";
 import { decisionOutcome, jsonObject, roleLabel, roleForAction } from "./describeDecision";
@@ -47,7 +47,6 @@ export function DecisionsTable() {
   const changes = useChangeSets();
   const reviews = useActions({ filters: { type: "source_review" } });
   const archives = useActions({ filters: { type: "source_lifecycle" } });
-  const contexts = useChangeContexts(changes.data?.map((change) => change.id));
   const exceptionData = useExceptionData();
   const label = useActorLabel();
   const [kind, setKind] = useState("");
@@ -57,18 +56,23 @@ export function DecisionsTable() {
   const action = selected ? exceptionData.actionById.get(selected.action_id) : undefined;
   const unit = action && UNIT_ACTION_TYPES.has(action.type) ? exceptionData.unitById.get(action.target_id ?? "") : undefined;
   const rows = useMemo(() => {
-    const actionByChange = new Map([...(reviews.data ?? []), ...(archives.data ?? [])].map((action) => [action.change_set_id, action]));
+    const actionByChange = new Map<string, Tables<"actions">>();
+    for (const action of [...(reviews.data ?? []), ...(archives.data ?? [])]) {
+      if (!action.change_set_id) continue;
+      const current = actionByChange.get(action.change_set_id);
+      if (!current || action.type === "source_lifecycle") actionByChange.set(action.change_set_id, action);
+    }
     const decisions: DecisionRow[] = (changes.data ?? []).flatMap((change) => {
-      const description = describeChange(contexts.data?.get(change.id) ?? EMPTY_CONTEXT(change.id), change.summary);
-      const isDomainReview = ["domain_steward", "domain_decider"].includes(String(jsonObject(jsonObject(change.actor_attribution).proposedBy).role));
-      if (description.type !== "source_review" && description.type !== "source_lifecycle" && !isDomainReview) return [];
       const recorded = jsonObject(change.actor_attribution);
+      const isDomainReview = ["domain_steward", "domain_decider"].includes(String(jsonObject(recorded.proposedBy).role));
       const decisionAction = actionByChange.get(change.id);
+      const type = isDomainReview ? "Domain structure" : decisionAction?.type === "source_review" || decisionAction?.type === "source_lifecycle" ? CHANGE_TYPE_LABEL[decisionAction.type] : null;
+      if (!type) return [];
       const input = jsonObject(decisionAction?.input);
       const person = change.proposed_by === "person" ? label("person", change.author_id, null) : null;
       const proposer = person ?? roleLabel(recorded.proposedBy) ?? "Researcher (model not recorded)";
       const decider = person ?? roleLabel(recorded.decidedBy) ?? roleLabel({ role: "reviewer", model: change.model_version });
-      return [{ id: change.id, changeSet: change, type: isDomainReview ? "Domain structure" : CHANGE_TYPE_LABEL[description.type], status: change.status,
+      return [{ id: change.id, changeSet: change, type, status: change.status,
         summary: change.summary, proposer, decider: decider ?? "–", decision: isDomainReview ? (change.status === "reverted" ? "Reverted" : change.status === "applied" ? "Approved" : change.status === "rejected" ? "Rejected" : "Pending") : decisionOutcome(change, input),
         created_at: change.created_at, tokens: formatTokens(change), href: `/decisions/${change.id}` }];
     });
@@ -83,7 +87,7 @@ export function DecisionsTable() {
         tokens: "–" });
     }
     return decisions.filter((row) => (!kind || row.type === kind) && (!outcome || row.decision === outcome)).sort((a, b) => b.created_at.localeCompare(a.created_at));
-  }, [changes.data, reviews.data, archives.data, contexts.data, exceptionData.exceptions, exceptionData.actionById, label, kind, outcome]);
+  }, [changes.data, reviews.data, archives.data, exceptionData.exceptions, exceptionData.actionById, label, kind, outcome]);
   const columns = [
     textColumn<DecisionRow>("status", "Status", (row) => statusLabel(row.status)),
     textColumn<DecisionRow>("decision", "Decision", (row) => row.decision, (row) => <Badge variant="secondary"><StatusDot tone={DECISION_TONE[row.decision] ?? "muted"} label={row.decision} /></Badge>),
@@ -108,7 +112,7 @@ export function DecisionsTable() {
       {["Approved", "Rejected", "Archived", "Restored", "Pending", "Error", "Reverted", "Reinstated"].map((value) => <NativeSelectOption key={value} value={value}>{value}</NativeSelectOption>)}
     </NativeSelect>
     </div>
-    <DataTable query={{ data: rows, isPending: changes.isPending || contexts.isPending || reviews.isPending || archives.isPending || exceptionData.state.isPending, error: changes.error ?? contexts.error ?? reviews.error ?? archives.error ?? exceptionData.state.error }}
+    <DataTable query={{ data: rows, isPending: changes.isPending || reviews.isPending || archives.isPending || exceptionData.state.isPending, error: changes.error ?? reviews.error ?? archives.error ?? exceptionData.state.error }}
       columns={columns} getRowId={(row) => row.id} filterPlaceholder="Search decisions…"
       emptyState={<EmptyState icon={DecisionIcon} title="No decisions yet" hint="Approvals, archive decisions, and exceptions appear here." />} />
     <ExceptionDialog exception={selected} action={action} unit={unit} before={action && selected?.status !== "open" ? exceptionData.textsOf(action).before : null} onClose={() => setSelectedId(null)} />

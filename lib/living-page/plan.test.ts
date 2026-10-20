@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { needsRewrite, revisionToActions, uncoveredUnitIds } from "./plan";
+import { needsRewrite, releaseIrrelevantClaims, revisionToActions, uncoveredUnitIds } from "./plan";
 import type { SectionState } from "./types";
 
 // A SECTION WITH ONE FLAGGED LINE, ONE CURRENT LINE AND ONE UNCOVERED CLAIM
@@ -34,6 +34,14 @@ describe("section plan", () => {
       { type: "revise_line", targetId: "l0", expectedRevisionId: null, passageIds: [], speechAct: null, input: { content: "New 1.", unitRevisionIds: ["r1"], expectedLineRevisionId: "lr0" } },
       { type: "write_line", targetId: null, expectedRevisionId: null, passageIds: [], speechAct: null, input: { sectionId: "s1", position: 2, content: "Claim 3.", unitRevisionIds: ["r3"] } },
     ]);
+  });
+
+  it("removes an omitted claim the surviving lines do not cite", () => {
+    const query = { article: true, unitIds: ["u1", "u2", "u3"] };
+    expect(releaseIrrelevantClaims("s1", query, new Set(["u3"]), new Set(["u1", "u2"]))).toMatchObject({
+      type: "update_section_query", targetId: "s1", input: { query: { article: true, unitIds: ["u1", "u2"] }, fromQuery: query },
+    });
+    expect(releaseIrrelevantClaims("s1", query, new Set(["u2"]), new Set(["u2"]))).toBeNull();
   });
 
   it("drops a chart whose numbers the cited claims do not state", () => {

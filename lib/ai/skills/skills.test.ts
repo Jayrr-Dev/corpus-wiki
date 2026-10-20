@@ -34,13 +34,20 @@ describe("stage skill selection",()=>{
 });
 
 function intercept(answer:object) {
-  // The writer's line fact-check gets an empty verdict list, which keeps every line
+  // The writer's line fact-check accepts the one drafted line.
   const fetch=vi.fn(async(_url:unknown,init:RequestInit)=>{
-    const checking=JSON.parse(String(init.body)).response_format?.json_schema?.name==="line_fact_check";
-    return new Response(JSON.stringify({model:"test",choices:[{finish_reason:"stop",message:{content:JSON.stringify(checking?{lines:[]}:answer)}}]}));
+    const body=JSON.parse(String(init.body));
+    const checking=body.response_format?.json_schema?.name==="line_fact_check";
+    const payload=checking?{lines:[{ref:"A1",problem:"",missingCitations:[],unstatedCitations:[],supported:true}]}:answer;
+    if(body.stream)return new Response(`data: ${JSON.stringify({model:"test",choices:[{delta:{content:JSON.stringify(payload)},finish_reason:"stop"}]})}\n\ndata: [DONE]\n\n`,{headers:{"Content-Type":"text/event-stream"}});
+    return new Response(JSON.stringify({model:"test",choices:[{finish_reason:"stop",message:{content:JSON.stringify(payload)}}]}));
   });
   vi.stubGlobal("fetch",fetch);
-  return ()=>JSON.parse(String((fetch.mock.calls[0] as unknown as [unknown,RequestInit])[1].body));
+  return ()=>{
+    const calls=fetch.mock.calls as unknown as [unknown,RequestInit][];
+    const writer=calls.find((item)=>JSON.parse(String(item[1].body)).response_format?.json_schema?.name==="section_lines");
+    return JSON.parse(String((writer??calls[0])![1].body));
+  };
 }
 describe("assigned skills reach actual AI requests",()=>{
   it("uses role overrides and restores the assigned skill when cleared", () => {

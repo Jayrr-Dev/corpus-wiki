@@ -13,14 +13,15 @@ const SENTENCE_END = /(?<=[.!?])\s+/;
 
 // ONE PAGE OF EXTRACTED TEXT (page is null for formats without pages; time is where a
 // video's transcript piece starts, "mm:ss"; figure is the stored picture an embedded
-// image's description was written from, its path in the 'sources' bucket)
-export type ExtractedPage = { page: number | null; text: string; time?: string; figure?: string };
+// image's description was written from, its path in the 'sources' bucket; sectionPath
+// is the book part and chapter a PDF page belongs to)
+export type ExtractedPage = { page: number | null; text: string; time?: string; figure?: string; sectionPath?: readonly string[] };
 
 // WHAT ingest_source STORES PER PASSAGE
 export type PassageDraft = {
   position: number;
   text: string;
-  location: { page?: number; heading?: string; time?: string; figure?: string };
+  location: { page?: number; heading?: string; sectionPath?: string[]; time?: string; figure?: string };
   hash: string;
   speakerLabel: string | null;
 };
@@ -29,12 +30,18 @@ export type PassageDraft = {
 export function splitIntoPassages(pages: readonly ExtractedPage[]): PassageDraft[] {
   const drafts: Omit<PassageDraft, "position">[] = [];
   let heading: string | undefined;
-  for (const { page, text, time, figure } of pages) {
+  for (const { page, text, time, figure, sectionPath } of pages) {
     for (const paragraph of text.split(PARAGRAPH_BREAK)) {
       const clean = paragraph.replace(/\s*\n\s*/g, " ").trim();
       if (!clean) continue;
       if (clean.startsWith("#")) heading = clean.replace(/^#+\s*/, "");
-      const location = { ...(page !== null && { page }), ...(heading && { heading }), ...(time && { time }), ...(figure && { figure }) };
+      const location = {
+        ...(page !== null && { page }),
+        ...(heading && { heading }),
+        ...(sectionPath?.length ? { sectionPath: [...sectionPath] } : {}),
+        ...(time && { time }),
+        ...(figure && { figure }),
+      };
       drafts.push(...packSentences(clean).map((piece) => passageOf(piece, location)));
     }
   }

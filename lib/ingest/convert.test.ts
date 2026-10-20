@@ -45,6 +45,14 @@ describe("one pipeline, one converter per format", () => {
     expect(passages.map((p) => p.text).join(" ")).toContain("Python 3.13");
   });
 
+  it("keeps a page's book section on each of its passages", () => {
+    const passages = splitIntoPassages([{ page: 200, text: "A claim.\n\nAnother.", sectionPath: ["Assessment", "CHAPTER 6", "Misidentifications"] }]);
+    expect(passages.map((passage) => passage.location.sectionPath)).toEqual([
+      ["Assessment", "CHAPTER 6", "Misidentifications"],
+      ["Assessment", "CHAPTER 6", "Misidentifications"],
+    ]);
+  });
+
   it("reads a Word document into passages", async () => {
     const passages = splitIntoPassages(await CONVERTERS.docx(fixture("beta-handbook.docx")));
     expect(passages.map((p) => p.text)).toContain("Decision: Beta ships on iOS first, in March 2027.");

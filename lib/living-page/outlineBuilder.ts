@@ -119,7 +119,7 @@ export class OutlineRejectedError extends Error {
   constructor(readonly attempts: Attempt[], readonly usage: TokenUsage) { super(`Outline needs review after ${attempts.length} attempts; nothing was published.`); }
 }
 
-export async function buildOutline(settings: TokenFactorySettings, knowledge: ArticleKnowledge, options: { seed?: ArticlePlan; subject?: string; systemInstructions?: string; editorialNote?: string; maxAttempts?: number; onAttempt?: (attempt: Attempt) => void } = {}) {
+export async function buildOutline(settings: TokenFactorySettings, knowledge: ArticleKnowledge, options: { seed?: ArticlePlan; subject?: string; systemInstructions?: string; editorialNote?: string; maxAttempts?: number; skipReview?: boolean; onAttempt?: (attempt: Attempt) => void } = {}) {
   if (!knowledge.units.length) throw new Error("No knowledge units to organize.");
   const maxAttempts = options.maxAttempts ?? 6;
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 6) throw new Error("maxAttempts must be 1-6.");
@@ -135,7 +135,7 @@ export async function buildOutline(settings: TokenFactorySettings, knowledge: Ar
   const canonical = (value: unknown): unknown => Array.isArray(value) ? value.map(canonical)
     : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)).map(([key, item]) => [key, canonical(item)])) : value;
   const checkpoint = `outline-v1:${createHash("sha256").update(JSON.stringify(canonical({
-    policy: OUTLINE_POLICY_VERSION, reviewPolicy: REVIEW_POLICY, messages, seed: options.seed,
+    policy: OUTLINE_POLICY_VERSION, reviewPolicy: REVIEW_POLICY, messages, seed: options.seed, ...(options.skipReview ? { skipReview: true } : {}),
     revisions: knowledge.units.map(unit => [unit.unitId, unit.revisionId]),
     model: settings.model, routes: Object.entries(settings.roleRoutes ?? {}).sort(([a], [b]) => a.localeCompare(b)).map(([role, route]) => [role, route.model]),
     effort: settings.effort, roleEfforts: settings.roleEfforts, instructions: settings.roleInstructions,
@@ -166,7 +166,8 @@ export async function buildOutline(settings: TokenFactorySettings, knowledge: Ar
     if (index === 0 && options.seed && problems.length) markFresh();
     let review: OutlineReview | null = null;
     // Invalid references and dropped evidence are deterministic failures, never something an LLM can approve.
-    if (!problems.length) {
+    // A person who accepted a suggestion has already approved it, so that path skips the independent reviewer.
+    if (!problems.length && !options.skipReview) {
       // Keep the draft, but reassess legacy short-budget reviews: their cutoff
       // fallback could force a lower effort than the configured reviewer.
       const graded = await workflowStep(`${checkpoint}:${index}:review-v2`, () => {
@@ -176,7 +177,8 @@ export async function buildOutline(settings: TokenFactorySettings, knowledge: Ar
       usage = addUsage(usage, graded);
       review = graded.value;
     }
-    const attempt = { plan, centralMessage: draft.centralMessage || null, readingOrderRationale: draft.readingOrderRationale || null, problems, review, accepted: problems.length === 0 && review !== null && reviewPasses(review) };
+    const approved = options.skipReview === true || (review !== null && reviewPasses(review));
+    const attempt = { plan, centralMessage: draft.centralMessage || null, readingOrderRationale: draft.readingOrderRationale || null, problems, review, accepted: problems.length === 0 && approved };
     attempts.push(attempt);
     options.onAttempt?.(attempt);
     if (attempt.accepted) return { plan, attempts, ...usage };

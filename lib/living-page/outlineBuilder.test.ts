@@ -198,6 +198,11 @@ describe("outline structure gates", () => {
 });
 
 describe("outline review and repair", () => {
+  it("lets a person's approval stand in for the independent review", async () => {
+    const built = await buildOutline({ apiKey: "test" }, knowledge, { seed: good, skipReview: true });
+    expect(built.attempts).toEqual([expect.objectContaining({ accepted: true, review: null })]);
+    expect(chatJson).not.toHaveBeenCalled();
+  });
   it("gives later reviews the earlier findings without allowing them to override a new rejection", async () => {
     const first = { ...review(2), blockingIssues: ["Move C2 to origins"], fixes: ["Keep C3 in sports"] };
     const second = { ...review(2), blockingIssues: ["C3 still has a misleading heading"], fixes: ["Rename the sports heading"] };

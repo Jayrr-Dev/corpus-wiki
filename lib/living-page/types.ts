@@ -1,4 +1,4 @@
-import type { EpistemicStatus, UnitKind } from "@/lib/ai/types";
+import type { EpistemicStatus, SectionQuery, UnitKind } from "@/lib/ai/types";
 import type { Enums } from "@/lib/database/types";
 
 // =====================================================================
@@ -40,11 +40,24 @@ export type SectionLine = {
 };
 
 // DB: read_section_state
-export type SectionState = { sectionId: string; title: string; pageTitle: string; units: SectionUnit[]; lines: SectionLine[] };
+export type SectionState = {
+  sectionId: string;
+  title: string;
+  pageTitle: string;
+  units: SectionUnit[];
+  lines: SectionLine[];
+  query?: SectionQuery;
+};
 
 // WRITER INPUT: the section's claims and lines; only flagged lines and uncovered claims are its job
 export type SectionReviseInput = {
-  articleStructure?: { status: "planned" | "applied" | "current"; outOfDate: boolean; rationale: string; sections: { title: string; position: number; claimCount: number }[]; currentSectionTitles: string[] };
+  articleStructure?: {
+    status: "planned" | "applied" | "current";
+    outOfDate: boolean;
+    rationale: string;
+    sections: { title: string; position: number; claimCount: number }[];
+    currentSectionTitles: string[];
+  };
   pageTitle: string;
   sectionTitle: string;
   units: SectionUnit[];
@@ -79,4 +92,9 @@ export type SectionRevision = {
 // DB FUNCTION SHAPES
 export type SectionRef = { sectionId: string; pageId: string };
 // rebuildRequested: another rebuild was asked for while this one ran (for rebuildEventId)
-export type FinishedSectionBuild = { sectionId: string; changeNoteId: string | null; rebuildRequested?: boolean; rebuildEventId?: string | null };
+export type FinishedSectionBuild = {
+  sectionId: string;
+  changeNoteId: string | null;
+  rebuildRequested?: boolean;
+  rebuildEventId?: string | null;
+};

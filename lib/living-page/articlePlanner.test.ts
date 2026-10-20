@@ -54,8 +54,8 @@ describe("article planning completeness", () => {
 
   it("fails without changing stored content if the corrected outline is still incomplete", async () => {
     vi.mocked(chatJson).mockResolvedValue(answer(incomplete));
-    await expect(planArticle({ apiKey: "test" }, knowledge)).rejects.toThrow("Outline needs review after 4 attempts");
-    expect(chatJson).toHaveBeenCalledTimes(4);
+    await expect(planArticle({ apiKey: "test" }, knowledge)).rejects.toThrow("Outline needs review after 6 attempts");
+    expect(chatJson).toHaveBeenCalledTimes(6);
   });
 
   it("requests a descriptive heading instead of one that restates the introduction", async () => {
@@ -71,6 +71,6 @@ describe("article planning completeness", () => {
     const restating = { title: "Safety at Acme", introduction: ["C1"], sections: [{ title: "Overview of rules", claims: ["C2"] }] };
     vi.mocked(chatJson).mockResolvedValue(answer(restating));
     await expect(planArticle({ apiKey: "test" }, knowledge)).rejects.toThrow("Outline needs review");
-    expect(chatJson).toHaveBeenCalledTimes(4);
+    expect(chatJson).toHaveBeenCalledTimes(6);
   });
 });

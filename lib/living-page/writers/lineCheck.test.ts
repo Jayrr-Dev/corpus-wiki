@@ -20,7 +20,7 @@ function fakeModel(answers: Record<string, unknown[]>) {
     requests.push({ name, body });
     const answer = answers[name]?.shift();
     if (!answer) throw new Error(`No answer queued for ${name}`);
-    if (body.stream) return new Response(`data: ${JSON.stringify({ model: "test", choices: [{ delta: { content: JSON.stringify(answer) }, finish_reason: "stop" }] })}\n\ndata: [DONE]\n\n`, { headers: { "Content-Type": "text/event-stream" } });
+    if (body.stream) return new Response(`data: ${JSON.stringify({ model: "test", usage: { prompt_tokens: 10, completion_tokens: 5 }, choices: [{ delta: { content: JSON.stringify(answer) }, finish_reason: "stop" }] })}\n\ndata: [DONE]\n\n`, { headers: { "Content-Type": "text/event-stream" } });
     return new Response(JSON.stringify({ model: "test", usage: { prompt_tokens: 10, completion_tokens: 5 }, choices: [{ finish_reason: "stop", message: { content: JSON.stringify(answer) } }] }));
   }));
   return requests;

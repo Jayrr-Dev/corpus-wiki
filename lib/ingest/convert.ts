@@ -2,6 +2,7 @@ import type { ImageDescriber } from "./describeMedia";
 import { type VideoReader, videoPages } from "./describeVideo";
 import { readDocx } from "./docx";
 import type { UploadFormatId } from "./formats";
+import { bookSectionPaths, type PdfOutlineSource } from "./pdfSections";
 import type { ExtractedPage } from "./passages";
 
 // =====================================================================
@@ -19,13 +20,18 @@ export type ConvertContext = {
 
 export type Converter = (bytes: Uint8Array, context?: ConvertContext) => Promise<ExtractedPage[]>;
 
-// PDF: page by page (unpdf: pdf.js built for servers, no native deps)
+// PDF: page by page (unpdf: pdf.js built for servers, no native deps).
+// Bookmarks become each page's section path, shown beside the page number.
 async function convertPdf(bytes: Uint8Array): Promise<ExtractedPage[]> {
   const { extractText, getDocumentProxy } = await import("unpdf");
   // pdf.js may detach the buffer it reads, so it gets its own copy
   const pdf = await getDocumentProxy(bytes.slice());
   const { text } = await extractText(pdf, { mergePages: false });
-  return text.map((pageText, index) => ({ page: index + 1, text: pageText }));
+  const paths = await bookSectionPaths(pdf as PdfOutlineSource, text);
+  return text.map((pageText, index) => {
+    const sectionPath = paths[index];
+    return { page: index + 1, text: pageText, ...(sectionPath ? { sectionPath } : {}) };
+  });
 }
 
 // WORD (.docx): the document's paragraphs, with each embedded picture described in its place (docx.ts)

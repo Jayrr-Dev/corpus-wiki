@@ -5,7 +5,7 @@
 // Source: Nebius Token Factory pricing, checked 2026-10-15; Claude rows: Anthropic API list prices, checked 2026-10-16.
 // =====================================================================
 
-export const PRICES_CHECKED_ON = "2026-10-19 (Claude and embeddings); 2026-10-15 (Token Factory chat)";
+export const PRICES_CHECKED_ON = "2026-10-19 (Claude, embeddings, and OpenRouter Mercury 3); 2026-10-15 (Token Factory chat)";
 
 export type ModelPrice = { model: string; inputPerM: number; outputPerM: number; cacheReadMultiplier?: number; longContext?: { above: number; inputPerM: number; outputPerM: number } };
 
@@ -57,6 +57,9 @@ export const MODEL_PRICES: readonly ModelPrice[] = [
   { model: "claude-opus-4-6", inputPerM: 5, outputPerM: 25 },
   { model: "claude-sonnet-4-6", inputPerM: 3, outputPerM: 15 },
   { model: "claude-haiku-4-5", inputPerM: 1, outputPerM: 5 },
+  // OpenRouter launch price for Mercury 3 ($0.10 / $0.35 per 1M). List price is $0.20 / $0.70.
+  // https://openrouter.ai/inception/mercury-3 , checked 2026-10-19.
+  { model: "inception/mercury-3", inputPerM: 0.1, outputPerM: 0.35 },
 ];
 
 const BY_NAME = new Map(MODEL_PRICES.map((price) => [price.model.toLowerCase(), price]));
@@ -64,7 +67,8 @@ const BY_NAME = new Map(MODEL_PRICES.map((price) => [price.model.toLowerCase(), 
 // The price for a model id, or null when the table has none
 export function priceFor(model: string): ModelPrice | null {
   // These providers have their own rates, even for the same model name.
-  if (model.startsWith("openrouter/") || model.startsWith("cerebras/")) return null;
+  if (model.startsWith("cerebras/")) return null;
+  if (model.startsWith("openrouter/")) return BY_NAME.get(model.slice("openrouter/".length).toLowerCase()) ?? null;
   const name = model.split("/").pop() ?? model;
   return BY_NAME.get(name.toLowerCase()) ?? BY_NAME.get(name.toLowerCase().replace(/-\d{8}$/, "")) ?? null;
 }
