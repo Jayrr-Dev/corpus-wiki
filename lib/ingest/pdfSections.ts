@@ -40,7 +40,7 @@ async function sectionMarks(pdf: PdfOutlineSource, nodes: readonly OutlineNode[]
     const title = node.title.trim();
     const page = title ? await bookmarkPage(pdf, node.dest) : null;
     const path = page === null ? parents : [...parents, ...sectionTitles(title, pageTexts[page - 1])];
-    if (page !== null) marks.push({ page, path });
+    if (page !== null) marks.push({ page, path: [...path] });
     marks.push(...await sectionMarks(pdf, node.items ?? [], path, pageTexts));
   }
   return marks;

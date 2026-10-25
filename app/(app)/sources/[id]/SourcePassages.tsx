@@ -106,7 +106,7 @@ const ACTION_VERBS: Partial<Record<Enums<"action_type">, [verb: string, hint: st
 // then the claim; the glyph is how certain it is. Claims since merged or retired are counted, not listed.
 function ProducedUnits({ actions, unitById }: Omit<PassageItemProps, "passage">) {
   if (actions.length === 0) return null;
-  const byTarget = new Map<string, Tables<"actions">[]>();
+  const byTarget = new Map<string, PassageAction[]>();
   for (const action of actions) byTarget.set(action.target_id ?? action.id, [...(byTarget.get(action.target_id ?? action.id) ?? []), action]);
   const retired = [...byTarget.keys()].filter((targetId) => unitById.get(targetId)?.retired_at);
   const live = [...byTarget].filter(([targetId]) => !retired.includes(targetId));

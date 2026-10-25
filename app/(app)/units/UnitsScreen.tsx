@@ -158,8 +158,7 @@ function useFilteredUnits(filters: UnitFilters) {
   const pages = usePages();
   const articleUnits = useArticleUnitLinks(Boolean(filters.article));
   const articleReady = !filters.article || (pages.isSuccess && articleUnits.isSuccess);
-  const reads = [units, unitDomains, unitEntities, domains];
-  if (filters.article && (pages.error || articleUnits.error)) reads.push(pages, articleUnits);
+  const reads = [units, unitDomains, unitEntities, domains, ...(filters.article && (pages.error || articleUnits.error) ? [pages, articleUnits] : [])];
   const data = useMemo(
     () =>
       filterUnits(units.data ?? [], articleReady ? filters : { ...filters, article: "" }, {

@@ -24,7 +24,7 @@ export function buildPageTree<T extends HierarchyPage>(pages: T[]): PageNode<T>[
 }
 
 // The page itself, then every page nested under it. A cycle is visited once.
-export function pageAndDescendants(pages: Pick<HierarchyPage, "id" | "parent_page_id">[], rootId: string): string[] {
+export function pageAndDescendants(pages: readonly Pick<HierarchyPage, "id" | "parent_page_id">[], rootId: string): string[] {
   const children = new Map<string, string[]>();
   for (const page of pages) {
     if (!page.parent_page_id) continue;
