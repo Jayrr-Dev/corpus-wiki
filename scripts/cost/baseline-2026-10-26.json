@@ -1,0 +1,1328 @@
+{
+  "generatedAt": "2026-10-26T23:26:21.602Z",
+  "window": {
+    "since": "2026-09-26T00:00:00.000Z",
+    "until": "2026-10-26T00:00:00.000Z",
+    "days": 30
+  },
+  "totals": {
+    "key": "total",
+    "calls": 14160,
+    "cost": 87.89592281299967,
+    "unpricedCalls": 368,
+    "promptTokens": 154224763,
+    "completionTokens": 16922690
+  },
+  "spaces": 2,
+  "bySpace": [
+    {
+      "key": "21132c80-32b3-4ef2-9156-d9af60486173",
+      "calls": 9992,
+      "cost": 73.6601125199998,
+      "unpricedCalls": 27,
+      "promptTokens": 124853664,
+      "completionTokens": 9740033
+    },
+    {
+      "key": "00000000-0000-4000-8000-000000000001",
+      "calls": 4168,
+      "cost": 14.235810292999997,
+      "unpricedCalls": 341,
+      "promptTokens": 29371099,
+      "completionTokens": 7182657
+    }
+  ],
+  "byPurpose": [
+    {
+      "key": "independent_upload_domain_review",
+      "calls": 119,
+      "cost": 9.947648599999997,
+      "unpricedCalls": 1,
+      "promptTokens": 18194179,
+      "completionTokens": 355623
+    },
+    {
+      "key": "place_topics",
+      "calls": 132,
+      "cost": 9.449841150000003,
+      "unpricedCalls": 0,
+      "promptTokens": 17320702,
+      "completionTokens": 337998
+    },
+    {
+      "key": "page_editorial_review",
+      "calls": 176,
+      "cost": 7.760191125000001,
+      "unpricedCalls": 32,
+      "promptTokens": 8189555,
+      "completionTokens": 949818
+    },
+    {
+      "key": "independent_section_editorial_review",
+      "calls": 1412,
+      "cost": 7.728175275000005,
+      "unpricedCalls": 0,
+      "promptTokens": 7061606,
+      "completionTokens": 441119
+    },
+    {
+      "key": "article_outline",
+      "calls": 389,
+      "cost": 6.9900749699999984,
+      "unpricedCalls": 11,
+      "promptTokens": 10128074,
+      "completionTokens": 1225750
+    },
+    {
+      "key": "line_fact_check",
+      "calls": 1890,
+      "cost": 6.688802550000004,
+      "unpricedCalls": 102,
+      "promptTokens": 8154783,
+      "completionTokens": 584634
+    },
+    {
+      "key": "article_outline_review",
+      "calls": 309,
+      "cost": 5.975269949999999,
+      "unpricedCalls": 1,
+      "promptTokens": 4055297,
+      "completionTokens": 597450
+    },
+    {
+      "key": "independent_section_editorial_selection",
+      "calls": 871,
+      "cost": 4.803421869999998,
+      "unpricedCalls": 5,
+      "promptTokens": 3584579,
+      "completionTokens": 135077
+    },
+    {
+      "key": "article_composition",
+      "calls": 59,
+      "cost": 4.71117699,
+      "unpricedCalls": 2,
+      "promptTokens": 953853,
+      "completionTokens": 108278
+    },
+    {
+      "key": "glossary_duplicate_review",
+      "calls": 3109,
+      "cost": 4.593178885000008,
+      "unpricedCalls": 5,
+      "promptTokens": 33211316,
+      "completionTokens": 2678321
+    },
+    {
+      "key": "article_scope_review",
+      "calls": 49,
+      "cost": 4.376678299999998,
+      "unpricedCalls": 0,
+      "promptTokens": 1225318,
+      "completionTokens": 189692
+    },
+    {
+      "key": "section_lines",
+      "calls": 2142,
+      "cost": 2.6819453049999984,
+      "unpricedCalls": 103,
+      "promptTokens": 17656307,
+      "completionTokens": 2934935
+    },
+    {
+      "key": "article_update_discovery",
+      "calls": 195,
+      "cost": 1.6378821799999999,
+      "unpricedCalls": 21,
+      "promptTokens": 1379574,
+      "completionTokens": 362988
+    },
+    {
+      "key": "reconciliation",
+      "calls": 253,
+      "cost": 1.3254539500000004,
+      "unpricedCalls": 8,
+      "promptTokens": 4413537,
+      "completionTokens": 1676100
+    },
+    {
+      "key": "upload_domain_plan",
+      "calls": 21,
+      "cost": 1.2879723,
+      "unpricedCalls": 1,
+      "promptTokens": 2469329,
+      "completionTokens": 203006
+    },
+    {
+      "key": "glossary_dictionary",
+      "calls": 321,
+      "cost": 1.2182890500000008,
+      "unpricedCalls": 16,
+      "promptTokens": 3838158,
+      "completionTokens": 2123418
+    },
+    {
+      "key": "composer_visual_review",
+      "calls": 34,
+      "cost": 1.1661610749999998,
+      "unpricedCalls": 0,
+      "promptTokens": 220651,
+      "completionTokens": 15895
+    },
+    {
+      "key": "page_structure_review",
+      "calls": 15,
+      "cost": 0.988326925,
+      "unpricedCalls": 0,
+      "promptTokens": 162882,
+      "completionTokens": 39751
+    },
+    {
+      "key": "composer_image_comparison",
+      "calls": 19,
+      "cost": 0.8638759999999999,
+      "unpricedCalls": 0,
+      "promptTokens": 151789,
+      "completionTokens": 12836
+    },
+    {
+      "key": "composer_candidate_selection",
+      "calls": 93,
+      "cost": 0.8059274399999997,
+      "unpricedCalls": 0,
+      "promptTokens": 728083,
+      "completionTokens": 227362
+    },
+    {
+      "key": "composer_context_review",
+      "calls": 17,
+      "cost": 0.5749280000000001,
+      "unpricedCalls": 0,
+      "promptTokens": 105712,
+      "completionTokens": 7604
+    },
+    {
+      "key": "domain_decision",
+      "calls": 105,
+      "cost": 0.4804555000000001,
+      "unpricedCalls": 4,
+      "promptTokens": 2024135,
+      "completionTokens": 556084
+    },
+    {
+      "key": "line_fact_confirm",
+      "calls": 260,
+      "cost": 0.47096626999999985,
+      "unpricedCalls": 12,
+      "promptTokens": 516417,
+      "completionTokens": 57926
+    },
+    {
+      "key": "knowledge_expansion",
+      "calls": 41,
+      "cost": 0.17678634499999998,
+      "unpricedCalls": 0,
+      "promptTokens": 976502,
+      "completionTokens": 156916
+    },
+    {
+      "key": "speed_test",
+      "calls": 52,
+      "cost": 0.13207945799999998,
+      "unpricedCalls": 8,
+      "promptTokens": 2855,
+      "completionTokens": 30348
+    },
+    {
+      "key": "describe_entities",
+      "calls": 99,
+      "cost": 0.1106536,
+      "unpricedCalls": 3,
+      "promptTokens": 492338,
+      "completionTokens": 128820
+    },
+    {
+      "key": "glossary_canonicalize",
+      "calls": 260,
+      "cost": 0.10282019999999999,
+      "unpricedCalls": 0,
+      "promptTokens": 623367,
+      "completionTokens": 80967
+    },
+    {
+      "key": "article_suggestions",
+      "calls": 92,
+      "cost": 0.09009533000000003,
+      "unpricedCalls": 0,
+      "promptTokens": 740412,
+      "completionTokens": 91963
+    },
+    {
+      "key": "entity_profiles",
+      "calls": 116,
+      "cost": 0.08158129999999995,
+      "unpricedCalls": 1,
+      "promptTokens": 561861,
+      "completionTokens": 62221
+    },
+    {
+      "key": "article_proposals",
+      "calls": 27,
+      "cost": 0.080744575,
+      "unpricedCalls": 4,
+      "promptTokens": 296808,
+      "completionTokens": 97726
+    },
+    {
+      "key": "independent_upload_domain_issue_check",
+      "calls": 10,
+      "cost": 0.0774091,
+      "unpricedCalls": 0,
+      "promptTokens": 679871,
+      "completionTokens": 18844
+    },
+    {
+      "key": "independent_article_review",
+      "calls": 92,
+      "cost": 0.07637084999999998,
+      "unpricedCalls": 3,
+      "promptTokens": 543844,
+      "completionTokens": 49992
+    },
+    {
+      "key": "domain_duplicate_review",
+      "calls": 55,
+      "cost": 0.060004400000000006,
+      "unpricedCalls": 0,
+      "promptTokens": 576429,
+      "completionTokens": 4723
+    },
+    {
+      "key": "entity_duplicate_review",
+      "calls": 187,
+      "cost": 0.04921900000000002,
+      "unpricedCalls": 0,
+      "promptTokens": 366555,
+      "completionTokens": 25127
+    },
+    {
+      "key": "entity_web_profiles",
+      "calls": 40,
+      "cost": 0.045321249999999993,
+      "unpricedCalls": 1,
+      "promptTokens": 221875,
+      "completionTokens": 26729
+    },
+    {
+      "key": "independent_external_source_approval",
+      "calls": 41,
+      "cost": 0.037942500000000004,
+      "unpricedCalls": 3,
+      "promptTokens": 166601,
+      "completionTokens": 41983
+    },
+    {
+      "key": "external_source_justification",
+      "calls": 26,
+      "cost": 0.033188300000000004,
+      "unpricedCalls": 4,
+      "promptTokens": 107702,
+      "completionTokens": 56796
+    },
+    {
+      "key": "external_research_justification",
+      "calls": 38,
+      "cost": 0.03147475,
+      "unpricedCalls": 4,
+      "promptTokens": 100738,
+      "completionTokens": 42976
+    },
+    {
+      "key": "force_create_pick",
+      "calls": 29,
+      "cost": 0.020998599999999996,
+      "unpricedCalls": 5,
+      "promptTokens": 107693,
+      "completionTokens": 32289
+    },
+    {
+      "key": "independent_external_search_approval",
+      "calls": 28,
+      "cost": 0.020234100000000005,
+      "unpricedCalls": 4,
+      "promptTokens": 89668,
+      "completionTokens": 23131
+    },
+    {
+      "key": "duplicate_judge",
+      "calls": 6,
+      "cost": 0.01873755,
+      "unpricedCalls": 0,
+      "promptTokens": 6587,
+      "completionTokens": 35499
+    },
+    {
+      "key": "sourcer_source_justification",
+      "calls": 15,
+      "cost": 0.0163819,
+      "unpricedCalls": 0,
+      "promptTokens": 70929,
+      "completionTokens": 18578
+    },
+    {
+      "key": "domain_structure_review",
+      "calls": 1,
+      "cost": 0.0155903,
+      "unpricedCalls": 0,
+      "promptTokens": 46192,
+      "completionTokens": 17323
+    },
+    {
+      "key": "knowledge_chat",
+      "calls": 14,
+      "cost": 0.01446075,
+      "unpricedCalls": 0,
+      "promptTokens": 54715,
+      "completionTokens": 12507
+    },
+    {
+      "key": "space_subtitle",
+      "calls": 112,
+      "cost": 0.013645595000000005,
+      "unpricedCalls": 0,
+      "promptTokens": 122568,
+      "completionTokens": 8339
+    },
+    {
+      "key": "entity_cleanup",
+      "calls": 17,
+      "cost": 0.012963549999999999,
+      "unpricedCalls": 0,
+      "promptTokens": 66454,
+      "completionTokens": 11448
+    },
+    {
+      "key": "entity_reclassify",
+      "calls": 12,
+      "cost": 0.008377500000000001,
+      "unpricedCalls": 0,
+      "promptTokens": 41010,
+      "completionTokens": 4452
+    },
+    {
+      "key": "glossary_duplicate_embeddings",
+      "calls": 232,
+      "cost": 0.00758238,
+      "unpricedCalls": 0,
+      "promptTokens": 758238,
+      "completionTokens": 0
+    },
+    {
+      "key": "entity_web_queries",
+      "calls": 40,
+      "cost": 0.0070535,
+      "unpricedCalls": 1,
+      "promptTokens": 41269,
+      "completionTokens": 2294
+    },
+    {
+      "key": "embeddings",
+      "calls": 399,
+      "cost": 0.004557089999999998,
+      "unpricedCalls": 2,
+      "promptTokens": 455709,
+      "completionTokens": 0
+    },
+    {
+      "key": "dedupe",
+      "calls": 9,
+      "cost": 0.0040434500000000005,
+      "unpricedCalls": 0,
+      "promptTokens": 8012,
+      "completionTokens": 5933
+    },
+    {
+      "key": "entity_web_sites",
+      "calls": 12,
+      "cost": 0.0034726999999999996,
+      "unpricedCalls": 1,
+      "promptTokens": 23321,
+      "completionTokens": 473
+    },
+    {
+      "key": "sourcer_research",
+      "calls": 7,
+      "cost": 0.0028647,
+      "unpricedCalls": 0,
+      "promptTokens": 13337,
+      "completionTokens": 3062
+    },
+    {
+      "key": "describe_image",
+      "calls": 4,
+      "cost": 0.0027999,
+      "unpricedCalls": 0,
+      "promptTokens": 6510,
+      "completionTokens": 941
+    },
+    {
+      "key": "knowledge_agent",
+      "calls": 3,
+      "cost": 0.00234975,
+      "unpricedCalls": 0,
+      "promptTokens": 15265,
+      "completionTokens": 120
+    },
+    {
+      "key": "describe_assets",
+      "calls": 4,
+      "cost": 0.0021947499999999997,
+      "unpricedCalls": 0,
+      "promptTokens": 5325,
+      "completionTokens": 2792
+    },
+    {
+      "key": "claim_titles",
+      "calls": 1,
+      "cost": 0.00187305,
+      "unpricedCalls": 0,
+      "promptTokens": 1867,
+      "completionTokens": 3186
+    },
+    {
+      "key": "domain_tab_organization",
+      "calls": 1,
+      "cost": 0.0014193,
+      "unpricedCalls": 0,
+      "promptTokens": 8383,
+      "completionTokens": 1162
+    },
+    {
+      "key": "glossary_embeddings",
+      "calls": 38,
+      "cost": 0.0007340199999999999,
+      "unpricedCalls": 0,
+      "promptTokens": 73402,
+      "completionTokens": 0
+    },
+    {
+      "key": "force_create_search_query",
+      "calls": 4,
+      "cost": 0.0004929,
+      "unpricedCalls": 0,
+      "promptTokens": 526,
+      "completionTokens": 828
+    },
+    {
+      "key": "entity_profile_kinds",
+      "calls": 2,
+      "cost": 0.0004881,
+      "unpricedCalls": 0,
+      "promptTokens": 3263,
+      "completionTokens": 255
+    },
+    {
+      "key": "glossary_definition",
+      "calls": 1,
+      "cost": 0.00027225,
+      "unpricedCalls": 0,
+      "promptTokens": 875,
+      "completionTokens": 282
+    },
+    {
+      "key": "empty_article_retrieval",
+      "calls": 1,
+      "cost": 3.7e-7,
+      "unpricedCalls": 0,
+      "promptTokens": 37,
+      "completionTokens": 0
+    },
+    {
+      "key": "glossary_search",
+      "calls": 2,
+      "cost": 1.4e-7,
+      "unpricedCalls": 0,
+      "promptTokens": 14,
+      "completionTokens": 0
+    }
+  ],
+  "byRole": [
+    {
+      "key": "reviewer",
+      "calls": 5075,
+      "cost": 39.048812050000016,
+      "unpricedCalls": 159,
+      "promptTokens": 33395050,
+      "completionTokens": 3061695
+    },
+    {
+      "key": "domain_decider",
+      "calls": 380,
+      "cost": 21.239192999999986,
+      "unpricedCalls": 6,
+      "promptTokens": 40668131,
+      "completionTokens": 1468355
+    },
+    {
+      "key": "plan_articles",
+      "calls": 710,
+      "cost": 8.767616124999995,
+      "unpricedCalls": 41,
+      "promptTokens": 12451838,
+      "completionTokens": 1745332
+    },
+    {
+      "key": "composer",
+      "calls": 189,
+      "cost": 6.956845505000003,
+      "unpricedCalls": 2,
+      "promptTokens": 1945467,
+      "completionTokens": 356638
+    },
+    {
+      "key": "dictionary_editor",
+      "calls": 3951,
+      "cost": 5.880612884999999,
+      "unpricedCalls": 21,
+      "promptTokens": 38417360,
+      "completionTokens": 4824859
+    },
+    {
+      "key": "write_articles",
+      "calls": 1931,
+      "cost": 2.4504746049999975,
+      "unpricedCalls": 103,
+      "promptTokens": 17257179,
+      "completionTokens": 2591732
+    },
+    {
+      "key": "(none)",
+      "calls": 1132,
+      "cost": 1.0785190129999975,
+      "unpricedCalls": 14,
+      "promptTokens": 2618487,
+      "completionTokens": 1349949
+    },
+    {
+      "key": "curator",
+      "calls": 15,
+      "cost": 0.988326925,
+      "unpricedCalls": 0,
+      "promptTokens": 162882,
+      "completionTokens": 39751
+    },
+    {
+      "key": "reconciler",
+      "calls": 201,
+      "cost": 0.9411622999999996,
+      "unpricedCalls": 8,
+      "promptTokens": 4001956,
+      "completionTokens": 1030991
+    },
+    {
+      "key": "define_concepts",
+      "calls": 41,
+      "cost": 0.17678634499999998,
+      "unpricedCalls": 0,
+      "promptTokens": 976502,
+      "completionTokens": 156916
+    },
+    {
+      "key": "identify_entities",
+      "calls": 284,
+      "cost": 0.15277029999999994,
+      "unpricedCalls": 3,
+      "promptTokens": 869961,
+      "completionTokens": 136422
+    },
+    {
+      "key": "article_reviewer",
+      "calls": 92,
+      "cost": 0.07637084999999998,
+      "unpricedCalls": 3,
+      "promptTokens": 543844,
+      "completionTokens": 49992
+    },
+    {
+      "key": "domain_steward",
+      "calls": 56,
+      "cost": 0.07559470000000001,
+      "unpricedCalls": 0,
+      "promptTokens": 622621,
+      "completionTokens": 22046
+    },
+    {
+      "key": "researcher",
+      "calls": 39,
+      "cost": 0.03786595,
+      "unpricedCalls": 8,
+      "promptTokens": 154056,
+      "completionTokens": 62493
+    },
+    {
+      "key": "sourcer",
+      "calls": 22,
+      "cost": 0.019246600000000003,
+      "unpricedCalls": 0,
+      "promptTokens": 84266,
+      "completionTokens": 21640
+    },
+    {
+      "key": "media_analyst",
+      "calls": 8,
+      "cost": 0.004994650000000001,
+      "unpricedCalls": 0,
+      "promptTokens": 11835,
+      "completionTokens": 3733
+    },
+    {
+      "key": "embedder",
+      "calls": 33,
+      "cost": 0.00040831000000000005,
+      "unpricedCalls": 0,
+      "promptTokens": 40831,
+      "completionTokens": 0
+    },
+    {
+      "key": "deduplicator",
+      "calls": 1,
+      "cost": 0.00032270000000000004,
+      "unpricedCalls": 0,
+      "promptTokens": 2497,
+      "completionTokens": 146
+    }
+  ],
+  "byModel": [
+    {
+      "key": "anthropic/claude-sonnet-5-5",
+      "calls": 2760,
+      "cost": 43.30813659999998,
+      "unpricedCalls": 5,
+      "promptTokens": 22519476,
+      "completionTokens": 712281
+    },
+    {
+      "key": "anthropic/claude-haiku-5-5",
+      "calls": 8812,
+      "cost": 32.31703485499994,
+      "unpricedCalls": 20,
+      "promptTokens": 114419148,
+      "completionTokens": 9867371
+    },
+    {
+      "key": "anthropic/claude-opus-5-5",
+      "calls": 137,
+      "cost": 8.911565000000001,
+      "unpricedCalls": 2,
+      "promptTokens": 1441146,
+      "completionTokens": 157238
+    },
+    {
+      "key": "zai-org/GLM-5.3-Flash",
+      "calls": 978,
+      "cost": 2.155579349999999,
+      "unpricedCalls": 2,
+      "promptTokens": 4867129,
+      "completionTokens": 2851020
+    },
+    {
+      "key": "openrouter/inception/mercury-3",
+      "calls": 434,
+      "cost": 1.0675178,
+      "unpricedCalls": 8,
+      "promptTokens": 4618085,
+      "completionTokens": 1730598
+    },
+    {
+      "key": "anthropic/claude-fable-5-1",
+      "calls": 1,
+      "cost": 0.01518,
+      "unpricedCalls": 0,
+      "promptTokens": 53,
+      "completionTokens": 293
+    },
+    {
+      "key": "anthropic/claude-fable-5",
+      "calls": 1,
+      "cost": 0.01406,
+      "unpricedCalls": 0,
+      "promptTokens": 51,
+      "completionTokens": 271
+    },
+    {
+      "key": "moonshotai/Kimi-K3",
+      "calls": 1,
+      "cost": 0.01299,
+      "unpricedCalls": 0,
+      "promptTokens": 115,
+      "completionTokens": 843
+    },
+    {
+      "key": "Qwen/Qwen3-Embedding-8B",
+      "calls": 673,
+      "cost": 0.012874000000000024,
+      "unpricedCalls": 3,
+      "promptTokens": 1287400,
+      "completionTokens": 0
+    },
+    {
+      "key": "zai-org/GLM-5.1",
+      "calls": 1,
+      "cost": 0.0088504,
+      "unpricedCalls": 0,
+      "promptTokens": 36,
+      "completionTokens": 2000
+    },
+    {
+      "key": "anthropic/claude-opus-5",
+      "calls": 1,
+      "cost": 0.00773,
+      "unpricedCalls": 0,
+      "promptTokens": 51,
+      "completionTokens": 299
+    },
+    {
+      "key": "anthropic/claude-opus-4-8",
+      "calls": 1,
+      "cost": 0.007655,
+      "unpricedCalls": 0,
+      "promptTokens": 51,
+      "completionTokens": 296
+    },
+    {
+      "key": "anthropic/claude-opus-4-7",
+      "calls": 1,
+      "cost": 0.00748,
+      "unpricedCalls": 0,
+      "promptTokens": 56,
+      "completionTokens": 288
+    },
+    {
+      "key": "moonshotai/Kimi-K2.6",
+      "calls": 1,
+      "cost": 0.0074041,
+      "unpricedCalls": 0,
+      "promptTokens": 38,
+      "completionTokens": 1842
+    },
+    {
+      "key": "Qwen/Qwen3.5-397B-A17B",
+      "calls": 1,
+      "cost": 0.0072258,
+      "unpricedCalls": 0,
+      "promptTokens": 43,
+      "completionTokens": 2000
+    },
+    {
+      "key": "Qwen/Qwen3.8-27B",
+      "calls": 1,
+      "cost": 0.006019350000000001,
+      "unpricedCalls": 0,
+      "promptTokens": 43,
+      "completionTokens": 2000
+    },
+    {
+      "key": "anthropic/claude-opus-4-6",
+      "calls": 1,
+      "cost": 0.005025,
+      "unpricedCalls": 0,
+      "promptTokens": 40,
+      "completionTokens": 193
+    },
+    {
+      "key": "meta-models/muse-spark-open",
+      "calls": 1,
+      "cost": 0.00440075,
+      "unpricedCalls": 0,
+      "promptTokens": 175,
+      "completionTokens": 984
+    },
+    {
+      "key": "anthropic/claude-sonnet-4-6",
+      "calls": 1,
+      "cost": 0.003645,
+      "unpricedCalls": 0,
+      "promptTokens": 40,
+      "completionTokens": 235
+    },
+    {
+      "key": "anthropic/claude-sonnet-5",
+      "calls": 1,
+      "cost": 0.003252,
+      "unpricedCalls": 0,
+      "promptTokens": 51,
+      "completionTokens": 315
+    },
+    {
+      "key": "nvidia/Nemotron-3.5-Super-VL",
+      "calls": 5,
+      "cost": 0.002994,
+      "unpricedCalls": 0,
+      "promptTokens": 6560,
+      "completionTokens": 1140
+    },
+    {
+      "key": "deepseek-ai/DeepSeek-V4-Pro-0813",
+      "calls": 2,
+      "cost": 0.0026281200000000003,
+      "unpricedCalls": 0,
+      "promptTokens": 68,
+      "completionTokens": 641
+    },
+    {
+      "key": "deepseek-ai/DeepSeek-V4-Pro",
+      "calls": 1,
+      "cost": 0.0012775,
+      "unpricedCalls": 0,
+      "promptTokens": 34,
+      "completionTokens": 348
+    },
+    {
+      "key": "moonshotai/Kimi-K2.7-Code",
+      "calls": 1,
+      "cost": 0.0011481,
+      "unpricedCalls": 0,
+      "promptTokens": 38,
+      "completionTokens": 278
+    },
+    {
+      "key": "deepseek-ai/DeepSeek-V4.1-Flash",
+      "calls": 1,
+      "cost": 0.0009624,
+      "unpricedCalls": 0,
+      "promptTokens": 60,
+      "completionTokens": 787
+    },
+    {
+      "key": "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "calls": 1,
+      "cost": 0.000716,
+      "unpricedCalls": 0,
+      "promptTokens": 50,
+      "completionTokens": 222
+    },
+    {
+      "key": "NousResearch/Hermes-4-405B",
+      "calls": 1,
+      "cost": 0.000538,
+      "unpricedCalls": 0,
+      "promptTokens": 55,
+      "completionTokens": 161
+    },
+    {
+      "key": "nvidia/nemotron-3-super-120b-a12b",
+      "calls": 3,
+      "cost": 0.0005211,
+      "unpricedCalls": 0,
+      "promptTokens": 150,
+      "completionTokens": 529
+    },
+    {
+      "key": "MiniMaxAI/MiniMax-M3",
+      "calls": 1,
+      "cost": 0.00043860000000000004,
+      "unpricedCalls": 0,
+      "promptTokens": 206,
+      "completionTokens": 314
+    },
+    {
+      "key": "deepseek-ai/DeepSeek-V4-Flash-0731",
+      "calls": 1,
+      "cost": 0.00025508000000000003,
+      "unpricedCalls": 0,
+      "promptTokens": 34,
+      "completionTokens": 894
+    },
+    {
+      "key": "openbmb/MiniCPM-V-4_5",
+      "calls": 1,
+      "cost": 0.00025119800000000006,
+      "unpricedCalls": 0,
+      "promptTokens": 41,
+      "completionTokens": 202
+    },
+    {
+      "key": "openai/gpt-oss-120b",
+      "calls": 1,
+      "cost": 0.00018855,
+      "unpricedCalls": 0,
+      "promptTokens": 97,
+      "completionTokens": 290
+    },
+    {
+      "key": "Qwen/Qwen3-235B-A22B-Instruct-2507",
+      "calls": 1,
+      "cost": 0.00014319999999999998,
+      "unpricedCalls": 0,
+      "promptTokens": 41,
+      "completionTokens": 225
+    },
+    {
+      "key": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+      "calls": 1,
+      "cost": 0.00006919999999999999,
+      "unpricedCalls": 0,
+      "promptTokens": 41,
+      "completionTokens": 217
+    },
+    {
+      "key": "nvidia/Nemotron-3_5-Lightning",
+      "calls": 1,
+      "cost": 0.00006228000000000001,
+      "unpricedCalls": 0,
+      "promptTokens": 50,
+      "completionTokens": 247
+    },
+    {
+      "key": "google/gemma-3-27b-it",
+      "calls": 1,
+      "cost": 0.0000602,
+      "unpricedCalls": 0,
+      "promptTokens": 41,
+      "completionTokens": 187
+    },
+    {
+      "key": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "calls": 1,
+      "cost": 0.00004428,
+      "unpricedCalls": 0,
+      "promptTokens": 50,
+      "completionTokens": 172
+    },
+    {
+      "key": "cerebras/qwen-3.8-27b",
+      "calls": 324,
+      "cost": 0,
+      "unpricedCalls": 324,
+      "promptTokens": 5063726,
+      "completionTokens": 1585055
+    },
+    {
+      "key": "cerebras/gpt-oss-120b",
+      "calls": 2,
+      "cost": 0,
+      "unpricedCalls": 2,
+      "promptTokens": 194,
+      "completionTokens": 414
+    },
+    {
+      "key": "reflection/beam",
+      "calls": 1,
+      "cost": 0,
+      "unpricedCalls": 1,
+      "promptTokens": 0,
+      "completionTokens": 0
+    },
+    {
+      "key": "GLM-5.3-Flash",
+      "calls": 1,
+      "cost": 0,
+      "unpricedCalls": 1,
+      "promptTokens": 0,
+      "completionTokens": 0
+    }
+  ],
+  "longContext": {
+    "line": 100000,
+    "callsAbove": 265,
+    "costAbove": 22.515063099999992,
+    "callsAboveOnLongContextModels": 244,
+    "costAboveOnLongContextModels": 20.547752999999993
+  },
+  "uploads": {
+    "events": 36,
+    "documents": 27,
+    "attributedCalls": 11733,
+    "attributedCost": 73.41609834499991,
+    "bySubject": 926,
+    "byTime": 10807,
+    "unattributedCalls": 2427,
+    "unattributedCost": 14.479824468000013,
+    "costPerUpload": 2.0393360651388863,
+    "medianCostPerUpload": 0.014687279999999999,
+    "costPerDocument": 2.719114753518515,
+    "allInCostPerDocument": 3.2554045486296173,
+    "perUpload": [
+      {
+        "eventId": "811105ea-fcfe-4ac4-9c7d-dc589b1501e4",
+        "title": "Understanding the Archetypes involving the eight functions of type.pdf",
+        "startedAt": "2026-10-18T07:52:59.662256+00:00",
+        "status": "reconciling",
+        "calls": 8538,
+        "cost": 60.777249084999916
+      },
+      {
+        "eventId": "b9c25fc1-b325-4230-ad3d-f0f4839fb18f",
+        "title": "3.1 Utility Line Assignment (ULA ) Application.docx",
+        "startedAt": "2026-10-16T21:08:30.552622+00:00",
+        "status": "applied",
+        "calls": 2569,
+        "cost": 11.40753992999999
+      },
+      {
+        "eventId": "00074ecc-3410-413e-8060-abc5144c7ab7",
+        "title": "WHMIS Training Requirements: What Employers Must Know",
+        "startedAt": "2026-10-15T21:11:10.473738+00:00",
+        "status": "failed",
+        "calls": 48,
+        "cost": 0.22976948000000003
+      },
+      {
+        "eventId": "27625eab-8a35-4df4-ac6d-38b8ca124c0d",
+        "title": "Utilitek Solutions Inc.",
+        "startedAt": "2026-10-17T01:40:05.327206+00:00",
+        "status": "applied",
+        "calls": 182,
+        "cost": 0.17487449000000016
+      },
+      {
+        "eventId": "479be0ba-c8fd-4454-99ee-bf31db51ce0c",
+        "title": "Utilitek Solutions Inc.",
+        "startedAt": "2026-10-16T23:35:59.815601+00:00",
+        "status": "failed",
+        "calls": 144,
+        "cost": 0.16208209999999995
+      },
+      {
+        "eventId": "bef4fb2f-208c-4c02-a549-2793454f4fd3",
+        "title": null,
+        "startedAt": "2026-10-16T14:44:07.090931+00:00",
+        "status": "applied",
+        "calls": 15,
+        "cost": 0.15859954999999998
+      },
+      {
+        "eventId": "78c4a6b1-22d8-4b25-9348-b580e8ba7879",
+        "title": "The Complete Guide to Quality Inspection: Types, Processes, and Best Practices",
+        "startedAt": "2026-10-15T21:28:39.244347+00:00",
+        "status": "applied",
+        "calls": 8,
+        "cost": 0.0575583
+      },
+      {
+        "eventId": "e3646952-4f18-4de2-81e7-5aeb8e2b476d",
+        "title": "WHMIS - General",
+        "startedAt": "2026-10-15T21:03:03.136834+00:00",
+        "status": "applied",
+        "calls": 6,
+        "cost": 0.04669982
+      },
+      {
+        "eventId": "ed239e00-3b47-424e-b105-833b71d24af0",
+        "title": "QC Basics: What is a Quality Inspection? Context, Tools & Template",
+        "startedAt": "2026-10-15T21:22:38.552415+00:00",
+        "status": "applied",
+        "calls": 11,
+        "cost": 0.04343101
+      },
+      {
+        "eventId": "f8a480c3-5352-4dcb-a36c-fd199e45f23f",
+        "title": "Workplace Hazardous Materials Information System (WHMIS)",
+        "startedAt": "2026-10-15T20:56:56.505214+00:00",
+        "status": "applied",
+        "calls": 13,
+        "cost": 0.03844869
+      },
+      {
+        "eventId": "721afd77-9b3f-493c-b51a-b05e141490ca",
+        "title": "3.1 Utility Line Assignment (ULA ) Application.docx",
+        "startedAt": "2026-10-16T21:38:30.893536+00:00",
+        "status": "applied",
+        "calls": 14,
+        "cost": 0.035415050000000003
+      },
+      {
+        "eventId": "65238e98-a58d-425a-b187-d927d3eb3f27",
+        "title": "LIVE TEST - Utilitek website - 2026-10-17T02-09-28-904Z.md",
+        "startedAt": "2026-10-17T02:09:30.905527+00:00",
+        "status": "applied",
+        "calls": 9,
+        "cost": 0.0276348
+      },
+      {
+        "eventId": "50accdb8-b1b5-4ad9-aa13-43f70a3228c5",
+        "title": "Utilitek Solutions Inc. — company LinkedIn profile (history)",
+        "startedAt": "2026-10-17T16:26:00.411336+00:00",
+        "status": "applied",
+        "calls": 9,
+        "cost": 0.020448590000000003
+      },
+      {
+        "eventId": "0ab37af0-a301-40ca-a4df-a2145a21e6eb",
+        "title": "LIVE TEST - Utilitek website - 2026-10-17T02-52-28-151Z.md",
+        "startedAt": "2026-10-17T02:52:30.730056+00:00",
+        "status": "applied",
+        "calls": 7,
+        "cost": 0.017789600000000003
+      },
+      {
+        "eventId": "c7b06fb6-4256-42de-96fd-c2e38f4140f1",
+        "title": "EPCOR Utilities - Wikipedia",
+        "startedAt": "2026-10-16T18:01:06.821508+00:00",
+        "status": "reconciling",
+        "calls": 10,
+        "cost": 0.01746665
+      },
+      {
+        "eventId": "75d65431-5ab5-4fe8-8847-4ac96469dd61",
+        "title": "3.1 Utility Line Assignment (ULA ) Application.docx",
+        "startedAt": "2026-10-16T16:06:13.227246+00:00",
+        "status": "applied",
+        "calls": 7,
+        "cost": 0.0165996
+      },
+      {
+        "eventId": "79351409-8c51-478f-874f-cfd30b9b7083",
+        "title": "Hazardous Products Regulations",
+        "startedAt": "2026-10-17T22:09:37.25489+00:00",
+        "status": "applied",
+        "calls": 17,
+        "cost": 0.01575645
+      },
+      {
+        "eventId": "e6e48d7d-b0df-4891-92fa-bef2ea3b3b42",
+        "title": "Utilitek Solutions Inc.",
+        "startedAt": "2026-10-16T23:42:58.686824+00:00",
+        "status": "applied",
+        "calls": 53,
+        "cost": 0.014961529999999997
+      },
+      {
+        "eventId": "dd772ddc-0be6-4a91-91d4-e3d13ee0f2e2",
+        "title": "CCOHS: WHMIS - Safety Data Sheet (SDS)",
+        "startedAt": "2026-10-17T22:14:33.829401+00:00",
+        "status": "applied",
+        "calls": 6,
+        "cost": 0.01441303
+      },
+      {
+        "eventId": "c9b45e65-695e-40fa-83cf-6389b8bb6275",
+        "title": "LIVE TEST - Utilitek website - 2026-10-17T02-37-03-214Z.md",
+        "startedAt": "2026-10-17T02:37:07.241241+00:00",
+        "status": "applied",
+        "calls": 4,
+        "cost": 0.013611400000000001
+      },
+      {
+        "eventId": "e6220ba3-d5e8-40a0-a05c-5096c5fd0b0d",
+        "title": "3.1 Utility Line Assignment (ULA ) Application.docx",
+        "startedAt": "2026-10-16T20:59:43.617722+00:00",
+        "status": "applied",
+        "calls": 3,
+        "cost": 0.0131136
+      },
+      {
+        "eventId": "190b2a07-2ce2-4825-8523-70dbb706a00b",
+        "title": "Utilitek Solutions Inc.",
+        "startedAt": "2026-10-17T01:31:00.56618+00:00",
+        "status": "applied",
+        "calls": 14,
+        "cost": 0.011983240000000001
+      },
+      {
+        "eventId": "a910b239-b659-4c54-85e7-ecf8c9eb71a0",
+        "title": "LIVE TEST - Utilitek website - 2026-10-17T03-11-10-244Z.md",
+        "startedAt": "2026-10-17T03:11:12.667899+00:00",
+        "status": "applied",
+        "calls": 4,
+        "cost": 0.011944300000000001
+      },
+      {
+        "eventId": "11334ada-d5a5-4417-95c6-05de513adb2a",
+        "title": "WHMIS 2026 | Unifor",
+        "startedAt": "2026-10-17T22:11:48.746563+00:00",
+        "status": "failed",
+        "calls": 3,
+        "cost": 0.0115894
+      },
+      {
+        "eventId": "b26606bf-b616-41e5-a448-a6f9f043d4d7",
+        "title": "Duties of Confined Space Team Members",
+        "startedAt": "2026-10-16T22:40:40.667024+00:00",
+        "status": "applied",
+        "calls": 5,
+        "cost": 0.01157965
+      },
+      {
+        "eventId": "2dafd46d-18c5-4fae-aaa1-0b431e5a62f1",
+        "title": "Confined Space Worker Roles During Permit-Required Work",
+        "startedAt": "2026-10-16T22:37:46.351942+00:00",
+        "status": "applied",
+        "calls": 5,
+        "cost": 0.0102232
+      },
+      {
+        "eventId": "312b83aa-a17a-4eaa-a200-e0778d1fbb86",
+        "title": "Utilitek Solutions Inc.",
+        "startedAt": "2026-10-17T01:34:32.555856+00:00",
+        "status": "failed",
+        "calls": 8,
+        "cost": 0.0095387
+      },
+      {
+        "eventId": "00b829d7-8ca6-4a8e-b3ae-71833f9c6588",
+        "title": "LIVE TEST - Utilitek website - 2026-10-17T03-06-00-758Z.md",
+        "startedAt": "2026-10-17T03:06:02.716467+00:00",
+        "status": "applied",
+        "calls": 1,
+        "cost": 0.0082289
+      },
+      {
+        "eventId": "ec0318a4-2f2a-451e-8102-d948245fb0dd",
+        "title": "WHMIS and Chemical Management - NL OHS Guide",
+        "startedAt": "2026-10-15T21:10:40.613121+00:00",
+        "status": "applied",
+        "calls": 6,
+        "cost": 0.008096329999999999
+      },
+      {
+        "eventId": "1513b721-29f1-4d1e-b48a-fb24753c7dd7",
+        "title": "Inspection - Wikipedia",
+        "startedAt": "2026-10-15T21:37:58.737948+00:00",
+        "status": "failed",
+        "calls": 3,
+        "cost": 0.007876399999999999
+      },
+      {
+        "eventId": "9f7b0bf0-6d8f-471d-a03a-50a2c80d24db",
+        "title": "Utilitek Solutions Inc.",
+        "startedAt": "2026-10-17T01:39:11.278616+00:00",
+        "status": "failed",
+        "calls": 2,
+        "cost": 0.0070866
+      },
+      {
+        "eventId": "40e7d45f-5bdc-47e2-a520-55eda239675b",
+        "title": "e8-confined-space-entry.md",
+        "startedAt": "2026-10-16T22:17:43.499899+00:00",
+        "status": "applied",
+        "calls": 1,
+        "cost": 0.00673655
+      },
+      {
+        "eventId": "c925ce4e-8614-4908-89ba-8ee2a3cdd61d",
+        "title": "The Role of a Safety Officer in Construction",
+        "startedAt": "2026-10-16T22:42:43.843442+00:00",
+        "status": "applied",
+        "calls": 5,
+        "cost": 0.00456517
+      },
+      {
+        "eventId": "137aadb2-b8c6-4030-92b1-aa39ed4ffdf7",
+        "title": "WHMIS | ENVIRONMENT, HEALTH & SAFETY | Risk",
+        "startedAt": "2026-10-15T21:02:36.434995+00:00",
+        "status": "applied",
+        "calls": 1,
+        "cost": 0.00318715
+      },
+      {
+        "eventId": "56706777-3b2d-4a82-a91a-0e2087771abe",
+        "title": "Utilitek Solutions Inc.",
+        "startedAt": "2026-10-16T23:36:31.030636+00:00",
+        "status": "failed",
+        "calls": 2,
+        "cost": 0
+      }
+    ]
+  }
+}

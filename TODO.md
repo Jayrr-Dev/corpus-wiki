@@ -33,7 +33,7 @@ measured, and Sam picks which ones to switch on.
 | topics | T2 Keep each topic prompt under 100k tokens, quality unchanged | T1 | waiting |
 | review | R1 Find what triggered the reviewer burst; does a normal upload repeat it? | | waiting |
 | review | R2 Same sample on Haiku and Sonnet: how often do verdicts agree? | | waiting |
-| cost | M1 Cost-per-upload report from `ai_calls` (script), run before and after | | waiting |
+| cost | M1 Cost-per-upload report from `ai_calls` (script), run before and after: `scripts/cost/report.ts`; before = `scripts/cost/baseline-2026-10-26.json` ($87.90, $2.72 per document, median $0.0147 per upload); after still to run | | before done |
 
 Critical path: K1, then G1, then G2.
 
