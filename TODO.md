@@ -29,8 +29,8 @@ measured, and Sam picks which ones to switch on.
 | glossary | G1 Glossary duplicate review uses the prefilter | K1 | waiting |
 | glossary | G2 Measure: calls skipped, and agreement with saved LLM decisions | G1 | waiting |
 | claims | C1 Web page guard and cleaning cycle use the prefilter | K1 | waiting |
-| topics | T1 Measure what fills the 135k to 154k token topic prompts | | waiting |
-| topics | T2 Keep each topic prompt under 100k tokens, quality unchanged | T1 | waiting |
+| topics | T1 Measure what fills the 135k to 154k token topic prompts | | done: live ai_calls shows max 18.8k (19 calls); unscoped neighbors+profiles are the growth term; notes topics-T1.md |
+| topics | T2 Keep each topic prompt under 100k tokens, quality unchanged | T1 | ready to integrate: `TOPIC_PROMPT_BUDGET=on` (default off); payload 8-57% smaller; same roots on 3 real uploads; notes topics-T2.md |
 | review | R1 Find what triggered the reviewer burst; does a normal upload repeat it? | | waiting |
 | review | R2 Same sample on Haiku and Sonnet: how often do verdicts agree? | | waiting |
 | cost | M1 Cost-per-upload report from `ai_calls` (script), run before and after: `scripts/cost/report.ts`; before = `scripts/cost/baseline-2026-10-26.json` ($87.90, $2.72 per document, median $0.0147 per upload); after still to run | | before done |
