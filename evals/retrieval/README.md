@@ -50,21 +50,23 @@ It sends claim text to Nebius. Spot-check the new questions before using them.
 ## Running the eval: `run.ts`
 
 ```bash
-node --experimental-strip-types --env-file="<main checkout>/.env.local" evals/retrieval/run.ts --modes legacy,hybrid
+node --experimental-strip-types --env-file="<main checkout>/.env.local" evals/retrieval/run.ts --variants legacy,hybrid,hybrid-rerank
 ```
 
-It asks `rankUnits` (`lib/chatbot/rank.ts`) every question in each mode, with
-the question's `entityId` as the chosen entity. Each question is embedded once
-and the same vector goes to every mode, so modes differ only in ranking. A
+Variants: `legacy`; `hybrid` with no reranker; `hybrid-rerank` with the Voyage
+reranker (needs `VOYAGE_API_KEY`, and sends claim text to Voyage). Each asks
+`rankUnits` (`lib/chatbot/rank.ts`) every question, with the question's
+`entityId` as the chosen entity. Each question is embedded once and the same
+vector goes to every variant, so variants differ only in ranking. A
 question's rank is where the first of its `unitIds` lands. It reports hit@5,
 hit@10 and MRR (mean of 1 / rank, 0 for a miss) overall and for scoped and
-unscoped questions, and writes `results/<date>-<mode>.json` with each
-question's rank, the rank inside every search arm, and the top 10. Set
-`CHAT_RERANKER=voyage` with `VOYAGE_API_KEY` to measure hybrid with the
-reranker (the file is then named `<date>-hybrid-rerank.json`).
+unscoped questions, plus the median time per question, and writes
+`results/<date>-<variant>.json` with each question's rank, its rank inside
+every search arm, the top 10, its time, and the exact text of any failed
+database or rerank call.
 
-A run is marked `"valid": false` when any question fell back with a warning
-(for example a missing database function); do not compare such a run. The run
+A run is marked `"valid": false` when any question warned, had a failed call,
+or (for `hybrid-rerank`) was not reranked; do not compare such a run. The run
 is read-only: it does not log AI calls to the database.
 
 ## Drift
