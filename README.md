@@ -2,6 +2,8 @@
 
 An evolving knowledge system that turns information into traceable, reusable knowledge—and uses that knowledge to support reasoning and decisions.
 
+**Hackathon:** This app is a submission to the [Nebius Global AI Hackathon](https://nebiusglobalaihackathon.devpost.com/).
+
 **Status:** First working prototype. Upload a PDF, Word or Markdown file; NVIDIA Nemotron drafts what it changes; Change control applies it in one transaction or asks a person; the wiki pages rewrite the lines that changed. The architecture below is the full vision; the prototype implements the capture-and-update path (see [What the prototype does](#what-the-prototype-does)).
 
 > Business documents that are never out of date.
