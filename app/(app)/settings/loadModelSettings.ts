@@ -1,7 +1,7 @@
 import "server-only";
 
 import { type ReasoningEffort, resolveModel } from "@/lib/ai/chat";
-import { readGlossaryAutoDecide, listAvailableModels,readAllowExternalKnowledge, readArticleCharter, readAutoUpdateStale, readModelChoice, readRoleAuto } from "@/lib/ai/models";
+import { readGlossaryAutoDecide, listAvailableModels,readAllowExternalKnowledge, readArticleCharter, readAutoUpdateStale, readModelChoice, readMonetizationEnabled, readRoleAuto } from "@/lib/ai/models";
 import type { ArticleCharter } from "@/lib/living-page/articleCharter";
 import type { DataType } from "@/lib/ai/modelInputs";
 import { resolveVisionModel } from "@/lib/ingest/describeMedia";
@@ -48,6 +48,10 @@ export async function loadArticleCharter(): Promise<ArticleCharter> {
 }
 
 // The external-knowledge switch, and whether a web search key is set so it can work
+export async function loadMonetization(): Promise<boolean> {
+  return readMonetizationEnabled(supabaseRpc(getAdminSupabase()));
+}
+
 export async function loadExternalKnowledge(): Promise<{ enabled: boolean; ready: boolean }> {
   return { enabled: await readAllowExternalKnowledge(supabaseRpc(getAdminSupabase())), ready: webSearchKey() !== null };
 }

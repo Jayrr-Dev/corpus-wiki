@@ -17,7 +17,7 @@ import { ANTHROPIC_MODEL_PREFIX, CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN
 
 type ModelsResponse = { data?: { id?: string; architecture?: { modality?: string } }[] };
 
-type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; aiRoleAuto?: string[]; autoUpdateStale?: boolean; glossaryAutoDecide?: boolean; allowExternalKnowledge?: boolean; articleCharter?: unknown };
+type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; aiRoleAuto?: string[]; autoUpdateStale?: boolean; glossaryAutoDecide?: boolean; allowExternalKnowledge?: boolean; monetizationEnabled?: boolean; articleCharter?: unknown };
 
 // The model picked on /settings, or null when none is picked
 export async function readChosenModel(db: DbRpc): Promise<string | null> {
@@ -78,6 +78,17 @@ export async function readAllowExternalKnowledge(db: DbRpc): Promise<boolean> {
 // Saves the external-knowledge switch for the whole workspace
 export async function saveAllowExternalKnowledge(db: DbRpc, enabled: boolean): Promise<void> {
   await db.call("set_allow_external_knowledge", { p_enabled: enabled });
+}
+
+// True only when /settings turns on usage-based plans (docs/monetization-plan.md); off means log only
+export async function readMonetizationEnabled(db: DbRpc): Promise<boolean> {
+  const settings = await db.call<WorkspaceSettings>("get_workspace_settings");
+  return settings.monetizationEnabled === true;
+}
+
+// Saves the monetization switch for the current space
+export async function saveMonetizationEnabled(db: DbRpc, enabled: boolean): Promise<void> {
+  await db.call("set_monetization_enabled", { p_enabled: enabled });
 }
 
 // The article charter set on /settings, with every field present (empty when unset)

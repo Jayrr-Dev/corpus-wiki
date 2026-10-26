@@ -9,8 +9,9 @@ import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoDecide } from "./AutoDecide";
 import { AutoUpdateStale } from "./AutoUpdateStale";
 import { ExternalKnowledge } from "./ExternalKnowledge";
-import { loadGlossaryAutoDecide, loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMyProfile, loadSpeedTests } from "./loadModelSettings";
+import { loadGlossaryAutoDecide, loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMonetization, loadMyProfile, loadSpeedTests } from "./loadModelSettings";
 import { ModelPicker } from "./ModelPicker";
+import { Monetization } from "./Monetization";
 import { NameForm } from "./NameForm";
 import { RoleModels } from "./RoleModels";
 import { PasswordForm } from "./PasswordForm";
@@ -50,7 +51,7 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
 }
 
 export default async function SettingsPage() {
-  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide()]);
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide, monetization] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide(), loadMonetization()]);
   const panels: Record<string, ReactNode> = {
     preferences: (
       <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
@@ -84,6 +85,7 @@ export default async function SettingsPage() {
         <AutoDecide enabled={glossaryAutoDecide} />
         <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
+        <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} /></div>
       </SettingsCard>
     ),
     security: <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>,

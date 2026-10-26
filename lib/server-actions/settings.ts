@@ -6,7 +6,7 @@ import { readModelChoice } from "@/lib/ai/models";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { currentActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
-import { listAvailableModels, saveAiEffort, saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel, saveRoleAuto, saveRoleEffort, saveRoleModel } from "@/lib/ai/models";
+import { listAvailableModels, saveAiEffort, saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel, saveMonetizationEnabled, saveRoleAuto, saveRoleEffort, saveRoleModel } from "@/lib/ai/models";
 import { REASONING_EFFORTS, type ReasoningEffort } from "@/lib/ai/chat";
 import { AUTO_ROLES, type AutoRole, MODEL_ROLES, type ModelRole, ROLE_INPUTS, roleName } from "@/lib/ai/roles";
 import { describeTypes, missingTypes, type OfferedModel } from "@/lib/ai/modelInputs";
@@ -109,6 +109,15 @@ export async function setAutoUpdateStale(enabled: boolean): Promise<ActionResult
   return toActionResult(async () => {
     await requireUser();
     await saveAutoUpdateStale(supabaseRpc(getAdminSupabase()), enabled);
+    return {};
+  });
+}
+
+// MONETIZATION: turns usage-based plans with weekly limits on or off (off by default)
+export async function setMonetizationEnabled(enabled: boolean): Promise<ActionResult> {
+  return toActionResult(async () => {
+    await requireUser();
+    await saveMonetizationEnabled(supabaseRpc(getAdminSupabase()), enabled);
     return {};
   });
 }
