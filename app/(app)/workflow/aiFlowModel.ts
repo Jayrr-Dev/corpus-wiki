@@ -47,10 +47,10 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
       { id: "embeddings", step: "Index", kind: "system", name: "Claim vectors", does: "Indexes the new claims by meaning for matching.", submits: [], direct: true,
         facts: [
           { label: "Receives", text: "The cleaned claims and the definitions added for this upload." },
-          { label: "Hands on", text: "Vectors used by the Article reviewer and the Reviewer to find related knowledge. The Duplicate reviewer indexes any claims it still needs while comparing them." },
+          { label: "Hands on", text: "Vectors used by the Article reviewer and the Reviewer to find related knowledge. The Deduplicator indexes any claims it still needs while comparing them." },
           { label: "Submits", text: "Nothing. Vectors are saved directly." },
         ] },
-      { id: "deduplicator", step: "Duplicates", kind: "role", roleId: "deduplicator", name: "Duplicate reviewer", does: "Merges repeats of claims this upload added or revised.", submits: ["revise_claim", "merge_duplicates"], exceptions: ["deletion"], receivesShort: "similar claims",
+      { id: "deduplicator", step: "Duplicates", kind: "role", roleId: "deduplicator", name: "Deduplicator", does: "Merges repeats of claims this upload added or revised.", submits: ["revise_claim", "merge_duplicates"], exceptions: ["deletion"], receivesShort: "similar claims",
         facts: [
           { label: "Receives", text: "Clusters of similar claims, found with the vectors." },
           { label: "Submits", text: "One ChangeSet per cluster: a revised claim and a merge of the repeats." },
@@ -155,7 +155,7 @@ const FLOW_SOURCE_LANES: AiFlowLane[] = [
           { label: "Hands on", text: "The approved excerpts, saved as an outside source." },
           { label: "Submits", text: "A source_review action. Undoing an approval also archives the source." },
         ] },
-      { id: "reconciler-external", step: "Scoped reconcile", kind: "role", roleId: "reconciler", name: "Reconciler", roles: ["extract_knowledge", "identify_entities", "link_knowledge", "organize_topics", "define_concepts"], receivesShort: "approved excerpts", does: "Turns approved excerpts into claims, checked by the Duplicate reviewer.", submits: ["add_claim", "create_entity"],
+      { id: "reconciler-external", step: "Scoped reconcile", kind: "role", roleId: "reconciler", name: "Reconciler", roles: ["extract_knowledge", "identify_entities", "link_knowledge", "organize_topics", "define_concepts"], receivesShort: "approved excerpts", does: "Turns approved excerpts into claims, checked by the Deduplicator.", submits: ["add_claim", "create_entity"],
         facts: [
           { label: "Receives", text: "Only the approved excerpts, scoped to the article and section that asked." },
           { label: "Hands on", text: "New claims to the Writer, which rebuilds the section with citations." },
