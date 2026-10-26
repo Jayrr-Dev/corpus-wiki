@@ -36,7 +36,7 @@ for (const node of AI_FLOW_LANES.flatMap((lane) => lane.nodes)) {
 const APP_ROLES = {
   media_analyst: { id: "media_analyst", name: "Media analyst", description: "Describes uploaded images and videos so they can be read as text." },
   reconciler: { id: "reconciler", name: "Reconciler", description: "Turns passages into claims, links and entities in one request, guided by the Extractor, Entity analyst, Linker, Organizer and Definer instructions." },
-  deduplicator: { id: "deduplicator", name: "Duplicate reviewer", description: "Merges repeats of claims an upload added or revised." },
+  deduplicator: { id: "deduplicator", name: "Deduplicator", description: "Finds and merges repeats: claims an upload added or revised, glossary entries, entities and topic names." },
   dictionary_editor: { id: "dictionary_editor", name: "Dictionary editor", description: "Writes cited glossary entries from live claims." },
 } as const;
 const appRole = (role: (typeof APP_ROLES)[keyof typeof APP_ROLES]) => ({ ...role, instructions: null, source: "Managed by the app", version: undefined });

@@ -34,7 +34,7 @@ export const ROLE_INPUTS: Record<ModelRole, DataType[]> = Object.fromEntries(MOD
 export const roleInputs = (role: string): DataType[] => ROLE_INPUTS[role as ModelRole] ?? ["text"];
 export function roleName(role: string): string {
   if (role === "dictionary_editor") return "Dictionary editor";
-  return FIXED_ROLES.find((entry) => entry.id === role)?.name ?? STAGE_ROLES[role as AiStage] ?? ({ reconciler: "Reconciler", deduplicator: "Duplicate reviewer", media_analyst: "Media analyst", embedder: "Index" }[role]) ?? role;
+  return FIXED_ROLES.find((entry) => entry.id === role)?.name ?? STAGE_ROLES[role as AiStage] ?? ({ reconciler: "Reconciler", deduplicator: "Deduplicator", media_analyst: "Media analyst", embedder: "Index" }[role]) ?? role;
 }
 export function roleForPurpose(purpose: string): string | null {
   if (["place_topics", "upload_domain_plan", "independent_upload_domain_review", "independent_upload_domain_issue_check"].includes(purpose)) return "domain_decider";
@@ -42,10 +42,10 @@ export function roleForPurpose(purpose: string): string | null {
   if (purpose === "article_composition") return "composer";
   if (purpose === "composer_candidate_selection") return "composer";
   if (["composer_image_comparison", "composer_context_review", "composer_visual_review"].includes(purpose)) return "composer";
-  if (["glossary_dictionary", "glossary_duplicate_review", "glossary_canonicalize"].includes(purpose)) return "dictionary_editor";
+  if (["glossary_dictionary", "glossary_canonicalize"].includes(purpose)) return "dictionary_editor";
   if (purpose === "page_editorial_review" || purpose === "independent_section_editorial_selection" || purpose === "independent_section_editorial_review" || purpose === "line_fact_check" || purpose === "line_fact_confirm" || purpose === "article_outline_review") return "reviewer";
   if (purpose === "independent_article_review") return "article_reviewer";
-  if (purpose === "domain_structure_review" || purpose === "domain_duplicate_review") return "domain_steward";
+  if (purpose === "domain_structure_review") return "domain_steward";
   if (purpose === "article_scope_review") return "reviewer";
   if (purpose === "page_structure_review") return "curator";
   if (purpose.startsWith("independent_external_")) return "reviewer";
@@ -55,10 +55,11 @@ export function roleForPurpose(purpose: string): string | null {
   if (["section_lines", "section_rewrite", "claim_titles"].includes(purpose)) return "write_articles";
   if (["article_outline", "article_update_discovery", "force_create_pick", "article_proposals", "article_suggestions"].includes(purpose)) return "plan_articles";
   if (purpose === "knowledge_expansion") return "define_concepts";
-  if (["describe_entities", "entity_reclassify", "entity_duplicate_review", "entity_profiles", "entity_web_profiles"].includes(purpose)) return "identify_entities";
+  if (["describe_entities", "entity_reclassify", "entity_profiles", "entity_web_profiles"].includes(purpose)) return "identify_entities";
   if (purpose === "embeddings") return "embedder";
   if (purpose === "link_existing") return "link_knowledge";
-  if (["dedupe", "duplicate_judge"].includes(purpose)) return "deduplicator";
+  // EVERY DUPLICATE CHECK: claims, glossary, entities and domain/topic names (lib/ai/nameDuplicateJudge.ts)
+  if (["dedupe", "duplicate_judge", "glossary_duplicate_review", "entity_duplicate_review", "domain_duplicate_review"].includes(purpose)) return "deduplicator";
   if (["describe_image", "describe_video", "describe_assets"].includes(purpose)) return "media_analyst";
   return AI_STAGES.some((stage) => stage.id === purpose) ? purpose : null;
 }
