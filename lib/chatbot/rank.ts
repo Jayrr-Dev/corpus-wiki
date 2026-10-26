@@ -1,0 +1,118 @@
+import "server-only";
+import type { Embedder } from "@/lib/ai/embeddings";
+import type { DbRpc } from "@/lib/db/rpc";
+import { savedVectors, similarUnits } from "@/lib/knowledge/embeddingStore";
+import { cosine } from "@/lib/knowledge/similarity";
+import type { ServerSupabase } from "@/lib/supabase/server";
+import { reciprocalRankFusion } from "./fusion";
+import { searchFilter } from "./validation";
+
+// =====================================================================
+// CLAIM RANKING FOR CHAT: which claims a question should see, best first.
+// Each search (an "arm") makes its own list; "hybrid" fuses the capped
+// lists with reciprocal rank fusion, "legacy" keeps the old glued order
+// for comparison. CHAT_SEARCH picks the mode (legacy by default).
+// Ids only: callers recheck every id through the user's session.
+// =====================================================================
+
+export type SearchMode = "legacy" | "hybrid";
+export type RankDeps = {
+  db: DbRpc;
+  client: ServerSupabase;
+  embedder: Embedder;
+  // The selected entity: its claims are searched before any global limit
+  entity?: { type: string; key: string };
+  // The question's vector when the caller already has it; null when embedding failed
+  vector?: number[] | null;
+  mode?: SearchMode;
+};
+export type RankResult = { unitIds: string[]; arms: Record<string, string[]>; mode: SearchMode; warning: string | null };
+
+// Longest list each arm brings into the fusion
+export const ARM_CAP = 20;
+// Top meaning and top keyword matches whose links are followed
+export const LINK_SEEDS = 5;
+// With an entity selected, its own arms count this many times, so global matches cannot outvote them
+export const SCOPED_WEIGHT = 2;
+const MIN_SIMILARITY = 0.35;
+const SEMANTIC_WARNING = "Semantic search is unavailable; this answer uses text matches only.";
+
+export function searchMode(env: NodeJS.ProcessEnv = process.env): SearchMode {
+  return env.CHAT_SEARCH === "hybrid" ? "hybrid" : "legacy";
+}
+
+export async function rankUnits(question: string, deps: RankDeps): Promise<RankResult> {
+  const { db, client, embedder, entity } = deps;
+  const mode = deps.mode ?? searchMode();
+  const hybrid = mode === "hybrid";
+  let warning: string | null = null;
+  let vector = deps.vector;
+  if (vector === undefined) {
+    try {
+      [vector] = await embedder.embed([question]);
+      if (!vector) throw new Error("No query embedding returned.");
+    } catch { vector = null; warning = SEMANTIC_WARNING; }
+  }
+  let meaning: string[] = [];
+  if (vector) {
+    try { meaning = (await similarUnits(db, embedder.model, vector, hybrid ? ARM_CAP : 12, MIN_SIMILARITY)).map(match => match.unitId); }
+    catch { warning = SEMANTIC_WARNING; }
+  }
+  const filter = searchFilter(["content", "title"], question);
+  let words: string[] = [];
+  if (!hybrid && filter) {
+    const lexical = await client.from("revisions").select("unit_id").or(filter).limit(20);
+    if (lexical.error) throw lexical.error;
+    words = (lexical.data ?? []).map(row => row.unit_id);
+  }
+  let keyword: string[] = [];
+  if (hybrid) {
+    try { keyword = (await db.call<{ unit_id: string }[]>("search_units_text", { p_query: question, p_limit: ARM_CAP })).map(row => row.unit_id); }
+    catch { warning = warning ?? "Keyword search is temporarily unavailable; other matches are still included."; }
+  }
+  let link: string[] = [];
+  const seeds = [...new Set([...meaning.slice(0, LINK_SEEDS), ...keyword.slice(0, LINK_SEEDS)])];
+  if (hybrid && seeds.length) {
+    try { link = (await db.call<{ unit_id: string }[]>("linked_units", { p_unit_ids: seeds, p_limit: ARM_CAP })).map(row => row.unit_id); }
+    catch { warning = warning ?? "Linked claims are temporarily unavailable; other matches are still included."; }
+  }
+  // Search inside the chosen entity before applying result limits. Otherwise global
+  // top matches from larger companies can crowd out every relevant scoped claim.
+  const scoped: { unitId: string; score: number }[] = [];
+  const scopedWords: string[] = [];
+  if (entity) {
+    const scopeIds = await db.call<string[]>("living_page_query_units", { p_query: { entity: { type: entity.type, key: entity.key } } });
+    for (let start = 0; start < scopeIds.length; start += 200) {
+      const scopeUnits = await client.from("units").select("id,current_revision_id").in("id", scopeIds.slice(start, start + 200)).is("retired_at", null);
+      if (scopeUnits.error) throw scopeUnits.error;
+      const current = scopeUnits.data ?? [];
+      const currentIds = current.map(unit => unit.current_revision_id);
+      if (!currentIds.length) continue;
+      if (filter) {
+        const scopedLexical = await client.from("revisions").select("unit_id").in("id", currentIds).or(filter).limit(20);
+        if (scopedLexical.error) throw scopedLexical.error;
+        scopedWords.push(...(scopedLexical.data ?? []).map(row => row.unit_id));
+      }
+      if (vector) {
+        try {
+          const vectors = await savedVectors(db, embedder.model, currentIds);
+          for (const unit of current) {
+            const saved = vectors.get(unit.current_revision_id);
+            if (!saved || saved.length !== vector.length) continue;
+            const score = cosine(vector, saved);
+            if (score >= MIN_SIMILARITY) scoped.push({ unitId: unit.id, score });
+          }
+        } catch { warning = "Some scoped semantic matches are unavailable; text matches are still included."; }
+      }
+    }
+  }
+  const scopedMeaning = scoped.sort((a, b) => b.score - a.score).slice(0, hybrid ? ARM_CAP : 12).map(item => item.unitId);
+  if (!hybrid) {
+    const unitIds = [...new Set([...[...scopedMeaning, ...scopedWords].slice(0, 32), ...meaning, ...words])];
+    return { unitIds, arms: { meaning, words, scopedMeaning, scopedWords }, mode, warning };
+  }
+  const arms = { meaning, keyword, link, scopedMeaning, scopedWords: scopedWords.slice(0, ARM_CAP) };
+  const scopedArms = Array.from({ length: SCOPED_WEIGHT }, () => [arms.scopedMeaning, arms.scopedWords]).flat();
+  const unitIds = reciprocalRankFusion([meaning, keyword, link, ...scopedArms], { cap: ARM_CAP });
+  return { unitIds, arms, mode, warning };
+}
