@@ -189,13 +189,30 @@ describe("rankUnits rerank", () => {
     ["the request fails", async () => { throw new Error("timeout"); }],
     ["the ranking repeats an index", async (_query: string, documents: string[]) => documents.map(() => 0)],
     ["the ranking is short", async () => [0]],
-  ])("keeps the fused order without a warning when %s", async (_label, rerank) => {
-    const fused = await fusedOrder();
-    const result = await rankUnits("lockout", { db, client: fakeClient([...ids("m"), ...ids("k")]), embedder, mode: "hybrid", reranker: { model: "rerank-test", rerank } });
-    expect(result.unitIds).toEqual(fused);
+  ])("falls back to the legacy order without a warning when %s", async (_label, rerank) => {
+    // Word matches cover every row the client holds, k first, capped at 20
+    const client = fakeClient([...ids("k"), ...ids("m")]);
+    const result = await rankUnits("lockout", { db, client, embedder, mode: "hybrid", reranker: { model: "rerank-test", rerank } });
+    // Legacy: top 12 by meaning, then the word matches
+    expect(result.unitIds).toEqual([...ids("m").slice(0, 12), ...ids("k")]);
+    expect(result.unitIds).not.toEqual(await fusedOrder());
     expect(result.rerankedBy).toBeNull();
+    expect(result.arms).toMatchObject({ meaning: ids("m"), keyword: ids("k"), link: ids("l"), words: ids("k") });
     expect(result.arms.reranked).toBeUndefined();
     expect(result.warning).toBeNull();
+  });
+
+  it("falls back to legacy with the entity's claims first", async () => {
+    rpc.scope.mockResolvedValue(["s1"]);
+    mocks.savedVectors.mockResolvedValue(new Map([["r-s1", [1, 0]]]));
+    const result = await rankUnits("lockout", { db, client: fakeClient(["s1"]), embedder, entity, mode: "hybrid", reranker: { model: "rerank-test", rerank: async () => { throw new Error("timeout"); } } });
+    expect(result.unitIds).toEqual(["s1", ...ids("m").slice(0, 12)]);
+  });
+
+  it("keeps the fused order when no reranker is configured", async () => {
+    const result = await rankUnits("lockout", { db, client: fakeClient(ids("k")), embedder, mode: "hybrid", reranker: null });
+    expect(result.unitIds).toEqual(await fusedOrder());
+    expect(result.arms.words).toBeUndefined();
   });
 
   it("never reranks in legacy mode", async () => {
