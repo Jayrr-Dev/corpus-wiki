@@ -30,7 +30,7 @@ const REPLAYABLE_READS = new Set([
   "get_workspace_settings", "get_glossary_auto_decide", "get_ai_role_instructions", "get_ai_skill_library", "get_all_role_memory", "get_role_memory",
   "read_upload_workflows", "upload_knowledge_result", "upload_workflow_waiting", "upload_unplaced_claims", "upload_article_inputs",
   "reconciliation_input", "upload_topic_context", "verify_upload_topic_coverage", "entity_cleanup_input", "event_touched_entities", "entity_profiles_missing", "entity_profile_evidence",
-  "missing_glossary_embeddings", "missing_unit_embeddings", "missing_passage_embeddings", "search_glossary", "similar_units", "similar_passages", "unit_vectors",
+  "missing_glossary_embeddings", "missing_unit_embeddings", "missing_passage_embeddings", "search_glossary", "similar_units", "similar_passages", "unit_vectors", "search_units_text", "linked_units",
   "article_index", "page_candidates", "list_affected_sections", "list_page_sections", "living_page_event_units", "living_page_change_summary",
   "read_section_state", "read_section_units", "read_page_context", "page_review_snapshot", "page_review_related", "page_review_status",
   "pages_needing_editorial_review", "curator_snapshot", "curator_claim_vectors", "domain_review_snapshot", "held_suggestion_units",
