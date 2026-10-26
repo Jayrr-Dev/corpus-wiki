@@ -69,6 +69,18 @@ Shared files: `lib/database/types.ts` belongs to **db**; `.env.example` to
   available or not allowed on OrioleDB.
 - Changing the existing evals in `evals/*.ts`: they test uploads, not search.
 
+### Follow-ups (after C3, only if hybrid wins)
+
+- Upload reconciliation: rank the existing claims the model sees (at most 12 per
+  call in `lib/ai/tokenFactory/client.ts`) with `rankUnits`, so updates and
+  contradictions are not missed. Highest value.
+- Article section candidates (`lib/living-page/articleKnowledgeCandidates.ts`):
+  replace the hand-merged literal and vector lists with RRF.
+- Glossary and topic placement (`similarGlossary`, `lib/domains/uploadAssignment.ts`):
+  add the keyword arm where exact names matter.
+- Not a fit: duplicate detection (needs an equivalence check, not relevance) and
+  clustering in `lib/suggestions/group.ts`.
+
 ### Decisions for Sam
 
 - Create a Voyage account and put `VOYAGE_API_KEY` in `.env.local`. Needed only
