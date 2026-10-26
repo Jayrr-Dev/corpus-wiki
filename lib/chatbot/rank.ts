@@ -66,12 +66,14 @@ export async function rankUnits(question: string, deps: RankDeps): Promise<RankR
     catch { warning = SEMANTIC_WARNING; }
   }
   const filter = searchFilter(["content", "title"], question);
-  let words: string[] = [];
-  if (!hybrid && filter) {
+  // Unranked word matches anywhere: legacy's last list, and hybrid's only when its rerank fails
+  const wordMatches = async () => {
+    if (!filter) return [];
     const lexical = await client.from("revisions").select("unit_id").or(filter).limit(20);
     if (lexical.error) throw lexical.error;
-    words = (lexical.data ?? []).map(row => row.unit_id);
-  }
+    return (lexical.data ?? []).map(row => row.unit_id);
+  };
+  const words = hybrid ? [] : await wordMatches();
   let keyword: string[] = [];
   if (hybrid) {
     try { keyword = (await db.call<{ unit_id: string }[]>("search_units_text", { p_query: question, p_limit: ARM_CAP })).map(row => row.unit_id); }
@@ -114,20 +116,23 @@ export async function rankUnits(question: string, deps: RankDeps): Promise<RankR
     }
   }
   const scopedMeaning = scoped.sort((a, b) => b.score - a.score).slice(0, hybrid ? ARM_CAP : 12).map(item => item.unitId);
-  if (!hybrid) {
-    const unitIds = [...new Set([...[...scopedMeaning, ...scopedWords].slice(0, 32), ...meaning, ...words])];
-    return { unitIds, arms: { meaning, words, scopedMeaning, scopedWords }, mode, rerankedBy: null, warning };
-  }
+  // Legacy keeps the top 12 by meaning; hybrid fetched up to 20 in the same order, so its top 12 match
+  const legacyOrder = (words: string[]) => [...new Set([...[...scopedMeaning.slice(0, 12), ...scopedWords].slice(0, 32), ...meaning.slice(0, 12), ...words])];
+  if (!hybrid) return { unitIds: legacyOrder(words), arms: { meaning, words, scopedMeaning, scopedWords }, mode, rerankedBy: null, warning };
   const arms = { meaning, keyword, link, scopedMeaning, scopedWords: scopedWords.slice(0, ARM_CAP) };
   const scopedArms = Array.from({ length: SCOPED_WEIGHT }, () => [arms.scopedMeaning, arms.scopedWords]).flat();
   const fused = reciprocalRankFusion([meaning, keyword, link, ...scopedArms], { cap: ARM_CAP });
   const reranker = deps.reranker === undefined ? getReranker() : deps.reranker;
   if (reranker) {
-    // The fused order already stands, so a failed rerank costs nothing the user needs to hear about
     try {
       const reranked = await rerankTop(question, fused.slice(0, RERANK_DEPTH), client, reranker);
       return { unitIds: [...reranked, ...fused.slice(RERANK_DEPTH)], arms: { ...arms, reranked }, mode, rerankedBy: reranker.model, warning };
-    } catch { /* keep the fused order */ }
+    } catch {
+      // The fused order without the reranker measured worse than legacy (docs/hindsight-ideas.md),
+      // so a failed rerank falls back to legacy. The user still gets an answer; no warning needed.
+      const words = await wordMatches();
+      return { unitIds: legacyOrder(words), arms: { ...arms, words }, mode, rerankedBy: null, warning };
+    }
   }
   return { unitIds: fused, arms, mode, rerankedBy: null, warning };
 }
