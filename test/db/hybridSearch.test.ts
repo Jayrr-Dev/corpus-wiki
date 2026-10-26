@@ -79,15 +79,27 @@ it("ranks live current wording, title included, best first and within the space"
     expect(solar.map(row => name(row.unit_id))).toEqual([
       "Solar panels power the house and solar panels save money",
       "The roof has panels, and the garden gets some solar heat",
+      "Wind turbines spin on the hill",
     ]);
     expect(solar[0]!.rank).toBeGreaterThan(solar[1]!.rank);
+    expect(solar[1]!.rank).toBeGreaterThan(solar[2]!.rank);
     const current = await fixture.pg.query<{ current_revision_id: string }>("select current_revision_id from units where id=$1", [solar[0]!.unit_id]);
     expect(solar[0]!.revision_id).toBe(current.rows[0]!.current_revision_id);
     expect((await search("solar panels", 1)).map(row => name(row.unit_id))).toEqual(["Solar panels power the house and solar panels save money"]);
-    expect((await search("solar farm")).map(row => name(row.unit_id))).toEqual(["Wind turbines spin on the hill"]);
+    const farm = await search("solar farm");
+    expect(farm.map(row => name(row.unit_id))[0]).toBe("Wind turbines spin on the hill");
+    expect(farm).toHaveLength(3);
     expect((await search("hydro")).map(row => name(row.unit_id))).toEqual(["Obsolete solar panels wording"]);
+    expect((await search("Who must wear gloves near the turbines?")).map(row => name(row.unit_id))).toEqual(["Wind turbines spin on the hill"]);
+    const words = await search("Does the house save money with panels?");
+    expect(words.map(row => name(row.unit_id))).toEqual([
+      "Solar panels power the house and solar panels save money",
+      "The roof has panels, and the garden gets some solar heat",
+    ]);
+    expect(words[0]!.rank).toBeGreaterThan(words[1]!.rank);
+    expect((await search("it's \"PPE\" & gloves? (garden) | !heat: <-> 'roof'")).map(row => name(row.unit_id))).toEqual(["The roof has panels, and the garden gets some solar heat"]);
     expect(await search("obsolete")).toEqual([]);
-    expect(await search("retired solar")).toEqual([]);
+    expect((await search("retired solar panels claim")).map(row => name(row.unit_id))).not.toContain("Retired solar panels claim");
     expect(await search("")).toEqual([]);
     expect(await search("the and of")).toEqual([]);
     expect((await fixture.pg.query("select * from public.search_units_text(null)")).rows).toEqual([]);

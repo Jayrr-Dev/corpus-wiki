@@ -8,13 +8,15 @@
 
 grant create on schema public to space_runtime;
 
--- KEYWORD SEARCH: live claims whose current wording matches, best first
+-- KEYWORD SEARCH: live claims whose current wording holds any of the words, best first
+-- (more matching words rank higher). The lexemes are already stemmed, so the OR query
+-- is cast, not parsed again; no words left means a null query and no rows.
 create function public.search_units_text(p_query text, p_limit integer default 40)
 returns table (unit_id uuid, revision_id uuid, rank real)
 language sql stable
 set search_path = ''
 as $$
-  with q as (select websearch_to_tsquery('english'::regconfig, coalesce(p_query, '')) query),
+  with q as (select nullif(replace(plainto_tsquery('english'::regconfig, coalesce(p_query, ''))::text, ' & ', ' | '), '')::tsquery query),
   matches as (
     select u.id, r.id revision_id, to_tsvector('english'::regconfig, coalesce(r.title, '') || ' ' || r.content) doc
     from public.units u
