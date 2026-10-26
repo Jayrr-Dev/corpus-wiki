@@ -4,6 +4,7 @@ const fromPretrained = vi.hoisted(() => vi.fn());
 vi.mock("@huggingface/transformers", () => ({
   AutoTokenizer: { from_pretrained: fromPretrained },
   AutoModelForSequenceClassification: { from_pretrained: fromPretrained },
+  env: {},
 }));
 
 // Fresh module and process state per test: the model is cached on globalThis
@@ -16,7 +17,14 @@ async function nli() {
 afterEach(() => { fromPretrained.mockReset(); vi.restoreAllMocks(); });
 
 describe("getNli", () => {
-  it("is null unless DEDUP_NLI=on", async () => {
+  it("is on by default and off with DEDUP_NLI=off", async () => {
+    const { getNli } = await nli();
+    expect(getNli({ NODE_ENV: "production" })?.model).toBe("cross-encoder/nli-deberta-v3-base");
+    expect(getNli({ NODE_ENV: "development" })?.model).toBe("cross-encoder/nli-deberta-v3-base");
+    expect(getNli({ NODE_ENV: "production", DEDUP_NLI: "off" })).toBeNull();
+  });
+
+  it("is off in tests unless DEDUP_NLI=on, so tests never download the model", async () => {
     const { getNli } = await nli();
     expect(getNli({ NODE_ENV: "test" })).toBeNull();
     expect(getNli({ NODE_ENV: "test", DEDUP_NLI: "off" })).toBeNull();

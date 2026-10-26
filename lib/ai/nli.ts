@@ -1,7 +1,10 @@
 import "server-only";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 // NLI SCORER: a small local model (no API cost) that says whether one sentence follows from another
-// (entailment), denies it (contradiction) or neither (neutral). Off unless DEDUP_NLI=on. The deduplicator
+// (entailment), denies it (contradiction) or neither (neutral). On unless DEDUP_NLI=off (tests: off unless
+// DEDUP_NLI=on, so they never download the model). The deduplicator
 // uses it only to drop clearly unrelated candidates before an LLM call, never to confirm a duplicate:
 // on swapped-word pairs ("the supervisor signs" vs "the attendant signs") it says "same" with certainty.
 export type NliScores = { entailment: number; contradiction: number; neutral: number };
@@ -20,7 +23,9 @@ type NliState = { pending?: Promise<Loaded>; failed?: boolean };
 const state = ((globalThis as { __nli?: NliState }).__nli ??= {});
 
 async function load(): Promise<Loaded> {
-  const { AutoTokenizer, AutoModelForSequenceClassification } = await import("@huggingface/transformers");
+  const { AutoTokenizer, AutoModelForSequenceClassification, env } = await import("@huggingface/transformers");
+  // Hosted servers can only write to the temp folder, where the downloaded model is cached
+  if (process.env.VERCEL) env.cacheDir = join(tmpdir(), "transformers-cache");
   const [tokenizer, model] = await Promise.all([
     AutoTokenizer.from_pretrained(NLI_MODEL),
     AutoModelForSequenceClassification.from_pretrained(NLI_MODEL, { dtype: "fp32", model_file_name: NLI_MODEL_FILE }),
@@ -63,5 +68,6 @@ const scorer: NliScorer = {
 };
 
 export function getNli(env: NodeJS.ProcessEnv = process.env): NliScorer | null {
-  return env.DEDUP_NLI === "on" && !state.failed ? scorer : null;
+  const on = env.NODE_ENV === "test" ? env.DEDUP_NLI === "on" : env.DEDUP_NLI !== "off";
+  return on && !state.failed ? scorer : null;
 }

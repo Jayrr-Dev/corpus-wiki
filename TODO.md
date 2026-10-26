@@ -82,7 +82,7 @@ Shared files: `lib/ai/roles.ts` belongs to **dedup**; `.env.example` to **dedup*
 
 - After R2: whether the reviewer role moves from Sonnet to Haiku (a Settings
   change, no code).
-- After G2 and C1: whether to switch on `DEDUP_NLI`.
+- `DEDUP_NLI` is on by default (Sam, 2026-10-26); `DEDUP_NLI=off` turns it off.
 - After T2: whether the slimmer topic prompts become the default.
 
 ## Plan: hybrid chat search
