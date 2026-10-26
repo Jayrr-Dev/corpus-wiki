@@ -1,5 +1,6 @@
 import "server-only";
 import type { Embedder } from "@/lib/ai/embeddings";
+import { getReranker, type Reranker } from "@/lib/ai/rerank";
 import type { DbRpc } from "@/lib/db/rpc";
 import { savedVectors, similarUnits } from "@/lib/knowledge/embeddingStore";
 import { cosine } from "@/lib/knowledge/similarity";
@@ -11,7 +12,8 @@ import { searchFilter } from "./validation";
 // CLAIM RANKING FOR CHAT: which claims a question should see, best first.
 // Each search (an "arm") makes its own list; "hybrid" fuses the capped
 // lists with reciprocal rank fusion, "legacy" keeps the old glued order
-// for comparison. CHAT_SEARCH picks the mode (legacy by default).
+// for comparison. CHAT_SEARCH picks the mode (legacy by default). In
+// hybrid, a reranker (CHAT_RERANKER) re-sorts the fused top claims.
 // Ids only: callers recheck every id through the user's session.
 // =====================================================================
 
@@ -25,8 +27,11 @@ export type RankDeps = {
   // The question's vector when the caller already has it; null when embedding failed
   vector?: number[] | null;
   mode?: SearchMode;
+  // Defaults to the one the environment switches on; null turns reranking off
+  reranker?: Reranker | null;
 };
-export type RankResult = { unitIds: string[]; arms: Record<string, string[]>; mode: SearchMode; warning: string | null };
+// rerankedBy is the reranker's model when it re-sorted the list, else null
+export type RankResult = { unitIds: string[]; arms: Record<string, string[]>; mode: SearchMode; rerankedBy: string | null; warning: string | null };
 
 // Longest list each arm brings into the fusion
 export const ARM_CAP = 20;
@@ -34,6 +39,8 @@ export const ARM_CAP = 20;
 export const LINK_SEEDS = 5;
 // With an entity selected, its own arms count this many times, so global matches cannot outvote them
 export const SCOPED_WEIGHT = 2;
+// How many of the fused claims the reranker re-sorts
+export const RERANK_DEPTH = 40;
 const MIN_SIMILARITY = 0.35;
 const SEMANTIC_WARNING = "Semantic search is unavailable; this answer uses text matches only.";
 
@@ -109,10 +116,32 @@ export async function rankUnits(question: string, deps: RankDeps): Promise<RankR
   const scopedMeaning = scoped.sort((a, b) => b.score - a.score).slice(0, hybrid ? ARM_CAP : 12).map(item => item.unitId);
   if (!hybrid) {
     const unitIds = [...new Set([...[...scopedMeaning, ...scopedWords].slice(0, 32), ...meaning, ...words])];
-    return { unitIds, arms: { meaning, words, scopedMeaning, scopedWords }, mode, warning };
+    return { unitIds, arms: { meaning, words, scopedMeaning, scopedWords }, mode, rerankedBy: null, warning };
   }
   const arms = { meaning, keyword, link, scopedMeaning, scopedWords: scopedWords.slice(0, ARM_CAP) };
   const scopedArms = Array.from({ length: SCOPED_WEIGHT }, () => [arms.scopedMeaning, arms.scopedWords]).flat();
-  const unitIds = reciprocalRankFusion([meaning, keyword, link, ...scopedArms], { cap: ARM_CAP });
-  return { unitIds, arms, mode, warning };
+  const fused = reciprocalRankFusion([meaning, keyword, link, ...scopedArms], { cap: ARM_CAP });
+  const reranker = deps.reranker === undefined ? getReranker() : deps.reranker;
+  if (reranker) {
+    // The fused order already stands, so a failed rerank costs nothing the user needs to hear about
+    try {
+      const reranked = await rerankTop(question, fused.slice(0, RERANK_DEPTH), client, reranker);
+      return { unitIds: [...reranked, ...fused.slice(RERANK_DEPTH)], arms: { ...arms, reranked }, mode, rerankedBy: reranker.model, warning };
+    } catch { /* keep the fused order */ }
+  }
+  return { unitIds: fused, arms, mode, rerankedBy: null, warning };
+}
+
+// Re-sorts ids by their current title and wording; ids whose text the client cannot read keep their place after the rest
+async function rerankTop(question: string, ids: string[], client: ServerSupabase, reranker: Reranker): Promise<string[]> {
+  if (!ids.length) return [];
+  const units = await client.from("units").select("id,current_revision_id").in("id", ids).is("retired_at", null);
+  if (units.error) throw units.error;
+  const revisions = await client.from("revisions").select("id,unit_id,title,content").in("id", (units.data ?? []).map(unit => unit.current_revision_id));
+  if (revisions.error) throw revisions.error;
+  const text = new Map((revisions.data ?? []).map(revision => [revision.unit_id, [revision.title, revision.content].filter(Boolean).join("\n")]));
+  const readable = ids.filter(id => text.get(id));
+  const order = await reranker.rerank(question, readable.map(id => text.get(id)!));
+  if (order.length !== readable.length || new Set(order).size !== order.length || order.some(index => !readable[index])) throw new Error(`${reranker.model} returned an invalid ranking`);
+  return [...order.map(index => readable[index]!), ...ids.filter(id => !text.get(id))];
 }
