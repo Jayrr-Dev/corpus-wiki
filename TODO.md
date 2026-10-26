@@ -1,5 +1,90 @@
 # To-do
 
+## Plan: cut AI cost, and one reusable deduplicator
+
+Goal: lower the AI cost of processing uploads without lowering quality, and turn
+the duplicate checks into one reusable **deduplicator** role.
+
+Where the money went (`public.ai_calls`, last 30 days to 2026-10-26, priced with
+`lib/ai/pricing.ts` rules, cache discounts ignored): about $97, almost all in
+bursts on 7 days; the last 7 days cost $0.20. Top jobs: `line_fact_check` $10.95,
+`independent_section_editorial_review` $10.37, `independent_upload_domain_review`
+$9.95, `place_topics` $9.45, `page_editorial_review` $8.04, `article_outline` $7.44,
+`article_outline_review` $6.90, `glossary_duplicate_review` $4.62. The reviewer
+role (Sonnet) ran about 2,400 calls on 2026-10-18 and 19 and almost none since.
+`place_topics` and `independent_upload_domain_review` average 135k and 154k
+prompt tokens, above Haiku's 100k long-context line, so they pay 5x per token.
+
+Done looks like: cost per uploaded document measured before and after on the
+same files; the deduplicator handles claims and glossary through one shared
+prefilter with NLI; each cheaper option is behind a switch with its quality
+measured, and Sam picks which ones to switch on.
+
+### Chart
+
+| Lane | Task | Needs | Status |
+|---|---|---|---|
+| dedup | K1 `lib/dedup/` shared prefilter + `lib/ai/nli.ts` (NLI scorer behind `DEDUP_NLI`) | | waiting |
+| dedup | K2 Route every duplicate purpose to the `deduplicator` role; Settings shows it as "Deduplicator" | | waiting |
+| glossary | G1 Glossary duplicate review uses the prefilter | K1 | waiting |
+| glossary | G2 Measure: calls skipped, and agreement with saved LLM decisions | G1 | waiting |
+| claims | C1 Web page guard and cleaning cycle use the prefilter | K1 | waiting |
+| topics | T1 Measure what fills the 135k to 154k token topic prompts | | waiting |
+| topics | T2 Keep each topic prompt under 100k tokens, quality unchanged | T1 | waiting |
+| review | R1 Find what triggered the reviewer burst; does a normal upload repeat it? | | waiting |
+| review | R2 Same sample on Haiku and Sonnet: how often do verdicts agree? | | waiting |
+| cost | M1 Cost-per-upload report from `ai_calls` (script), run before and after | | waiting |
+
+Critical path: K1, then G1, then G2.
+
+### Lanes, owned paths and contracts
+
+- **dedup** owns `lib/dedup/**`, `lib/ai/nli.ts`, `lib/ai/roles.ts` and the role
+  label in Settings.
+  - `lib/ai/nli.ts`: `export type NliScorer = { model: string; score(premise: string, hypothesis: string): Promise<{ entailment: number; contradiction: number; neutral: number }> }`
+    and `export function getNli(env = process.env): NliScorer | null` (null unless
+    `DEDUP_NLI=on`). Model `cross-encoder/nli-deberta-v3-base`, file
+    `model_quint8_avx2`, loaded once and lazily through `@huggingface/transformers`
+    like `lib/ingest/describeVideoServer.ts`. Any load or run failure returns no
+    verdict, never an error to the caller.
+  - `lib/dedup/prefilter.ts`: `export type DedupItem = { id: string; text: string }`;
+    `export type Relation = "same" | "adds_detail" | "contradicts" | "unrelated" | "unclear"`;
+    `export async function relate(a: string, b: string, nli: NliScorer | null): Promise<Relation>`
+    (both directions; "unrelated" only when neither direction entails or
+    contradicts, with a confidence threshold); and
+    `export async function prefilter(item: DedupItem, candidates: DedupItem[], nli: NliScorer | null): Promise<{ keep: DedupItem[]; dropped: { id: string; relation: Relation }[] }>`
+    that drops only "unrelated" candidates. Callers skip their LLM call when
+    `keep` is empty. "contradicts" always stays (glossary conflicts go to people).
+  - Stats: each caller logs `{ purpose, candidates, dropped, skippedCall }` with
+    `processingMetric` so G2 and M1 can count savings.
+- **glossary** owns `lib/glossary/dedupe.ts` and its tests. Keeps its own prompt
+  and merge rules; only the candidate list passes through `prefilter` first.
+- **claims** owns `lib/ingest/duplicateGuard.ts`, `lib/ingest/dedupe.ts`,
+  `lib/ai/tokenFactory/duplicateJudge.ts` and their tests.
+- **topics** owns `lib/ingest/placeTopicsServer.ts`, `lib/domains/**` and their tests.
+- **review** is read-only on app code; owns `scripts/cost/review-sample.ts`.
+- **cost** owns `scripts/cost/report.ts`.
+
+Shared files: `lib/ai/roles.ts` belongs to **dedup**; `.env.example` to **dedup**
+(the `DEDUP_NLI` line); this file: each lane edits only its own rows.
+
+### Cut in review
+
+- Entity, domain and topic-name duplicate checks (`entity_duplicate_review`,
+  `domain_duplicate_review`, `nameDuplicateJudge`): K2 moves them to the
+  deduplicator's model setting, but they adopt the prefilter later, once G2
+  shows it is safe.
+- One shared LLM prompt for every duplicate check: each kind keeps its own merge
+  rules; only the prefilter, role and stats are shared.
+- Prompt caching and the Opus composer: smaller savings; revisit after M1.
+
+### Decisions for Sam
+
+- After R2: whether the reviewer role moves from Sonnet to Haiku (a Settings
+  change, no code).
+- After G2 and C1: whether to switch on `DEDUP_NLI`.
+- After T2: whether the slimmer topic prompts become the default.
+
 ## Plan: hybrid chat search
 
 Goal: chat finds the right claims more often, by fusing meaning, keyword and
