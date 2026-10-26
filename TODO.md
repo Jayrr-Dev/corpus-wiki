@@ -25,7 +25,7 @@ measured, and Sam picks which ones to switch on.
 | Lane | Task | Needs | Status |
 |---|---|---|---|
 | dedup | K1 `lib/dedup/` shared prefilter + `lib/ai/nli.ts` (NLI scorer behind `DEDUP_NLI`) | | ready to integrate |
-| dedup | K2 Route every duplicate purpose to the `deduplicator` role; Settings shows it as "Deduplicator" | | waiting |
+| dedup | K2 Route every duplicate purpose to the `deduplicator` role; Settings shows it as "Deduplicator" | | ready to integrate |
 | glossary | G1 Glossary duplicate review uses the prefilter | K1 | waiting |
 | glossary | G2 Measure: calls skipped, and agreement with saved LLM decisions | G1 | waiting |
 | claims | C1 Web page guard and cleaning cycle use the prefilter | K1 | waiting |

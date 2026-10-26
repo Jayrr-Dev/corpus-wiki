@@ -228,17 +228,17 @@ describe("glossary duplicate guard", () => {
     }
   });
 
-  it("routes low-effort review through the dictionary editor with bounded candidate references", async () => {
+  it("routes low-effort review through the deduplicator with bounded candidate references", async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: {
       content: JSON.stringify({ duplicateOf: 0, definition: "A product intended for use in the home.", relationship: "same_meaning", reason: "Same meaning.", usageNotes: [] }),
     }, finish_reason: "stop" }] })));
     vi.stubGlobal("fetch", fetchMock);
     try {
       const result = await reviewGlossaryDuplicates([entry("Product", { usageNotes: [] }), entry("Products", { usageNotes: [] })], {
-        apiKey: "workspace", model: "default", roleRoutes: { dictionary_editor: { apiKey: "dictionary", model: "review-model" } },
+        apiKey: "workspace", model: "default", roleRoutes: { deduplicator: { apiKey: "dedup", model: "review-model" } },
       }, async () => {});
       expect(result).toHaveLength(1);
-      expect(roleForPurpose("glossary_duplicate_review")).toBe("dictionary_editor");
+      expect(roleForPurpose("glossary_duplicate_review")).toBe("deduplicator");
       const init = (fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[1];
       const body = JSON.parse(String(init.body));
       expect(body).toMatchObject({ model: "review-model", reasoning_effort: "low", max_tokens: 8000 });
