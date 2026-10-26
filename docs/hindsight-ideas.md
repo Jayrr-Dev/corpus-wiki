@@ -47,6 +47,47 @@ graph arm that expands one hop over `relationships` from the top vector seeds,
 and cap each arm before fusion. A reranker is optional; measure first with the
 existing evals.
 
+**Measured 2026-10-26** with `evals/retrieval/` (60 questions written from live
+claims, 10 scoped to an entity; one shared query vector per question; results in
+`evals/retrieval/results/2026-10-26-*.json`). A question's rank is where the
+first claim that answers it lands in `rankUnits`' list.
+
+| Mode | hit@5 | hit@10 | MRR | Scoped hit@5 | Unscoped hit@5 | Median time |
+|---|---|---|---|---|---|---|
+| legacy (current) | 90.0% | 96.7% | 0.804 | 80% | 92% | 257 ms |
+| hybrid, no reranker | 53.3% | 73.3% | 0.477 | 40% | 56% | 405 ms |
+| hybrid + Voyage `rerank-2.5` | 98.3% | 98.3% | 0.902 | 100% | 98% | 796 ms |
+
+All three runs are valid: no warnings, no failed calls, and all 60 questions
+reranked in the third. Hybrid with the reranker never loses a question legacy
+gets in its top 5, and gains five (q36, q37, q45, q54, q56); its one miss is q12.
+
+Hybrid without the reranker is worse than legacy. In 22 questions the meaning
+arm alone ranks the answer first to fourth, but the fused rank is 6th to 15th.
+RRF itself (`fusion.ts`) is correct; the arm mix is the cause. Claims that sit in
+several weaker lists outvote a lone first place: keyword and link lists both
+grow from the same top hits, and `scopedWords` (an unranked `ilike` match)
+counts twice. Over the 60 questions the arms found the answer this often:
+meaning 59, keyword 35, scopedMeaning 10, scopedWords 4, link 2.
+
+**Decision:** by the plan's rule, hybrid alone is worse than current, so the
+code default stays `CHAT_SEARCH=legacy`. Hybrid with the reranker is clearly
+better, so the recommendation is to switch both on together in the environment
+(`CHAT_SEARCH=hybrid` and `CHAT_RERANKER=voyage`) and never hybrid alone. Two
+caveats before doing so:
+
+- A failed rerank falls back silently to the fused order, which is the worse
+  list. Falling back to the legacy order instead, or fixing the arm weights
+  (weight meaning higher, rank or drop `scopedWords`, lower the link cap), would
+  remove that risk.
+- Voyage's trial tier allows 3 requests a minute; a payment method is now on the
+  account and the full-speed run met no limits. Each search takes about 0.8 s
+  instead of 0.26 s.
+
+Not measured: the effect on answer quality (only ranking), repeat runs (one run
+per mode), and Voyage cost per search. Sixty questions means one question moves
+a rate by 1.7 points.
+
 ### 2. Claim-level time
 
 **Theirs:** every fact carries when the event happened (`occurred_*`) separately
