@@ -15,8 +15,8 @@ current; the reranker stays off unless `CHAT_RERANKER=voyage` and a key is set.
 
 | Lane | Task | Needs | Status |
 |---|---|---|---|
-| db | A1 `search_units_text`: Postgres full-text search over live claims, ranked, no index | | waiting |
-| db | A2 `linked_units`: one hop over live `relationships`, both directions | | waiting |
+| db | A1 `search_units_text`: Postgres full-text search over live claims, ranked, no index | | ready to integrate |
+| db | A2 `linked_units`: one hop over live `relationships`, both directions | | ready to integrate |
 | rerank | B1 `lib/ai/rerank.ts`: Voyage `rerank-2.5` client behind `CHAT_RERANKER` | | waiting |
 | eval | C1 Question set: 40 to 60 questions, each with the claim(s) that answer it | | waiting |
 | eval | C2 Runner: hit@5, hit@10, MRR per mode, against the live database, read-only | C1, D2 | waiting |
