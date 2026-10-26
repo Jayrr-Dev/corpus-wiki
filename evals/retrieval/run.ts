@@ -17,7 +17,7 @@ import type { DbRpc } from "../../lib/db/rpc.ts";
 // READ-ONLY against the live database; embeds the questions on Nebius and,
 // for hybrid-rerank, sends claim text to Voyage.
 //
-//   node --experimental-strip-types --env-file=<path to .env.local> evals/retrieval/run.ts [--variants legacy,hybrid,hybrid-rerank]
+//   node --experimental-strip-types --env-file=<path to .env.local> evals/retrieval/run.ts [--variants legacy,hybrid,hybrid-rerank] [--rerank-pace 25]
 //
 // Variants: legacy; hybrid with no reranker; hybrid-rerank with the Voyage
 // reranker (needs VOYAGE_API_KEY). Writes results/<date>-<variant>.json.
@@ -43,6 +43,9 @@ const env = process.env;
 if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.SUPABASE_SECRET_KEY) throw new Error("Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY.");
 const variantsArg = process.argv.indexOf("--variants");
 const variants = (variantsArg > 0 ? process.argv[variantsArg + 1]!.split(",") : VARIANTS) as Variant[];
+// Seconds to wait before each reranked question: Voyage's trial tier allows 3 requests a minute
+const paceArg = process.argv.indexOf("--rerank-pace");
+const rerankPaceMs = paceArg > 0 ? Number(process.argv[paceArg + 1]) * 1000 : 0;
 for (const variant of variants) if (!VARIANTS.includes(variant)) throw new Error(`Unknown variant ${variant}; use ${VARIANTS.join(", ")}.`);
 
 // SCORING
@@ -125,6 +128,8 @@ try {
     const scored: Scored[] = [];
     for (const [index, question] of questions.entries()) {
       const entity = question.entityId ? entities.get(question.entityId) : undefined;
+      // The pause comes before the timer, so ms still measures the search alone
+      if (variant === "hybrid-rerank" && rerankPaceMs && index > 0) await new Promise(resolve => setTimeout(resolve, rerankPaceMs));
       failures = [];
       const started = performance.now();
       const result = await rankUnits(question.question, { db, client, embedder, entity, vector: vectors[index] ?? null, mode, reranker: variant === "hybrid-rerank" ? reranker : null });

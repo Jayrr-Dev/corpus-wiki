@@ -65,6 +65,10 @@ unscoped questions, plus the median time per question, and writes
 every search arm, the top 10, its time, and the exact text of any failed
 database or rerank call.
 
+On Voyage's trial tier (no payment method: 3 requests a minute) add
+`--rerank-pace 25` to wait 25 seconds before each reranked question; the
+pause is not counted in the per-question time.
+
 A run is marked `"valid": false` when any question warned, had a failed call,
 or (for `hybrid-rerank`) was not reranked; do not compare such a run. The run
 is read-only: it does not log AI calls to the database.
