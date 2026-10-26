@@ -61,6 +61,37 @@ it("packs unfinished small groups without repeating an older accepted review or 
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
+it("with TOPIC_PROMPT_BUDGET on, splits a batch whose prompts would pass the token budget and still files every claim",async()=>{
+ vi.stubEnv("TOPIC_PROMPT_BUDGET","on");
+ try {
+  const event=await setup(Array.from({length:40},(_,i)=>`Permit condition ${i+1}: `+"the site crew records each excavation check. ".repeat(180)));
+  const batches:number[]=[];
+  const reviewSizes:number[]=[];
+  const planSizes:number[]=[];
+  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
+   const payload=JSON.parse(request.messages.find(m=>m.role==="user")!.content as string);
+   let value:unknown;
+   if(request.name==="upload_domain_plan")planSizes.push(request.messages.reduce((n,m)=>n+(m.content as string).length,0));
+   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Permits",reason:"Permit policy",refs:payload.claims.map((c:{ref:string})=>c.ref)}]};
+   else if(request.name==="place_topics") {
+    batches.push(payload.claims.length);
+    value={placements:payload.claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Permits"]}))};
+   } else if(request.name==="independent_upload_domain_review") {
+    reviewSizes.push(request.messages.reduce((n,m)=>n+(m.content as string).length,0));
+    const review=JSON.parse(request.messages.at(-1)!.content as string);
+    value={approved:true,issues:[],parents:review.parents.map((p:object)=>({...p,reason:"Permit checks belong together."}))};
+   } else throw new Error(request.name);
+   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
+  });
+  await topicPlacerFor(store.db,{apiKey:"test"})(event);
+  expect(batches.length).toBeGreaterThan(1);
+  expect(batches.reduce((a,b)=>a+b,0)).toBe(40);
+  expect(planSizes.length).toBeGreaterThan(1);
+  expect(Math.max(...planSizes,...reviewSizes)/2.4).toBeLessThan(100_000);
+  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ } finally { vi.unstubAllEnvs(); }
+});
+
 async function setup(contents=["A permit is required within 1m.","Workers follow design standards.","The employer is responsible for worker safety."]) {
  await store.pg.exec("insert into domains(name,path,proposed_by) values ('Upload test','Upload test','person'); insert into domains(name,path,parent_id,proposed_by) select n.name,'Upload test/'||n.name,d.id,'person' from domains d cross join (values ('Permits'),('Responsibilities')) n(name) where d.path='Upload test';");
  const upload=await recordUpload(store.db,{title:"ULA permit and safety policy.docx",mimeType:"text/plain",sourceDate:"2026-10-16T00:00:00Z",hash:"domain-assignment-test",storagePath:"test/assignments.txt",passages:[{position:0,text:"A permit is required within 1m. Workers follow design standards. The employer is responsible for worker safety.",location:{heading:"Permit rules and responsibilities"},hash:"assignment-passage",speakerLabel:null}]});
