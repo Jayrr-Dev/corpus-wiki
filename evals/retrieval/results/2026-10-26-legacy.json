@@ -1,0 +1,1590 @@
+{
+  "mode": "legacy",
+  "rerankedBy": null,
+  "date": "2026-10-26",
+  "embeddingModel": "Qwen/Qwen3-Embedding-8B",
+  "valid": true,
+  "warnings": 0,
+  "summary": {
+    "overall": {
+      "questions": 60,
+      "hitAt5": 0.9,
+      "hitAt10": 0.9666666666666667,
+      "mrr": 0.8056878306878308
+    },
+    "scoped": {
+      "questions": 10,
+      "hitAt5": 0.8,
+      "hitAt10": 1,
+      "mrr": 0.7753968253968254
+    },
+    "unscoped": {
+      "questions": 50,
+      "hitAt5": 0.92,
+      "hitAt10": 0.96,
+      "mrr": 0.8117460317460319
+    }
+  },
+  "questions": [
+    {
+      "id": "q01",
+      "question": "What software and equipment are included in Utilitek Solutions Inc.'s toolset?",
+      "claimTitle": "Utilitek engineering tools list",
+      "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+      "rank": 2,
+      "armRanks": {
+        "meaning": 2,
+        "words": null,
+        "scopedMeaning": 2,
+        "scopedWords": null
+      },
+      "top10": [
+        "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+        "1e856fd5-7329-4440-8704-758927fa29f6",
+        "eee5c405-7cd2-4d44-bf1a-7bbf38ebe7b2",
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "a28e03e7-b7c0-4543-bd50-5412326268b3",
+        "9ef6fa58-f1ed-490e-a12e-105e5a558e92",
+        "e97b9604-6fbd-4750-b893-365fde9e7e02",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "c8ab05b2-2e9f-411e-8104-668c877cdba2",
+        "0c1e39a4-929b-456b-8918-ca83f8859fae"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q02",
+      "question": "What components does Utilitek Solutions use in its protection and control operations?",
+      "claimTitle": "Protection and control services",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+        "76384c7f-3bb3-4177-9b3e-4476cb53d737",
+        "bee278fa-1ced-4432-a598-2774ca0ec0a7",
+        "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "b6414fc4-ab01-40db-9b4e-16365eaf1684",
+        "b7ba699c-7fca-40b4-a857-5eff46a95ac1",
+        "c2fdbc25-fefe-471c-ad8a-d72f5709ba46",
+        "fba20286-eed5-4984-b98f-210ae913f8a8"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q03",
+      "question": "What does Utilitek Solutions list as one of its specialisms on their website?",
+      "claimTitle": "Shared-pole engineering specialism",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "0c1e39a4-929b-456b-8918-ca83f8859fae",
+        "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+        "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+        "c097021e-1909-4844-baae-67a2d45c8f3c",
+        "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+        "e8f11593-d2b4-426b-9362-9a80f89e3f25"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q04",
+      "question": "How does ISO define the distinction between quality assurance and quality control?",
+      "claimTitle": "Quality assurance versus quality control",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "c047af4c-2e44-4899-9159-a6b79b752e5a",
+        "6018d56e-95ba-49b7-b6e4-0987917c3c12",
+        "a5d06153-aeb3-49d7-8ba1-d9b211e532d8",
+        "8b27a61b-abe2-4ed0-90dc-a798afcf966d",
+        "b4da129e-e8ea-4237-b6fa-5ba3815a2f4a",
+        "a5965ae0-2662-48f6-bb40-0c122375c8e1",
+        "0e18c0c4-dc87-43ec-afdc-6caa47187ee4",
+        "1958a5a9-2c52-4d4c-bbd7-e021e72aeb97",
+        "24d39368-2c57-4b31-920a-707026ca7033",
+        "5c506136-4ec9-4a80-b04a-20332da4f217"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q05",
+      "question": "What triggers the need for ear safety gear at Utilitek Solutions Inc.?",
+      "claimTitle": "Hearing protection at 85 dB",
+      "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 12,
+        "scopedMeaning": 1,
+        "scopedWords": null
+      },
+      "top10": [
+        "cd1b277f-7b00-443b-8786-e394851a7146",
+        "fb4a3460-5d77-49f9-b148-7ec774d23cd5",
+        "51051809-88af-4b5f-b989-b51b5d033e7c",
+        "248c5ffb-a0fb-4f28-934a-b12b9d5729ac",
+        "00d4eba4-c3c7-4092-953b-aa3087179cce",
+        "3b0d3436-56c8-4120-9fb8-d54f8785bb28",
+        "fba20286-eed5-4984-b98f-210ae913f8a8",
+        "36f37d73-f442-47d8-a97e-c18fa2e99104",
+        "8f538b48-13d8-48fd-a551-78c7a20b40fd",
+        "9ca31d71-eeb6-402c-a780-5d070f7a6354"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q06",
+      "question": "How does Utilitek Solutions categorize its compliance resources online?",
+      "claimTitle": "Utilitek compliance reference groups",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "699f631b-9180-4a4e-97a7-c8e234524775",
+        "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "e97b9604-6fbd-4750-b893-365fde9e7e02",
+        "4e2acd8f-c9fb-4e7e-a26c-113310f733db",
+        "c471e597-321d-4a46-8c36-a2885a141da7",
+        "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0",
+        "a28e03e7-b7c0-4543-bd50-5412326268b3",
+        "c8ab05b2-2e9f-411e-8104-668c877cdba2",
+        "f9861c48-e582-4efa-819c-232b62028100"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q07",
+      "question": "Where is EPCOR Utilities Inc.'s headquarters located?",
+      "claimTitle": "EPCOR identity and headquarters",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "968c0663-e191-41a0-8bb3-46c26a593ec7",
+        "75d32fc7-d94b-44a7-b8ac-f9557fcc780a",
+        "966f6149-aacb-42c4-bf59-25a31ed41802",
+        "757fe01d-a820-4a92-a382-6ba280019bc8",
+        "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "b3188b61-6949-44b8-82cf-14b2433a29fc",
+        "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd",
+        "7bbc14ac-1f3f-45a3-8145-65d5e3440336",
+        "cd7a4f7f-f304-4f89-a6f3-dd0e81080003",
+        "89820b1e-cd29-434f-9a81-67d2b01fcb73"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q08",
+      "question": "What tool guides the verification process when checking if items match design requirements?",
+      "claimTitle": "Inspector follows specification-based checklist",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "8f8907b1-d006-4779-8f5e-87ba6c4efd92",
+        "829ce03f-6649-4007-8394-ffe95b74cc7e",
+        "8b27a61b-abe2-4ed0-90dc-a798afcf966d",
+        "b4da129e-e8ea-4237-b6fa-5ba3815a2f4a",
+        "bef15bab-d3dd-456a-9885-af2e7fa0286c",
+        "099a43ce-ea32-4993-87aa-ca6b37287e9f",
+        "a5d06153-aeb3-49d7-8ba1-d9b211e532d8",
+        "7415a246-8b8a-46f6-9933-db3c44c7b356",
+        "62bb5f05-9d61-403b-bcc6-12e35bd20def",
+        "7f02ea46-b740-41de-b180-1bee548eca03"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q09",
+      "question": "What should I verify on a dangerous item before starting work?",
+      "claimTitle": "Check label before use",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "1e8983d1-5eb6-4120-a172-562f5f084c7f",
+        "ac17668f-5650-430d-913c-17304b8febbe",
+        "ba05ce7f-9ab9-4558-944d-1d1cbd97cb03",
+        "f53bad0e-7eb1-4770-bdfb-a0538e8e4622",
+        "ee699cab-d5bd-4f00-9ab6-a0ec09d9cfb5",
+        "c66a33ec-a8df-453c-8c20-5f89e56bb5d9",
+        "d00d0d26-0e77-4ffe-885c-59023e7f9af5",
+        "1d655470-55ad-43f3-89cc-64762619d21e",
+        "88d0f6ed-d461-4030-b295-8bcde1ac9673",
+        "6a6e3148-fe03-4ad7-b450-3ebe68d8a147"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q10",
+      "question": "What kind of network planning support does Utilitek Solutions offer?",
+      "claimTitle": "Distribution system design service",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "b6414fc4-ab01-40db-9b4e-16365eaf1684",
+        "b7ba699c-7fca-40b4-a857-5eff46a95ac1",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+        "c2fdbc25-fefe-471c-ad8a-d72f5709ba46",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "0c1e39a4-929b-456b-8918-ca83f8859fae",
+        "3d96cac7-9d60-48f0-8750-6a57e7af27b3",
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "e58bf6c7-1138-447b-98b8-3f6d38baebb8"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q11",
+      "question": "What are employees expected to understand after completing the government security training?",
+      "claimTitle": "Participants learn GoC security principles",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "b9a4edcf-578b-48de-af4f-e0bb25823473",
+        "34eeceb0-dc03-41d7-aafd-135a59ec28a3",
+        "151f34e1-5064-4064-8af3-bb992940f635",
+        "bfabd8e2-d8b1-498c-85f1-5d241f7b7ece",
+        "ac17668f-5650-430d-913c-17304b8febbe",
+        "8db14b6e-0b30-4171-bb80-c45d5e00f537",
+        "3f4193a6-1fbb-48cc-93cd-e37e706bac33",
+        "ec1ace16-537a-44b8-8d93-a9ee699acf5f",
+        "f7751843-be7a-4481-bd78-4c3a93c51c22",
+        "c92d93b8-642f-41b1-9080-bbd3e7643afc"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q12",
+      "question": "What areas are included when planning the practice run for home-based service setup?",
+      "claimTitle": "Residential exercise: coordination scope",
+      "entityId": null,
+      "rank": null,
+      "armRanks": {
+        "meaning": null,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "02c6c794-ce32-4680-9cf8-e6f6fbe6d1a2",
+        "1dacccfb-af9a-46a5-afbd-126a04c25218",
+        "3807cfbc-0332-43b7-ab20-0bc9f8647a30",
+        "a8586fc1-a61e-4bd6-82a4-d77687071c0f",
+        "41d9db45-e894-44ac-9a80-fa464441621d",
+        "2b911bca-29b0-4fdc-8ccc-82c44a01e51a",
+        "3dff2834-579e-40d6-a8f6-4a05eed1e72d",
+        "c3a82fd0-1b7e-4447-acab-3037f0a2c920",
+        "48edc4d9-31c5-4a95-83fc-463db8323af6",
+        "50dc9245-730b-4cfb-a866-1a6688786b59"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q13",
+      "question": "What key skills are covered in the self-paced fire safety class regarding handling small fires on site?",
+      "claimTitle": "WMT105 course covers extinguisher use",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "b5ee5029-4537-4060-a122-4437f715beb2",
+        "3f4193a6-1fbb-48cc-93cd-e37e706bac33",
+        "34eeceb0-dc03-41d7-aafd-135a59ec28a3",
+        "f7751843-be7a-4481-bd78-4c3a93c51c22",
+        "ac17668f-5650-430d-913c-17304b8febbe",
+        "151f34e1-5064-4064-8af3-bb992940f635",
+        "b9a4edcf-578b-48de-af4f-e0bb25823473",
+        "f53bad0e-7eb1-4770-bdfb-a0538e8e4622",
+        "ec1ace16-537a-44b8-8d93-a9ee699acf5f",
+        "13d360fa-6adf-481d-8e58-b9ab4866d3c0"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q14",
+      "question": "What skills are covered in the training program for handling expert assessments of building performance?",
+      "claimTitle": "COR414 course covers E4 management",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "13d360fa-6adf-481d-8e58-b9ab4866d3c0",
+        "faacd081-1333-42cc-a1f2-c6491542b9f3",
+        "a8586fc1-a61e-4bd6-82a4-d77687071c0f",
+        "02c6c794-ce32-4680-9cf8-e6f6fbe6d1a2",
+        "9d0fb242-b426-47ca-a94a-169bf7e91a47",
+        "5741da65-7f8a-4b2e-be95-b06bb98531ed",
+        "3807cfbc-0332-43b7-ab20-0bc9f8647a30",
+        "c3a82fd0-1b7e-4447-acab-3037f0a2c920",
+        "aeb02860-415b-433c-8b90-489fe41dba7b",
+        "e97b9604-6fbd-4750-b893-365fde9e7e02"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q15",
+      "question": "What steps are taken when the minimum agreed clearances for an EPCOR utility line assignment cannot be achieved?",
+      "claimTitle": "Reduced clearances require utility agreement",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "676b597e-90a7-403a-bae4-acc5043dfd86",
+        "5df5e05e-427d-49dc-9a51-63cd5842a6ef",
+        "850b3a72-0885-488c-b9b4-9ced3ab11c6f",
+        "24223be6-e46a-4c5c-9944-d2f50ca971f0",
+        "ed3fb336-9369-41ea-abf3-eb1308950324",
+        "5a8cc1a2-deaa-47ca-9801-ae37de7ec9dc",
+        "c40ed9ea-c524-44cb-9286-a158a8953bf7",
+        "1b1ea575-a9be-4d41-a25e-4a5da9a9ed36",
+        "89820b1e-cd29-434f-9a81-67d2b01fcb73",
+        "aadf64c3-a984-4cd6-959b-ce504848c72c"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q16",
+      "question": "What risks arise when a flawed component enters the aerospace manufacturing line?",
+      "claimTitle": "Defective components trigger cascading failures",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "be3a5d2e-2cb5-4012-ad77-07a3fc0e849b",
+        "5e0821ed-b87f-493c-88f4-807a6dc45b6a",
+        "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "e7570995-d81f-4d9c-979d-5a97aacaa46c",
+        "ae29182b-2f39-49af-900b-a93a619a8c18",
+        "160b202f-e7e4-4417-8e08-ef71a2585436",
+        "726cbe8e-5026-418b-b98f-0a5d828765e9",
+        "260fb9e8-510f-4f7b-8e68-f9ce0780297c",
+        "792080c9-06f2-477d-a744-f1c62efdbb92",
+        "4214b8ff-115a-4350-8856-82c6c50f0049"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q17",
+      "question": "When did Utilitek Solutions begin supporting upgrades to power delivery infrastructure?",
+      "claimTitle": "Electrical distribution work since 2014",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "e8f11593-d2b4-426b-9362-9a80f89e3f25",
+        "e58bf6c7-1138-447b-98b8-3f6d38baebb8",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+        "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+        "1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+        "c4bee0f1-ddac-4e37-a03d-45874379f301",
+        "d21d87b5-a554-41b9-b71f-51c3d3399c8d",
+        "c2fdbc25-fefe-471c-ad8a-d72f5709ba46"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q18",
+      "question": "What are the key components of the short online safety training for staff?",
+      "claimTitle": "WHMIS online course for employees",
+      "entityId": null,
+      "rank": 2,
+      "armRanks": {
+        "meaning": 2,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "34eeceb0-dc03-41d7-aafd-135a59ec28a3",
+        "3f4193a6-1fbb-48cc-93cd-e37e706bac33",
+        "151f34e1-5064-4064-8af3-bb992940f635",
+        "b9a4edcf-578b-48de-af4f-e0bb25823473",
+        "9ba82d2a-44cb-4714-9b1f-7e05a1289d25",
+        "f18e81d2-168f-43b8-88c6-a5fd267015bd",
+        "f7751843-be7a-4481-bd78-4c3a93c51c22",
+        "40491913-4490-4995-be18-119140fd701d",
+        "b5ee5029-4537-4060-a122-4437f715beb2",
+        "bfabd8e2-d8b1-498c-85f1-5d241f7b7ece"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q19",
+      "question": "What does Utilitek Solutions' delivery process involve?",
+      "claimTitle": "Published four-step delivery sequence",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 8,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0",
+        "f9861c48-e582-4efa-819c-232b62028100",
+        "e97b9604-6fbd-4750-b893-365fde9e7e02",
+        "a28e03e7-b7c0-4543-bd50-5412326268b3",
+        "c8ab05b2-2e9f-411e-8104-668c877cdba2",
+        "eee5c405-7cd2-4d44-bf1a-7bbf38ebe7b2",
+        "da343193-2d72-43d3-8ed4-952b4453850c",
+        "9ef6fa58-f1ed-490e-a12e-105e5a558e92",
+        "868ad190-4ecf-47ce-bb4d-5626470318d5"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q20",
+      "question": "What does the person overseeing safety at Brightwater Utilities Ltd. check before allowing work inside a tank?",
+      "claimTitle": "Step 5: safe atmosphere limits",
+      "entityId": "8c4a47bc-cc01-43de-a943-5b707b167f2c",
+      "rank": 1,
+      "armRanks": {
+        "meaning": 2,
+        "words": null,
+        "scopedMeaning": 1,
+        "scopedWords": null
+      },
+      "top10": [
+        "770011ca-f74e-4bf0-82da-7f7d20af6fc3",
+        "6318c597-64df-44e6-b794-e878e63af87c",
+        "368b228f-c399-4d32-a36d-4e398d385620",
+        "71591851-1664-435d-8bbe-9f4cc78d43cf",
+        "cbbfec1a-be78-4ba1-9f91-0c73efcf3df3",
+        "fd793467-8294-4c2b-b340-cf648ee1edb3",
+        "7ebd967a-c2a7-44e5-8aac-9a62882ac007",
+        "f2750fdd-5868-47c2-af83-20c6986a0eb5",
+        "65c8fbf8-4607-4579-acf4-186a9815f92b",
+        "371d68e5-d144-42a1-a480-6c26a9dff21c"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q21",
+      "question": "What mandatory PPE does every person need to bring when entering a confined space?",
+      "claimTitle": "Required entrant equipment list",
+      "entityId": null,
+      "rank": 3,
+      "armRanks": {
+        "meaning": 3,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "1f2a6df7-25d1-442a-8334-10a387efb064",
+        "cbbfec1a-be78-4ba1-9f91-0c73efcf3df3",
+        "65c8fbf8-4607-4579-acf4-186a9815f92b",
+        "e7d68282-97cc-4101-9b89-5b20e71f5884",
+        "6318c597-64df-44e6-b794-e878e63af87c",
+        "7e7aa05c-8a78-4608-ac89-d321209ddabf",
+        "54f2ea03-0715-45cc-8a15-c425ba38542b",
+        "4dfcf9a8-7efa-4340-b5c1-0fdafb89af42",
+        "e60ce867-d3be-4c12-9d0e-d10b2ec81cde",
+        "2390c511-3b4f-453f-8a5f-53c2ebba7cb8"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q22",
+      "question": "What changes were made to align national chemical labeling rules with global guidelines?",
+      "claimTitle": "WHMIS aligned with GHS",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 6,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "a88396dc-304a-4787-8184-37494f9474fb",
+        "28d1035d-2397-46c6-9b1b-c82deeb2109a",
+        "f1d02ad9-57db-4f13-b29b-ccf30625bf47",
+        "dbc3fb6b-f47a-4621-a760-cf2b4ebaf194",
+        "01634d7b-da3d-4b30-92c7-f305c3a96d01",
+        "aab6fec0-c888-456b-b4c0-e9dae11bd243",
+        "3f4193a6-1fbb-48cc-93cd-e37e706bac33",
+        "8ae55811-f96a-4ce4-bc64-855f4d54ed3a",
+        "9d28301f-7618-47e3-8b87-760ff19b03ff",
+        "1189fa46-f358-40cd-a97a-6e3974b91fb4"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q23",
+      "question": "What are the stages of the training simulation used to practice home service procedures?",
+      "claimTitle": "Residential exercise: four-phase sequence",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "02c6c794-ce32-4680-9cf8-e6f6fbe6d1a2",
+        "c3a82fd0-1b7e-4447-acab-3037f0a2c920",
+        "a8586fc1-a61e-4bd6-82a4-d77687071c0f",
+        "48edc4d9-31c5-4a95-83fc-463db8323af6",
+        "3807cfbc-0332-43b7-ab20-0bc9f8647a30",
+        "41d9db45-e894-44ac-9a80-fa464441621d",
+        "1dacccfb-af9a-46a5-afbd-126a04c25218",
+        "2b911bca-29b0-4fdc-8ccc-82c44a01e51a",
+        "50dc9245-730b-4cfb-a866-1a6688786b59",
+        "3dff2834-579e-40d6-a8f6-4a05eed1e72d"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q24",
+      "question": "What problems can be avoided by adhering to the utility line assignment rules?",
+      "claimTitle": "ULA compliance benefits",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "42458e4e-3a78-4e71-8b77-b1b2adb1463f",
+        "5df5e05e-427d-49dc-9a51-63cd5842a6ef",
+        "676b597e-90a7-403a-bae4-acc5043dfd86",
+        "14157c42-f26c-48d4-98ef-683eaa80438a",
+        "5a8cc1a2-deaa-47ca-9801-ae37de7ec9dc",
+        "1b1ea575-a9be-4d41-a25e-4a5da9a9ed36",
+        "c40ed9ea-c524-44cb-9286-a158a8953bf7",
+        "259359f1-6e4c-458e-aefd-52db65d9e8f0",
+        "850b3a72-0885-488c-b9b4-9ced3ab11c6f",
+        "ed3fb336-9369-41ea-abf3-eb1308950324"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q25",
+      "question": "What makes an employee eligible to enter a confined space at work?",
+      "claimTitle": "Authorized entrant definition",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "37b8696e-d296-425c-89a8-8d355b6ba369",
+        "cbbfec1a-be78-4ba1-9f91-0c73efcf3df3",
+        "1f2a6df7-25d1-442a-8334-10a387efb064",
+        "6318c597-64df-44e6-b794-e878e63af87c",
+        "71591851-1664-435d-8bbe-9f4cc78d43cf",
+        "fd793467-8294-4c2b-b340-cf648ee1edb3",
+        "7e7aa05c-8a78-4608-ac89-d321209ddabf",
+        "88b300fd-14e7-46b7-bd12-a703e7a26cae",
+        "e7d68282-97cc-4101-9b89-5b20e71f5884",
+        "e60ce867-d3be-4c12-9d0e-d10b2ec81cde"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q26",
+      "question": "What’s the cost difference between addressing an issue early in manufacturing versus waiting until after shipment?",
+      "claimTitle": "1-10-100 rule defect costs",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "4214b8ff-115a-4350-8856-82c6c50f0049",
+        "27b826a2-d416-4bba-b2c0-172f2215f1e0",
+        "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "f2d8bea2-6c89-41b3-8e28-5dd9631c6353",
+        "ae29182b-2f39-49af-900b-a93a619a8c18",
+        "be3a5d2e-2cb5-4012-ad77-07a3fc0e849b",
+        "160b202f-e7e4-4417-8e08-ef71a2585436",
+        "98bbfc9d-6b34-4ddb-9470-006d9668f6b0",
+        "c26c86a9-52bf-493c-bf2d-a7cfe69867b6",
+        "260fb9e8-510f-4f7b-8e68-f9ce0780297c"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q27",
+      "question": "How does our team prepare for safety risks when beginning a new task?",
+      "claimTitle": "Job Hazard Analysis before work",
+      "entityId": null,
+      "rank": 3,
+      "armRanks": {
+        "meaning": 3,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "c66a33ec-a8df-453c-8c20-5f89e56bb5d9",
+        "ee699cab-d5bd-4f00-9ab6-a0ec09d9cfb5",
+        "88d0f6ed-d461-4030-b295-8bcde1ac9673",
+        "ac17668f-5650-430d-913c-17304b8febbe",
+        "62fa568c-cacf-424f-b0c4-5695cee164e3",
+        "b09134b0-0a32-4a70-bffa-7f3abd1e53ed",
+        "beda91d5-3eb1-4339-9ff9-3b3bf3a85af7",
+        "1d603428-124e-4d10-8e21-1b22a8ce84e9",
+        "1e8983d1-5eb6-4120-a172-562f5f084c7f",
+        "bc77a3bf-9dab-4fb6-ba04-89ea0845e378"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q28",
+      "question": "What are the goals of the mandatory online safety program for public servants?",
+      "claimTitle": "COR310 Security Awareness course purpose",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "34eeceb0-dc03-41d7-aafd-135a59ec28a3",
+        "b9a4edcf-578b-48de-af4f-e0bb25823473",
+        "9ba82d2a-44cb-4714-9b1f-7e05a1289d25",
+        "bfabd8e2-d8b1-498c-85f1-5d241f7b7ece",
+        "3f4193a6-1fbb-48cc-93cd-e37e706bac33",
+        "8db14b6e-0b30-4171-bb80-c45d5e00f537",
+        "b628e02e-b601-40b8-96fb-9beeca401e16",
+        "01634d7b-da3d-4b30-92c7-f305c3a96d01",
+        "b4d3dba0-6651-4fe1-8044-2233e9366ec8",
+        "fd4379fd-a7d6-4884-b723-ccf174dc6b26"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q29",
+      "question": "What does the earlier error elimination principle state about when defects should be addressed?",
+      "claimTitle": "Earlier error elimination principle",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 8,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "f2d8bea2-6c89-41b3-8e28-5dd9631c6353",
+        "4214b8ff-115a-4350-8856-82c6c50f0049",
+        "27b826a2-d416-4bba-b2c0-172f2215f1e0",
+        "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "ae29182b-2f39-49af-900b-a93a619a8c18",
+        "4137fc06-3ec6-4063-9ab9-0d26fec6dc5f",
+        "792080c9-06f2-477d-a744-f1c62efdbb92",
+        "5e0821ed-b87f-493c-88f4-807a6dc45b6a",
+        "be3a5d2e-2cb5-4012-ad77-07a3fc0e849b",
+        "d9c90ecf-b2b6-4df8-8a6c-c27b52c433aa"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q30",
+      "question": "What kind of electrical infrastructure projects does Utilitek Solutions handle?",
+      "claimTitle": "Utility power systems service",
+      "entityId": null,
+      "rank": 2,
+      "armRanks": {
+        "meaning": 2,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+        "c4bee0f1-ddac-4e37-a03d-45874379f301",
+        "d21d87b5-a554-41b9-b71f-51c3d3399c8d",
+        "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "e58bf6c7-1138-447b-98b8-3f6d38baebb8",
+        "b6414fc4-ab01-40db-9b4e-16365eaf1684",
+        "b7ba699c-7fca-40b4-a857-5eff46a95ac1",
+        "69960a5b-648a-4db5-875c-95839da8e95b"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q31",
+      "question": "Is the labeled summary from Utilitek Solutions' website considered part of their official operating policies?",
+      "claimTitle": "Website snapshot is not a policy",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "c471e597-321d-4a46-8c36-a2885a141da7",
+        "f423a5ae-f664-433b-a5db-d8ac36b021c2",
+        "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+        "4e2acd8f-c9fb-4e7e-a26c-113310f733db",
+        "b4d3dba0-6651-4fe1-8044-2233e9366ec8",
+        "c097021e-1909-4844-baae-67a2d45c8f3c",
+        "699f631b-9180-4a4e-97a7-c8e234524775",
+        "cd7a4f7f-f304-4f89-a6f3-dd0e81080003",
+        "d9d56d5d-8e99-41cc-8cf6-701092a9fa95",
+        "fd4379fd-a7d6-4884-b723-ccf174dc6b26"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q32",
+      "question": "What steps are taken during initial inspections of received parts prior to manufacturing?",
+      "claimTitle": "IQC definition and activities",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "798855d2-3eaa-4f09-a878-59e2c9954800",
+        "87db0e4c-193b-4a10-a81c-7ca797ae331d",
+        "829ce03f-6649-4007-8394-ffe95b74cc7e",
+        "a5965ae0-2662-48f6-bb40-0c122375c8e1",
+        "9264351a-d68a-4a94-a3ea-2e1256c24065",
+        "7415a246-8b8a-46f6-9933-db3c44c7b356",
+        "c26c86a9-52bf-493c-bf2d-a7cfe69867b6",
+        "895d8f71-3b9a-4ff5-aabd-bd9c87e17deb",
+        "109fb0fa-68df-4cd6-ad26-580bd7644e66",
+        "a5d06153-aeb3-49d7-8ba1-d9b211e532d8"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q33",
+      "question": "What kind of infrastructure work does EPCOR handle related to road lighting and control systems?",
+      "claimTitle": "EPCOR traffic signal and streetlight support",
+      "entityId": "e620dd5e-d2f7-4439-840b-dd976d4ad038",
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 7,
+        "scopedMeaning": 1,
+        "scopedWords": 1
+      },
+      "top10": [
+        "757fe01d-a820-4a92-a382-6ba280019bc8",
+        "75d32fc7-d94b-44a7-b8ac-f9557fcc780a",
+        "b3188b61-6949-44b8-82cf-14b2433a29fc",
+        "966f6149-aacb-42c4-bf59-25a31ed41802",
+        "968c0663-e191-41a0-8bb3-46c26a593ec7",
+        "7bbc14ac-1f3f-45a3-8145-65d5e3440336",
+        "c4bee0f1-ddac-4e37-a03d-45874379f301",
+        "d21d87b5-a554-41b9-b71f-51c3d3399c8d",
+        "89820b1e-cd29-434f-9a81-67d2b01fcb73",
+        "670c9b8b-1c85-4031-a0ee-599503d4b9fb"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q34",
+      "question": "How many years of experience does Utilitek Solutions state it has?",
+      "claimTitle": "Utilitek advertised experience claim",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "c097021e-1909-4844-baae-67a2d45c8f3c",
+        "0dd66e6e-2c49-40b2-9b80-3f17d45dfc76",
+        "e8f11593-d2b4-426b-9362-9a80f89e3f25",
+        "0c1e39a4-929b-456b-8918-ca83f8859fae",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "a28e03e7-b7c0-4543-bd50-5412326268b3",
+        "eee5c405-7cd2-4d44-bf1a-7bbf38ebe7b2"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q35",
+      "question": "How can I easily set up placeholders in documents while doing inspections?",
+      "claimTitle": "Capture photos during inspection",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "191e6eec-0212-45b4-aec9-496b21828a4f",
+        "7f02ea46-b740-41de-b180-1bee548eca03",
+        "612fbc9c-a9c0-45c0-b6dc-ff8406082f49",
+        "bcc85236-2182-41e0-860e-761e2a13ba26",
+        "f4a0bb43-9360-4de0-b39f-acb16ff858a0",
+        "b58e96c8-0ce0-40de-9595-b5b17fe97a8b",
+        "d909b650-f26f-4df0-b15e-9873e5fb23cc",
+        "792080c9-06f2-477d-a744-f1c62efdbb92",
+        "f1144496-1def-4588-b5c2-1917796414da",
+        "a801e1d0-ae7b-4a62-b89c-af3cf4fb029c"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q36",
+      "question": "What steps are taken by workers at Brightwater Utilities Ltd. regarding protective gear and tethering prior to confined space access?",
+      "claimTitle": "Step 7: equipment and retrieval before entry",
+      "entityId": "8c4a47bc-cc01-43de-a943-5b707b167f2c",
+      "rank": 9,
+      "armRanks": {
+        "meaning": null,
+        "words": null,
+        "scopedMeaning": 9,
+        "scopedWords": null
+      },
+      "top10": [
+        "6318c597-64df-44e6-b794-e878e63af87c",
+        "fd793467-8294-4c2b-b340-cf648ee1edb3",
+        "71591851-1664-435d-8bbe-9f4cc78d43cf",
+        "e7d68282-97cc-4101-9b89-5b20e71f5884",
+        "cbbfec1a-be78-4ba1-9f91-0c73efcf3df3",
+        "7eea6306-3339-442b-8e5c-b01dbb73e91b",
+        "65c8fbf8-4607-4579-acf4-186a9815f92b",
+        "8d689c6b-7722-44c6-b1a1-965062155fc2",
+        "00b038c3-3fb1-441d-8efa-504d7fe761a3",
+        "368b228f-c399-4d32-a36d-4e398d385620"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q37",
+      "question": "What components are part of Utilitek Solutions Inc.'s electrical infrastructure services?",
+      "claimTitle": "Utilitek power-system offering",
+      "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+      "rank": 7,
+      "armRanks": {
+        "meaning": 7,
+        "words": null,
+        "scopedMeaning": 7,
+        "scopedWords": null
+      },
+      "top10": [
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "c4bee0f1-ddac-4e37-a03d-45874379f301",
+        "d21d87b5-a554-41b9-b71f-51c3d3399c8d",
+        "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+        "1b3e6568-0dec-4613-9f85-1c4bcf2b5231",
+        "e58bf6c7-1138-447b-98b8-3f6d38baebb8",
+        "b6414fc4-ab01-40db-9b4e-16365eaf1684",
+        "b7ba699c-7fca-40b4-a857-5eff46a95ac1"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q38",
+      "question": "What’s the typical multiplier for correcting issues found post-launch versus those caught early in design?",
+      "claimTitle": "1:10:100 error cost ratio",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "27b826a2-d416-4bba-b2c0-172f2215f1e0",
+        "4214b8ff-115a-4350-8856-82c6c50f0049",
+        "f2d8bea2-6c89-41b3-8e28-5dd9631c6353",
+        "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "792080c9-06f2-477d-a744-f1c62efdbb92",
+        "d9c90ecf-b2b6-4df8-8a6c-c27b52c433aa",
+        "be3a5d2e-2cb5-4012-ad77-07a3fc0e849b",
+        "ae29182b-2f39-49af-900b-a93a619a8c18",
+        "aeb02860-415b-433c-8b90-489fe41dba7b",
+        "5b7567ab-f30a-4ede-8578-7128c7d9e5a2"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q39",
+      "question": "How does Utilitek Solutions Inc. assign responsibility for workplace well-being between managers and staff?",
+      "claimTitle": "Supervisor and worker safety accountability",
+      "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": 1,
+        "scopedWords": 18
+      },
+      "top10": [
+        "b628e02e-b601-40b8-96fb-9beeca401e16",
+        "933a9e79-c5a7-4f3c-a802-946001be463f",
+        "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb",
+        "56f96253-421e-4ede-b95c-27c1641224c8",
+        "3a9acf4f-ec61-40c8-9a36-bd3b6181e167",
+        "fd4379fd-a7d6-4884-b723-ccf174dc6b26",
+        "d522ebe8-5cb6-4446-b23f-f2a1fca0194b",
+        "0341b487-bc3e-465e-a5a4-6ee5eabd0650",
+        "e5275d4f-c1aa-49a8-8623-c0d2292c49f4",
+        "3a2bb6b7-139f-481a-a9fd-51f39ce80df2"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q40",
+      "question": "What services does EPCOR provide across its Canadian and U.S. operating regions?",
+      "claimTitle": "EPCOR operations and regions",
+      "entityId": "e620dd5e-d2f7-4439-840b-dd976d4ad038",
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": 1,
+        "scopedWords": 5
+      },
+      "top10": [
+        "75d32fc7-d94b-44a7-b8ac-f9557fcc780a",
+        "757fe01d-a820-4a92-a382-6ba280019bc8",
+        "b3188b61-6949-44b8-82cf-14b2433a29fc",
+        "968c0663-e191-41a0-8bb3-46c26a593ec7",
+        "966f6149-aacb-42c4-bf59-25a31ed41802",
+        "7bbc14ac-1f3f-45a3-8145-65d5e3440336",
+        "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "89820b1e-cd29-434f-9a81-67d2b01fcb73",
+        "a6578345-60e1-4fbd-8a3f-b2aa51c5e1dd"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q41",
+      "question": "Who holds full ownership of EPCOR?",
+      "claimTitle": "EPCOR ownership",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "966f6149-aacb-42c4-bf59-25a31ed41802",
+        "968c0663-e191-41a0-8bb3-46c26a593ec7",
+        "75d32fc7-d94b-44a7-b8ac-f9557fcc780a",
+        "757fe01d-a820-4a92-a382-6ba280019bc8",
+        "b3188b61-6949-44b8-82cf-14b2433a29fc",
+        "7bbc14ac-1f3f-45a3-8145-65d5e3440336",
+        "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "17f21914-90b1-4c01-ba2e-32da135ed641",
+        "1817af96-8918-4f97-bfd7-cf46c2ed1b6e",
+        "89820b1e-cd29-434f-9a81-67d2b01fcb73"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q42",
+      "question": "What does an SDS contain and when is it given to employees?",
+      "claimTitle": "SDS (Safety Data Sheet) glossary entry",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "09281254-7f55-429a-8897-61bfa9da90ad",
+        "dd8001cf-36af-493a-8249-a387f0cb7823",
+        "f18e81d2-168f-43b8-88c6-a5fd267015bd",
+        "f53bad0e-7eb1-4770-bdfb-a0538e8e4622",
+        "a9c5b2ca-aa8c-4e97-9710-5e7454baecbb",
+        "ac17668f-5650-430d-913c-17304b8febbe",
+        "6297e351-356d-4741-b321-bee23df9b205",
+        "9983ac5f-b308-4417-b856-a3bac95ce004",
+        "c92d93b8-642f-41b1-9080-bbd3e7643afc",
+        "992b6584-c730-4bc4-8abd-14dc08020a29"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q43",
+      "question": "What is the second step in Utilitek Solutions Inc.'s delivery process?",
+      "claimTitle": "Delivery step two: design",
+      "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 7,
+        "scopedMeaning": 1,
+        "scopedWords": 1
+      },
+      "top10": [
+        "868ad190-4ecf-47ce-bb4d-5626470318d5",
+        "f9861c48-e582-4efa-819c-232b62028100",
+        "a28e03e7-b7c0-4543-bd50-5412326268b3",
+        "ca6fbb9f-ebf7-4118-a1bb-038ec581e8a3",
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "eee5c405-7cd2-4d44-bf1a-7bbf38ebe7b2",
+        "c8ab05b2-2e9f-411e-8104-668c877cdba2",
+        "e97b9604-6fbd-4750-b893-365fde9e7e02",
+        "da343193-2d72-43d3-8ed4-952b4453850c",
+        "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q44",
+      "question": "What does the designer need to do when handling a utility line request?",
+      "claimTitle": "ULA application process overview",
+      "entityId": null,
+      "rank": 4,
+      "armRanks": {
+        "meaning": 4,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "1b1ea575-a9be-4d41-a25e-4a5da9a9ed36",
+        "c40ed9ea-c524-44cb-9286-a158a8953bf7",
+        "aadf64c3-a984-4cd6-959b-ce504848c72c",
+        "259359f1-6e4c-458e-aefd-52db65d9e8f0",
+        "676b597e-90a7-403a-bae4-acc5043dfd86",
+        "7b209ac6-6b51-4604-8dbc-d5f0c1d21083",
+        "c7e08d37-ec1b-473d-b462-ac161b0dd146",
+        "f1144496-1def-4588-b5c2-1917796414da",
+        "a801e1d0-ae7b-4a62-b89c-af3cf4fb029c",
+        "3a0ccb7b-7477-4275-86c1-4898c9566a28"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q45",
+      "question": "What are the key components covered in the mock grid planning activity labeled with timestamp 20261017023703216-1?",
+      "claimTitle": "Distribution exercise: design scope",
+      "entityId": null,
+      "rank": 7,
+      "armRanks": {
+        "meaning": 7,
+        "words": 19,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "02c6c794-ce32-4680-9cf8-e6f6fbe6d1a2",
+        "f8867285-e775-48c5-83c3-bca44a612605",
+        "3dff2834-579e-40d6-a8f6-4a05eed1e72d",
+        "da429c76-1010-44c4-941c-830a368b3db9",
+        "aeb02860-415b-433c-8b90-489fe41dba7b",
+        "d909b650-f26f-4df0-b15e-9873e5fb23cc",
+        "e9444627-a7ee-4863-806a-2106b1d87102",
+        "e94ece6b-63a1-4bac-97e9-37cbc9e54e92",
+        "c3a82fd0-1b7e-4447-acab-3037f0a2c920",
+        "1aab3249-61aa-4d2e-b5d1-569a876f7e82"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q46",
+      "question": "What types of infrastructure improvements does Utilitek Solutions offer for shared utility projects?",
+      "claimTitle": "Joint-use infrastructure upgrade service",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "e58bf6c7-1138-447b-98b8-3f6d38baebb8",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "0c1e39a4-929b-456b-8918-ca83f8859fae",
+        "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+        "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "c4bee0f1-ddac-4e37-a03d-45874379f301",
+        "d21d87b5-a554-41b9-b71f-51c3d3399c8d",
+        "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+        "69960a5b-648a-4db5-875c-95839da8e95b"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q47",
+      "question": "What occurs when checking an approved work authorization for special requirements?",
+      "claimTitle": "Designer reviews ULA permit for conditions",
+      "entityId": null,
+      "rank": 3,
+      "armRanks": {
+        "meaning": 3,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "cb0d07ca-9e6b-44cd-b4f3-fb94cd47a26a",
+        "ba05ce7f-9ab9-4558-944d-1d1cbd97cb03",
+        "e1d05353-f0df-4ec4-b0a0-4ec1b8f87cc8",
+        "4dfd2fa2-731a-4516-9551-03db67629b84",
+        "ee699cab-d5bd-4f00-9ab6-a0ec09d9cfb5",
+        "faacd081-1333-42cc-a1f2-c6491542b9f3",
+        "bef15bab-d3dd-456a-9885-af2e7fa0286c",
+        "6c57720c-f0cf-4267-819d-af726973b1ac",
+        "da343193-2d72-43d3-8ed4-952b4453850c",
+        "f9861c48-e582-4efa-819c-232b62028100"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q48",
+      "question": "What does a person responsible for workplace protection focus on when overseeing building projects?",
+      "claimTitle": "Safety Officer core duty",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 1,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "862d2e90-6c43-4cdc-9858-c8de4b83a77c",
+        "65c7b0da-f492-4845-b9f7-31f888abbb37",
+        "b628e02e-b601-40b8-96fb-9beeca401e16",
+        "933a9e79-c5a7-4f3c-a802-946001be463f",
+        "ee347309-85e3-4767-b930-7f2660c66517",
+        "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb",
+        "bfabd8e2-d8b1-498c-85f1-5d241f7b7ece",
+        "beda91d5-3eb1-4339-9ff9-3b3bf3a85af7",
+        "a9c5b2ca-aa8c-4e97-9710-5e7454baecbb",
+        "ac17668f-5650-430d-913c-17304b8febbe"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q49",
+      "question": "If an item’s marking is missing or unclear, what action should workers take?",
+      "claimTitle": "Do not use unlabelled products",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "6a6e3148-fe03-4ad7-b450-3ebe68d8a147",
+        "1e8983d1-5eb6-4120-a172-562f5f084c7f",
+        "d00d0d26-0e77-4ffe-885c-59023e7f9af5",
+        "ba05ce7f-9ab9-4558-944d-1d1cbd97cb03",
+        "1d655470-55ad-43f3-89cc-64762619d21e",
+        "ac17668f-5650-430d-913c-17304b8febbe",
+        "a9c5b2ca-aa8c-4e97-9710-5e7454baecbb",
+        "c92d93b8-642f-41b1-9080-bbd3e7643afc",
+        "ec1ace16-537a-44b8-8d93-a9ee699acf5f",
+        "f53bad0e-7eb1-4770-bdfb-a0538e8e4622"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q50",
+      "question": "What types of locations require following Brightwater Utilities' confined space entry rules?",
+      "claimTitle": "Procedure scope: permit spaces",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "6318c597-64df-44e6-b794-e878e63af87c",
+        "7e7aa05c-8a78-4608-ac89-d321209ddabf",
+        "e60ce867-d3be-4c12-9d0e-d10b2ec81cde",
+        "cbbfec1a-be78-4ba1-9f91-0c73efcf3df3",
+        "88b300fd-14e7-46b7-bd12-a703e7a26cae",
+        "71591851-1664-435d-8bbe-9f4cc78d43cf",
+        "fd793467-8294-4c2b-b340-cf648ee1edb3",
+        "e7d68282-97cc-4101-9b89-5b20e71f5884",
+        "7c2bf44a-4525-4a07-a33c-c4862b46f0b6",
+        "1f2a6df7-25d1-442a-8334-10a387efb064"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q51",
+      "question": "What does Utilitek Solutions coordinate in its housing development work?",
+      "claimTitle": "Utilitek housing development coordination",
+      "entityId": null,
+      "rank": 3,
+      "armRanks": {
+        "meaning": 3,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "c4bee0f1-ddac-4e37-a03d-45874379f301",
+        "d21d87b5-a554-41b9-b71f-51c3d3399c8d",
+        "69960a5b-648a-4db5-875c-95839da8e95b",
+        "714bd2af-a555-494b-b2e2-7b4cd0be46d3",
+        "dff0858d-d356-47da-9eeb-418cc1221e4a",
+        "76d6bc53-ea24-4146-ab2a-72f7a8ecbb83",
+        "e58bf6c7-1138-447b-98b8-3f6d38baebb8",
+        "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280",
+        "5a67bedd-a547-444d-9c8d-504d23e65f7e",
+        "b6414fc4-ab01-40db-9b4e-16365eaf1684"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q52",
+      "question": "What sequence does Utilitek Solutions Inc.'s safety protocol use to address workplace risks?",
+      "claimTitle": "Hazard control hierarchy, PPE last",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "fba20286-eed5-4984-b98f-210ae913f8a8",
+        "88d0f6ed-d461-4030-b295-8bcde1ac9673",
+        "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb",
+        "ee699cab-d5bd-4f00-9ab6-a0ec09d9cfb5",
+        "b4d3dba0-6651-4fe1-8044-2233e9366ec8",
+        "d522ebe8-5cb6-4446-b23f-f2a1fca0194b",
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "3a9acf4f-ec61-40c8-9a36-bd3b6181e167",
+        "933a9e79-c5a7-4f3c-a802-946001be463f",
+        "3a2bb6b7-139f-481a-a9fd-51f39ce80df2"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q53",
+      "question": "What role do acceptable defect thresholds play when checking product batches?",
+      "claimTitle": "AQL limits guide acceptance",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 15,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "b7936ba9-3db1-44f2-9b5b-74f020044fa3",
+        "792080c9-06f2-477d-a744-f1c62efdbb92",
+        "7415a246-8b8a-46f6-9933-db3c44c7b356",
+        "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "93345ace-ab08-4956-a549-6afe816c0fb5",
+        "8b27a61b-abe2-4ed0-90dc-a798afcf966d",
+        "a5d06153-aeb3-49d7-8ba1-d9b211e532d8",
+        "5c506136-4ec9-4a80-b04a-20332da4f217",
+        "9264351a-d68a-4a94-a3ea-2e1256c24065",
+        "f2d8bea2-6c89-41b3-8e28-5dd9631c6353"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q54",
+      "question": "What components are brought together during the planning stage of the practice run?",
+      "claimTitle": "Residential exercise: design phase",
+      "entityId": null,
+      "rank": null,
+      "armRanks": {
+        "meaning": null,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "02c6c794-ce32-4680-9cf8-e6f6fbe6d1a2",
+        "aeb02860-415b-433c-8b90-489fe41dba7b",
+        "a8586fc1-a61e-4bd6-82a4-d77687071c0f",
+        "3d6997ca-f103-4afc-a1fb-09b19b27122b",
+        "bef15bab-d3dd-456a-9885-af2e7fa0286c",
+        "3807cfbc-0332-43b7-ab20-0bc9f8647a30",
+        "dd0ab25e-77cd-47f9-88c7-4bf6d5503acd",
+        "2b911bca-29b0-4fdc-8ccc-82c44a01e51a",
+        "48edc4d9-31c5-4a95-83fc-463db8323af6",
+        "42cb9ef1-0d8b-4f21-a66a-18dd4fc7d997"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q55",
+      "question": "What is the first step in Utilitek Solutions Inc.'s delivery process?",
+      "claimTitle": "Delivery step one: assessment",
+      "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": 1,
+        "scopedWords": null
+      },
+      "top10": [
+        "a28e03e7-b7c0-4543-bd50-5412326268b3",
+        "c8ab05b2-2e9f-411e-8104-668c877cdba2",
+        "35a00413-0d46-4e61-a6bc-fb118df0a8f7",
+        "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0",
+        "e97b9604-6fbd-4750-b893-365fde9e7e02",
+        "f9861c48-e582-4efa-819c-232b62028100",
+        "eee5c405-7cd2-4d44-bf1a-7bbf38ebe7b2",
+        "868ad190-4ecf-47ce-bb4d-5626470318d5",
+        "da343193-2d72-43d3-8ed4-952b4453850c",
+        "9ef6fa58-f1ed-490e-a12e-105e5a558e92"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q56",
+      "question": "Who oversees hazardous material rules in Canadian workplaces?",
+      "claimTitle": "Provincial workplace WHMIS regulation",
+      "entityId": null,
+      "rank": 9,
+      "armRanks": {
+        "meaning": 9,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "34fdcb3c-06ae-4ec2-936c-2bfb61b42344",
+        "a88396dc-304a-4787-8184-37494f9474fb",
+        "28d1035d-2397-46c6-9b1b-c82deeb2109a",
+        "dc3bac1a-c0f0-4544-8504-8ca9bab64e6d",
+        "8ae464e4-38ce-4731-9725-7630ef9bbe27",
+        "0e506ad8-904a-4301-a792-67f5f085c65d",
+        "ece50b40-80f6-4270-8954-7e9eab544421",
+        "4a58342c-9419-4e11-914f-5e2cb3b841f1",
+        "21944480-9118-4509-950a-3397423cfab7",
+        "15883607-0c0c-47ad-8154-00ef42ab950f"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q57",
+      "question": "What are the main duties of the person responsible for checking hazards and ensuring safe work practices at building sites?",
+      "claimTitle": "Safety Officer role definition",
+      "entityId": null,
+      "rank": 2,
+      "armRanks": {
+        "meaning": 2,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "862d2e90-6c43-4cdc-9858-c8de4b83a77c",
+        "65c7b0da-f492-4845-b9f7-31f888abbb37",
+        "b628e02e-b601-40b8-96fb-9beeca401e16",
+        "fcfebc13-1928-47f1-bb51-b4c2bcbb1beb",
+        "beda91d5-3eb1-4339-9ff9-3b3bf3a85af7",
+        "d522ebe8-5cb6-4446-b23f-f2a1fca0194b",
+        "ee347309-85e3-4767-b930-7f2660c66517",
+        "b09134b0-0a32-4a70-bffa-7f3abd1e53ed",
+        "62fa568c-cacf-424f-b0c4-5695cee164e3",
+        "ac17668f-5650-430d-913c-17304b8febbe"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q58",
+      "question": "How far apart should electrical equipment be placed from regular water mains compared to larger supply conduits?",
+      "claimTitle": "1.8m and 2.5m water line clearances",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": null,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "24223be6-e46a-4c5c-9944-d2f50ca971f0",
+        "ed3fb336-9369-41ea-abf3-eb1308950324",
+        "5df5e05e-427d-49dc-9a51-63cd5842a6ef",
+        "850b3a72-0885-488c-b9b4-9ced3ab11c6f",
+        "5a8cc1a2-deaa-47ca-9801-ae37de7ec9dc",
+        "676b597e-90a7-403a-bae4-acc5043dfd86",
+        "7bbc14ac-1f3f-45a3-8145-65d5e3440336",
+        "89820b1e-cd29-434f-9a81-67d2b01fcb73",
+        "670c9b8b-1c85-4031-a0ee-599503d4b9fb",
+        "3d96cac7-9d60-48f0-8750-6a57e7af27b3"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q59",
+      "question": "Which program is recommended for drafting plans in the synthetic housing service drill?",
+      "claimTitle": "Residential exercise: layout tool",
+      "entityId": null,
+      "rank": 1,
+      "armRanks": {
+        "meaning": 1,
+        "words": 10,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "60274cb3-16e9-4a1d-a697-936c927e26d8",
+        "d909b650-f26f-4df0-b15e-9873e5fb23cc",
+        "c3a82fd0-1b7e-4447-acab-3037f0a2c920",
+        "02c6c794-ce32-4680-9cf8-e6f6fbe6d1a2",
+        "3807cfbc-0332-43b7-ab20-0bc9f8647a30",
+        "41d9db45-e894-44ac-9a80-fa464441621d",
+        "1aab3249-61aa-4d2e-b5d1-569a876f7e82",
+        "2ab20bba-87cb-4ed1-8edc-b7076d712881",
+        "50dc9245-730b-4cfb-a866-1a6688786b59",
+        "1dacccfb-af9a-46a5-afbd-126a04c25218"
+      ],
+      "warning": null
+    },
+    {
+      "id": "q60",
+      "question": "What are the primary kinds of checks done before starting full-scale production?",
+      "claimTitle": "Pre-production inspection definition",
+      "entityId": null,
+      "rank": 4,
+      "armRanks": {
+        "meaning": 4,
+        "words": 4,
+        "scopedMeaning": null,
+        "scopedWords": null
+      },
+      "top10": [
+        "bef15bab-d3dd-456a-9885-af2e7fa0286c",
+        "62bb5f05-9d61-403b-bcc6-12e35bd20def",
+        "9264351a-d68a-4a94-a3ea-2e1256c24065",
+        "e74e5682-2cb8-4d27-900b-670954d42ea8",
+        "98bbfc9d-6b34-4ddb-9470-006d9668f6b0",
+        "bc77a3bf-9dab-4fb6-ba04-89ea0845e378",
+        "4137fc06-3ec6-4063-9ab9-0d26fec6dc5f",
+        "87db0e4c-193b-4a10-a81c-7ca797ae331d",
+        "829ce03f-6649-4007-8394-ffe95b74cc7e",
+        "7415a246-8b8a-46f6-9933-db3c44c7b356"
+      ],
+      "warning": null
+    }
+  ]
+}

@@ -47,6 +47,26 @@ node --experimental-strip-types --env-file="<main checkout>/.env.local" evals/re
 Needs `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY` and `NEBIUS_API_KEY`.
 It sends claim text to Nebius. Spot-check the new questions before using them.
 
+## Running the eval: `run.ts`
+
+```bash
+node --experimental-strip-types --env-file="<main checkout>/.env.local" evals/retrieval/run.ts --modes legacy,hybrid
+```
+
+It asks `rankUnits` (`lib/chatbot/rank.ts`) every question in each mode, with
+the question's `entityId` as the chosen entity. Each question is embedded once
+and the same vector goes to every mode, so modes differ only in ranking. A
+question's rank is where the first of its `unitIds` lands. It reports hit@5,
+hit@10 and MRR (mean of 1 / rank, 0 for a miss) overall and for scoped and
+unscoped questions, and writes `results/<date>-<mode>.json` with each
+question's rank, the rank inside every search arm, and the top 10. Set
+`CHAT_RERANKER=voyage` with `VOYAGE_API_KEY` to measure hybrid with the
+reranker (the file is then named `<date>-hybrid-rerank.json`).
+
+A run is marked `"valid": false` when any question fell back with a warning
+(for example a missing database function); do not compare such a run. The run
+is read-only: it does not log AI calls to the database.
+
 ## Drift
 
 The IDs point at the live database. Claims get revised, merged and retired, so
