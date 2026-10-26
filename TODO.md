@@ -32,7 +32,7 @@ measured, and Sam picks which ones to switch on.
 | topics | T1 Measure what fills the 135k to 154k token topic prompts | | waiting |
 | topics | T2 Keep each topic prompt under 100k tokens, quality unchanged | T1 | waiting |
 | review | R1 Find what triggered the reviewer burst; does a normal upload repeat it? (findings: `scripts/cost/review-notes.md`) | | ready to integrate |
-| review | R2 Same sample on Haiku and Sonnet: how often do verdicts agree? | | waiting |
+| review | R2 Same sample on Haiku and Sonnet: how often do verdicts agree? (`scripts/cost/review-sample.ts`; results in `scripts/cost/review-notes.md`) | | ready to integrate |
 | cost | M1 Cost-per-upload report from `ai_calls` (script), run before and after | | waiting |
 
 Critical path: K1, then G1, then G2.
