@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DbRpc } from "@/lib/db/rpc";
 import type { ServerSupabase } from "@/lib/supabase/server";
-import { ARM_CAP, rankUnits, searchMode } from "./rank";
+import { ARM_CAP, RERANK_DEPTH, rankUnits, searchMode } from "./rank";
 
 const mocks = vi.hoisted(() => ({ similarUnits: vi.fn(), savedVectors: vi.fn() }));
 vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: mocks.similarUnits, savedVectors: mocks.savedVectors }));
@@ -11,7 +11,7 @@ type Row = Record<string, unknown>;
 function fakeClient(ids: string[]) {
   const tables: Record<string, Row[]> = {
     units: ids.map(id => ({ id, current_revision_id: `r-${id}`, retired_at: null })),
-    revisions: ids.map(id => ({ id: `r-${id}`, unit_id: id })),
+    revisions: ids.map(id => ({ id: `r-${id}`, unit_id: id, title: id, content: `text ${id}` })),
   };
   return { from(table: string) {
     const filters: ((row: Row) => boolean)[] = [];
@@ -151,5 +151,57 @@ describe("rankUnits hybrid", () => {
     const result = await rankUnits("lockout", { db, client: fakeClient([]), embedder, mode: "hybrid" });
     expect(result.warning).toContain("text matches only");
     expect(mocks.similarUnits).not.toHaveBeenCalled();
+  });
+});
+
+describe("rankUnits rerank", () => {
+  const ids = (prefix: string) => Array.from({ length: ARM_CAP }, (_, index) => `${prefix}${index}`);
+  const reversing = (model = "rerank-test") => ({ model, rerank: vi.fn(async (_query: string, documents: string[]) => documents.map((_, index) => documents.length - 1 - index)) });
+  async function fusedOrder() {
+    return (await rankUnits("lockout", { db, client: fakeClient([]), embedder, mode: "hybrid", reranker: null })).unitIds;
+  }
+  beforeEach(() => {
+    mocks.similarUnits.mockResolvedValue(matches(ids("m")));
+    rpc.searchText.mockResolvedValue(textRows(ids("k")));
+    rpc.linked.mockResolvedValue(ids("l").map(id => ({ unit_id: id, via_unit_id: "m0", type: "supports" })));
+  });
+
+  it("re-sorts the fused top 40 by title and content and leaves the rest in place", async () => {
+    const fused = await fusedOrder();
+    expect(fused).toHaveLength(60);
+    const reranker = reversing();
+    const result = await rankUnits("lockout", { db, client: fakeClient([...ids("m"), ...ids("k"), ...ids("l")]), embedder, mode: "hybrid", reranker });
+    expect(result.unitIds).toEqual([...fused.slice(0, RERANK_DEPTH).reverse(), ...fused.slice(RERANK_DEPTH)]);
+    expect(result.arms.reranked).toEqual(fused.slice(0, RERANK_DEPTH).reverse());
+    expect(result.rerankedBy).toBe("rerank-test");
+    expect(reranker.rerank).toHaveBeenCalledWith("lockout", fused.slice(0, RERANK_DEPTH).map(id => `${id}\ntext ${id}`));
+  });
+
+  it("puts claims whose text cannot be read after the reranked ones", async () => {
+    const fused = await fusedOrder();
+    const readable = fused.slice(0, RERANK_DEPTH).filter(id => id.startsWith("k"));
+    const result = await rankUnits("lockout", { db, client: fakeClient(readable), embedder, mode: "hybrid", reranker: reversing() });
+    expect(result.unitIds.slice(0, readable.length)).toEqual([...readable].reverse());
+    expect(result.unitIds.slice(readable.length, RERANK_DEPTH)).toEqual(fused.slice(0, RERANK_DEPTH).filter(id => !id.startsWith("k")));
+  });
+
+  it.each([
+    ["the request fails", async () => { throw new Error("timeout"); }],
+    ["the ranking repeats an index", async (_query: string, documents: string[]) => documents.map(() => 0)],
+    ["the ranking is short", async () => [0]],
+  ])("keeps the fused order without a warning when %s", async (_label, rerank) => {
+    const fused = await fusedOrder();
+    const result = await rankUnits("lockout", { db, client: fakeClient([...ids("m"), ...ids("k")]), embedder, mode: "hybrid", reranker: { model: "rerank-test", rerank } });
+    expect(result.unitIds).toEqual(fused);
+    expect(result.rerankedBy).toBeNull();
+    expect(result.arms.reranked).toBeUndefined();
+    expect(result.warning).toBeNull();
+  });
+
+  it("never reranks in legacy mode", async () => {
+    const reranker = reversing();
+    const result = await rankUnits("lockout", { db, client: fakeClient(ids("m")), embedder, mode: "legacy", reranker });
+    expect(reranker.rerank).not.toHaveBeenCalled();
+    expect(result.rerankedBy).toBeNull();
   });
 });

@@ -22,7 +22,7 @@ current; the reranker stays off unless `CHAT_RERANKER=voyage` and a key is set.
 | eval | C2 Runner: hit@5, hit@10, MRR per mode, against the live database, read-only | C1, D2 | waiting |
 | search | D1 `lib/chatbot/fusion.ts`: RRF with a cap per list | | merged |
 | search | D2 `lib/chatbot/rank.ts`: arms, caps, fusion; `retrieve.ts` uses it; `CHAT_SEARCH` switch | A1, A2, D1 | merged |
-| search | D3 Rerank the fused top 40 when the reranker is on; fall back on error | B1, D2 | waiting |
+| search | D3 Rerank the fused top 40 when the reranker is on; fall back on error | B1, D2 | merged |
 | eval | C3 Measure all three modes; pick the default; write results into the doc | C2, D3, Voyage key | waiting |
 
 Critical path: A1, then D2, then D3, then C3.
