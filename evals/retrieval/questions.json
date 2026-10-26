@@ -1,0 +1,557 @@
+[
+  {
+    "id": "q01",
+    "question": "What software and equipment are included in Utilitek Solutions Inc.'s toolset?",
+    "unitIds": [
+      "1e856fd5-7329-4440-8704-758927fa29f6"
+    ],
+    "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+    "claimTitle": "Utilitek engineering tools list"
+  },
+  {
+    "id": "q02",
+    "question": "What components does Utilitek Solutions use in its protection and control operations?",
+    "unitIds": [
+      "76384c7f-3bb3-4177-9b3e-4476cb53d737",
+      "28df28f4-2da4-4ff4-95f8-74a1f8bd4434",
+      "bee278fa-1ced-4432-a598-2774ca0ec0a7"
+    ],
+    "entityId": null,
+    "claimTitle": "Protection and control services"
+  },
+  {
+    "id": "q03",
+    "question": "What does Utilitek Solutions list as one of its specialisms on their website?",
+    "unitIds": [
+      "0c1e39a4-929b-456b-8918-ca83f8859fae"
+    ],
+    "entityId": null,
+    "claimTitle": "Shared-pole engineering specialism"
+  },
+  {
+    "id": "q04",
+    "question": "How does ISO define the distinction between quality assurance and quality control?",
+    "unitIds": [
+      "c047af4c-2e44-4899-9159-a6b79b752e5a"
+    ],
+    "entityId": null,
+    "claimTitle": "Quality assurance versus quality control"
+  },
+  {
+    "id": "q05",
+    "question": "What triggers the need for ear safety gear at Utilitek Solutions Inc.?",
+    "unitIds": [
+      "cd1b277f-7b00-443b-8786-e394851a7146",
+      "248c5ffb-a0fb-4f28-934a-b12b9d5729ac"
+    ],
+    "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+    "claimTitle": "Hearing protection at 85 dB"
+  },
+  {
+    "id": "q06",
+    "question": "How does Utilitek Solutions categorize its compliance resources online?",
+    "unitIds": [
+      "699f631b-9180-4a4e-97a7-c8e234524775"
+    ],
+    "entityId": null,
+    "claimTitle": "Utilitek compliance reference groups"
+  },
+  {
+    "id": "q07",
+    "question": "Where is EPCOR Utilities Inc.'s headquarters located?",
+    "unitIds": [
+      "968c0663-e191-41a0-8bb3-46c26a593ec7"
+    ],
+    "entityId": null,
+    "claimTitle": "EPCOR identity and headquarters"
+  },
+  {
+    "id": "q08",
+    "question": "What tool guides the verification process when checking if items match design requirements?",
+    "unitIds": [
+      "8f8907b1-d006-4779-8f5e-87ba6c4efd92"
+    ],
+    "entityId": null,
+    "claimTitle": "Inspector follows specification-based checklist"
+  },
+  {
+    "id": "q09",
+    "question": "What should I verify on a dangerous item before starting work?",
+    "unitIds": [
+      "1e8983d1-5eb6-4120-a172-562f5f084c7f"
+    ],
+    "entityId": null,
+    "claimTitle": "Check label before use"
+  },
+  {
+    "id": "q10",
+    "question": "What kind of network planning support does Utilitek Solutions offer?",
+    "unitIds": [
+      "c2fdbc25-fefe-471c-ad8a-d72f5709ba46",
+      "b6414fc4-ab01-40db-9b4e-16365eaf1684",
+      "b7ba699c-7fca-40b4-a857-5eff46a95ac1"
+    ],
+    "entityId": null,
+    "claimTitle": "Distribution system design service"
+  },
+  {
+    "id": "q11",
+    "question": "What are employees expected to understand after completing the government security training?",
+    "unitIds": [
+      "b9a4edcf-578b-48de-af4f-e0bb25823473"
+    ],
+    "entityId": null,
+    "claimTitle": "Participants learn GoC security principles"
+  },
+  {
+    "id": "q12",
+    "question": "What areas are included when planning the practice run for home-based service setup?",
+    "unitIds": [
+      "fbecb9d6-413f-40a3-a2a0-46d836341a95"
+    ],
+    "entityId": null,
+    "claimTitle": "Residential exercise: coordination scope"
+  },
+  {
+    "id": "q13",
+    "question": "What key skills are covered in the self-paced fire safety class regarding handling small fires on site?",
+    "unitIds": [
+      "b5ee5029-4537-4060-a122-4437f715beb2"
+    ],
+    "entityId": null,
+    "claimTitle": "WMT105 course covers extinguisher use"
+  },
+  {
+    "id": "q14",
+    "question": "What skills are covered in the training program for handling expert assessments of building performance?",
+    "unitIds": [
+      "13d360fa-6adf-481d-8e58-b9ab4866d3c0"
+    ],
+    "entityId": null,
+    "claimTitle": "COR414 course covers E4 management"
+  },
+  {
+    "id": "q15",
+    "question": "What steps are taken when the minimum agreed clearances for an EPCOR utility line assignment cannot be achieved?",
+    "unitIds": [
+      "676b597e-90a7-403a-bae4-acc5043dfd86"
+    ],
+    "entityId": null,
+    "claimTitle": "Reduced clearances require utility agreement"
+  },
+  {
+    "id": "q16",
+    "question": "What risks arise when a flawed component enters the aerospace manufacturing line?",
+    "unitIds": [
+      "be3a5d2e-2cb5-4012-ad77-07a3fc0e849b"
+    ],
+    "entityId": null,
+    "claimTitle": "Defective components trigger cascading failures"
+  },
+  {
+    "id": "q17",
+    "question": "When did Utilitek Solutions begin supporting upgrades to power delivery infrastructure?",
+    "unitIds": [
+      "e8f11593-d2b4-426b-9362-9a80f89e3f25"
+    ],
+    "entityId": null,
+    "claimTitle": "Electrical distribution work since 2014"
+  },
+  {
+    "id": "q18",
+    "question": "What are the key components of the short online safety training for staff?",
+    "unitIds": [
+      "3f4193a6-1fbb-48cc-93cd-e37e706bac33"
+    ],
+    "entityId": null,
+    "claimTitle": "WHMIS online course for employees"
+  },
+  {
+    "id": "q19",
+    "question": "What does Utilitek Solutions' delivery process involve?",
+    "unitIds": [
+      "e97b9604-6fbd-4750-b893-365fde9e7e02",
+      "34df4caf-e9fc-49f9-825b-8a4ca36d5ef0",
+      "35a00413-0d46-4e61-a6bc-fb118df0a8f7"
+    ],
+    "entityId": null,
+    "claimTitle": "Published four-step delivery sequence"
+  },
+  {
+    "id": "q20",
+    "question": "What does the person overseeing safety at Brightwater Utilities Ltd. check before allowing work inside a tank?",
+    "unitIds": [
+      "770011ca-f74e-4bf0-82da-7f7d20af6fc3"
+    ],
+    "entityId": "8c4a47bc-cc01-43de-a943-5b707b167f2c",
+    "claimTitle": "Step 5: safe atmosphere limits"
+  },
+  {
+    "id": "q21",
+    "question": "What mandatory PPE does every person need to bring when entering a confined space?",
+    "unitIds": [
+      "65c8fbf8-4607-4579-acf4-186a9815f92b"
+    ],
+    "entityId": null,
+    "claimTitle": "Required entrant equipment list"
+  },
+  {
+    "id": "q22",
+    "question": "What changes were made to align national chemical labeling rules with global guidelines?",
+    "unitIds": [
+      "28d1035d-2397-46c6-9b1b-c82deeb2109a",
+      "a88396dc-304a-4787-8184-37494f9474fb"
+    ],
+    "entityId": null,
+    "claimTitle": "WHMIS aligned with GHS"
+  },
+  {
+    "id": "q23",
+    "question": "What are the stages of the training simulation used to practice home service procedures?",
+    "unitIds": [
+      "02c6c794-ce32-4680-9cf8-e6f6fbe6d1a2"
+    ],
+    "entityId": null,
+    "claimTitle": "Residential exercise: four-phase sequence"
+  },
+  {
+    "id": "q24",
+    "question": "What problems can be avoided by adhering to the utility line assignment rules?",
+    "unitIds": [
+      "42458e4e-3a78-4e71-8b77-b1b2adb1463f"
+    ],
+    "entityId": null,
+    "claimTitle": "ULA compliance benefits"
+  },
+  {
+    "id": "q25",
+    "question": "What makes an employee eligible to enter a confined space at work?",
+    "unitIds": [
+      "37b8696e-d296-425c-89a8-8d355b6ba369"
+    ],
+    "entityId": null,
+    "claimTitle": "Authorized entrant definition"
+  },
+  {
+    "id": "q26",
+    "question": "What’s the cost difference between addressing an issue early in manufacturing versus waiting until after shipment?",
+    "unitIds": [
+      "4214b8ff-115a-4350-8856-82c6c50f0049"
+    ],
+    "entityId": null,
+    "claimTitle": "1-10-100 rule defect costs"
+  },
+  {
+    "id": "q27",
+    "question": "How does our team prepare for safety risks when beginning a new task?",
+    "unitIds": [
+      "88d0f6ed-d461-4030-b295-8bcde1ac9673"
+    ],
+    "entityId": null,
+    "claimTitle": "Job Hazard Analysis before work"
+  },
+  {
+    "id": "q28",
+    "question": "What are the goals of the mandatory online safety program for public servants?",
+    "unitIds": [
+      "34eeceb0-dc03-41d7-aafd-135a59ec28a3"
+    ],
+    "entityId": null,
+    "claimTitle": "COR310 Security Awareness course purpose"
+  },
+  {
+    "id": "q29",
+    "question": "What does the earlier error elimination principle state about when defects should be addressed?",
+    "unitIds": [
+      "f2d8bea2-6c89-41b3-8e28-5dd9631c6353"
+    ],
+    "entityId": null,
+    "claimTitle": "Earlier error elimination principle"
+  },
+  {
+    "id": "q30",
+    "question": "What kind of electrical infrastructure projects does Utilitek Solutions handle?",
+    "unitIds": [
+      "e87e1e7f-5f3a-4fff-abcf-7dfe2181d280"
+    ],
+    "entityId": null,
+    "claimTitle": "Utility power systems service"
+  },
+  {
+    "id": "q31",
+    "question": "Is the labeled summary from Utilitek Solutions' website considered part of their official operating policies?",
+    "unitIds": [
+      "f423a5ae-f664-433b-a5db-d8ac36b021c2",
+      "c471e597-321d-4a46-8c36-a2885a141da7"
+    ],
+    "entityId": null,
+    "claimTitle": "Website snapshot is not a policy"
+  },
+  {
+    "id": "q32",
+    "question": "What steps are taken during initial inspections of received parts prior to manufacturing?",
+    "unitIds": [
+      "798855d2-3eaa-4f09-a878-59e2c9954800"
+    ],
+    "entityId": null,
+    "claimTitle": "IQC definition and activities"
+  },
+  {
+    "id": "q33",
+    "question": "What kind of infrastructure work does EPCOR handle related to road lighting and control systems?",
+    "unitIds": [
+      "757fe01d-a820-4a92-a382-6ba280019bc8"
+    ],
+    "entityId": "e620dd5e-d2f7-4439-840b-dd976d4ad038",
+    "claimTitle": "EPCOR traffic signal and streetlight support"
+  },
+  {
+    "id": "q34",
+    "question": "How many years of experience does Utilitek Solutions state it has?",
+    "unitIds": [
+      "c097021e-1909-4844-baae-67a2d45c8f3c"
+    ],
+    "entityId": null,
+    "claimTitle": "Utilitek advertised experience claim"
+  },
+  {
+    "id": "q35",
+    "question": "How can I easily set up placeholders in documents while doing inspections?",
+    "unitIds": [
+      "191e6eec-0212-45b4-aec9-496b21828a4f"
+    ],
+    "entityId": null,
+    "claimTitle": "Capture photos during inspection"
+  },
+  {
+    "id": "q36",
+    "question": "What steps are taken by workers at Brightwater Utilities Ltd. regarding protective gear and tethering prior to confined space access?",
+    "unitIds": [
+      "00b038c3-3fb1-441d-8efa-504d7fe761a3"
+    ],
+    "entityId": "8c4a47bc-cc01-43de-a943-5b707b167f2c",
+    "claimTitle": "Step 7: equipment and retrieval before entry"
+  },
+  {
+    "id": "q37",
+    "question": "What components are part of Utilitek Solutions Inc.'s electrical infrastructure services?",
+    "unitIds": [
+      "1b3e6568-0dec-4613-9f85-1c4bcf2b5231"
+    ],
+    "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+    "claimTitle": "Utilitek power-system offering"
+  },
+  {
+    "id": "q38",
+    "question": "What’s the typical multiplier for correcting issues found post-launch versus those caught early in design?",
+    "unitIds": [
+      "27b826a2-d416-4bba-b2c0-172f2215f1e0"
+    ],
+    "entityId": null,
+    "claimTitle": "1:10:100 error cost ratio"
+  },
+  {
+    "id": "q39",
+    "question": "How does Utilitek Solutions Inc. assign responsibility for workplace well-being between managers and staff?",
+    "unitIds": [
+      "b628e02e-b601-40b8-96fb-9beeca401e16"
+    ],
+    "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+    "claimTitle": "Supervisor and worker safety accountability"
+  },
+  {
+    "id": "q40",
+    "question": "What services does EPCOR provide across its Canadian and U.S. operating regions?",
+    "unitIds": [
+      "75d32fc7-d94b-44a7-b8ac-f9557fcc780a"
+    ],
+    "entityId": "e620dd5e-d2f7-4439-840b-dd976d4ad038",
+    "claimTitle": "EPCOR operations and regions"
+  },
+  {
+    "id": "q41",
+    "question": "Who holds full ownership of EPCOR?",
+    "unitIds": [
+      "966f6149-aacb-42c4-bf59-25a31ed41802"
+    ],
+    "entityId": null,
+    "claimTitle": "EPCOR ownership"
+  },
+  {
+    "id": "q42",
+    "question": "What does an SDS contain and when is it given to employees?",
+    "unitIds": [
+      "09281254-7f55-429a-8897-61bfa9da90ad"
+    ],
+    "entityId": null,
+    "claimTitle": "SDS (Safety Data Sheet) glossary entry"
+  },
+  {
+    "id": "q43",
+    "question": "What is the second step in Utilitek Solutions Inc.'s delivery process?",
+    "unitIds": [
+      "868ad190-4ecf-47ce-bb4d-5626470318d5",
+      "ca6fbb9f-ebf7-4118-a1bb-038ec581e8a3"
+    ],
+    "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+    "claimTitle": "Delivery step two: design"
+  },
+  {
+    "id": "q44",
+    "question": "What does the designer need to do when handling a utility line request?",
+    "unitIds": [
+      "259359f1-6e4c-458e-aefd-52db65d9e8f0"
+    ],
+    "entityId": null,
+    "claimTitle": "ULA application process overview"
+  },
+  {
+    "id": "q45",
+    "question": "What are the key components covered in the mock grid planning activity labeled with timestamp 20261017023703216-1?",
+    "unitIds": [
+      "e9444627-a7ee-4863-806a-2106b1d87102"
+    ],
+    "entityId": null,
+    "claimTitle": "Distribution exercise: design scope"
+  },
+  {
+    "id": "q46",
+    "question": "What types of infrastructure improvements does Utilitek Solutions offer for shared utility projects?",
+    "unitIds": [
+      "e58bf6c7-1138-447b-98b8-3f6d38baebb8"
+    ],
+    "entityId": null,
+    "claimTitle": "Joint-use infrastructure upgrade service"
+  },
+  {
+    "id": "q47",
+    "question": "What occurs when checking an approved work authorization for special requirements?",
+    "unitIds": [
+      "e1d05353-f0df-4ec4-b0a0-4ec1b8f87cc8"
+    ],
+    "entityId": null,
+    "claimTitle": "Designer reviews ULA permit for conditions"
+  },
+  {
+    "id": "q48",
+    "question": "What does a person responsible for workplace protection focus on when overseeing building projects?",
+    "unitIds": [
+      "862d2e90-6c43-4cdc-9858-c8de4b83a77c"
+    ],
+    "entityId": null,
+    "claimTitle": "Safety Officer core duty"
+  },
+  {
+    "id": "q49",
+    "question": "If an item’s marking is missing or unclear, what action should workers take?",
+    "unitIds": [
+      "6a6e3148-fe03-4ad7-b450-3ebe68d8a147"
+    ],
+    "entityId": null,
+    "claimTitle": "Do not use unlabelled products"
+  },
+  {
+    "id": "q50",
+    "question": "What types of locations require following Brightwater Utilities' confined space entry rules?",
+    "unitIds": [
+      "6318c597-64df-44e6-b794-e878e63af87c"
+    ],
+    "entityId": null,
+    "claimTitle": "Procedure scope: permit spaces"
+  },
+  {
+    "id": "q51",
+    "question": "What does Utilitek Solutions coordinate in its housing development work?",
+    "unitIds": [
+      "69960a5b-648a-4db5-875c-95839da8e95b"
+    ],
+    "entityId": null,
+    "claimTitle": "Utilitek housing development coordination"
+  },
+  {
+    "id": "q52",
+    "question": "What sequence does Utilitek Solutions Inc.'s safety protocol use to address workplace risks?",
+    "unitIds": [
+      "fba20286-eed5-4984-b98f-210ae913f8a8"
+    ],
+    "entityId": null,
+    "claimTitle": "Hazard control hierarchy, PPE last"
+  },
+  {
+    "id": "q53",
+    "question": "What role do acceptable defect thresholds play when checking product batches?",
+    "unitIds": [
+      "b7936ba9-3db1-44f2-9b5b-74f020044fa3"
+    ],
+    "entityId": null,
+    "claimTitle": "AQL limits guide acceptance"
+  },
+  {
+    "id": "q54",
+    "question": "What components are brought together during the planning stage of the practice run?",
+    "unitIds": [
+      "3dff2834-579e-40d6-a8f6-4a05eed1e72d",
+      "0b0ae98d-3a1b-405f-b19b-b08d686f9a6b",
+      "50dc9245-730b-4cfb-a866-1a6688786b59"
+    ],
+    "entityId": null,
+    "claimTitle": "Residential exercise: design phase"
+  },
+  {
+    "id": "q55",
+    "question": "What is the first step in Utilitek Solutions Inc.'s delivery process?",
+    "unitIds": [
+      "a28e03e7-b7c0-4543-bd50-5412326268b3",
+      "c8ab05b2-2e9f-411e-8104-668c877cdba2"
+    ],
+    "entityId": "fffc01ce-40e3-4e5e-b6db-5449ac1f7cf9",
+    "claimTitle": "Delivery step one: assessment"
+  },
+  {
+    "id": "q56",
+    "question": "Who oversees hazardous material rules in Canadian workplaces?",
+    "unitIds": [
+      "15883607-0c0c-47ad-8154-00ef42ab950f",
+      "21944480-9118-4509-950a-3397423cfab7"
+    ],
+    "entityId": null,
+    "claimTitle": "Provincial workplace WHMIS regulation"
+  },
+  {
+    "id": "q57",
+    "question": "What are the main duties of the person responsible for checking hazards and ensuring safe work practices at building sites?",
+    "unitIds": [
+      "65c7b0da-f492-4845-b9f7-31f888abbb37"
+    ],
+    "entityId": null,
+    "claimTitle": "Safety Officer role definition"
+  },
+  {
+    "id": "q58",
+    "question": "How far apart should electrical equipment be placed from regular water mains compared to larger supply conduits?",
+    "unitIds": [
+      "24223be6-e46a-4c5c-9944-d2f50ca971f0"
+    ],
+    "entityId": null,
+    "claimTitle": "1.8m and 2.5m water line clearances"
+  },
+  {
+    "id": "q59",
+    "question": "Which program is recommended for drafting plans in the synthetic housing service drill?",
+    "unitIds": [
+      "d909b650-f26f-4df0-b15e-9873e5fb23cc",
+      "60274cb3-16e9-4a1d-a697-936c927e26d8"
+    ],
+    "entityId": null,
+    "claimTitle": "Residential exercise: layout tool"
+  },
+  {
+    "id": "q60",
+    "question": "What are the primary kinds of checks done before starting full-scale production?",
+    "unitIds": [
+      "e74e5682-2cb8-4d27-900b-670954d42ea8"
+    ],
+    "entityId": null,
+    "claimTitle": "Pre-production inspection definition"
+  }
+]
