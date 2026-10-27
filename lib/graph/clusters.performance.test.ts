@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createDomainSeparator } from "./clusters";
+import { createContainment, packDomains } from "./clusters";
 import type { SimNode } from "./physics";
 
 function fixture(count: number): SimNode[] {
@@ -11,21 +11,24 @@ function fixture(count: number): SimNode[] {
   }));
 }
 
-it("reads domain membership once and reuses it as positions and pins change", () => {
+it("packs once per set of dots and reuses it as positions and pins change", () => {
   const nodes = fixture(540);
   let reads = 0;
   for (const node of nodes) {
     const paths = node.domainPaths;
     Object.defineProperty(node, "domainPaths", { get: () => { reads++; return paths; } });
   }
-  const separate = createDomainSeparator(nodes, 1);
-  expect(reads).toBe(nodes.length);
-  reads = 0;
-  separate();
-  nodes[0]!.fx = nodes[0]!.x;
-  nodes[0]!.fy = nodes[0]!.y;
-  const pinned = { x: nodes[0]!.x, y: nodes[0]!.y };
-  separate();
-  expect(reads).toBe(0);
-  expect({ x: nodes[0]!.x, y: nodes[0]!.y }).toEqual(pinned);
+  const contain = createContainment(nodes, 1);
+  const packed = reads;
+  expect(packed).toBeGreaterThan(0);
+  contain();
+  nodes[0]!.fx = 10_000;
+  nodes[0]!.fy = 10_000;
+  nodes[0]!.x = 10_000;
+  nodes[0]!.y = 10_000;
+  contain();
+  expect(packDomains(nodes, 1)).toBe(packDomains(nodes, 1));
+  expect(reads).toBe(packed);
+  // A dragged dot stays where the pointer holds it
+  expect({ x: nodes[0]!.x, y: nodes[0]!.y }).toEqual({ x: 10_000, y: 10_000 });
 });

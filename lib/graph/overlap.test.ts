@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createDomainSeparator } from "./clusters";
+import { createContainment } from "./clusters";
 import { createSimulation, nodeRadius, type SimLink, type SimNode } from "./physics";
 import { DEFAULT_GRAPH_SETTINGS } from "./settings";
 
@@ -41,9 +41,10 @@ it("keeps well-linked hubs in one subject from overlapping once settled", () => 
   });
   const nodeSize = DEFAULT_GRAPH_SETTINGS.display.nodeSize;
   const simulation = createSimulation(nodes, links, DEFAULT_GRAPH_SETTINGS.forces, nodeSize);
-  const separate = createDomainSeparator(nodes, nodeSize, links);
+  const contain = createContainment(nodes, nodeSize);
   try {
-    for (let tick = 0; tick < 300; tick++) { simulation.tick(); separate(); }
+    contain();
+    for (let tick = 0; tick < 300; tick++) { simulation.tick(); contain(); }
     expect(worstOverlap(nodes, nodeSize)).toBeLessThan(0.1);
   } finally { simulation.stop(); }
 });

@@ -9,17 +9,20 @@ import {
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from "d3-force";
-import { deepestPaths, forceClusters, forceRootSeparation } from "./clusters";
+import { packDomains } from "./clusters";
 import type { GraphForces } from "./settings";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
 // =====================================================================
 // PHYSICS: Obsidian's four force sliders mapped onto d3-force.
-//   Center force  -> forceX/forceY pull toward (0, 0), weighted by link count
+//   Center force  -> forceX/forceY pull toward (0, 0), or with domains on toward the middle
+//                    of each dot's own domain circle, weighted by link count
 //   Repel force   -> forceManyBody (negative charge), stronger for hubs
 //   Link force    -> forceLink strength
 //   Link distance -> forceLink distance
-//   Domain pull   -> forceClusters (dots gather by domain and subdomain)
+//   Domain pull   -> above 0, domains on: circles are packed up front (clusters.ts), each dot
+//                    is pulled to its own circle and kept inside it (createContainment), and
+//                    links between domains stop pulling (bundles show them instead)
 // A collide force keeps dots from overlapping. The simulation stops by
 // itself once the layout settles (d3's alpha decay), so an idle graph
 // uses no CPU.
@@ -35,9 +38,11 @@ const CENTER_SCALE = 0.1;
 const REPEL_SCALE = 15;
 const LINK_SCALE = 0.5;
 const REPEL_REACH = 800;
-const CLUSTER_SCALE = 1;
-// At full domain pull, links between groups keep this little of their strength (1 - CROSS_SLACK)
-const CROSS_SLACK = 0.9;
+// With domains on, how much the domain pull adds to each dot's pull toward its circle's middle
+const HOME_SCALE = 0.1;
+// With domains on, dots only push dots this close (in world units): a dot in another circle is kept
+// out by containment, so pushing across circles only crowds dots against their rings
+const PACKED_REPEL_REACH = 150;
 // Derived "similar" links pull this much as hard as stored ones, so real relationships shape the layout
 const SIMILAR_PULL = 0.5;
 
@@ -65,28 +70,28 @@ export function pullWeight(node: Pick<GraphNode, "degree">): number {
 
 // Applies slider values to a simulation's forces (no restart; the caller decides)
 export function applyForces(simulation: GraphSimulation, forces: GraphForces, nodeSize: number): void {
+  // Domains on: every dot has a home circle in the packing
+  const homes = forces.cluster > 0 ? packDomains(simulation.nodes(), nodeSize).homes : null;
+  const pull = (node: SimNode) => (forces.center * CENTER_SCALE + (homes ? forces.cluster * HOME_SCALE : 0)) * pullWeight(node);
   simulation
-    .force("x", forceX<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
-    .force("y", forceY<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
-    .force("charge", forceManyBody<SimNode>().strength((node) => -forces.repel * REPEL_SCALE * (1 + HUB_REPEL * Math.sqrt(node.degree))).distanceMax(REPEL_REACH))
-    .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE))
-    .force("root-separation", forces.cluster > 0 ? forceRootSeparation(nodeSize, simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")?.links() ?? []) : null)
+    .force("x", forceX<SimNode>((node) => homes?.get(node.id)?.x ?? 0).strength(pull))
+    .force("y", forceY<SimNode>((node) => homes?.get(node.id)?.y ?? 0).strength(pull))
+    .force("charge", forceManyBody<SimNode>().strength((node) => -forces.repel * REPEL_SCALE * (1 + HUB_REPEL * Math.sqrt(node.degree))).distanceMax(homes ? PACKED_REPEL_REACH : REPEL_REACH))
     // Collide runs last and at full strength: it sees every other pull first, so big hubs
     // drawn into one domain spot still end up side by side. Re-adding it keeps it last.
     .force("collide", null)
     .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2).strength(1).iterations(COLLIDE_PASSES));
   const link = simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link");
   const strength = forces.link * LINK_SCALE;
-  // Links between different domain groups slacken as the domain pull rises, so groups can sit apart
-  const paths = deepestPaths(simulation.nodes());
+  // With domains on, links between two homes do not pull: each dot stays in its own circle anyway
   const crossing = (candidate: SimLink) => {
-    const [from, to] = [candidate.source, candidate.target].map((end) => (typeof end === "object" ? paths.get(end) : undefined));
+    const [from, to] = [candidate.source, candidate.target].map((end) => (typeof end === "object" ? homes?.get(end.id) : undefined));
     return from !== undefined && to !== undefined && from !== to;
   };
   link
     ?.strength((candidate) => {
-      const base = candidate.kind === "similar" ? strength * SIMILAR_PULL : strength;
-      return crossing(candidate) ? base * (1 - Math.min(1, forces.cluster) * CROSS_SLACK) : base;
+      if (crossing(candidate)) return 0;
+      return candidate.kind === "similar" ? strength * SIMILAR_PULL : strength;
     })
     .distance(forces.linkDistance);
 }

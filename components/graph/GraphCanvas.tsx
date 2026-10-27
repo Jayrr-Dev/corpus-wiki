@@ -91,12 +91,14 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   const frame = useRef<number | null>(null);
   const redrawRef = useRef<() => void>(() => {});
   const colorOf = useMemo(() => groupColorLookup(settings.groups), [settings.groups]);
-  const latest = useRef({ display: settings.display, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain });
   // The domain circles toggle also turns off the pull that gathers dots by domain
   const forces = useMemo(
     () => (settings.display.domainCircles ? settings.forces : { ...settings.forces, cluster: 0 }),
     [settings.forces, settings.display.domainCircles],
   );
+  // Circles come from the domain packing, so they only match the dots while the domain pull is on
+  const showCircles = forces.cluster > 0;
+  const latest = useRef({ display: settings.display, showCircles, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain });
   const layout = useForceLayout(graph, forces, settings.display.nodeSize, redrawRef);
   const geometry = useRef<{
     nodes: SimNode[]; revision: number; nodeSize: number; domainCircles: boolean;
@@ -112,11 +114,11 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     const ctx = element?.getContext("2d");
     if (!element || !ctx || size.current.width === 0) return;
     const { nodes, links, revision } = layout.current;
-    const { display } = latest.current;
+    const { display, showCircles } = latest.current;
     let bounds = geometry.current;
-    if (!bounds || bounds.nodes !== nodes || bounds.revision !== revision || bounds.nodeSize !== display.nodeSize || bounds.domainCircles !== display.domainCircles || bounds.width !== size.current.width || bounds.height !== size.current.height) {
-      const circles = display.domainCircles ? clusterCircles(nodes, display.nodeSize) : [];
-      bounds = { nodes, revision, nodeSize: display.nodeSize, domainCircles: display.domainCircles, ...size.current,
+    if (!bounds || bounds.nodes !== nodes || bounds.revision !== revision || bounds.nodeSize !== display.nodeSize || bounds.domainCircles !== showCircles || bounds.width !== size.current.width || bounds.height !== size.current.height) {
+      const circles = showCircles ? clusterCircles(nodes, display.nodeSize) : [];
+      bounds = { nodes, revision, nodeSize: display.nodeSize, domainCircles: showCircles, ...size.current,
         circles, overview: fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height) };
       geometry.current = bounds;
     }
@@ -162,8 +164,8 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks/immutability -- Shared ref is the force simulation callback bridge.
     redrawRef.current = redraw;
-    latest.current = { display: settings.display, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain };
-  }, [redraw, settings.display, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain]);
+    latest.current = { display: settings.display, showCircles, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain };
+  }, [redraw, settings.display, showCircles, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain]);
 
   // RESIZE: the first size centers the camera; later ones keep the view (or refit, while auto-fitting)
   const onResize = useCallback(
@@ -178,7 +180,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Read current simulation positions when invoked.
   const fitView = useCallback(() => {
     const { nodes } = layout.current;
-    const circles = settings.display.domainCircles ? clusterCircles(nodes, settings.display.nodeSize) : [];
+    const circles = showCircles ? clusterCircles(nodes, settings.display.nodeSize) : [];
     const overview = fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height);
     setFocusedDomain(null);
     onFocusDomain?.(null);
@@ -188,10 +190,10 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
       isAutoFit.current = true;
       redraw();
     });
-  }, [layout, settings.display.domainCircles, settings.display.nodeSize, motion, redraw, onFocusDomain]);
+  }, [layout, showCircles, settings.display.nodeSize, motion, redraw, onFocusDomain]);
   // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Hit testing needs current mutable simulation positions.
   const focusGroup = useCallback((point: Point) => {
-    if (!progressiveZoom || !settings.display.domainCircles) return;
+    if (!progressiveZoom || !showCircles) return;
     const { nodes } = layout.current;
     const circles = clusterCircles(nodes, settings.display.nodeSize);
     const overview = fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height);
@@ -213,7 +215,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     hoveredId.current = null;
     isAutoFit.current = false;
     redraw();
-  }, [layout, progressiveZoom, settings.display, redraw, motion, fitView, onFocusDomain]);
+  }, [layout, progressiveZoom, showCircles, settings.display, redraw, motion, fitView, onFocusDomain]);
   usePointerControls({ canvas, layout, camera, hoveredId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, onContextNode, onContextTitle: (point,client) => {const label=[...domainLabelBoxes.current].reverse().find(b=>point.x>=b.x-5&&point.x<=b.x+b.width+5&&point.y>=b.y-4&&point.y<=b.y+b.height+4);if(!label||!onContextDomain)return false;onContextDomain(label.path,client);return true;}, onSelect: onSelect ? (nodes,toggle) => onSelect(nodes.filter(n=>!focusedDomain||n.domainPaths.some(p=>p===focusedDomain||p.startsWith(focusedDomain+"/"))),toggle) : undefined, onSelectionBox: setSelectionBox, onBackgroundClick: focusGroup, motion, redraw });
 
   // ZOOM BUTTONS: zoom around the canvas center; fit hands the camera back to auto-fit
@@ -227,7 +229,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   );
 
   // REDRAW when display settings or groups change (no layout change needed)
-  useEffect(redraw, [redraw, settings.display, colorOf, focusedDomain]);
+  useEffect(redraw, [redraw, settings.display, showCircles, colorOf, focusedDomain]);
   // CLEANUP: cancel a pending frame and clear the handle, so a remount (React dev's double
   // mount) can schedule frames again
   useEffect(

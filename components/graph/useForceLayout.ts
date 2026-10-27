@@ -3,7 +3,7 @@
 import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import type { GraphData, GraphForces } from "@/lib/graph";
 import { applyForces, createSimulation, type GraphSimulation, type SimLink, type SimNode, toSimGraph } from "@/lib/graph/physics";
-import { createDomainSeparator } from "@/lib/graph/clusters";
+import { createContainment } from "@/lib/graph/clusters";
 
 // =====================================================================
 // FORCE LAYOUT: runs the d3 simulation for the visible graph. A new
@@ -37,18 +37,22 @@ export function useForceLayout(graph: GraphData, forces: GraphForces, nodeSize: 
     const previous = new Map(layout.current.nodes.map((node) => [node.id, node]));
     const { nodes, links } = toSimGraph(graph, previous);
     const simulation = createSimulation(nodes, links, settings.current.forces, settings.current.nodeSize);
-    let separationSize = settings.current.nodeSize;
-    let separate = createDomainSeparator(nodes, separationSize, links);
-    simulation.on("tick", () => {
-      // d3 integrates velocities after its forces. Resolve ring collisions after
-      // that movement as well, so the rendered (and final) frame stays separated.
-      if (settings.current.forces.cluster > 0) {
-        if (separationSize !== settings.current.nodeSize) {
-          separationSize = settings.current.nodeSize;
-          separate = createDomainSeparator(nodes, separationSize, links);
-        }
-        separate();
+    let containedSize = settings.current.nodeSize;
+    let contain = createContainment(nodes, containedSize);
+    const keepInside = () => {
+      if (settings.current.forces.cluster <= 0) return;
+      if (containedSize !== settings.current.nodeSize) {
+        containedSize = settings.current.nodeSize;
+        contain = createContainment(nodes, containedSize);
       }
+      contain();
+    };
+    // Dots start inside their circles, so the first frame already shows the packed domains
+    keepInside();
+    simulation.on("tick", () => {
+      // d3 moves the dots after its forces run; put any that left their circle back after that
+      // movement, so the drawn (and final) frame keeps every dot inside its own domain
+      keepInside();
       layout.current.revision++;
       onTick.current();
     });
