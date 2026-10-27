@@ -49,7 +49,7 @@ export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
   groups: [],
   colorGroupDomains: [],
   colorThemeVersion: 1,
-  display: { arrows: false, domainCircles: true, titlePosition: "bottom", textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
+  display: { arrows: false, domainCircles: true, titlePosition: "top", textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
   forces: { center: 0.4, repel: 11, link: 0.8, linkDistance: 80, cluster: 0.5 },
 };
 
