@@ -8,16 +8,16 @@
    or shadcn's names, which point at the same tokens.
    ===================================================================== */
 
-/* DARK OR LIGHT: follows the OS; a `.dark` or `.light` class on <html> overrides it */
+/* DARK OR LIGHT: follows the OS; a `.dark` or `.light` class on <html> (set by the theme switch) overrides it */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* LIGHT GRAYS */
+/* LIGHT GRAYS: a warm off-white, softer on the eyes than pure white */
 :root,
 .light {
-  --sb-background: #ffffff;
-  --sb-sidebar: #f6f6f6;
-  --sb-hover: #ececec;
-  --sb-border: #e3e3e3;
+  --sb-background: #faf9f6;
+  --sb-sidebar: #f3f2ee;
+  --sb-hover: #e9e7e2;
+  --sb-border: #dfddd7;
   --sb-text: #222222;
   --sb-muted: #5c5c5c;
   --sb-faint: #9a9a9a;

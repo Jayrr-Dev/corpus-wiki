@@ -25,6 +25,7 @@ import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
 import { ERROR_LOG_NAV, isActivePath, type NavItem, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
 import { SpaceSwitcher } from "./SpaceSwitcher";
+import { ThemeSwitch } from "./ThemeSwitch";
 import type { Space } from "@/lib/spaces/shared";
 import { Tooltip } from "@/components/standard/tooltip";
 
@@ -69,7 +70,7 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
   );
 }
 
-// APP SIDEBAR: brand and search, the two nav groups, then error log / settings / tutorial / sign out
+// APP SIDEBAR: brand and search, the two nav groups, then error log / settings / theme / tutorial / sign out
 // On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links
 export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Space[]; activeSpace: Space; accountEmail?: string | null }) {
   const openCount = useOpenExceptionCount();
@@ -104,6 +105,7 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
         <SidebarMenu>
           <NavLink item={ERROR_LOG_NAV} />
           <NavLink item={SETTINGS_NAV} />
+          <ThemeSwitch />
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="Tutorial" onClick={reopenTutorial}>
               <HelpIcon />
