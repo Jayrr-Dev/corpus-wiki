@@ -20,7 +20,10 @@ settle time, same behavior, typecheck, lint and tests passing, merged to main.
 | knowledge | K1 `/units` (45 calls), `/entities`, `/stakeholders`, `/domains`, `/glossary`, `/graph` | | running |
 | ingest | I1 `/sources`, `/assets`, `/upload` and their detail pages | | running |
 | review | R1 `/decisions` (31 calls), `/changes`, `/exceptions`, `/errors` and detail pages | | running |
-| admin | A1 `/roles` (ai_calls 1.75 s), `/settings` (523 KB HTML), `/publishing`, `/workflow`, `/ask`, public `/explore`, `/s`, `/embed` | | running |
+| admin | A1a `/roles`: AI call pages in parallel, library and memory read on the server (24 to 18 calls, settle 6.4 to 2.9 s) | | merged 5c98cc3 |
+| admin | A1b `/settings`: tabs mount on first open (HTML 523 to 134 KB, 22 to 13 calls, settle 4.6 to 2.1 s) | | merged 5c98cc3 |
+| admin | A1c `/roles` HTML grew 84 to 398 KB (roster now server-rendered): trim what is serialized | A1a | running |
+| admin | A1d `/publishing`, `/workflow`, `/ask`, public `/explore`, `/s`, `/embed` | | running |
 
 No arrows: page lanes start now against the current shell. Critical path: S2,
 because it removes calls from every page.
