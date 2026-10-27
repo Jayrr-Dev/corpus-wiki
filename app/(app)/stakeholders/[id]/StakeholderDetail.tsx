@@ -7,18 +7,31 @@ import { formatDate } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { Tooltip } from "@/components/standard/tooltip";
 import { queryKeys, useUnitEntities } from "@/lib/queries";
-import { type UnitSummary, useUnitSummaries } from "@/lib/queries/screens";
+import type { UnitSummary } from "@/lib/queries/screens";
 import { allContacts, CONTACT_LABELS, cardKind, contactHref, sentenceCase, type StakeholderCard } from "@/lib/stakeholders/cards";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { CONTACT_ICONS, kindColor, StakeholderBadge } from "../StakeholderCard";
 import { StakeholderMenu } from "../StakeholderMenu";
+import { useUnitSummariesByIds } from "../../units/unitSummaries";
 import { useStakeholderCards } from "../StakeholdersScreen";
 
 type Detail = {
   related: { entityId: string; name: string; kind: string; shared: number }[];
   sources: { sourceId: string; title: string; claims: number }[];
 };
+
+// Related stakeholders and sources for one card
+function useStakeholderDetail(entityId: string) {
+  return useQuery({
+    queryKey: [...queryKeys.table("entity_profiles"), "detail", entityId],
+    queryFn: async () => {
+      const { data, error } = await getBrowserSupabase().rpc("stakeholder_detail" as never, { p_entity_id: entityId } as never);
+      if (error) throw new Error(error.message);
+      return data as unknown as Detail;
+    },
+  });
+}
 
 // Claim kinds in the order a reader wants them
 const KIND_ORDER = ["fact", "decision", "procedure", "definition", "preference"];
@@ -27,6 +40,9 @@ const KIND_ORDER = ["fact", "decision", "procedure", "definition", "preference"]
 // contacts, related stakeholders, then every claim about them by kind and the sources
 export function StakeholderDetail({ entityId }: { entityId: string }) {
   const cards = useStakeholderCards();
+  // The body waits for the cards; start its reads now so they arrive together
+  useStakeholderDetail(entityId);
+  useUnitEntities({ filters: { entity_id: entityId } });
   const card = cards.data?.find((candidate) => candidate.entityId === entityId);
   return (
     <QueryState query={cards}>
@@ -76,17 +92,10 @@ function Header({ card }: { card: StakeholderCard }) {
 function Body({ card }: { card: StakeholderCard }) {
   const links = useUnitEntities({ filters: { entity_id: card.entityId } });
   const unitIds = (links.data ?? []).map((row) => row.unit_id);
-  const units = useUnitSummaries(unitIds);
+  const units = useUnitSummariesByIds(unitIds);
   const live = (units.data ?? []).filter((unit) => !unit.retired_at);
   const unitById = new Map(live.map((unit) => [unit.id, unit]));
-  const detail = useQuery({
-    queryKey: [...queryKeys.table("entity_profiles"), "detail", card.entityId],
-    queryFn: async () => {
-      const { data, error } = await getBrowserSupabase().rpc("stakeholder_detail" as never, { p_entity_id: card.entityId } as never);
-      if (error) throw new Error(error.message);
-      return data as unknown as Detail;
-    },
-  });
+  const detail = useStakeholderDetail(card.entityId);
   const contacts = allContacts(card);
   const byKind = KIND_ORDER.map((kind) => [kind, live.filter((unit) => unit.kind === kind)] as const).filter(([, list]) => list.length > 0);
 

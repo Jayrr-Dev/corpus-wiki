@@ -3,9 +3,10 @@
 import { QueryState } from "@/app/(app)/_components/bits";
 import { EmptyState } from "@/components/EmptyState";
 import { GraphView } from "@/components/graph";
+import { useGraphData } from "@/components/graph/useGraphData";
 import { GraphIcon } from "@/components/icons";
-import { useGraphData } from "@/lib/graph";
-import { GraphHistoryControls } from "./GraphHistoryControls";
+import { useUndescribedEntityCount } from "@/lib/queries/screens";
+import { GraphHistoryControls, useGraphHistory } from "./GraphHistoryControls";
 import { UpdateDomainsButton } from "./UpdateDomainsButton";
 import { CleanDuplicatesButton } from "./CleanDuplicatesButton";
 import { AutoDescribeEntities } from "./AutoDescribeEntities";
@@ -16,6 +17,9 @@ import { Loader } from "@/components/standard/loader";
 // Linking and duplicate cleanup live in the graph settings panel.
 export function GraphScreen() {
   const query = useGraphData();
+  // The actions panel mounts once the graph is in; start its reads now so they do not wait for it
+  useGraphHistory();
+  useUndescribedEntityCount();
   const isEmpty = query.data?.nodes.length === 0;
   return (
     <div className="flex h-full min-h-0 flex-col">

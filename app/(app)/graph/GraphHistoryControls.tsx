@@ -17,12 +17,17 @@ function readRedo(): RedoStack | null {
   } catch { return null; }
 }
 
-export function GraphHistoryControls() {
-  const history = useQuery({ queryKey: ["table", "change_sets", "graph-history"], queryFn: async () => {
+// The latest undoable graph edit and the graph's fingerprint (GraphScreen starts it with the graph read)
+export function useGraphHistory() {
+  return useQuery({ queryKey: ["table", "change_sets", "graph-history"], queryFn: async () => {
     const result = await graphHistory();
     if (!result.ok) throw new Error(result.error);
     return result;
   } });
+}
+
+export function GraphHistoryControls() {
+  const history = useGraphHistory();
   const [redo, setRedo] = useState<RedoStack | null>(readRedo);
   const inFlight = useRef(false);
   const action = useServerAction(stepGraphHistory, { progress: false });

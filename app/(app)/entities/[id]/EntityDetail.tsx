@@ -9,8 +9,9 @@ import { RightPanelSlot } from "@/components/shell";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import type { Tables } from "@/lib/database/types";
-import { useActions, useEntity, usePages, useUnitEntities } from "@/lib/queries";
-import { useRowsByIds, useUnitDomainsFor, useUnitSummaries } from "@/lib/queries/screens";
+import { useActions, useDomains, useEntity, useEntityDescriptionRevisions, usePages, useUnitEntities } from "@/lib/queries";
+import { useRowsByIds, useUnitDomainsFor } from "@/lib/queries/screens";
+import { useUnitSummariesByIds } from "../../units/unitSummaries";
 import { DescriptionPanel } from "./DescriptionPanel";
 
 // A change this soon after the entity was added is part of adding it, not an update
@@ -23,6 +24,11 @@ type DescriptionPreview = { id: string; description: string; created_at: string 
 export function EntityDetail({ entityId }: { entityId: string }) {
   const query = useEntity(entityId);
   const entity = query.data;
+  // The sections below wait for the entity; start their reads now so they arrive together
+  usePages({ filters: { entity_id: entityId } });
+  useActions({ filters: { target_id: entityId, outcome: "applied" } });
+  useUnitEntities({ filters: { entity_id: entityId } });
+  useEntityDescriptionRevisions({ filters: { entity_id: entityId } });
   const [preview, setPreview] = useState<DescriptionPreview | null>(null);
   return (
     <QueryState query={query}>
@@ -125,7 +131,9 @@ function useEntityReach(entityId: string) {
   const links = useUnitEntities({ filters: { entity_id: entityId } });
   const unitIds = (links.data ?? []).map((row) => row.unit_id);
   const unitDomains = useUnitDomainsFor(unitIds).data ?? [];
-  const domains = useRowsByIds("domains", unitDomains.map((row) => row.domain_id)).data ?? [];
+  // Every domain is one small read the sidebar shares; pick the ones these units sit in
+  const domainIds = new Set(unitDomains.map((row) => row.domain_id));
+  const domains = (useDomains().data ?? []).filter((domain) => domainIds.has(domain.id));
   const countByDomain = new Map<string, number>();
   for (const row of unitDomains) countByDomain.set(row.domain_id, (countByDomain.get(row.domain_id) ?? 0) + 1);
   return {
@@ -139,7 +147,7 @@ function useEntityReach(entityId: string) {
 // UNITS ABOUT IT: each with its role (subject, object, mentioned)
 function EntityUnits({ entityId }: { entityId: string }) {
   const links = useUnitEntities({ filters: { entity_id: entityId } });
-  const units = useUnitSummaries((links.data ?? []).map((row) => row.unit_id));
+  const units = useUnitSummariesByIds((links.data ?? []).map((row) => row.unit_id));
   const roleById = new Map((links.data ?? []).map((row) => [row.unit_id, row.role]));
   const list = units.data ?? [];
   return (

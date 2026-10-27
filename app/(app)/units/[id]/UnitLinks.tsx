@@ -5,7 +5,8 @@ import { humanize } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
 import type { Structure } from "@/lib/ai/types";
 import type { Tables } from "@/lib/database/types";
-import { type UnitSummary, useUnitRelationships, useUnitSummaries } from "@/lib/queries/screens";
+import { type UnitSummary, useUnitRelationships } from "@/lib/queries/screens";
+import { useUnitSummariesByIds } from "../unitSummaries";
 import { cn } from "@/lib/utils";
 
 // LINKS: relationships from this unit and to it, with the unit on the other end.
@@ -21,7 +22,7 @@ export function UnitLinks({ unitId, structure }: { unitId: string; structure?: S
     : [];
   const list = all.filter((link) => !steps.includes(link));
   const otherIds = all.map((link) => (link.from_unit_id === unitId ? link.to_unit_id : link.from_unit_id));
-  const others = useUnitSummaries(otherIds);
+  const others = useUnitSummariesByIds(otherIds);
   const unitById = new Map((others.data ?? []).map((unit) => [unit.id, unit]));
   const ordered = structure?.type === "sequence";
   return (
