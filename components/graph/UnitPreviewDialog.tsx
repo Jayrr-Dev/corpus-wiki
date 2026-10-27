@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Enums } from "@/lib/database/types";
 import type { GraphNode } from "@/lib/graph";
-import { type UnitSummary, useRowsByIds, useUnitSummaries } from "@/lib/queries/screens";
+import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
+import { type UnitSummary, useRowsByIds } from "@/lib/queries/screens";
 import { EntityPreview, PagePreview } from "./NodePreviews";
 
 // UNIT PREVIEW: a clicked unit's key facts (status, claim, domains, entities) without leaving the graph
@@ -39,7 +40,7 @@ const UPDATED_AFTER_MS = 60_000;
 
 // BODY: the kind line, the content, then entities, domains and dates
 function UnitPreview({ node }: { node: GraphNode }) {
-  const query = useUnitSummaries([node.id]);
+  const query = useUnitSummariesByIds([node.id]);
   const unit = query.data?.[0];
   // The current revision's author is who made the latest change
   const revision = useRowsByIds("revisions", [unit?.current_revision_id]).data?.[0];

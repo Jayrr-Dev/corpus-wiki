@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorNote } from "@/app/(app)/_components/bits";
 import { useDomains, useRelationships } from "@/lib/queries";
-import { useUnitSummaries } from "@/lib/queries/screens";
+import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
 import { UnitActionForm } from "@/components/actions/ActionDialog";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { moveGraphClaim, setGraphLinkRemoved } from "@/lib/server-actions/graphNodes";
@@ -34,7 +34,7 @@ export function NodeContextMenu({context,data,onClose,onOpen}:{context:Selection
   </>;
 }
 function NodeEditor({node,mode,data,onDone}:{node:GraphNode;mode:"move"|"link"|"links";data:GraphData;onDone:()=>void}) {
-  const units=useUnitSummaries([node.id]);
+  const units=useUnitSummariesByIds([node.id]);
   const domains=useDomains();
   const relationships=useRelationships();
   const move=useServerAction(moveGraphClaim);

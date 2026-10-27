@@ -13,7 +13,8 @@ import { DataTable } from "@/components/data-table";
 import { EntityIcon } from "@/components/icons";
 import { RowMenu, menuColumn } from "@/components/row-menu/RowMenu";
 import type { Tables } from "@/lib/database/types";
-import { queryKeys, useEntities, useSources, useUnitEntities } from "@/lib/queries";
+import { queryKeys, useEntities } from "@/lib/queries";
+import { readAllPages } from "@/components/graph/readAllPages";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { EntityRowMenu } from "./EntityRowMenu";
@@ -70,18 +71,21 @@ export function EntitiesTable({ showRetired = false }: { showRetired?: boolean }
   );
 }
 
-// Entities (retired hidden unless `showRetired`) with the number of units about each
+// Entities (retired hidden unless `showRetired`) with the number of units about each.
+// The links and sources are read with only the columns the counts and tabs use.
 function useEntityRows(showRetired: boolean, scope: string) {
   const entities = useEntities();
-  const unitEntities = useUnitEntities();
-  const sources = useSources();
+  const unitEntities = useQuery({
+    queryKey: [...queryKeys.table("unit_entities"), "entity-unit-links"],
+    queryFn: () => readAllPages((from, to) => getBrowserSupabase().from("unit_entities").select("unit_id, entity_id").order("unit_id").order("entity_id").order("role").range(from, to)),
+  });
+  const sources = useQuery({
+    queryKey: [...queryKeys.table("sources"), "origins"],
+    queryFn: () => readAllPages((from, to) => getBrowserSupabase().from("sources").select("id, origin").order("id").range(from, to)),
+  });
   const sourceUnits = useQuery({
     queryKey: [...queryKeys.table("units"), "entity-source-links"],
-    queryFn: async () => {
-      const { data, error } = await getBrowserSupabase().from("source_units").select("source_id, unit_id");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => readAllPages((from, to) => getBrowserSupabase().from("source_units").select("source_id, unit_id").order("source_id").order("unit_id").range(from, to)),
   });
   const data = useMemo(() => {
     const counts = new Map<string, number>();
