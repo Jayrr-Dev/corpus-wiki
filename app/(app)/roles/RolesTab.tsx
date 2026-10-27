@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Sparkles } from "lucide-react";
 import { InfoPopover } from "@/components/standard/info-popover";
@@ -114,21 +114,30 @@ export function RolesTab({ library, modelSettings, initialMemory }: { library: S
                 : <p className="text-panel text-faint">Guides the Reconciler’s request, so it uses the Reconciler’s model and effort.</p>}
             </div>
             {(AUTO_ROLES as readonly string[]).includes(role.id) ? <RoleFullAuto role={role.id as AutoRole} name={role.name} on={modelSettings.roleAuto.includes(role.id)} /> : null}
-            <details className="group border-t">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-panel font-medium transition-colors hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
-                Role instructions
-                <span aria-hidden="true" className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
-              </summary>
+            <RoleInstructionsSection>
               {role.instructions === null
                 ? <p className="border-t px-5 py-4 text-panel leading-relaxed text-muted-foreground">The app manages this role’s instructions, so they cannot be edited here.</p>
                 : <RoleInstructions key={`${role.id}:${override?.version ?? "default"}:${role.instructions}`} role={role.id} name={role.name} instructions={override?.instructions ?? role.instructions} version={override?.version ?? null} />}
-            </details>
+            </RoleInstructionsSection>
           </div>
         </article>;
       })}
     </div>
     <RoleMemoryPanel initialMemory={initialMemory} />
   </section>;
+}
+
+// THE COLLAPSED INSTRUCTIONS: the body renders the first time it opens and then stays (an open
+// edit survives closing it), so the page does not ship every role's instructions up front
+function RoleInstructionsSection({ children }: { children: ReactNode }) {
+  const [opened, setOpened] = useState(false);
+  return <details className="group border-t" onToggle={(event) => { if (event.currentTarget.open) setOpened(true); }}>
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3 text-panel font-medium transition-colors hover:bg-hover focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&::-webkit-details-marker]:hidden">
+      Role instructions
+      <span aria-hidden="true" className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
+    </summary>
+    {opened ? children : null}
+  </details>;
 }
 
 // FULL AUTO: what the role would hold in Exceptions is accepted at once, so it never waits for you
