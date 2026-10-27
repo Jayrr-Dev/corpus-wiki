@@ -2,6 +2,7 @@ import "server-only";
 
 import { AsyncLocalStorage } from "node:async_hooks";
 import { cookies } from "next/headers";
+import { forgetRequestClaims, requestClaims } from "@/lib/auth/claims";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 
@@ -25,6 +26,7 @@ const byRequest = new WeakMap<object, Promise<Actor>>();
 // Let that render resolve the new selection; settled background runs keep theirs.
 export async function resetRequestActor(): Promise<void> {
   byRequest.delete(await cookies());
+  await forgetRequestClaims();
 }
 
 // A LONG RUN (an upload's workflow) settles its actor once, at its start. In `next dev`
@@ -66,7 +68,7 @@ export async function currentActor(): Promise<Actor> {
 }
 
 async function readPersonId(): Promise<string | null> {
-  const { data, error } = await (await getServerSupabase()).auth.getClaims();
+  const { data, error } = await requestClaims();
   // An unavailable/invalid auth service must never turn a person's request
   // into a trusted script targeting the original account's data.
   if (error && error.name !== "AuthSessionMissingError") throw error;

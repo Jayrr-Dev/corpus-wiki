@@ -34,12 +34,16 @@ export async function refreshSession(request: NextRequest) {
       },
     },
   });
-  const { data } = await supabase.auth.getClaims();
   const selected = request.cookies.get(SPACE_COOKIE)?.value;
+  // The ownership read runs beside the claims check; RLS answers it with the same
+  // session, and its result counts only once the claims are verified
+  const [{ data }, owned] = await Promise.all([
+    supabase.auth.getClaims(),
+    selected && isSpaceId(selected)
+      ? supabase.from("spaces").select("id").eq("id", selected).maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+  ]);
   if (data?.claims && selected) {
-    const owned = isSpaceId(selected)
-      ? await supabase.from("spaces").select("id").eq("id", selected).maybeSingle()
-      : { data: null, error: null };
     if (owned.error) throw new Error(owned.error.message);
     if (!owned.data) {
       request.cookies.delete(SPACE_COOKIE);
