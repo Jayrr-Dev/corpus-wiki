@@ -17,10 +17,13 @@ import type { Tables } from "@/lib/database/types";
 import { sourceState } from "@/lib/knowledge/evidence";
 import { latestUploads } from "@/lib/ingest/latestUploads";
 import { cn } from "@/lib/utils";
-import { useChangeSets, useShiftEvents } from "@/lib/queries";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys, useShiftEvents } from "@/lib/queries";
+import { readIdBatches, readPages } from "@/lib/queries/batched";
 import { useRowsByIds } from "@/lib/queries/screens";
+import { getBrowserSupabase } from "@/lib/supabase/client";
 import { SourceRowMenu } from "@/app/(app)/sources/SourceRowMenu";
-import { UploadWorkflowActions, UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
+import { UploadWorkflowActions, UploadWorkflowBatch, UploadWorkflowStatus } from "@/components/upload/UploadWorkflowStatus";
 import { RetryUploadButton } from "./RetryUploadButton";
 
 // ONE ROW: the upload event with its source and change set
@@ -84,48 +87,66 @@ export function RecentUploads() {
   const data = useMemo(() => query.data.filter((row) => (row.source?.origin ?? "internal") === origin), [query.data, origin]);
   const counts = { internal: 0, external: 0 };
   for (const row of query.data) counts[row.source?.origin === "external" ? "external" : "internal"] += 1;
+  // Every internal row's workflow in one read, not one per row
+  const workflowIds = useMemo(() => query.data.filter((row) => row.source?.origin === "internal").map((row) => row.id), [query.data]);
   return (
-    <Section title="Recent uploads">
-      <Tabs.Root value={origin} onValueChange={setOrigin} className="space-y-4">
-        <Tabs.List aria-label="Upload source origin" className="flex gap-1 border-b">
-          {(["internal", "external"] as const).map((value) => (
-            <Tabs.Trigger key={value} value={value} className={cn("border-b-2 px-3 py-2 text-panel transition-colors", origin === value ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
-              {value === "internal" ? "Internal" : "External"}
-              <span className="ml-1.5 font-mono text-xs text-faint">{counts[value]}</span>
-            </Tabs.Trigger>
-          ))}
-        </Tabs.List>
-        <Tabs.Content value={origin}>
-          <DataTable
-            key={origin}
-            query={{ ...query, data }}
-            columns={COLUMNS}
-            getRowId={(row) => row.id}
-            pageSize={10}
-            filterPlaceholder="Search uploads…"
-            emptyState={<EmptyState icon={UploadIcon} title={`No ${origin} uploads yet`} />}
-          />
-        </Tabs.Content>
-      </Tabs.Root>
-    </Section>
+    <UploadWorkflowBatch eventIds={workflowIds}>
+      <Section title="Recent uploads">
+        <Tabs.Root value={origin} onValueChange={setOrigin} className="space-y-4">
+          <Tabs.List aria-label="Upload source origin" className="flex gap-1 border-b">
+            {(["internal", "external"] as const).map((value) => (
+              <Tabs.Trigger key={value} value={value} className={cn("border-b-2 px-3 py-2 text-panel transition-colors", origin === value ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                {value === "internal" ? "Internal" : "External"}
+                <span className="ml-1.5 font-mono text-xs text-faint">{counts[value]}</span>
+              </Tabs.Trigger>
+            ))}
+          </Tabs.List>
+          <Tabs.Content value={origin}>
+            <DataTable
+              key={origin}
+              query={{ ...query, data }}
+              columns={COLUMNS}
+              getRowId={(row) => row.id}
+              pageSize={10}
+              filterPlaceholder="Search uploads…"
+              emptyState={<EmptyState icon={UploadIcon} title={`No ${origin} uploads yet`} />}
+            />
+          </Tabs.Content>
+        </Tabs.Root>
+      </Section>
+    </UploadWorkflowBatch>
   );
+}
+
+// The change set of each listed upload: only those rows and the two columns the table links with
+function useUploadChangeSets(eventIds: string[]) {
+  const ids = [...new Set(eventIds)].sort();
+  return useQuery({
+    queryKey: [...queryKeys.table("change_sets"), "events", ids],
+    queryFn: () => readIdBatches(ids, (batch) => readPages((from, to) =>
+      getBrowserSupabase().from("change_sets").select("id, event_id").in("event_id", batch).order("created_at", { ascending: false }).order("id").range(from, to))),
+    enabled: ids.length > 0,
+  });
 }
 
 // Upload events joined to their source titles and change sets
 function useUploadRows() {
   const events = useShiftEvents({ filters: { cause: "upload" } });
-  const sources = useRowsByIds("sources", (events.data ?? []).map((event) => event.source_id));
-  const changeSets = useChangeSets();
+  const latest = useMemo(() => latestUploads(events.data ?? []), [events.data]);
+  const sources = useRowsByIds("sources", latest.map((event) => event.source_id));
+  const changeSets = useUploadChangeSets(latest.map((event) => event.id));
   const data = useMemo(() => {
     const sourceById = new Map((sources.data ?? []).map((source) => [source.id, source]));
+    // Same order as the whole-table read had, so an event with several change sets links the same one
     const changeByEvent = new Map((changeSets.data ?? []).map((changeSet) => [changeSet.event_id, changeSet.id]));
     // An upload whose file was deleted or purged is history, not an upload: Changes keeps it
-    return latestUploads(events.data ?? []).map((event) => ({
+    return latest.map((event) => ({
       ...event,
       sourceTitle: sourceById.get(event.source_id ?? "")?.title ?? "—",
       source: sourceById.get(event.source_id ?? "") ?? null,
       changeSetId: changeByEvent.get(event.id) ?? null,
     }));
-  }, [events.data, sources.data, changeSets.data]);
-  return { data, ...readsState([events, sources, changeSets]) };
+  }, [latest, sources.data, changeSets.data]);
+  // No listed uploads means no change sets to read (the read stays idle, not pending)
+  return { data, ...readsState(latest.length ? [events, sources, changeSets] : [events, sources]) };
 }

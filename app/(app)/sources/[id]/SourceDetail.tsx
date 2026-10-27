@@ -16,11 +16,12 @@ import { Tooltip } from "@/components/standard/tooltip";
 import { UploadWorkflowStatus, useUploadWorkflows } from "@/components/upload/UploadWorkflowStatus";
 import { glossaryAnchor } from "@/lib/glossary/entries";
 import { useShiftEvents, useSource, useSources } from "@/lib/queries";
-import { useSourceArticles, useSourceReach, useSourceUnitIds, useSourceUsage, useUnitSummaries } from "@/lib/queries/screens";
+import { useSourceUnitIds, useUnitSummaries } from "@/lib/queries/screens";
 import { SourcePreview } from "../SourcePreview";
 import { SourceRowMenu } from "../SourceRowMenu";
 import { SourceFigures } from "./SourceFigures";
 import { SourcePassages } from "./SourcePassages";
+import { useOneSourceUsage, useSourceArticles, useSourceReach } from "./sourceReads";
 
 // SOURCE DETAIL: what the file is, a preview of it, the pictures read from it, the articles built on it, the knowledge that cites it,
 // the definitions, entities and domains that knowledge produced, then its passages
@@ -89,7 +90,7 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
   const firstUpload = useShiftEvents({ filters: { source_id: source.id, cause: "upload" }, ascending: true, limit: 1 }).data?.[0];
   const uploaderName = usePersonName(firstUpload?.person_id);
   const uploader = uploaderName ?? (firstUpload?.via === "api" ? "API key" : null);
-  const usage = useSourceUsage().data?.get(source.id);
+  const usage = useOneSourceUsage(source.id).data;
   const reach = useSourceReach(source.id).data;
   const facts: [string, ReactNode][] = [["State", <SourceState key="state" source={source} />]];
   if (newer) facts.push(["Replaced by", <TextLink key="newer" href={`/sources/${newer.id}`}>{newer.title}</TextLink>]);

@@ -10,7 +10,7 @@ import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Circle, LoaderCircle, Minus, X } from "lucide-react";
-import { useState } from "react";
+import { createContext, type ReactNode, useContext, useMemo, useState } from "react";
 
 // How often the status is read while a run works, and while it waits for a resume
 const RUNNING_POLL_MS = 1500;
@@ -20,23 +20,61 @@ function ErrorNote({ error }: { error?: string | null }) {
   return <RawErrorNote error={uploadErrorMessage(error)} />;
 }
 
-export function useUploadWorkflows(eventIds: string[]) {
+// Read independently of the long-running Server Action queue.
+async function readUploadWorkflows(ids: string[]): Promise<UploadWorkflow[]> {
+  const { data, error } = await getBrowserSupabase().rpc("read_upload_workflows", { p_event_ids: ids });
+  if (error) throw error;
+  return data as unknown as UploadWorkflow[];
+}
+
+export function useUploadWorkflows(eventIds: string[], enabled = true) {
   const ids = [...new Set(eventIds)].sort();
   return useQuery({
     queryKey: ["table", "upload_workflows", ids],
-    queryFn: async () => {
-      // Read independently of the long-running Server Action queue.
-      const { data, error } = await getBrowserSupabase().rpc("read_upload_workflows", { p_event_ids: ids });
-      if (error) throw error;
-      return data as unknown as UploadWorkflow[];
-    },
-    enabled: ids.length > 0,
+    queryFn: () => readUploadWorkflows(ids),
+    enabled: enabled && ids.length > 0,
     refetchInterval: (query) => {
       const runs = query.state.data;
       if (runs?.every((run) => run.state === "complete")) return false;
       return runs?.some(isRunning) ? RUNNING_POLL_MS : IDLE_POLL_MS;
     },
   });
+}
+
+// =====================================================================
+// ONE READ FOR A WHOLE TABLE: a table of uploads reads every row's workflow
+// in one call, then polls only the ones not complete yet, instead of one
+// read (and one poll) per row. A row outside the batch reads its own.
+// =====================================================================
+
+type WorkflowBatch = { ids: Set<string>; byEvent: Map<string, UploadWorkflow>; isPending: boolean; error: Error | null };
+const WorkflowBatchContext = createContext<WorkflowBatch | null>(null);
+
+export function UploadWorkflowBatch({ eventIds, children }: { eventIds: string[]; children: ReactNode }) {
+  const ids = useMemo(() => [...new Set(eventIds)].sort(), [eventIds]);
+  const all = useQuery({
+    queryKey: ["table", "upload_workflows", "batch", ids],
+    queryFn: () => readUploadWorkflows(ids),
+    enabled: ids.length > 0,
+  });
+  // A complete workflow does not change again, so only the others are polled
+  const open = useMemo(() => (all.data ?? []).filter((run) => run.state !== "complete").map((run) => run.event_id).sort(), [all.data]);
+  const live = useUploadWorkflows(open);
+  const value = useMemo<WorkflowBatch>(() => {
+    const byEvent = new Map((all.data ?? []).map((run) => [run.event_id, run]));
+    for (const run of live.data ?? []) byEvent.set(run.event_id, run);
+    return { ids: new Set(ids), byEvent, isPending: all.isPending && ids.length > 0, error: all.error ?? live.error };
+  }, [ids, all.data, all.isPending, all.error, live.data, live.error]);
+  return <WorkflowBatchContext.Provider value={value}>{children}</WorkflowBatchContext.Provider>;
+}
+
+// One upload's workflow: from the table's batch when it covers the event, else its own read
+function useUploadWorkflow(eventId: string): { workflow: UploadWorkflow | undefined; isPending: boolean; error: Error | null } {
+  const batch = useContext(WorkflowBatchContext);
+  const covered = batch?.ids.has(eventId) ?? false;
+  const own = useUploadWorkflows([eventId], !covered);
+  if (batch && covered) return { workflow: batch.byEvent.get(eventId), isPending: batch.isPending, error: batch.error };
+  return { workflow: own.data?.[0], isPending: own.isPending, error: own.error };
 }
 
 const LABELS: Record<string, string> = {
@@ -197,8 +235,8 @@ function CompactStatus({ workflow }: { workflow: UploadWorkflow }) {
 
 // TABLE ACTIONS: Cancel while it runs, Resume when it stopped (Retry for an old upload that failed)
 export function UploadWorkflowActions({ eventId, allowRetry = true, legacyStatus }: { eventId: string; allowRetry?: boolean; legacyStatus?: string }) {
-  const query = useUploadWorkflows([eventId]);
-  const workflow = query.data?.[0];
+  const query = useUploadWorkflow(eventId);
+  const workflow = query.workflow;
   if (query.isPending || query.error) return null;
   if (!workflow) return allowRetry && legacyStatus === "failed" ? <RetryUploadButton eventId={eventId} /> : null;
   return (
@@ -222,8 +260,8 @@ function LegacyStatus({ status, error }: { status: string; error?: string | null
 
 // `compact` (tables): the status line and its live activity, without the stage list
 export function UploadWorkflowStatus({ eventId, allowRetry = true, legacyStatus, legacyError, compact = false }: { eventId: string; allowRetry?: boolean; legacyStatus?: string; legacyError?: string | null; compact?: boolean }) {
-  const query = useUploadWorkflows([eventId]);
-  const workflow = query.data?.[0];
+  const query = useUploadWorkflow(eventId);
+  const workflow = query.workflow;
   if (query.error) return <ErrorNote error="Processing progress could not be loaded. Refresh to try again." />;
   if (!workflow && compact) return legacyStatus ? <LegacyStatus status={legacyStatus} error={legacyError} /> : null;
   if (!workflow) return legacyStatus ? <div className="flex flex-col gap-2"><span>{legacyStatus}</span>{!query.isPending && allowRetry && legacyStatus === "failed" ? <RetryUploadButton eventId={eventId} /> : null}</div> : null;
