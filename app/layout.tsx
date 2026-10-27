@@ -16,7 +16,8 @@ export const metadata: Metadata = {
 // ROOT LAYOUT: fonts, tokens and client providers for every route
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable}`}>
+    // next-themes sets the theme class on <html> before React loads, so the server markup differs
+    <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       {/* Browser extensions (e.g. ColorZilla's cz-shortcut-listen) add attributes to <body> before React loads */}
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>

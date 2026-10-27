@@ -1,6 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { useState, type ReactNode } from "react";
 import { Toaster } from "@/components/toast";
 import { TooltipProvider } from "@/components/standard/tooltip";
@@ -12,15 +13,17 @@ export function makeQueryClient(): QueryClient {
   });
 }
 
-// CLIENT PROVIDERS: one QueryClient per browser tab, the tooltip provider and the error toaster
+// CLIENT PROVIDERS: the theme (a .light or .dark class on <html>), one QueryClient per browser tab, the tooltip provider and the error toaster
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(makeQueryClient);
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {children}
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
