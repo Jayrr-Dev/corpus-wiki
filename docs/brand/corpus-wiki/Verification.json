@@ -1,0 +1,122 @@
+{
+  "print": [
+    {
+      "pdf": "01-Vertical\\02-Print\\CMYK\\Black\\Corpus-Wiki-Vertical-CMYK-Black.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "01-Vertical\\02-Print\\CMYK\\Full-Colour\\Corpus-Wiki-Vertical-CMYK-Full-Colour.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "01-Vertical\\02-Print\\CMYK\\Inverse\\Corpus-Wiki-Vertical-CMYK-Inverse.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "01-Vertical\\02-Print\\CMYK\\White\\Corpus-Wiki-Vertical-CMYK-White.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "02-Horizontal\\02-Print\\CMYK\\Black\\Corpus-Wiki-Horizontal-CMYK-Black.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "02-Horizontal\\02-Print\\CMYK\\Full-Colour\\Corpus-Wiki-Horizontal-CMYK-Full-Colour.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "02-Horizontal\\02-Print\\CMYK\\Inverse\\Corpus-Wiki-Horizontal-CMYK-Inverse.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "02-Horizontal\\02-Print\\CMYK\\White\\Corpus-Wiki-Horizontal-CMYK-White.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "03-Brandmark\\02-Print\\CMYK\\Black\\Corpus-Wiki-Brandmark-CMYK-Black.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "03-Brandmark\\02-Print\\CMYK\\Full-Colour\\Corpus-Wiki-Brandmark-CMYK-Full-Colour.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "03-Brandmark\\02-Print\\CMYK\\Inverse\\Corpus-Wiki-Brandmark-CMYK-Inverse.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "03-Brandmark\\02-Print\\CMYK\\White\\Corpus-Wiki-Brandmark-CMYK-White.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "04-Wordmark\\02-Print\\CMYK\\Black\\Corpus-Wiki-Wordmark-CMYK-Black.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "04-Wordmark\\02-Print\\CMYK\\Full-Colour\\Corpus-Wiki-Wordmark-CMYK-Full-Colour.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "04-Wordmark\\02-Print\\CMYK\\Inverse\\Corpus-Wiki-Wordmark-CMYK-Inverse.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    },
+    {
+      "pdf": "04-Wordmark\\02-Print\\CMYK\\White\\Corpus-Wiki-Wordmark-CMYK-White.pdf",
+      "vectorNoImages": true,
+      "textOutlined": true,
+      "CMYKFillPresent": true,
+      "EPSVectorCMYK": true
+    }
+  ],
+  "pngCount": 56,
+  "jpegCount": 56,
+  "PNGWidthsAndTransparencyPassed": true,
+  "allBlackPNGPixelsPureBlack": true,
+  "font": "Garamond Regular",
+  "chosenSymbol": "09 The Open Margin"
+}

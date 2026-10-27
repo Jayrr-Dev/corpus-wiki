@@ -1,0 +1,219 @@
+{
+  "brand": "Corpus Wiki",
+  "chosenMark": "09 \u2014 The Open Margin",
+  "chosenFont": "F10 \u2014 Garamond Regular",
+  "userReason": "User preferred the distinctive W",
+  "fontVersion": "Version 2.40",
+  "fontBinaryIncluded": false,
+  "palette": {
+    "green": "#496748",
+    "charcoal": "#172522",
+    "black": "#000000",
+    "white": "#FFFFFF"
+  },
+  "printConversion": "Unprofiled DeviceCMYK: K=1-max(R,G,B), remaining channels normalized by1-K. Actual CMYK vectors; no ICC output intent or press-matched claim. Black variant uses C0 M0 Y0 K100. White print artwork is white/no-process-ink, not a spot-white separation.",
+  "inverseTreatment": "Inverse and White are intentionally identical: all-white artwork, transparent vector/PNG background. JPEG proofs use charcoal.",
+  "omitted": [
+    "Native Illustrator AI: no native authoring/exporter used; SVG is the editable vector master.",
+    "Pantone/spot-colour separations: no specific spot colour selected."
+  ],
+  "tools": {
+    "reportlab": "4.4.9",
+    "svglib": "2.3.2",
+    "fonttools": "4.68.0",
+    "uharfbuzz": "0.57.0"
+  },
+  "clearSpace": "At least one-quarter of visible symbol height; wordmark alone uses half the visible C height. Supplied artboards include this space.",
+  "recommendedMinimums": {
+    "horizontal": "56px artwork viewport height",
+    "vertical": "240px artwork viewport width",
+    "brandmark": "24px square viewport",
+    "wordmark": "240px artwork viewport width"
+  },
+  "rasterExports": [
+    {
+      "name": "Vertical",
+      "variant": "Full-Colour",
+      "svg": "01-Vertical\\01-Digital\\RGB\\Full-Colour\\Corpus-Wiki-Vertical-RGB-Full-Colour.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Vertical",
+      "variant": "Inverse",
+      "svg": "01-Vertical\\01-Digital\\RGB\\Inverse\\Corpus-Wiki-Vertical-RGB-Inverse.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#172522"
+    },
+    {
+      "name": "Vertical",
+      "variant": "Black",
+      "svg": "01-Vertical\\01-Digital\\RGB\\Black\\Corpus-Wiki-Vertical-RGB-Black.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Vertical",
+      "variant": "White",
+      "svg": "01-Vertical\\01-Digital\\RGB\\White\\Corpus-Wiki-Vertical-RGB-White.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#172522"
+    },
+    {
+      "name": "Horizontal",
+      "variant": "Full-Colour",
+      "svg": "02-Horizontal\\01-Digital\\RGB\\Full-Colour\\Corpus-Wiki-Horizontal-RGB-Full-Colour.svg",
+      "sizes": [
+        320,
+        960,
+        1920
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Horizontal",
+      "variant": "Inverse",
+      "svg": "02-Horizontal\\01-Digital\\RGB\\Inverse\\Corpus-Wiki-Horizontal-RGB-Inverse.svg",
+      "sizes": [
+        320,
+        960,
+        1920
+      ],
+      "jpegBackground": "#172522"
+    },
+    {
+      "name": "Horizontal",
+      "variant": "Black",
+      "svg": "02-Horizontal\\01-Digital\\RGB\\Black\\Corpus-Wiki-Horizontal-RGB-Black.svg",
+      "sizes": [
+        320,
+        960,
+        1920
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Horizontal",
+      "variant": "White",
+      "svg": "02-Horizontal\\01-Digital\\RGB\\White\\Corpus-Wiki-Horizontal-RGB-White.svg",
+      "sizes": [
+        320,
+        960,
+        1920
+      ],
+      "jpegBackground": "#172522"
+    },
+    {
+      "name": "Brandmark",
+      "variant": "Full-Colour",
+      "svg": "03-Brandmark\\01-Digital\\RGB\\Full-Colour\\Corpus-Wiki-Brandmark-RGB-Full-Colour.svg",
+      "sizes": [
+        24,
+        32,
+        64,
+        256,
+        1024
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Brandmark",
+      "variant": "Inverse",
+      "svg": "03-Brandmark\\01-Digital\\RGB\\Inverse\\Corpus-Wiki-Brandmark-RGB-Inverse.svg",
+      "sizes": [
+        24,
+        32,
+        64,
+        256,
+        1024
+      ],
+      "jpegBackground": "#172522"
+    },
+    {
+      "name": "Brandmark",
+      "variant": "Black",
+      "svg": "03-Brandmark\\01-Digital\\RGB\\Black\\Corpus-Wiki-Brandmark-RGB-Black.svg",
+      "sizes": [
+        24,
+        32,
+        64,
+        256,
+        1024
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Brandmark",
+      "variant": "White",
+      "svg": "03-Brandmark\\01-Digital\\RGB\\White\\Corpus-Wiki-Brandmark-RGB-White.svg",
+      "sizes": [
+        24,
+        32,
+        64,
+        256,
+        1024
+      ],
+      "jpegBackground": "#172522"
+    },
+    {
+      "name": "Wordmark",
+      "variant": "Full-Colour",
+      "svg": "04-Wordmark\\01-Digital\\RGB\\Full-Colour\\Corpus-Wiki-Wordmark-RGB-Full-Colour.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Wordmark",
+      "variant": "Inverse",
+      "svg": "04-Wordmark\\01-Digital\\RGB\\Inverse\\Corpus-Wiki-Wordmark-RGB-Inverse.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#172522"
+    },
+    {
+      "name": "Wordmark",
+      "variant": "Black",
+      "svg": "04-Wordmark\\01-Digital\\RGB\\Black\\Corpus-Wiki-Wordmark-RGB-Black.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#FFFFFF"
+    },
+    {
+      "name": "Wordmark",
+      "variant": "White",
+      "svg": "04-Wordmark\\01-Digital\\RGB\\White\\Corpus-Wiki-Wordmark-RGB-White.svg",
+      "sizes": [
+        240,
+        768,
+        1536
+      ],
+      "jpegBackground": "#172522"
+    }
+  ]
+}

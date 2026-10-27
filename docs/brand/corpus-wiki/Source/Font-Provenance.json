@@ -1,0 +1,39 @@
+{
+  "id": "F10",
+  "family": "Garamond",
+  "style": "Regular",
+  "fontFile": "C:\\Windows\\Fonts\\GARA.TTF",
+  "sha256": "6204f2ace1a6c196b95b079f10ded04af8f431ce8eb2cf3945acc89b594c3728",
+  "version": "Version 2.40",
+  "copyright": "Digitized data copyright Monotype Typography, Ltd 1991-1995. All rights reserved. Monotype Garamond\u00ae is a trademark of Monotype Typography, Ltd which may be registered in certain jurisdictions.",
+  "license": "NOTIFICATION OF LICENSE AGREEMENT\r\n\r\nThis typeface is the property of Monotype Typography and its use by you is covered under the terms of a license agreement. You have obtained this typeface software either directly from Monotype or together with software distributed by one of Monotype\u2019s licensees.\r\n\r\nThis software is a valuable asset of Monotype. Unless you have entered into a specific license agreement granting you additional rights, your use of this software is limited to your workstation for your own publishing use. You may not copy or distribute this software.\r\n\r\nIf you have any question concerning your rights you should review the license agreement you received with the software or contact Monotype for a copy of the license agreement.\r\n\r\nMonotype can be contacted at:\r\n\r\nUSA 847-718-0400  UK 44(0)1737 765959\r\n\r\nFor license terms and usage rights, please visit our web site at www.monotype.com/html/type/license.html\r\n \r\nLizenzbedingungen und Nutzungsrechte finden Sie auf unserer Webseite www.monotype.com/html/type/license.html\r\n\r\nPour plus d'informations concernant les droits d'utilisation et les questions contractuelles, veuillez consultez notre site www.monotype.com/html/type/license.html\r\n\r\nPara obtener informaci\u00f3n acerca de los t\u00e9rminos de licencia y los derechos de uso, visite nuestro sitio en el Web en www.monotype.com/html/type/license.html\r\n\r\nPer le condizioni contrattuali ed i diritti d'uso, visitate il nostro sito web all'indirizzo www.monotype.com/html/type/license.html\r\n",
+  "licenseURL": "http://www.monotype.com/html/type/license.html",
+  "weight": 400,
+  "shaping": "HarfBuzz via uharfbuzz; default script/language/direction; kern and liga enabled; no manual tracking",
+  "normalization": "Visible ink height of uppercase C36 SVG units horizontally,26 stacked; natural widths preserved",
+  "wordInkBounds": [
+    2.3946188340807177,
+    -36.053811659192824,
+    270.5919282511211,
+    14.125560538116593
+  ],
+  "horizontalBaseline": 62.76412556053811,
+  "markViewport": 90,
+  "markInkBounds": [
+    30.8,
+    21.2,
+    99.2,
+    82.4
+  ],
+  "visibleMarkTypeGap": 24.8,
+  "manualOpticalCorrections": [],
+  "horizontalSize": [
+    412.197,
+    100
+  ],
+  "stackedSize": [
+    233.698,
+    176.241
+  ],
+  "licenseStatus": "Installed Windows font; font binary excluded from deliverables. Usage/embedding/redistribution rights remain those of its license."
+}
