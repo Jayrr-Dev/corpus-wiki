@@ -13,17 +13,17 @@ settle time, same behavior, typecheck, lint and tests passing, merged to main.
 
 | Lane | Task | Needs | Status |
 |---|---|---|---|
-| shell | S1 Server floor: proxy + `(app)/layout.tsx` auth/space lookups in parallel or deduped (`cache()`) | | running |
-| shell | S2 Sidebar badges and tree: stop loading whole `sources` / `shift_events` tables on every page | | running |
-| shell | S3 Unused preload warnings (fonts / route preloads) | | running |
-| pages | P1 Home `/` and `/p/[slug]`: cut the 2.5 s page action and duplicate calls | | running |
-| knowledge | K1 `/units` (45 calls), `/entities`, `/stakeholders`, `/domains`, `/glossary`, `/graph` | | running |
-| ingest | I1 `/sources`, `/assets`, `/upload` and their detail pages | | running |
+| shell | S1 Server floor: claims read once per request, proxy space check beside it, `ensure_my_space` only for new accounts | | merged 089e226 |
+| shell | S2 Sidebar: counts and id-only reads (shell calls about 13 to 6-7 per page) | | merged 089e226 |
+| shell | S3 Unused preload warnings: from Next's dev CSS, not our code; prod build not checked | | done, no change |
+| pages | P1 Home welcome AI call only when no subtitle is saved (migration 20261119027000 applied); article reads in parallel. `/` 25 to 16 calls, settle 4.8 to 1.8-2.5 s | | merged 515fca6, 557db5b |
+| knowledge | K1 `/units` 45 to 23 calls; entities, stakeholders, domains, graph read in fewer rounds | | merged bd0adbd |
+| ingest | I1 `/upload` 26 to 11 calls, `/sources` 16 to 10, `/assets` 15 to 9 | | merged 0d1162e |
 | review | R1 `/decisions` (31 calls), `/changes`, `/exceptions`, `/errors` and detail pages | | running |
 | admin | A1a `/roles`: AI call pages in parallel, library and memory read on the server (24 to 18 calls, settle 6.4 to 2.9 s) | | merged 5c98cc3 |
 | admin | A1b `/settings`: tabs mount on first open (HTML 523 to 134 KB, 22 to 13 calls, settle 4.6 to 2.1 s) | | merged 5c98cc3 |
-| admin | A1c `/roles` HTML grew 84 to 398 KB (roster now server-rendered): trim what is serialized | A1a | running |
-| admin | A1d `/publishing`, `/workflow`, `/ask`, public `/explore`, `/s`, `/embed` | | running |
+| admin | A1c `/roles` HTML 398 to 240 KB (chosen model only before hydration, instructions on open) | A1a | merged 6710977 |
+| admin | A1d `/publishing`, `/workflow`, `/ask`, public reader: already at the shell floor | | done, no change |
 
 No arrows: page lanes start now against the current shell. Critical path: S2,
 because it removes calls from every page.
