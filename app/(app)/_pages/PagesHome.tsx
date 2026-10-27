@@ -34,18 +34,21 @@ export function PagesHome() {
 
 function FrontPage({ browse }: { browse: () => void }) {
   const space = useActiveSpace();
+  const saved = space.subtitle_for_name === space.name && space.subtitle?.trim() ? space.subtitle : null;
+  // Only an unsaved subtitle needs the action (it calls the AI, a few seconds).
+  // A failure resolves to null so it is cached, not retried on every visit.
   const welcome = useQuery({
     queryKey: ["space-welcome", space.id, space.name],
+    enabled: !saved,
     queryFn: async () => {
       const result = await readSpaceWelcome();
-      if (!result.ok) throw new Error(result.error);
-      if (result.spaceId !== space.id || result.title !== space.name) return null;
+      if (!result.ok || result.spaceId !== space.id || result.title !== space.name) return null;
       return result.subtitle;
     },
     staleTime: Infinity,
     retry: false,
   });
-  const subtitle = welcome.data ?? (space.subtitle_for_name === space.name ? space.subtitle : null);
+  const subtitle = saved ?? welcome.data;
   const data = useFrontPage();
   const zone = useTimeZone();
   const [now, setNow] = useState<Date | null>(null);
