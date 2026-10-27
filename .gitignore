@@ -21,3 +21,4 @@ npm-debug.log*
 .vercel
 .claude/*
 !.claude/settings.json
+.env*
