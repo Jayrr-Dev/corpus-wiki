@@ -16,6 +16,10 @@ export function SettingsTabs({ tabs }: { tabs: SettingsTab[] }) {
   const hash = useSyncExternalStore(subscribeHash, readHash, readNoHash);
   const [chosen, setChosen] = useState<string | null>(null);
   const active = chosen ?? (tabs.some((tab) => tab.id === hash) ? hash : tabs[0]?.id);
+  // A panel mounts the first time its tab opens and then stays, so hidden tabs cost
+  // nothing on load (no HTML, no data reads) and keep their state once visited
+  const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set());
+  if (active && !opened.has(active)) setOpened(new Set([...opened, active]));
 
   function select(id: string) {
     setChosen(id);
@@ -56,7 +60,7 @@ export function SettingsTabs({ tabs }: { tabs: SettingsTab[] }) {
       </div>
       {tabs.map(({ id, panel }) => (
         <div key={id} id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-tab`} hidden={id !== active} className="min-w-0">
-          {panel}
+          {id === active || opened.has(id) ? panel : null}
         </div>
       ))}
     </div>
