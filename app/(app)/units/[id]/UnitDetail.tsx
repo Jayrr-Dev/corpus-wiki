@@ -5,7 +5,9 @@ import { formatDate, statusLabel } from "@/app/(app)/_lib/format";
 import { UnitActionButtons } from "@/components/actions/ActionDialog";
 import { ReadingPane } from "@/components/shell";
 import { StatusGlyph } from "@/components/icons";
-import { type UnitSummary, useUnitSummaries } from "@/lib/queries/screens";
+import { useEntities, useRevisions, useUnitDomains, useUnitEntities } from "@/lib/queries";
+import { type UnitSummary, useUnitRelationships } from "@/lib/queries/screens";
+import { useUnitSummariesByIds } from "../unitSummaries";
 import { UnitAbout } from "./UnitAbout";
 import { UnitHistory } from "./UnitHistory";
 import { UnitLinks } from "./UnitLinks";
@@ -13,8 +15,14 @@ import { UnitSources } from "./UnitSources";
 
 // UNIT DETAIL: header and edits, then history, sources, what it is about, and links
 export function UnitDetail({ unitId }: { unitId: string }) {
-  const query = useUnitSummaries([unitId]);
+  const query = useUnitSummariesByIds([unitId]);
   const unit = query.data?.[0];
+  // The sections below wait for the unit; start their reads now so they arrive together
+  useRevisions({ filters: { unit_id: unitId } });
+  useUnitRelationships(unitId);
+  useUnitEntities({ filters: { unit_id: unitId } });
+  useUnitDomains({ filters: { unit_id: unitId } });
+  useEntities();
   return (
     <ReadingPane title={unit?.label ?? "Knowledge"} width="prose">
     <QueryState query={query}>
@@ -23,7 +31,7 @@ export function UnitDetail({ unitId }: { unitId: string }) {
           <UnitHeader unit={unit} />
           <UnitHistory unitId={unit.id} />
           <UnitSources unitId={unit.id} />
-          <UnitAbout unitId={unit.id} />
+          <UnitAbout unitId={unit.id} currentRevisionId={unit.current_revision_id} />
           <UnitLinks unitId={unit.id} structure={unit.structure} />
         </div>
       ) : (

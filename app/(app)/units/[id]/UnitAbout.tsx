@@ -9,9 +9,8 @@ import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { UnitContextEditor } from "./UnitContextEditor";
 
 // ABOUT: the entities the unit is about (with their role) and the domains it belongs to
-export function UnitAbout({ unitId }: { unitId: string }) {
-  const unit = useRowsByIds("units", [unitId]);
-  const revision = useRowsByIds("revisions", [unit.data?.[0]?.current_revision_id]);
+export function UnitAbout({ unitId, currentRevisionId }: { unitId: string; currentRevisionId: string }) {
+  const revision = useRowsByIds("revisions", [currentRevisionId]);
   const allEntities = useEntities();
   const current = revision.data?.[0];
   const context = parseKnowledgeContext(current?.knowledge_context);

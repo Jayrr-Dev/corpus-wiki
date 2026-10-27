@@ -32,7 +32,6 @@ import {
 import {
   type UnitSummary,
   useSectionKnowledge,
-  useUnitSummaries,
 } from "@/lib/queries/screens";
 import { useRealtimeInvalidation } from "@/lib/realtime/useRealtimeInvalidation";
 import {
@@ -52,6 +51,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useAllUnitSummaries } from "./unitSummaries";
 import { unusedUnits } from "./UnusedUnits";
 import { useUnitFilters } from "./useUnitFilters";
 
@@ -493,7 +493,7 @@ export function SuggestionsTab() {
   const { filters, setFilter } = useUnitFilters();
   const runs = useSuggestionRuns();
   const suggestions = useArticleSuggestions();
-  const units = useUnitSummaries();
+  const units = useAllUnitSummaries();
   const sectionKnowledge = useSectionKnowledge();
   const domains = useDomains();
   const unitDomains = useUnitDomains();

@@ -16,9 +16,9 @@ import {
   type SectionKnowledge,
   type UnitSummary,
   useSectionKnowledge,
-  useUnitSummaries,
 } from "@/lib/queries/screens";
 import { useMemo } from "react";
+import { useAllUnitSummaries } from "./unitSummaries";
 import { domainSubtreeIds } from "./filterUnits";
 import { useUnitFilters } from "./useUnitFilters";
 
@@ -73,7 +73,7 @@ export function unusedUnits(
 // UNUSED TAB: current knowledge that no article cites
 export function UnusedUnits() {
   const { filters, setFilter } = useUnitFilters();
-  const units = useUnitSummaries();
+  const units = useAllUnitSummaries();
   const sectionKnowledge = useSectionKnowledge();
   const domains = useDomains();
   const unitDomains = useUnitDomains();

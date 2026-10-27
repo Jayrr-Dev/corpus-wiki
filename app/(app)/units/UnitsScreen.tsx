@@ -15,7 +15,8 @@ import { InfoPopover } from "@/components/standard/info-popover";
 import { PopoverDescription } from "@/components/ui/popover";
 import { contextDescription } from "@/lib/knowledge/contextSelection";
 import { useDomains, useEntities, usePages, useUnitDomains, useUnitEntities } from "@/lib/queries";
-import { type UnitSummary, useArticleUnitLinks, useUnitSummaries } from "@/lib/queries/screens";
+import { type UnitSummary, useArticleUnitLinks } from "@/lib/queries/screens";
+import { useAllUnitSummaries } from "./unitSummaries";
 import type { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -58,7 +59,7 @@ const PENDING = { data: [] as UnitSummary[], isPending: true, error: null };
 
 // A domain's current units, across origins and including its descendants.
 export function DomainUnitsTable({ domainId }: { domainId: string }) {
-  const units = useUnitSummaries();
+  const units = useAllUnitSummaries();
   const domains = useDomains();
   const unitDomains = useUnitDomains();
   const data = useMemo(() => {
@@ -151,7 +152,7 @@ export function UnitsScreen() {
 
 // Units with every filter applied; pending/error from any of the reads it joins
 function useFilteredUnits(filters: UnitFilters) {
-  const units = useUnitSummaries();
+  const units = useAllUnitSummaries();
   const unitDomains = useUnitDomains();
   const unitEntities = useUnitEntities();
   const domains = useDomains();
