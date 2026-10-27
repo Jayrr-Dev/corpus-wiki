@@ -14,7 +14,7 @@ export function PreviewFooter({ children }: { children: ReactNode }) {
 }
 
 function PreviewHeader({ node, kind }: { node: GraphNode; kind: string }) {
-  return <div data-drag-handle className="flex cursor-move flex-col gap-2 pr-6"><p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{kind}</p><h2 className="text-body leading-none font-medium">{node.label}</h2></div>;
+  return <div className="flex flex-col gap-2 pr-6"><p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{kind}</p><h2 className="text-body leading-none font-medium">{node.label}</h2></div>;
 }
 
 function OpenPage({ node }: { node: GraphNode }) {

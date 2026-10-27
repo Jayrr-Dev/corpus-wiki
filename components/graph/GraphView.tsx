@@ -3,9 +3,11 @@
 import { DomainContextMenu } from "./DomainContextMenu";
 import { SelectionActions } from "./SelectionActions";
 import { NodeContextMenu } from "./NodeContextMenu";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { applyFilters, createdBy, DEFAULT_GRAPH_SETTINGS, withRelated, type GraphData, type GraphSettings, type GraphNode } from "@/lib/graph";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useServerAction } from "@/components/actions/useServerAction";
 import { Button } from "@/components/ui/button";
+import { applyFilters, createdBy, DEFAULT_GRAPH_SETTINGS, withRelated, type GraphData, type GraphSettings, type GraphNode } from "@/lib/graph";
+import { moveGraphClaim } from "@/lib/server-actions/graphNodes";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphPanel } from "./panel/GraphPanel";
 import { NodePreviewCards, useNodePreviewCards } from "./NodePreviewCards";
@@ -29,6 +31,13 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
   const replay = useReplay(data.nodes);
   // Every node previews without leaving the graph, several at once
   const previews = useNodePreviewCards();
+  const move = useServerAction(moveGraphClaim, { progress: { title: "Moving claim", detail: "Filing it in the domain you dropped it on." } });
+  const moveNode = useCallback((node: GraphNode, destination: string) => {
+    if (node.kind !== "unit" || move.isPending) return;
+    const source = [...node.domainPaths].sort()[0] ?? "";
+    if (!destination || destination === source) return;
+    void move.run(node.id, source, destination);
+  }, [move]);
   const { showRelated, relatedness } = settings.filters;
 
   // Related links come from the full graph, so the replay grows them with their units
@@ -41,7 +50,7 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
 
   return (
     <div className="relative h-full">
-      <GraphCanvas key={`${settings.filters.domain}:${domainVersion}`} graph={visible} settings={settings} onOpen={previews.open} onContextDomain={(path,point)=>setDomainContext({path,...point})} selectedIds={selectedIds} onSelect={(nodes,toggle)=>setSelectedIds(previous=>{const ids=nodes.filter(n=>n.kind==="unit").map(n=>n.id);return toggle ? [...previous.filter(id=>!ids.includes(id)),...ids.filter(id=>!previous.includes(id))] : ids;})} onFocusDomain={path => setFocusedDomain({path,filter:settings.filters.domain})} onContextNode={(node, point) => setContext({node,...point})} />
+      <GraphCanvas key={`${settings.filters.domain}:${domainVersion}`} graph={visible} settings={settings} onOpen={previews.open} onContextDomain={(path,point)=>setDomainContext({path,...point})} selectedIds={selectedIds} onSelect={(nodes,toggle)=>setSelectedIds(previous=>{const ids=nodes.filter(n=>n.kind==="unit").map(n=>n.id);return toggle ? [...previous.filter(id=>!ids.includes(id)),...ids.filter(id=>!previous.includes(id))] : ids;})} onFocusDomain={path => setFocusedDomain({path,filter:settings.filters.domain})} onContextNode={(node, point) => setContext({node,...point})} onMoveNode={moveNode} />
       {visible.nodes.length === 0 && data.nodes.length > 0 && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center pl-64 pr-4" role="status">
           <div className="pointer-events-auto flex max-w-sm flex-col items-center gap-3 rounded-lg border bg-background p-6 text-center shadow-sm">
@@ -63,6 +72,7 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
         onAnimate={replay.isPlaying ? replay.stop : replay.start}
         actions={typeof actions === "function" ? actions(settings, (focusedDomain?.filter === settings.filters.domain ? focusedDomain.path : null) ?? (settings.filters.domain || null)) : actions}
       />
+      {move.error ? <p role="alert" className="absolute bottom-8 left-3 z-20 max-w-sm rounded-md border bg-background px-3 py-2 text-sm shadow-md">{move.error}</p> : null}
       <p className="pointer-events-none absolute right-3 bottom-2 font-mono text-xs text-faint">
         {visible.nodes.length} nodes · {visible.links.length} links
       </p>

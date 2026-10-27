@@ -52,6 +52,9 @@ interface PointerOptions {
   onContextTitle?: (point: Point, client: Point) => boolean;
   onContextNode?: (node: SimNode, point: Point) => void;
   onBackgroundClick?: (world: Point) => void;
+  // Dragging a dot: null clears the drop hint. A finished drag reports where the dot was let go.
+  onNodeDrag?: (node: SimNode | null, world: Point) => void;
+  onNodeDrop?: (node: SimNode, world: Point) => void;
   motion: { animateTo: (next: Camera) => void; cancel: () => void; target: RefObject<Camera | null> };
   redraw: () => void;
 }
@@ -79,12 +82,12 @@ function nodeAt(nodes: readonly SimNode[], world: Point, nodeSize: number, zoom:
 }
 
 // Wires the canvas's pointer and wheel events to the camera, hover and layout
-export function usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, motion, redraw }: PointerOptions): void {
-  const latest = useRef({ nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw });
+export function usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, motion, redraw }: PointerOptions): void {
+  const latest = useRef({ nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, redraw });
   // Latest props for the listeners below (synced after render, read in events)
   useLayoutEffect(() => {
-    latest.current = { nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw };
-  }, [nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw]);
+    latest.current = { nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, redraw };
+  }, [nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, redraw]);
 
   useEffect(() => {
     const element = canvas.current;
@@ -172,6 +175,7 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
         gesture.node.x = gesture.node.fx = world.x - gesture.offset.x;
         gesture.node.y = gesture.node.fy = world.y - gesture.offset.y;
         layout.current.revision++;
+        latest.current.onNodeDrag?.(gesture.node, { x: gesture.node.x, y: gesture.node.y });
       } else if (gesture.mode === "pan") {
         camera.current = panBy(camera.current, point.x - gesture.last.x, point.y - gesture.last.y);
         gesture.last = point;
@@ -218,12 +222,14 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
       const slop = event.pointerType === "touch" ? TAP_SLOP_PX : CLICK_SLOP_PX;
       if (gesture.mode === "drag") {
         const { node, moved } = gesture;
+        const world = { x: node.x ?? 0, y: node.y ?? 0 };
         releaseDrag();
+        latest.current.onNodeDrag?.(null, world);
         if (!moved) {
           const { onFocus } = latest.current;
           if (onFocus && focusedId?.current !== node.id) onFocus(node.id);
           else latest.current.onOpen(node);
-        }
+        } else latest.current.onNodeDrop?.(node, world);
       } else if (gesture.mode === "pan" && gesture.start && Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < slop) {
         if (isDoubleTap(event, point)) zoomInAt(point);
         else if (focusedId?.current != null && latest.current.onFocus) latest.current.onFocus(null);
@@ -236,6 +242,7 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
     const onCancel = (event: PointerEvent) => {
       pressed.delete(event.pointerId);
       releaseDrag();
+      latest.current.onNodeDrag?.(null, { x: 0, y: 0 });
       latest.current.onSelectionBox?.(null);
       gesture = { mode: "idle" };
     };

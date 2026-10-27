@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, shortLabel } from "./build";
 import { hierarchyOpacity, labelOpacity, pinchStep, REVEAL_AT, revealOpacity, toWorld, zoomAt, zoomBy } from "./camera";
-import { clusterCircles, clusterTree, createContainment, packDomains } from "./clusters";
+import { circleAt, clusterCircles, clusterTree, createContainment, moveTarget, packDomains } from "./clusters";
 import type { SimNode } from "./physics";
 import { applyFilters, createdBy } from "./filters";
 import { groupColorLookup, groupCounts, groupSuggestions, joinGroupQuery, parseGroupQuery, splitGroupQuery } from "./groups";
@@ -386,6 +386,21 @@ describe("domain clusters", () => {
     expect(safety?.size).toBe(3);
     expect(safety?.members.map((node) => node.id)).toEqual(["c"]);
     expect(safety?.children.map((group) => group.label)).toEqual(["PPE", "WHMIS"]);
+  });
+
+  it("picks the deepest circle under a point and files a claim there", () => {
+    const circles = clusterCircles([dot("a", ["Co/Safety/PPE"]), dot("b", ["Co/Safety/WHMIS"])], 1);
+    const leaf = circles.find((circle) => circle.key === "Co/Safety/PPE")!;
+    const parent = circles.find((circle) => circle.key === "Co/Safety")!;
+    expect(circleAt(circles, leaf)?.key).toBe("Co/Safety/PPE");
+    expect(circleAt(circles, { x: 1e6, y: 1e6 })).toBeNull();
+    const claim = { ...dot("a", ["Co/Safety/PPE"]), kind: "unit" as const };
+    expect(moveTarget(claim, leaf, null)).toBeNull();
+    expect(moveTarget(claim, circles.find((circle) => circle.key === "Co/Safety/WHMIS")!, null)).toBe("Co/Safety/WHMIS");
+    expect(moveTarget(claim, parent, "Co/Safety/PPE")).toBe("Co/Safety");
+    expect(moveTarget(claim, { key: "Co" }, "Co/Safety/PPE")).toBe("Co");
+    expect(moveTarget(claim, { key: "Other" }, "Co/Safety/PPE")).toBeNull();
+    expect(moveTarget({ ...claim, kind: "page" }, parent, null)).toBeNull();
   });
 
   it("draws each outer ring around the rings inside it", () => {

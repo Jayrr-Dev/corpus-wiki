@@ -1,6 +1,6 @@
 "use client";
 
-import { type PointerEvent as ReactPointerEvent, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { NodePreviewBody } from "./UnitPreviewDialog";
 // =====================================================================
 // NODE PREVIEW CARDS: a clicked node's preview floats beside the click,
 // with no overlay, so the graph stays usable and several can be open at
-// once. Drag a card by its header; the one touched last sits on top.
+// once. A card stays where it opened. Panning the graph does not move it.
+// The one touched last sits on top.
 // =====================================================================
 
 // At most this many cards; opening one more closes the oldest
@@ -52,37 +53,25 @@ export function NodePreviewCards({ cards, setCards }: { cards: Card[]; setCards:
     const card = previous.find((other) => other.node.id === id);
     return !card || previous.at(-1) === card ? previous : [...previous.filter((other) => other !== card), card];
   });
-  const move = (id: string, x: number, y: number) => setCards((previous) => previous.map((card) => (card.node.id === id ? { ...card, x, y } : card)));
   return createPortal(
     // A stable DOM order, so bringing a card forward (z-index only) never moves its element and resets its scroll
     <>{[...cards].sort((a, b) => a.node.id.localeCompare(b.node.id)).map((card) => (
-      <PreviewCard key={card.node.id} card={card} z={cards.indexOf(card)} onClose={() => close(card.node.id)} onFront={() => front(card.node.id)} onMove={(x, y) => move(card.node.id, x, y)} />
+      <PreviewCard key={card.node.id} card={card} z={cards.indexOf(card)} onClose={() => close(card.node.id)} onFront={() => front(card.node.id)} />
     ))}</>,
     document.body,
   );
 }
 
-// ONE CARD: fixed in the window, below dialogs (z-50) so a Sources dialog opens over it
-function PreviewCard({ card, z, onClose, onFront, onMove }: { card: Card; z: number; onClose: () => void; onFront: () => void; onMove: (x: number, y: number) => void }) {
-  // Drag from the header only, so the text stays selectable
-  const startDrag = (event: ReactPointerEvent<HTMLElement>) => {
-    onFront();
-    const target = event.target as HTMLElement;
-    if (!target.closest("[data-drag-handle]") || target.closest("a,button")) return;
-    event.preventDefault();
-    const start = { x: event.clientX - card.x, y: event.clientY - card.y };
-    const drag = (moveEvent: PointerEvent) => onMove(moveEvent.clientX - start.x, Math.max(0, moveEvent.clientY - start.y));
-    const stop = () => { window.removeEventListener("pointermove", drag); window.removeEventListener("pointerup", stop); };
-    window.addEventListener("pointermove", drag);
-    window.addEventListener("pointerup", stop);
-  };
+// ONE CARD: fixed in the window, below dialogs (z-50) so a Sources dialog opens over it.
+// Not a drag handle: a pan of the graph must not slide this card.
+function PreviewCard({ card, z, onClose, onFront }: { card: Card; z: number; onClose: () => void; onFront: () => void }) {
   return (
     <div
       role="dialog"
       aria-label={card.node.label}
-      onPointerDown={startDrag}
-      style={{ left: card.x, top: card.y, width: CARD_WIDTH, zIndex: 40 + z }}
-      className="fixed max-h-[70vh] max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl bg-popover p-4 text-panel text-popover-foreground shadow-lg ring-1 ring-foreground/10"
+      onPointerDown={onFront}
+      style={{ "--card-x": `${card.x}px`, "--card-y": `${card.y}px`, "--card-z": 40 + z } as CSSProperties}
+      className="fixed top-[var(--card-y)] left-[var(--card-x)] z-[var(--card-z)] max-h-[70vh] w-96 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl bg-popover p-4 text-panel text-popover-foreground shadow-lg ring-1 ring-foreground/10"
     >
       <NodePreviewBody node={card.node} />
       <Button variant="ghost" size="icon-sm" className="absolute top-2 right-2" onClick={onClose}>

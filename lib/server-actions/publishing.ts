@@ -8,7 +8,7 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 import { toActionResult } from "./result";
 import { publicationInput } from "@/lib/publishing/validation";
 import type { PublishInput, WikiBody } from "@/lib/publishing/types";
-import { loadWikiMetrics } from "@/lib/publishing/server";
+import { loadPublicationEditor, loadWikiMetrics } from "@/lib/publishing/server";
 
 export async function publishSpaceWiki(input: PublishInput) {
   return toActionResult(async () => {
@@ -20,7 +20,6 @@ export async function publishSpaceWiki(input: PublishInput) {
       p_visibility: v.visibility, p_title: v.title, p_description: v.description, p_publisher: v.publisher, p_embed: v.embedEnabled, p_pages: v.pages,
     });
     revalidatePath("/explore");
-    revalidatePath("/publishing");
     return { publication };
   });
 }
@@ -30,6 +29,13 @@ export async function previewWikiPublication(pageId: string) {
     await requireUser();
     if (!z.uuid().safeParse(pageId).success) throw new Error("Choose a valid page.");
     return supabaseRpc(getAdminSupabase()).call<{ body: WikiBody; fingerprint: string }>("preview_wiki_publication", { p_page: pageId });
+  });
+}
+
+export async function loadPublishingDialog() {
+  return toActionResult(async () => {
+    const [editor, metrics] = await Promise.all([loadPublicationEditor(), loadWikiMetrics()]);
+    return { editor, metrics };
   });
 }
 

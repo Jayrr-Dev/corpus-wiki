@@ -1,6 +1,31 @@
 import { expect, it } from "vitest";
+import { nodeRadius } from "@/lib/graph/physics";
 import { DEFAULT_GRAPH_SETTINGS } from "@/lib/graph/settings";
 import { drawGraph, type DrawInput } from "./drawGraph";
+
+function dot(id: string, degree: number, x: number, y: number, label = id) {
+  return { id, kind: "unit" as const, label, text: label, href: "", createdAt: "", degree, domainPaths: [] as string[], entityNames: [] as string[], unitKind: null, status: null, x, y };
+}
+
+function recordingContext(measure: (text: string) => number) {
+  const painted: { text: string; x: number; y: number }[] = [];
+  let font = "10px sans-serif";
+  const ctx = new Proxy({ globalAlpha: 1 }, {
+    get(_, key) {
+      if (key === "font") return font;
+      if (key === "measureText") return (text: string) => ({ width: measure(text) });
+      if (key === "fillText") return (text: string, x: number, y: number) => painted.push({ text, x, y });
+      return () => {};
+    },
+    set(_, key, value) {
+      if (key === "font") font = String(value);
+      return true;
+    },
+  }) as unknown as CanvasRenderingContext2D;
+  return { ctx, painted };
+}
+
+const palette = { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" };
 
 it("keeps domain text at readable screen sizes even below the canvas font limit", () => {
   let font = "10px sans-serif";
@@ -107,4 +132,47 @@ it("sums links between domains into one line at the overview, then shows them bu
   expect(strokes).toHaveLength(2);
   expect(strokes[0]).toMatchObject({ curves: 0, lines: 1 });
   expect(strokes[1]).toEqual({ alpha: 0.7, curves: 2, lines: 0 });
+});
+
+it("puts the start of a bubble title at the top of the bubble", () => {
+  const { ctx, painted } = recordingContext(() => 48);
+  const node = dot("hub", 40, 200, 200, "Instinctive Triad grouping");
+  drawGraph({
+    ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k: 3 }, overviewZoom: null,
+    nodes: [node], links: [], circles: [], display: DEFAULT_GRAPH_SETTINGS.display, palette,
+    colorOf: () => "applied", focusId: null, focusIds: new Set(), hoverLabelOnly: false,
+  });
+  const title = painted.find((item) => item.text.startsWith("Instinctive"));
+  expect(title?.text).toBe("Instinctive Triad grouping");
+  const centerY = 200 * 3;
+  expect(title!.y).toBeLessThan(centerY - nodeRadius(node, 1) * 3 * 0.5);
+});
+
+it("keeps the first words when a title is too tall for its bubble", () => {
+  const { ctx, painted } = recordingContext((text) => text.length * 6);
+  const label = "Alpha bravo charlie delta echo foxtrot golf hotel india juliet kilo lima mike";
+  drawGraph({
+    ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k: 2 }, overviewZoom: null,
+    nodes: [dot("note", 15, 200, 200, label)], links: [], circles: [],
+    display: DEFAULT_GRAPH_SETTINGS.display, palette,
+    colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
+  });
+  const title = painted.map((item) => item.text).join(" ");
+  expect(title.startsWith("Alpha")).toBe(true);
+  expect(title.endsWith("…")).toBe(true);
+  expect(title.length).toBeLessThan(label.length);
+});
+
+it("gives a larger bubble its title before a smaller neighbor can take the space", () => {
+  const { ctx, painted } = recordingContext(() => 80);
+  const large = dot("large", 3, 200, 200, "Large title");
+  const small = dot("small", 1, 200, 200, "Small title");
+  drawGraph({
+    ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k: 2 }, overviewZoom: null,
+    nodes: [small, large], links: [], circles: [], display: DEFAULT_GRAPH_SETTINGS.display, palette,
+    colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
+  });
+  const texts = painted.map((item) => item.text);
+  expect(texts).toContain("Large title");
+  expect(texts).not.toContain("Small title");
 });

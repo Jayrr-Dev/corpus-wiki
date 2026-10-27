@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { circleExtents, clusterCircles, type GraphData, type GraphNode, type GraphSettings, groupColorLookup } from "@/lib/graph";
+import { circleAt, circleExtents, clusterCircles, type GraphData, type GraphNode, type GraphSettings, groupColorLookup, moveTarget } from "@/lib/graph";
 import { type Camera, centeredCamera, fitCamera, hierarchyOpacity, type Point, zoomBy } from "@/lib/graph/camera";
 import { Button } from "@/components/ui/button";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
@@ -28,6 +28,7 @@ export interface GraphCanvasProps {
   onContextDomain?: (path:string, point:Point) => void;
   onContextNode?: (node: GraphNode, point: Point) => void;
   onFocusDomain?: (path: string | null) => void;
+  onMoveNode?: (node: GraphNode, path: string) => void;
   // Reveal text in layers as you zoom in from the whole-graph view (off for small local graphs, where titles always fit)
   progressiveZoom?: boolean;
   // While a dot is focused, show only its text (small panels, where neighbor titles pile up)
@@ -78,7 +79,7 @@ function useCanvasSize(container: React.RefObject<HTMLDivElement | null>, canvas
   }, [container, canvas, onResize]);
 }
 
-export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextDomain, onFocusDomain, selectedIds = [], onSelect, progressiveZoom = true, hoverLabelOnly = false, className }: GraphCanvasProps) {
+export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextDomain, onFocusDomain, onMoveNode, selectedIds = [], onSelect, progressiveZoom = true, hoverLabelOnly = false, className }: GraphCanvasProps) {
   const container = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const domainLabelBoxes=useRef<{path:string;x:number;y:number;width:number;height:number}[]>([]);
@@ -93,6 +94,8 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   const focusFade = useRef({ id: null as string | null, mix: 0, at: 0 });
   const [focusedDomain, setFocusedDomain] = useState<string | null>(null);
   const [selectionBox,setSelectionBox] = useState<{x:number;y:number;width:number;height:number}|null>(null);
+  const dropHint = useRef<string | null>(null);
+  const [dropLabel, setDropLabel] = useState<string | null>(null);
   const selection = useRef(selectedIds);
   useLayoutEffect(() => { selection.current = selectedIds; redrawRef.current(); }, [selectedIds]);
   const frame = useRef<number | null>(null);
@@ -171,6 +174,14 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     for (const node of nodes) if(selected.has(node.id)) {
       ctx.beginPath(); ctx.arc((node.x??0)*camera.current.k+camera.current.x,(node.y??0)*camera.current.k+camera.current.y, nodeRadius(node,display.nodeSize)*camera.current.k+5,0,Math.PI*2); ctx.stroke();
     }
+    const hint = dropHint.current ? circles.find((circle) => circle.key === dropHint.current) : null;
+    if (hint) {
+      ctx.beginPath();
+      ctx.arc(hint.x * camera.current.k + camera.current.x, hint.y * camera.current.k + camera.current.y, hint.r * camera.current.k, 0, Math.PI * 2);
+      ctx.lineWidth = 4;
+      ctx.setLineDash([]);
+      ctx.stroke();
+    }
     ctx.restore();
   }, [layout]);
 
@@ -244,7 +255,22 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     focusFade.current.at = performance.now();
     redraw();
   }, [redraw]);
-  usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, onFocus: focusNode, onContextNode, onContextTitle: (point,client) => {const label=[...domainLabelBoxes.current].reverse().find(b=>point.x>=b.x-5&&point.x<=b.x+b.width+5&&point.y>=b.y-4&&point.y<=b.y+b.height+4);if(!label||!onContextDomain)return false;onContextDomain(label.path,client);return true;}, onSelect: onSelect ? (nodes,toggle) => onSelect(nodes.filter(n=>!focusedDomain||n.domainPaths.some(p=>p===focusedDomain||p.startsWith(focusedDomain+"/"))),toggle) : undefined, onSelectionBox: setSelectionBox, onBackgroundClick: focusGroup, motion, redraw });
+  const showDrop = (node: SimNode | null, world: Point) => {
+    const hit = node && latest.current.showCircles ? circleAt(clusterCircles(layout.current.nodes, latest.current.display.nodeSize), world) : null;
+    const path = node ? moveTarget(node, hit, latest.current.focusedDomain) : null;
+    if (dropHint.current === path) return;
+    dropHint.current = path;
+    setDropLabel(path);
+    redraw();
+  };
+  const dropNode = (node: SimNode, world: Point) => {
+    showDrop(node, world);
+    const path = dropHint.current;
+    dropHint.current = null;
+    setDropLabel(null);
+    if (path) onMoveNode?.(node, path);
+  };
+  usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, onFocus: focusNode, onContextNode, onContextTitle: (point,client) => {const label=[...domainLabelBoxes.current].reverse().find(b=>point.x>=b.x-5&&point.x<=b.x+b.width+5&&point.y>=b.y-4&&point.y<=b.y+b.height+4);if(!label||!onContextDomain)return false;onContextDomain(label.path,client);return true;}, onSelect: onSelect ? (nodes,toggle) => onSelect(nodes.filter(n=>!focusedDomain||n.domainPaths.some(p=>p===focusedDomain||p.startsWith(focusedDomain+"/"))),toggle) : undefined, onSelectionBox: setSelectionBox, onBackgroundClick: focusGroup, onNodeDrag: onMoveNode ? showDrop : undefined, onNodeDrop: onMoveNode ? dropNode : undefined, motion, redraw });
 
   // ZOOM BUTTONS: zoom around the canvas center; fit hands the camera back to auto-fit
   const zoomCenter = useCallback(
@@ -272,9 +298,10 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     <div ref={container} className={cn("relative h-full w-full overflow-hidden", className)}>
       <canvas ref={canvas} className="absolute inset-0 touch-none" aria-label="Knowledge graph" role="img" />
       {selectionBox && <div className="pointer-events-none absolute left-[var(--box-x)] top-[var(--box-y)] h-[var(--box-h)] w-[var(--box-w)] border-2 border-link bg-link/15" style={{"--box-x":`${selectionBox.x}px`,"--box-y":`${selectionBox.y}px`,"--box-w":`${selectionBox.width}px`,"--box-h":`${selectionBox.height}px`} as CSSProperties} />}
+      {dropLabel && <p role="status" className="pointer-events-none absolute top-3 left-1/2 z-20 -translate-x-1/2 rounded-md border bg-background px-3 py-1 text-sm shadow-md">Drop to move into {dropLabel}</p>}
       <ZoomControls onZoomIn={() => zoomCenter(BUTTON_ZOOM)} onZoomOut={() => zoomCenter(1 / BUTTON_ZOOM)} onFit={fitView} />
       {focusedDomain && <Button type="button" variant="outline" className="absolute top-3 right-3" onClick={fitView}>Back to overview</Button>}
-      {progressiveZoom && <p className="pointer-events-none absolute bottom-2 left-3 text-xs text-muted-foreground">Scroll to zoom · Click a dot twice to open · Click a group to focus · Ctrl-drag to select</p>}
+      {progressiveZoom && <p className="pointer-events-none absolute bottom-2 left-3 text-xs text-muted-foreground">Scroll to zoom · Drag a claim into another domain · Click a dot twice to open · Ctrl-drag to select</p>}
     </div>
   );
 }

@@ -50,7 +50,7 @@ function UnitPreview({ node }: { node: GraphNode }) {
   );
   return (
     <div className="flex flex-col gap-4">
-      <div data-drag-handle className="flex cursor-move flex-col gap-2 pr-6">
+      <div className="flex flex-col gap-2 pr-6">
         <KindLine node={node} />
         <h2 className="text-title font-semibold">{node.label}</h2>
       </div>

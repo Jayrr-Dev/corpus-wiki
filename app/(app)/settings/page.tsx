@@ -1,6 +1,5 @@
 import { BrainCircuit, ChartNoAxesCombined, CircleDollarSign, Gauge, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { ReadingPane } from "@/components/shell";
 import { CostTable } from "@/components/usage/CostTable";
 import { UsagePanel } from "@/components/usage/UsagePanel";
@@ -95,7 +94,7 @@ export default async function SettingsPage() {
   };
   return (
     <ReadingPane title="Settings">
-      <p className="-mt-2 text-panel text-muted-foreground">Make this workspace work the way you think. <Link href="/publishing" className="text-link hover:underline">Publishing, embeds & reader metrics</Link></p>
+      <p className="-mt-2 text-panel text-muted-foreground">Make this workspace work the way you think.</p>
       <div className="mt-4">
         <SettingsTabs tabs={sections.map(({ id, label, icon: Icon }) => ({ id, label, icon: <Icon size={16} aria-hidden="true" />, panel: panels[id] }))} />
       </div>

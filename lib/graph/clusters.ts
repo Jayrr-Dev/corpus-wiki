@@ -183,6 +183,26 @@ export function clusterCircles(nodes: readonly SimNode[], nodeSize: number): Clu
   return packDomains(nodes, nodeSize).circles;
 }
 
+// The innermost ring under a point (a parent contains its children, so the deepest one is the drop)
+export function circleAt(circles: readonly ClusterCircle[], point: { x: number; y: number }): ClusterCircle | null {
+  let hit: ClusterCircle | null = null;
+  for (const circle of circles) {
+    if (Math.hypot(point.x - circle.x, point.y - circle.y) > circle.r) continue;
+    if (!hit || circle.depth > hit.depth || (circle.depth === hit.depth && circle.r < hit.r)) hit = circle;
+  }
+  return hit;
+}
+
+// The domain a dragged claim would join. The same domain, a non-claim, or a circle outside the
+// focused branch stays put. A parent of the focus still counts, so a claim can move up a level.
+export function moveTarget(node: Pick<GraphNode, "kind" | "domainPaths">, hit: Pick<ClusterCircle, "key"> | null, focusedDomain: string | null): string | null {
+  if (node.kind !== "unit" || !hit) return null;
+  const source = [...node.domainPaths].sort()[0] ?? "";
+  if (hit.key === source) return null;
+  if (focusedDomain && hit.key !== focusedDomain && !hit.key.startsWith(`${focusedDomain}/`) && !focusedDomain.startsWith(`${hit.key}/`)) return null;
+  return hit.key;
+}
+
 // Spread for a dot placed fresh in its home: a golden-angle spiral by its index, so new dots start apart
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 

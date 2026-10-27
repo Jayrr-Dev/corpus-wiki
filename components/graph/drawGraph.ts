@@ -327,16 +327,64 @@ const TITLE_HALO_PX = 4;
 // Room kept between a title set inside its dot and the dot's edge, in screen pixels
 const INSIDE_PAD_PX = 6;
 
-// INSIDE TITLE: the title wrapped to fit inside its dot, or null when the dot is too small on screen.
+// True when a text block's corners stay inside a circle of this screen radius
+function blockFits(widthPx: number, heightPx: number, radiusPx: number): boolean {
+  return (widthPx / 2) ** 2 + (heightPx / 2) ** 2 <= radiusPx ** 2;
+}
+
+function lineWidth(ctx: CanvasRenderingContext2D, lines: readonly string[]): number {
+  return Math.max(0, ...lines.map((line) => ctx.measureText(line).width));
+}
+
+// Cuts a line so it fits, keeping the first words and ending in "…"
+function ellipsize(ctx: CanvasRenderingContext2D, text: string, maxPx: number): string {
+  if (ctx.measureText(text).width <= maxPx) return text;
+  let end = text.length;
+  while (end > 0) {
+    const kept = text.slice(0, end).trimEnd();
+    if (kept && ctx.measureText(`${kept}…`).width <= maxPx) return `${kept}…`;
+    end -= 1;
+  }
+  return "";
+}
+
+// The first lines that fit. A cut title keeps the start and marks the cut with "…".
+function prefixThatFits(ctx: CanvasRenderingContext2D, lines: readonly string[], radiusPx: number, wrapPx: number): string[] | null {
+  const linePx = LABEL_PX * LINE_HEIGHT;
+  for (let count = lines.length; count > 0; count -= 1) {
+    const cut = count < lines.length;
+    let chosen = lines.slice(0, count);
+    if (cut) {
+      const last = chosen[count - 1] ?? "";
+      const fitted = ellipsize(ctx, last, wrapPx);
+      if (!fitted) continue;
+      const marked = fitted.endsWith("…") ? fitted : ellipsize(ctx, `${fitted}…`, wrapPx);
+      if (!marked) continue;
+      chosen = [...chosen.slice(0, -1), marked];
+    }
+    if (blockFits(lineWidth(ctx, chosen), chosen.length * linePx, radiusPx)) return chosen;
+  }
+  const maxWidth = 2 * Math.sqrt(Math.max(0, radiusPx ** 2 - (linePx / 2) ** 2));
+  const line = ellipsize(ctx, lines[0] ?? "", maxWidth);
+  if (!line || !blockFits(ctx.measureText(line).width, linePx, radiusPx)) return null;
+  return [line];
+}
+
+// INSIDE TITLE: the start of the title, wrapped inside its dot, as high as the circle allows
+// so the title is the first thing in the bubble. Null when even one short line does not fit.
 // The wrap width is rounded so the wrap cache is not refilled on every zoom step.
-function insideTitle(ctx: CanvasRenderingContext2D, node: SimNode, input: DrawInput): { lines: string[]; widthPx: number } | null {
+function insideTitle(ctx: CanvasRenderingContext2D, node: SimNode, input: DrawInput): { lines: string[]; widthPx: number; topPx: number } | null {
   const radiusPx = nodeRadius(node, input.display.nodeSize) * input.camera.k - INSIDE_PAD_PX;
-  if (radiusPx < LABEL_PX * 2) return null;
-  const wrapPx = Math.min(LABEL_WRAP_PX, Math.floor((radiusPx * 1.6) / 10) * 10);
+  if (radiusPx < LABEL_PX) return null;
+  const wrapPx = Math.min(LABEL_WRAP_PX, Math.max(10, Math.floor((radiusPx * 1.6) / 10) * 10));
   const wrapped = wrapLabel(ctx, node.label, wrapPx, input.palette.fontFamily);
-  const heightPx = wrapped.lines.length * LABEL_PX * LINE_HEIGHT;
-  // The text block's corners must stay inside the circle
-  return (wrapped.widthPx / 2) ** 2 + (heightPx / 2) ** 2 <= radiusPx ** 2 ? wrapped : null;
+  if (wrapped.lines.length === 0) return null;
+  const lines = prefixThatFits(ctx, wrapped.lines, radiusPx, wrapPx);
+  if (!lines) return null;
+  const widthPx = lineWidth(ctx, lines);
+  // Highest top that still keeps the block inside the circle (screen pixels above the dot's middle)
+  const topPx = -Math.sqrt(Math.max(0, radiusPx ** 2 - (widthPx / 2) ** 2));
+  return { lines, widthPx, topPx };
 }
 
 // HOVERED LABEL: same wrap as the resting label, on a backing box, nudged inside the canvas so it is never cut off
@@ -394,7 +442,12 @@ function drawLabels(input: DrawInput): void {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   let focused: SimNode | null = null;
-  for (const node of nodes) {
+  // Bigger dots claim their title first, so a large bubble's title is not dropped behind a small neighbor
+  const ordered = [...nodes].sort((a, b) => {
+    const byRadius = nodeRadius(b, display.nodeSize) - nodeRadius(a, display.nodeSize);
+    return byRadius !== 0 ? byRadius : a.id.localeCompare(b.id);
+  });
+  for (const node of ordered) {
     if (node.id === focusId) { focused = node; continue; }
     if (node.id === hoveredId) continue;
     if (!inDomain(node, input.focusedDomain)) continue;
@@ -402,11 +455,12 @@ function drawLabels(input: DrawInput): void {
     const opacity = inFocus ? faded(input, zoomOpacity, 1) : zoomOpacity * faded(input, 1, DIMMED);
     if (opacity <= 0.01 || !isOnScreen(node, input)) continue;
     ctx.globalAlpha = opacity;
-    // A dot big enough on screen holds its own title; otherwise the title sits beside it (above by default)
+    // A dot big enough on screen holds the start of its title at the top of the bubble.
+    // Otherwise the title sits beside it (above by default).
     const inside = insideTitle(ctx, node, input);
     const { lines, widthPx } = inside ?? wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
     const { x, y, align } = inside
-      ? { x: node.x ?? 0, y: (node.y ?? 0) - (lines.length * lineHeight) / 2, align: "center" as const }
+      ? { x: node.x ?? 0, y: (node.y ?? 0) + inside.topPx / camera.k, align: "center" as const }
       : titleAnchor(node, lines.length, lineHeight, display, camera.k);
     const left = align === "center" ? x - widthPx / camera.k / 2 : align === "right" ? x - widthPx / camera.k : x;
     if (!reserveLabel(input, left, y, widthPx, lines.length * LABEL_PX * LINE_HEIGHT)) continue;
