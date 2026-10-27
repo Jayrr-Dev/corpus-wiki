@@ -290,42 +290,49 @@ export function GroupsSection({ value, nodes, onChange }: { value: GraphGroup[];
 }
 
 
-// DISPLAY: arrows, the three sliders, and the replay
 const TITLE_OPTIONS = TITLE_POSITIONS.map((position) => ({ value: position, label: position[0]!.toUpperCase() + position.slice(1) }));
 
-function DisplayControls({
-  value,
-  onChange,
-  isReplaying,
-  onAnimate,
-}: {
-  value: GraphDisplay;
-  onChange: (next: GraphDisplay) => void;
-  isReplaying: boolean;
-  onAnimate: () => void;
-}) {
+function DisplaySliders({ keys, value, onChange }: { keys: readonly (typeof DISPLAY_SLIDERS)[number]["key"][]; value: GraphDisplay; onChange: (next: GraphDisplay) => void }) {
   return (
     <>
-      <SwitchRow label="Arrows" checked={value.arrows} onChange={(arrows) => onChange({ ...value, arrows })} />
-      <SwitchRow label="Domain circles" checked={value.domainCircles} onChange={(domainCircles) => onChange({ ...value, domainCircles })} />
-      <SelectRow label="Title position" value={value.titlePosition} options={TITLE_OPTIONS} onChange={(titlePosition) => onChange({ ...value, titlePosition })} />
-      {DISPLAY_SLIDERS.map((rule) => (
+      {DISPLAY_SLIDERS.filter((rule) => keys.includes(rule.key)).map((rule) => (
         <SliderRow key={rule.key} label={rule.label} min={rule.min} max={rule.max} step={rule.step} value={value[rule.key]} onChange={(next) => onChange({ ...value, [rule.key]: next })} />
       ))}
-      <Button variant="outline" size="sm" onClick={onAnimate} className="self-center">
-        {isReplaying ? "Stop" : "Animate"}
-      </Button>
     </>
   );
 }
 
-// FORCES: the four physics sliders
-function ForceControls({ value, onChange }: { value: GraphForces; onChange: (next: GraphForces) => void }) {
+// LABELS: where note titles sit and when they fade
+function LabelControls({ value, onChange }: { value: GraphDisplay; onChange: (next: GraphDisplay) => void }) {
+  return (
+    <>
+      <SelectRow label="Title position" value={value.titlePosition} options={TITLE_OPTIONS} onChange={(titlePosition) => onChange({ ...value, titlePosition })} />
+      <DisplaySliders keys={["textFadeThreshold"]} value={value} onChange={onChange} />
+    </>
+  );
+}
+
+// SHAPES: how big the dots and lines are, and the extra marks drawn on them
+function ShapeControls({ value, onChange }: { value: GraphDisplay; onChange: (next: GraphDisplay) => void }) {
+  return (
+    <>
+      <DisplaySliders keys={["nodeSize", "linkThickness"]} value={value} onChange={onChange} />
+      <SwitchRow label="Arrows" checked={value.arrows} onChange={(arrows) => onChange({ ...value, arrows })} />
+      <SwitchRow label="Domain circles" checked={value.domainCircles} onChange={(domainCircles) => onChange({ ...value, domainCircles })} />
+    </>
+  );
+}
+
+// FORCES: the physics sliders, then the replay that shows them settle
+function ForceControls({ value, onChange, isReplaying, onAnimate }: { value: GraphForces; onChange: (next: GraphForces) => void; isReplaying: boolean; onAnimate: () => void }) {
   return (
     <>
       {FORCE_SLIDERS.map((rule) => (
         <SliderRow key={rule.key} label={rule.label} min={rule.min} max={rule.max} step={rule.step} value={value[rule.key]} onChange={(next) => onChange({ ...value, [rule.key]: next })} />
       ))}
+      <Button variant="outline" size="sm" onClick={onAnimate} className="self-center">
+        {isReplaying ? "Stop" : "Animate"}
+      </Button>
     </>
   );
 }
@@ -348,11 +355,21 @@ function ShowControls({ value, onChange }: { value: GraphFilters; onChange: (nex
   );
 }
 
+// TUNING GROUP: a smaller fold inside Tuning, closed until asked for
 function TuningGroup({ title, children }: { title: string; children: ReactNode }) {
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-xs font-medium text-faint">{title}</span>
-      {children}
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+        className="flex items-center gap-1.5 text-left text-xs font-medium text-faint hover:text-text"
+      >
+        <ChevronRight className={cn("size-3 transition-transform", isOpen && "rotate-90")} aria-hidden />
+        {title}
+      </button>
+      {isOpen ? <div className="flex flex-col gap-3 pl-4">{children}</div> : null}
     </div>
   );
 }
@@ -383,8 +400,9 @@ export function TuningSection({
   return (
     <PanelSection title="Tuning">
       <TuningGroup title="Show"><ShowControls value={filters} onChange={onFiltersChange} /></TuningGroup>
-      <TuningGroup title="Display"><DisplayControls value={display} onChange={onDisplayChange} isReplaying={isReplaying} onAnimate={onAnimate} /></TuningGroup>
-      <TuningGroup title="Forces"><ForceControls value={forces} onChange={onForcesChange} /></TuningGroup>
+      <TuningGroup title="Labels"><LabelControls value={display} onChange={onDisplayChange} /></TuningGroup>
+      <TuningGroup title="Shapes"><ShapeControls value={display} onChange={onDisplayChange} /></TuningGroup>
+      <TuningGroup title="Forces"><ForceControls value={forces} onChange={onForcesChange} isReplaying={isReplaying} onAnimate={onAnimate} /></TuningGroup>
       {actions ? <TuningGroup title="Actions">{actions}</TuningGroup> : null}
     </PanelSection>
   );
