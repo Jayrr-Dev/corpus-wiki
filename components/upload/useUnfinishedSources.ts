@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { useShiftEvents, useSources } from "@/lib/queries";
+import { readPages } from "@/lib/queries/batched";
 import { canResumeUpload, isRunning, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 
@@ -22,11 +22,22 @@ export function useUnfinishedSources(): Set<string> {
 // SOURCE RUNS: active internal sources whose latest upload is being worked on right now (processing),
 // or stopped before it finished and can be resumed (unfinished)
 export function useSourceRuns(): SourceRuns {
-  const sources = useSources().data;
-  const uploads = useShiftEvents({ filters: { cause: "upload" } }).data;
+  // Only the ids and links the badge needs, filtered in the query: this runs behind every
+  // screen, so it never loads whole tables. Keys stay under ["table", <table>] so Realtime
+  // invalidation of either table still refreshes it.
+  const sources = useQuery({
+    queryKey: ["table", "sources", "active-internal-ids"],
+    queryFn: () => readPages<{ id: string }>((from, to) => getBrowserSupabase().from("sources").select("id")
+      .eq("origin", "internal").is("archived_at", null).is("replaced_by_id", null).order("id").range(from, to)),
+  }).data;
+  const uploads = useQuery({
+    queryKey: ["table", "shift_events", "upload-runs"],
+    queryFn: () => readPages<{ id: string; source_id: string | null }>((from, to) => getBrowserSupabase().from("shift_events").select("id,source_id")
+      .eq("cause", "upload").not("source_id", "is", null).order("created_at", { ascending: false }).order("id").range(from, to)),
+  }).data;
   // Newest first, so the first upload seen per source is its latest run
   const latestEventBySource = useMemo(() => {
-    const active = new Set((sources ?? []).filter((source) => source.origin === "internal" && !source.archived_at && !source.replaced_by_id).map((source) => source.id));
+    const active = new Set((sources ?? []).map((source) => source.id));
     const latest = new Map<string, string>();
     for (const event of uploads ?? []) if (event.source_id && active.has(event.source_id) && !latest.has(event.source_id)) latest.set(event.source_id, event.id);
     return latest;

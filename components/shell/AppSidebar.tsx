@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useExceptionCounts } from "@/app/(app)/exceptions/useExceptionInbox";
+import { useOpenExceptionCount } from "@/app/(app)/exceptions/useExceptionInbox";
 import { HelpIcon, SignOutIcon } from "@/components/icons";
 import { reopenTutorial } from "@/components/tutorial";
 import {
@@ -28,12 +28,6 @@ import { SpaceSwitcher } from "./SpaceSwitcher";
 import { ThemeSwitch } from "./ThemeSwitch";
 import type { Space } from "@/lib/spaces/shared";
 import { Tooltip } from "@/components/standard/tooltip";
-
-// OPEN EXCEPTION COUNT: the one "needs you" number on every screen
-function useOpenExceptionCount(): number {
-  const { data } = useExceptionCounts();
-  return data?.open ?? 0;
-}
 
 // NAV LINK: one menu row; the tooltip only shows when the sidebar is collapsed to icons
 function NavLink({ item, badge }: { item: NavItem; badge?: number }) {
@@ -73,6 +67,7 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
 // APP SIDEBAR: brand and search, the two nav groups, then error log / settings / theme / tutorial / sign out
 // On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links
 export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Space[]; activeSpace: Space; accountEmail?: string | null }) {
+  // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
   const openCount = useOpenExceptionCount();
   const suggestionCount = useSuggestionAttentionCount();
   const unfinishedSources = useUnfinishedSources().size;
