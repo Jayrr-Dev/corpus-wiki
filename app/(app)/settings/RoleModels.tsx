@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { ErrorNote } from "@/app/(app)/_components/bits";
@@ -47,8 +48,14 @@ export function RoleModels({ settings }: { settings: ModelSettings }) {
 
 // ONE ROLE'S MODEL AND EFFORT: the two selects, also shown on each role card on /roles.
 // Renders as two grid cells plus a status line, so the parent lays them out.
+// True once the page is interactive. The server HTML lists only each select's chosen model, so a page
+// of role cards does not ship every model once per role; the full list fills in on hydration.
+const subscribeNothing = () => () => {};
+const useHydrated = () => useSyncExternalStore(subscribeNothing, () => true, () => false);
+
 export function RoleModelControls({ role, settings }: { role: ModelRole; settings: ModelSettings }) {
   const router = useRouter();
+  const hydrated = useHydrated();
   const save = useServerAction(chooseRoleModel);
   const saveEffort = useServerAction(chooseRoleEffort);
   const isSaving = save.isPending || saveEffort.isPending;
@@ -69,7 +76,8 @@ export function RoleModelControls({ role, settings }: { role: ModelRole; setting
   // Only models that read the role's data are offered. A saved pick the provider no longer lists, or one
   // that cannot read that data, stays visible (marked) so it can be seen and cleared
   const fitting = settings.models.filter((model) => readsAll(settings.modelInputs[model], needs));
-  const options = current && !fitting.includes(current) ? [current, ...fitting] : fitting;
+  const offered = current && !fitting.includes(current) ? [current, ...fitting] : fitting;
+  const options = hydrated ? offered : offered.filter((model) => model === current);
   const optionLabel = (model: string) => {
     if (!settings.models.includes(model)) return `${model} (no longer offered)`;
     const missing = missingTypes(settings.modelInputs[model], needs);
@@ -87,7 +95,7 @@ export function RoleModelControls({ role, settings }: { role: ModelRole; setting
         aria-label={`Model for ${roleName(role)}`}
         className="w-full min-w-0"
         value={current}
-        disabled={isSaving || options.length === 0}
+        disabled={isSaving || offered.length === 0}
         onChange={(event) => void apply(event.target.value || null)}
       >
         <NativeSelectOption value="">{seesImages ? "Vision model" : "Active model"}</NativeSelectOption>
