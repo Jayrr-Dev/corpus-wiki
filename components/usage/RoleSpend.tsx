@@ -1,13 +1,14 @@
 "use client";
 
 import { type CSSProperties, useMemo } from "react";
-import type { UseQueryResult } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { formatCount } from "@/app/(app)/_lib/format";
 import { InfoPopover } from "@/components/standard/info-popover";
 import type { Tables } from "@/lib/database/types";
 import { formatUsd } from "@/lib/ai/pricing";
 import { roleName } from "@/lib/ai/roles";
-import { useAiCalls } from "@/lib/queries";
+import { getBrowserSupabase } from "@/lib/supabase/client";
+import { fetchAllAiCalls } from "./allAiCalls";
 import { totalsByRole, type RoleTotal } from "./summarizeUsage";
 
 // =====================================================================
@@ -17,8 +18,9 @@ import { totalsByRole, type RoleTotal } from "./summarizeUsage";
 
 type Calls = UseQueryResult<Tables<"ai_calls">[]>;
 
-// Every logged call (no cap), shared by the panel and the role cards
-export const useAllAiCalls = () => useAiCalls({ limit: undefined });
+// Every logged call (no cap), shared by the panel, the role cards and Settings. Keyed under
+// ["table", "ai_calls"] so a saved action refreshes it like the shared list hooks.
+export const useAllAiCalls = () => useQuery({ queryKey: ["table", "ai_calls", "all"], queryFn: () => fetchAllAiCalls(getBrowserSupabase()) });
 
 // Spend per role id, for the role cards
 export function useRoleSpend(calls: Calls): Map<string, RoleTotal> {

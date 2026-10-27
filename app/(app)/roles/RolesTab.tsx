@@ -15,6 +15,7 @@ import { saveRoleInstructions } from "@/lib/server-actions/skills";
 import { setRoleAuto } from "@/lib/server-actions/settings";
 import { formatUsd } from "@/lib/ai/pricing";
 import { AI_STAGES, type SkillLibrary } from "@/lib/ai/skills/types";
+import type { MemoryEntry } from "@/lib/ai/memory";
 import { defaultSkill } from "@/lib/ai/skills/defaults";
 import { AUTO_ROLES, type AutoRole, FIXED_ROLES, MODEL_ROLES, type ModelRole, STAGE_ROLES } from "@/lib/ai/roles";
 import { UndoIcon } from "@/components/icons";
@@ -42,7 +43,7 @@ const APP_ROLES = {
 const appRole = (role: (typeof APP_ROLES)[keyof typeof APP_ROLES]) => ({ ...role, instructions: null, source: "Managed by the app", version: undefined });
 const GUIDES_RECONCILER = new Set(["extract_knowledge", "link_knowledge", "organize_topics"]);
 
-export function RolesTab({ library, modelSettings }: { library: SkillLibrary; modelSettings: ModelSettings }) {
+export function RolesTab({ library, modelSettings, initialMemory }: { library: SkillLibrary; modelSettings: ModelSettings; initialMemory?: Record<string, MemoryEntry[]> }) {
   const calls = useAllAiCalls();
   const spend = useRoleSpend(calls);
   const roles = AI_STAGES.map((stage) => {
@@ -126,7 +127,7 @@ export function RolesTab({ library, modelSettings }: { library: SkillLibrary; mo
         </article>;
       })}
     </div>
-    <RoleMemoryPanel />
+    <RoleMemoryPanel initialMemory={initialMemory} />
   </section>;
 }
 
