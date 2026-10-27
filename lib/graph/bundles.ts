@@ -58,13 +58,12 @@ export function routeDomains(source: Pick<GraphNode, "domainPaths">, target: Pic
   return [...up, ...down];
 }
 
-// The two domains a link between domains is summed into at the overview: the sibling domains
-// where its route turns (or, when one domain holds the other, the outer domain itself and the
-// child the route enters). Null when both ends sit in one domain or either end has none.
+// The two sibling domains where a link's route turns, which it is summed into at the overview.
+// Null when both ends sit in one domain, either end has none, or one domain holds the other (a
+// line from a domain to a circle inside it has no gap to run in, so those links stay single).
 export function summaryDomains(source: Pick<GraphNode, "domainPaths">, target: Pick<GraphNode, "domainPaths">): [string, string] | null {
   const { up, down } = routeLegs(source, target);
-  if (up.length === 0 && down.length === 0) return null;
-  return [up.at(-1) ?? primarySegments(source).join("/"), down[0] ?? primarySegments(target).join("/")];
+  return up.length && down.length ? [up.at(-1)!, down[0]!] : null;
 }
 
 // Point on a circle's edge facing another point
@@ -72,6 +71,16 @@ function edgeToward(circle: RouteCircle, other: RoutePoint): RoutePoint {
   const dx = other.x - circle.x, dy = other.y - circle.y;
   const distance = Math.hypot(dx, dy) || 1;
   return { x: circle.x + (dx / distance) * circle.r, y: circle.y + (dy / distance) * circle.r };
+}
+
+// Ends of a line between two circles: their facing edges, each tucked `tuck` (at most half the
+// radius) back inside its circle, so touching neighbors still get a visible line between them
+export function facingEdges(from: RouteCircle, to: RouteCircle, tuck: number): [RoutePoint, RoutePoint] {
+  const ends = [edgeToward(from, to), edgeToward(to, from)] as const;
+  return [from, to].map((circle, i) => {
+    const edge = ends[i]!, inward = Math.min(tuck, circle.r / 2) / (circle.r || 1);
+    return { x: edge.x + (circle.x - edge.x) * inward, y: edge.y + (circle.y - edge.y) * inward };
+  }) as [RoutePoint, RoutePoint];
 }
 
 // Control points a link bends through: circle middles along each leg, and where the legs meet,

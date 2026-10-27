@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { routeControls, routeDomains, straightenRoute, summaryDomains } from "./bundles";
+import { facingEdges, routeControls, routeDomains, straightenRoute, summaryDomains } from "./bundles";
 
 const at = (...domainPaths: string[]) => ({ domainPaths });
 
@@ -31,12 +31,22 @@ describe("summaryDomains", () => {
     expect(summaryDomains(at("Types/One/Anger"), at("Types/Six/Fear"))).toEqual(["Types/One", "Types/Six"]);
   });
 
-  it("uses the outer domain itself when it holds the other", () => {
-    expect(summaryDomains(at("Types"), at("Types/One/Anger"))).toEqual(["Types", "Types/One"]);
+  it("leaves links from a domain into one of its own children single", () => {
+    expect(summaryDomains(at("Types"), at("Types/One/Anger"))).toBeNull();
   });
 
   it("leaves links inside one domain alone", () => {
     expect(summaryDomains(at("Types/One"), at("Types/One"))).toBeNull();
+  });
+});
+
+describe("facingEdges", () => {
+  it("ends a line just inside each circle's facing edge", () => {
+    expect(facingEdges({ x: 0, y: 0, r: 100 }, { x: 300, y: 0, r: 50 }, 10)).toEqual([{ x: 90, y: 0 }, { x: 260, y: 0 }]);
+  });
+
+  it("tucks in at most half the radius", () => {
+    expect(facingEdges({ x: 0, y: 0, r: 10 }, { x: 100, y: 0, r: 10 }, 50)).toEqual([{ x: 5, y: 0 }, { x: 95, y: 0 }]);
   });
 });
 

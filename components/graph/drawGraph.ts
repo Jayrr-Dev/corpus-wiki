@@ -1,4 +1,4 @@
-import { type ClusterCircle, type GraphColor, type GraphDisplay, type GraphNode, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute, summaryDomains } from "@/lib/graph";
+import { type ClusterCircle, facingEdges, type GraphColor, type GraphDisplay, type GraphNode, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute, summaryDomains } from "@/lib/graph";
 import { type Camera, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import type { CanvasPalette } from "./palette";
@@ -67,6 +67,8 @@ const BUNDLE_STRENGTH = 0.85;
 // root of the links summed, so one heavy pair cannot drown the rest)
 const SUMMARY_ALPHA = 0.45;
 const SUMMARY_MAX_PX = 10;
+// How far a summary line reaches inside each circle past its edge, in screen pixels
+const SUMMARY_TUCK_PX = 12;
 // DOMAIN CIRCLES: accent per domain (cycled), fill and ring opacity, ring width and label size in screen pixels
 const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "stale", "failed"];
 const CIRCLE_FILL_ALPHA = 0.16;
@@ -135,8 +137,9 @@ interface DomainSummary {
   count: number;
 }
 
-// SUMMARY PASS (under the single links): one straight line between the middles of each pair of
-// domains that links join, faded out as the single links fade in
+// SUMMARY PASS (under the single links): one straight line between the facing edges of each pair
+// of domains that links join, faded out as the single links fade in. Edges, not middles: a big
+// domain's middle often sits over one of its children, which would look like the line's owner.
 function drawSummaries(input: DrawInput, summaries: Iterable<DomainSummary>, shown: number): void {
   const { ctx, palette, camera, display, hoveredId } = input;
   if (shown <= 0.01) return;
@@ -145,9 +148,10 @@ function drawSummaries(input: DrawInput, summaries: Iterable<DomainSummary>, sho
   ctx.globalAlpha = SUMMARY_ALPHA * shown * (hoveredId === null ? 1 : 0.5);
   for (const { from, to, count } of summaries) {
     ctx.lineWidth = Math.min(SUMMARY_MAX_PX, LINK_PX * display.linkThickness * (1 + Math.sqrt(count))) / camera.k;
+    const [start, end] = facingEdges(from, to, SUMMARY_TUCK_PX / camera.k);
     ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
     ctx.stroke();
   }
   ctx.lineCap = "butt";
