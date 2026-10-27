@@ -115,7 +115,7 @@ describe("batched reconciliation", () => {
     expect(claims.map((action) => action.passageIds)).toEqual(input(81).passages.map((passage) => [passage.id]));
     expect(draft.actions.filter((action) => action.type === "create_entity")).toHaveLength(1);
     expect(draft.actions.filter((action) => action.type === "create_domain")).toHaveLength(1);
-    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v13-entity-types+name-duplicate-v2" });
+    expect(draft.trace).toMatchObject({ tokensIn: 30, tokensOut: 60, promptVersion: "reconcile-v14-structure-labels+name-duplicate-v2" });
   });
 
   it("lets a later batch continue a procedure an earlier batch started", async () => {

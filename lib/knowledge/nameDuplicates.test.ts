@@ -40,6 +40,14 @@ describe("entity name duplicate guard", () => {
     expect(actions[0]?.input).toMatchObject({ context: { entities: [{ type: "company", key: "utilitek", role: "subject" }] } });
   });
 
+  it("moves structure label ends onto the reused identity", async () => {
+    const known = entity("Utilitek Solutions Inc.", "utilitek");
+    const labelled: AnswerClaim = { ...claim("Utiltek Solutions"), stakeholderLinks: [{ from: { type: "team", key: "billing" }, link: "part_of",
+      to: { type: "company", key: "utiltek-solutions" }, title: null, seniority: null, share: null, current: true }] };
+    const result = await reuseEntities([labelled], [known], vi.fn(async () => 0));
+    expect(result[0]?.stakeholderLinks?.[0]).toMatchObject({ from: { type: "team", key: "billing" }, to: { type: "company", key: "utilitek" } });
+  });
+
   it("finds acronyms across types but keeps uncertain identities separate", async () => {
     const proposed = claim("FAA");
     proposed.entities[0]!.type = "organization";

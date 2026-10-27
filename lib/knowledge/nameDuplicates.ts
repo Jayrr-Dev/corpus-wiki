@@ -56,8 +56,14 @@ export async function reuseEntities(claims: AnswerClaim[], existing: ExistingEnt
     const target = resolved.get(entityKey(ref));
     return target ? { ...ref, type: target.type, key: target.key, name: target.name } : ref;
   };
+  // A structure label names its ends by type and key only: follow the same choices
+  const resolveEnd = <T extends { type: string; key: string }>(ref: T): T => {
+    const target = resolved.get(`${ref.type}:${ref.key}`);
+    return target ? { ...ref, type: target.type, key: target.key } : ref;
+  };
   return claims.map((claim) => ({ ...claim, entities: claim.entities.map(resolve),
-    ...(claim.applicability ? { applicability: { ...claim.applicability, entities: claim.applicability.entities.map(resolve) } } : {}) }));
+    ...(claim.applicability ? { applicability: { ...claim.applicability, entities: claim.applicability.entities.map(resolve) } } : {}),
+    ...(claim.stakeholderLinks ? { stakeholderLinks: claim.stakeholderLinks.map((label) => ({ ...label, from: resolveEnd(label.from), to: resolveEnd(label.to) })) } : {}) }));
 }
 
 // Compare sibling topics only. A confirmed parent rename carries its descendants with it.
