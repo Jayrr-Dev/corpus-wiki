@@ -20,7 +20,10 @@ import { RetireForm } from "@/components/actions/RetireForm";
 import { buildRetireDomain } from "@/components/actions/buildCatalog";
 import { RowMenu } from "@/components/row-menu/RowMenu";
 import { buildDomainTree, type DomainNode } from "@/lib/domains/tree";
-import { useDomainTabs, useDomains, useUnitDomains, useUnits } from "@/lib/queries";
+import { queryKeys, useDomainTabs, useDomains, useUnitDomains } from "@/lib/queries";
+import { readPages } from "@/lib/queries/batched";
+import { getBrowserSupabase } from "@/lib/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { deleteDomainAction } from "@/lib/server-actions/catalog";
 import { cn } from "@/lib/utils";
 import { subtreeCounts, unitsByDomain } from "./countUnits";
@@ -172,10 +175,14 @@ function DomainMenu({ node, onOpenUnits }: { node: DomainNode; onOpenUnits: () =
 function useDomainCounts(showRetired: boolean) {
   const domains = useDomains();
   const unitDomains = useUnitDomains();
-  const units = useUnits();
+  // Only the ids of current units: the counts need nothing else from the units table
+  const units = useQuery({
+    queryKey: [...queryKeys.table("units"), "current-ids"],
+    queryFn: () => readPages((from, to) => getBrowserSupabase().from("units").select("id").is("retired_at", null).order("id").range(from, to)),
+  });
   const tree = useMemo(() => buildDomainTree((domains.data ?? []).filter((domain) => showRetired || !domain.retired_at)), [domains.data, showRetired]);
   const counts = useMemo(() => {
-    const currentIds = new Set((units.data ?? []).filter((unit) => !unit.retired_at).map((unit) => unit.id));
+    const currentIds = new Set((units.data ?? []).map((unit) => unit.id));
     return subtreeCounts(tree, unitsByDomain(unitDomains.data ?? [], (id) => currentIds.has(id)));
   }, [tree, units.data, unitDomains.data]);
   return { tree, counts, state: readsState([domains, unitDomains, units]) };
