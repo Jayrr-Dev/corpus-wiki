@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { BookOpen, Search } from "lucide-react";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { explorePublicWikis } from "@/lib/publishing/server";
 import { exploreOffset } from "@/lib/publishing/validation";
 
@@ -12,7 +13,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   const result = await explorePublicWikis(query, offset);
   const pagination = (start: number) => `/explore?${new URLSearchParams({ q: query, offset: String(start) })}`;
   return <div className="mx-auto max-w-6xl px-5 py-7 sm:px-10">
-    <nav aria-label="Public navigation" className="flex items-center justify-between text-sm"><Link href="/explore" className="font-semibold">Corpus Wiki</Link><Link href="/publishing" className="text-muted-foreground hover:underline">Publish your wiki</Link></nav>
+    <nav aria-label="Public navigation" className="flex items-center justify-between text-sm"><Link href="/explore" className="flex items-center gap-2 font-semibold"><BrandMark className="size-5" />Corpus Wiki</Link><Link href="/publishing" className="text-muted-foreground hover:underline">Publish your wiki</Link></nav>
     <header className="max-w-2xl pb-10 pt-14 sm:pt-20"><h1 className="font-serif text-4xl leading-tight sm:text-5xl">Knowledge worth sharing.</h1><p className="mt-4 text-base leading-7 text-muted-foreground">Explore wikis published by their owners. Find a space to read, or search the articles inside it.</p></header>
     <form action="/explore" role="search" className="mb-10 flex max-w-2xl gap-3"><label htmlFor="explore-search" className="sr-only">Search public spaces and articles</label><div className="flex flex-1 items-center gap-3 rounded-lg border px-4"><Search size={18} aria-hidden="true" className="shrink-0 text-muted-foreground" /><input id="explore-search" type="search" name="q" defaultValue={query} maxLength={120} placeholder="Search spaces, topics, and article text…" className="min-w-0 flex-1 bg-transparent py-3 text-sm outline-none" /></div><button type="submit" className="rounded-lg bg-foreground px-5 text-sm font-medium text-background hover:opacity-85">Search</button></form>
     <main id="wiki-content"><div className="mb-4 flex items-center justify-between border-b pb-3"><h2 className="text-sm font-medium">{query ? `Results for “${query}”` : "Recently published"}</h2><p className="text-xs text-muted-foreground">{result.total} {result.total === 1 ? "space" : "spaces"}</p></div>

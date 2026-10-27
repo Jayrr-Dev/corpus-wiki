@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useOpenExceptionCount } from "@/app/(app)/exceptions/useExceptionInbox";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { HelpIcon, SignOutIcon } from "@/components/icons";
 import { reopenTutorial } from "@/components/tutorial";
 import {
@@ -79,7 +80,7 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="Corpus Wiki">
               <Link href="/">
-                <PageIconMark />
+                <BrandMark />
                 <span className="font-semibold">Corpus Wiki</span>
               </Link>
             </SidebarMenuButton>
@@ -120,9 +121,4 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
       <SidebarRail />
     </Sidebar>
   );
-}
-
-// BRAND MARK: a small filled square standing in for a logo
-function PageIconMark() {
-  return <span aria-hidden className="size-4 shrink-0 rounded-sm bg-text" />;
 }

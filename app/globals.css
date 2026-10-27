@@ -2,7 +2,8 @@
 
 /* =====================================================================
    DESIGN TOKENS: the only place a color is written.
-   Grayscale base, dark and light. Five dull accents, used only as small
+   Grayscale base, dark and light, plus the Corpus Wiki brand green for the
+   logo mark only. Five dull accents, used only as small
    marks (a dot, a 2px bar, an icon), never as a panel or button fill.
    Components use the Tailwind names below (bg-background, text-muted-foreground…)
    or shadcn's names, which point at the same tokens.
@@ -18,9 +19,11 @@
   --sb-sidebar: #f3f2ee;
   --sb-hover: #e9e7e2;
   --sb-border: #dfddd7;
-  --sb-text: #222222;
+  /* text is the brand charcoal, a near-black with a green cast */
+  --sb-text: #172522;
   --sb-muted: #5c5c5c;
   --sb-faint: #9a9a9a;
+  --sb-brand: #496748;
   color-scheme: light;
 }
 
@@ -34,6 +37,7 @@
     --sb-text: #dcdcdc;
     --sb-muted: #a3a3a3;
     --sb-faint: #6b6b6b;
+    --sb-brand: #8fae8d;
     color-scheme: dark;
   }
 }
@@ -47,6 +51,8 @@
   --sb-text: #dcdcdc;
   --sb-muted: #a3a3a3;
   --sb-faint: #6b6b6b;
+  /* the brand green, lifted so the mark reads on dark grays */
+  --sb-brand: #8fae8d;
   color-scheme: dark;
 }
 
@@ -129,6 +135,7 @@
   --color-failed: var(--sb-failed);
   --color-stale: var(--sb-stale);
   --color-link: var(--sb-link);
+  --color-brand: var(--sb-brand);
 
   /* SHADCN NAMES, MAPPED ONTO THE SAME TOKENS */
   --color-foreground: var(--sb-text);
