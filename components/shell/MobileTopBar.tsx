@@ -6,7 +6,7 @@ import { Menu } from "lucide-react";
 import { InfoIcon } from "@/components/icons";
 import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { useSidebar } from "@/components/ui/sidebar";
-import { isActivePath, PRIMARY_NAV, SECONDARY_NAV, SETTINGS_NAV } from "./nav";
+import { isActivePath, NAV_GROUPS, SETTINGS_NAV } from "./nav";
 import { useRightPanel } from "./RightPanel";
 
 // =====================================================================
@@ -16,7 +16,7 @@ import { useRightPanel } from "./RightPanel";
 // opens the right panel as a bottom sheet when the page has filled it.
 // =====================================================================
 
-const ALL_NAV = [...PRIMARY_NAV, ...SECONDARY_NAV, SETTINGS_NAV];
+const ALL_NAV = [...NAV_GROUPS.flat(), SETTINGS_NAV];
 const APP_NAME = "Corpus Wiki";
 
 // SCREEN TITLE: the nav label of the section the current route belongs to
