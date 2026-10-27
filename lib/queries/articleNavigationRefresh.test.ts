@@ -7,8 +7,7 @@ import { useArticleTopicLinks } from "./articleTopicLinks";
 import { useRelatedArticles } from "./relatedArticles";
 
 const reads = vi.hoisted(() => ({ links: vi.fn(), related: vi.fn() }));
-vi.mock("@/lib/server-actions/articleTopicLinks", () => ({ readArticleTopicLinks: reads.links }));
-vi.mock("@/lib/server-actions/relatedArticles", () => ({ readRelatedArticles: reads.related }));
+vi.mock("./articleReads", () => ({ readArticle: (kind: "links" | "related", pageId: string) => reads[kind](pageId) }));
 
 let root: Root;
 let container: HTMLElement;

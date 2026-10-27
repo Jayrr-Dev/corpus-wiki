@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { readRelatedArticles } from "@/lib/server-actions/relatedArticles";
+import { readArticle } from "./articleReads";
 
 export function useRelatedArticles(pageId: string, contextKey: string, enabled = true) {
   return useQuery({
@@ -7,7 +7,7 @@ export function useRelatedArticles(pageId: string, contextKey: string, enabled =
     enabled,
     placeholderData: (previous, query) => query?.queryKey[3] === pageId ? previous : undefined,
     queryFn: async () => {
-      const result = await readRelatedArticles(pageId);
+      const result = await readArticle("related", pageId);
       if (!result.ok) throw new Error(result.error);
       return result.articles;
     },

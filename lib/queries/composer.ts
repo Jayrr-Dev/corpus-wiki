@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { readArticleIllustrations } from "@/lib/server-actions/composer";
+import { useEffect, useRef } from "react";
+import { readArticle } from "./articleReads";
 import type { ShownLine } from "./sectionLines";
 
 export function useComposerFigures(pageId: string, lines: ShownLine[], contextKey = "") {
@@ -10,13 +10,21 @@ export function useComposerFigures(pageId: string, lines: ShownLine[], contextKe
     // dropping the images, including when a background refresh fails.
     queryKey: ["table", "lines", "composer", pageId],
     queryFn: async () => {
-      const result = await readArticleIllustrations(pageId);
+      const result = await readArticle("figures", pageId);
       if (!result.ok) throw new Error(result.error);
       return result.figures;
     },
+    refetchOnMount: "always",
   });
   const { refetch } = query;
-  useEffect(() => { void refetch(); }, [pageId, contextKey, revisionKey, refetch]);
+  // The mount already fetches; refetch only when the article's text or sections change.
+  const seen = useRef(`${pageId}\n${contextKey}\n${revisionKey}`);
+  useEffect(() => {
+    const key = `${pageId}\n${contextKey}\n${revisionKey}`;
+    if (seen.current === key) return;
+    seen.current = key;
+    void refetch();
+  }, [pageId, contextKey, revisionKey, refetch]);
   // Do not keep a stale cached drawing visible while its replacement loads.
   const revisions = new Map(lines.filter((line) => !line.isStale).map((line) => [line.lineId, line.lineRevisionId]));
   return { ...query, data: query.data?.filter((figure) =>

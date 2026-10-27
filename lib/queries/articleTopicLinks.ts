@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { readArticleTopicLinks } from "@/lib/server-actions/articleTopicLinks";
+import { readArticle } from "./articleReads";
 
 export function useArticleTopicLinks(pageId: string, contextKey: string, enabled = true) {
   return useQuery({
@@ -9,7 +9,7 @@ export function useArticleTopicLinks(pageId: string, contextKey: string, enabled
     // Never carry destinations over when navigating to a different article.
     placeholderData: (previous, query) => query?.queryKey[3] === pageId ? previous : undefined,
     queryFn: async () => {
-      const result = await readArticleTopicLinks(pageId);
+      const result = await readArticle("links", pageId);
       if (!result.ok) throw new Error(result.error);
       return result.links;
     },
