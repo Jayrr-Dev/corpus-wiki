@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties, useId, useMemo, useState } from "react";
+import { type CSSProperties, type ReactNode, useId, useMemo, useState } from "react";
 import { DomainTreeSelect } from "@/components/actions/DomainTreeSelect";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
@@ -35,11 +35,11 @@ import { PanelSection } from "./PanelSection";
 import { SelectRow, SliderRow, SwitchRow } from "./rows";
 
 // =====================================================================
-// PANEL SECTIONS: Filters, Groups, Display, Forces. Each takes its
+// PANEL SECTIONS: Filters, Domains, Colors, Tuning. Each takes its
 // slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
 
-// FILTERS: search, one domain to focus on (with its subdomains), the extra layers, orphans, and derived related links with their minimum score
+// FILTERS: search, the extra layers, and derived related links with their minimum score; orphans live under Tuning
 export function FiltersSection({ value, onChange }: { value: GraphFilters; onChange: (next: GraphFilters) => void }) {
   const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) => onChange({ ...value, [key]: next });
   return (
@@ -48,7 +48,6 @@ export function FiltersSection({ value, onChange }: { value: GraphFilters; onCha
       <SwitchRow label="Knowledge units" checked={value.showUnits} onChange={(next) => set("showUnits", next)} />
       <SwitchRow label="Entities" checked={value.showEntities} onChange={(next) => set("showEntities", next)} />
       <SwitchRow label="Pages" checked={value.showPages} onChange={(next) => set("showPages", next)} />
-      <SwitchRow label="Orphans" checked={value.showOrphans} onChange={(next) => set("showOrphans", next)} />
       <SwitchRow label="Related links" checked={value.showRelated} onChange={(next) => set("showRelated", next)} />
       {value.showRelated ? (
         <SliderRow label="Min relatedness" value={value.relatedness} min={0.05} max={0.9} step={0.01} onChange={(next) => set("relatedness", next)} />
@@ -57,14 +56,10 @@ export function FiltersSection({ value, onChange }: { value: GraphFilters; onCha
   );
 }
 
+// DOMAINS: one domain to focus on (with its subdomains); the Internal and External switches live under Tuning
 export function DomainsSection({ value, nodes, onChange }: { value: GraphFilters; nodes: readonly GraphNode[]; onChange: (next: GraphFilters) => void }) {
   const internal = value.domainScope === "internal" || value.domainScope === "both";
   const external = value.domainScope === "external" || value.domainScope === "both";
-  const setScopes = (nextInternal: boolean, nextExternal: boolean) => onChange({
-    ...value,
-    domainScope: nextInternal ? (nextExternal ? "both" : "internal") : (nextExternal ? "external" : "none"),
-    domain: "",
-  });
   // Visibility switches filter the canvas, not the choices available in the picker.
   const domains = useMemo(() => groupSuggestions(nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, "both") }))).domain.map((path) => ({ id: path, path })), [nodes]);
   const domainGroups = useMemo(() => (["internal", "external"] as const).map((scope) => ({
@@ -81,8 +76,6 @@ export function DomainsSection({ value, nodes, onChange }: { value: GraphFilters
   };
   return (
     <PanelSection title="Domains">
-      <SwitchRow label="Internal" checked={internal} onChange={(checked) => setScopes(checked, external)} />
-      <SwitchRow label="External" checked={external} onChange={(checked) => setScopes(internal, checked)} />
       <DomainTreeSelect label="Show domain" emptyLabel="All domains" value={value.domain} domains={domains} groups={domainGroups} onChange={selectDomain} className="h-7 w-full max-w-none" />
     </PanelSection>
   );
@@ -300,7 +293,7 @@ export function GroupsSection({ value, nodes, onChange }: { value: GraphGroup[];
 // DISPLAY: arrows, the three sliders, and the replay
 const TITLE_OPTIONS = TITLE_POSITIONS.map((position) => ({ value: position, label: position[0]!.toUpperCase() + position.slice(1) }));
 
-export function DisplaySection({
+function DisplayControls({
   value,
   onChange,
   isReplaying,
@@ -312,7 +305,7 @@ export function DisplaySection({
   onAnimate: () => void;
 }) {
   return (
-    <PanelSection title="Display">
+    <>
       <SwitchRow label="Arrows" checked={value.arrows} onChange={(arrows) => onChange({ ...value, arrows })} />
       <SwitchRow label="Domain circles" checked={value.domainCircles} onChange={(domainCircles) => onChange({ ...value, domainCircles })} />
       <SelectRow label="Title position" value={value.titlePosition} options={TITLE_OPTIONS} onChange={(titlePosition) => onChange({ ...value, titlePosition })} />
@@ -322,17 +315,77 @@ export function DisplaySection({
       <Button variant="outline" size="sm" onClick={onAnimate} className="self-center">
         {isReplaying ? "Stop" : "Animate"}
       </Button>
-    </PanelSection>
+    </>
   );
 }
 
 // FORCES: the four physics sliders
-export function ForcesSection({ value, onChange }: { value: GraphForces; onChange: (next: GraphForces) => void }) {
+function ForceControls({ value, onChange }: { value: GraphForces; onChange: (next: GraphForces) => void }) {
   return (
-    <PanelSection title="Forces">
+    <>
       {FORCE_SLIDERS.map((rule) => (
         <SliderRow key={rule.key} label={rule.label} min={rule.min} max={rule.max} step={rule.step} value={value[rule.key]} onChange={(next) => onChange({ ...value, [rule.key]: next })} />
       ))}
+    </>
+  );
+}
+
+// SHOW: which domain trees appear (your own sources, outside ones) and whether unlinked claims do
+function ShowControls({ value, onChange }: { value: GraphFilters; onChange: (next: GraphFilters) => void }) {
+  const internal = value.domainScope === "internal" || value.domainScope === "both";
+  const external = value.domainScope === "external" || value.domainScope === "both";
+  const setScopes = (nextInternal: boolean, nextExternal: boolean) => onChange({
+    ...value,
+    domainScope: nextInternal ? (nextExternal ? "both" : "internal") : (nextExternal ? "external" : "none"),
+    domain: "",
+  });
+  return (
+    <>
+      <SwitchRow label="Internal" checked={internal} onChange={(checked) => setScopes(checked, external)} />
+      <SwitchRow label="External" checked={external} onChange={(checked) => setScopes(internal, checked)} />
+      <SwitchRow label="Orphans" checked={value.showOrphans} onChange={(showOrphans) => onChange({ ...value, showOrphans })} />
+    </>
+  );
+}
+
+function TuningGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <span className="text-xs font-medium text-faint">{title}</span>
+      {children}
+    </div>
+  );
+}
+
+// TUNING: closed by default so reading the graph comes first. Holds the knobs that shape the
+// drawing, then the maintenance actions, which change data and so go last.
+export function TuningSection({
+  filters,
+  display,
+  forces,
+  onFiltersChange,
+  onDisplayChange,
+  onForcesChange,
+  isReplaying,
+  onAnimate,
+  actions,
+}: {
+  filters: GraphFilters;
+  display: GraphDisplay;
+  forces: GraphForces;
+  onFiltersChange: (next: GraphFilters) => void;
+  onDisplayChange: (next: GraphDisplay) => void;
+  onForcesChange: (next: GraphForces) => void;
+  isReplaying: boolean;
+  onAnimate: () => void;
+  actions?: ReactNode;
+}) {
+  return (
+    <PanelSection title="Tuning">
+      <TuningGroup title="Show"><ShowControls value={filters} onChange={onFiltersChange} /></TuningGroup>
+      <TuningGroup title="Display"><DisplayControls value={display} onChange={onDisplayChange} isReplaying={isReplaying} onAnimate={onAnimate} /></TuningGroup>
+      <TuningGroup title="Forces"><ForceControls value={forces} onChange={onForcesChange} /></TuningGroup>
+      {actions ? <TuningGroup title="Actions">{actions}</TuningGroup> : null}
     </PanelSection>
   );
 }
