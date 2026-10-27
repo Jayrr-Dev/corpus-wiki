@@ -54,12 +54,13 @@ function sourceColumns(usage: Map<string, SourceUsage> | undefined, uploads: Upl
   ];
 }
 
-// Each source's first upload event (reruns come later), by source id
+// Each source's first upload event (reruns come later), by source id. Reads the newest-first
+// list the sidebar and Upload already hold, so the last event seen per source is its first.
 function useFirstUploads(): Uploads {
-  const events = useShiftEvents({ filters: { cause: "upload" }, ascending: true }).data;
+  const events = useShiftEvents({ filters: { cause: "upload" } }).data;
   return useMemo(() => {
     const first: Uploads = new Map();
-    for (const event of events ?? []) if (event.source_id && !first.has(event.source_id)) first.set(event.source_id, event);
+    for (const event of events ?? []) if (event.source_id) first.set(event.source_id, event);
     return first;
   }, [events]);
 }
