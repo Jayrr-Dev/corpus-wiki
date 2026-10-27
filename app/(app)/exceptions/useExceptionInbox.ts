@@ -52,3 +52,17 @@ export function useExceptionCounts() {
     },
   });
 }
+
+// OPEN COUNT ONLY: the sidebar badge on every screen needs just this one number
+export function useOpenExceptionCount(): number {
+  const space = useActiveSpace();
+  return useQuery({
+    queryKey: ["table", "exceptions", "open-count", space.id],
+    queryFn: async () => {
+      const { count, error } = await getBrowserSupabase().from("exceptions").select("id", { count: "exact", head: true })
+        .filter("space_id", "eq", space.id).eq("status", "open");
+      if (error) throw error;
+      return count ?? 0;
+    },
+  }).data ?? 0;
+}
