@@ -6,6 +6,7 @@ import { ErrorNote, Note, QueryState } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
+import type { MemoryEntry } from "@/lib/ai/memory";
 import { MODEL_ROLES, type ModelRole, roleName } from "@/lib/ai/roles";
 import { clearRoleMemory, readRoleMemory } from "@/lib/server-actions/skills";
 import { ROLE_ICONS } from "../workflow/roleIcons";
@@ -18,9 +19,9 @@ import { ROLE_ICONS } from "../workflow/roleIcons";
 
 const QUERY_KEY = ["table", "ai_role_memory"];
 
-export function RoleMemoryPanel() {
+export function RoleMemoryPanel({ initialMemory }: { initialMemory?: Record<string, MemoryEntry[]> }) {
   const client = useQueryClient();
-  const memory = useQuery({ queryKey: QUERY_KEY, queryFn: async () => {
+  const memory = useQuery({ queryKey: QUERY_KEY, initialData: initialMemory, queryFn: async () => {
     const result = await readRoleMemory(); if (!result.ok) throw new Error(result.error); return result.memory;
   } });
   const clear = useServerAction(clearRoleMemory);
