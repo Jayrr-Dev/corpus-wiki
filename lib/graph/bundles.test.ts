@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { routeDomains, straightenRoute } from "./bundles";
+import { routeControls, routeDomains, straightenRoute } from "./bundles";
 
 const at = (...domainPaths: string[]) => ({ domainPaths });
 
@@ -23,6 +23,27 @@ describe("routeDomains", () => {
 
   it("uses the same primary domain as the cluster tree", () => {
     expect(routeDomains(at("Zeta", "Alpha/A"), at("Alpha/B"))).toEqual(["Alpha/A", "Alpha/B"]);
+  });
+});
+
+describe("routeControls", () => {
+  const circles = new Map([
+    ["Types", { x: 0, y: 0, r: 100 }],
+    ["Types/One", { x: -50, y: 0, r: 20 }],
+    ["Types/Six", { x: 50, y: 0, r: 20 }],
+    ["History", { x: 0, y: 300, r: 50 }],
+  ]);
+
+  it("turns at the facing edges of sibling circles, not their middles", () => {
+    expect(routeControls(at("Types/One"), at("Types/Six"), circles)).toEqual([{ x: -30, y: 0 }, { x: 30, y: 0 }]);
+  });
+
+  it("passes through the middles of deeper circles on the way", () => {
+    expect(routeControls(at("Types/One"), at("History"), circles)).toMatchObject([{ x: -50, y: 0 }, { x: 0, y: 100 }, { x: 0, y: 250 }]);
+  });
+
+  it("uses middles when one domain holds the other", () => {
+    expect(routeControls(at("Types"), at("Types/Six"), circles)).toEqual([{ x: 50, y: 0, r: 20 }]);
   });
 });
 

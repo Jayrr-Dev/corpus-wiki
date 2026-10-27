@@ -1,4 +1,4 @@
-import { type ClusterCircle, type GraphColor, type GraphDisplay, type GraphNode, routeDomains, type RoutePoint, straightenRoute } from "@/lib/graph";
+import { type ClusterCircle, type GraphColor, type GraphDisplay, type GraphNode, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute } from "@/lib/graph";
 import { type Camera, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import type { CanvasPalette } from "./palette";
@@ -61,7 +61,7 @@ const SIMILAR_DASH_PX = 3;
 const SIMILAR_ALPHA = 0.7;
 // LINK WIDTH IN SCREEN PIXELS AT THICKNESS 1
 const LINK_PX = 0.8;
-// HIERARCHICAL BUNDLES: Holten's beta at the overview (0 straight, 1 hugs the domain tree)
+// HIERARCHICAL BUNDLES: Holten's beta (0 straight, 1 hugs the domain tree)
 const BUNDLE_STRENGTH = 0.85;
 // DOMAIN CIRCLES: accent per domain (cycled), fill and ring opacity, ring width and label size in screen pixels
 const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "stale", "failed"];
@@ -124,29 +124,24 @@ function traceLink(ctx: CanvasRenderingContext2D, source: SimNode, target: SimNo
   ctx.lineTo(ex - size * Math.cos(angle + 0.45), ey - size * Math.sin(angle + 0.45));
 }
 
-// How hard links between domains hug the domain tree at the overview. They straighten out
-// as note titles fade in, so a zoomed-in view shows exactly which dots each link joins.
-function bundleStrength({ circles, camera, overviewZoom }: DrawInput): number {
-  if (circles.length === 0) return 0;
-  return overviewZoom === null ? BUNDLE_STRENGTH : BUNDLE_STRENGTH * (1 - revealOpacity(camera.k, overviewZoom, REVEAL_AT.title));
-}
-
-// LINKS PASS: one path per style. Stored links are solid; derived "similar" links are dashed,
-// fainter, and hidden at the overview until the camera zooms in (a hovered dot still shows its
-// own). Links between domains bundle along the domain tree. With a hover, focused links go in a
-// brighter path of their own.
+// LINKS PASS: one path per style. Stored links are solid. Derived "similar" links are dashed and
+// fainter, hidden at the overview until the camera zooms in, and only drawn inside one domain
+// (a guess that spans domains crosses the whole map for little); a hovered dot still shows all of
+// its own. Links between domains bundle along the domain tree at every zoom. With a hover, focused
+// links go in a brighter path of their own.
 function drawLinks(input: DrawInput): void {
   const { ctx, links, palette, hoveredId, camera, display, circles } = input;
   const isFocused = (source: SimNode, target: SimNode) => hoveredId !== null && (source.id === hoveredId || target.id === hoveredId);
-  const strength = bundleStrength(input);
-  const centers = new Map<string, RoutePoint>(circles.map((circle) => [circle.key, circle]));
+  const centers = new Map<string, RouteCircle>(circles.map((circle) => [circle.key, circle]));
   // Control points for a link, start and end included (none: a straight line)
   const route = (source: SimNode, target: SimNode): RoutePoint[] => {
-    if (strength <= 0.01) return [];
-    const controls = routeDomains(source, target).flatMap((path) => centers.get(path) ?? []);
-    return controls.length ? straightenRoute({ x: source.x ?? 0, y: source.y ?? 0 }, controls, { x: target.x ?? 0, y: target.y ?? 0 }, strength) : [];
+    if (circles.length === 0) return [];
+    const controls = routeControls(source, target, centers);
+    return controls.length ? straightenRoute({ x: source.x ?? 0, y: source.y ?? 0 }, controls, { x: target.x ?? 0, y: target.y ?? 0 }, BUNDLE_STRENGTH) : [];
   };
   const similarShown = input.overviewZoom === null ? 1 : revealOpacity(camera.k, input.overviewZoom, REVEAL_AT.similar);
+  const isShown = (link: SimLink, source: SimNode, target: SimNode, focused: boolean) =>
+    link.kind !== "similar" || focused || routeDomains(source, target).length === 0;
   ctx.lineWidth = (LINK_PX * display.linkThickness) / camera.k;
   for (const similar of [true, false]) {
     ctx.setLineDash(similar ? [SIMILAR_DASH_PX / camera.k, SIMILAR_DASH_PX / camera.k] : []);
@@ -158,7 +153,7 @@ function drawLinks(input: DrawInput): void {
       ctx.beginPath();
       for (const link of links) {
         const pair = ends(link);
-        if (pair && (link.kind === "similar") === similar && isFocused(...pair) === focused && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input, route(...pair));
+        if (pair && (link.kind === "similar") === similar && isFocused(...pair) === focused && isShown(link, ...pair, focused) && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input, route(...pair));
       }
       ctx.strokeStyle = palette.muted;
       ctx.globalAlpha = shown;

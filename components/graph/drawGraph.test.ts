@@ -68,7 +68,7 @@ it("paints nested domain circles progressively fainter without fading their name
   expect(labels).toEqual([1, 1, 1, 1]);
 });
 
-it("hides similar links at the overview, bends links between domains, and straightens them on zoom", () => {
+it("hides similar links at the overview and across domains, and bundles links between domains at every zoom", () => {
   const strokes: { alpha: number; curves: number; lines: number }[] = [];
   let curves = 0, lines = 0;
   const ctx = new Proxy({ globalAlpha: 1 }, {
@@ -87,7 +87,7 @@ it("hides similar links at the overview, bends links between domains, and straig
   const input = (k: number): DrawInput => ({
     ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k }, overviewZoom: 1,
     nodes: [a, b, c],
-    links: [{ id: "stored", source: a, target: b, kind: "supports" }, { id: "similar", source: a, target: c, kind: "similar" }],
+    links: [{ id: "stored", source: a, target: b, kind: "supports" }, { id: "similar", source: a, target: c, kind: "similar" }, { id: "across", source: c, target: b, kind: "similar" }],
     circles: [{ key: "Left", label: "Left", depth: 0, isBranch: false, x: 0, y: 100, r: 50, index: 0 }, { key: "Right", label: "Right", depth: 0, isBranch: false, x: 400, y: 100, r: 50, index: 1 }],
     display: DEFAULT_GRAPH_SETTINGS.display,
     palette: { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" },
@@ -98,8 +98,9 @@ it("hides similar links at the overview, bends links between domains, and straig
   expect(strokes).toEqual([{ alpha: 0.7, curves: 2, lines: 0 }]);
   strokes.length = 0;
   drawGraph(input(4));
-  // Zoomed in: the similar link shows, and the stored link is a straight line
+  // Zoomed in: the similar link inside "Left" shows, the one across domains stays hidden,
+  // and the stored link is still bundled
   expect(strokes).toHaveLength(2);
-  expect(strokes[0]!.lines).toBe(1);
-  expect(strokes[1]).toEqual({ alpha: 0.7, curves: 0, lines: 1 });
+  expect(strokes[0]).toMatchObject({ curves: 0, lines: 1 });
+  expect(strokes[1]).toEqual({ alpha: 0.7, curves: 2, lines: 0 });
 });
