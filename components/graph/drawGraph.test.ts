@@ -67,3 +67,39 @@ it("paints nested domain circles progressively fainter without fading their name
   expect(outlines.slice(0, 4)).toEqual([0.8, 0.8, 0.8, 0.8]);
   expect(labels).toEqual([1, 1, 1, 1]);
 });
+
+it("hides similar links at the overview, bends links between domains, and straightens them on zoom", () => {
+  const strokes: { alpha: number; curves: number; lines: number }[] = [];
+  let curves = 0, lines = 0;
+  const ctx = new Proxy({ globalAlpha: 1 }, {
+    get(target, key) {
+      if (key === "globalAlpha") return target.globalAlpha;
+      if (key === "beginPath") return () => { curves = 0; lines = 0; };
+      if (key === "quadraticCurveTo") return () => { curves++; };
+      if (key === "lineTo") return () => { lines++; };
+      if (key === "stroke") return () => { if (curves || lines) strokes.push({ alpha: target.globalAlpha, curves, lines }); };
+      if (key === "measureText") return () => ({ width: 20 });
+      return () => {};
+    },
+  }) as unknown as CanvasRenderingContext2D;
+  const node = (id: string, x: number, domain: string) => ({ id, kind: "unit" as const, label: id, text: id, href: "", createdAt: "", degree: 1, domainPaths: [domain], entityNames: [], unitKind: null, status: null, x, y: 0 });
+  const [a, b, c] = [node("a", 0, "Left"), node("b", 400, "Right"), node("c", 10, "Left")];
+  const input = (k: number): DrawInput => ({
+    ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k }, overviewZoom: 1,
+    nodes: [a, b, c],
+    links: [{ id: "stored", source: a, target: b, kind: "supports" }, { id: "similar", source: a, target: c, kind: "similar" }],
+    circles: [{ key: "Left", label: "Left", depth: 0, isBranch: false, x: 0, y: 100, r: 50, index: 0 }, { key: "Right", label: "Right", depth: 0, isBranch: false, x: 400, y: 100, r: 50, index: 1 }],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    palette: { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" },
+    colorOf: () => null, hoveredId: null, focusIds: new Set(), hoverLabelOnly: false,
+  });
+  drawGraph(input(1));
+  // Only the stored link draws, curved through both domain centers
+  expect(strokes).toEqual([{ alpha: 0.7, curves: 2, lines: 0 }]);
+  strokes.length = 0;
+  drawGraph(input(4));
+  // Zoomed in: the similar link shows, and the stored link is a straight line
+  expect(strokes).toHaveLength(2);
+  expect(strokes[0]!.lines).toBe(1);
+  expect(strokes[1]).toEqual({ alpha: 0.7, curves: 0, lines: 1 });
+});

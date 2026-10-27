@@ -43,7 +43,7 @@ const RING_PER_DOT = 18;
 const RING_MIN = 80;
 
 // Segments of a node's primary domain path (empty when it has none)
-function primarySegments(node: Pick<GraphNode, "domainPaths">): string[] {
+export function primarySegments(node: Pick<GraphNode, "domainPaths">): string[] {
   return ([...node.domainPaths].sort()[0] ?? "").split("/").filter(Boolean);
 }
 

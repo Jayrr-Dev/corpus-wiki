@@ -1,4 +1,4 @@
-import type { ClusterCircle, GraphColor, GraphDisplay, GraphNode } from "@/lib/graph";
+import { type ClusterCircle, type GraphColor, type GraphDisplay, type GraphNode, routeDomains, type RoutePoint, straightenRoute } from "@/lib/graph";
 import { type Camera, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import type { CanvasPalette } from "./palette";
@@ -61,6 +61,8 @@ const SIMILAR_DASH_PX = 3;
 const SIMILAR_ALPHA = 0.7;
 // LINK WIDTH IN SCREEN PIXELS AT THICKNESS 1
 const LINK_PX = 0.8;
+// HIERARCHICAL BUNDLES: Holten's beta at the overview (0 straight, 1 hugs the domain tree)
+const BUNDLE_STRENGTH = 0.85;
 // DOMAIN CIRCLES: accent per domain (cycled), fill and ring opacity, ring width and label size in screen pixels
 const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "stale", "failed"];
 const CIRCLE_FILL_ALPHA = 0.16;
@@ -95,41 +97,71 @@ function ends(link: SimLink): [SimNode, SimNode] | null {
   return typeof source === "object" && typeof target === "object" ? [source as SimNode, target as SimNode] : null;
 }
 
-// One link segment, stopped at the target dot's edge so an arrowhead can sit there
-function traceLink(ctx: CanvasRenderingContext2D, source: SimNode, target: SimNode, input: DrawInput): void {
+// One link, stopped at the target dot's edge so an arrowhead can sit there. With control points it
+// curves through them (a quadratic from midpoint to midpoint, the smooth look of Holten's B-splines).
+function traceLink(ctx: CanvasRenderingContext2D, source: SimNode, target: SimNode, input: DrawInput, points: readonly RoutePoint[] = []): void {
   const sx = source.x ?? 0, sy = source.y ?? 0, tx = target.x ?? 0, ty = target.y ?? 0;
-  const length = Math.hypot(tx - sx, ty - sy) || 1;
+  // The last bend sets the direction the link arrives from
+  const before = points.length > 2 ? points[points.length - 2]! : { x: sx, y: sy };
+  const length = Math.hypot(tx - before.x, ty - before.y) || 1;
   const inset = input.display.arrows ? nodeRadius(target, input.display.nodeSize) : 0;
-  const ex = tx - ((tx - sx) / length) * inset, ey = ty - ((ty - sy) / length) * inset;
+  const ex = tx - ((tx - before.x) / length) * inset, ey = ty - ((ty - before.y) / length) * inset;
   ctx.moveTo(sx, sy);
-  ctx.lineTo(ex, ey);
+  if (points.length > 2) {
+    for (let i = 1; i < points.length - 1; i++) {
+      const point = points[i]!, next = points[i + 1]!;
+      const last = i === points.length - 2;
+      ctx.quadraticCurveTo(point.x, point.y, last ? ex : (point.x + next.x) / 2, last ? ey : (point.y + next.y) / 2);
+    }
+  } else ctx.lineTo(ex, ey);
   if (!input.display.arrows) return;
   // Arrowhead: two short strokes back from the tip
   const size = 4 / Math.sqrt(input.camera.k);
-  const angle = Math.atan2(ty - sy, tx - sx);
+  const angle = Math.atan2(ty - before.y, tx - before.x);
   ctx.moveTo(ex, ey);
   ctx.lineTo(ex - size * Math.cos(angle - 0.45), ey - size * Math.sin(angle - 0.45));
   ctx.moveTo(ex, ey);
   ctx.lineTo(ex - size * Math.cos(angle + 0.45), ey - size * Math.sin(angle + 0.45));
 }
 
-// LINKS PASS: one path per style. Stored links are solid; derived "similar" links are
-// dashed and fainter. With a hover, focused links go in a brighter path of their own.
+// How hard links between domains hug the domain tree at the overview. They straighten out
+// as note titles fade in, so a zoomed-in view shows exactly which dots each link joins.
+function bundleStrength({ circles, camera, overviewZoom }: DrawInput): number {
+  if (circles.length === 0) return 0;
+  return overviewZoom === null ? BUNDLE_STRENGTH : BUNDLE_STRENGTH * (1 - revealOpacity(camera.k, overviewZoom, REVEAL_AT.title));
+}
+
+// LINKS PASS: one path per style. Stored links are solid; derived "similar" links are dashed,
+// fainter, and hidden at the overview until the camera zooms in (a hovered dot still shows its
+// own). Links between domains bundle along the domain tree. With a hover, focused links go in a
+// brighter path of their own.
 function drawLinks(input: DrawInput): void {
-  const { ctx, links, palette, hoveredId, camera, display } = input;
+  const { ctx, links, palette, hoveredId, camera, display, circles } = input;
   const isFocused = (source: SimNode, target: SimNode) => hoveredId !== null && (source.id === hoveredId || target.id === hoveredId);
+  const strength = bundleStrength(input);
+  const centers = new Map<string, RoutePoint>(circles.map((circle) => [circle.key, circle]));
+  // Control points for a link, start and end included (none: a straight line)
+  const route = (source: SimNode, target: SimNode): RoutePoint[] => {
+    if (strength <= 0.01) return [];
+    const controls = routeDomains(source, target).flatMap((path) => centers.get(path) ?? []);
+    return controls.length ? straightenRoute({ x: source.x ?? 0, y: source.y ?? 0 }, controls, { x: target.x ?? 0, y: target.y ?? 0 }, strength) : [];
+  };
+  const similarShown = input.overviewZoom === null ? 1 : revealOpacity(camera.k, input.overviewZoom, REVEAL_AT.similar);
   ctx.lineWidth = (LINK_PX * display.linkThickness) / camera.k;
   for (const similar of [true, false]) {
     ctx.setLineDash(similar ? [SIMILAR_DASH_PX / camera.k, SIMILAR_DASH_PX / camera.k] : []);
     for (const focused of [false, true]) {
+      const alpha = focused ? 1 : hoveredId === null ? 0.7 : 0.45;
+      const shown = similar && !focused ? alpha * SIMILAR_ALPHA * similarShown : alpha;
+      // Skipping hidden links also skips their routing, the bulk of the cost at the overview
+      if (shown <= 0.01) continue;
       ctx.beginPath();
       for (const link of links) {
         const pair = ends(link);
-        if (pair && (link.kind === "similar") === similar && isFocused(...pair) === focused && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input);
+        if (pair && (link.kind === "similar") === similar && isFocused(...pair) === focused && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input, route(...pair));
       }
       ctx.strokeStyle = palette.muted;
-      const alpha = focused ? 1 : hoveredId === null ? 0.7 : 0.45;
-      ctx.globalAlpha = similar && !focused ? alpha * SIMILAR_ALPHA : alpha;
+      ctx.globalAlpha = shown;
       ctx.stroke();
     }
   }
