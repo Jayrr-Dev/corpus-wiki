@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { applyFilters, neighborhood, withRelated, type GraphNode } from "@/lib/graph";
+import { applyFilters, neighborhood, withRelated } from "@/lib/graph";
 import { useGraphData } from "./useGraphData";
-import { NodePreviewDialog } from "./UnitPreviewDialog";
+import { NodePreviewCards, useNodePreviewCards } from "./NodePreviewCards";
 import { GraphCanvas } from "./GraphCanvas";
 import { SliderRow } from "./panel/rows";
 import { GLOBAL_GRAPH_SETTINGS_KEY, useGraphSettings } from "./useGraphSettings";
@@ -20,7 +20,7 @@ const MIN_DEPTH = 1;
 const MAX_DEPTH = 5;
 
 export function LocalGraph({ centerId }: { centerId: string }) {
-  const [preview, setPreview] = useState<GraphNode | null>(null);
+  const previews = useNodePreviewCards();
   const query = useGraphData();
   const { settings } = useGraphSettings(GLOBAL_GRAPH_SETTINGS_KEY, query.data?.nodes);
   const [depth, setDepth] = useState(MIN_DEPTH);
@@ -46,10 +46,10 @@ export function LocalGraph({ centerId }: { centerId: string }) {
     <section aria-label="Local graph" className="flex flex-col gap-2">
       <h2 className="text-xs font-medium tracking-wide text-faint uppercase">Local graph</h2>
       <div className="h-64 overflow-hidden rounded-md border">
-        {local ? <GraphCanvas graph={local} settings={settings} progressiveZoom={false} hoverLabelOnly onOpen={setPreview} /> : null}
+        {local ? <GraphCanvas graph={local} settings={settings} progressiveZoom={false} hoverLabelOnly onOpen={previews.open} /> : null}
       </div>
       <SliderRow label={`Depth ${depth}`} value={depth} min={MIN_DEPTH} max={MAX_DEPTH} step={1} onChange={setDepth} />
-      <NodePreviewDialog node={preview} onClose={() => setPreview(null)} />
+      <NodePreviewCards cards={previews.cards} setCards={previews.setCards} />
     </section>
   );
 }

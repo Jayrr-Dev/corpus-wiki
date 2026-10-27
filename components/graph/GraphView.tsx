@@ -8,7 +8,7 @@ import { applyFilters, createdBy, DEFAULT_GRAPH_SETTINGS, withRelated, type Grap
 import { Button } from "@/components/ui/button";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphPanel } from "./panel/GraphPanel";
-import { NodePreviewDialog } from "./UnitPreviewDialog";
+import { NodePreviewCards, useNodePreviewCards } from "./NodePreviewCards";
 import { GLOBAL_GRAPH_SETTINGS_KEY, useGraphSettings } from "./useGraphSettings";
 import { useReplay } from "./useReplay";
 
@@ -27,8 +27,8 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
   const [domainContext,setDomainContext]=useState<{path:string;x:number;y:number}|null>(null);
   const [context, setContext] = useState<{node: GraphNode; x:number; y:number} | null>(null);
   const replay = useReplay(data.nodes);
-  // Every node previews without leaving the graph.
-  const [preview, setPreview] = useState<GraphNode | null>(null);
+  // Every node previews without leaving the graph, several at once
+  const previews = useNodePreviewCards();
   const { showRelated, relatedness } = settings.filters;
 
   // Related links come from the full graph, so the replay grows them with their units
@@ -41,7 +41,7 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
 
   return (
     <div className="relative h-full">
-      <GraphCanvas key={`${settings.filters.domain}:${domainVersion}`} graph={visible} settings={settings} onOpen={setPreview} onContextDomain={(path,point)=>setDomainContext({path,...point})} selectedIds={selectedIds} onSelect={(nodes,toggle)=>setSelectedIds(previous=>{const ids=nodes.filter(n=>n.kind==="unit").map(n=>n.id);return toggle ? [...previous.filter(id=>!ids.includes(id)),...ids.filter(id=>!previous.includes(id))] : ids;})} onFocusDomain={path => setFocusedDomain({path,filter:settings.filters.domain})} onContextNode={(node, point) => setContext({node,...point})} />
+      <GraphCanvas key={`${settings.filters.domain}:${domainVersion}`} graph={visible} settings={settings} onOpen={previews.open} onContextDomain={(path,point)=>setDomainContext({path,...point})} selectedIds={selectedIds} onSelect={(nodes,toggle)=>setSelectedIds(previous=>{const ids=nodes.filter(n=>n.kind==="unit").map(n=>n.id);return toggle ? [...previous.filter(id=>!ids.includes(id)),...ids.filter(id=>!previous.includes(id))] : ids;})} onFocusDomain={path => setFocusedDomain({path,filter:settings.filters.domain})} onContextNode={(node, point) => setContext({node,...point})} />
       {visible.nodes.length === 0 && data.nodes.length > 0 && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center pl-64 pr-4" role="status">
           <div className="pointer-events-auto flex max-w-sm flex-col items-center gap-3 rounded-lg border bg-background p-6 text-center shadow-sm">
@@ -68,8 +68,8 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
       </p>
       <SelectionActions nodes={visible.nodes.filter(n=>selectedIds.includes(n.id))} onClear={()=>setSelectedIds([])} />
       <DomainContextMenu context={domainContext} onClose={()=>setDomainContext(null)} onChanged={()=>{setFocusedDomain(null);setDomainVersion(v=>v+1);update("filters",{...settings.filters,domain:""});}} />
-      <NodeContextMenu context={context} data={data} onClose={() => setContext(null)} onOpen={setPreview} />
-      <NodePreviewDialog node={preview} onClose={() => setPreview(null)} />
+      <NodeContextMenu context={context} data={data} onClose={() => setContext(null)} onOpen={previews.open} />
+      <NodePreviewCards cards={previews.cards} setCards={previews.setCards} />
     </div>
   );
 }

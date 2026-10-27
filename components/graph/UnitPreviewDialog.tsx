@@ -8,22 +8,16 @@ import { formatDate, statusLabel } from "@/app/(app)/_lib/format";
 import { useActorLabel } from "@/app/(app)/_lib/useActorLabel";
 import { StatusGlyph } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Enums } from "@/lib/database/types";
 import type { GraphNode } from "@/lib/graph";
 import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
 import { type UnitSummary, useRowsByIds } from "@/lib/queries/screens";
-import { EntityPreview, PagePreview } from "./NodePreviews";
+import { EntityPreview, PagePreview, PreviewFooter } from "./NodePreviews";
 
-// UNIT PREVIEW: a clicked unit's key facts (status, claim, domains, entities) without leaving the graph
-export function NodePreviewDialog({ node, onClose }: { node: GraphNode | null; onClose: () => void }) {
-  return (
-    <Dialog open={node !== null} onOpenChange={(isOpen) => (isOpen ? null : onClose())}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
-        {node ? node.kind === "unit" ? <UnitPreview key={node.id} node={node} /> : node.kind === "entity" ? <EntityPreview key={node.id} node={node} /> : <PagePreview key={node.id} node={node} /> : null}
-      </DialogContent>
-    </Dialog>
-  );
+// NODE PREVIEW: a clicked node's key facts without leaving the graph (shown in a preview card)
+export function NodePreviewBody({ node }: { node: GraphNode }) {
+  return node.kind === "unit" ? <UnitPreview node={node} /> : node.kind === "entity" ? <EntityPreview node={node} /> : <PagePreview node={node} />;
 }
 
 // KIND COLORS: one accent per unit kind, for the kind line
@@ -56,21 +50,19 @@ function UnitPreview({ node }: { node: GraphNode }) {
   );
   return (
     <div className="flex flex-col gap-4">
-      <DialogHeader>
+      <div data-drag-handle className="flex cursor-move flex-col gap-2 pr-6">
         <KindLine node={node} />
-        <DialogTitle asChild>
-          <h2 className="text-title font-semibold">{node.label}</h2>
-        </DialogTitle>
-      </DialogHeader>
+        <h2 className="text-title font-semibold">{node.label}</h2>
+      </div>
       <QueryState query={query}>
         <p className="text-body">{unit?.content ?? node.text}</p>
       </QueryState>
       <Facts items={facts(node, unit, author, sourceCount > 0 ? sourcesButton : null)} />
-      <DialogFooter>
+      <PreviewFooter>
         <Button asChild>
           <Link href={node.href}>Open page</Link>
         </Button>
-      </DialogFooter>
+      </PreviewFooter>
       <SourcesDialog open={showSources} onOpenChange={setShowSources} title={node.label} cited={cited} />
     </div>
   );
@@ -95,12 +87,10 @@ function SourcesDialog({ open, onOpenChange, title, cited }: { open: boolean; on
 function KindLine({ node }: { node: GraphNode }) {
   const color = node.unitKind ? KIND_COLOR[node.unitKind] : undefined;
   return (
-    <DialogDescription asChild>
-      <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
-        {node.status ? <StatusGlyph status={node.status} className={color} /> : null}
-        <span className={color}>{[node.status ? statusLabel(node.status) : null, node.unitKind].filter(Boolean).join(" ")}</span>
-      </p>
-    </DialogDescription>
+    <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+      {node.status ? <StatusGlyph status={node.status} className={color} /> : null}
+      <span className={color}>{[node.status ? statusLabel(node.status) : null, node.unitKind].filter(Boolean).join(" ")}</span>
+    </p>
   );
 }
 
