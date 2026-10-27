@@ -36,6 +36,9 @@ describe("answerToActions", () => {
     const messages = buildReconciliationMessages({ ...INPUT, existingUnits: [{ ...INPUT.existingUnits[0]!, context }] });
     expect(JSON.parse(messages[1]!.content).existingUnits[0].context).toEqual(context);
     expect(messages[0]!.content).toContain("Two people sharing a name are not automatically identical");
+    expect(messages[0]!.content).toContain("stakeholderLinks");
+    expect(messages[0]!.content).toContain("owned_by (a person or organization owns it");
+    expect(messages[0]!.content).toContain("vice_president: Vice president");
   });
 
   it("preserves legacy revision context and carries explicit context corrections", () => {
@@ -55,6 +58,38 @@ describe("answerToActions", () => {
       ["government_body", "health-canada"], ["legislation", "hazardous-products-act"],
     ]);
     expect(actions.at(-1)?.input).toMatchObject({ context: { entities: expect.arrayContaining([{ type: "government_body", key: "health-canada", role: "subject" }]) } });
+  });
+
+  it("keeps the claim's structure labels in its context, dropping ones whose ends are not its entities", () => {
+    const seat = { title: null, seniority: null, share: null, current: true };
+    const actions = answerToActions({ summary: "", claims: [claim({
+      entities: [
+        { type: "person", key: "dana-lee", name: "Dana Lee", role: "subject" },
+        { type: "team", key: "billing", name: "Billing", role: "object" },
+        { type: "company", key: "Acme Corp", name: "Acme Corp", role: "mentioned" },
+      ],
+      applicability: { status: "unspecified", entities: [], conditions: null },
+      stakeholderLinks: [
+        { ...seat, from: { type: "person", key: "dana-lee" }, link: "leads", to: { type: "team", key: "billing" }, title: " Head of Billing ", seniority: "director", share: 0.5 },
+        { ...seat, from: { type: "team", key: "billing" }, link: "part_of", to: { type: "company", key: "Acme Corp" } },
+        { ...seat, from: { type: "company", key: "acme-corp" }, link: "owned_by", to: { type: "company", key: "globex" }, share: 0.6 },
+        { ...seat, from: { type: "team", key: "billing" }, link: "part_of", to: { type: "team", key: "billing" } },
+      ],
+    })] }, INPUT);
+    expect(actions.at(-1)?.input).toMatchObject({ context: { structure: [
+      { ...seat, from: { type: "person", key: "dana-lee" }, link: "leads", to: { type: "team", key: "billing" }, title: "Head of Billing", seniority: "director" },
+      { ...seat, from: { type: "team", key: "billing" }, link: "part_of", to: { type: "company", key: "acme-corp" } },
+    ] } });
+  });
+
+  it("writes no structure key for a claim without labels, and carries labels on a revision", () => {
+    const plain = answerToActions({ summary: "", claims: [claim({ applicability: { status: "unspecified", entities: [], conditions: null } })] }, INPUT);
+    expect(plain.at(-1)?.input).not.toHaveProperty("context.structure");
+    const label = { from: { type: "person" as const, key: "dana-lee" }, link: "works_in" as const, to: { type: "project" as const, key: "alpha" }, title: null, seniority: "staff" as const, share: null, current: false };
+    const revised = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1",
+      entities: [{ type: "person", key: "dana-lee", name: "Dana Lee", role: "subject" }, { type: "project", key: "alpha", name: "Project Alpha", role: "object" }],
+      applicability: { status: "unspecified", entities: [], conditions: null }, stakeholderLinks: [label] })] }, INPUT);
+    expect(revised.at(-1)).toMatchObject({ type: "revise_claim", input: { context: { structure: [label] } } });
   });
 
   it("creates scope-only entities before a claim without treating them as subjects", () => {

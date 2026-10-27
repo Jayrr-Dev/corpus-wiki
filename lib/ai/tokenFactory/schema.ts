@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { Constants } from "@/lib/database/types";
 import { ENTITY_TYPES, normalizeEntityType } from "@/lib/knowledge/entityTypes";
+import { SENIORITIES, STRUCTURE_LINK_TYPES } from "@/lib/stakeholders/structure";
 
 // =====================================================================
 // WHAT NEMOTRON MUST ANSWER: claims, each one typed action on the store,
@@ -42,6 +43,20 @@ export const structureSchema = z.object({
   mode: z.enum(["all", "any"]).nullable(),
 });
 
+// HOW TWO OF THE CLAIM'S ENTITIES SIT TOGETHER (lib/stakeholders/structure.ts): who is inside
+// whom and who presses on whom, from the smaller or lower end to the bigger. toDraft.ts keeps it
+// as knowledge_context.structure; the answer field has its own name because "structure" above
+// is a composite's shape.
+const structureLabelSchema = z.object({
+  from: z.object({ type: entityTypeSchema, key: z.string().min(1) }),
+  link: z.enum(STRUCTURE_LINK_TYPES),
+  to: z.object({ type: entityTypeSchema, key: z.string().min(1) }),
+  title: z.string().nullable(),
+  seniority: z.enum(SENIORITIES).nullable(),
+  share: z.number().min(0).max(1).nullable(),
+  current: z.boolean(),
+});
+
 // ONE CLAIM READ FROM THE FILE
 const claimSchema = z.object({
   action: z.enum(CLAIM_ACTIONS),
@@ -57,6 +72,8 @@ const claimSchema = z.object({
   domainPaths: z.array(z.string()),
   // Set only on a composite; older answers have none
   structure: structureSchema.nullable().optional(),
+  // Required in guided decoding (an empty list when the passage states none); older answers have none
+  stakeholderLinks: z.array(structureLabelSchema).default([]),
   reason: z.string(),
 });
 
@@ -77,8 +94,10 @@ export const reconciliationAnswerSchema = z.object({
   links: z.array(linkSchema).default([]),
 });
 
-export type ReconciliationAnswer = z.infer<typeof reconciliationAnswerSchema>;
-export type AnswerClaim = z.infer<typeof claimSchema>;
+// stakeholderLinks stays optional on the type, so claims built in code without it still fit
+export type AnswerClaim = Omit<z.infer<typeof claimSchema>, "stakeholderLinks"> & { stakeholderLinks?: AnswerStructureLabel[] };
+export type AnswerStructureLabel = z.infer<typeof structureLabelSchema>;
+export type ReconciliationAnswer = Omit<z.infer<typeof reconciliationAnswerSchema>, "claims"> & { claims: AnswerClaim[] };
 export type AnswerEntityRef = z.infer<typeof entityRefSchema>;
 export type AnswerLink = z.infer<typeof linkSchema>;
 

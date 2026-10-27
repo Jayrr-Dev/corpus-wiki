@@ -4,6 +4,7 @@ import type { StageSkills } from "@/lib/ai/skills/types";
 import type { ChatMessage } from "@/lib/ai/chat";
 import type { ReconciliationInput, Structure } from "@/lib/ai/types";
 import { ENTITY_TYPE_GUIDE } from "@/lib/knowledge/entityTypes";
+import { SENIORITY_LADDER, STRUCTURE_LINKS } from "@/lib/stakeholders/structure";
 
 // =====================================================================
 // RECONCILIATION PROMPT (PROMPT_VERSION in lib/ai/config.ts names it).
@@ -12,6 +13,10 @@ import { ENTITY_TYPE_GUIDE } from "@/lib/knowledge/entityTypes";
 // only by typed actions. Dates and ties are NOT the model's job: Change
 // control checks those itself.
 // =====================================================================
+
+// The structure vocabulary as the model reads it (lib/stakeholders/structure.ts is the one list)
+const STRUCTURE_LINK_GUIDE = STRUCTURE_LINKS.map((entry) => `${entry.link} (${entry.description})`).join("; ");
+const SENIORITY_GUIDE = SENIORITY_LADDER.map((entry) => `${entry.seniority}: ${entry.label}`).join("; ");
 
 const SYSTEM_PROMPT = `You maintain a universal knowledge store. You read ONE new file and decide how it changes what is known.
 
@@ -30,6 +35,13 @@ Answer with JSON only: { "summary": string, "claims": Claim[], "links": Link[] }
   - epistemicStatus: established (decided, or stated by an authoritative source), supported (stated with evidence), assumed, hypothesis (anything proposed or asked: never a decision), disputed, unknown.
   - passages: the refs (e.g. "P2") of the passages the claim comes from. At least one.
   - entities: the real things the claim is about, as { type, key, name, role }. type is exactly one of: ${ENTITY_TYPE_GUIDE}. key is the lowercase name with spaces as hyphens. Reuse an existing entity's type and key when it is the same thing. role: subject (what the claim is about), object, or mentioned.
+  - stakeholderLinks: how this claim's entities sit inside each other and press on each other, as { from: { type, key }, link, to: { type, key }, title, seniority, share, current }. Return [] when the passage states none.
+    - Label only links the passage states. Both from and to must be entities of THIS claim; when the passage names a department or team, add it as a "team" entity and use it.
+    - link: ${STRUCTURE_LINK_GUIDE}.
+    - Direction goes from the smaller or lower thing to the bigger: a person works_in a team, a team is part_of a company, a company is owned_by its parent, a person leads a team or reports_to a person. A pressure link goes from the one pressing: a regulator regulates a company, an investor funds a project, a client contracts_with a supplier.
+    - title: the person's job title as the passage writes it, or null. seniority: that title mapped onto the ladder (${SENIORITY_GUIDE}), or null when there is no seat or it does not fit.
+    - share: only on owned_by, the stated ownership from 0 to 1 (60% is 0.6); null when the passage gives no number. Never guess a share.
+    - current: false only when the passage says the seat, ownership or tie has ended ("former CEO"); otherwise true.
   - applicability: { status, entities: [{ type, key, name }], conditions: string | null }. status is "scoped" for a claim limited to particular people, organizations, projects, products, places, or conditions; "general" only when the evidence explicitly supports a general statement; otherwise "unspecified". Scope entities identify where the claim holds, separately from its subject/object/mentioned entities. General and unspecified scope have no scope entities. Keep supported restrictions such as "employees working on site" in conditions. A scoped claim needs entities or conditions.
   - For revisions, supply the full resulting entities and applicability. Preserve existing context unless the cited evidence supports changing it. Repeated wording does not justify broadening scope. A different person's or company's similar claim is an add, not a revision.
   - Identity: reuse type/key only when evidence identifies the same entity. Two people sharing a name are not automatically identical. Use a supported distinguishing qualifier in a new key, or omit an unresolved identity instead of guessing. A source's author, company, folder, or article context does not automatically own every claim or definition.
