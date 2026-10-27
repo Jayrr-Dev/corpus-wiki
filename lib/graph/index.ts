@@ -8,7 +8,7 @@
 export type * from "./types";
 export { buildGraph, countDegrees, shortLabel } from "./build";
 export { circleExtents, clusterCircles, clusterTree, deepestPaths, type ClusterCircle, type ClusterGroup } from "./clusters";
-export { routeControls, routeDomains, straightenRoute, type RouteCircle, type RoutePoint } from "./bundles";
+export { routeControls, routeDomains, straightenRoute, summaryDomains, type RouteCircle, type RoutePoint } from "./bundles";
 export { applyFilters, createdBy, domainPathsForScope, keepNodes, type GraphFilters } from "./filters";
 export {
   GRAPH_COLORS,

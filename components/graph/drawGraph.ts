@@ -1,4 +1,4 @@
-import { type ClusterCircle, type GraphColor, type GraphDisplay, type GraphNode, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute } from "@/lib/graph";
+import { type ClusterCircle, type GraphColor, type GraphDisplay, type GraphNode, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute, summaryDomains } from "@/lib/graph";
 import { type Camera, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import type { CanvasPalette } from "./palette";
@@ -63,6 +63,10 @@ const SIMILAR_ALPHA = 0.7;
 const LINK_PX = 0.8;
 // HIERARCHICAL BUNDLES: Holten's beta (0 straight, 1 hugs the domain tree)
 const BUNDLE_STRENGTH = 0.85;
+// DOMAIN SUMMARY LINES: opacity, and the widest one in screen pixels (width grows with the square
+// root of the links summed, so one heavy pair cannot drown the rest)
+const SUMMARY_ALPHA = 0.45;
+const SUMMARY_MAX_PX = 10;
 // DOMAIN CIRCLES: accent per domain (cycled), fill and ring opacity, ring width and label size in screen pixels
 const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "stale", "failed"];
 const CIRCLE_FILL_ALPHA = 0.16;
@@ -124,11 +128,37 @@ function traceLink(ctx: CanvasRenderingContext2D, source: SimNode, target: SimNo
   ctx.lineTo(ex - size * Math.cos(angle + 0.45), ey - size * Math.sin(angle + 0.45));
 }
 
+// A summed line between two domains: one per pair, its width grown by how many links it stands for
+interface DomainSummary {
+  from: RouteCircle;
+  to: RouteCircle;
+  count: number;
+}
+
+// SUMMARY PASS (under the single links): one straight line between the middles of each pair of
+// domains that links join, faded out as the single links fade in
+function drawSummaries(input: DrawInput, summaries: Iterable<DomainSummary>, shown: number): void {
+  const { ctx, palette, camera, display, hoveredId } = input;
+  if (shown <= 0.01) return;
+  ctx.strokeStyle = palette.muted;
+  ctx.lineCap = "round";
+  ctx.globalAlpha = SUMMARY_ALPHA * shown * (hoveredId === null ? 1 : 0.5);
+  for (const { from, to, count } of summaries) {
+    ctx.lineWidth = Math.min(SUMMARY_MAX_PX, LINK_PX * display.linkThickness * (1 + Math.sqrt(count))) / camera.k;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+  }
+  ctx.lineCap = "butt";
+}
+
 // LINKS PASS: one path per style. Stored links are solid. Derived "similar" links are dashed and
 // fainter, hidden at the overview until the camera zooms in, and only drawn inside one domain
 // (a guess that spans domains crosses the whole map for little); a hovered dot still shows all of
-// its own. Links between domains bundle along the domain tree at every zoom. With a hover, focused
-// links go in a brighter path of their own.
+// its own. Links between domains bundle along the domain tree; at the overview each bundle is
+// summed into one line per pair of domains, and the single links fade in as the camera zooms in.
+// With a hover, focused links go in a brighter path of their own and are never summed.
 function drawLinks(input: DrawInput): void {
   const { ctx, links, palette, hoveredId, camera, display, circles } = input;
   const isFocused = (source: SimNode, target: SimNode) => hoveredId !== null && (source.id === hoveredId || target.id === hoveredId);
@@ -142,22 +172,46 @@ function drawLinks(input: DrawInput): void {
   const similarShown = input.overviewZoom === null ? 1 : revealOpacity(camera.k, input.overviewZoom, REVEAL_AT.similar);
   const isShown = (link: SimLink, source: SimNode, target: SimNode, focused: boolean) =>
     link.kind !== "similar" || focused || routeDomains(source, target).length === 0;
+  // How far single links between domains have faded in (1: no summaries)
+  const detail = input.overviewZoom === null || circles.length === 0 ? 1 : revealOpacity(camera.k, input.overviewZoom, REVEAL_AT.links);
+  // SUMMARIES: stored, unfocused links between two drawn domains, summed per pair
+  const summarised = new Set<SimLink>();
+  const summaries = new Map<string, DomainSummary>();
+  if (detail < 0.99) {
+    for (const link of links) {
+      const pair = ends(link);
+      if (!pair || link.kind === "similar" || isFocused(...pair) || !pair.every((node) => inDomain(node, input.focusedDomain))) continue;
+      const domains = summaryDomains(...pair);
+      const from = domains && centers.get(domains[0]), to = domains && centers.get(domains[1]);
+      if (!domains || !from || !to) continue;
+      summarised.add(link);
+      const key = [...domains].sort().join("|");
+      const summary = summaries.get(key);
+      if (summary) summary.count++;
+      else summaries.set(key, { from, to, count: 1 });
+    }
+  }
+  drawSummaries(input, summaries.values(), 1 - detail);
   ctx.lineWidth = (LINK_PX * display.linkThickness) / camera.k;
   for (const similar of [true, false]) {
     ctx.setLineDash(similar ? [SIMILAR_DASH_PX / camera.k, SIMILAR_DASH_PX / camera.k] : []);
     for (const focused of [false, true]) {
       const alpha = focused ? 1 : hoveredId === null ? 0.7 : 0.45;
       const shown = similar && !focused ? alpha * SIMILAR_ALPHA * similarShown : alpha;
-      // Skipping hidden links also skips their routing, the bulk of the cost at the overview
-      if (shown <= 0.01) continue;
-      ctx.beginPath();
-      for (const link of links) {
-        const pair = ends(link);
-        if (pair && (link.kind === "similar") === similar && isFocused(...pair) === focused && isShown(link, ...pair, focused) && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input, route(...pair));
+      // Links summed at the overview also draw one by one, in a path of their own that fades in with the zoom
+      for (const faded of similar || focused ? [false] : [false, true]) {
+        const opacity = faded ? shown * detail : shown;
+        // Skipping hidden links also skips their routing, the bulk of the cost at the overview
+        if (opacity <= 0.01) continue;
+        ctx.beginPath();
+        for (const link of links) {
+          const pair = ends(link);
+          if (pair && summarised.has(link) === faded && (link.kind === "similar") === similar && isFocused(...pair) === focused && isShown(link, ...pair, focused) && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input, route(...pair));
+        }
+        ctx.strokeStyle = palette.muted;
+        ctx.globalAlpha = opacity;
+        ctx.stroke();
       }
-      ctx.strokeStyle = palette.muted;
-      ctx.globalAlpha = shown;
-      ctx.stroke();
     }
   }
   ctx.setLineDash([]);

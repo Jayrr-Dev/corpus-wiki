@@ -68,7 +68,7 @@ it("paints nested domain circles progressively fainter without fading their name
   expect(labels).toEqual([1, 1, 1, 1]);
 });
 
-it("hides similar links at the overview and across domains, and bundles links between domains at every zoom", () => {
+it("sums links between domains into one line at the overview, then shows them bundled one by one on zoom", () => {
   const strokes: { alpha: number; curves: number; lines: number }[] = [];
   let curves = 0, lines = 0;
   const ctx = new Proxy({ globalAlpha: 1 }, {
@@ -94,8 +94,8 @@ it("hides similar links at the overview and across domains, and bundles links be
     colorOf: () => null, hoveredId: null, focusIds: new Set(), hoverLabelOnly: false,
   });
   drawGraph(input(1));
-  // Only the stored link draws, curved through both domain centers
-  expect(strokes).toEqual([{ alpha: 0.7, curves: 2, lines: 0 }]);
+  // Overview: one summary line between the two domains; similar links and single links hidden
+  expect(strokes).toEqual([{ alpha: 0.45, curves: 0, lines: 1 }]);
   strokes.length = 0;
   drawGraph(input(4));
   // Zoomed in: the similar link inside "Left" shows, the one across domains stays hidden,

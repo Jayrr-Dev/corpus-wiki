@@ -10,7 +10,8 @@ import type { GraphNode } from "./types";
 // the facing edges of those circles, not their middles, so a bundle
 // runs in the gap between them instead of across their contents.
 // `strength` (Holten's beta) straightens a route back toward a plain
-// line: 0 is straight, 1 hugs the tree.
+// line: 0 is straight, 1 hugs the tree. At the overview a whole bundle
+// can be summed into one line between its two domains.
 // =====================================================================
 
 export interface RoutePoint {
@@ -55,6 +56,15 @@ function routeLegs(source: Pick<GraphNode, "domainPaths">, target: Pick<GraphNod
 export function routeDomains(source: Pick<GraphNode, "domainPaths">, target: Pick<GraphNode, "domainPaths">): string[] {
   const { up, down } = routeLegs(source, target);
   return [...up, ...down];
+}
+
+// The two domains a link between domains is summed into at the overview: the sibling domains
+// where its route turns (or, when one domain holds the other, the outer domain itself and the
+// child the route enters). Null when both ends sit in one domain or either end has none.
+export function summaryDomains(source: Pick<GraphNode, "domainPaths">, target: Pick<GraphNode, "domainPaths">): [string, string] | null {
+  const { up, down } = routeLegs(source, target);
+  if (up.length === 0 && down.length === 0) return null;
+  return [up.at(-1) ?? primarySegments(source).join("/"), down[0] ?? primarySegments(target).join("/")];
 }
 
 // Point on a circle's edge facing another point

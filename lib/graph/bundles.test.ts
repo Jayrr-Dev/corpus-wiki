@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { routeControls, routeDomains, straightenRoute } from "./bundles";
+import { routeControls, routeDomains, straightenRoute, summaryDomains } from "./bundles";
 
 const at = (...domainPaths: string[]) => ({ domainPaths });
 
@@ -23,6 +23,20 @@ describe("routeDomains", () => {
 
   it("uses the same primary domain as the cluster tree", () => {
     expect(routeDomains(at("Zeta", "Alpha/A"), at("Alpha/B"))).toEqual(["Alpha/A", "Alpha/B"]);
+  });
+});
+
+describe("summaryDomains", () => {
+  it("sums a link into the sibling domains where its route turns", () => {
+    expect(summaryDomains(at("Types/One/Anger"), at("Types/Six/Fear"))).toEqual(["Types/One", "Types/Six"]);
+  });
+
+  it("uses the outer domain itself when it holds the other", () => {
+    expect(summaryDomains(at("Types"), at("Types/One/Anger"))).toEqual(["Types", "Types/One"]);
+  });
+
+  it("leaves links inside one domain alone", () => {
+    expect(summaryDomains(at("Types/One"), at("Types/One"))).toBeNull();
   });
 });
 

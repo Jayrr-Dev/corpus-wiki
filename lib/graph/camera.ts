@@ -63,8 +63,9 @@ export function labelOpacity(zoom: number, threshold: number): number {
 
 // PROGRESSIVE ZOOM: how many times the overview zoom (the one that fits the whole graph) each layer
 // of text needs before it fades in. Domain names always show; topics come next, then derived
-// "similar" links (hidden at the overview), then note titles.
-export const REVEAL_AT = { subdomain: 0.6, similar: 1, title: 1.4 } as const;
+// "similar" links (hidden at the overview), then single links between domains (summed into one
+// line per pair of domains at the overview), then note titles.
+export const REVEAL_AT = { subdomain: 0.6, similar: 1, links: 1.15, title: 1.4 } as const;
 
 // Keep three levels in the overview; reveal deeper levels gradually on zoom.
 export function hierarchyOpacity(depth: number, zoom: number, overviewZoom: number | null): number {
