@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono-face" });
 
 export const metadata: Metadata = {
-  title: "Second Brain",
+  title: "Corpus Wiki",
   description: "Files become knowledge units; the wiki rewrites itself.",
 };
 

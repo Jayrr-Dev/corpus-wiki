@@ -1,6 +1,6 @@
 ---
 name: encyclopedia-humanizer
-description: Write or revise sourced encyclopedia and internal knowledge-base articles with natural prose, neutral tone, topical structure, article links, and verifiable references. Use for wiki articles and definitions, including Second Brain pages; not for marketing copy, personal essays, or routine coding updates.
+description: Write or revise sourced encyclopedia and internal knowledge-base articles with natural prose, neutral tone, topical structure, article links, and verifiable references. Use for wiki articles and definitions, including Corpus Wiki pages; not for marketing copy, personal essays, or routine coding updates.
 license: MIT
 metadata:
   version: "1.0.0"
@@ -14,7 +14,7 @@ qualifications, and provenance of the underlying knowledge.
 
 Read [references/style-rules.json](references/style-rules.json) before drafting.
 Its `voice` and `evidence` rules apply throughout; use `article`, `outline`, or
-`definitions` for the work being done. Second Brain imports this same file into
+`definitions` for the work being done. Corpus Wiki imports this same file into
 its generator prompts. Edit the canonical project copy and sync the installed
 skill when changing the rules.
 
@@ -53,7 +53,7 @@ statements. Check that article links resolve to the intended context. Add infobo
 fields, images, related articles, or source metadata only when they exist and
 help explain the subject.
 
-## Second Brain output contract
+## Corpus Wiki output contract
 
 The planner returns an outline with real claim references. The section writer
 returns the existing JSON schema with paragraph text and claim references.

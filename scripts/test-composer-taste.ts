@@ -31,7 +31,7 @@ try {
   if (settings.roleRoutes?.composer) settings.roleRoutes = { ...settings.roleRoutes, reviewer: settings.roleRoutes.composer };
   settings.logCall = async (call) => { console.log(JSON.stringify({ call: call.purpose, model: call.model, status: call.status })); };
   const params = new URLSearchParams({ action: "query", format: "json", formatversion: "2", prop: "extracts|info|revisions", explaintext: "1", inprop: "url", rvprop: "ids", titles: "Deserted medieval village" });
-  const response = await fetch(`https://en.wikipedia.org/w/api.php?${params}`, { headers: { "User-Agent": "SecondBrainEngine/0.1 (isolated illustration evaluation)" }, signal: AbortSignal.timeout(30000) });
+  const response = await fetch(`https://en.wikipedia.org/w/api.php?${params}`, { headers: { "User-Agent": "CorpusWiki/0.1 (isolated illustration evaluation)" }, signal: AbortSignal.timeout(30000) });
   if (!response.ok) throw new Error(`Wikipedia ${response.status}`);
   const source = (await response.json()).query.pages[0];
   let section = "Overview";

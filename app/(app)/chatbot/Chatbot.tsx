@@ -141,15 +141,15 @@ export function Chatbot({ userId }: { userId: string }) {
 
   return <div className="flex h-[calc(100%-2.75rem)] min-h-0 overflow-hidden md:h-full">
     <HistorySidebar chats={chats} activeId={activeId} busy={busy || !!deciding || !historyReady} onSelect={selectChat} onNew={newChat} onDelete={id => { persist(chats.filter(chat => chat.id !== id)); if (id === activeId) newChat(); }} />
-    <section data-tour="reading-pane" aria-label="Ask your second brain" className={`flex min-h-0 min-w-0 flex-1 flex-col ${!messages.length ? "overflow-y-auto" : ""}`}>
+    <section data-tour="reading-pane" aria-label="Ask your wiki" className={`flex min-h-0 min-w-0 flex-1 flex-col ${!messages.length ? "overflow-y-auto" : ""}`}>
     <div className={`flex w-full flex-col ${!messages.length ? "my-auto shrink-0 py-10 sm:py-16" : "min-h-0 flex-1"}`}>
     <div onScroll={event => { const el = event.currentTarget; followAnswer.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100; }} className={messages.length ? "min-h-0 flex-1 overflow-y-auto px-5" : "px-5"}>
       {!messages.length ? <div className="mx-auto max-w-3xl pb-6">
         <h2 className="text-center text-title font-semibold">What’s on your mind?</h2>
-        <p className="mx-auto mt-3 max-w-md text-center text-panel leading-6 text-muted-foreground">Write articles, add sources, and work through exceptions with your second brain.</p>
+        <p className="mx-auto mt-3 max-w-md text-center text-panel leading-6 text-muted-foreground">Write articles, add sources, and work through exceptions with your wiki.</p>
         <div className="mt-8 grid gap-3 sm:grid-cols-3">{suggestions.map(({ title, text, icon: Icon }) => <button key={title} disabled={busy || !historyReady} onClick={() => void send(text)} className="rounded-xl border p-4 text-left transition-colors hover:border-foreground/20 hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"><span className="mb-2 flex items-center gap-2 text-sm font-medium"><Icon className="size-4 text-muted-foreground" />{title}</span><span className="text-panel leading-5 text-muted-foreground">{text}</span></button>)}</div>
       </div> : <div className="mx-auto max-w-3xl space-y-8 py-8" role="log" aria-label="Conversation">{messages.map((message, index) => <article key={index} className={message.role === "user" ? "ml-auto w-fit max-w-[85%] rounded-2xl bg-sidebar px-5 py-3" : "pr-2"}>
-        <p className="mb-2 text-xs font-medium text-muted-foreground">{message.role === "user" ? "You" : "Second Brain"}</p>
+        <p className="mb-2 text-xs font-medium text-muted-foreground">{message.role === "user" ? "You" : "Corpus Wiki"}</p>
         {!!message.activities?.length && <div className="mb-4 space-y-2" aria-label="Agent actions">{message.activities.map(activity => <div key={activity.id} className="rounded-xl border bg-sidebar/40 p-3 text-sm">
           <div className="font-medium">{activity.label}</div>
           <p className={`mt-1 text-xs ${activity.status === "failed" ? "text-destructive" : "text-muted-foreground"}`}>{activity.detail}</p>
@@ -165,7 +165,7 @@ export function Chatbot({ userId }: { userId: string }) {
       {warning && <p role="status" className="mb-3 text-xs text-muted-foreground">{warning}</p>}
       {storageError && <p role="alert" className="mb-3 text-xs text-destructive">{storageError}</p>}
       <form data-tour="ask-composer" onSubmit={event => { event.preventDefault(); void send(); }} className="rounded-2xl border bg-sidebar p-3 shadow-sm focus-within:ring-1 focus-within:ring-ring">
-        <textarea ref={input} aria-label="Message Ask" placeholder="Ask your second brain…" value={draft} onChange={event => setDraft(event.target.value)} maxLength={8000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send(); } }} className="max-h-40 w-full resize-none bg-transparent px-1 py-2 text-panel outline-none" />
+        <textarea ref={input} aria-label="Message Ask" placeholder="Ask your wiki…" value={draft} onChange={event => setDraft(event.target.value)} maxLength={8000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void send(); } }} className="max-h-40 w-full resize-none bg-transparent px-1 py-2 text-panel outline-none" />
         <div className="mt-2 flex items-center justify-between gap-3"><div className="flex min-w-0 flex-wrap items-center gap-1"><ContextPicker disabled={busy} value={entityId} options={(entities.data ?? []).filter(entity => !entity.merged_into_id).map(entity => ({ id: entity.id, name: entity.name, type: entity.type }))} onChange={setEntityId} loading={entities.isPending} failed={entities.isError} /><OutputSkillPicker value={outputSkill} onChange={setOutputSkill} disabled={busy} /><ModePicker agent={agent} onChange={setAgent} disabled={busy} /></div>
           <Tooltip content={busy ? "Stop response" : "Send message"}><button type={busy ? "button" : "submit"} onClick={busy ? event => { event.preventDefault(); controller.current?.abort(); } : undefined} disabled={!busy && !draft.trim()} aria-label={busy ? "Stop response" : "Send message"} className="flex size-9 items-center justify-center rounded-full bg-foreground text-background disabled:opacity-30">{busy ? <Square className="size-3.5" /> : <ArrowUp className="size-4" />}</button></Tooltip>
         </div>

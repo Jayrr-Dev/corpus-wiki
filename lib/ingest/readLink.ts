@@ -60,7 +60,7 @@ export async function readLink(value: string): Promise<{ title: string; text: st
         agent: false,
         family: target.family,
         lookup: (_host, _options, callback) => callback(null, target.address, target.family),
-        headers: { "User-Agent": "SecondBrainEngine/0.1", Accept: "text/html,text/plain,text/markdown", "Accept-Encoding": "identity" },
+        headers: { "User-Agent": "CorpusWiki/0.1", Accept: "text/html,text/plain,text/markdown", "Accept-Encoding": "identity" },
       }, (response) => {
         response.on("error", reject);
         const status = response.statusCode ?? 0;

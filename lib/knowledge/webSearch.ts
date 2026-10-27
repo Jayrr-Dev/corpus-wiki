@@ -24,7 +24,7 @@ async function webJson<T>(url: string, init: RequestInit): Promise<T> {
 const TAVILY_SEARCH_URL = "https://api.tavily.com/search";
 const WIKIPEDIA_API_URL = "https://en.wikipedia.org/w/api.php";
 // Wikipedia asks API callers to name themselves
-const WIKIPEDIA_USER_AGENT = "SecondBrainEngine/0.1 (external knowledge search)";
+const WIKIPEDIA_USER_AGENT = "CorpusWiki/0.1 (external knowledge search)";
 // A page longer than this is cut: each page is reconciled like an uploaded file, so length is time
 const MAX_PAGE_CHARS = 8_000;
 // Pages kept per search; each is ingested in full, so a few good ones beat many

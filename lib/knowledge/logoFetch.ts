@@ -16,7 +16,7 @@ const TIMEOUT_MS = 8_000;
 const MAX_HTML_BYTES = 1_000_000;
 const MAX_IMAGE_BYTES = 300_000;
 const MIN_IMAGE_BYTES = 100;
-const USER_AGENT = "SecondBrainEngine/0.1 (stakeholder logo)";
+const USER_AGENT = "CorpusWiki/0.1 (stakeholder logo)";
 
 export type Logo = { bytes: Uint8Array; contentType: string; extension: string };
 

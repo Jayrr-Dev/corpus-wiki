@@ -5,7 +5,7 @@ import { uploadExecution } from "@/lib/ingest/workflowContext";
 
 export type WebImage = { id: string; title: string; description: string; imageUrl: string; displayUrl?: string; sourceUrl: string; creator: string; license: string; licenseUrl: string };
 type FilePage = { pageid: number; title: string; imageinfo?: { url?: string; thumburl?: string; descriptionurl?: string; mime?: string; extmetadata?: Record<string, { value?: string }> }[] };
-const headers = { "User-Agent": "SecondBrainEngine/0.1 (article illustration search)" };
+const headers = { "User-Agent": "CorpusWiki/0.1 (article illustration search)" };
 const MAX_BYTES = 20 * 1024 * 1024;
 const plain = (html: string) => new DOMParser().parseFromString(`<html><body>${html}</body></html>`, "text/html").body.textContent?.trim() ?? "";
 function trustedUrl(value: string, host: string) {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SignupForm } from "./SignupForm";
 
-export const metadata: Metadata = { title: "Create account · Second Brain" };
+export const metadata: Metadata = { title: "Create account · Corpus Wiki" };
 export default function SignupPage() {
   return <div className="flex min-h-dvh items-center justify-center bg-background p-6">
     <div className="flex w-full max-w-sm flex-col gap-5 rounded-lg border bg-sidebar p-6">

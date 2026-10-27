@@ -17,7 +17,7 @@ import { useRightPanel } from "./RightPanel";
 // =====================================================================
 
 const ALL_NAV = [...PRIMARY_NAV, ...SECONDARY_NAV, SETTINGS_NAV];
-const APP_NAME = "Second Brain";
+const APP_NAME = "Corpus Wiki";
 
 // SCREEN TITLE: the nav label of the section the current route belongs to
 function useScreenTitle(): string {

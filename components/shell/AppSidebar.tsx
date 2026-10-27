@@ -82,10 +82,10 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
       <SidebarHeader search searchPlaceholder="Search…" separator>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Second Brain">
+            <SidebarMenuButton asChild tooltip="Corpus Wiki">
               <Link href="/">
                 <PageIconMark />
-                <span className="font-semibold">Second Brain</span>
+                <span className="font-semibold">Corpus Wiki</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

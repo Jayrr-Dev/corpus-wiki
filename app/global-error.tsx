@@ -8,7 +8,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
   return (
     <html lang="en">
       <body className="flex min-h-dvh items-center justify-center bg-background p-6 text-text">
-        <ErrorFallback error={error} where="Second Brain" onRetry={reset} />
+        <ErrorFallback error={error} where="Corpus Wiki" onRetry={reset} />
       </body>
     </html>
   );

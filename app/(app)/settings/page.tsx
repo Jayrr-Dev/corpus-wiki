@@ -60,7 +60,7 @@ export default async function SettingsPage() {
       </SettingsCard>
     ),
     intelligence: (
-      <SettingsCard id="intelligence" title="Intelligence" description="Fine-tune the AI behind your second brain." icon={BrainCircuit}>
+      <SettingsCard id="intelligence" title="Intelligence" description="Fine-tune the AI behind your wiki." icon={BrainCircuit}>
         <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">AI model</h3><SettingHint>Used for uploads, line edits, and page builds.</SettingHint></div>
         <ModelPicker settings={modelSettings} />
         <div className="mt-6 border-t pt-6">
@@ -81,7 +81,7 @@ export default async function SettingsPage() {
       </SettingsCard>
     ),
     features: (
-      <SettingsCard id="features" title="Features" description="Choose what your second brain does on its own." icon={ToggleRight}>
+      <SettingsCard id="features" title="Features" description="Choose what your wiki does on its own." icon={ToggleRight}>
         <AutoDecide enabled={glossaryAutoDecide} />
         <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>

@@ -1,4 +1,4 @@
-# Second Brain Engine
+# Corpus Wiki
 
 An evolving knowledge system that turns information into traceable, reusable knowledge—and uses that knowledge to support reasoning and decisions.
 
@@ -10,7 +10,7 @@ An evolving knowledge system that turns information into traceable, reusable kno
 
 ## Vision
 
-Build a second brain that can explain what it knows, where that knowledge came from, when it applies, how it connects to other knowledge, and why it influenced a conclusion or decision.
+Build a wiki that can explain what it knows, where that knowledge came from, when it applies, how it connects to other knowledge, and why it influenced a conclusion or decision.
 
 Documents preserve evidence. Atomic Knowledge Units (AKUs) represent independently understandable claims, concepts, principles, procedures, hypotheses, or questions. Typed relationships connect them into a versioned knowledge graph.
 
@@ -125,7 +125,7 @@ Use exact hashes, vector similarity, entity matching, and graph relationships to
 
 ## Design discussion
 
-This architecture was developed in the [original Second Brain design conversation](https://chatgpt.com/share/6acfbc17-10bc-83e8-a984-7d6bdb7cdaed).
+This architecture was developed in the [original Corpus Wiki design conversation](https://chatgpt.com/share/6acfbc17-10bc-83e8-a984-7d6bdb7cdaed).
 
 ## What the prototype does
 
@@ -155,7 +155,7 @@ An older file never overwrites a newer one, and a set whose units changed while 
 
 **Living pages, lines as rows** (`lib/living-page`, `supabase/migrations/20261015000000_lines_as_rows.sql`): every line of a wiki section is a row (`lines`) with never-edited versions (`line_revisions`) that cite the exact claim revisions they state. When a claim changes, the lines citing it are flagged (`stale_lines`), and only those lines are rewritten, through Change control like any other change. Editing a line that states one claim also revises that claim in the same ChangeSet, so changes flow both ways. Open pages update live.
 
-**One call** (`app/api/capture/route.ts`): `POST /api/capture` runs the whole path above in a single request and answers with the event's status and ChangeSet, so a script, phone shortcut or another agent can feed the second brain without the UI. Send a note as JSON (`text`, optional `title` and `sourceDate`), raw text, or a file as multipart (`file`, optional `sourceDate`); the date defaults to today. Authenticate with `Authorization: Bearer $SECOND_BRAIN_API_KEY` or a signed-in session.
+**One call** (`app/api/capture/route.ts`): `POST /api/capture` runs the whole path above in a single request and answers with the event's status and ChangeSet, so a script, phone shortcut or another agent can feed the wiki without the UI. Send a note as JSON (`text`, optional `title` and `sourceDate`), raw text, or a file as multipart (`file`, optional `sourceDate`); the date defaults to today. Authenticate with `Authorization: Bearer $SECOND_BRAIN_API_KEY` or a signed-in session.
 
 ```bash
 curl -X POST http://localhost:3000/api/capture \
