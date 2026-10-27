@@ -287,6 +287,9 @@ function titleAnchor(node: SimNode, lineCount: number, lineHeight: number, displ
 
 // Opacity of the backing box behind the hovered title (0 = none, 1 = solid canvas colour)
 const HOVER_LABEL_BG_ALPHA = 0.95;
+// Backing box behind every other title: opacity (times the title's own), and side padding in screen pixels
+const LABEL_BG_ALPHA = 0.85;
+const LABEL_BG_PAD_PX = 3;
 
 // HOVERED LABEL: same wrap as the resting label, on a backing box, nudged inside the canvas so it is never cut off
 function drawHoveredLabel(input: DrawInput, node: SimNode): void {
@@ -350,6 +353,15 @@ function drawLabels(input: DrawInput): void {
     const { x, y, align } = titleAnchor(node, lines.length, lineHeight, display, camera.k);
     const left = align === "center" ? x - widthPx / camera.k / 2 : align === "right" ? x - widthPx / camera.k : x;
     if (!reserveLabel(input, left, y, widthPx, lines.length * LABEL_PX * LINE_HEIGHT)) continue;
+    // Backing box in the canvas colour, so lines and dots behind the title do not cut through it
+    const pad = LABEL_BG_PAD_PX / camera.k;
+    ctx.globalAlpha = opacity * LABEL_BG_ALPHA;
+    ctx.fillStyle = palette.background;
+    ctx.beginPath();
+    ctx.roundRect(left - pad, y - pad / 2, widthPx / camera.k + 2 * pad, lines.length * lineHeight + pad, 3 / camera.k);
+    ctx.fill();
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = palette.muted;
     ctx.textAlign = align;
     lines.forEach((line, i) => paintText(input, line, x, y + i * lineHeight));
   }
