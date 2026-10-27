@@ -47,6 +47,8 @@ const ORPHAN_PULL = 0.15;
 const HALF_PULL_DEGREE = 3;
 // Each sqrt(link) adds this much repulsion, so hubs clear room around their neighbors
 const HUB_REPEL = 0.5;
+// Collision passes per tick; one pass leaves big dots overlapping when many pulls meet
+const COLLIDE_PASSES = 3;
 
 // Dot radius in world units: emphasize connected hubs while keeping growth sublinear.
 export function nodeRadius(node: Pick<GraphNode, "degree">, nodeSize: number): number {
@@ -67,9 +69,12 @@ export function applyForces(simulation: GraphSimulation, forces: GraphForces, no
     .force("x", forceX<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
     .force("y", forceY<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
     .force("charge", forceManyBody<SimNode>().strength((node) => -forces.repel * REPEL_SCALE * (1 + HUB_REPEL * Math.sqrt(node.degree))).distanceMax(REPEL_REACH))
-    .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2))
     .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE))
-    .force("root-separation", forces.cluster > 0 ? forceRootSeparation(nodeSize, simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")?.links() ?? []) : null);
+    .force("root-separation", forces.cluster > 0 ? forceRootSeparation(nodeSize, simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")?.links() ?? []) : null)
+    // Collide runs last and at full strength: it sees every other pull first, so big hubs
+    // drawn into one domain spot still end up side by side. Re-adding it keeps it last.
+    .force("collide", null)
+    .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2).strength(1).iterations(COLLIDE_PASSES));
   const link = simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link");
   const strength = forces.link * LINK_SCALE;
   // Links between different domain groups slacken as the domain pull rises, so groups can sit apart
