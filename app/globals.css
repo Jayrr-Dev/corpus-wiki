@@ -163,6 +163,8 @@
   /* TYPE: fonts come from next/font in app/layout.tsx */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-face), ui-monospace, monospace;
+  /* the brand title: Garamond, set in capitals */
+  --font-brand: Garamond, var(--font-garamond), ui-serif, serif;
   --text-panel: 13px;
   --text-panel--line-height: 1.45;
   --text-body: 15px;

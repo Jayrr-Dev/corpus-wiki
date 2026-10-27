@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BrandMark } from "@/components/brand/BrandMark";
+import { BrandMark, BrandName } from "@/components/brand/BrandMark";
 import { readPublicWiki } from "@/lib/publishing/server";
 import { makeMetricTicket } from "@/lib/publishing/metricTicket";
 import { WikiArticle } from "./WikiArticle";
@@ -22,7 +22,7 @@ export async function PublicWikiReader({ slug, pageSlug, embed = false, query = 
   const base = `${embed ? "/embed" : "/s"}/${slug}`;
   const ticket = wiki.page ? makeMetricTicket({ slug, page: wiki.page.slug, edition: wiki.edition, surface: embed ? "embed" : "site", channel: embed ? "embed" : fromExplore ? "explore" : "direct" }) : null;
   return <div className={embed ? "min-h-svh px-4 py-5 sm:px-6" : "mx-auto min-h-svh max-w-7xl px-5 py-6 sm:px-9"}>
-    {!embed && <nav aria-label="Public navigation" className="mb-10 flex items-center justify-between text-sm"><Link prefetch={false} href="/explore" className="flex items-center gap-2 font-medium hover:underline"><BrandMark />Corpus Wiki / Explore</Link><Link href="/" className="text-muted-foreground hover:underline">My workspace</Link></nav>}
+    {!embed && <nav aria-label="Public navigation" className="mb-10 flex items-center justify-between text-sm"><Link prefetch={false} href="/explore" className="flex items-center gap-2 font-medium hover:underline"><BrandMark /><BrandName className="text-body font-normal" /> / Explore</Link><Link href="/" className="text-muted-foreground hover:underline">My workspace</Link></nav>}
     <header className="mb-7 flex flex-wrap items-start justify-between gap-4 border-b pb-5">
       <div className="max-w-2xl"><Link prefetch={false} href={base} className="text-xl font-semibold hover:underline">{wiki.title}</Link>
         {wiki.description && <p className="mt-2 text-sm leading-6 text-muted-foreground">{wiki.description}</p>}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useOpenExceptionCount } from "@/app/(app)/exceptions/useExceptionInbox";
-import { BrandMark } from "@/components/brand/BrandMark";
+import { BrandMark, BrandName } from "@/components/brand/BrandMark";
 import { HelpIcon, SignOutIcon } from "@/components/icons";
 import { reopenTutorial } from "@/components/tutorial";
 import {
@@ -81,7 +81,7 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
             <SidebarMenuButton asChild tooltip="Corpus Wiki">
               <Link href="/">
                 <BrandMark />
-                <span className="font-semibold">Corpus Wiki</span>
+                <BrandName className="text-body" />
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

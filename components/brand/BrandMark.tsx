@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 
 // =====================================================================
-// CORPUS WIKI BRAND: the open-margin mark and the horizontal logo.
+// CORPUS WIKI BRAND: the open-margin mark, the name in Garamond capitals,
+// and the two together as the logo.
 // Source artwork lives in docs/brand/corpus-wiki; web copies in public/brand/corpus-wiki.
 // =====================================================================
 
@@ -16,15 +17,17 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-// BRAND LOGO: mark and Garamond wordmark; the white artwork replaces the charcoal one in dark mode
+// BRAND NAME: the title as text, so it follows the theme and the size around it
+export function BrandName({ className }: { className?: string }) {
+  return <span className={cn("font-brand uppercase tracking-wider", className)}>Corpus Wiki</span>;
+}
+
+// BRAND LOGO: mark and name side by side, as on the sign-in pages
 export function BrandLogo({ className }: { className?: string }) {
-  const art = "/brand/corpus-wiki/Corpus-Wiki-Horizontal-RGB";
   return (
-    <span role="img" aria-label="Corpus Wiki" className={cn("inline-flex h-8", className)}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- a small static SVG; next/image adds nothing */}
-      <img src={`${art}-Full-Colour.svg`} alt="" className="h-full w-auto dark:hidden" />
-      {/* eslint-disable-next-line @next/next/no-img-element -- as above */}
-      <img src={`${art}-White.svg`} alt="" className="hidden h-full w-auto dark:block" />
+    <span className={cn("inline-flex items-center gap-2.5", className)}>
+      <BrandMark className="size-7" />
+      <BrandName className="text-xl" />
     </span>
   );
 }
