@@ -14,10 +14,13 @@ import type { GraphNode } from "./types";
 export const TITLE_POSITIONS = ["top", "bottom", "left", "right"] as const;
 export type TitlePosition = (typeof TITLE_POSITIONS)[number];
 
+// Which circles gather the dots. Only one is on at a time. "off" draws no circles.
+export const GRAPH_GROUP_BY = ["domain", "entity", "off"] as const;
+export type GraphGroupBy = (typeof GRAPH_GROUP_BY)[number];
+
 export interface GraphDisplay {
   arrows: boolean;
-  // Circles around each domain and subdomain
-  domainCircles: boolean;
+  groupBy: GraphGroupBy;
   titlePosition: TitlePosition;
   textFadeThreshold: number;
   nodeSize: number;
@@ -49,7 +52,7 @@ export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
   groups: [],
   colorGroupDomains: [],
   colorThemeVersion: 1,
-  display: { arrows: false, domainCircles: true, titlePosition: "bottom", textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
+  display: { arrows: false, groupBy: "domain", titlePosition: "bottom", textFadeThreshold: 0, nodeSize: 1, linkThickness: 1 },
   forces: { center: 0.4, repel: 11, link: 0.8, linkDistance: 80, cluster: 0.5 },
 };
 
@@ -62,7 +65,7 @@ export interface SliderRule<K extends string> {
   step: number;
 }
 
-export const DISPLAY_SLIDERS: readonly SliderRule<Exclude<keyof GraphDisplay, "arrows" | "domainCircles" | "titlePosition">>[] = [
+export const DISPLAY_SLIDERS: readonly SliderRule<Exclude<keyof GraphDisplay, "arrows" | "groupBy" | "titlePosition">>[] = [
   { key: "textFadeThreshold", label: "Text fade threshold", min: -3, max: 3, step: 0.1 },
   { key: "nodeSize", label: "Node size", min: 0.1, max: 5, step: 0.1 },
   { key: "linkThickness", label: "Link thickness", min: 0.1, max: 5, step: 0.1 },
@@ -97,7 +100,15 @@ const settingsSchema = z.object({
   groups: z.array(z.object({ id: z.string(), query: z.string(), color: z.enum(colorTokens) })),
   colorGroupDomains: z.array(z.string()).default([]),
   colorThemeVersion: z.number().default(0),
-  display: z.object({ arrows: z.boolean(), domainCircles: z.boolean().default(DEFAULT_DISPLAY.domainCircles), titlePosition: z.enum(TITLE_POSITIONS).default(DEFAULT_DISPLAY.titlePosition), textFadeThreshold: z.number(), nodeSize: z.number(), linkThickness: z.number() }),
+  display: z.object({
+    arrows: z.boolean(),
+    domainCircles: z.boolean().optional(),
+    groupBy: z.enum(GRAPH_GROUP_BY).optional(),
+    titlePosition: z.enum(TITLE_POSITIONS).default(DEFAULT_DISPLAY.titlePosition),
+    textFadeThreshold: z.number(),
+    nodeSize: z.number(),
+    linkThickness: z.number(),
+  }),
   forces: z.object({ center: z.number(), repel: z.number(), link: z.number(), linkDistance: z.number(), cluster: z.number().default(DEFAULT_FORCES.cluster) }),
 });
 
@@ -106,6 +117,8 @@ export function parseSavedSettings(saved: unknown): GraphSettings {
   const parsed = settingsSchema.safeParse(saved);
   if (!parsed.success) return DEFAULT_GRAPH_SETTINGS;
   const settings = parsed.data;
+  const { domainCircles, groupBy: savedGroup, ...displayRest } = settings.display;
+  const display: GraphDisplay = { ...displayRest, groupBy: savedGroup ?? (domainCircles === false ? "off" : "domain") };
   if (settings.colorThemeVersion < 1) {
     settings.groups = themeAutomaticGroups(settings.groups);
     settings.colorThemeVersion = 1;
@@ -118,7 +131,7 @@ export function parseSavedSettings(saved: unknown): GraphSettings {
   if (previousDefaults.some((previous) => (Object.keys(previous) as (keyof GraphForces)[]).every((key) => settings.forces[key] === previous[key]))) {
     settings.forces = { ...DEFAULT_FORCES };
   }
-  return settings;
+  return { ...settings, display };
 }
 
 // Seed three domain levels once. Children precede their ancestors

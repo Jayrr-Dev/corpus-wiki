@@ -1,6 +1,11 @@
 import type { Force } from "d3-force";
+import { entityColor } from "./domainColors";
 import { nodeRadius, pullWeight, type SimLink, type SimNode } from "./physics";
+import type { GraphColor } from "./groups";
 import type { GraphNode } from "./types";
+
+// Which circle a dot sits in. Domain uses the topic tree. Entity uses one entity name.
+export type ClusterMode = "domain" | "entity";
 
 // =====================================================================
 // DOMAIN CLUSTERS: groups dots by the domain tree. A node sits in its
@@ -16,6 +21,8 @@ export interface ClusterGroup {
   path: string;
   label: string;
   depth: number;
+  // Path of the domain above this one ("" at the top). Kept whole so an entity name can contain "/".
+  parent: string;
   members: SimNode[];
   children: ClusterGroup[];
   // Dots in this domain and everything below it
@@ -28,11 +35,14 @@ export interface ClusterCircle {
   key: string;
   label: string;
   depth: number;
+  parent: string;
   isBranch: boolean;
   x: number;
   y: number;
   r: number;
   index: number;
+  // Set for entity circles so the ring matches the dots inside it
+  color?: GraphColor;
 }
 
 // SPACING in world units: room between dots and a leaf ring, and around child rings (with space for their names)
@@ -42,23 +52,38 @@ const BRANCH_PAD = 26;
 const RING_PER_DOT = 18;
 const RING_MIN = 80;
 
-// Segments of a node's primary domain path (empty when it has none)
-function primarySegments(node: Pick<GraphNode, "domainPaths">): string[] {
+// The entity a dot sits inside when several are named (same rule as the first domain path)
+export function primaryEntityName(node: Pick<GraphNode, "entityNames">): string | null {
+  return [...(node.entityNames ?? [])].sort((a, b) => a.localeCompare(b))[0] ?? null;
+}
+
+// Segments of the circle path. Entity mode is one flat name, not a tree.
+function clusterSegments(node: Pick<GraphNode, "domainPaths" | "entityNames">, mode: ClusterMode): string[] {
+  if (mode === "entity") {
+    const name = primaryEntityName(node);
+    return name ? [name] : [];
+  }
   return ([...node.domainPaths].sort()[0] ?? "").split("/").filter(Boolean);
 }
 
+// True when this dot belongs in the focused circle
+export function nodeInCluster(node: Pick<GraphNode, "domainPaths" | "entityNames">, key: string, mode: ClusterMode): boolean {
+  if (mode === "entity") return primaryEntityName(node) === key;
+  return node.domainPaths.some((path) => path === key || path.startsWith(`${key}/`));
+}
+
 // TREE: the domains the visible dots sit in, top-level domains first, children sorted by name
-export function clusterTree(nodes: readonly SimNode[]): ClusterGroup[] {
+export function clusterTree(nodes: readonly SimNode[], mode: ClusterMode = "domain"): ClusterGroup[] {
   const roots: ClusterGroup[] = [];
   const byPath = new Map<string, ClusterGroup>();
   for (const node of nodes) {
     let siblings = roots;
     let group: ClusterGroup | undefined;
-    primarySegments(node).forEach((segment, depth, segments) => {
+    clusterSegments(node, mode).forEach((segment, depth, segments) => {
       const path = segments.slice(0, depth + 1).join("/");
       group = byPath.get(path);
       if (!group) {
-        group = { path, label: segment, depth, members: [], children: [], size: 0 };
+        group = { path, label: segment, depth, parent: segments.slice(0, depth).join("/"), members: [], children: [], size: 0 };
         byPath.set(path, group);
         siblings.push(group);
       }
@@ -76,13 +101,13 @@ export function clusterTree(nodes: readonly SimNode[]): ClusterGroup[] {
 }
 
 // The deepest domain path each dot sits in (dots without a domain are left out)
-export function deepestPaths(nodes: readonly SimNode[]): Map<SimNode, string> {
+export function deepestPaths(nodes: readonly SimNode[], mode: ClusterMode = "domain"): Map<SimNode, string> {
   const paths = new Map<SimNode, string>();
   const walk = (group: ClusterGroup) => {
     for (const node of group.members) paths.set(node, group.path);
     group.children.forEach(walk);
   };
-  clusterTree(nodes).forEach(walk);
+  clusterTree(nodes, mode).forEach(walk);
   return paths;
 }
 
@@ -120,7 +145,7 @@ function spotsAround(center: { x: number; y: number }, groups: readonly ClusterG
 }
 
 // FORCE: each dot toward its deepest domain's spot. Strength 0 turns it off.
-export function forceClusters(strength: number): Force<SimNode, undefined> {
+export function forceClusters(strength: number, mode: ClusterMode = "domain"): Force<SimNode, undefined> {
   let targets = new Map<SimNode, { x: number; y: number }>();
   let memberGroups: SimNode[][] = [];
 
@@ -160,7 +185,7 @@ export function forceClusters(strength: number): Force<SimNode, undefined> {
       const spots = spotsAround(spot, group.children, group.members.length > 0 ? groupSize(group.members.length) : 0);
       for (const [child, childSpot] of spots) place(child, childSpot);
     };
-    for (const [group, spot] of spotsAround({ x: 0, y: 0 }, clusterTree(nodes), 0)) place(group, spot);
+    for (const [group, spot] of spotsAround({ x: 0, y: 0 }, clusterTree(nodes, mode), 0)) place(group, spot);
   };
   return force;
 }
@@ -173,11 +198,11 @@ function ringAround(middle: { x: number; y: number }, nodes: readonly SimNode[],
 }
 
 // CIRCLES for the current positions, outermost first so inner rings draw on top
-export function clusterCircles(nodes: readonly SimNode[], nodeSize: number): ClusterCircle[] {
-  return circlesForTree(clusterTree(nodes), nodeSize);
+export function clusterCircles(nodes: readonly SimNode[], nodeSize: number, mode: ClusterMode = "domain"): ClusterCircle[] {
+  return circlesForTree(clusterTree(nodes, mode), nodeSize, mode);
 }
 
-function circlesForTree(tree: readonly ClusterGroup[], nodeSize: number): ClusterCircle[] {
+function circlesForTree(tree: readonly ClusterGroup[], nodeSize: number, mode: ClusterMode): ClusterCircle[] {
   // Builds a group's ring from its children's, and returns it with every ring inside it
   const build = (group: ClusterGroup, index: number): { circle: ClusterCircle; all: ClusterCircle[]; dots: SimNode[] } => {
     const inner = group.children.map((child) => build(child, index));
@@ -214,7 +239,10 @@ function circlesForTree(tree: readonly ClusterGroup[], nodeSize: number): Cluste
         r = fitted.r + pad;
       }
     }
-    const circle = { key: group.path, label: group.label, depth: group.depth, isBranch, ...middle, r, index };
+    const circle = {
+      key: group.path, label: group.label, depth: group.depth, parent: group.parent, isBranch, ...middle, r, index,
+      color: mode === "entity" ? entityColor(group.label) : undefined,
+    };
     return { circle, all: [circle, ...inner.flatMap((child) => child.all)], dots };
   };
   return tree.flatMap((group, index) => build(group, index).all);
@@ -222,14 +250,14 @@ function circlesForTree(tree: readonly ClusterGroup[], nodeSize: number): Cluste
 
 // Move whole root groups apart using their actual drawn bounds. Moving every
 // member equally preserves the compact arrangement inside each root.
-export function separateRootDomains(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = []): void {
-  createDomainSeparator(nodes, nodeSize, links)();
+export function separateRootDomains(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = [], mode: ClusterMode = "domain"): void {
+  createDomainSeparator(nodes, nodeSize, links, mode)();
 }
 
 // Membership and link affinity stay fixed for a simulation. Only bounds and
 // pinned state change on a tick; avoid scanning every node for every domain.
-export function createDomainSeparator(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = []): () => void {
-  const tree = clusterTree(nodes);
+export function createDomainSeparator(nodes: SimNode[], nodeSize: number, links: readonly SimLink[] = [], mode: ClusterMode = "domain"): () => void {
+  const tree = clusterTree(nodes, mode);
   const membersByPath = new Map<string, SimNode[]>();
   const directByPath = new Map<string, ClusterGroup>();
   const rootByNode = new Map<string, string>();
@@ -274,16 +302,16 @@ export function createDomainSeparator(nodes: SimNode[], nodeSize: number, links:
     }
   // Separate children first, then recompute their parents' expanded bounds.
     for (let level = depth; level >= 0; level--) {
-      separateDomainsAtDepth(tree, nodeSize, level, membersByPath, directByPath, connectionWeight);
+      separateDomainsAtDepth(tree, nodeSize, level, membersByPath, directByPath, connectionWeight, mode);
     }
   };
 }
 
-function separateDomainsAtDepth(tree: readonly ClusterGroup[], nodeSize: number, depth: number, membersByPath: ReadonlyMap<string, SimNode[]>, directByPath: ReadonlyMap<string, ClusterGroup>, connectionWeight: ReadonlyMap<string, number>): void {
-  const roots = circlesForTree(tree, nodeSize).filter((circle) => circle.depth === depth);
+function separateDomainsAtDepth(tree: readonly ClusterGroup[], nodeSize: number, depth: number, membersByPath: ReadonlyMap<string, SimNode[]>, directByPath: ReadonlyMap<string, ClusterGroup>, connectionWeight: ReadonlyMap<string, number>, mode: ClusterMode): void {
+  const roots = circlesForTree(tree, nodeSize, mode).filter((circle) => circle.depth === depth);
   const groups = roots.map((circle) => ({
     circle,
-    parentPath: circle.key.split("/").slice(0, -1).join("/"),
+    parentPath: circle.parent,
     nodes: membersByPath.get(circle.key)!,
   }));
   // Parent-level claims are not members of any child. Reserve their actual
@@ -294,7 +322,7 @@ function separateDomainsAtDepth(tree: readonly ClusterGroup[], nodeSize: number,
     const parent = directByPath.get(parentPath)!;
     const members = parent.members;
     if (!members.length) continue;
-    const circle = circlesForTree([parent], nodeSize)[0]!;
+    const circle = circlesForTree([parent], nodeSize, mode)[0]!;
     groups.push({ circle, parentPath, nodes: members });
   }
   const pairKey = (a: string, b: string) => JSON.stringify([a, b].sort());
@@ -343,10 +371,10 @@ function separateDomainsAtDepth(tree: readonly ClusterGroup[], nodeSize: number,
   }
 }
 
-export function forceRootSeparation(nodeSize: number, links: readonly SimLink[] = []): Force<SimNode, undefined> {
+export function forceRootSeparation(nodeSize: number, links: readonly SimLink[] = [], mode: ClusterMode = "domain"): Force<SimNode, undefined> {
   let separate = () => {};
   const force = () => separate();
-  force.initialize = (value: SimNode[]) => { separate = createDomainSeparator(value, nodeSize, links); };
+  force.initialize = (value: SimNode[]) => { separate = createDomainSeparator(value, nodeSize, links, mode); };
   return force;
 }
 

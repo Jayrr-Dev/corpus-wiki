@@ -9,7 +9,7 @@ import {
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from "d3-force";
-import { deepestPaths, forceClusters, forceRootSeparation } from "./clusters";
+import { deepestPaths, forceClusters, forceRootSeparation, type ClusterMode } from "./clusters";
 import type { GraphForces } from "./settings";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -62,18 +62,18 @@ export function pullWeight(node: Pick<GraphNode, "degree">): number {
 }
 
 // Applies slider values to a simulation's forces (no restart; the caller decides)
-export function applyForces(simulation: GraphSimulation, forces: GraphForces, nodeSize: number): void {
+export function applyForces(simulation: GraphSimulation, forces: GraphForces, nodeSize: number, mode: ClusterMode = "domain"): void {
   simulation
     .force("x", forceX<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
     .force("y", forceY<SimNode>(0).strength((node) => forces.center * CENTER_SCALE * pullWeight(node)))
     .force("charge", forceManyBody<SimNode>().strength((node) => -forces.repel * REPEL_SCALE * (1 + HUB_REPEL * Math.sqrt(node.degree))).distanceMax(REPEL_REACH))
     .force("collide", forceCollide<SimNode>((node) => nodeRadius(node, nodeSize) + 2))
-    .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE))
-    .force("root-separation", forces.cluster > 0 ? forceRootSeparation(nodeSize, simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")?.links() ?? []) : null);
+    .force("cluster", forceClusters(forces.cluster * CLUSTER_SCALE, mode))
+    .force("root-separation", forces.cluster > 0 ? forceRootSeparation(nodeSize, simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")?.links() ?? [], mode) : null);
   const link = simulation.force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link");
   const strength = forces.link * LINK_SCALE;
-  // Links between different domain groups slacken as the domain pull rises, so groups can sit apart
-  const paths = deepestPaths(simulation.nodes());
+  // Links between different groups slacken as the pull rises, so groups can sit apart
+  const paths = deepestPaths(simulation.nodes(), mode);
   const crossing = (candidate: SimLink) => {
     const [from, to] = [candidate.source, candidate.target].map((end) => (typeof end === "object" ? paths.get(end) : undefined));
     return from !== undefined && to !== undefined && from !== to;
@@ -110,10 +110,10 @@ export function toSimGraph(data: GraphData, previous: ReadonlyMap<string, SimNod
 }
 
 // Creates a stopped simulation over these nodes and links (the caller restarts it)
-export function createSimulation(nodes: SimNode[], links: SimLink[], forces: GraphForces, nodeSize: number): GraphSimulation {
+export function createSimulation(nodes: SimNode[], links: SimLink[], forces: GraphForces, nodeSize: number, mode: ClusterMode = "domain"): GraphSimulation {
   const simulation = forceSimulation<SimNode, SimLink>(nodes)
     .force("link", forceLink<SimNode, SimLink>(links).id((node) => node.id))
     .stop();
-  applyForces(simulation, forces, nodeSize);
+  applyForces(simulation, forces, nodeSize, mode);
   return simulation;
 }

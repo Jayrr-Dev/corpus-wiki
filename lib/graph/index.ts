@@ -7,8 +7,8 @@
 
 export type * from "./types";
 export { buildGraph, countDegrees, shortLabel } from "./build";
-export { circleExtents, clusterCircles, clusterTree, deepestPaths, type ClusterCircle, type ClusterGroup } from "./clusters";
-export { applyFilters, createdBy, domainPathsForScope, keepNodes, type GraphFilters } from "./filters";
+export { circleExtents, clusterCircles, clusterTree, deepestPaths, nodeInCluster, primaryEntityName, type ClusterCircle, type ClusterGroup, type ClusterMode } from "./clusters";
+export { applyFilters, createdBy, domainPathsForScope, graphForGrouping, keepNodes, type GraphFilters } from "./filters";
 export {
   GRAPH_COLORS,
   GROUP_FIELDS,
@@ -30,8 +30,10 @@ export {
   FORCE_SLIDERS,
   parseSavedSettings,
   TITLE_POSITIONS,
+  GRAPH_GROUP_BY,
   type GraphDisplay,
   type GraphForces,
+  type GraphGroupBy,
   type GraphSettings,
   type SliderRule,
   type TitlePosition,

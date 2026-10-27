@@ -3,7 +3,8 @@ import { buildGraph, shortLabel } from "./build";
 import { hierarchyOpacity, labelOpacity, pinchStep, REVEAL_AT, revealOpacity, toWorld, zoomAt, zoomBy } from "./camera";
 import { clusterCircles, clusterTree, forceClusters, separateRootDomains } from "./clusters";
 import type { SimLink, SimNode } from "./physics";
-import { applyFilters, createdBy } from "./filters";
+import { entityColor } from "./domainColors";
+import { applyFilters, createdBy, graphForGrouping } from "./filters";
 import { groupColorLookup, groupCounts, groupSuggestions, joinGroupQuery, parseGroupQuery, splitGroupQuery } from "./groups";
 import { neighborhood } from "./neighborhood";
 import type { GraphRows } from "./rows";
@@ -310,6 +311,13 @@ describe("saved settings", () => {
     const older = { ...DEFAULT_GRAPH_SETTINGS, filters: { search, showEntities: true, showPages, showOrphans } };
     expect(parseSavedSettings(older).filters).toEqual({ ...DEFAULT_GRAPH_SETTINGS.filters, showEntities: true });
   });
+
+  it("reads the old domain circles switch as the group", () => {
+    const display = { ...DEFAULT_GRAPH_SETTINGS.display };
+    delete (display as { groupBy?: string }).groupBy;
+    expect(parseSavedSettings({ ...DEFAULT_GRAPH_SETTINGS, display: { ...display, domainCircles: false } }).display.groupBy).toBe("off");
+    expect(parseSavedSettings({ ...DEFAULT_GRAPH_SETTINGS, display: { ...display, domainCircles: true } }).display.groupBy).toBe("domain");
+  });
 });
 
 describe("claims sharing a topic label", () => {
@@ -331,8 +339,18 @@ describe("claims sharing a topic label", () => {
   });
 });
 
+describe("entity groups", () => {
+  it("drops the entity dot and the about line so units sit inside the circle", () => {
+    const grouped = graphForGrouping(graph, "entity");
+    expect(grouped.nodes.map((node) => node.id)).not.toContain("e1");
+    expect(grouped.links.some((link) => link.kind === "about")).toBe(false);
+    expect(grouped.links.some((link) => link.kind === "depends_on")).toBe(true);
+    expect(graphForGrouping(graph, "domain")).toBe(graph);
+  });
+});
+
 describe("domain clusters", () => {
-  const dot = (id: string, domainPaths: string[], x = 0, y = 0): SimNode => ({ ...({} as GraphNode), id, domainPaths, degree: 0, x, y });
+  const dot = (id: string, domainPaths: string[], x = 0, y = 0, entityNames: string[] = []): SimNode => ({ ...({} as GraphNode), id, domainPaths, entityNames, degree: 0, x, y });
   it("gathers sparse members around their own group even far from the layout target", () => {
     const nodes = [dot("a", ["Co/Safety"], 900), dot("b", ["Co/Safety"], 1100)];
     const force = forceClusters(0.5);
@@ -345,6 +363,13 @@ describe("domain clusters", () => {
     disabled.initialize!(resting, Math.random);
     disabled(1);
     expect(resting.every((node) => !node.vx && !node.vy)).toBe(true);
+  });
+  it("draws one colored circle per entity", () => {
+    const nodes = [dot("a", [], 0, 0, ["Acme"]), dot("b", [], 12, 0, ["Acme"]), dot("c", [], 80, 40, ["Other"])];
+    const circles = clusterCircles(nodes, 1, "entity");
+    expect(circles.map((circle) => circle.label).sort()).toEqual(["Acme", "Other"]);
+    expect(circles.find((circle) => circle.label === "Acme")!.color).toBe(entityColor("Acme"));
+    expect(circles.every((circle) => circle.color)).toBe(true);
   });
   it("fits an uneven cluster tightly while containing every dot", () => {
     const nodes = [dot("a", ["Co"], 0), dot("b", ["Co"], 1), dot("c", ["Co"], 2), dot("outlier", ["Co"], 200)];

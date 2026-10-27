@@ -71,6 +71,15 @@ export function inDomainScope(data: GraphData, scope: GraphFilters["domainScope"
   return { ...scoped, nodes: scoped.nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, scope) })) };
 }
 
+// ENTITY GROUP: the circle is the entity. Drop the entity dot and the "about" line
+// so knowledge units sit inside the circle instead of connecting to it.
+export function graphForGrouping(data: GraphData, groupBy: "domain" | "entity" | "off"): GraphData {
+  if (groupBy !== "entity") return data;
+  const nodes = data.nodes.filter((node) => node.kind !== "entity");
+  const ids = new Set(nodes.map((node) => node.id));
+  return { nodes, links: data.links.filter((link) => link.kind !== "about" && ids.has(link.source) && ids.has(link.target)) };
+}
+
 // APPLY: the visible graph for these filters
 export function applyFilters(data: GraphData, filters: GraphFilters): GraphData {
   const shownKinds = new Set<GraphNodeKind>();

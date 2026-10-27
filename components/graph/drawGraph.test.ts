@@ -18,8 +18,8 @@ it("keeps domain text at readable screen sizes even below the canvas font limit"
   }) as unknown as CanvasRenderingContext2D;
   drawGraph({
     ctx,width:800,height:600,pixelRatio:2,camera:{x:400,y:300,k:0.000001},overviewZoom:0.000001,
-    nodes:[],links:[],circles:[{key:"root",label:"Domain",depth:0,isBranch:true,x:0,y:0,r:100,index:0}],
-    display:DEFAULT_GRAPH_SETTINGS.display,
+    nodes:[],links:[],circles:[{key:"root",label:"Domain",depth:0,parent:"",isBranch:true,x:0,y:0,r:100,index:0}],
+    display:DEFAULT_GRAPH_SETTINGS.display, groupBy:"domain",
     palette:{background:"#111",border:"#333",text:"#fff",muted:"#aaa",faint:"#666",fontFamily:"sans-serif",token:()=>"#aaf"},
     colorOf:()=>null,hoveredId:null,focusIds:new Set(),hoverLabelOnly:false,
   });
@@ -52,8 +52,8 @@ it("paints nested domain circles progressively fainter without fading their name
     ctx, width: 800, height: 800, pixelRatio: 1,
     camera: { x: 0, y: 0, k: 1 }, overviewZoom: 1,
     nodes: [], links: [],
-    circles: [0, 1, 2, 3].map((depth) => ({ key: `domain-${depth}`, label: `Domain ${depth}`, depth, isBranch: true, x: 100 + depth * 150, y: 300, r: 30, index: 0 })),
-    display: DEFAULT_GRAPH_SETTINGS.display,
+    circles: [0, 1, 2, 3].map((depth) => ({ key: `domain-${depth}`, label: `Domain ${depth}`, depth, parent: "", isBranch: true, x: 100 + depth * 150, y: 300, r: 30, index: 0 })),
+    display: DEFAULT_GRAPH_SETTINGS.display, groupBy: "domain" as const,
     palette: { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" },
     colorOf: () => null, hoveredId: null, focusIds: new Set(), hoverLabelOnly: false,
   };

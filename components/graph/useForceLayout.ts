@@ -3,7 +3,7 @@
 import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import type { GraphData, GraphForces } from "@/lib/graph";
 import { applyForces, createSimulation, type GraphSimulation, type SimLink, type SimNode, toSimGraph } from "@/lib/graph/physics";
-import { createDomainSeparator } from "@/lib/graph/clusters";
+import { createDomainSeparator, type ClusterMode } from "@/lib/graph/clusters";
 
 // =====================================================================
 // FORCE LAYOUT: runs the d3 simulation for the visible graph. A new
@@ -24,28 +24,30 @@ const FIRST_ALPHA = 1;
 const NUDGE_ALPHA = 0.3;
 
 // Runs the simulation and returns it as a ref; calls `onTick.current` each step so the canvas can redraw
-export function useForceLayout(graph: GraphData, forces: GraphForces, nodeSize: number, onTick: RefObject<() => void>): RefObject<ForceLayout> {
+export function useForceLayout(graph: GraphData, forces: GraphForces, nodeSize: number, onTick: RefObject<() => void>, mode: ClusterMode = "domain"): RefObject<ForceLayout> {
   const layout = useRef<ForceLayout>({ nodes: [], links: [], simulation: null, revision: 0 });
-  const settings = useRef({ forces, nodeSize });
+  const settings = useRef({ forces, nodeSize, mode });
   // Latest slider values for the rebuild below (synced after render, read in effects)
   useLayoutEffect(() => {
-    settings.current = { forces, nodeSize };
-  }, [forces, nodeSize]);
+    settings.current = { forces, nodeSize, mode };
+  }, [forces, nodeSize, mode]);
 
   // REBUILD on a new visible graph, carrying positions over
   useEffect(() => {
     const previous = new Map(layout.current.nodes.map((node) => [node.id, node]));
     const { nodes, links } = toSimGraph(graph, previous);
-    const simulation = createSimulation(nodes, links, settings.current.forces, settings.current.nodeSize);
+    const simulation = createSimulation(nodes, links, settings.current.forces, settings.current.nodeSize, settings.current.mode);
     let separationSize = settings.current.nodeSize;
-    let separate = createDomainSeparator(nodes, separationSize, links);
+    let separationMode = settings.current.mode;
+    let separate = createDomainSeparator(nodes, separationSize, links, separationMode);
     simulation.on("tick", () => {
       // d3 integrates velocities after its forces. Resolve ring collisions after
       // that movement as well, so the rendered (and final) frame stays separated.
       if (settings.current.forces.cluster > 0) {
-        if (separationSize !== settings.current.nodeSize) {
+        if (separationSize !== settings.current.nodeSize || separationMode !== settings.current.mode) {
           separationSize = settings.current.nodeSize;
-          separate = createDomainSeparator(nodes, separationSize, links);
+          separationMode = settings.current.mode;
+          separate = createDomainSeparator(nodes, separationSize, links, separationMode);
         }
         separate();
       }
@@ -56,18 +58,18 @@ export function useForceLayout(graph: GraphData, forces: GraphForces, nodeSize: 
     layout.current = { nodes, links, simulation, revision: layout.current.revision + 1 };
     onTick.current();
     return () => void simulation.stop();
-  }, [graph, onTick]);
+  }, [graph, mode, onTick]);
 
   // RE-HEAT on a force or size change (skipped when the rebuild above already used these values)
-  const applied = useRef<{ forces: GraphForces; nodeSize: number } | null>(null);
+  const applied = useRef<{ forces: GraphForces; nodeSize: number; mode: ClusterMode } | null>(null);
   useEffect(() => {
     const { simulation } = layout.current;
     const isFirstApply = applied.current === null;
-    applied.current = { forces, nodeSize };
+    applied.current = { forces, nodeSize, mode };
     if (!simulation || isFirstApply) return;
-    applyForces(simulation, forces, nodeSize);
+    applyForces(simulation, forces, nodeSize, mode);
     simulation.alpha(NUDGE_ALPHA).restart();
-  }, [forces, nodeSize]);
+  }, [forces, nodeSize, mode]);
 
   return layout;
 }
