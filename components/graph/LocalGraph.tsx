@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { applyFilters, neighborhood, useGraphData, withRelated, type GraphNode } from "@/lib/graph";
+import { applyFilters, neighborhood, withRelated, type GraphNode } from "@/lib/graph";
+import { useGraphData } from "./useGraphData";
 import { NodePreviewDialog } from "./UnitPreviewDialog";
 import { GraphCanvas } from "./GraphCanvas";
 import { SliderRow } from "./panel/rows";
