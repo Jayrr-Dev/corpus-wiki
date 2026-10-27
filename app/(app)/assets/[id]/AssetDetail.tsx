@@ -14,8 +14,11 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import { ASSET_TYPE_LABEL, ASSET_TYPES, type AssetEditableField, type AssetType } from "@/lib/assets/tags";
-import { useAsset, useAssets, usePassages, useSource, usePage } from "@/lib/queries";
-import { useActionsForPassages, useUnitSummaries } from "@/lib/queries/screens";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys, useAsset, useSource, usePage } from "@/lib/queries";
+import { readPages } from "@/lib/queries/batched";
+import { useActionsForPassages, useRowsByIds, useUnitSummaries } from "@/lib/queries/screens";
+import { getBrowserSupabase } from "@/lib/supabase/client";
 import { useAssetUsage } from "@/lib/queries/assetUsage";
 import { useRealtimeInvalidation } from "@/lib/realtime";
 import { describeAssets, editAsset, releaseAssetEdits } from "@/lib/server-actions/assets";
@@ -94,8 +97,9 @@ function AssetClaims({ asset }: { asset: Asset }) {
 
 // WHAT WAS READ FROM IT: the passages the vision or speech model wrote, linking to their place in the source
 function AssetPassages({ asset }: { asset: Asset }) {
-  const passages = usePassages({ filters: { source_id: asset.source_id ?? undefined } });
-  const list = (passages.data ?? []).filter((passage) => asset.passage_ids.includes(passage.id));
+  // Only the passages read from this asset, not every passage of its source
+  const passages = useRowsByIds("passages", asset.passage_ids);
+  const list = useMemo(() => (passages.data ?? []).filter((passage) => passage.source_id === asset.source_id).sort((a, b) => a.position - b.position), [passages.data, asset.source_id]);
   return (
     <Section title="Read from the asset">
       <QueryState query={passages}>
@@ -201,7 +205,7 @@ function AssetTypeSelect({ asset }: { asset: Asset }) {
 // server folds a new one into a known tag when it is the same word in another form)
 function TagEditor({ asset }: { asset: Asset }) {
   const edit = useServerAction(editAsset, { progress: false });
-  const all = useAssets();
+  const all = useKnownTags();
   const [draft, setDraft] = useState("");
   const known = useMemo(() => [...new Set((all.data ?? []).flatMap((other) => other.tags))].filter((tag) => !asset.tags.includes(tag)).sort(), [all.data, asset.tags]);
   const save = (tags: string[]) => edit.run(asset.id, { tags });
@@ -234,6 +238,14 @@ function TagEditor({ asset }: { asset: Asset }) {
       <ErrorNote error={edit.error} />
     </div>
   );
+}
+
+// Every asset's tags (only that column), to suggest the tags already in use
+function useKnownTags() {
+  return useQuery({
+    queryKey: [...queryKeys.table("assets"), "tags"],
+    queryFn: () => readPages((from, to) => getBrowserSupabase().from("assets").select("tags").order("id").range(from, to)),
+  });
 }
 
 // WHAT A PERSON CHANGED: those fields stay through "Describe again" until handed back to the AI
