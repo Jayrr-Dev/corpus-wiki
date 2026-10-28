@@ -16,19 +16,20 @@ the graph looks the same as before for the existing settings; merged to main.
 | Lane | Task | Needs | Status |
 |---|---|---|---|
 | contract | C1 `lib/graph/nodeTypes.ts` and `lib/graph/groupings.ts`: shapes, the four types, the three groupings, trait helpers; also cleared main's 10 graph type errors | | merged |
-| layout | L0 Fix `clusters.performance.test.ts` (red on main before C1: `packDomains` re-reads `domainPaths`) | C1 | planned |
-| layout | L1 `clusters.ts`, `physics.ts`, `coalesce.ts` ask traits, not names; no behavior change | C1 | planned |
-| layout | L2 Per-grouping rules move into `GROUPINGS` entries; any hub pins to its circle center | L1 | planned |
-| data | D1 `filters.ts`, `build.ts`, `related.ts`, `recentUnits.ts` ask traits, not names; no behavior change | C1 | planned |
+| layout | L0 Fix `clusters.performance.test.ts` (red on main before C1: `packDomains` re-reads `domainPaths`) | C1 | merged 51f6cbe |
+| layout | L1 `clusters.ts`, `physics.ts`, `coalesce.ts` ask traits, not names; no behavior change | C1 | merged 51f6cbe |
+| layout | L2 Per-grouping rules move into `GROUPINGS` entries; any hub pins to its circle center | L1 | merged 51f6cbe |
+| data | D1 `filters.ts`, `build.ts`, `related.ts`, `recentUnits.ts` ask traits, not names; no behavior change | C1 | merged 2831458 |
 | data | D2 Settings: `shown` map replaces `showUnits`/`showEntities`/`showDomains`/`showPages`; old saves migrate | D1, P1 | planned |
 | data | D3 `graphForGrouping` keeps the active grouping's hub nodes (stops hiding pages and entities) | D1, L2 | planned |
+| data | D4 Place entity nodes by their knowledge: in Domain grouping, the domain most of their units sit in; in Pages grouping, the article and section that cite most of their units. Generalize `domainsInsideEntityGroups` / `domainsInsidePageGroups` to every `isPlacedByLinks` node, using the `evidence` graph so it works with units hidden | D3 | planned |
 | canvas | V1 `drawGraph.ts`, `GraphCanvas.tsx`: color, shape and size from the registry; per-grouping colors in `groupColors.ts`; `clusterModeOf` removed | C1 | merged c9c87a6 |
-| panel | P1 Nodes and Group switches built from the registries; `components/graph/nodeTypes.tsx` holds previews per type | C1 | planned |
-| guard | G1 Lint rule against literal kind checks; every-type-by-every-grouping test; made-up type test | L2, D2, D3, V1, P1 | planned |
+| panel | P1 Nodes and Group switches built from the registries; `components/graph/nodeTypes.tsx` holds previews per type | C1 | merged 9e3ec94 |
+| guard | G1 Lint rule against literal kind checks; every-type-by-every-grouping test; made-up type test | L2, D2, D3, D4, V1, P1 | planned |
 | stakeholder | S1 `stakeholder` node type from `entities.is_stakeholder` (rows, builder, preview) | G1 | planned |
 | stakeholder | S2 Stakeholder grouping entry | S1 | planned |
 
-Critical path: C1, L1, L2, D3, G1, S1, S2. After C1, the layout, data, canvas
+Critical path: C1, L1, L2, D3, D4, G1, S1, S2. D4 was added after a browser check: with only Entities shown, entities sat in no circle (Domain), vanished (Entities) or all fell into No article (Pages). After C1, the layout, data, canvas
 and panel lanes start at once.
 
 Cut in review: a third "layer" role (no type needs it yet); groupings made
