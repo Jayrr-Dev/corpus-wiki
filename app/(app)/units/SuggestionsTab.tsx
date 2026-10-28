@@ -55,8 +55,6 @@ import { useAllUnitSummaries } from "./unitSummaries";
 import { unusedUnits } from "./UnusedUnits";
 import { useUnitFilters } from "./useUnitFilters";
 
-// Must match MAX_GROUPS_PER_RUN in lib/suggestions/run.ts
-const MAX_AI_CALLS = 10;
 const OPEN = new Set(["pending", "accepting", "failed", "stale"]);
 const REFRESH = ["article_suggestions", "suggestion_runs"] as const;
 
@@ -622,7 +620,7 @@ export function SuggestionsTab() {
         <Tooltip
           content={
             countsReady
-              ? `${formatCount(free)} unused unit(s) to group. This run suggests the ${MAX_AI_CALLS} groups that cover the most claims.`
+              ? `${formatCount(free)} unused unit(s) to group. Likely merges are suggested first, then whatever is left.`
               : "Counting unused knowledge…"
           }
         >

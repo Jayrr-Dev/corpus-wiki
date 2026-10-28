@@ -395,6 +395,7 @@ export function GraphView({
         target={openedCircle}
         pages={data.nodes}
         units={data.nodes}
+        poolGraph={visible}
         onClose={() => setOpenedCircle(null)}
       />
       <Dialog

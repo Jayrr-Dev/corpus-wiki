@@ -13,7 +13,16 @@ import { cosine } from "@/lib/knowledge/similarity";
 export type GroupUnit = { id: string; revisionId: string; vector: readonly number[]; domainIds: string[]; rootDomainId: string | null; entityIds: string[]; sourceIds: string[] };
 export type GroupLink = { from: string; to: string; type: string };
 export type GroupSignals = { cohesion: number; links: number; sharedEntityIds: string[]; sharedDomainIds: string[]; sharedSources: number };
-export type UnitGroup = { key: string; unitIds: string[]; revisionIds: string[]; signals: GroupSignals };
+export type GroupLane = "merge" | "leftover";
+export type UnitGroup = {
+  key: string;
+  unitIds: string[];
+  revisionIds: string[];
+  signals: GroupSignals;
+  lane?: GroupLane;
+  pageId?: string;
+  strength?: number;
+};
 export type Grouping = { groups: UnitGroup[]; ungrouped: string[] };
 
 export const GROUPING = {
@@ -154,6 +163,120 @@ export function groupUnits(units: readonly GroupUnit[], links: readonly GroupLin
   }
   result.groups.sort((a, b) => b.unitIds.length - a.unitIds.length || a.key.localeCompare(b.key));
   return result;
+}
+
+// A picture of one article, built once per run. citedIds are claims it already
+// cites. domainIds are domains that mostly belong to this article, not a wide
+// domain shared across the workspace. vector is the mean of a sample of its claims.
+export type ArticleHome = {
+  pageId: string;
+  vector: readonly number[];
+  citedIds: readonly string[];
+  domainIds: readonly string[];
+};
+
+const TEXT_CLEAR = GROUPING.joinAt;
+const TEXT_MILD = 0.55;
+const TEXT_WITH_DOMAIN = 0.6;
+const SCORE_MARGIN = 0.05;
+const LINKS_ALONE = 2;
+const LINK_WEIGHT = 0.08;
+const LINK_WEIGHT_CAP = 0.24;
+const DOMAIN_WEIGHT = 0.06;
+const MERGE_MIN = 2;
+
+export type MergeSplit = { groups: UnitGroup[]; rest: GroupUnit[] };
+
+// Neighbors joined by a link that still means "same subject".
+function neighborIndex(links: readonly GroupLink[]): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const link of links) {
+    if (link.from === link.to || !linkCounts(link.type)) continue;
+    map.set(link.from, [...(map.get(link.from) ?? []), link.to]);
+    map.set(link.to, [...(map.get(link.to) ?? []), link.from]);
+  }
+  return map;
+}
+
+function linksInto(unitId: string, cited: ReadonlySet<string>, neighbors: ReadonlyMap<string, string[]>): number {
+  let count = 0;
+  for (const other of neighbors.get(unitId) ?? []) if (cited.has(other)) count += 1;
+  return count;
+}
+
+// Pull claims that already point at one article. Everyone else is left for grouping.
+export function likelyMerges(
+  units: readonly GroupUnit[],
+  links: readonly GroupLink[],
+  homes: readonly ArticleHome[],
+): MergeSplit {
+  const neighbors = neighborIndex(links);
+  const citedByPage = new Map(homes.map((home) => [home.pageId, new Set(home.citedIds)]));
+  const placed = new Map<string, { home: ArticleHome; score: number; text: number; links: number }>();
+  for (const unit of units) {
+    let best: { home: ArticleHome; score: number; text: number; links: number } | null = null;
+    let second = -Infinity;
+    for (const home of homes) {
+      const text = cosine(unit.vector, home.vector);
+      const linked = linksInto(unit.id, citedByPage.get(home.pageId) ?? new Set(), neighbors);
+      const domain = home.domainIds.some((id) => unit.domainIds.includes(id));
+      const clear = text >= TEXT_CLEAR
+        || linked >= LINKS_ALONE
+        || (linked >= 1 && text >= TEXT_MILD)
+        || (domain && text >= TEXT_WITH_DOMAIN);
+      const score = text + Math.min(LINK_WEIGHT_CAP, LINK_WEIGHT * linked) + (domain ? DOMAIN_WEIGHT : 0);
+      if (!clear) {
+        if (score > second) second = score;
+        continue;
+      }
+      if (!best || score > best.score) {
+        if (best && best.score > second) second = best.score;
+        best = { home, score, text, links: linked };
+      } else if (score > second) second = score;
+    }
+    if (!best || second >= best.score - SCORE_MARGIN) continue;
+    placed.set(unit.id, best);
+  }
+  const byPage = new Map<string, { home: ArticleHome; members: { unit: GroupUnit; score: number; text: number; links: number }[] }>();
+  for (const unit of units) {
+    const hit = placed.get(unit.id);
+    if (!hit) continue;
+    const bucket = byPage.get(hit.home.pageId) ?? { home: hit.home, members: [] };
+    bucket.members.push({ unit, score: hit.score, text: hit.text, links: hit.links });
+    byPage.set(hit.home.pageId, bucket);
+  }
+  const groups: UnitGroup[] = [];
+  const grouped = new Set<string>();
+  for (const bucket of byPage.values()) {
+    const members = [...bucket.members].sort((a, b) => b.score - a.score || a.unit.id.localeCompare(b.unit.id));
+    for (let index = 0; index < members.length; index += GROUPING.maxSize) {
+      const slice = members.slice(index, index + GROUPING.maxSize);
+      if (slice.length < MERGE_MIN) continue;
+      const list = slice.map((member) => member.unit);
+      const strength = slice.reduce((sum, member) => sum + member.score, 0) / slice.length;
+      const text = slice.reduce((sum, member) => sum + member.text, 0) / slice.length;
+      const homeDomains = new Set(bucket.home.domainIds);
+      groups.push({
+        key: groupKey(list),
+        unitIds: list.map((unit) => unit.id),
+        revisionIds: list.map((unit) => unit.revisionId),
+        lane: "merge",
+        pageId: bucket.home.pageId,
+        strength,
+        signals: {
+          cohesion: Math.round(text * 1000) / 1000,
+          links: slice.reduce((sum, member) => sum + member.links, 0),
+          sharedEntityIds: common(list.map((unit) => unit.entityIds)),
+          sharedDomainIds: common(list.map((unit) => unit.domainIds.filter((id) => homeDomains.has(id)))),
+          sharedSources: common(list.map((unit) => unit.sourceIds)).length,
+        },
+      });
+      for (const unit of list) grouped.add(unit.id);
+    }
+  }
+  groups.sort((a, b) => (b.strength ?? 0) - (a.strength ?? 0) || (a.pageId ?? "").localeCompare(b.pageId ?? "") || a.key.localeCompare(b.key));
+  const rest = units.filter((unit) => !grouped.has(unit.id)).sort((a, b) => a.id.localeCompare(b.id));
+  return { groups, rest };
 }
 
 // A group someone already dismissed comes back only when it has changed: at least

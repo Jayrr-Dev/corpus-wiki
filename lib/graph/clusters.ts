@@ -119,27 +119,66 @@ function isReservedCircleLabel(label: string): boolean {
 }
 
 // What a second click on an already selected page-mode circle opens.
+export type CirclePool = "no-article" | "orphans" | "linked";
 export type CircleOpenTarget =
   | { kind: "page"; title: string }
   | { kind: "section"; page: string; section: string }
-  | { kind: "recommendation"; title: string };
+  | { kind: "recommendation"; title: string }
+  | { kind: "pool"; pool: CirclePool };
 
 // Page circles open the article, section circles open that section, and a suggestion
-// circle inside No article opens the recommendation. The No article circle itself does not.
+// circle inside No article opens the recommendation. No article, Orphans, and Linked
+// open a dialog that can suggest merges or new articles. External does not.
 export function circleOpenTarget(
   circle: { label: string; parent: string },
   mode: ClusterMode,
 ): CircleOpenTarget | null {
   if (mode !== "page") return null;
   if (circle.parent === "") {
-    if (circle.label === NO_ARTICLE_LABEL) return null;
+    if (circle.label === NO_ARTICLE_LABEL)
+      return { kind: "pool", pool: "no-article" };
     return { kind: "page", title: circle.label };
   }
   if (circle.parent === NO_ARTICLE_LABEL) {
+    if (circle.label === ORPHANS_LABEL)
+      return { kind: "pool", pool: "orphans" };
+    if (circle.label === LINKED_LABEL) return { kind: "pool", pool: "linked" };
     if (isReservedCircleLabel(circle.label)) return null;
     return { kind: "recommendation", title: circle.label };
   }
   return { kind: "section", page: circle.parent, section: circle.label };
+}
+
+function poolCircleKey(pool: CirclePool): string {
+  if (pool === "no-article") return NO_ARTICLE_LABEL;
+  return joinPath(
+    [NO_ARTICLE_LABEL, pool === "orphans" ? ORPHANS_LABEL : LINKED_LABEL],
+    "page",
+  );
+}
+
+// Real claim ids sitting in one of those circles. A drawn pile expands to its members.
+export function unitIdsInCirclePool(
+  nodes: readonly (ClusterNode & {
+    id: string;
+    memberIds?: readonly string[];
+  })[],
+  links: readonly {
+    source: string | { id: string };
+    target: string | { id: string };
+  }[],
+  pool: CirclePool,
+): string[] {
+  const hubs = noArticleGroups(nodes, links);
+  const key = poolCircleKey(pool);
+  const ids: string[] = [];
+  for (const node of nodes) {
+    if (node.kind && node.kind !== "unit") continue;
+    if (!nodeInCluster(node, key, "page", hubs)) continue;
+    if (node.memberIds?.length) ids.push(...node.memberIds);
+    else if (!node.id.startsWith("coalesce:")) ids.push(node.id);
+  }
+  return [...new Set(ids)];
 }
 
 type ClusterNode = Pick<

@@ -90,6 +90,7 @@ export function NodesSection({
 }
 
 // EDGES: lines between dots. Connectors attach a note to a domain, entity, or page.
+// Relationships are stored lines between notes. Zoomed out, they draw as the thin lines between circles.
 // Related links are derived similarity lines between units.
 export function EdgesSection({
   value,
@@ -110,6 +111,11 @@ export function EdgesSection({
         label="Connectors"
         checked={value.showConnectors}
         onChange={(next) => set("showConnectors", next)}
+      />
+      <SwitchRow
+        label="Relationships"
+        checked={value.showRelationships}
+        onChange={(next) => set("showRelationships", next)}
       />
       <SwitchRow
         label="Related links"
@@ -306,7 +312,7 @@ export function GroupSection({
               A unit used in more than one section sits in the earliest one.
             </li>
             <li>
-              Click a selected article, section, or suggestion again to open it.
+              Click a selected article, section, suggestion, No article, Orphans, or Linked circle again to open it.
             </li>
             <li>
               Drag one knowledge unit onto an article, a section, or a

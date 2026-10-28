@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type GroupUnit, groupKey, groupUnits, pairAffinity, withoutDismissed } from "./group";
+import { type ArticleHome, type GroupUnit, groupKey, groupUnits, likelyMerges, pairAffinity, withoutDismissed } from "./group";
 
 // A unit vector pointing mostly along one axis, tilted slightly so units differ
 function unit(id: string, axis: number, tilt = 0, extra: Partial<GroupUnit> = {}): GroupUnit {
@@ -52,6 +52,79 @@ describe("groupUnits", () => {
   it("groups each root domain separately when the set is large", () => {
     const units = [unit("a1", 0, 0.1, { rootDomainId: "x" }), unit("a2", 0, 0.2, { rootDomainId: "x" }), unit("a3", 0, 0.3, { rootDomainId: "y" }), unit("a4", 0, 0.15, { rootDomainId: "y" })];
     expect(groupUnits(units, [], { partitionAbove: 3, minSize: 2 }).groups.map((group) => group.unitIds)).toEqual([["a1", "a2"], ["a3", "a4"]]);
+  });
+});
+
+function home(pageId: string, axis: number, extra: Partial<ArticleHome> = {}): ArticleHome {
+  const vector = new Array(8).fill(0);
+  vector[axis] = 1;
+  return { pageId, vector, citedIds: [], domainIds: [], ...extra };
+}
+
+describe("likelyMerges", () => {
+  it("puts claims that read like one article into a merge, and leaves the rest", () => {
+    const page = home("alpha", 0);
+    const close = [
+      unit("a", 0, 0.1),
+      unit("b", 0, 0.2),
+    ];
+    const far = unit("far", 2);
+    const { groups, rest } = likelyMerges([...close, far], [], [page]);
+    expect(groups.map((group) => group.unitIds)).toEqual([["a", "b"]]);
+    expect(groups[0]).toMatchObject({ lane: "merge", pageId: "alpha" });
+    expect(rest.map((item) => item.id)).toEqual(["far"]);
+    const leftover = groupUnits(rest, []);
+    expect(leftover.groups).toEqual([]);
+    expect(leftover.ungrouped).toEqual(["far"]);
+  });
+
+  it("merges claims that link into an article twice, even when the text is not close", () => {
+    const page = home("alpha", 0, { citedIds: ["c1", "c2"] });
+    const claims = [unit("a", 2), unit("b", 3)];
+    const links = [
+      { from: "a", to: "c1", type: "supports" },
+      { from: "a", to: "c2", type: "supports" },
+      { from: "b", to: "c1", type: "supports" },
+      { from: "b", to: "c2", type: "supports" },
+    ];
+    const { groups, rest } = likelyMerges(claims, links, [page]);
+    expect(groups.map((group) => group.unitIds).sort()).toEqual([["a", "b"]]);
+    expect(rest).toEqual([]);
+  });
+
+  it("does not merge on a wide domain or a single link", () => {
+    const page = home("alpha", 0, { citedIds: ["c1"], domainIds: ["wide"] });
+    const claims = [
+      unit("domain", 2, 0, { domainIds: ["wide"] }),
+      unit("once", 3),
+    ];
+    const { groups, rest } = likelyMerges(claims, [{ from: "once", to: "c1", type: "supports" }], [page]);
+    expect(groups).toEqual([]);
+    expect(rest.map((item) => item.id)).toEqual(["domain", "once"]);
+  });
+
+  it("leaves a claim in the leftovers when two articles score about the same", () => {
+    const pages = [home("alpha", 0), home("beta", 0)];
+    const claims = [unit("a", 0, 0.1), unit("b", 0, 0.15), unit("c", 0, 0.2)];
+    const { groups, rest } = likelyMerges(claims, [], pages);
+    expect(groups).toEqual([]);
+    expect(rest.map((item) => item.id)).toEqual(["a", "b", "c"]);
+    expect(groupUnits(rest, []).groups.map((group) => group.unitIds)).toEqual([["a", "b", "c"]]);
+  });
+
+  it("orders stronger homes first and keeps a lone claim for the leftovers", () => {
+    const strong = home("strong", 0);
+    const weak = home("weak", 1);
+    const claims = [
+      unit("s1", 0, 0.05),
+      unit("s2", 0, 0.1),
+      unit("w1", 1, 0.9),
+      unit("w2", 1, 0.85),
+      unit("only", 3),
+    ];
+    const { groups, rest } = likelyMerges(claims, [], [weak, strong]);
+    expect(groups.map((group) => group.pageId)).toEqual(["strong", "weak"]);
+    expect(rest.map((item) => item.id)).toEqual(["only"]);
   });
 });
 

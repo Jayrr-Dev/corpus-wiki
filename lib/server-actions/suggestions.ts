@@ -24,11 +24,20 @@ async function startWork() {
   }).then(() => undefined).catch((error) => console.error("Article suggestions could not run:", error)));
 }
 
-// RUN: queue a run over unused knowledge, optionally one domain and its children
-export async function runArticleSuggestions(domainId: string | null): Promise<ActionResult<{ runId: string }>> {
+const runScope = z.object({
+  domainId: z.string().uuid().nullable(),
+  unitIds: z.array(z.string().uuid()).max(5000).optional(),
+  kind: z.enum(["create", "merge"]).optional(),
+});
+
+// RUN: queue a run over unused knowledge. Optional domain, claim list, and one kind.
+export async function runArticleSuggestions(
+  domainId: string | null,
+  options?: { unitIds?: string[]; kind?: "create" | "merge" },
+): Promise<ActionResult<{ runId: string }>> {
   return toActionResult(async () => {
     const user = await requireUser();
-    const scope = { domainId: z.string().uuid().nullable().parse(domainId) };
+    const scope = runScope.parse({ domainId, ...options });
     const { data, error } = await getAdminSupabase().from("suggestion_runs").insert({ requested_by: user.id, scope }).select("id").single();
     if (error) throw new Error(error.code === "23505" ? "A suggestion run is already in progress." : error.message);
     await startWork();

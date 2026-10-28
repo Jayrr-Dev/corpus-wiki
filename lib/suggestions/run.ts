@@ -40,9 +40,11 @@ import { readIdBatches, readPages } from "@/lib/queries/batched";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import "server-only";
 import {
+  type ArticleHome,
   type GroupLink,
   type GroupUnit,
   groupUnits,
+  likelyMerges,
   type UnitGroup,
   withoutDismissed,
 } from "./group";
@@ -69,13 +71,17 @@ import {
 //          article or merge into one through change control
 // =====================================================================
 
-export const MAX_GROUPS_PER_RUN = 10;
 const VECTOR_BATCH = 256;
+const HOME_SAMPLE = 40;
 const CLOSEST_ARTICLES = 4;
 const ARTICLE_INDEX_LIMIT = 300;
 const SIMILAR_TITLE = 0.8;
 
-export type SuggestionScope = { domainId?: string | null };
+export type SuggestionScope = {
+  domainId?: string | null;
+  unitIds?: string[];
+  kind?: "create" | "merge";
+};
 type SavedGroup = UnitGroup & {
   status: "pending" | "done" | "failed";
   error?: string;
@@ -266,12 +272,16 @@ async function runSuggestions(deps: SuggestionDeps, claim: Claim) {
     if (saveError) throw new Error(saveError.message);
     if (!data?.length) throw new LeaseLost();
   };
+  const scope = (run.scope ?? {}) as SuggestionScope;
   let groups = run.groups as SavedGroup[] | null;
   if (!groups) {
     await save({ phase: "grouping", error: null });
-    groups = (
-      await groupForRun(deps, (run.scope ?? {}) as SuggestionScope)
-    ).map((group) => ({
+    const first = await groupForRun(
+      deps,
+      scope,
+      scope.kind === "create" ? "leftover" : "merge",
+    );
+    groups = first.map((group) => ({
       ...group,
       status: "pending" as const,
     }));
@@ -288,7 +298,8 @@ async function runSuggestions(deps: SuggestionDeps, claim: Claim) {
   };
   let suggested = run.suggested;
   const context = await suggestionContext(deps);
-  for (const group of groups) {
+  const ask = async () => {
+  for (const group of groups ?? []) {
     if (group.status !== "pending") continue;
     await renew(deps.db, claim);
     // A previous attempt may have saved this group's suggestions before it stopped
@@ -299,7 +310,12 @@ async function runSuggestions(deps: SuggestionDeps, claim: Claim) {
       .eq("group_key", group.key);
     try {
       if (!count) {
-        const result = await suggestForGroup(deps, context, group);
+        const result = await suggestForGroup(
+          deps,
+          context,
+          group,
+          scope.kind ?? (group.lane === "merge" ? "merge" : undefined),
+        );
         usage = addUsage(usage, result);
         if (result.rows.length) {
           const { error: insertError } = await client
@@ -318,13 +334,33 @@ async function runSuggestions(deps: SuggestionDeps, claim: Claim) {
     }
     await save({
       groups: groups as unknown as Json,
-      done: groups.filter((item) => item.status !== "pending").length,
+      done: (groups ?? []).filter((item) => item.status !== "pending").length,
       suggested,
       tokens_in: usage.tokensIn ?? 0,
       tokens_out: usage.tokensOut ?? 0,
     });
   }
-  const failed = groups.filter((group) => group.status === "failed");
+  };
+  await ask();
+  // Leftovers are grouped only after the merge answers are saved, so those claims are held out.
+  if (scope.kind !== "merge" && !(groups ?? []).some((group) => group.lane === "leftover")) {
+    await save({ phase: "grouping", error: null });
+    const rest = await groupForRun(deps, scope, "leftover");
+    const added = rest.map((group) => ({
+      ...group,
+      lane: "leftover" as const,
+      status: "pending" as const,
+    }));
+    groups = [...(groups ?? []), ...added];
+    await save({
+      groups: groups as unknown as Json,
+      total: groups.length,
+      done: groups.filter((item) => item.status !== "pending").length,
+      phase: "suggesting",
+    });
+    await ask();
+  }
+  const failed = (groups ?? []).filter((group) => group.status === "failed");
   await save({
     state: "done",
     phase: null,
@@ -332,15 +368,17 @@ async function runSuggestions(deps: SuggestionDeps, claim: Claim) {
     lease_until: null,
     finished_at: new Date().toISOString(),
     error: failed.length
-      ? `${failed.length} of ${groups.length} group(s) could not be suggested: ${failed[0]!.error}`
+      ? `${failed.length} of ${(groups ?? []).length} group(s) could not be suggested: ${failed[0]!.error}`
       : null,
   });
 }
 
-// GROUPING: current units no live article cites and no open suggestion holds
+// GROUPING: current units no live article cites and no open suggestion holds.
+// "merge" is the clear-home pool. "leftover" groups whatever is still unused.
 async function groupForRun(
   deps: SuggestionDeps,
   scope: SuggestionScope,
+  pass: "merge" | "leftover",
 ): Promise<UnitGroup[]> {
   const { db, client, embedder } = deps;
   const [units, cited, held, domains, dismissed] = await Promise.all([
@@ -355,7 +393,7 @@ async function groupForRun(
     readPages((from, to) =>
       client
         .from("section_knowledge")
-        .select("unit_id")
+        .select("unit_id, page_id")
         .order("unit_id")
         .order("section_id")
         .range(from, to),
@@ -410,6 +448,10 @@ async function groupForRun(
         .filter((row) => inScope.has(row.domain_id))
         .map((row) => row.unit_id),
     );
+    candidates = candidates.filter((unit) => keep.has(unit.id));
+  }
+  if (scope.unitIds) {
+    const keep = new Set(scope.unitIds);
     candidates = candidates.filter((unit) => keep.has(unit.id));
   }
   if (!candidates.length) return [];
@@ -510,23 +552,124 @@ async function groupForRun(
     ];
   });
   const inSet = new Set(ids);
+  const citedIds = new Set(cited.flatMap((row) => row.unit_id ?? []));
   const links: GroupLink[] = relationships
-    .filter((row) => inSet.has(row.to_unit_id))
+    .filter((row) => inSet.has(row.to_unit_id) || citedIds.has(row.to_unit_id))
     .map((row) => ({
       from: row.from_unit_id,
       to: row.to_unit_id,
       type: row.type,
     }));
+  const dismissedRows = dismissed.map((row) => ({
+    unitIds: row.unit_ids,
+    revisionIds: row.revision_ids,
+  }));
+  if (pass === "merge") {
+    if (scope.kind === "create") return [];
+    const homes = await articleHomes(
+      deps,
+      cited,
+      groupInput[0]?.vector.length ?? 0,
+    );
+    return withoutDismissed(likelyMerges(groupInput, links, homes).groups, dismissedRows);
+  }
+  if (scope.kind === "merge") return [];
   const { groups } = groupUnits(groupInput, links);
-  const ready = withoutDismissed(
-    groups,
-    dismissed.map((row) => ({
-      unitIds: row.unit_ids,
-      revisionIds: row.revision_ids,
-    })),
-  );
-  // groupUnits returns the largest groups first. One run suggests those.
-  return ready.slice(0, MAX_GROUPS_PER_RUN);
+  return withoutDismissed(groups, dismissedRows).map((group) => ({
+    ...group,
+    lane: "leftover" as const,
+  }));
+}
+
+// One picture per article: a sample of its cited claims, plus domains that mostly belong to it.
+async function articleHomes(
+  deps: SuggestionDeps,
+  cited: readonly { unit_id: string | null; page_id: string | null }[],
+  width: number,
+): Promise<ArticleHome[]> {
+  const byPage = new Map<string, Set<string>>();
+  for (const row of cited) {
+    if (!row.page_id || !row.unit_id) continue;
+    const list = byPage.get(row.page_id) ?? new Set<string>();
+    list.add(row.unit_id);
+    byPage.set(row.page_id, list);
+  }
+  if (!byPage.size || !width) return [];
+  const sampleIds = [...byPage.values()].flatMap((ids) => [...ids].sort().slice(0, HOME_SAMPLE));
+  const citedIds = [...new Set(cited.flatMap((row) => row.unit_id ?? []))];
+  const [sampled, domainRows] = await Promise.all([
+    readIdBatches(sampleIds, (batch) =>
+      readPages((from, to) =>
+        deps.client
+          .from("units")
+          .select("id, current_revision_id")
+          .in("id", batch)
+          .order("id")
+          .range(from, to),
+      ),
+    ),
+    readIdBatches(citedIds, (batch) =>
+      readPages((from, to) =>
+        deps.client
+          .from("unit_domains")
+          .select("unit_id, domain_id")
+          .in("unit_id", batch)
+          .order("unit_id")
+          .order("domain_id")
+          .range(from, to),
+      ),
+    ),
+  ]);
+  const revisionOf = new Map(sampled.map((unit) => [unit.id, unit.current_revision_id]));
+  const vectors = new Map<string, number[]>();
+  const revisions = [...new Set(sampled.map((unit) => unit.current_revision_id))];
+  for (let index = 0; index < revisions.length; index += VECTOR_BATCH) {
+    for (const [revisionId, vector] of await savedVectors(
+      deps.db,
+      deps.embedder.model,
+      revisions.slice(index, index + VECTOR_BATCH),
+    ))
+      vectors.set(revisionId, vector);
+  }
+  const domainsOf = new Map<string, string[]>();
+  for (const row of domainRows) {
+    if (!row.unit_id || !row.domain_id) continue;
+    domainsOf.set(row.unit_id, [...(domainsOf.get(row.unit_id) ?? []), row.domain_id]);
+  }
+  const domainPages = new Map<string, Map<string, number>>();
+  for (const [pageId, ids] of byPage) {
+    for (const unitId of ids) {
+      for (const domainId of new Set(domainsOf.get(unitId) ?? [])) {
+        const pages = domainPages.get(domainId) ?? new Map<string, number>();
+        pages.set(pageId, (pages.get(pageId) ?? 0) + 1);
+        domainPages.set(domainId, pages);
+      }
+    }
+  }
+  const owned = new Map<string, string[]>();
+  for (const [domainId, pages] of domainPages) {
+    const total = [...pages.values()].reduce((sum, count) => sum + count, 0);
+    for (const [pageId, count] of pages) {
+      if (count < 2 || count * 2 <= total) continue;
+      owned.set(pageId, [...(owned.get(pageId) ?? []), domainId].sort());
+    }
+  }
+  return [...byPage.keys()].sort().map((pageId) => {
+    const ids = [...byPage.get(pageId)!].sort();
+    const rows = ids.slice(0, HOME_SAMPLE).flatMap((id) => {
+      const vector = vectors.get(revisionOf.get(id) ?? "");
+      return vector ? [vector] : [];
+    });
+    const vector = rows.length
+      ? rows[0]!.map((_, index) => rows.reduce((sum, row) => sum + (row[index] ?? 0), 0) / rows.length)
+      : new Array<number>(width).fill(0);
+    return {
+      pageId,
+      vector,
+      citedIds: ids,
+      domainIds: owned.get(pageId) ?? [],
+    };
+  });
 }
 
 type RunContext = {
@@ -652,13 +795,14 @@ async function suggestForGroup(
   deps: SuggestionDeps,
   context: RunContext,
   group: SavedGroup,
+  kind?: SuggestionScope["kind"],
 ): Promise<TokenUsage & { rows: SuggestionRow[] }> {
   const { claims, entities } = await loadArticleClaims(
     deps.client,
     group.unitIds,
   );
-  if (claims.length < MIN_NEW_ARTICLE_CLAIMS)
-    return { rows: [], tokensIn: 0, tokensOut: 0 };
+  const minimum = kind === "merge" ? 2 : MIN_NEW_ARTICLE_CLAIMS;
+  if (claims.length < minimum) return { rows: [], tokensIn: 0, tokensOut: 0 };
   const vectors = await savedVectors(
     deps.db,
     deps.embedder.model,
@@ -695,7 +839,14 @@ async function suggestForGroup(
     schema: suggestionsSchema,
     jsonSchema: suggestionsJsonSchema,
     maxTokens: ANSWER_TOKEN_BUDGET,
-    messages: buildSuggestionMessages(context.instructions, input),
+    messages: buildSuggestionMessages(
+      kind === "merge"
+        ? `${context.instructions}\nThis run may only use action "merge". Do not return action "create".`
+        : kind === "create"
+          ? `${context.instructions}\nThis run may only use action "create". Do not return action "merge".`
+          : context.instructions,
+      input,
+    ),
   };
   let answer = await chatJson(deps.settings, request);
   let usage: TokenUsage = {
@@ -720,7 +871,10 @@ async function suggestForGroup(
     suggestions = readSuggestions(answer.value, input);
   }
   const closeness = new Map(closest.map((page) => [page.id, page.closeness]));
-  const rows = suggestions.map((suggestion, index): SuggestionRow => {
+  const kept = kind
+    ? suggestions.filter((suggestion) => suggestion.kind === kind)
+    : suggestions;
+  const rows = kept.map((suggestion, index): SuggestionRow => {
     const similar =
       suggestion.kind === "create"
         ? context.articles.find(

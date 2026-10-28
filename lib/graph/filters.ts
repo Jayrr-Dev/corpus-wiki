@@ -18,6 +18,8 @@ export interface GraphFilters {
   showOrphans: boolean;
   // Lines that attach a note to a domain, entity, or page
   showConnectors: boolean;
+  // Stored lines between notes (supports, related to, and the rest). Zoomed out, these draw as the thin lines between circles.
+  showRelationships: boolean;
   // derived "similar" links between related units, and the minimum score (0..1) they need
   showRelated: boolean;
   relatedness: number;
@@ -50,6 +52,20 @@ function applyConnectors(data: GraphData, show: boolean): GraphData {
   return {
     nodes: data.nodes,
     links: data.links.filter((link) => !CONNECTOR_KINDS.has(link.kind)),
+  };
+}
+
+function isRelationship(kind: GraphLink["kind"]): boolean {
+  return (
+    kind !== "about" && kind !== "cites" && kind !== "in" && kind !== "similar"
+  );
+}
+
+function applyRelationships(data: GraphData, show: boolean): GraphData {
+  if (show) return data;
+  return {
+    nodes: data.nodes,
+    links: data.links.filter((link) => !isRelationship(link.kind)),
   };
 }
 
@@ -556,7 +572,10 @@ export function applyFilters(
           linkedIds(bySearch).has(node.id) ||
           (node.kind === "domain" && node.degree > 0),
       );
-  return applyConnectors(visible, filters.showConnectors);
+  return applyRelationships(
+    applyConnectors(visible, filters.showConnectors),
+    filters.showRelationships,
+  );
 }
 
 // REPLAY CUT: only what existed at `cutoff` (ms since epoch)
