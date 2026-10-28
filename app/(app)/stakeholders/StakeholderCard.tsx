@@ -128,19 +128,19 @@ function ContactIcon({ contact }: { contact: ReturnType<typeof allContacts>[numb
   );
 }
 
-// POWER LEVEL 1 to 5, with the reasons behind it on hover: general power, or (overUs) the
-// part of it that bears on our own work
+// POWER 0 to 1000 (125 points per tenfold), with the reasons behind it on hover: general power,
+// or (overUs) the part of it that bears on our own work
 export function PowerBadge({ power, overUs, className }: { power: Power; overUs?: boolean; className?: string }) {
-  const name = overUs ? "Power over our work" : "Power Level";
+  const name = overUs ? "Power over our work" : "Power";
   return (
     <Tooltip content={(
       <span className="block space-y-1">
-        <span className="block font-medium">{name} {power.level} of 5{power.estimated ? " (estimate)" : ""}</span>
+        <span className="block font-medium">{name} {power.points} of 1000{power.estimated ? " (estimate)" : ""}</span>
         {power.reasons.map((reason) => <span key={reason} className="block">{reason}</span>)}
       </span>
     )}>
-      <span className={cn("relative z-10 rounded border px-1.5 py-0.5 font-medium tabular-nums text-muted-foreground", overUs && "border-link/40 text-link", className)} aria-label={`${name} ${power.level} of 5${power.estimated ? ", estimate" : ""}`}>
-        {overUs ? "Over us" : "Power"} {power.level}{power.estimated && <span className="text-faint">~</span>}
+      <span className={cn("relative z-10 rounded border px-1.5 py-0.5 font-medium tabular-nums text-muted-foreground", overUs && "border-link/40 text-link", className)} aria-label={`${name} ${power.points} of 1000${power.estimated ? ", estimate" : ""}`}>
+        {overUs ? "Over us" : "Power"} {power.points}{power.estimated && <span className="text-faint">~</span>}
       </span>
     </Tooltip>
   );

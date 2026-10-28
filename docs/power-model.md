@@ -129,6 +129,12 @@ A person with no seats, network or experience gets a floor of 1.
 | 1,000 to under 10,000 | 4 |
 | 10,000 and up | 5 |
 
+The page shows **points from 0 to 1000** instead of the level, so parties in the
+same band still differ: `points = round(clamp(log10(power) × 125, 0, 1000))`.
+Every tenfold is 125 points: 1 staff-equivalent is 0, 100 is 250, 10,000 is
+500, 1 million is 750, and 100 million or more is 1000. The level stays as a
+coarse band.
+
 Each result also carries `reasons`, one short sentence per part that counted
 ("About 12,000 employees", "Owns 60 percent of Company A", "Former director of
 Engineering until 2021", "Connected to 6 organizations", "About 15 years in

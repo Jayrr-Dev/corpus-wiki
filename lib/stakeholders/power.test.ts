@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StakeholderCard } from "./cards";
 import type { StructureRelation } from "./structure";
-import { POWER_MODEL, computePower, computePowerOverUs, levelOf, parseAmount, seniorityFromTitle, sizeFromFacts, timeWeight } from "./power";
+import { POWER_MODEL, computePower, computePowerOverUs, levelOf, parseAmount, pointsOf, seniorityFromTitle, sizeFromFacts, timeWeight } from "./power";
 
 const NOW = new Date("2026-10-28T00:00:00Z");
 
@@ -301,5 +301,15 @@ describe("who gets a level", () => {
     expect(results.get("china")?.level).toBe(5);
     expect(results.has("epcor")).toBe(true);
     expect(computePowerOverUs([card("designer", "role"), card("epcor", "company", {}, { isOurs: true })], [], "epcor", NOW).has("designer")).toBe(false);
+  });
+});
+
+describe("points from 0 to 1000", () => {
+  it("gives 125 points per tenfold, clamped", () => {
+    expect(pointsOf(0.5)).toBe(0);
+    expect(pointsOf(100)).toBe(250);
+    expect(pointsOf(10_000)).toBe(500);
+    expect(pointsOf(300_000)).toBe(685);
+    expect(pointsOf(1e9)).toBe(1000);
   });
 });

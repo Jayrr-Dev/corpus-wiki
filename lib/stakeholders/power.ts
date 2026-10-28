@@ -13,8 +13,9 @@ import type { Seniority, StructureRelation } from "./structure";
 import { SENIORITY_LADDER } from "./structure";
 
 export type PowerLevel = 1 | 2 | 3 | 4 | 5;
-// score: log10 of power in staff-equivalents (2 is about 100 staff). estimated: a default or a stale link was used
-export type PowerResult = { score: number; level: PowerLevel; reasons: string[]; estimated: boolean };
+// score: log10 of power in staff-equivalents (2 is about 100 staff). points: the same on a 0 to 1000
+// scale, 125 points per tenfold. estimated: a default or a stale link was used
+export type PowerResult = { score: number; points: number; level: PowerLevel; reasons: string[]; estimated: boolean };
 
 // EVERY TUNING NUMBER, by the section of docs/power-model.md it comes from
 export const POWER_MODEL = {
@@ -35,7 +36,7 @@ export const POWER_MODEL = {
     experience: { peak: 0.1, perYear: 0.01, cap: 0.25 },
     maxPasses: 20, floor: 1,
   },
-  levels: { bands: [10, 100, 1_000, 10_000] },
+  levels: { bands: [10, 100, 1_000, 10_000], pointsPerTenfold: 125, maxPoints: 1000 },
   powerOverUs: { inUs: 1, regulates: 1, funds: 0.8, client: 0.7, perLink: 0.5, unconnected: 0.01 },
 } as const;
 
@@ -186,6 +187,12 @@ const seniorityWord = (seniority: Seniority) => seniority.replace(/_/g, " ");
 // ---------------------------------------------------------------------
 // 5. LEVELS: fixed powers of ten of staff-equivalents
 // ---------------------------------------------------------------------
+
+// 0 to 1000: 125 points per tenfold, so 1 staff-equivalent is 0, 10,000 is 500, 100 million is 1000
+export function pointsOf(power: number): number {
+  const { pointsPerTenfold, maxPoints } = POWER_MODEL.levels;
+  return Math.round(Math.min(maxPoints, Math.max(0, Math.log10(power) * pointsPerTenfold)));
+}
 
 export function levelOf(power: number): PowerLevel {
   return (1 + POWER_MODEL.levels.bands.filter((band) => power >= band).length) as PowerLevel;
@@ -500,7 +507,7 @@ function settle(ids: string[], start: State, maxPasses: number, partsOf: (id: st
 }
 
 function resultOf(power: number, reasons: string[], estimated: boolean): PowerResult {
-  return { score: Math.round(Math.log10(power) * 100) / 100, level: levelOf(power), reasons: [...new Set(reasons)].slice(0, MAX_REASONS), estimated };
+  return { score: Math.round(Math.log10(power) * 100) / 100, points: pointsOf(power), level: levelOf(power), reasons: [...new Set(reasons)].slice(0, MAX_REASONS), estimated };
 }
 const reasonsOf = (parts: Part[]) => {
   const merged = new Map<string, number>();
@@ -524,7 +531,7 @@ function computeAll(cards: StakeholderCard[], relations: StructureRelation[], no
   return { graph, results };
 }
 
-const withoutPower = ({ score, level, reasons, estimated }: PowerResult): PowerResult => ({ score, level, reasons, estimated });
+const withoutPower = ({ score, points, level, reasons, estimated }: PowerResult): PowerResult => ({ score, points, level, reasons, estimated });
 
 // WHO GETS A LEVEL: not a role (a seat, not a party), and a place only when it is a jurisdiction
 const JURISDICTION_KINDS = /\b(country|nation|province|state|territory|city|town|municipality|county)\b/;
