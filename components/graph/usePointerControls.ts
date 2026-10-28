@@ -39,7 +39,7 @@ const DOUBLE_TAP_ZOOM = 2;
 type Gesture =
   | { mode: "idle" }
   | { mode: "select"; start: Point }
-  | { mode: "pan"; last: Point; start: Point | null }
+  | { mode: "pan"; last: Point; start: Point | null; pick?: SimNode | null }
   | {
       mode: "drag";
       node: SimNode;
@@ -60,6 +60,8 @@ interface PointerOptions {
   onFocus?: (id: string | null) => void;
   // Set false once the person moves the view themselves
   isAutoFit: RefObject<boolean>;
+  // Dots actually drawn. Combined claims are one dot here, so hits match the picture.
+  shownNodes?: RefObject<readonly SimNode[] | null>;
   nodeSize: number;
   onOpen: (node: SimNode) => void;
   onSelect?: (nodes: SimNode[], toggle: boolean) => void;
@@ -122,6 +124,7 @@ export function usePointerControls({
   hoveredId,
   focusedId,
   isAutoFit,
+  shownNodes,
   nodeSize,
   onOpen,
   onFocus,
@@ -186,9 +189,10 @@ export function usePointerControls({
     let lastTap: { time: number; point: Point } | null = null;
     // Touch double-taps zoom in onUp; some browsers also fire dblclick for them, which must not zoom twice
     let lastPointerType = "mouse";
+    const hitNodes = () => shownNodes?.current ?? layout.current.nodes;
     const hitTest = (point: Point) =>
       nodeAt(
-        layout.current.nodes,
+        hitNodes(),
         toWorld(camera.current, point),
         latest.current.nodeSize,
         camera.current.k,
@@ -236,6 +240,11 @@ export function usePointerControls({
       const node = hitTest(point);
       if (!node) {
         gesture = { mode: "pan", last: point, start: point };
+        return;
+      }
+      // A combined dot stands for many claims. Dragging it would move a picture, not a real dot.
+      if (node.memberIds) {
+        gesture = { mode: "pan", last: point, start: point, pick: node };
         return;
       }
       const world = toWorld(camera.current, point);
@@ -339,7 +348,7 @@ export function usePointerControls({
             ? node
               ? [node]
               : []
-            : layout.current.nodes.filter(
+            : hitNodes().filter(
                 (n) =>
                   (n.x ?? 0) >= Math.min(a.x, b.x) &&
                   (n.x ?? 0) <= Math.max(a.x, b.x) &&
@@ -376,7 +385,9 @@ export function usePointerControls({
         gesture.start &&
         Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < slop
       ) {
-        if (isDoubleTap(event, point)) zoomInAt(point);
+        if (gesture.pick && latest.current.onSelect) {
+          latest.current.onSelect([gesture.pick], false);
+        } else if (isDoubleTap(event, point)) zoomInAt(point);
         else {
           // Click empty canvas: drop any box/Ctrl selection, then unfocus or run the background action.
           latest.current.onSelect?.([], false);
@@ -472,5 +483,5 @@ export function usePointerControls({
       element.removeEventListener("dblclick", onDoubleClick);
       element.removeEventListener("wheel", onWheel);
     };
-  }, [canvas, layout, camera, hoveredId, focusedId, isAutoFit, motion]);
+  }, [canvas, layout, camera, hoveredId, focusedId, isAutoFit, motion, shownNodes]);
 }

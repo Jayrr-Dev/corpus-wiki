@@ -4,6 +4,7 @@ import {
   isReservedCircleLabel,
   NO_ARTICLE_LABEL,
   PAGE_SEP,
+  stepNumber,
   type CircleOpenTarget,
   type GroupingId,
   type LinkEnd,
@@ -37,7 +38,9 @@ export {
 // Health & Safety, inside PPE. Every level gets a circle, nested.
 // Circles are packed (d3's circle packing) before any dot moves: an
 // innermost domain is sized from its dots, siblings pack tightly side
-// by side, and each parent is just big enough for its children. Each
+// by side, and each parent is just big enough for its children. When
+// Ordered is on, a real sequence (article sections, or step names) winds
+// out in a spiral in that order. Each
 // dot is then kept inside its own circle, so links arrange dots within
 // a domain but never stretch one domain toward another.
 // Other groupings follow the rules in their GROUPINGS entry (entity: one flat circle per name;
@@ -133,8 +136,9 @@ function clusterSegments(
 export function clusterKey(
   node: ClusterNode,
   mode: ClusterMode,
+  hubs?: ReadonlyMap<string, string> | null,
 ): string | null {
-  const segments = clusterSegments(node, mode);
+  const segments = clusterSegments(node, mode, hubs ?? null);
   return segments.length ? joinPath(segments, mode) : null;
 }
 
@@ -147,9 +151,10 @@ export function clusterConnections(
   key: string,
   mode: ClusterMode,
 ): { nodeIds: ReadonlySet<string>; circleKeys: ReadonlySet<string> } {
+  const hubs = circleSubgroups(nodes, links, mode);
   const members = new Set(
     nodes
-      .filter((node) => nodeInCluster(node, key, mode))
+      .filter((node) => nodeInCluster(node, key, mode, hubs))
       .map((node) => node.id),
   );
   const byId = new Map(nodes.map((node) => [node.id, node]));
@@ -163,7 +168,7 @@ export function clusterConnections(
     const outside = byId.get(sourceIn ? link.target : link.source);
     if (!outside) continue;
     nodeIds.add(outside.id);
-    const segments = clusterSegments(outside, mode);
+    const segments = clusterSegments(outside, mode, hubs);
     for (let depth = 0; depth < segments.length; depth++) {
       const circleKey = joinPath(segments.slice(0, depth + 1), mode);
       if (circleKey === key || key.startsWith(`${circleKey}${sep}`)) continue;
@@ -174,13 +179,33 @@ export function clusterConnections(
   return { nodeIds, circleKeys };
 }
 
-// True when this dot belongs in the focused circle
+// Nested circles a grouping works out from the links (page: the groups inside No article)
+export function circleSubgroups(
+  nodes: readonly ClusterNode[],
+  links: readonly { source: LinkEnd; target: LinkEnd }[],
+  mode: ClusterMode,
+): ReadonlyMap<string, string> | null {
+  return GROUPINGS[mode].subgroups?.(nodes, links) ?? null;
+}
+
+// Connection groups inside No article: a hub id, Orphans, Linked, or External.
+export function noArticleGroups(
+  nodes: readonly ClusterNode[],
+  links: readonly { source: LinkEnd; target: LinkEnd }[],
+): Map<string, string> {
+  return GROUPINGS.page.subgroups?.(nodes, links) ?? new Map();
+}
+
+// True when this dot belongs in the focused circle.
+// Page mode needs the No article groups (Orphans, Linked, External). Without
+// them every loose note looks like it sits only in No article.
 export function nodeInCluster(
   node: ClusterNode,
   key: string,
   mode: ClusterMode,
+  hubs: ReadonlyMap<string, string> | null = null,
 ): boolean {
-  return GROUPINGS[mode].holds(node, key);
+  return GROUPINGS[mode].holds(node, key, hubs);
 }
 
 // Segments of a node's primary domain path (empty when it has none)
@@ -319,6 +344,80 @@ function spotRadius(dots: readonly SimNode[], nodeSize: number): number {
   return Math.max(SPOT_MIN, Math.sqrt(LOOSENESS * area));
 }
 
+// True when these children are a sequence: section positions, or step names.
+function childrenAreSequence(children: readonly ClusterGroup[]): boolean {
+  if (children.length < 2) return false;
+  const orders = new Set(children.map((child) => child.order));
+  if (orders.size > 1) return true;
+  for (const child of children) {
+    if (stepNumber(child.label) === null) return false;
+  }
+  return true;
+}
+
+// Winds circles outward in order. The first sits near the middle. Each next one
+// follows the spiral, with a gap, so a long list fills the circle instead of a line.
+function packSpiral(items: Packed[]): number {
+  if (items.length === 0) return 0;
+  const first = items[0];
+  if (!first) return 0;
+  first.x = 0;
+  first.y = 0;
+  let angle = 0;
+  for (let index = 1; index < items.length; index++) {
+    const item = items[index];
+    const previous = items[index - 1];
+    if (!item || !previous) continue;
+    const pitch = Math.max(item.r, previous.r) * 2 + SIBLING_GAP;
+    let x = 0;
+    let y = 0;
+    let placed = false;
+    for (let guard = 0; guard < 5000; guard++) {
+      const spiral = (pitch / (Math.PI * 2)) * angle + first.r + item.r + SIBLING_GAP;
+      x = Math.cos(angle) * spiral;
+      y = Math.sin(angle) * spiral;
+      let clear = true;
+      for (let back = 0; back < index; back++) {
+        const other = items[back];
+        if (!other) continue;
+        const needed = item.r + other.r + SIBLING_GAP;
+        if (Math.hypot(x - other.x, y - other.y) < needed - 0.01) {
+          clear = false;
+          break;
+        }
+      }
+      if (clear) {
+        placed = true;
+        break;
+      }
+      const reach = Math.max(spiral, item.r);
+      angle += Math.max(0.08, (item.r + SIBLING_GAP) / reach);
+    }
+    item.x = x;
+    item.y = y;
+    if (placed) angle += 0.15;
+  }
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const item of items) {
+    minX = Math.min(minX, item.x - item.r);
+    maxX = Math.max(maxX, item.x + item.r);
+    minY = Math.min(minY, item.y - item.r);
+    maxY = Math.max(maxY, item.y + item.r);
+  }
+  const cx = (minX + maxX) / 2;
+  const cy = (minY + maxY) / 2;
+  let radius = 0;
+  for (const item of items) {
+    item.x -= cx;
+    item.y -= cy;
+    radius = Math.max(radius, Math.hypot(item.x, item.y) + item.r);
+  }
+  return radius;
+}
+
 // Packs circles side by side with a gap and centers them on their enclosing circle, whose radius it returns
 function packAround(items: Packed[]): number {
   for (const item of items) item.r += SIBLING_GAP / 2;
@@ -355,6 +454,7 @@ function packGroup(
   group: ClusterGroup,
   nodeSize: number,
   hubs: ReadonlyMap<string, number>,
+  ordered: boolean,
 ): Packed {
   const fit = (radius: number) =>
     Math.max(radius, (hubs.get(group.path) ?? 0) + domainRingGap(nodeSize));
@@ -369,7 +469,9 @@ function packGroup(
       items: [],
     };
   }
-  const items = group.children.map((child) => packGroup(child, nodeSize, hubs));
+  const items = group.children.map((child) =>
+    packGroup(child, nodeSize, hubs, ordered),
+  );
   if (group.members.length > 0)
     items.push({
       x: 0,
@@ -379,7 +481,11 @@ function packGroup(
       inset: 0,
       items: [],
     });
-  return { x: 0, y: 0, r: fit(packAround(items) + BRANCH_PAD), group, items };
+  let layout = packAround;
+  if (ordered) {
+    if (childrenAreSequence(group.children)) layout = packSpiral;
+  }
+  return { x: 0, y: 0, r: fit(layout(items) + BRANCH_PAD), group, items };
 }
 
 // After a centered bubble has settled, grow its ring (and each parent ring) so the bubble stays inside.
@@ -446,6 +552,7 @@ let lastPacking: {
     source: LinkEnd;
     target: LinkEnd;
   }[];
+  ordered: boolean;
   packing: DomainPacking;
 } | null = null;
 
@@ -460,12 +567,14 @@ export function packDomains(
     source: LinkEnd;
     target: LinkEnd;
   }[] = NO_LINKS,
+  ordered = false,
 ): DomainPacking {
   if (
     lastPacking?.nodes === nodes &&
     lastPacking.nodeSize === nodeSize &&
     lastPacking.mode === mode &&
-    lastPacking.links === links
+    lastPacking.links === links &&
+    lastPacking.ordered === ordered
   )
     return lastPacking.packing;
   const rule = GROUPINGS[mode];
@@ -477,7 +586,7 @@ export function packDomains(
     (node) =>
       !hasHubBody(node) && !centersGrouping(node, mode) && !filed.has(node),
   );
-  const top = tree.map((group) => packGroup(group, nodeSize, hubRadii));
+  const top = tree.map((group) => packGroup(group, nodeSize, hubRadii, ordered));
   if (loose.length > 0)
     top.push({
       x: 0,
@@ -524,7 +633,7 @@ export function packDomains(
   };
   top.forEach((item, index) => place(item, 0, 0, index));
   pinCenteredNodes(packing, nodes, mode);
-  lastPacking = { nodes, nodeSize, mode, links, packing };
+  lastPacking = { nodes, nodeSize, mode, links, ordered, packing };
   return packing;
 }
 
@@ -538,8 +647,9 @@ export function clusterCircles(
     source: LinkEnd;
     target: LinkEnd;
   }[] = NO_LINKS,
+  ordered = false,
 ): ClusterCircle[] {
-  return packDomains(nodes, nodeSize, mode, links).circles;
+  return packDomains(nodes, nodeSize, mode, links, ordered).circles;
 }
 
 // The innermost ring under a point (a parent contains its children, so the deepest one is the drop)
@@ -747,8 +857,9 @@ export function createContainment(
     source: LinkEnd<SimNode>;
     target: LinkEnd<SimNode>;
   }[] = NO_LINKS,
+  ordered = false,
 ): () => void {
-  const { homes, circles } = packDomains(nodes, nodeSize, mode, links);
+  const { homes, circles } = packDomains(nodes, nodeSize, mode, links, ordered);
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const connected = new Map<string, SimNode[]>();
   const endOf = (end: LinkEnd<SimNode>) =>
@@ -823,7 +934,7 @@ export function createContainment(
           }
         }
         for (const other of connected.get(node.id) ?? []) {
-          if (GROUPINGS[mode].holds(other, path)) continue;
+          if (GROUPINGS[mode].holds(other, path, null)) continue;
           weight += OUTSIDE_DOMAIN_PULL;
           x += (other.x ?? 0) * OUTSIDE_DOMAIN_PULL;
           y += (other.y ?? 0) * OUTSIDE_DOMAIN_PULL;

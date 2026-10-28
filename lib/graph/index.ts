@@ -23,6 +23,8 @@ export {
   clusterCircles,
   clusterConnections,
   clusterKey,
+  circleSubgroups,
+  noArticleGroups,
   clusterTree,
   deepestPaths,
   moveTarget,
@@ -40,7 +42,7 @@ export {
   type ClusterMode,
   type PageDrop,
 } from "./clusters";
-export { coalesceGraph } from "./coalesce";
+export { coalesceDrawn, coalesceGraph } from "./coalesce";
 export {
   applyFilters,
   createdBy,

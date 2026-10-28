@@ -39,6 +39,7 @@ export function useForceLayout(
   onTick: RefObject<() => void>,
   mode: ClusterMode = "domain",
   colorOf: NodeColorOf = () => null,
+  ordered = false,
 ): RefObject<ForceLayout> {
   const layout = useRef<ForceLayout>({
     nodes: [],
@@ -46,11 +47,11 @@ export function useForceLayout(
     simulation: null,
     revision: 0,
   });
-  const settings = useRef({ forces, nodeSize, mode, colorOf });
+  const settings = useRef({ forces, nodeSize, mode, colorOf, ordered });
   // Latest slider values for the rebuild below (synced after render, read in effects)
   useLayoutEffect(() => {
-    settings.current = { forces, nodeSize, mode, colorOf };
-  }, [forces, nodeSize, mode, colorOf]);
+    settings.current = { forces, nodeSize, mode, colorOf, ordered };
+  }, [forces, nodeSize, mode, colorOf, ordered]);
 
   // REBUILD on a new visible graph, carrying positions over
   useEffect(() => {
@@ -65,19 +66,35 @@ export function useForceLayout(
       settings.current.nodeSize,
       settings.current.mode,
       settings.current.colorOf,
+      settings.current.ordered,
     );
     let containedSize = settings.current.nodeSize;
     let containedMode = settings.current.mode;
-    let contain = createContainment(nodes, containedSize, containedMode, links);
+    let containedOrdered = settings.current.ordered;
+    let contain = createContainment(
+      nodes,
+      containedSize,
+      containedMode,
+      links,
+      containedOrdered,
+    );
     const keepInside = () => {
       if (settings.current.forces.cluster <= 0) return;
       if (
         containedSize !== settings.current.nodeSize ||
-        containedMode !== settings.current.mode
+        containedMode !== settings.current.mode ||
+        containedOrdered !== settings.current.ordered
       ) {
         containedSize = settings.current.nodeSize;
         containedMode = settings.current.mode;
-        contain = createContainment(nodes, containedSize, containedMode, links);
+        containedOrdered = settings.current.ordered;
+        contain = createContainment(
+          nodes,
+          containedSize,
+          containedMode,
+          links,
+          containedOrdered,
+        );
       }
       contain();
     };
@@ -107,15 +124,16 @@ export function useForceLayout(
     nodeSize: number;
     mode: ClusterMode;
     colorOf: NodeColorOf;
+    ordered: boolean;
   } | null>(null);
   useEffect(() => {
     const { simulation } = layout.current;
     const isFirstApply = applied.current === null;
-    applied.current = { forces, nodeSize, mode, colorOf };
+    applied.current = { forces, nodeSize, mode, colorOf, ordered };
     if (!simulation || isFirstApply) return;
-    applyForces(simulation, forces, nodeSize, mode, colorOf);
+    applyForces(simulation, forces, nodeSize, mode, colorOf, ordered);
     simulation.alpha(NUDGE_ALPHA).restart();
-  }, [forces, nodeSize, mode, colorOf]);
+  }, [forces, nodeSize, mode, colorOf, ordered]);
 
   return layout;
 }

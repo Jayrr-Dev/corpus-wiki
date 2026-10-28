@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { memo, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { diffWords } from "@/components/diff/diffWords";
 import { linkArticleText, type ArticleLink } from "@/lib/living-page/articleEvidence";
+import { ArticleTextLink } from "./previewTabs";
 import styles from "./PatchedText.module.css";
 
 const subscribeMotion = (notify: () => void) => {
@@ -17,7 +17,7 @@ const EMPTY_LINKS: ArticleLink[] = [];
 
 const LinkedText = memo(function LinkedText({ text, links }: { text: string; links: ArticleLink[] }) {
   return useMemo(() => linkArticleText(text, links).map((chunk, index) => chunk.href
-    ? <Link key={index} href={chunk.href} className="text-link hover:underline">{chunk.text}</Link>
+    ? <ArticleTextLink key={index} href={chunk.href} label={chunk.text} className="text-link hover:underline">{chunk.text}</ArticleTextLink>
     : <span key={index}>{chunk.text}</span>), [text, links]);
 });
 

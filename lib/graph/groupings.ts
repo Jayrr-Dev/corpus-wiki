@@ -65,7 +65,11 @@ export interface GroupingRule {
     subgroups: ReadonlyMap<string, string> | null,
   ): string[];
   // True when this dot belongs in the circle with this key
-  holds(node: PlacedNode, key: string): boolean;
+  holds(
+    node: PlacedNode,
+    key: string,
+    subgroups: ReadonlyMap<string, string> | null,
+  ): boolean;
   // Nested circles worked out from the links, by node id (page: the groups inside No article)
   subgroups?(
     nodes: readonly PlacedNode[],
@@ -239,8 +243,25 @@ function suggestionColor(group: ClusterGroup): GraphColor {
   return merge ? "needs-you" : "link";
 }
 
+// "Step 2" or "2. Setup". Ordinary topic names do not match, so they keep the packed look.
+export function stepNumber(label: string): number | null {
+  const match = /^(?:step\s+)?(\d+)\b/i.exec(label.trim());
+  if (!match?.[1]) return null;
+  return Number(match[1]);
+}
+
+// Steps in number order, everything else by name
+function compareSiblingLabels(a: string, b: string): number {
+  const aStep = stepNumber(a);
+  const bStep = stepNumber(b);
+  if (aStep !== null) {
+    if (bStep !== null) return aStep - bStep || a.localeCompare(b);
+  }
+  return a.localeCompare(b);
+}
+
 function byLabel(a: ClusterGroup, b: ClusterGroup): number {
-  return a.label.localeCompare(b.label);
+  return compareSiblingLabels(a.label, b.label);
 }
 
 // Topic tree: the primary domain path, one segment per level
@@ -332,8 +353,9 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
     separator: PAGE_SEP,
     nests: true,
     segments: pageSegments,
-    holds: (node, key) => {
-      const segments = pageSegments(node, null);
+    // The No article groups (Orphans, Linked, External) count, or every loose note looks like it sits only in No article
+    holds: (node, key, subgroups) => {
+      const segments = pageSegments(node, subgroups);
       if (segments.length === 0) return false;
       const path = segments.join(PAGE_SEP);
       return path === key || path.startsWith(`${key}${PAGE_SEP}`);
@@ -353,7 +375,7 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
         return a.order - b.order || a.label.localeCompare(b.label);
       if (a.label === NO_ARTICLE_LABEL) return 1;
       if (b.label === NO_ARTICLE_LABEL) return -1;
-      return a.label.localeCompare(b.label);
+      return compareSiblingLabels(a.label, b.label);
     },
     color: (group) =>
       group.quiet

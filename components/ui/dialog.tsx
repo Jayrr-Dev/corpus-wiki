@@ -202,7 +202,7 @@ function DialogContent({
           showCloseButton && "[&_[data-slot=dialog-header]]:pr-20",
           className,
           maximized &&
-            "top-0 left-0 h-dvh max-h-none w-screen max-w-none translate-x-0 translate-y-0 rounded-none sm:max-w-none",
+            "top-0 left-0 flex h-dvh max-h-none w-screen max-w-none translate-x-0 translate-y-0 overflow-hidden rounded-none sm:max-w-none",
           minimized && "pointer-events-none invisible",
           "p-0"
         )}
@@ -213,7 +213,7 @@ function DialogContent({
           className={cn(
             "flex w-full flex-col gap-4 p-4",
             "has-[[data-slot=dialog-footer]]:pb-0",
-            "in-data-[maximized]:min-h-full in-data-[maximized]:flex-1",
+            "in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1 in-data-[maximized]:overflow-hidden",
             "in-data-[maximized]:has-[[data-slot=dialog-footer]]:[&>:has([data-slot=dialog-footer])]:flex",
             "in-data-[maximized]:has-[[data-slot=dialog-footer]]:[&>:has([data-slot=dialog-footer])]:min-h-full",
             "in-data-[maximized]:has-[[data-slot=dialog-footer]]:[&>:has([data-slot=dialog-footer])]:w-full",
@@ -311,8 +311,11 @@ function DialogFooter({
 function DialogTitle({
   className,
   children,
+  size = "default",
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+}: React.ComponentProps<typeof DialogPrimitive.Title> & {
+  size?: "default" | "title"
+}) {
   const window = React.useContext(DialogWindowContext)
   const ref = React.useRef<HTMLHeadingElement>(null)
 
@@ -324,7 +327,12 @@ function DialogTitle({
     <DialogPrimitive.Title
       ref={ref}
       data-slot="dialog-title"
-      className={cn("text-body leading-none font-medium", className)}
+      className={cn(
+        size === "title"
+          ? "text-title font-semibold"
+          : "text-body leading-none font-medium",
+        className
+      )}
       {...props}
     >
       {children}
