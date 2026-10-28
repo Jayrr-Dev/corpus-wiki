@@ -54,7 +54,7 @@ const COLUMNS = [
           className="font-medium"
         />
         {row.error ? <ErrorNote error={row.error.startsWith("The model's answer did not match the expected shape:")
-          ? "The AI returned invalid claim fields. Resume processing to try again; no knowledge from this answer was saved."
+          ? "The AI returned invalid claim fields. Resume to try again; nothing from this answer was saved."
           : row.error} /> : null}
       </div>
     )

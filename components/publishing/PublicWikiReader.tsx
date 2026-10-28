@@ -38,7 +38,7 @@ export async function PublicWikiReader({ slug, pageSlug, embed = false, query = 
         </nav>
       </aside>
       <main id="wiki-content" className="min-w-0 max-w-3xl pb-10">
-        {wiki.page ? <WikiArticle body={wiki.page} /> : <p className="py-8 text-muted-foreground">Choose a different search to find a published page.</p>}
+        {wiki.page ? <WikiArticle body={wiki.page} /> : <p className="py-8 text-muted-foreground">No page found. Try another search.</p>}
         <footer className="mt-12 border-t pt-4 text-xs leading-5 text-muted-foreground">This is a published edition. Source files, private citations and workspace controls are not included. Anonymous reading counts are collected without tracking cookies; browser privacy preferences are honored.</footer>
         {ticket && <ReadMetrics key={ticket} ticket={ticket} />}
       </main>
