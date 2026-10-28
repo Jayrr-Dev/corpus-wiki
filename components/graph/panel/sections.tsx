@@ -82,6 +82,7 @@ export function NodesSection({
 }
 
 // EDGES: lines between dots. Connectors attach a note to a domain, entity, or page.
+// Relationships are stored lines between notes. Zoomed out, they draw as the thin lines between circles.
 // Related links are derived similarity lines between units.
 export function EdgesSection({
   value,
@@ -102,6 +103,11 @@ export function EdgesSection({
         label="Connectors"
         checked={value.showConnectors}
         onChange={(next) => set("showConnectors", next)}
+      />
+      <SwitchRow
+        label="Relationships"
+        checked={value.showRelationships}
+        onChange={(next) => set("showRelationships", next)}
       />
       <SwitchRow
         label="Related links"

@@ -42,10 +42,12 @@ export type LinkEnd<N extends { id: string } = { id: string }> =
   | N;
 
 // What a second click on an already selected page-mode circle opens.
+export type CirclePool = "no-article" | "orphans" | "linked";
 export type CircleOpenTarget =
   | { kind: "article"; title: string }
   | { kind: "section"; page: string; section: string }
-  | { kind: "recommendation"; title: string };
+  | { kind: "recommendation"; title: string }
+  | { kind: "pool"; pool: CirclePool };
 
 export interface GroupingRule {
   id: GroupingId;
@@ -420,13 +422,18 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
         : times.sections.get(group.path);
     },
     // Page circles open the article, section circles open that section, and a suggestion
-    // circle inside No article opens the recommendation. The No article circle itself does not.
+    // circle inside No article opens the recommendation. No article, Orphans, and Linked
+    // open a dialog that can suggest merges or new articles. External does not.
     openTarget: (circle) => {
       if (circle.parent === "") {
-        if (circle.label === NO_ARTICLE_LABEL) return null;
+        if (circle.label === NO_ARTICLE_LABEL)
+          return { kind: "pool", pool: "no-article" };
         return { kind: "article", title: circle.label };
       }
       if (circle.parent === NO_ARTICLE_LABEL) {
+        if (circle.label === ORPHANS_LABEL)
+          return { kind: "pool", pool: "orphans" };
+        if (circle.label === LINKED_LABEL) return { kind: "pool", pool: "linked" };
         if (isReservedCircleLabel(circle.label)) return null;
         return { kind: "recommendation", title: circle.label };
       }
@@ -435,7 +442,7 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
     help: [
       "Pages draws a circle around each article. Each section is a circle inside it, and the knowledge that section uses sits there. Domain nodes show there only when Domains is on in Nodes. Each domain sits in the article, and the section, that uses most of its knowledge. A domain with none of its own sits with the domain it connects to most.",
       "A unit used in more than one section sits in the earliest one.",
-      "Click a selected article, section, or suggestion again to open it.",
+      "Click a selected article, section, suggestion, No article, Orphans, or Linked circle again to open it.",
       "Drag one knowledge unit onto an article, a section, or a suggestion. An article drop uses the earliest section that can take one claim. A blue suggestion adds it to that new article. An orange Merge suggestion adds it to that merge. Go back to the overview before dropping it on a different group.",
       "Units that no article cites gather in a gray No article circle. Inside it, a node with the most connections and the nodes linked to it form a nested group, with a black border and that node name. Linked nodes that never join a hub sit together in Linked. A node with no links at all sits in Orphans. A link to anything else leaves it in No article. Nodes from an external source sit in External. A pending suggestion groups its units inside that circle. A new article is blue. A merge is orange and marked Merge. The newest 10% of knowledge units changed, used, moved, or applied keep a green border. The newest 10% of articles and the newest 10% of sections have a yellow ring. Inside a selected group, that share is of the group.",
     ],

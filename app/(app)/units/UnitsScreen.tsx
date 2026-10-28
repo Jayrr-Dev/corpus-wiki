@@ -125,7 +125,9 @@ export function UnitsScreen() {
             <PopoverDescription>A run proposes articles from knowledge no article cites.</PopoverDescription>
             <ul className="mt-2 list-disc space-y-1 pl-4">
               <li>Groups by meaning, links, shared entities, domains, and sources.</li>
+              <li>Likely merges go first. A claim that already points at an article is suggested before the leftovers.</li>
               <li>The AI names a new article, or merges a group into an existing one.</li>
+              <li>On the graph, open No article, Orphans, or Linked to suggest only merges, or only new articles.</li>
               <li>Nothing changes until you accept. Run all accepts every open suggestion.</li>
               <li>Accepted work goes through Changes and can be undone.</li>
               <li>The Curator leaves knowledge in an open suggestion alone.</li>

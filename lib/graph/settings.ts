@@ -72,6 +72,7 @@ export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
     shown: defaultShown(),
     showOrphans: true,
     showConnectors: true,
+    showRelationships: true,
     showRelated: true,
     relatedness: 0.3,
   },
@@ -167,6 +168,7 @@ const settingsSchema = z.object({
     showPages: z.boolean().optional(),
     showOrphans: z.boolean(),
     showConnectors: z.boolean().default(true),
+    showRelationships: z.boolean().default(true),
     showRelated: z.boolean().default(DEFAULT_RELATED.showRelated),
     relatedness: z.number().default(DEFAULT_RELATED.relatedness),
   }),
@@ -241,6 +243,7 @@ export function parseSavedSettings(saved: unknown): GraphSettings {
     shown: shownFrom(savedFilters),
     showOrphans: savedFilters.showOrphans,
     showConnectors: savedFilters.showConnectors,
+    showRelationships: savedFilters.showRelationships,
     showRelated: savedFilters.showRelated,
     relatedness: savedFilters.relatedness,
   };

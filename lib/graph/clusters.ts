@@ -2,10 +2,13 @@ import { packEnclose, packSiblings } from "d3-hierarchy";
 import {
   GROUPINGS,
   isReservedCircleLabel,
+  LINKED_LABEL,
   NO_ARTICLE_LABEL,
+  ORPHANS_LABEL,
   PAGE_SEP,
   stepNumber,
   type CircleOpenTarget,
+  type CirclePool,
   type GroupingId,
   type LinkEnd,
   type PlacedNode,
@@ -30,6 +33,7 @@ export {
   primaryPageTitle,
   primaryStakeholderName,
   type CircleOpenTarget,
+  type CirclePool,
 } from "./groupings";
 
 // =====================================================================
@@ -110,7 +114,7 @@ export interface ClusterCircle {
   quiet?: boolean;
 }
 
-// What a second click on an already selected circle opens (page circles only today)
+// What a second click on an already selected circle opens.
 export function circleOpenTarget(
   circle: { label: string; parent: string },
   mode: ClusterMode,
@@ -207,6 +211,38 @@ export function nodeInCluster(
   hubs: ReadonlyMap<string, string> | null = null,
 ): boolean {
   return GROUPINGS[mode].holds(node, key, hubs);
+}
+
+function poolCircleKey(pool: CirclePool): string {
+  if (pool === "no-article") return NO_ARTICLE_LABEL;
+  return joinPath(
+    [NO_ARTICLE_LABEL, pool === "orphans" ? ORPHANS_LABEL : LINKED_LABEL],
+    "page",
+  );
+}
+
+// Real claim ids sitting in one of those circles. A drawn pile expands to its members.
+export function unitIdsInCirclePool(
+  nodes: readonly (ClusterNode & {
+    id: string;
+    memberIds?: readonly string[];
+  })[],
+  links: readonly {
+    source: string | { id: string };
+    target: string | { id: string };
+  }[],
+  pool: CirclePool,
+): string[] {
+  const hubs = noArticleGroups(nodes, links);
+  const key = poolCircleKey(pool);
+  const ids: string[] = [];
+  for (const node of nodes) {
+    if (node.kind && !isContent({ kind: node.kind })) continue;
+    if (!nodeInCluster(node, key, "page", hubs)) continue;
+    if (node.memberIds?.length) ids.push(...node.memberIds);
+    else if (!node.id.startsWith("coalesce:")) ids.push(node.id);
+  }
+  return [...new Set(ids)];
 }
 
 // Segments of a node's primary domain path (empty when it has none)

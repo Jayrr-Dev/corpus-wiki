@@ -15,6 +15,7 @@ import {
   circleAt,
   circleNestedIn,
   circleOpenTarget,
+  unitIdsInCirclePool,
   clusterCircles,
   clusterConnections,
   clusterTree,
@@ -141,6 +142,7 @@ const ALL_LAYERS = {
   shown: ALL_SHOWN,
   showOrphans: true,
   showConnectors: true,
+  showRelationships: true,
   showRelated: false,
   relatedness: 0.3,
 };
@@ -1077,6 +1079,24 @@ describe("entity groups", () => {
     expect(hidden.links.some((link) => link.kind === "depends_on")).toBe(true);
   });
 
+  it("hides relationship lines without removing the notes they join", () => {
+    const hidden = applyFilters(graph, {
+      ...ALL_LAYERS,
+      showRelationships: false,
+    });
+    expect(hidden.nodes.map((node) => node.id).sort()).toEqual([
+      "d1",
+      "d2",
+      "e1",
+      "p1",
+      "u1",
+      "u2",
+      "u3",
+    ]);
+    expect(hidden.links.some((link) => link.kind === "depends_on")).toBe(false);
+    expect(hidden.links.some((link) => link.kind === "in")).toBe(true);
+  });
+
   it("keeps page dots and their cites lines so each page sits in the middle of its circle", () => {
     expect(nodeById("u1").pageTitles).toEqual(["Alpha"]);
     const grouped = graphForGrouping(graph, "page");
@@ -1439,7 +1459,7 @@ describe("domain clusters", () => {
     ).toEqual({ kind: "recommendation", title: "Centers" });
     expect(
       circleOpenTarget({ label: NO_ARTICLE_LABEL, parent: "" }, "page"),
-    ).toBeNull();
+    ).toEqual({ kind: "pool", pool: "no-article" });
     expect(
       circleOpenTarget({ label: "Alpha", parent: "" }, "domain"),
     ).toBeNull();
@@ -1536,7 +1556,11 @@ describe("domain clusters", () => {
         { label: LINKED_LABEL, parent: NO_ARTICLE_LABEL },
         "page",
       ),
-    ).toBeNull();
+    ).toEqual({ kind: "pool", pool: "linked" });
+    expect(unitIdsInCirclePool([big, other], links, "linked").sort()).toEqual([
+      "big",
+      "other",
+    ]);
     const { homes } = packDomains([big, other], 1, "page", links);
     expect(homes.get("big")).toBe(homes.get("other"));
     expect(
@@ -1586,7 +1610,16 @@ describe("domain clusters", () => {
         { label: ORPHANS_LABEL, parent: NO_ARTICLE_LABEL },
         "page",
       ),
-    ).toBeNull();
+    ).toEqual({ kind: "pool", pool: "orphans" });
+    expect(unitIdsInCirclePool(nodes, links, "orphans")).toEqual(["orphan"]);
+    expect(unitIdsInCirclePool(nodes, links, "linked")).toEqual([]);
+    expect(unitIdsInCirclePool(nodes, links, "no-article").sort()).toEqual([
+      "hub",
+      "leaf",
+      "orphan",
+      "out",
+      "web",
+    ]);
     expect(
       circleOpenTarget(
         { label: EXTERNAL_LABEL, parent: NO_ARTICLE_LABEL },

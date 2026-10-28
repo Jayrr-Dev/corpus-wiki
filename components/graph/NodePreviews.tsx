@@ -1,11 +1,14 @@
 "use client";
 
-import { Facts, QueryState } from "@/app/(app)/_components/bits";
-import { formatDate } from "@/app/(app)/_lib/format";
+import { ErrorNote, Facts, Note, QueryState } from "@/app/(app)/_components/bits";
+import { formatCount, formatDate } from "@/app/(app)/_lib/format";
+import { useServerAction } from "@/components/actions/useServerAction";
 import { LineBlock } from "@/components/living-page/LineBlock";
 import { ArticleTextLink, PreviewTabProvider } from "@/components/living-page/previewTabs";
 import { UnitPreview } from "@/components/graph/UnitPreview";
 import { DynamicTabs } from "@/components/standard/dynamic-tabs";
+import { InfoPopover } from "@/components/standard/info-popover";
+import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,13 +18,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PopoverDescription } from "@/components/ui/popover";
 import {
   GROUPINGS,
   isContent,
   nodeType,
+  unitIdsInCirclePool,
   type CircleOpenTarget,
+  type CirclePool,
+  type GraphData,
   type GraphNode,
 } from "@/lib/graph";
+import { runArticleSuggestions } from "@/lib/server-actions/suggestions";
 import { articleNavigation } from "@/lib/living-page/articleNavigation";
 import type { ArticleLink } from "@/lib/living-page/articleEvidence";
 import {
@@ -674,20 +682,139 @@ function ArticlePreviewTabs({
   );
 }
 
-// SECOND CLICK: the article, one section, or a pending suggestion
+const POOL_TITLE: Record<CirclePool, string> = {
+  "no-article": "No article",
+  orphans: "Orphans",
+  linked: "Linked",
+};
+
+const POOL_LEAD: Record<CirclePool, string> = {
+  "no-article": "Knowledge that no article cites.",
+  orphans: "Claims in No article that have no links.",
+  linked: "Claims in No article that link out, and did not join a hub.",
+};
+
+const SUGGEST_LIMIT = 5000;
+
+// SECOND CLICK on No article, Orphans, or Linked: suggest merges or new articles
+function PoolSuggest({
+  pool,
+  graph,
+  units,
+}: {
+  pool: CirclePool;
+  graph: GraphData;
+  units: readonly GraphNode[];
+}) {
+  const ids = useMemo(
+    () => unitIdsInCirclePool(graph.nodes, graph.links, pool).slice(0, SUGGEST_LIMIT),
+    [graph, pool],
+  );
+  const listed = useMemo(() => {
+    const byId = new Map(units.map((unit) => [unit.id, unit]));
+    return ids.flatMap((id) => byId.get(id) ?? []);
+  }, [ids, units]);
+  const run = useServerAction(runArticleSuggestions, {
+    progress: false,
+    refreshTables: ["article_suggestions", "suggestion_runs"],
+  });
+  const [started, setStarted] = useState<"create" | "merge" | null>(null);
+  const start = async (kind: "create" | "merge") => {
+    setStarted(null);
+    const result = await run.run(null, { unitIds: ids, kind });
+    if (result.ok) setStarted(kind);
+  };
+  const title = POOL_TITLE[pool];
+  return (
+    <>
+      <DialogHeader>
+        <div className="flex items-center gap-1.5">
+          <DialogTitle>{title}</DialogTitle>
+          <InfoPopover label={`About ${title}`}>
+            <PopoverDescription>{POOL_LEAD[pool]}</PopoverDescription>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              <li>Likely merges go first. Claims that already point at an article are suggested before the leftovers.</li>
+              <li>Merges add them to an article that already exists.</li>
+              <li>Articles propose a new page when the subject stands on its own. A new article needs at least 3 claims.</li>
+              <li>Nothing is written until you accept a suggestion.</li>
+            </ul>
+          </InfoPopover>
+        </div>
+        <DialogDescription className="sr-only">
+          Suggest merges or new articles for the claims in {title}.
+        </DialogDescription>
+      </DialogHeader>
+      <p className="text-panel text-muted-foreground">
+        {formatCount(ids.length)} claim{ids.length === 1 ? "" : "s"}
+      </p>
+      {listed.length ? (
+        <ul className="flex max-h-64 flex-col gap-1 overflow-y-auto">
+          {listed.map((unit) => (
+            <li key={unit.id}>
+              <ArticleTextLink href={unit.href} label={unit.label} className="text-link hover:underline">
+                {unit.label}
+              </ArticleTextLink>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-muted-foreground">No claims are in this circle.</p>
+      )}
+      {started ? (
+        <Note>
+          Started.{" "}
+          <Link href="/units?view=suggestions" className="text-link hover:underline">
+            Open Suggestions
+          </Link>{" "}
+          to review {started === "merge" ? "merges" : "new articles"}.
+        </Note>
+      ) : null}
+      <ErrorNote error={run.error} />
+      <DialogFooter>
+        <Tooltip content={ids.length < 2 ? "A merge needs at least 2 claims." : "Group these claims and propose merges into existing articles."}>
+          <span>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={run.isPending || ids.length < 2}
+              onClick={() => void start("merge")}
+            >
+              {run.isPending ? "Starting…" : "Suggest merges"}
+            </Button>
+          </span>
+        </Tooltip>
+        <Tooltip content={ids.length < 3 ? "A new article needs at least 3 claims." : "Group these claims and propose new articles."}>
+          <span>
+            <Button
+              type="button"
+              disabled={run.isPending || ids.length < 3}
+              onClick={() => void start("create")}
+            >
+              {run.isPending ? "Starting…" : "Suggest articles"}
+            </Button>
+          </span>
+        </Tooltip>
+      </DialogFooter>
+    </>
+  );
+}
+
+// SECOND CLICK: the article, one section, a pending suggestion, or a No article pile
 export function CirclePreviewDialog({
   target,
   pages,
   units,
+  poolGraph,
   onClose,
 }: {
   target: CircleOpenTarget | null;
   pages: readonly GraphNode[];
   units: readonly GraphNode[];
+  poolGraph: GraphData;
   onClose: () => void;
 }) {
   const page =
-    target && target.kind !== "recommendation"
+    target && (target.kind === "article" || target.kind === "section")
       ? pages.find(
           (node) =>
             node.kind === GROUPINGS.page.hubKind &&
@@ -709,7 +836,13 @@ export function CirclePreviewDialog({
       open={target !== null}
       onOpenChange={(isOpen) => (isOpen ? null : onClose())}
     >
-      <DialogContent className="w-fit max-w-[min(52rem,calc(100%-2rem))] sm:max-w-[min(52rem,calc(100%-2rem))]">
+      <DialogContent
+        className={
+          target?.kind === "pool"
+            ? undefined
+            : "w-fit max-w-[min(52rem,calc(100%-2rem))] sm:max-w-[min(52rem,calc(100%-2rem))]"
+        }
+      >
         {target?.kind === "article" && page ? (
           <ArticlePreviewTabs
             key={page.id}
@@ -727,7 +860,10 @@ export function CirclePreviewDialog({
             units={units}
           />
         ) : null}
-        {target && target.kind !== "recommendation" && !page ? (
+        {target?.kind === "pool" ? (
+          <PoolSuggest key={target.pool} pool={target.pool} graph={poolGraph} units={units} />
+        ) : null}
+        {target && target.kind !== "recommendation" && target.kind !== "pool" && !page ? (
           <PreviewSplit sidebar={<UnitLinks units={[]} />}>
             <DialogHeader>
               <DialogTitle>Article</DialogTitle>
