@@ -8,6 +8,7 @@ import type { Tone } from "@/app/(app)/_lib/tone";
 import { EmptyState } from "@/components/EmptyState";
 import { DataTable } from "@/components/data-table";
 import { ChangeIcon } from "@/components/icons";
+import { InfoPopover } from "@/components/standard/info-popover";
 import type { Tables } from "@/lib/database/types";
 import { estimateCallCost, formatUsd } from "@/lib/ai/pricing";
 import { useAllAiCalls } from "./RoleSpend";
@@ -82,18 +83,24 @@ export function UsagePanel() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total calls", value: total.calls, detail: `${formatCount(total.failed)} cut off or failed` },
-          { label: "Tokens in", value: total.promptTokens, detail: "Input tokens processed" },
+          { label: "Tokens in", value: total.promptTokens, detail: null },
           { label: "Tokens out", value: total.completionTokens, detail: `${formatCount(total.reasoningTokens)} reasoning tokens` },
           { label: "This space", value: total.calls > 0 && total.unknownCostCalls === total.calls ? null : total.costUsd, detail: total.unknownCostCalls ? `${formatCount(total.unknownCostCalls)} calls have unknown cost; total is partial` : "Estimated cost at list prices", usd: true },
         ].map(({ label, value, detail, usd }) => (
           <div key={label} className="min-w-0 rounded-xl border bg-sidebar/50 p-4">
             <p className="text-xs font-medium text-muted-foreground">{label}</p>
             <p className="mt-2 break-all text-2xl font-semibold tracking-tight tabular-nums">{calls.isPending ? "—" : value === null ? "Unknown" : usd ? formatUsd(value) : formatCount(value)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+            {detail ? <p className="mt-1 text-xs text-muted-foreground">{detail}</p> : null}
           </div>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">All-time logged usage in this space. Days are in UTC. Retries with reported usage are included.{total.legacyClaudeCalls > 0 ? ` ${formatCount(total.legacyClaudeCalls)} older Claude calls lack cache details; their estimates use regular input rates.` : ""} Your provider bill may also include calls from other spaces, API clients, and unreported usage.</p>
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <p>All-time logged usage in this space.</p>
+        <InfoPopover label="About usage">
+          <p>Days are in UTC. Retries with reported usage are included.{total.legacyClaudeCalls > 0 ? ` ${formatCount(total.legacyClaudeCalls)} older Claude calls lack cache details; their estimates use regular input rates.` : ""}</p>
+          <p className="mt-2">Your provider bill may also include calls from other spaces, API clients, and unreported usage.</p>
+        </InfoPopover>
+      </div>
       <h3 className="font-medium">Daily breakdown</h3>
       <DataTable query={{ ...calls, data: totals }} columns={TOTAL_COLUMNS} getRowId={(row) => `${row.day}|${row.model}`} pageSize={7} filterPlaceholder="Search days or models…" emptyState={empty} />
       <h3 className="font-medium">Recent calls</h3>
