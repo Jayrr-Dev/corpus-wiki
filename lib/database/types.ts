@@ -810,6 +810,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      entity_relations: {
+        Row: {
+          current: boolean;
+          from_entity_id: string;
+          link: string;
+          seniority: string | null;
+          share: number | null;
+          title: string | null;
+          to_entity_id: string;
+          unit_id: string;
+        };
+        Insert: {
+          current?: boolean;
+          from_entity_id: string;
+          link: string;
+          seniority?: string | null;
+          share?: number | null;
+          title?: string | null;
+          to_entity_id: string;
+          unit_id: string;
+        };
+        Update: {
+          current?: boolean;
+          from_entity_id?: string;
+          link?: string;
+          seniority?: string | null;
+          share?: number | null;
+          title?: string | null;
+          to_entity_id?: string;
+          unit_id?: string;
+        };
+        Relationships: [];
+      };
       entity_profiles: {
         Row: {
           entity_id: string;
@@ -1525,6 +1558,7 @@ export type Database = {
       };
       read_upload_workflows: { Args: { p_event_ids: string[] }; Returns: Json };
       sync_assets: { Args: Record<string, never>; Returns: number };
+      stakeholder_structure: { Args: Record<string, never>; Returns: Json };
       rename_asset_tag: {
         Args: { p_from: string; p_to: string };
         Returns: number;
