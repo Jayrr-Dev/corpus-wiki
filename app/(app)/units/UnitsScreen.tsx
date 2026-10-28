@@ -72,7 +72,7 @@ export function DomainUnitsTable({ domainId }: { domainId: string }) {
     columns={COLUMNS}
     getRowId={(unit) => unit.id}
     filterPlaceholder="Search units…"
-    emptyState={<EmptyState icon={UnitIcon} title="No knowledge units" hint="This domain and its subdomains have no current units." />}
+    emptyState={<EmptyState icon={UnitIcon} title="No knowledge units" />}
   />;
 }
 
@@ -142,7 +142,7 @@ export function UnitsScreen() {
             getRowId={(unit) => unit.id}
             filterPlaceholder="Search units…"
             toolbarEnd={<ArticleTreeSelect pages={hydrated ? pages : []} value={filterState.filters.article} onChange={(value) => filterState.setFilter("article", value)} />}
-            emptyState={<EmptyState icon={UnitIcon} title="No units match" hint="Upload a file or change the filters." />}
+            emptyState={<EmptyState icon={UnitIcon} title="No units match" />}
           />
         </>
       )}

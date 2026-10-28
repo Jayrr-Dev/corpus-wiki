@@ -112,9 +112,9 @@ export function ChangesTable() {
         filterPlaceholder="Search changes…"
         emptyState={
           filtered ? (
-            <EmptyState icon={ChangeIcon} title="No changes match" hint="Change or reset the filters." />
+            <EmptyState icon={ChangeIcon} title="No changes match" />
           ) : (
-            <EmptyState icon={ChangeIcon} title="No changes yet" hint="Uploads and edits appear here." />
+            <EmptyState icon={ChangeIcon} title="No changes yet" />
           )
         }
       />

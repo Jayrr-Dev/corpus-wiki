@@ -114,7 +114,7 @@ export function DecisionsTable() {
     </div>
     <DataTable query={{ data: rows, isPending: changes.isPending || reviews.isPending || archives.isPending || exceptionData.state.isPending, error: changes.error ?? reviews.error ?? archives.error ?? exceptionData.state.error }}
       columns={columns} getRowId={(row) => row.id} filterPlaceholder="Search decisions…"
-      emptyState={<EmptyState icon={DecisionIcon} title="No decisions yet" hint="Approvals, archive decisions, and exceptions appear here." />} />
+      emptyState={<EmptyState icon={DecisionIcon} title="No decisions yet" />} />
     <ExceptionDialog exception={selected} action={action} unit={unit} before={action && selected?.status !== "open" ? exceptionData.textsOf(action).before : null} onClose={() => setSelectedId(null)} />
   </div>;
 }
