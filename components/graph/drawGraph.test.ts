@@ -21,7 +21,7 @@ function dot(id: string, degree: number, x: number, y: number, label = id) {
 }
 
 function recordingContext(measure: (text: string) => number) {
-  const painted: { text: string; x: number; y: number }[] = [];
+  const painted: { text: string; x: number; y: number; font: string }[] = [];
   let font = "10px sans-serif";
   const ctx = new Proxy(
     { globalAlpha: 1 },
@@ -32,7 +32,7 @@ function recordingContext(measure: (text: string) => number) {
           return (text: string) => ({ width: measure(text) });
         if (key === "fillText")
           return (text: string, x: number, y: number) =>
-            painted.push({ text, x, y });
+            painted.push({ text, x, y, font });
         return () => {};
       },
       set(_, key, value) {
@@ -329,7 +329,7 @@ it("sums links between domains into one line at the overview, then shows them bu
   expect(strokes[1]).toEqual({ alpha: 0.7, curves: 2, lines: 0 });
 });
 
-it("centers a bubble title inside the bubble", () => {
+it("centers a bubble title and keeps it larger than the note title size", () => {
   const { ctx, painted } = recordingContext(() => 48);
   const node = dot("hub", 40, 200, 200, "Instinctive Triad grouping");
   drawGraph({
@@ -353,8 +353,65 @@ it("centers a bubble title inside the bubble", () => {
   const title = painted.find((item) => item.text.startsWith("Instinctive"));
   expect(title?.text).toBe("Instinctive Triad grouping");
   const centerY = 200 * 3;
-  // textBaseline is top; a single line's top sits half a line above the center
-  expect(title!.y).toBeCloseTo(centerY - (12 * 1.3) / 2);
+  const size = Number.parseFloat(title!.font);
+  const line = size * 1.3;
+  // Bigger than the outside title (12px), and the line sits across the middle
+  expect(size).toBeGreaterThan(12);
+  expect(title!.y).toBeLessThan(centerY);
+  expect(title!.y + line).toBeGreaterThan(centerY);
+});
+
+it("drops the ellipsis once a bubble is large on screen", () => {
+  let font = "12px sans-serif";
+  const painted: { text: string; y: number }[] = [];
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(_, key) {
+        if (key === "font") return font;
+        if (key === "measureText")
+          return (text: string) => ({
+            width: text.length * Number.parseFloat(font) * 0.5,
+          });
+        if (key === "fillText")
+          return (text: string, _x: number, y: number) =>
+            painted.push({ text, y });
+        return () => {};
+      },
+      set(_, key, value) {
+        if (key === "font") font = String(value);
+        return true;
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  const label = "Eight cognitive fixation pattern";
+  drawGraph({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k: 6 },
+    overviewZoom: null,
+    nodes: [dot("hub", 20, 0, 0, label)],
+    links: [],
+    circles: [],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => null,
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  });
+  const lines = painted.map((item) => item.text);
+  expect(lines.join(" ")).toBe(label);
+  expect(lines.some((line) => line.includes("…"))).toBe(false);
+  const centerY = 400;
+  const first = painted[0]!;
+  const last = painted.at(-1)!;
+  expect(first.y).toBeLessThan(centerY);
+  expect(last.y).toBeGreaterThanOrEqual(first.y);
+  expect(last.y).toBeLessThan(centerY + 80);
 });
 
 it("keeps the first words when a title is too tall for its bubble", () => {

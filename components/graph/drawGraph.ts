@@ -310,10 +310,13 @@ const NEW_CIRCLE_RING_PX = 3;
 // Fullest group name above a ring, in screen pixels. Smaller or emptier circles scale down toward the note title size.
 const CIRCLE_LABEL_PX = 32;
 // Centered type tracks the circle it sits in: a fraction of the screen radius, clamped.
+// A bubble title starts at that size, then shrinks until the whole title fits.
 const CENTER_TYPE_RATIO = 0.36;
-const INSIDE_LABEL_MIN_PX = 8;
 const INSIDE_LABEL_MAX_PX = 42;
 const CIRCLE_CENTER_MAX_PX = 64;
+// Once a bubble is this wide on screen, shrink past the note title size before cutting the title.
+const ZOOMED_BUBBLE_PX = 40;
+const ZOOMED_LABEL_MIN_PX = 8;
 const CIRCLE_LABEL_HALO_PX = 4;
 // How far a domain name's color is pulled toward the text color (darker in light mode, lighter in dark mode)
 const CIRCLE_LABEL_CONTRAST = 0.82;
@@ -879,13 +882,21 @@ function paintHoverPlate(
 // Room kept between a title set inside its dot and the dot's edge, in screen pixels
 const INSIDE_PAD_PX = 6;
 
-// True when a text block's corners stay inside a circle of this screen radius
+// True when a text block's corners stay inside a circle of this screen radius.
+// `topPx` is the top of the block, in screen pixels from the circle's center.
+// Omit it and the block is checked on the center.
 function blockFits(
   widthPx: number,
   heightPx: number,
   radiusPx: number,
+  topPx = -heightPx / 2,
 ): boolean {
-  return (widthPx / 2) ** 2 + (heightPx / 2) ** 2 <= radiusPx ** 2;
+  const half = widthPx / 2;
+  const bottom = topPx + heightPx;
+  return (
+    half ** 2 + topPx ** 2 <= radiusPx ** 2 &&
+    half ** 2 + bottom ** 2 <= radiusPx ** 2
+  );
 }
 
 function lineWidth(
@@ -1026,56 +1037,84 @@ function prefixThatFits(
   return [line];
 }
 
-// INSIDE TITLE: the whole title, wrapped and centered inside its dot. Type scales
-// with the dot, then shrinks so the title is not cut. `omit` means the dot is big
-// enough for an inside title, but the only thing that fits is a stub, so no label
-// is drawn beside it either. Null means the dot is too small and the title sits outside.
+// Type inside a bubble. Grows with the bubble on screen, and never drops below
+// the note title size (the size used when the title sits outside).
+function insideFontPx(radiusPx: number): number {
+  return Math.round(
+    Math.min(
+      INSIDE_LABEL_MAX_PX,
+      Math.max(LABEL_PX, radiusPx * CENTER_TYPE_RATIO),
+    ),
+  );
+}
+
+// INSIDE TITLE: centered in the bubble. Type starts large, then shrinks until the
+// whole title fits. A cut ("…") is only for a bubble that is still too small.
+// Once the bubble is large on screen, type may go below the note title size so
+// the cut disappears. A stub that short is left off, and the title sits outside.
+// Null means the bubble is too small for an inside title.
 function insideTitle(
   ctx: CanvasRenderingContext2D,
   node: SimNode,
   input: DrawInput,
-):
-  | { lines: string[]; widthPx: number; topPx: number; fontPx: number }
-  | { omit: true }
-  | null {
+): { lines: string[]; widthPx: number; topPx: number; fontPx: number } | null {
   const radiusPx =
     nodeRadius(node, input.display.nodeSize) * input.camera.k - INSIDE_PAD_PX;
-  if (radiusPx < INSIDE_LABEL_MIN_PX * 0.6) return null;
+  const zoomed = radiusPx >= ZOOMED_BUBBLE_PX;
   const fitted = fitLabelInCircle(
     ctx,
     node.label,
     radiusPx,
     input.palette.fontFamily,
-    INSIDE_LABEL_MIN_PX,
+    zoomed ? ZOOMED_LABEL_MIN_PX : LABEL_PX,
     INSIDE_LABEL_MAX_PX,
     false,
   );
-  if (!fitted) return { omit: true };
-  // Top of the first line so the block sits on the dot's middle (screen pixels)
-  const topPx = -(fitted.lines.length * fitted.fontPx * LINE_HEIGHT) / 2;
+  if (!fitted) return null;
+  const kept = fitted.lines.join("").replaceAll("…", "").trim();
+  if (
+    fitted.lines.some((line) => line.includes("…")) &&
+    kept.length < MIN_CUT_CHARS
+  )
+    return null;
+  const heightPx = fitted.lines.length * fitted.fontPx * LINE_HEIGHT;
   return {
     lines: fitted.lines,
     widthPx: fitted.widthPx,
-    topPx,
+    topPx: -heightPx / 2,
     fontPx: fitted.fontPx,
   };
 }
 
-// HOVERED LABEL: same wrap as the resting label, on a backing box, nudged inside the canvas so it is never cut off
+// HOVERED LABEL: same type size as the title in the bubble, sitting above it,
+// on a backing box, nudged inside the canvas so it is never cut off
 function drawHoveredLabel(input: DrawInput, node: SimNode, alpha = 1): void {
   const { ctx, palette, camera, display } = input;
   const k = camera.k;
+  const radiusPx = nodeRadius(node, display.nodeSize) * k - INSIDE_PAD_PX;
+  const fontPx = insideFontPx(Math.max(LABEL_PX, radiusPx));
+  const wrapPx = Math.min(
+    input.width * 0.6,
+    Math.max(LABEL_WRAP_PX, (LABEL_WRAP_PX * fontPx) / LABEL_PX),
+  );
   const { lines, widthPx } = wrapLabel(
     ctx,
     node.label,
-    LABEL_WRAP_PX,
+    wrapPx,
     palette.fontFamily,
+    fontPx,
   );
-  const lineHeight = (LABEL_PX * LINE_HEIGHT) / k;
+  const lineHeight = (fontPx * LINE_HEIGHT) / k;
   const pad = 4 / k;
   const width = widthPx / k;
   const height = lines.length * lineHeight;
-  const anchor = titleAnchor(node, lines.length, lineHeight, display, k);
+  const anchor = titleAnchor(
+    node,
+    lines.length,
+    lineHeight,
+    { ...display, titlePosition: "top" },
+    k,
+  );
   const boxLeft =
     anchor.align === "center"
       ? anchor.x - width / 2
@@ -1101,7 +1140,9 @@ function drawHoveredLabel(input: DrawInput, node: SimNode, alpha = 1): void {
   ctx.globalAlpha = alpha;
   ctx.fillStyle = palette.text;
   ctx.textAlign = anchor.align;
-  lines.forEach((line, i) => paintText(input, line, x, y + i * lineHeight));
+  lines.forEach((line, i) =>
+    paintText(input, line, x, y + i * lineHeight, fontPx),
+  );
   ctx.globalAlpha = 1;
 }
 
@@ -1200,10 +1241,9 @@ function drawLabels(input: DrawInput): void {
       : zoomOpacity * faded(input, 1, DIMMED);
     if (opacity <= 0.01 || !isOnScreen(node, input)) continue;
     ctx.globalAlpha = opacity;
-    // A dot big enough on screen holds its title centered in the bubble.
+    // A dot big enough on screen holds its whole title in the middle.
     // Otherwise the title sits beside it (above by default).
     const inside = insideTitle(ctx, node, input);
-    if (inside && "omit" in inside) continue;
     const fontPx = inside?.fontPx ?? LABEL_PX;
     const { lines, widthPx } =
       inside ?? wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
@@ -1221,7 +1261,9 @@ function drawLabels(input: DrawInput): void {
         : align === "right"
           ? x - widthPx / camera.k
           : x;
-    if (!reserveLabel(input, left, y, widthPx, lines.length * rowPx)) continue;
+    // Inside titles always paint, so a domain name cannot leave a bubble blank.
+    const claimed = reserveLabel(input, left, y, widthPx, lines.length * rowPx);
+    if (!inside && !claimed) continue;
     // Inside: canvas-coloured text outlined in the dot's own colour. Outside: text outlined in the canvas colour.
     const group = inside ? input.colorOf(node) : null;
     ctx.strokeStyle = inside
