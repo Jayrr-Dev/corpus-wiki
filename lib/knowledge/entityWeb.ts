@@ -28,6 +28,7 @@ import { mapConcurrent } from "@/lib/processing/concurrency";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { fetchLogo } from "./logoFetch";
 import { searchSnippets, webSearchKey, wikipediaOfficialSite } from "./webSearch";
+import { withWikidataSizes } from "./wikidataSizes";
 
 // =====================================================================
 // STAKEHOLDER WEB LOOKUP (server side): runs when external knowledge is
@@ -148,6 +149,10 @@ export async function lookUpWebBatch(deps: Deps, entityIds: string[], force = fa
     })).value, withResults, siteResults);
     for (const [entityId, site] of picked) profiles.get(entityId)!.website = site;
   }
+  // Sizes for the Power Level, from the Wikidata item of a sure match (docs/power-model.md)
+  await mapConcurrent(subjects.filter((subject) => profiles.has(subject.entityId)), WEB_BATCH_SIZE, async (subject) => {
+    profiles.set(subject.entityId, await withWikidataSizes(subject.name, profiles.get(subject.entityId)!));
+  }, uploadExecution.getStore()?.signal);
 
   let logos = 0;
   const now = new Date().toISOString();

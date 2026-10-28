@@ -133,14 +133,25 @@ export async function searchSnippets(apiKey: string | null, query: string, maxRe
 type PagePropsResponse = { query?: { pages?: { pageprops?: { wikibase_item?: string } }[] } };
 type WikidataClaims = { claims?: { P856?: { rank?: string; mainsnak?: { datavalue?: { value?: string } } }[] } };
 
-export async function wikipediaOfficialSite(pageUrl: string): Promise<string | null> {
+// THE WIKIDATA ITEM ("Q42") a Wikipedia page is about; null when it has none
+export async function wikipediaItem(pageUrl: string): Promise<string | null> {
   let url: URL;
   try { url = new URL(pageUrl); } catch { return null; }
   if (!/(^|\.)wikipedia\.org$/.test(url.hostname) || !url.pathname.startsWith("/wiki/")) return null;
   const title = decodeURIComponent(url.pathname.slice("/wiki/".length));
   const props = await wikipedia<PagePropsResponse>({ prop: "pageprops", ppprop: "wikibase_item", titles: title, redirects: "1" });
   const item = props.query?.pages?.[0]?.pageprops?.wikibase_item;
-  if (!item || !/^Q\d+$/.test(item)) return null;
+  return item && /^Q\d+$/.test(item) ? item : null;
+}
+
+// ONE WIKIDATA API CALL (w/api.php), with the user agent Wikimedia asks for
+export function wikidata<T>(params: Record<string, string>): Promise<T> {
+  return webJson<T>(`https://www.wikidata.org/w/api.php?${new URLSearchParams({ ...params, format: "json" })}`, { headers: { "User-Agent": WIKIPEDIA_USER_AGENT }, cache: "no-store" });
+}
+
+export async function wikipediaOfficialSite(pageUrl: string): Promise<string | null> {
+  const item = await wikipediaItem(pageUrl);
+  if (!item) return null;
   let body: WikidataClaims;
   try { body = await webJson<WikidataClaims>(`https://www.wikidata.org/w/api.php?${new URLSearchParams({ action: "wbgetclaims", entity: item, property: "P856", format: "json" })}`, { headers: { "User-Agent": WIKIPEDIA_USER_AGENT }, cache: "no-store" }); }
   catch { uploadExecution.getStore()?.signal?.throwIfAborted(); return null; }
