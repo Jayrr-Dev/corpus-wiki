@@ -1,26 +1,65 @@
 "use client";
 
-import Link from "next/link";
-import { type ReactNode, useState } from "react";
 import { Facts, QueryState } from "@/app/(app)/_components/bits";
-import { PassageList, type UnitPassages, useUnitPassages } from "@/app/(app)/units/[id]/UnitSources";
 import { formatDate, statusLabel } from "@/app/(app)/_lib/format";
 import { useActorLabel } from "@/app/(app)/_lib/useActorLabel";
+import {
+  PassageList,
+  type UnitPassages,
+  useUnitPassages,
+} from "@/app/(app)/units/[id]/UnitSources";
+import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
 import { StatusGlyph } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { Enums } from "@/lib/database/types";
 import type { GraphNode } from "@/lib/graph";
-import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
 import { type UnitSummary, useRowsByIds } from "@/lib/queries/screens";
-import { EntityPreview, PagePreview } from "./NodePreviews";
+import Link from "next/link";
+import { type ReactNode, useState } from "react";
+import { DomainPreview, EntityPreview, PagePreview } from "./NodePreviews";
 
-// UNIT PREVIEW: a clicked unit's key facts (status, claim, domains, entities) without leaving the graph
-export function NodePreviewDialog({ node, onClose }: { node: GraphNode | null; onClose: () => void }) {
+// UNIT PREVIEW: a clicked unit's key facts (status, claim, domains, entities) without leaving the graph.
+// Other kinds keep a knowledge-unit list on the right. A unit dialog stays a single column.
+export function NodePreviewDialog({
+  node,
+  units = [],
+  onClose,
+}: {
+  node: GraphNode | null;
+  units?: readonly GraphNode[];
+  onClose: () => void;
+}) {
+  const open = node !== null;
+  const close = (isOpen: boolean) => (isOpen ? null : onClose());
+  if (!node || node.kind === "unit") {
+    return (
+      <Dialog open={open} onOpenChange={close}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          {node ? <UnitPreview key={node.id} node={node} /> : null}
+        </DialogContent>
+      </Dialog>
+    );
+  }
   return (
-    <Dialog open={node !== null} onOpenChange={(isOpen) => (isOpen ? null : onClose())}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
-        {node ? node.kind === "unit" ? <UnitPreview key={node.id} node={node} /> : node.kind === "entity" ? <EntityPreview key={node.id} node={node} /> : <PagePreview key={node.id} node={node} /> : null}
+    <Dialog open={open} onOpenChange={close}>
+      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-5xl">
+        {node.kind === "entity" ? (
+          <EntityPreview key={node.id} node={node} units={units} />
+        ) : null}
+        {node.kind === "domain" ? (
+          <DomainPreview key={node.id} node={node} units={units} />
+        ) : null}
+        {node.kind === "page" ? (
+          <PagePreview key={node.id} node={node} units={units} />
+        ) : null}
       </DialogContent>
     </Dialog>
   );
@@ -43,14 +82,23 @@ function UnitPreview({ node }: { node: GraphNode }) {
   const query = useUnitSummariesByIds([node.id]);
   const unit = query.data?.[0];
   // The current revision's author is who made the latest change
-  const revision = useRowsByIds("revisions", [unit?.current_revision_id]).data?.[0];
+  const revision = useRowsByIds("revisions", [unit?.current_revision_id])
+    .data?.[0];
   const label = useActorLabel();
-  const author = revision ? label(revision.author, revision.author_id, revision.model_version) : undefined;
+  const author = revision
+    ? label(revision.author, revision.author_id, revision.model_version)
+    : undefined;
   const cited = useUnitPassages(node.id);
   const [showSources, setShowSources] = useState(false);
-  const sourceCount = new Set(cited.passages.map((passage) => passage.source_id)).size;
+  const sourceCount = new Set(
+    cited.passages.map((passage) => passage.source_id),
+  ).size;
   const sourcesButton = (
-    <button type="button" className="text-link underline-offset-4 hover:underline" onClick={() => setShowSources(true)}>
+    <button
+      type="button"
+      className="text-link underline-offset-4 hover:underline"
+      onClick={() => setShowSources(true)}
+    >
       {sourceCount} {sourceCount === 1 ? "source" : "sources"}
     </button>
   );
@@ -65,19 +113,41 @@ function UnitPreview({ node }: { node: GraphNode }) {
       <QueryState query={query}>
         <p className="text-body">{unit?.content ?? node.text}</p>
       </QueryState>
-      <Facts items={facts(node, unit, author, sourceCount > 0 ? sourcesButton : null)} />
+      <Facts
+        items={facts(
+          node,
+          unit,
+          author,
+          sourceCount > 0 ? sourcesButton : null,
+        )}
+      />
       <DialogFooter>
         <Button asChild>
           <Link href={node.href}>Open page</Link>
         </Button>
       </DialogFooter>
-      <SourcesDialog open={showSources} onOpenChange={setShowSources} title={node.label} cited={cited} />
+      <SourcesDialog
+        open={showSources}
+        onOpenChange={setShowSources}
+        title={node.label}
+        cited={cited}
+      />
     </div>
   );
 }
 
 // SOURCES DIALOG: every passage the unit cites, each with a link to its source, stacked over the preview
-function SourcesDialog({ open, onOpenChange, title, cited }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; cited: UnitPassages }) {
+function SourcesDialog({
+  open,
+  onOpenChange,
+  title,
+  cited,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  cited: UnitPassages;
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] overflow-y-auto">
@@ -97,18 +167,39 @@ function KindLine({ node }: { node: GraphNode }) {
   return (
     <DialogDescription asChild>
       <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
-        {node.status ? <StatusGlyph status={node.status} className={color} /> : null}
-        <span className={color}>{[node.status ? statusLabel(node.status) : null, node.unitKind].filter(Boolean).join(" ")}</span>
+        {node.status ? (
+          <StatusGlyph status={node.status} className={color} />
+        ) : null}
+        <span className={color}>
+          {[node.status ? statusLabel(node.status) : null, node.unitKind]
+            .filter(Boolean)
+            .join(" ")}
+        </span>
       </p>
     </DialogDescription>
   );
 }
 
 // FACTS: entities, domains, sources, valid-from and (when it changed since) updated and by whom, only the ones the unit has
-function facts(node: GraphNode, unit: UnitSummary | undefined, author: string | undefined, sources: ReactNode): [string, ReactNode][] {
-  const lines = (values: string[]) => values.map((value) => <span key={value} className="block">{value}</span>);
-  const date = (value: string) => <span className="font-mono">{formatDate(value)}</span>;
-  const wasUpdated = unit ? Date.parse(unit.last_changed_at) - Date.parse(unit.created_at) > UPDATED_AFTER_MS : false;
+function facts(
+  node: GraphNode,
+  unit: UnitSummary | undefined,
+  author: string | undefined,
+  sources: ReactNode,
+): [string, ReactNode][] {
+  const lines = (values: string[]) =>
+    values.map((value) => (
+      <span key={value} className="block">
+        {value}
+      </span>
+    ));
+  const date = (value: string) => (
+    <span className="font-mono">{formatDate(value)}</span>
+  );
+  const wasUpdated = unit
+    ? Date.parse(unit.last_changed_at) - Date.parse(unit.created_at) >
+      UPDATED_AFTER_MS
+    : false;
   const rows: [string, ReactNode | null][] = [
     ["Entities", node.entityNames.length > 0 ? lines(node.entityNames) : null],
     ["Domains", node.domainPaths.length > 0 ? lines(node.domainPaths) : null],

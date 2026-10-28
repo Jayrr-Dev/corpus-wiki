@@ -48,16 +48,24 @@ export const SENIORITIES = SENIORITY_LADDER.map((entry) => entry.seniority) as [
 // ONE LINK AS A CLAIM LABELS IT (knowledge_context.structure[]). Both ends must also be in
 // the claim's own entities. title/seniority are for a person's seat (leads, works_in,
 // board_member_of); share only for owned_by; current false for a former seat or owner.
+// since/until: when the link started and ended, as the passage states it ("2019",
+// "2021-03", "2021-03-15"); null when not stated. until set means current is false.
 export type EntityRef = { type: string; key: string };
 export type StructureLabel = {
   from: EntityRef; link: StructureLinkType; to: EntityRef;
   title: string | null; seniority: Seniority | null; share: number | null; current: boolean;
+  since: string | null; until: string | null;
 };
 
+// A partial ISO date: a year, a year and month, or a full date
+export const PARTIAL_DATE = /^\d{4}(-\d{2}(-\d{2})?)?$/;
+
 // ONE LINK AS public.stakeholder_structure() RETURNS IT: merged entities resolved, one row per
-// (from, link, to) with every live claim that labels it
+// (from, link, to) with every live claim that labels it. asOf: the newest source date among
+// those claims (what "current" was true as of); null when no source has a date.
 export type StructureRelation = {
   fromId: string; toId: string; link: StructureLinkType;
   title: string | null; seniority: Seniority | null; share: number | null; current: boolean;
+  since: string | null; until: string | null; asOf: string | null;
   unitIds: string[];
 };

@@ -179,6 +179,31 @@
 }
 
 /* =====================================================================
+   LANDING PAGE (/welcome): always dark, so fixed values rather than theme
+   switches. Warm near black base, gold for the neuron and highlights,
+   brand green for the one button.
+   ===================================================================== */
+@theme {
+  --color-landing-base: #131209;
+  --color-landing-surface: #181818;
+  --color-landing-fade: #9b9b9b;
+  --color-landing-gold: #d9a441;
+  --color-landing-gold-pale: #f4d9a0;
+  --color-landing-glow: #f2c063;
+  --color-landing-spark: #ffe2a1;
+  --color-landing-core: #fff4d6;
+  --color-landing-ember: #8a5a1c;
+  --color-landing-label: #e8d3a6;
+  --color-landing-conflict: #e0705a;
+  --color-landing-green: #496748;
+  --color-landing-green-hover: #557a54;
+  --color-landing-green-light: #6e9a6c;
+  --color-landing-green-pale: #cfe3cd;
+  /* weighted, decelerating motion curve for every landing transition */
+  --ease-landing: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* =====================================================================
    BASE
    ===================================================================== */
 @layer base {

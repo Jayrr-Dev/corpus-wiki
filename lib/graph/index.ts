@@ -5,11 +5,49 @@
 // the panel's settings. UI lives in components/graph.
 // =====================================================================
 
-export type * from "./types";
 export { buildGraph, countDegrees, shortLabel } from "./build";
-export { circleExtents, clusterCircles, clusterTree, deepestPaths, type ClusterCircle, type ClusterGroup } from "./clusters";
-export { facingEdges, routeControls, routeDomains, straightenRoute, summaryDomains, type RouteCircle, type RoutePoint } from "./bundles";
-export { applyFilters, createdBy, domainPathsForScope, keepNodes, type GraphFilters } from "./filters";
+export {
+  facingEdges,
+  routeControls,
+  routeDomains,
+  straightenRoute,
+  summaryDomains,
+  type RouteCircle,
+  type RoutePoint,
+} from "./bundles";
+export {
+  circleAt,
+  circleExtents,
+  circleNestedIn,
+  circleOpenTarget,
+  clusterCircles,
+  clusterConnections,
+  clusterKey,
+  clusterTree,
+  deepestPaths,
+  moveTarget,
+  NO_ARTICLE_LABEL,
+  nodeInCluster,
+  ORPHANS_LABEL,
+  pageDropLabel,
+  pageMoveTarget,
+  primaryEntityName,
+  primaryPageTitle,
+  type CircleOpenTarget,
+  type ClusterCircle,
+  type ClusterGroup,
+  type ClusterMode,
+  type PageDrop,
+} from "./clusters";
+export {
+  applyFilters,
+  createdBy,
+  domainPathsForScope,
+  graphForGrouping,
+  keepNodes,
+  mergeEntityDomainHubs,
+  type GraphFilters,
+} from "./filters";
 export {
   GRAPH_COLORS,
   GROUP_FIELDS,
@@ -24,17 +62,26 @@ export {
   type GroupField,
 } from "./groups";
 export { neighborhood } from "./neighborhood";
-export { relatedLinks, scoreRelatedPairs, withRelated, type RelatedOptions, type ScoredPair } from "./related";
+export {
+  relatedLinks,
+  scoreRelatedPairs,
+  withRelated,
+  type RelatedOptions,
+  type ScoredPair,
+} from "./related";
 export {
   DEFAULT_GRAPH_SETTINGS,
   DISPLAY_SLIDERS,
   FORCE_SLIDERS,
+  GRAPH_GROUP_BY,
   parseSavedSettings,
   TITLE_POSITIONS,
   type GraphDisplay,
   type GraphForces,
+  type GraphGroupBy,
   type GraphSettings,
   type SliderRule,
   type TitlePosition,
 } from "./settings";
+export type * from "./types";
 export { useGraphData } from "./useGraphData";

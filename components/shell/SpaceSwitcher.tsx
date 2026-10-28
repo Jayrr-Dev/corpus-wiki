@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition, type FormEvent } from "react";
-import { CheckIcon, ChevronsUpDownIcon, LayersIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, Globe2, LayersIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { PublishingDialog } from "@/components/publishing/PublishingDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +13,11 @@ import { createSpace, deleteSpace, renameSpace, switchSpace } from "@/lib/server
 import { SPACE_CHANGED_KEY, type Space } from "@/lib/spaces/shared";
 import { describeCallError } from "@/lib/server-actions/result";
 
+const OPEN_PUBLISHING_KEY = "corpus-wiki-open-publishing";
+
 export function SpaceSwitcher({ spaces, activeSpace }: { spaces: Space[]; activeSpace: Space }) {
   const [dialog, setDialog] = useState<"create" | "rename" | "delete" | null>(null);
+  const [publishingOpen, setPublishingOpen] = useState(false);
   const [managedSpace, setManagedSpace] = useState<Space | null>(null);
   const [actionsFor, setActionsFor] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -33,10 +37,44 @@ export function SpaceSwitcher({ spaces, activeSpace }: { spaces: Space[]; active
     return () => window.removeEventListener("storage", changed);
   }, []);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        const pendingId = sessionStorage.getItem(OPEN_PUBLISHING_KEY);
+        if (!pendingId) return;
+        sessionStorage.removeItem(OPEN_PUBLISHING_KEY);
+        if (pendingId === activeSpace.id) setPublishingOpen(true);
+      } catch { /* storage may be disabled */ }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [activeSpace.id]);
+
   function enterSpace() {
     try { localStorage.setItem(SPACE_CHANGED_KEY, crypto.randomUUID()); } catch { /* storage may be disabled */ }
     // A full navigation discards all query caches, subscriptions and page state.
     window.location.assign(new URL("/", window.location.origin).href);
+  }
+
+  function openPublishing(space: Space) {
+    setError(null);
+    if (space.id === activeSpace.id) {
+      setPublishingOpen(true);
+      return;
+    }
+    try { sessionStorage.setItem(OPEN_PUBLISHING_KEY, space.id); } catch { /* storage may be disabled */ }
+    startTransition(async () => {
+      try {
+        const result = await switchSpace(space.id);
+        if (result.ok) enterSpace();
+        else {
+          try { sessionStorage.removeItem(OPEN_PUBLISHING_KEY); } catch { /* storage may be disabled */ }
+          setError(result.error);
+        }
+      } catch (caught) {
+        try { sessionStorage.removeItem(OPEN_PUBLISHING_KEY); } catch { /* storage may be disabled */ }
+        setError(describeCallError(caught));
+      }
+    });
   }
 
   function choose(id: string) {
@@ -96,6 +134,10 @@ export function SpaceSwitcher({ spaces, activeSpace }: { spaces: Space[]; active
                 </div>
               </div>
               <DropdownMenuSubContent sideOffset={6}>
+                <DropdownMenuItem disabled={pending} onSelect={() => openPublishing(space)}>
+                  <Globe2 className="size-4" /> Publishing
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem disabled={pending} onSelect={() => { setManagedSpace(space); setName(space.name); setError(null); setDialog("rename"); }}>
                   <PencilIcon className="size-4" /> Rename Space
                 </DropdownMenuItem>
@@ -140,6 +182,7 @@ export function SpaceSwitcher({ spaces, activeSpace }: { spaces: Space[]; active
           </form>
         </DialogContent>
       </Dialog>
+      <PublishingDialog open={publishingOpen} onOpenChange={setPublishingOpen} />
     </>
   );
 }

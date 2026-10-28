@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queries";
 import { getBrowserSupabase } from "@/lib/supabase/client";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { buildGraph } from "./build";
 import { fetchGraphRows } from "./rows";
 import type { GraphData } from "./types";
@@ -11,7 +11,7 @@ import type { GraphData } from "./types";
 // table, so anything that invalidates units (a commit, Realtime) refreshes the graph.
 export function useGraphData(): UseQueryResult<GraphData> {
   return useQuery({
-    queryKey: [...queryKeys.table("units"), "graph", "source-origin"],
+    queryKey: [...queryKeys.table("units"), "graph", "suggestions"],
     queryFn: async () => buildGraph(await fetchGraphRows(getBrowserSupabase())),
   });
 }
