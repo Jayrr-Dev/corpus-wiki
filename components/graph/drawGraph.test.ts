@@ -99,6 +99,7 @@ it("keeps domain text at readable screen sizes even below the canvas font limit"
         x: 0,
         y: 0,
         r: 100,
+        count: 1,
         index: 0,
       },
     ],
@@ -119,7 +120,7 @@ it("keeps domain text at readable screen sizes even below the canvas font limit"
     hoverLabelOnly: false,
   });
   expect(labels).toHaveLength(1);
-  expect(labels[0]!.font).toBe("700 20px sans-serif");
+  expect(labels[0]!.font).toBe("700 32px sans-serif");
   expect(labels[0]!.transform).toEqual([2, 0, 0, 2, 0, 0]);
   expect(labels[0]!.x).toBe(400);
   expect(labels[0]!.y).toBeCloseTo(297);
@@ -165,6 +166,7 @@ it("paints nested domain circles progressively fainter and names only the top tw
       x: 100 + depth * 150,
       y: 300,
       r: 30,
+      count: 1,
       index: 0,
     })),
     display: DEFAULT_GRAPH_SETTINGS.display,
@@ -283,6 +285,7 @@ it("sums links between domains into one line at the overview, then shows them bu
         x: 0,
         y: 100,
         r: 50,
+        count: 1,
         index: 0,
       },
       {
@@ -294,6 +297,7 @@ it("sums links between domains into one line at the overview, then shows them bu
         x: 400,
         y: 100,
         r: 50,
+        count: 1,
         index: 1,
       },
     ],
@@ -406,4 +410,271 @@ it("gives a larger bubble its title before a smaller neighbor can take the space
   const texts = painted.map((item) => item.text);
   expect(texts).toContain("Large title");
   expect(texts).not.toContain("Small title");
+});
+
+it("dims lines that only cross the circle in view, and keeps lines that enter or leave it", () => {
+  const alphas: number[] = [];
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(target, key) {
+        if (key === "globalAlpha") return target.globalAlpha;
+        if (key === "stroke")
+          return () => {
+            alphas.push(target.globalAlpha);
+          };
+        if (key === "measureText") return () => ({ width: 20 });
+        return () => {};
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  const node = (id: string, x: number, domain: string) => ({
+    id,
+    kind: "unit" as const,
+    label: id,
+    text: id,
+    href: "",
+    createdAt: "",
+    degree: 1,
+    domainPaths: [domain],
+    entityNames: [],
+    unitKind: null,
+    status: null,
+    x,
+    y: 0,
+  });
+  const inside = node("in", 0, "Type Two");
+  const left = node("left", -800, "Other");
+  const right = node("right", 800, "Else");
+  drawGraph({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k: 2 },
+    overviewZoom: null,
+    nodes: [inside, left, right],
+    links: [
+      { id: "out", source: inside, target: right, kind: "supports" },
+      { id: "cross", source: left, target: right, kind: "supports" },
+    ],
+    circles: [
+      {
+        key: "Type Two",
+        label: "Type Two",
+        depth: 0,
+        parent: "",
+        isBranch: true,
+        x: 0,
+        y: 0,
+        r: 200,
+        count: 3,
+        index: 0,
+      },
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => null,
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  });
+  expect(alphas).toContain(0.08);
+  expect(alphas).toContain(0.7);
+});
+
+it("hides note titles until the camera is inside an inner group", () => {
+  const titles: string[] = [];
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(target, key) {
+        if (key === "globalAlpha") return target.globalAlpha;
+        if (key === "fillText")
+          return (text: string) => {
+            if (target.globalAlpha > 0.05) titles.push(text);
+          };
+        if (key === "measureText") return () => ({ width: 40 });
+        return () => {};
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  const node = dot("note", 4, 0, 0, "Average Twos");
+  const input = (k: number): DrawInput => ({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k },
+    overviewZoom: 1,
+    nodes: [node],
+    links: [],
+    circles: [
+      {
+        key: "Type Two/Stress",
+        label: "Stress and movement",
+        depth: 1,
+        parent: "Type Two",
+        isBranch: false,
+        x: 0,
+        y: 0,
+        r: 40,
+        count: 4,
+        index: 0,
+      },
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => null,
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  });
+  drawGraph(input(2));
+  expect(titles).not.toContain("Average Twos");
+  titles.length = 0;
+  drawGraph(input(16));
+  expect(titles).toContain("Average Twos");
+});
+
+it("wraps a long group title inside its circle", () => {
+  const lines: string[] = [];
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(target, key) {
+        if (key === "globalAlpha") return target.globalAlpha;
+        if (key === "fillText")
+          return (text: string) => {
+            if (target.globalAlpha > 0.2) lines.push(text);
+          };
+        if (key === "measureText")
+          return (text: string) => ({ width: text.length * 10 });
+        return () => {};
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  drawGraph({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k: 2 },
+    overviewZoom: null,
+    nodes: [],
+    links: [],
+    circles: [
+      {
+        key: "ocpd",
+        label: "Obsessive-Compulsive Personality Disorder",
+        depth: 1,
+        parent: "",
+        isBranch: false,
+        x: 0,
+        y: 0,
+        r: 50,
+        count: 8,
+        index: 0,
+      },
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => null,
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  });
+  expect(lines.length).toBeGreaterThan(1);
+  expect(lines.join(" ")).toContain("Obsessive-");
+  expect(lines.join(" ")).toContain("Disorder");
+});
+
+it("fades groups the focus does not connect to and keeps linked groups bright", () => {
+  const rings: number[] = [];
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(target, key) {
+        if (key === "globalAlpha") return target.globalAlpha;
+        if (key === "stroke") return () => rings.push(target.globalAlpha);
+        if (key === "measureText") return () => ({ width: 20 });
+        return () => {};
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  const placed = (id: string, domain: string, x: number) => ({
+    id,
+    kind: "unit" as const,
+    label: id,
+    text: id,
+    href: "",
+    createdAt: "",
+    degree: 1,
+    domainPaths: [domain],
+    entityNames: [] as string[],
+    unitKind: null,
+    status: null,
+    x,
+    y: 0,
+  });
+  const home = placed("home", "Home/Child", 0);
+  const linked = placed("linked", "Linked", 200);
+  const other = placed("other", "Other", 400);
+  const circle = (
+    key: string,
+    depth: number,
+    x: number,
+  ): DrawInput["circles"][number] => ({
+    key,
+    label: key,
+    depth,
+    parent: depth === 0 ? "" : "Home",
+    isBranch: depth === 0 && key === "Home",
+    x,
+    y: 0,
+    r: 40,
+    count: 1,
+    index: depth,
+  });
+  const input: DrawInput = {
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 0, y: 0, k: 1 },
+    overviewZoom: null,
+    nodes: [home, linked, other],
+    links: [{ id: "join", source: home, target: linked, kind: "supports" }],
+    circles: [
+      circle("Home", 0, 0),
+      circle("Linked", 0, 200),
+      circle("Other", 0, 400),
+      circle("Home/Child", 1, 0),
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => null,
+    focusId: "home",
+    focusMix: 1,
+    focusIds: new Set(["home", "linked"]),
+    hoverLabelOnly: false,
+  };
+  drawGraph(input);
+  expect(rings.slice(0, 4).map((alpha) => Number(alpha.toFixed(3)))).toEqual([
+    0.8, 0.8, 0.08, 0.8,
+  ]);
+  rings.length = 0;
+  drawGraph({
+    ...input,
+    focusId: null,
+    focusIds: new Set(),
+    focusedDomain: "Home",
+  });
+  expect(rings.slice(0, 4).map((alpha) => Number(alpha.toFixed(3)))).toEqual([
+    0.8, 0.8, 0.096, 0.8,
+  ]);
 });

@@ -95,7 +95,11 @@ export function LocalGraph({ centerId }: { centerId: string }) {
         step={1}
         onChange={setDepth}
       />
-      <NodePreviewDialog node={preview} onClose={() => setPreview(null)} />
+      <NodePreviewDialog
+        node={preview}
+        units={query.data?.nodes ?? []}
+        onClose={() => setPreview(null)}
+      />
     </section>
   );
 }

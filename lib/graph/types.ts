@@ -28,6 +28,13 @@ export interface GraphNode {
   text: string;
   href: string;
   createdAt: string;
+  // Latest change, use in an article, move, or applied action. Units only.
+  activityAt?: string;
+  // Created times for articles and their sections, shared by every node.
+  articleCreatedAt?: {
+    pages: ReadonlyMap<string, string>;
+    sections: ReadonlyMap<string, string>;
+  };
   degree: number;
   // What group queries match on
   domainPaths: string[];
@@ -36,6 +43,12 @@ export interface GraphNode {
   entityNames: string[];
   // Pages that cite this unit (own title on page nodes; omitted on older fixtures)
   pageTitles?: string[];
+  // Title of a pending article suggestion that includes this unit
+  recommendedTitle?: string;
+  // create is a new article; merge adds these units to an existing one
+  recommendedKind?: "create" | "merge";
+  // Sections that cite this unit, in the article they belong to
+  pageSections?: { page: string; section: string; position: number }[];
   unitKind: Enums<"unit_kind"> | null;
   status: Enums<"epistemic_status"> | null;
 }

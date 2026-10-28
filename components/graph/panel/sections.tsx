@@ -49,11 +49,96 @@ import { PanelSection } from "./PanelSection";
 import { SelectRow, SliderRow, SwitchRow } from "./rows";
 
 // =====================================================================
-// PANEL SECTIONS: Filters, Group, Colors, Tuning. Each takes its
+// PANEL SECTIONS: Filters, Nodes, Group, Colors, Tuning. Each takes its
 // slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
 
-// FILTERS: search, layers, one domain to focus on, and derived related links; orphans live under Tuning
+// NODES: which dot kinds appear on the canvas (claims, domain hubs, entities, pages).
+export function NodesSection({
+  value,
+  onChange,
+}: {
+  value: GraphFilters;
+  onChange: (next: GraphFilters) => void;
+}) {
+  const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) =>
+    onChange({ ...value, [key]: next });
+  return (
+    <PanelSection title="Nodes" defaultOpen>
+      <SwitchRow
+        label="Knowledge units"
+        checked={value.showUnits}
+        onChange={(next) => set("showUnits", next)}
+      />
+      <SwitchRow
+        label="Domains"
+        checked={value.showDomains}
+        onChange={(next) => set("showDomains", next)}
+      />
+      <SwitchRow
+        label="Entities"
+        checked={value.showEntities}
+        onChange={(next) => set("showEntities", next)}
+      />
+      <SwitchRow
+        label="Pages"
+        checked={value.showPages}
+        onChange={(next) => set("showPages", next)}
+      />
+    </PanelSection>
+  );
+}
+
+// EDGES: lines between dots. Connectors attach a note to a domain, entity, or page.
+// Related links are derived similarity lines between units.
+export function EdgesSection({
+  value,
+  display,
+  onChange,
+  onDisplayChange,
+}: {
+  value: GraphFilters;
+  display: GraphDisplay;
+  onChange: (next: GraphFilters) => void;
+  onDisplayChange: (next: GraphDisplay) => void;
+}) {
+  const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) =>
+    onChange({ ...value, [key]: next });
+  return (
+    <PanelSection title="Edges" defaultOpen>
+      <SwitchRow
+        label="Connectors"
+        checked={value.showConnectors}
+        onChange={(next) => set("showConnectors", next)}
+      />
+      <SwitchRow
+        label="Related links"
+        checked={value.showRelated}
+        onChange={(next) => set("showRelated", next)}
+      />
+      <SliderRow
+        label="Opacity"
+        value={display.edgeOpacity}
+        min={0}
+        max={1}
+        step={0.01}
+        onChange={(edgeOpacity) => onDisplayChange({ ...display, edgeOpacity })}
+      />
+      {value.showRelated ? (
+        <SliderRow
+          label="Min relatedness"
+          value={value.relatedness}
+          min={0.05}
+          max={0.9}
+          step={0.01}
+          onChange={(next) => set("relatedness", next)}
+        />
+      ) : null}
+    </PanelSection>
+  );
+}
+
+// FILTERS: search and one domain to focus on; orphans live under Tuning
 export function FiltersSection({
   value,
   nodes,
@@ -120,41 +205,6 @@ export function FiltersSection({
         onChange={selectDomain}
         className="h-7 w-full max-w-none"
       />
-      <SwitchRow
-        label="Knowledge units"
-        checked={value.showUnits}
-        onChange={(next) => set("showUnits", next)}
-      />
-      <SwitchRow
-        label="Domains"
-        checked={value.showDomains}
-        onChange={(next) => set("showDomains", next)}
-      />
-      <SwitchRow
-        label="Entities"
-        checked={value.showEntities}
-        onChange={(next) => set("showEntities", next)}
-      />
-      <SwitchRow
-        label="Pages"
-        checked={value.showPages}
-        onChange={(next) => set("showPages", next)}
-      />
-      <SwitchRow
-        label="Related links"
-        checked={value.showRelated}
-        onChange={(next) => set("showRelated", next)}
-      />
-      {value.showRelated ? (
-        <SliderRow
-          label="Min relatedness"
-          value={value.relatedness}
-          min={0.05}
-          max={0.9}
-          step={0.01}
-          onChange={(next) => set("relatedness", next)}
-        />
-      ) : null}
     </PanelSection>
   );
 }
@@ -179,14 +229,46 @@ export function GroupSection({
             One grouping can be on at a time.
           </PopoverDescription>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
-            <li>Domain draws a circle around each topic.</li>
             <li>
-              Entities draws a colored circle around each entity. Knowledge
-              units sit inside it.
+              Domain draws a circle around each topic. That circle is separate
+              from the domain node. With Domains on in Nodes, the node sits in
+              the middle of its circle and grows with its connections.
             </li>
             <li>
-              Pages draws a colored circle around each article. Cited units sit
-              inside it.
+              Entities draws a colored circle around each entity. Knowledge
+              units sit inside it. Domain nodes show there only when Domains is
+              on in Nodes.
+            </li>
+            <li>
+              Pages draws a circle around each article. Each section is a circle
+              inside it, and the knowledge that section uses sits there.
+            </li>
+            <li>
+              A unit used in more than one section sits in the earliest one.
+            </li>
+            <li>
+              Click a selected article, section, or suggestion again to open it.
+            </li>
+            <li>
+              Drag one knowledge unit onto an article, a section, or a
+              suggestion. An article drop uses the earliest section that can
+              take one claim. A blue suggestion adds it to that new article. An
+              orange Merge suggestion adds it to that merge. Go back to the
+              overview before dropping it on a different group.
+            </li>
+            <li>
+              Units that no article cites gather in a gray No article circle.
+              Inside it, a node with the most connections and the nodes linked
+              to it form a nested group, with a black border and that node name.
+              Linked nodes that never join a hub sit together in Linked. A node
+              with no links at all sits in Orphans. A link to anything else
+              leaves it in No article. Nodes from an external source sit in
+              External. A pending suggestion groups its units inside that
+              circle. A new article is blue. A merge is orange and marked Merge.
+              The newest 10% of knowledge units changed, used, moved, or applied
+              keep a green border. The newest 10% of articles and the newest 10%
+              of sections have a yellow ring. Inside a selected group, that
+              share is of the group.
             </li>
           </ul>
         </>
@@ -666,10 +748,14 @@ function AddColorGroup({
 export function GroupsSection({
   value,
   nodes,
+  showNew,
+  onShowNew,
   onChange,
 }: {
   value: GraphGroup[];
   nodes: readonly GraphNode[];
+  showNew: boolean;
+  onShowNew: (showNew: boolean) => void;
   onChange: (next: GraphGroup[]) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -685,6 +771,7 @@ export function GroupsSection({
   );
   return (
     <PanelSection title="Colors" defaultOpen>
+      <SwitchRow label="Newest Toggle" checked={showNew} onChange={onShowNew} />
       <div className="flex items-center gap-1">
         {value.length > 6 || search ? (
           <Input

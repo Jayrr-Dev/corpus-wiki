@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildGraph, shortLabel } from "./build";
 import {
+  groupLabelPx,
   hierarchyOpacity,
   labelOpacity,
   pinchStep,
@@ -12,11 +13,22 @@ import {
 } from "./camera";
 import {
   circleAt,
+  circleNestedIn,
+  circleOpenTarget,
   clusterCircles,
+  clusterConnections,
   clusterTree,
   createContainment,
+  EXTERNAL_LABEL,
+  LINKED_LABEL,
   moveTarget,
+  NO_ARTICLE_LABEL,
+  nodeInCluster,
+  ORPHANS_LABEL,
   packDomains,
+  pageDropLabel,
+  pageMoveTarget,
+  pageSectionKey,
 } from "./clusters";
 import { entityColor } from "./domainColors";
 import { applyFilters, createdBy, graphForGrouping } from "./filters";
@@ -29,7 +41,8 @@ import {
   splitGroupQuery,
 } from "./groups";
 import { neighborhood } from "./neighborhood";
-import type { SimNode } from "./physics";
+import { nodeRadius, type SimNode } from "./physics";
+import { recentMarkedKeys, recentUnitIds } from "./recentUnits";
 import type { GraphRows } from "./rows";
 import { DEFAULT_GRAPH_SETTINGS, parseSavedSettings } from "./settings";
 import type { GraphNode } from "./types";
@@ -99,8 +112,8 @@ const rows: GraphRows = {
     },
   ],
   sections: [
-    { id: "s1", page_id: "p1" },
-    { id: "s2", page_id: "p1" },
+    { id: "s1", page_id: "p1", title: "Facts", position: 1 },
+    { id: "s2", page_id: "p1", title: "History", position: 0 },
   ],
   sectionInputs: [
     { section_id: "s1", unit_id: "u1" },
@@ -122,6 +135,7 @@ const ALL_LAYERS = {
   showDomains: true,
   showPages: true,
   showOrphans: true,
+  showConnectors: true,
   showRelated: false,
   relatedness: 0.3,
 };
@@ -137,6 +151,10 @@ describe("buildGraph", () => {
 
   it("links a page to a cited unit once, however many sections cite it", () => {
     expect(graph.links.filter((link) => link.kind === "cites")).toHaveLength(1);
+    expect(nodeById("u1").pageSections).toEqual([
+      { page: "Alpha", section: "Facts", position: 1 },
+      { page: "Alpha", section: "History", position: 0 },
+    ]);
   });
 
   it("links units and pages into their domains", () => {
@@ -151,6 +169,51 @@ describe("buildGraph", () => {
       label: "Data layer",
       text: "Projects/Alpha/Data layer",
     });
+  });
+
+  it("records when an article and its sections were created", () => {
+    const built = buildGraph({
+      ...rows,
+      sections: rows.sections.map((section) =>
+        section.id === "s1" ? { ...section, created_at: T3 } : section,
+      ),
+    });
+    const times = built.nodes[0]?.articleCreatedAt;
+    expect(times?.pages.get("Alpha")).toBe(T2);
+    expect(times?.sections.get(pageSectionKey("Alpha", "Facts"))).toBe(T3);
+    expect(times?.sections.has(pageSectionKey("Alpha", "History"))).toBe(false);
+  });
+
+  it("keeps the later of a unit change and a later move or use", () => {
+    const built = buildGraph({
+      ...rows,
+      units: rows.units.map((unit) =>
+        unit.id === "u1" ? { ...unit, last_changed_at: T1 } : unit,
+      ),
+      touches: [
+        { unit_id: "u1", at: "2026-10-20T00:00:00Z" },
+        { unit_id: "u1", at: T2 },
+      ],
+    });
+    expect(built.nodes.find((node) => node.id === "u1")?.activityAt).toBe(
+      "2026-10-20T00:00:00Z",
+    );
+  });
+
+  it("marks the newest tenth of knowledge units, articles, and sections", () => {
+    const nodes = Array.from({ length: 20 }, (_, index) => ({
+      id: `u${String(index).padStart(2, "0")}`,
+      kind: "unit",
+      activityAt: `2026-10-${String(index + 1).padStart(2, "0")}T00:00:00Z`,
+    }));
+    const marked = recentUnitIds(nodes);
+    expect([...marked].sort()).toEqual(["u18", "u19"]);
+    const articles = nodes.map((node) => ({
+      key: node.id,
+      at: node.activityAt,
+    }));
+    expect([...recentMarkedKeys(articles)].sort()).toEqual(["u18", "u19"]);
+    expect(recentUnitIds(nodes.slice(0, 4)).size).toBe(1);
   });
 
   it("counts degree over the kept links", () => {
@@ -565,6 +628,15 @@ describe("saved settings", () => {
     expect(parseSavedSettings(DEFAULT_GRAPH_SETTINGS)).toEqual(
       DEFAULT_GRAPH_SETTINGS,
     );
+    const display = { ...DEFAULT_GRAPH_SETTINGS.display };
+    delete (display as { showNew?: boolean }).showNew;
+    delete (display as { edgeOpacity?: number }).edgeOpacity;
+    const parsed = parseSavedSettings({
+      ...DEFAULT_GRAPH_SETTINGS,
+      display,
+    }).display;
+    expect(parsed.showNew).toBe(true);
+    expect(parsed.edgeOpacity).toBe(0.7);
   });
 
   it("keeps older saved settings, defaulting the fields added since", () => {
@@ -620,6 +692,20 @@ describe("claims sharing a topic label", () => {
 });
 
 describe("entity groups", () => {
+  it("hides domain nodes in entity grouping until the Domains toggle is on", () => {
+    const hidden = graphForGrouping(
+      applyFilters(graph, { ...ALL_LAYERS, showDomains: false }),
+      "entity",
+    );
+    expect(hidden.nodes.some((node) => node.kind === "domain")).toBe(false);
+    const shown = graphForGrouping(
+      applyFilters(graph, { ...ALL_LAYERS, showDomains: true }),
+      "entity",
+    );
+    expect(shown.nodes.some((node) => node.kind === "domain")).toBe(true);
+    expect(shown.nodes.some((node) => node.kind === "entity")).toBe(false);
+  });
+
   it("drops the entity dot and the about line so units sit inside the circle", () => {
     const grouped = graphForGrouping(graph, "entity");
     expect(grouped.nodes.map((node) => node.id)).not.toContain("e1");
@@ -627,17 +713,119 @@ describe("entity groups", () => {
     expect(grouped.links.some((link) => link.kind === "depends_on")).toBe(true);
   });
 
-  it("drops domain hubs and in-links when grouping by domain circles", () => {
+  it("puts the domain hub inside the entity group that shares its claims", () => {
+    const base = {
+      text: "",
+      href: "/",
+      createdAt: T1,
+      pageTitles: [] as string[],
+      unitKind: null,
+      status: null,
+    };
+    const node = (
+      id: string,
+      kind: GraphNode["kind"],
+      extra: Partial<GraphNode>,
+    ): GraphNode => ({
+      ...base,
+      id,
+      kind,
+      label: id,
+      degree: 0,
+      domainPaths: [],
+      entityNames: [],
+      ...extra,
+    });
+    const data = {
+      nodes: [
+        node("hub", "domain", { domainPaths: ["Safety"], degree: 20 }),
+        node("small", "domain", { domainPaths: ["Safety/PPE"], degree: 2 }),
+        node("u1", "unit", { domainPaths: ["Safety"], entityNames: ["Acme"] }),
+        node("u2", "unit", { domainPaths: ["Safety"], entityNames: ["Acme"] }),
+        node("u3", "unit", {
+          domainPaths: ["Safety/PPE"],
+          entityNames: ["Acme"],
+        }),
+        node("u4", "unit", { domainPaths: ["Safety"], entityNames: ["Other"] }),
+      ],
+      links: [],
+    };
+    const grouped = graphForGrouping(data, "entity");
+    expect(
+      grouped.nodes.find((item) => item.id === "hub")?.entityNames,
+    ).toEqual(["Acme"]);
+    expect(
+      grouped.nodes.find((item) => item.id === "small")?.entityNames,
+    ).toEqual([]);
+    const placed = grouped.nodes.map((item) => ({ ...item, x: 0, y: 0 }));
+    const circles = clusterCircles(placed, 1, "entity");
+    expect(circles.map((circle) => circle.key).sort()).toEqual([
+      "Acme",
+      "Other",
+    ]);
+    const acme = circles.find((circle) => circle.key === "Acme")!;
+    const { homes } = packDomains(placed, 1, "entity");
+    const home = homes.get("hub")!;
+    expect(home).toEqual(homes.get("u1"));
+    expect(homes.get("small")).not.toEqual(home);
+    expect(Math.hypot(acme.x - home.x, acme.y - home.y)).toBeLessThan(acme.r);
+  });
+
+  it("shows domain nodes and their circles when knowledge units are off", () => {
+    const filtered = applyFilters(graph, {
+      ...ALL_LAYERS,
+      showUnits: false,
+      showEntities: false,
+      showPages: false,
+      showOrphans: false,
+    });
+    expect(filtered.nodes.map((node) => node.id).sort()).toEqual(["d1", "d2"]);
+    expect(
+      filtered.nodes.find((node) => node.id === "d1")?.domainPaths,
+    ).toEqual(["Projects/Alpha"]);
+    const grouped = graphForGrouping(filtered, "domain");
+    expect(grouped.nodes.map((node) => node.id).sort()).toEqual(["d1", "d2"]);
+    const placed = grouped.nodes.map((node) => ({ ...node, x: 0, y: 0 }));
+    expect(
+      clusterCircles(placed, 1, "domain")
+        .map((circle) => circle.key)
+        .sort(),
+    ).toEqual(["Projects", "Projects/Alpha", "Projects/Alpha/Data layer"]);
+  });
+
+  it("keeps domain hub nodes when grouping by domain circles", () => {
     const grouped = graphForGrouping(graph, "domain");
     expect(grouped.nodes.map((node) => node.id).sort()).toEqual([
+      "d1",
+      "d2",
       "e1",
       "p1",
       "u1",
       "u2",
       "u3",
     ]);
-    expect(grouped.links.some((link) => link.kind === "in")).toBe(false);
+    expect(grouped.links.some((link) => link.kind === "in")).toBe(true);
     expect(graphForGrouping(graph, "off")).toBe(graph);
+  });
+
+  it("hides connector lines without removing the nodes they join", () => {
+    const hidden = applyFilters(graph, {
+      ...ALL_LAYERS,
+      showConnectors: false,
+    });
+    expect(hidden.nodes.map((node) => node.id).sort()).toEqual([
+      "d1",
+      "d2",
+      "e1",
+      "p1",
+      "u1",
+      "u2",
+      "u3",
+    ]);
+    expect(hidden.links.some((link) => link.kind === "in")).toBe(false);
+    expect(hidden.links.some((link) => link.kind === "about")).toBe(false);
+    expect(hidden.links.some((link) => link.kind === "cites")).toBe(false);
+    expect(hidden.links.some((link) => link.kind === "depends_on")).toBe(true);
   });
 
   it("drops page dots and cites links so cited units sit inside the circle", () => {
@@ -656,17 +844,176 @@ describe("domain clusters", () => {
     x = 0,
     y = 0,
     entityNames: string[] = [],
+    kind: GraphNode["kind"] = "unit",
   ): SimNode => ({
     ...({} as GraphNode),
     id,
+    kind,
     domainPaths,
     entityNames,
-    degree: 0,
+    degree: kind === "domain" ? 12 : 0,
     x,
     y,
   });
   const distance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
     Math.hypot(a.x - b.x, a.y - b.y);
+
+  it("does not change a domain circle when the domain node is added", () => {
+    const units = Array.from({ length: 8 }, (_, i) =>
+      dot(`u${i}`, ["Co/Safety/PPE"]),
+    );
+    const without = clusterCircles(units, 1, "domain");
+    const withNode = clusterCircles(
+      [...units, dot("d", ["Co/Safety/PPE"], 0, 0, [], "domain")],
+      1,
+      "domain",
+    );
+    const before = without.find((circle) => circle.key === "Co/Safety/PPE")!;
+    const after = withNode.find((circle) => circle.key === "Co/Safety/PPE")!;
+    expect(after.r).toBe(before.r);
+  });
+
+  it("pins a parent domain hub at the center of that circle", () => {
+    const hub = dot("d-parent", ["Co/Safety"], 40, -20, [], "domain");
+    const nodes = [
+      hub,
+      dot("a", ["Co/Safety/PPE"]),
+      dot("b", ["Co/Safety/Training"]),
+    ];
+    createContainment(nodes, 1, "domain")();
+    const { circles, homes } = packDomains(nodes, 1, "domain");
+    const circle = circles.find((item) => item.key === "Co/Safety")!;
+    const home = homes.get("d-parent")!;
+    expect(home.pin).toBe(true);
+    expect(home.x).toBe(circle.x);
+    expect(home.y).toBe(circle.y);
+    expect(
+      Math.hypot((hub.x ?? 0) - home.x, (hub.y ?? 0) - home.y),
+    ).toBeLessThan(home.r);
+  });
+
+  it("moves overlapping domain nodes apart without leaving a note inside one", () => {
+    const left = dot("d-a", ["Co/A"], 0, 0, [], "domain");
+    const right = dot("d-b", ["Co/B"], 0, 0, [], "domain");
+    left.degree = 40;
+    right.degree = 40;
+    const note = dot("u", ["Co/A"]);
+    const nodes = [left, right, note];
+    createContainment(nodes, 1, "domain")();
+    expect(Math.hypot(left.x! - right.x!, left.y! - right.y!)).toBeGreaterThan(
+      nodeRadius(left, 1) + nodeRadius(right, 1) - 0.5,
+    );
+    expect(Math.hypot(note.x! - left.x!, note.y! - left.y!)).toBeGreaterThan(
+      nodeRadius(note, 1) + nodeRadius(left, 1) - 0.5,
+    );
+  });
+
+  it("places a parent domain between its child circles", () => {
+    const parent = dot("p", ["Co/Safety"], 0, 0, [], "domain");
+    const notes = [
+      dot("a", ["Co/Safety/PPE"]),
+      dot("b", ["Co/Safety/Training"]),
+    ];
+    const nodes = [parent, ...notes];
+    createContainment(nodes, 1, "domain")();
+    const children = packDomains(nodes, 1, "domain").circles.filter(
+      (circle) => circle.parent === "Co/Safety",
+    );
+    const midX =
+      children.reduce((sum, circle) => sum + circle.x, 0) / children.length;
+    const midY =
+      children.reduce((sum, circle) => sum + circle.y, 0) / children.length;
+    expect(parent.x).toBeCloseTo(midX);
+    expect(parent.y).toBeCloseTo(midY);
+  });
+
+  it("places a domain node in the middle of the notes it connects to", () => {
+    const hub = dot("d", ["Co/Topic"], 400, 400, [], "domain");
+    const notes = [
+      dot("a", ["Co/Topic"], 0, 0),
+      dot("b", ["Co/Topic"], 120, 0),
+      dot("c", ["Co/Topic"], 0, 90),
+    ];
+    for (const note of notes) {
+      note.fx = note.x;
+      note.fy = note.y;
+    }
+    createContainment(
+      [hub, ...notes],
+      1,
+      "domain",
+      notes.map((note) => ({ source: note.id, target: hub.id })),
+    )();
+    expect(hub.x).toBeCloseTo(40);
+    expect(hub.y).toBeCloseTo(30);
+  });
+
+  it("lets a connection outside the domain pull less than one inside it", () => {
+    const hub = dot("d", ["Co/Topic"], 0, 0, [], "domain");
+    const inside = dot("in", ["Co/Topic"], 0, 0);
+    const outside = dot("out", ["Co/Other"], 100, 0);
+    inside.fx = 0;
+    inside.fy = 0;
+    outside.fx = 100;
+    outside.fy = 0;
+    createContainment([hub, inside, outside], 1, "domain", [
+      { source: inside.id, target: hub.id },
+      { source: outside.id, target: hub.id },
+    ])();
+    expect(hub.x).toBeCloseTo((100 * 0.03) / 1.03);
+    expect(hub.y).toBeCloseTo(0);
+  });
+
+  it("pins the domain hub at the center of its topic circle", () => {
+    const hub = dot("d-leaf", ["Co/Safety/PPE"], 99, 99, [], "domain");
+    const units = Array.from({ length: 8 }, (_, i) =>
+      dot(`u${i}`, ["Co/Safety/PPE"]),
+    );
+    const nodes = [...units, hub];
+    createContainment(nodes, 1, "domain")();
+    const { homes } = packDomains(nodes, 1, "domain");
+    const home = homes.get("d-leaf")!;
+    expect(home.pin).toBe(true);
+    expect(Math.hypot((hub.x ?? 0) - 99, (hub.y ?? 0) - 99)).toBeGreaterThan(1);
+    expect(
+      Math.hypot((hub.x ?? 0) - home.x, (hub.y ?? 0) - home.y),
+    ).toBeLessThan(home.r);
+  });
+
+  it("names the circles and dots a selected group links to", () => {
+    const nodes = [
+      dot("a", ["Types/One"]),
+      dot("b", ["Types/One"]),
+      dot("c", ["Types/Six/Fear"]),
+      dot("d", ["Types/Six/Fear"]),
+      dot("e", ["Other"]),
+      dot("loose", []),
+    ];
+    const found = clusterConnections(
+      nodes,
+      [
+        { source: "a", target: "c" },
+        { source: "a", target: "b" },
+        { source: "d", target: "e" },
+        { source: "a", target: "loose" },
+      ],
+      "Types/One",
+      "domain",
+    );
+    expect([...found.nodeIds].sort()).toEqual(["c", "loose"]);
+    expect([...found.circleKeys].sort()).toEqual([
+      "Types/Six",
+      "Types/Six/Fear",
+    ]);
+    const entities = clusterConnections(
+      [dot("a", [], 0, 0, ["Threes"]), dot("b", [], 0, 0, ["Eights"])],
+      [{ source: "a", target: "b" }],
+      "Threes",
+      "entity",
+    );
+    expect([...entities.nodeIds]).toEqual(["b"]);
+    expect([...entities.circleKeys]).toEqual(["Eights"]);
+  });
 
   it("draws one colored circle per entity", () => {
     const nodes = [
@@ -699,6 +1046,311 @@ describe("domain clusters", () => {
     expect(circles.find((circle) => circle.label === "Alpha")!.color).toBe(
       entityColor("Alpha"),
     );
+  });
+
+  it("opens an article, section, or suggestion from a second click", () => {
+    expect(circleOpenTarget({ label: "Alpha", parent: "" }, "page")).toEqual({
+      kind: "page",
+      title: "Alpha",
+    });
+    expect(
+      circleOpenTarget({ label: "Facts", parent: "Alpha" }, "page"),
+    ).toEqual({ kind: "section", page: "Alpha", section: "Facts" });
+    expect(
+      circleOpenTarget({ label: "Centers", parent: NO_ARTICLE_LABEL }, "page"),
+    ).toEqual({ kind: "recommendation", title: "Centers" });
+    expect(
+      circleOpenTarget({ label: NO_ARTICLE_LABEL, parent: "" }, "page"),
+    ).toBeNull();
+    expect(
+      circleOpenTarget({ label: "Alpha", parent: "" }, "domain"),
+    ).toBeNull();
+  });
+
+  it("gathers units that no article cites into a No article circle", () => {
+    const cited = { ...dot("a", []), pageTitles: ["Alpha"] };
+    const loose = { ...dot("b", []), pageTitles: [] as string[] };
+    const hub = dot("d", ["Co/Topic"], 0, 0, [], "domain");
+    const circles = clusterCircles([cited, loose, hub], 1, "page");
+    expect(circles.map((circle) => circle.label)).toEqual([
+      "Alpha",
+      NO_ARTICLE_LABEL,
+      ORPHANS_LABEL,
+    ]);
+    const catchAll = circles.find(
+      (circle) => circle.label === NO_ARTICLE_LABEL,
+    )!;
+    const orphans = circles.find((circle) => circle.label === ORPHANS_LABEL)!;
+    expect(catchAll.color).toBe("muted");
+    expect(orphans.parent).toBe(NO_ARTICLE_LABEL);
+    const { homes } = packDomains([cited, loose, hub], 1, "page");
+    expect(homes.get("b")).toEqual({
+      x: orphans.x,
+      y: orphans.y,
+      r: orphans.r - 8,
+    });
+    expect(homes.has("d")).toBe(false);
+    expect(nodeInCluster(loose, NO_ARTICLE_LABEL, "page")).toBe(true);
+    expect(nodeInCluster(hub, NO_ARTICLE_LABEL, "page")).toBe(false);
+    expect(nodeInCluster(cited, "Alpha", "page")).toBe(true);
+    const found = clusterConnections(
+      [cited, loose],
+      [{ source: "a", target: "b" }],
+      "Alpha",
+      "page",
+    );
+    expect([...found.circleKeys]).toEqual([NO_ARTICLE_LABEL]);
+  });
+
+  it("nests the most-connected No article node with the nodes it links", () => {
+    const center = {
+      ...dot("hub", []),
+      pageTitles: [] as string[],
+      degree: 6,
+    };
+    const leaf = {
+      ...dot("leaf", []),
+      pageTitles: [] as string[],
+      degree: 1,
+    };
+    const alone = {
+      ...dot("alone", []),
+      pageTitles: [] as string[],
+      degree: 0,
+    };
+    const links = [{ source: "hub", target: "leaf" }];
+    const circles = clusterCircles([center, leaf, alone], 1, "page", links);
+    const outer = circles.find((circle) => circle.label === NO_ARTICLE_LABEL)!;
+    expect(outer.quiet).toBeUndefined();
+    const nested = circles.find((circle) => circle.quiet);
+    expect(nested?.parent).toBe(NO_ARTICLE_LABEL);
+    expect(nested?.label).toBe("hub");
+    const { homes } = packDomains([center, leaf, alone], 1, "page", links);
+    expect(homes.get("hub")).toBe(homes.get("leaf"));
+    expect(homes.get("alone")).not.toBe(homes.get("hub"));
+  });
+
+  it("groups leftover linked No article nodes without borrowing a claim title", () => {
+    const big = {
+      ...dot("big", []),
+      pageTitles: [] as string[],
+      degree: 3,
+      label: "Formatory apparatus",
+    };
+    const other = {
+      ...dot("other", []),
+      pageTitles: [] as string[],
+      degree: 1,
+      label: "Six",
+    };
+    const links = [
+      { source: "big", target: "outside-a" },
+      { source: "other", target: "outside-b" },
+    ];
+    const circles = clusterCircles([big, other], 1, "page", links);
+    const group = circles.find((circle) => circle.label === LINKED_LABEL)!;
+    expect(group.parent).toBe(NO_ARTICLE_LABEL);
+    expect(group.quiet).toBeUndefined();
+    expect(group.badge).toBeUndefined();
+    expect(group.color).toBe("muted");
+    expect(
+      circleOpenTarget(
+        { label: LINKED_LABEL, parent: NO_ARTICLE_LABEL },
+        "page",
+      ),
+    ).toBeNull();
+    const { homes } = packDomains([big, other], 1, "page", links);
+    expect(homes.get("big")).toBe(homes.get("other"));
+    expect(
+      pageMoveTarget(
+        { ...dot("claim", []), pageTitles: ["Alpha"] },
+        { key: group.key, label: LINKED_LABEL, parent: NO_ARTICLE_LABEL },
+        null,
+      ),
+    ).toBeNull();
+  });
+
+  it("separates No article orphans from units with an external source", () => {
+    const orphan = {
+      ...dot("orphan", []),
+      pageTitles: [] as string[],
+      degree: 0,
+    };
+    const external = {
+      ...dot("web", []),
+      pageTitles: [] as string[],
+      degree: 0,
+      sourceScopes: ["external" as const],
+    };
+    const hub = { ...dot("hub", []), pageTitles: [] as string[], degree: 4 };
+    const leaf = { ...dot("leaf", []), pageTitles: [] as string[], degree: 1 };
+    const linkedOut = {
+      ...dot("out", []),
+      pageTitles: [] as string[],
+      degree: 1,
+    };
+    const nodes = [orphan, external, hub, leaf, linkedOut];
+    const links = [
+      { source: "hub", target: "leaf" },
+      { source: "out", target: "cited-unit" },
+    ];
+    const circles = clusterCircles(nodes, 1, "page", links);
+    const orphans = circles.find((circle) => circle.label === ORPHANS_LABEL)!;
+    const outside = circles.find((circle) => circle.label === EXTERNAL_LABEL)!;
+    expect(orphans.parent).toBe(NO_ARTICLE_LABEL);
+    expect(orphans.quiet).toBeUndefined();
+    expect(orphans.badge).toBeUndefined();
+    expect(outside.parent).toBe(NO_ARTICLE_LABEL);
+    expect(outside.color).toBe("graph-teal");
+    expect(outside.badge).toBeUndefined();
+    expect(
+      circleOpenTarget(
+        { label: ORPHANS_LABEL, parent: NO_ARTICLE_LABEL },
+        "page",
+      ),
+    ).toBeNull();
+    expect(
+      circleOpenTarget(
+        { label: EXTERNAL_LABEL, parent: NO_ARTICLE_LABEL },
+        "page",
+      ),
+    ).toBeNull();
+    const { homes } = packDomains(nodes, 1, "page", links);
+    expect(homes.get("orphan")).not.toBe(homes.get("web"));
+    expect(homes.get("out")).not.toBe(homes.get("orphan"));
+    expect(homes.get("hub")).toBe(homes.get("leaf"));
+    expect(
+      pageMoveTarget(
+        { ...dot("claim", []), pageTitles: ["Alpha"] },
+        {
+          key: orphans.key,
+          label: ORPHANS_LABEL,
+          parent: NO_ARTICLE_LABEL,
+        },
+        null,
+      ),
+    ).toBeNull();
+  });
+
+  it("groups a pending article suggestion inside No article in orange", () => {
+    const loose = { ...dot("a", []), pageTitles: [] as string[] };
+    const recommended = {
+      ...dot("b", []),
+      pageTitles: [] as string[],
+      recommendedTitle: "Centers",
+      recommendedKind: "merge" as const,
+    };
+    const created = {
+      ...dot("d", []),
+      pageTitles: [] as string[],
+      recommendedTitle: "Wings",
+      recommendedKind: "create" as const,
+    };
+    const cited = {
+      ...dot("c", []),
+      pageTitles: ["Alpha"],
+      recommendedTitle: "Centers",
+    };
+    const circles = clusterCircles(
+      [loose, recommended, created, cited],
+      1,
+      "page",
+    );
+    const suggestion = circles.find((circle) => circle.label === "Centers")!;
+    const createdCircle = circles.find((circle) => circle.label === "Wings")!;
+    expect(suggestion.parent).toBe(NO_ARTICLE_LABEL);
+    expect(suggestion.color).toBe("needs-you");
+    expect(suggestion.badge).toBe("Merge");
+    expect(createdCircle.color).toBe("link");
+    expect(createdCircle.badge).toBe("New Article");
+    expect(
+      circles.find((circle) => circle.label === NO_ARTICLE_LABEL)!.color,
+    ).toBe("muted");
+    expect(nodeInCluster(recommended, NO_ARTICLE_LABEL, "page")).toBe(true);
+    expect(nodeInCluster(loose, suggestion.key, "page")).toBe(false);
+    expect(nodeInCluster(cited, "Alpha", "page")).toBe(true);
+    const built = buildGraph({
+      ...rows,
+      suggestions: [
+        {
+          id: "s-b",
+          title: "Beta group",
+          kind: "create",
+          status: "pending",
+          unit_ids: ["u3"],
+        },
+        {
+          id: "s-a",
+          title: "Alpha group",
+          kind: "merge",
+          status: "pending",
+          unit_ids: ["u3", "u2"],
+        },
+        {
+          id: "s-old",
+          title: "Dismissed",
+          status: "dismissed",
+          unit_ids: ["u2"],
+        },
+      ],
+    });
+    expect(built.nodes.find((node) => node.id === "u3")!.recommendedTitle).toBe(
+      "Alpha group",
+    );
+    expect(built.nodes.find((node) => node.id === "u2")!.recommendedTitle).toBe(
+      "Alpha group",
+    );
+    expect(built.nodes.find((node) => node.id === "u2")!.recommendedKind).toBe(
+      "merge",
+    );
+    expect(
+      built.nodes.find((node) => node.id === "u1")!.recommendedTitle,
+    ).toBeUndefined();
+  });
+
+  it("nests each section inside its article and keeps that section's units there", () => {
+    const placed = (
+      id: string,
+      section: string,
+      position: number,
+    ): SimNode => ({
+      ...dot(id, []),
+      pageTitles: ["Alpha"],
+      pageSections: [{ page: "Alpha", section, position }],
+    });
+    const early = placed("early", "Zebra", 0);
+    const later = placed("later", "Apple", 1);
+    const both = {
+      ...placed("both", "Zebra", 0),
+      pageSections: [
+        { page: "Alpha", section: "Zebra", position: 0 },
+        { page: "Alpha", section: "Apple", position: 1 },
+      ],
+    };
+    const circles = clusterCircles([early, later, both], 1, "page");
+    expect(circles.map((circle) => circle.label)).toEqual([
+      "Alpha",
+      "Zebra",
+      "Apple",
+    ]);
+    const article = circles[0]!;
+    const zebra = circles[1]!;
+    const apple = circles[2]!;
+    expect(article.isBranch).toBe(true);
+    expect(zebra.parent).toBe(article.key);
+    expect(circleNestedIn(zebra.key, article.key, "page")).toBe(true);
+    expect(zebra.color).toBe(entityColor("Alpha"));
+    expect(apple.color).toBe(entityColor("Alpha"));
+    expect(nodeInCluster(early, article.key, "page")).toBe(true);
+    expect(nodeInCluster(early, zebra.key, "page")).toBe(true);
+    expect(nodeInCluster(early, apple.key, "page")).toBe(false);
+    expect(nodeInCluster(both, zebra.key, "page")).toBe(true);
+    expect(nodeInCluster(both, apple.key, "page")).toBe(false);
+    const { homes } = packDomains([early, later, both], 1, "page");
+    const home = homes.get("early")!;
+    expect(home.x).toBeCloseTo(zebra.x);
+    expect(home.y).toBeCloseTo(zebra.y);
+    expect(distance(home, article)).toBeLessThan(article.r);
   });
 
   it("packs sibling domains side by side without overlapping", () => {
@@ -821,6 +1473,89 @@ describe("domain clusters", () => {
     expect(moveTarget({ ...claim, kind: "page" }, parent, null)).toBeNull();
   });
 
+  it("files a claim into an article, a section, or a suggestion", () => {
+    const claim = {
+      kind: "unit" as const,
+      pageTitles: ["Alpha"],
+      pageSections: [{ page: "Alpha", section: "Facts", position: 0 }],
+    };
+    const facts = {
+      key: pageSectionKey("Alpha", "Facts"),
+      label: "Facts",
+      parent: "Alpha",
+    };
+    const notes = {
+      key: pageSectionKey("Beta", "Notes"),
+      label: "Notes",
+      parent: "Beta",
+    };
+    expect(pageMoveTarget(claim, facts, null)).toBeNull();
+    expect(pageMoveTarget(claim, notes, null)).toEqual({
+      kind: "section",
+      page: "Beta",
+      section: "Notes",
+    });
+    expect(
+      pageMoveTarget(claim, { key: "Beta", label: "Beta", parent: "" }, null),
+    ).toEqual({ kind: "article", page: "Beta" });
+    expect(
+      pageMoveTarget(claim, { key: "Alpha", label: "Alpha", parent: "" }, null),
+    ).toBeNull();
+    expect(
+      pageMoveTarget(
+        claim,
+        { key: NO_ARTICLE_LABEL, label: NO_ARTICLE_LABEL, parent: "" },
+        null,
+      ),
+    ).toBeNull();
+    expect(
+      pageMoveTarget(
+        claim,
+        {
+          key: pageSectionKey(NO_ARTICLE_LABEL, "Centers"),
+          label: "Centers",
+          parent: NO_ARTICLE_LABEL,
+          badge: "Merge",
+        },
+        null,
+      ),
+    ).toEqual({ kind: "suggestion", title: "Centers", merge: true });
+    expect(pageMoveTarget(claim, notes, "Alpha")).toBeNull();
+    expect(
+      pageMoveTarget(
+        claim,
+        {
+          key: pageSectionKey("Alpha", "Notes"),
+          label: "Notes",
+          parent: "Alpha",
+        },
+        "Alpha",
+      ),
+    ).toEqual({ kind: "section", page: "Alpha", section: "Notes" });
+    expect(pageMoveTarget({ ...claim, kind: "page" }, notes, null)).toBeNull();
+    const loose = {
+      kind: "unit" as const,
+      pageTitles: [] as string[],
+      recommendedTitle: "Wings",
+      recommendedKind: "create" as const,
+    };
+    expect(
+      pageMoveTarget(
+        loose,
+        {
+          key: pageSectionKey(NO_ARTICLE_LABEL, "Wings"),
+          label: "Wings",
+          parent: NO_ARTICLE_LABEL,
+          badge: "New Article",
+        },
+        null,
+      ),
+    ).toBeNull();
+    expect(
+      pageDropLabel({ kind: "section", page: "Beta", section: "Notes" }),
+    ).toBe("Notes in Beta");
+  });
+
   it("draws each outer ring around the rings inside it", () => {
     const circles = clusterCircles(
       [dot("a", ["Co/Safety/PPE"]), dot("b", ["Co/Safety/WHMIS"])],
@@ -873,5 +1608,20 @@ describe("progressive zoom", () => {
 
   it("shows topic names at the overview", () => {
     expect(revealOpacity(1, 1, REVEAL_AT.subdomain)).toBe(1);
+  });
+
+  it("names a bigger, fuller group in larger type, never below the note titles it holds", () => {
+    expect(groupLabelPx(100, 100, 40, 40, 12, 32)).toBe(32);
+    expect(groupLabelPx(0, 100, 0, 40, 12, 32)).toBe(12);
+    expect(groupLabelPx(10, 0, 4, 0, 12, 32)).toBe(32);
+    expect(groupLabelPx(50, 100, 20, 40, 12, 32)).toBeGreaterThan(
+      groupLabelPx(25, 100, 10, 40, 12, 32),
+    );
+    expect(groupLabelPx(40, 100, 30, 40, 12, 32)).toBeGreaterThan(
+      groupLabelPx(40, 100, 4, 40, 12, 32),
+    );
+    expect(groupLabelPx(80, 100, 10, 40, 12, 32)).toBeGreaterThan(
+      groupLabelPx(20, 100, 10, 40, 12, 32),
+    );
   });
 });

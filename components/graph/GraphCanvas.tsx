@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import {
   circleAt,
   circleExtents,
+  circleNestedIn,
+  circleOpenTarget,
   clusterCircles,
   groupColorLookup,
   moveTarget,
   nodeInCluster,
   primaryEntityName,
   primaryPageTitle,
+  type CircleOpenTarget,
   type ClusterMode,
   type GraphColor,
   type GraphData,
@@ -58,6 +61,8 @@ export interface GraphCanvasProps {
   onContextDomain?: (path: string, point: Point) => void;
   onContextNode?: (node: GraphNode, point: Point) => void;
   onFocusDomain?: (path: string | null) => void;
+  // Second click on a selected article, section, or suggestion circle.
+  onOpenCircle?: (target: CircleOpenTarget) => void;
   onMoveNode?: (node: GraphNode, path: string) => void;
   // Reveal text in layers as you zoom in from the whole-graph view (off for small local graphs, where titles always fit)
   progressiveZoom?: boolean;
@@ -123,6 +128,7 @@ export function GraphCanvas({
   onContextNode,
   onContextDomain,
   onFocusDomain,
+  onOpenCircle,
   onMoveNode,
   selectedIds = [],
   onSelect,
@@ -167,14 +173,18 @@ export function GraphCanvas({
     const byGroup = groupColorLookup(settings.groups);
     if (groupBy === "entity") {
       return (node: GraphNode) => {
+        if (node.kind === "domain") return null;
         const name = primaryEntityName(node);
         return name ? entityColor(name) : null;
       };
     }
     if (groupBy === "page") {
       return (node: GraphNode) => {
+        if (node.kind === "domain") return null;
         const title = primaryPageTitle(node);
-        return title ? entityColor(title) : null;
+        if (title) return entityColor(title);
+        if (!node.recommendedTitle) return "muted";
+        return node.recommendedKind === "merge" ? "needs-you" : "link";
       };
     }
     return byGroup;
@@ -212,6 +222,7 @@ export function GraphCanvas({
     settings.display.nodeSize,
     redrawRef,
     clusterMode,
+    colorOf,
   );
   const geometry = useRef<{
     nodes: SimNode[];
@@ -250,7 +261,7 @@ export function GraphCanvas({
       bounds.height !== size.current.height
     ) {
       const circles = showCircles
-        ? clusterCircles(nodes, display.nodeSize, mode)
+        ? clusterCircles(nodes, display.nodeSize, mode, links)
         : [];
       bounds = {
         nodes,
@@ -316,7 +327,9 @@ export function GraphCanvas({
       0,
       0,
     );
-    ctx.strokeStyle = palette.token("link");
+    const link = palette.token("link");
+    ctx.strokeStyle = link;
+    ctx.fillStyle = link;
     ctx.lineWidth = 3;
     const selected = new Set(selection.current);
     for (const node of nodes)
@@ -329,6 +342,9 @@ export function GraphCanvas({
           0,
           Math.PI * 2,
         );
+        ctx.globalAlpha = 0.16;
+        ctx.fill();
+        ctx.globalAlpha = 1;
         ctx.stroke();
       }
     const hint = dropHint.current
@@ -397,7 +413,12 @@ export function GraphCanvas({
   const fitView = useCallback(() => {
     const { nodes } = layout.current;
     const circles = showCircles
-      ? clusterCircles(nodes, settings.display.nodeSize, clusterMode)
+      ? clusterCircles(
+          nodes,
+          settings.display.nodeSize,
+          clusterMode,
+          layout.current.links,
+        )
       : [];
     const overview = fitCamera(
       [...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)],
@@ -422,8 +443,8 @@ export function GraphCanvas({
     redraw,
     onFocusDomain,
   ]);
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Hit testing needs current mutable simulation positions.
   const focusGroup = useCallback(
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Read current simulation positions when invoked.
     (point: Point) => {
       if (!progressiveZoom || !showCircles) return;
       const { nodes } = layout.current;
@@ -431,6 +452,7 @@ export function GraphCanvas({
         nodes,
         settings.display.nodeSize,
         clusterMode,
+        layout.current.links,
       );
       const overview = fitCamera(
         [...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)],
@@ -450,8 +472,12 @@ export function GraphCanvas({
         return;
       }
       // A neighboring bubble takes focus directly. Clicking the active bubble
-      // keeps it focused; the overview button provides an explicit way back.
-      if (picked.key === latest.current.focusedDomain) return;
+      // again opens that article, section, or suggestion.
+      if (picked.key === latest.current.focusedDomain) {
+        const target = circleOpenTarget(picked, clusterMode);
+        if (target) onOpenCircle?.(target);
+        return;
+      }
       setFocusedDomain(picked.key);
       onFocusDomain?.(picked.key);
       const members = nodes.filter((node) =>
@@ -460,7 +486,7 @@ export function GraphCanvas({
       const childRings = circles.filter(
         (circle) =>
           circle.key === picked.key ||
-          (clusterMode === "domain" && circle.key.startsWith(`${picked.key}/`)),
+          circleNestedIn(circle.key, picked.key, clusterMode),
       );
       const fitted = fitCamera(
         [...members, ...circleExtents(childRings, CIRCLE_LABEL_ROOM)],
@@ -484,6 +510,7 @@ export function GraphCanvas({
       motion,
       fitView,
       onFocusDomain,
+      onOpenCircle,
     ],
   );
   // FOCUS A DOT: start the fade toward it (null lets go)
@@ -505,6 +532,7 @@ export function GraphCanvas({
               layout.current.nodes,
               latest.current.display.nodeSize,
               "domain",
+              layout.current.links,
             ),
             world,
           )
@@ -545,7 +573,7 @@ export function GraphCanvas({
             point.y >= b.y - 4 &&
             point.y <= b.y + b.height + 4,
         );
-      if (!label || !onContextDomain) return false;
+      if (!label || !onContextDomain || groupBy !== "domain") return false;
       onContextDomain(label.path, client);
       return true;
     },

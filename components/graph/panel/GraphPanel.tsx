@@ -7,9 +7,11 @@ import { Minus, Square } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import type { UpdateGraphSettings } from "../useGraphSettings";
 import {
+  EdgesSection,
   FiltersSection,
   GroupSection,
   GroupsSection,
+  NodesSection,
   TuningSection,
 } from "./sections";
 
@@ -82,6 +84,16 @@ export function GraphPanel({
         nodes={nodes}
         onChange={(next) => update("filters", next)}
       />
+      <NodesSection
+        value={settings.filters}
+        onChange={(next) => update("filters", next)}
+      />
+      <EdgesSection
+        value={settings.filters}
+        display={settings.display}
+        onChange={(next) => update("filters", next)}
+        onDisplayChange={(next) => update("display", next)}
+      />
       <GroupSection
         value={settings.display}
         onChange={(next) => update("display", next)}
@@ -89,6 +101,10 @@ export function GraphPanel({
       <GroupsSection
         value={settings.groups}
         nodes={nodes}
+        showNew={settings.display.showNew}
+        onShowNew={(showNew) =>
+          update("display", { ...settings.display, showNew })
+        }
         onChange={(next) => update("groups", next)}
       />
       <TuningSection

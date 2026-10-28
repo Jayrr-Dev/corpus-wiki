@@ -17,13 +17,19 @@ import {
   createdBy,
   DEFAULT_GRAPH_SETTINGS,
   graphForGrouping,
+  pageDropLabel,
   withRelated,
+  type CircleOpenTarget,
   type GraphData,
   type GraphNode,
   type GraphSettings,
+  type PageDrop,
 } from "@/lib/graph";
 import { queryKeys } from "@/lib/queries";
-import { moveGraphClaim } from "@/lib/server-actions/graphNodes";
+import {
+  moveGraphClaim,
+  moveGraphUnitToGroup,
+} from "@/lib/server-actions/graphNodes";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useCallback,
@@ -35,6 +41,7 @@ import {
 import { DomainContextMenu } from "./DomainContextMenu";
 import { GraphCanvas } from "./GraphCanvas";
 import { NodeContextMenu } from "./NodeContextMenu";
+import { CirclePreviewDialog } from "./NodePreviews";
 import { GraphPanel } from "./panel/GraphPanel";
 import { SelectionActions } from "./SelectionActions";
 import { NodePreviewDialog } from "./UnitPreviewDialog";
@@ -44,13 +51,15 @@ import {
 } from "./useGraphSettings";
 import { useReplay } from "./useReplay";
 
-type PendingMove = { node: GraphNode; source: string; destination: string };
-
 const GRAPH_QUERY_KEY = [
   ...queryKeys.table("units"),
   "graph",
-  "source-origin",
+  "suggestions",
 ] as const;
+
+type PendingMove =
+  | { mode: "domain"; node: GraphNode; source: string; destination: string }
+  | { mode: "page"; node: GraphNode; drop: PageDrop };
 
 // Move the claim in the cached graph so the canvas updates before the server round-trip finishes.
 function withMovedClaim(
@@ -79,6 +88,40 @@ function withMovedClaim(
               external: scopes.external.length ? domainPaths : [],
             }
           : scopes,
+      };
+    }),
+  };
+}
+
+// Page grouping: the claim leaves its article and sits in the group it was dropped on.
+function withMovedToGroup(
+  data: GraphData,
+  unitId: string,
+  drop: PageDrop,
+): GraphData {
+  return {
+    ...data,
+    nodes: data.nodes.map((node) => {
+      if (node.id !== unitId) return node;
+      if (drop.kind === "suggestion") {
+        return {
+          ...node,
+          pageTitles: [],
+          pageSections: [],
+          recommendedTitle: drop.title,
+          recommendedKind: drop.merge ? "merge" : "create",
+        };
+      }
+      const page = drop.page;
+      return {
+        ...node,
+        pageTitles: [page],
+        pageSections:
+          drop.kind === "section"
+            ? [{ page, section: drop.section, position: 0 }]
+            : [],
+        recommendedTitle: undefined,
+        recommendedKind: undefined,
       };
     }),
   };
@@ -129,6 +172,9 @@ export function GraphView({
   const replay = useReplay(data.nodes);
   // Every node previews without leaving the graph.
   const [preview, setPreview] = useState<GraphNode | null>(null);
+  const [openedCircle, setOpenedCircle] = useState<CircleOpenTarget | null>(
+    null,
+  );
   // Dropping a claim onto a domain asks before filing it.
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
@@ -142,34 +188,64 @@ export function GraphView({
     },
     refreshTables: [],
   });
-  const moveNode = useCallback(
-    (node: GraphNode, destination: string) => {
-      if (node.kind !== "unit" || move.isPending) return;
-      const source = [...node.domainPaths].sort()[0] ?? "";
-      if (!destination || destination === source) return;
-      setMoveError(null);
-      setPendingMove({ node, source, destination });
+  const pageMove = useServerAction(moveGraphUnitToGroup, {
+    progress: {
+      title: "Moving knowledge",
+      detail: "Putting it in the group you dropped it on.",
+      delayMs: 800,
     },
-    [move.isPending],
+    refreshTables: [],
+  });
+  const busy = move.isPending || pageMove.isPending;
+  const moveNode = useCallback(
+    (node: GraphNode, destination: string | PageDrop) => {
+      if (node.kind !== "unit" || busy) return;
+      setMoveError(null);
+      if (typeof destination === "string") {
+        const source = [...node.domainPaths].sort()[0] ?? "";
+        if (!destination || destination === source) return;
+        setPendingMove({ mode: "domain", node, source, destination });
+        return;
+      }
+      setPendingMove({ mode: "page", node, drop: destination });
+    },
+    [busy],
   );
   const confirmMove = useCallback(async () => {
-    if (!pendingMove || move.isPending) return;
-    const { node, source, destination } = pendingMove;
+    if (!pendingMove || busy) return;
     setPendingMove(null);
     setMoveError(null);
-    queryClient.setQueryData<GraphData>(GRAPH_QUERY_KEY, (current) =>
-      current ? withMovedClaim(current, node.id, source, destination) : current,
-    );
-    const result = await move.run(node.id, source, destination);
-    if (!result.ok) {
-      setMoveError(result.error);
+    if (pendingMove.mode === "domain") {
+      const { node, source, destination } = pendingMove;
+      queryClient.setQueryData<GraphData>(GRAPH_QUERY_KEY, (current) =>
+        current
+          ? withMovedClaim(current, node.id, source, destination)
+          : current,
+      );
+      const result = await move.run(node.id, source, destination);
+      if (!result.ok) {
+        setMoveError(result.error);
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.table("units"),
+        });
+        return;
+      }
       void queryClient.invalidateQueries({
         queryKey: queryKeys.table("units"),
       });
       return;
     }
+    const { node, drop } = pendingMove;
+    queryClient.setQueryData<GraphData>(GRAPH_QUERY_KEY, (current) =>
+      current ? withMovedToGroup(current, node.id, drop) : current,
+    );
+    const result = await pageMove.run(node.id, drop);
     void queryClient.invalidateQueries({ queryKey: queryKeys.table("units") });
-  }, [pendingMove, move, queryClient]);
+    void queryClient.invalidateQueries({
+      queryKey: queryKeys.table("article_suggestions"),
+    });
+    if (!result.ok) setMoveError(result.error);
+  }, [pendingMove, busy, move, pageMove, queryClient]);
   const { showRelated, relatedness } = settings.filters;
 
   // Related links come from the full graph, so the replay grows them with their units
@@ -209,6 +285,7 @@ export function GraphView({
         onFocusDomain={(path) =>
           setFocusedDomain({ path, filter: settings.filters.domain })
         }
+        onOpenCircle={setOpenedCircle}
         onContextNode={(node, point) => setContext({ node, ...point })}
         onMoveNode={moveNode}
       />
@@ -290,11 +367,21 @@ export function GraphView({
         onClose={() => setContext(null)}
         onOpen={setPreview}
       />
-      <NodePreviewDialog node={preview} onClose={() => setPreview(null)} />
+      <NodePreviewDialog
+        node={preview}
+        units={data.nodes}
+        onClose={() => setPreview(null)}
+      />
+      <CirclePreviewDialog
+        target={openedCircle}
+        pages={data.nodes}
+        units={data.nodes}
+        onClose={() => setOpenedCircle(null)}
+      />
       <Dialog
         open={pendingMove !== null}
         onOpenChange={(open) => {
-          if (!open && !move.isPending) setPendingMove(null);
+          if (!open && !busy) setPendingMove(null);
         }}
       >
         <DialogContent>
@@ -302,19 +389,43 @@ export function GraphView({
             <>
               <DialogHeader>
                 <div className="flex items-center gap-1.5">
-                  <DialogTitle>Move this claim?</DialogTitle>
-                  <InfoPopover label="About moving claims">
-                    <p>Confirm the domain you dropped this claim into.</p>
-                    <ul className="mt-2 list-disc space-y-1 pl-4">
-                      <li>Other domain memberships stay intact.</li>
-                      <li>Undo this move in Changes.</li>
-                    </ul>
+                  <DialogTitle>Move this knowledge?</DialogTitle>
+                  <InfoPopover label="About moving knowledge">
+                    {pendingMove.mode === "domain" ? (
+                      <>
+                        <p>Confirm the domain you dropped this claim into.</p>
+                        <ul className="mt-2 list-disc space-y-1 pl-4">
+                          <li>Other domain memberships stay intact.</li>
+                          <li>Undo this move in Changes.</li>
+                        </ul>
+                      </>
+                    ) : (
+                      <>
+                        <p>
+                          Confirm the group you dropped this knowledge into.
+                        </p>
+                        <ul className="mt-2 list-disc space-y-1 pl-4">
+                          <li>
+                            An article or section is rewritten so it includes
+                            this knowledge.
+                          </li>
+                          <li>It leaves the section that cited it.</li>
+                          <li>
+                            A suggestion adds it to that new article or merge.
+                            Accept the suggestion before it is written.
+                          </li>
+                          <li>Undo a finished section move in Changes.</li>
+                        </ul>
+                      </>
+                    )}
                   </InfoPopover>
                 </div>
                 <DialogDescription className="sr-only">
                   Confirm moving “{pendingMove.node.label}” into{" "}
-                  {pendingMove.destination.split("/").at(-1) ||
-                    pendingMove.destination}
+                  {pendingMove.mode === "domain"
+                    ? pendingMove.destination.split("/").at(-1) ||
+                      pendingMove.destination
+                    : pageDropLabel(pendingMove.drop)}
                   .
                 </DialogDescription>
               </DialogHeader>
@@ -329,8 +440,10 @@ export function GraphView({
                   →
                 </span>
                 <div className="min-w-0 flex-1 rounded-lg border border-link/30 bg-link/10 px-3 py-2 text-sm font-semibold leading-relaxed break-words text-link">
-                  {pendingMove.destination.split("/").at(-1) ||
-                    pendingMove.destination}
+                  {pendingMove.mode === "domain"
+                    ? pendingMove.destination.split("/").at(-1) ||
+                      pendingMove.destination
+                    : pageDropLabel(pendingMove.drop)}
                 </div>
               </div>
               <DialogFooter>
@@ -340,7 +453,10 @@ export function GraphView({
                   </Button>
                 </DialogClose>
                 <Button type="button" onClick={() => void confirmMove()}>
-                  Move
+                  {pendingMove.mode === "page" &&
+                  pendingMove.drop.kind === "suggestion"
+                    ? "Add"
+                    : "Move"}
                 </Button>
               </DialogFooter>
             </>

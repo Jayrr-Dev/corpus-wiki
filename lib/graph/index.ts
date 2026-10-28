@@ -18,16 +18,26 @@ export {
 export {
   circleAt,
   circleExtents,
+  circleNestedIn,
+  circleOpenTarget,
   clusterCircles,
+  clusterConnections,
+  clusterKey,
   clusterTree,
   deepestPaths,
   moveTarget,
+  NO_ARTICLE_LABEL,
   nodeInCluster,
+  ORPHANS_LABEL,
+  pageDropLabel,
+  pageMoveTarget,
   primaryEntityName,
   primaryPageTitle,
+  type CircleOpenTarget,
   type ClusterCircle,
   type ClusterGroup,
   type ClusterMode,
+  type PageDrop,
 } from "./clusters";
 export {
   applyFilters,
@@ -35,6 +45,7 @@ export {
   domainPathsForScope,
   graphForGrouping,
   keepNodes,
+  mergeEntityDomainHubs,
   type GraphFilters,
 } from "./filters";
 export {

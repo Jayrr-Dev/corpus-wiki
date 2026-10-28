@@ -1,4 +1,5 @@
 import { knowledgeLabel, phraseLabel } from "@/lib/knowledge/label";
+import { pageSectionKey } from "./clusters";
 import type { GraphRows } from "./rows";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -35,6 +36,38 @@ function present<T>(values: readonly (T | undefined)[]): T[] {
   return values.filter((value): value is T => value !== undefined);
 }
 
+// Created times keyed the same way page circles are named.
+function createdArticles(
+  rows: GraphRows,
+): NonNullable<GraphNode["articleCreatedAt"]> {
+  const titleByPage = new Map(rows.pages.map((page) => [page.id, page.title]));
+  const pages = new Map(
+    rows.pages.map((page) => [page.title, page.created_at]),
+  );
+  const sections = new Map<string, string>();
+  for (const section of rows.sections) {
+    if (!section.created_at) continue;
+    const page = titleByPage.get(section.page_id);
+    if (!page) continue;
+    const title = section.title.trim() || "Untitled";
+    const key = pageSectionKey(page, title);
+    const previous = sections.get(key);
+    if (!previous || section.created_at > previous)
+      sections.set(key, section.created_at);
+  }
+  return { pages, sections };
+}
+
+// Later ISO timestamp wins. Either side may be missing.
+function latestActivity(
+  changed?: string,
+  touched?: string,
+): string | undefined {
+  if (!changed) return touched;
+  if (!touched) return changed;
+  return changed > touched ? changed : touched;
+}
+
 // UNIT NODES: claim text, domains, entity names and citing pages for group queries
 function unitNodes(rows: GraphRows): GraphNode[] {
   const contentByRevision = new Map(
@@ -54,19 +87,59 @@ function unitNodes(rows: GraphRows): GraphNode[] {
   );
   const titleByPage = new Map(rows.pages.map((page) => [page.id, page.title]));
   const livePages = new Set(rows.pages.map((page) => page.id));
-  const pageBySection = new Map(
+  const sectionById = new Map(
     rows.sections
       .filter((section) => livePages.has(section.page_id))
-      .map((section) => [section.id, section.page_id]),
+      .map((section) => [section.id, section]),
   );
   const pagesByUnit = new Map<string, string[]>();
+  const sectionsByUnit = new Map<
+    string,
+    { page: string; section: string; position: number }[]
+  >();
   for (const input of rows.sectionInputs) {
-    const pageId = pageBySection.get(input.section_id);
-    const title = pageId ? titleByPage.get(pageId) : undefined;
-    if (!title) continue;
+    const section = sectionById.get(input.section_id);
+    const title = section ? titleByPage.get(section.page_id) : undefined;
+    if (!section || !title) continue;
     const titles = pagesByUnit.get(input.unit_id) ?? [];
     if (!titles.includes(title)) titles.push(title);
     pagesByUnit.set(input.unit_id, titles);
+    const placements = sectionsByUnit.get(input.unit_id) ?? [];
+    const sectionTitle = section.title.trim() || "Untitled";
+    if (
+      !placements.some(
+        (placement) =>
+          placement.page === title && placement.section === sectionTitle,
+      )
+    )
+      placements.push({
+        page: title,
+        section: sectionTitle,
+        position: section.position,
+      });
+    sectionsByUnit.set(input.unit_id, placements);
+  }
+  const touchedAt = new Map<string, string>();
+  for (const touch of rows.touches ?? []) {
+    const previous = touchedAt.get(touch.unit_id);
+    if (!previous || touch.at > previous)
+      touchedAt.set(touch.unit_id, touch.at);
+  }
+  const recommendedByUnit = new Map<
+    string,
+    { title: string; kind: "create" | "merge" }
+  >();
+  for (const suggestion of [...(rows.suggestions ?? [])].sort(
+    (a, b) => a.title.localeCompare(b.title) || a.id.localeCompare(b.id),
+  )) {
+    if (suggestion.status !== "pending") continue;
+    const title = suggestion.title.trim();
+    if (!title) continue;
+    const kind = suggestion.kind === "merge" ? "merge" : "create";
+    for (const unitId of suggestion.unit_ids) {
+      if (!recommendedByUnit.has(unitId))
+        recommendedByUnit.set(unitId, { title, kind });
+    }
   }
   const domainsByUnit = groupBy(
     rows.unitDomains.map((row) => [row.unit_id, row.domain_id] as const),
@@ -85,6 +158,7 @@ function unitNodes(rows: GraphRows): GraphNode[] {
       text: content,
       href: `/units/${unit.id}`,
       createdAt: unit.created_at,
+      activityAt: latestActivity(unit.last_changed_at, touchedAt.get(unit.id)),
       degree: 0,
       domainPaths: present(
         (domainsByUnit.get(unit.id) ?? []).map((id) => pathByDomain.get(id)),
@@ -93,6 +167,9 @@ function unitNodes(rows: GraphRows): GraphNode[] {
         (entitiesByUnit.get(unit.id) ?? []).map((id) => nameByEntity.get(id)),
       ),
       pageTitles: pagesByUnit.get(unit.id) ?? [],
+      pageSections: sectionsByUnit.get(unit.id) ?? [],
+      recommendedTitle: recommendedByUnit.get(unit.id)?.title,
+      recommendedKind: recommendedByUnit.get(unit.id)?.kind,
       unitKind: unit.kind,
       status: unit.epistemic_status,
     };
@@ -289,6 +366,7 @@ export function buildGraph(rows: GraphRows): GraphData {
     scopes.add(scope);
     pageScopes.set(pageId, scopes);
   }
+  const articleCreatedAt = createdArticles(rows);
   const nodes = [
     ...unitNodes(rows),
     ...entityNodes(rows),
@@ -303,6 +381,7 @@ export function buildGraph(rows: GraphRows): GraphData {
           : [];
     return {
       ...node,
+      articleCreatedAt,
       sourceScopes,
       domainScopePaths: {
         internal: sourceScopes.includes("internal") ? node.domainPaths : [],
