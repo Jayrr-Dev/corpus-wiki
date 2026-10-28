@@ -20,6 +20,7 @@ import {
   FORCE_SLIDERS,
   GRAPH_COLORS,
   GROUP_FIELDS,
+  GROUPING_LIST,
   groupCounts,
   groupSuggestions,
   joinGroupQuery,
@@ -229,53 +230,11 @@ export function GroupSection({
             One grouping can be on at a time.
           </PopoverDescription>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
-            <li>
-              Domain draws a circle around each topic. That circle is separate
-              from the domain node. With Domains on in Nodes, the node sits in
-              the middle of its circle and grows with its connections.
-            </li>
-            <li>
-              Entities draws a colored circle around each entity. Knowledge
-              units sit inside it. Domain nodes show there only when Domains is
-              on in Nodes. Each domain sits in the entity most of its knowledge
-              is about. A domain with none of its own sits with the domain it
-              connects to most.
-            </li>
-            <li>
-              Pages draws a circle around each article. Each section is a circle
-              inside it, and the knowledge that section uses sits there. Domain
-              nodes show there only when Domains is on in Nodes. Each domain
-              sits in the article, and the section, that uses most of its
-              knowledge. A domain with none of its own sits with the domain it
-              connects to most.
-            </li>
-            <li>
-              A unit used in more than one section sits in the earliest one.
-            </li>
-            <li>
-              Click a selected article, section, or suggestion again to open it.
-            </li>
-            <li>
-              Drag one knowledge unit onto an article, a section, or a
-              suggestion. An article drop uses the earliest section that can
-              take one claim. A blue suggestion adds it to that new article. An
-              orange Merge suggestion adds it to that merge. Go back to the
-              overview before dropping it on a different group.
-            </li>
-            <li>
-              Units that no article cites gather in a gray No article circle.
-              Inside it, a node with the most connections and the nodes linked
-              to it form a nested group, with a black border and that node name.
-              Linked nodes that never join a hub sit together in Linked. A node
-              with no links at all sits in Orphans. A link to anything else
-              leaves it in No article. Nodes from an external source sit in
-              External. A pending suggestion groups its units inside that
-              circle. A new article is blue. A merge is orange and marked Merge.
-              The newest 10% of knowledge units changed, used, moved, or applied
-              keep a green border. The newest 10% of articles and the newest 10%
-              of sections have a yellow ring. Inside a selected group, that
-              share is of the group.
-            </li>
+            {GROUPING_LIST.flatMap((grouping) =>
+              grouping.help.map((line, index) => (
+                <li key={`${grouping.id}-${index}`}>{line}</li>
+              )),
+            )}
           </ul>
         </>
       }

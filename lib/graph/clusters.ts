@@ -1,5 +1,6 @@
 import { packEnclose, packSiblings } from "d3-hierarchy";
 import { entityColor } from "./domainColors";
+import { PAGE_SEP, type GroupingId } from "./groupings";
 import type { GraphColor } from "./groups";
 import { nodeRadius, type SimNode } from "./physics";
 import type { GraphNode } from "./types";
@@ -22,10 +23,10 @@ import type { GraphNode } from "./types";
 
 // Which circle a dot sits in. Domain uses the topic tree. Page nests sections under an article.
 // Entity uses one flat name.
-export type ClusterMode = "domain" | "entity" | "page";
+export type ClusterMode = GroupingId;
 
-// Page and section titles can contain "/". Keep their circle keys apart with a separator they cannot include.
-const PAGE_SEP = "\u001f";
+// One end of a link: an id, or the node once d3 has swapped it in (d3 also allows numeric ids)
+type LinkEnd<N extends { id: string } = { id: string }> = string | number | N;
 
 // Circle key for one section inside an article. Titles may contain "/".
 export function pageSectionKey(page: string, section: string): string {
@@ -148,9 +149,9 @@ type ClusterNode = Pick<
   | "recommendedTitle"
   | "recommendedKind"
   | "sourceScopes"
-  | "label"
 > & {
   id?: string;
+  label?: string;
   degree?: number;
   kind?: GraphNode["kind"];
   pageSections?: GraphNode["pageSections"];
@@ -187,8 +188,8 @@ function primarySectionTitle(node: ClusterNode, page: string): string | null {
 function hubNesting(
   nodes: readonly ClusterNode[],
   links: readonly {
-    source: string | { id: string };
-    target: string | { id: string };
+    source: LinkEnd;
+    target: LinkEnd;
   }[],
 ): Map<string, string> {
   const loose = nodes.filter((node) => {
@@ -200,8 +201,8 @@ function hubNesting(
   const degree = new Map(loose.map((node) => [node.id!, node.degree ?? 0]));
   const neighbors = new Map<string, Set<string>>();
   const linked = new Set<string>();
-  const endId = (end: string | { id: string }) =>
-    typeof end === "object" ? end.id : end;
+  const endId = (end: LinkEnd) =>
+    typeof end === "object" ? end.id : String(end);
   for (const link of links) {
     const source = endId(link.source);
     const target = endId(link.target);
@@ -639,8 +640,8 @@ let lastPacking: {
   nodeSize: number;
   mode: ClusterMode;
   links: readonly {
-    source: string | { id: string };
-    target: string | { id: string };
+    source: LinkEnd;
+    target: LinkEnd;
   }[];
   packing: DomainPacking;
 } | null = null;
@@ -659,8 +660,8 @@ export function packDomains(
   nodeSize: number,
   mode: ClusterMode = "domain",
   links: readonly {
-    source: string | { id: string };
-    target: string | { id: string };
+    source: LinkEnd;
+    target: LinkEnd;
   }[] = [],
 ): DomainPacking {
   if (
@@ -758,8 +759,8 @@ export function clusterCircles(
   nodeSize: number,
   mode: ClusterMode = "domain",
   links: readonly {
-    source: string | { id: string };
-    target: string | { id: string };
+    source: LinkEnd;
+    target: LinkEnd;
   }[] = [],
 ): ClusterCircle[] {
   return packDomains(nodes, nodeSize, mode, links).circles;
@@ -970,13 +971,13 @@ export function createContainment(
   nodes: readonly SimNode[],
   nodeSize: number,
   mode: ClusterMode = "domain",
-  links: readonly { source: string | SimNode; target: string | SimNode }[] = [],
+  links: readonly { source: LinkEnd<SimNode>; target: LinkEnd<SimNode> }[] = [],
 ): () => void {
   const { homes, circles } = packDomains(nodes, nodeSize, mode, links);
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const connected = new Map<string, SimNode[]>();
-  const endOf = (end: string | SimNode) =>
-    typeof end === "object" ? end : byId.get(end);
+  const endOf = (end: LinkEnd<SimNode>) =>
+    typeof end === "object" ? end : byId.get(String(end));
   for (const link of links) {
     const source = endOf(link.source);
     const target = endOf(link.target);

@@ -1,4 +1,5 @@
 import type { Enums } from "@/lib/database/types";
+import type { GraphNodeKind } from "./nodeTypes";
 
 // =====================================================================
 // GRAPH MODEL: what the graph view draws, independent of how it is
@@ -6,8 +7,8 @@ import type { Enums } from "@/lib/database/types";
 // (like Obsidian's tags); links are typed.
 // =====================================================================
 
-// NODE KINDS
-export type GraphNodeKind = "unit" | "entity" | "page" | "domain";
+// NODE KINDS: listed, with their traits, in nodeTypes.ts
+export type { GraphNodeKind };
 
 // LINK KINDS: the seven relationship types, plus "about" (unit or page -> entity), "cites" (page -> unit),
 // "in" (unit or page -> domain), and "similar" (derived relatedness between units, never stored; see related.ts)
