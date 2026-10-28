@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { QueryState } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { RowMenu } from "@/components/row-menu/RowMenu";
+import { InfoHint } from "@/components/standard/info-hint";
 import { InfoPopover } from "@/components/standard/info-popover";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -67,13 +68,18 @@ export function SkillsScreen() {
 function Assignments({library,onView}:{library:SkillLibrary;onView:(skill:AiSkill)=>void}) {
   const skills=library.skills.filter((skill)=>!skill.archived_at);
   return <section aria-label="Skill assignments" className="space-y-2">
-    <p className="text-xs text-muted-foreground">Assign reusable instructions to seven AI capabilities. The first five guide one shared reconciliation request; they do not run as separate steps. Agent Roles instructions take precedence.</p>
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p>Pick the skill each AI capability follows.</p>
+      <InfoPopover label="About skill assignments">
+        <p>The first five guide one shared reconciliation request; they do not run as separate steps. Agent Roles instructions take precedence.</p>
+        <p>Source citations, data validation, and revision checks remain part of the workflow for every skill.</p>
+      </InfoPopover>
+    </div>
     <ul className="divide-y overflow-hidden rounded-lg border">{AI_STAGES.map((stage)=>{
       const assignment=library.assignments.find((row)=>row.stage===stage.id);
       const current=assignment ? assignment.skill_id : defaultSkill(stage.id).id;
       return <StageRow key={`${stage.id}:${current}`} stage={stage} overridden={!!library.roleInstructions?.some((item)=>item.role===stage.id)} current={current} skills={skills} onView={onView} />;
     })}</ul>
-    <p className="text-xs text-faint">Source citations, data validation, and revision checks remain part of the workflow for every skill.</p>
   </section>;
 }
 function StageRow({stage,overridden,current,skills,onView}:{overridden:boolean;stage:(typeof AI_STAGES)[number];current:string|null;skills:AiSkill[];onView:(skill:AiSkill)=>void}) {
@@ -89,10 +95,10 @@ function StageRow({stage,overridden,current,skills,onView}:{overridden:boolean;s
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-panel font-medium">{stage.name}</h2>
+          <InfoHint>{stage.description}</InfoHint>
           {overridden?<Badge variant="outline">Agent Roles override active</Badge>:null}
           {current===null?<Badge variant="outline">App rules only</Badge>:current!==defaultId?<Badge variant="secondary">Custom</Badge>:null}
         </div>
-        <p className="mt-0.5 text-panel text-muted-foreground">{stage.description}</p>
       </div>
     </div>
     <div className="space-y-1.5">
@@ -103,7 +109,7 @@ function StageRow({stage,overridden,current,skills,onView}:{overridden:boolean;s
         </NativeSelect>
         <RowMenu label={selectedSkill?.name??"Skill"} items={[{label:"View",isDisabled:!selectedSkill,run:()=>selectedSkill&&onView(selectedSkill)}]} />
       </div>
-      {overridden?<p className="text-xs text-muted-foreground">This skill is inactive while the <Link href="/roles" className="underline underline-offset-4">Agent Roles override</Link> is active.</p>:null}
+      {overridden?<p className="text-xs text-muted-foreground">Not used while the <Link href="/roles" className="underline underline-offset-4">Agent Roles override</Link> is on.</p>:null}
       {dirty||saved||save.error||current!==defaultId?<div className="flex flex-wrap items-center gap-2 text-xs">
         {dirty?<>
           <Button size="sm" disabled={save.isPending} onClick={()=>void apply(selected||null)}>{save.isPending?"Saving…":"Save"}</Button>
@@ -137,6 +143,6 @@ function SkillList({library,onEdit,onDuplicate}:{library:SkillLibrary;onEdit:(sk
         <div><Button size="sm" variant="outline" onClick={()=>onEdit(skill)}>{skill.builtin_key||skill.archived_at?"View":"Edit"}</Button></div>
       </article>;
     })}</div>
-    {!matches.length?<p className="text-panel text-faint">No matching skills. Create one with New skill.</p>:null}
+    {!matches.length?<p className="text-panel text-faint">No matching skills.</p>:null}
   </section>;
 }

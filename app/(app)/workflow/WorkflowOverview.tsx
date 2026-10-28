@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { InfoHint } from "@/components/standard/info-hint";
 import { useRef, useState } from "react";
 import { OTHER_PHASES, UPLOAD_PHASES, WORKFLOW_SAFEGUARDS, type OverviewPhase } from "./workflowOverviewModel";
 
@@ -37,8 +38,11 @@ export function WorkflowOverview({ onAssignments }: { onAssignments: () => void 
   return <section aria-label="Workflow overview" className="space-y-6">
     <div className="flex flex-wrap items-baseline justify-between gap-3">
       <div className="space-y-1">
-        <h2 className="text-base font-semibold">How your workspace works</h2>
-        <p className="text-xs leading-5 text-muted-foreground">Follow upload processing, illustrations, asset cleanup, graph edits and research. Select a step for its details and instructions. Additional workflows run on their own triggers.</p>
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-base font-semibold">How your workspace works</h2>
+          <InfoHint>Covers upload processing, illustrations, asset cleanup, graph edits and research. Additional workflows run on their own triggers.</InfoHint>
+        </div>
+        <p className="text-xs leading-5 text-muted-foreground">Select a step for its details.</p>
       </div>
       <Link href="/upload" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">Upload progress <ArrowRight aria-hidden="true" className="size-3" /></Link>
     </div>
@@ -63,6 +67,7 @@ export function WorkflowOverview({ onAssignments }: { onAssignments: () => void 
         <p className="mb-3 text-xs text-muted-foreground">Step details · {selectedPhase.name}</p>
         <div aria-live="polite" aria-atomic="true">
           <h3 className="text-sm font-semibold">{selectedStep.name}</h3>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">{selectedStep.description}</p>
           <p className="mt-3 text-sm leading-6">{selectedStep.detail}</p>
           <dl className="mt-5 space-y-4 border-t pt-4 text-xs leading-5">
             <div><dt className="font-medium">When it runs</dt><dd className="mt-1 text-muted-foreground">{selectedStep.trigger ?? selectedPhase.trigger}</dd></div>
@@ -98,7 +103,6 @@ function Phase({ phase, number, selectedId, onSelect }: { phase: OverviewPhase; 
       {phase.steps.map((step) => <li key={step.id}>
         <button id={`workflow-step-${step.id}`} type="button" aria-pressed={selectedId === step.id} aria-controls="workflow-step-details" onClick={() => onSelect(step.id)} className={`w-full rounded-sm border-l-2 px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring ${selectedId === step.id ? "border-foreground bg-muted" : "border-transparent hover:bg-muted/50"}`}>
           <span className="block text-xs font-medium leading-5">{step.name}</span>
-          <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">{step.description}</span>
         </button>
       </li>)}
     </ol>

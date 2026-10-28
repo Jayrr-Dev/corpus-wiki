@@ -81,6 +81,6 @@ export const OTHER_PHASES: OverviewPhase[] = [
 export const WORKFLOW_SAFEGUARDS = [
   { id: "change-control", name: "Change control", description: "Review applied changes and undo them when needed.", href: "/changes" },
   { id: "approvals", name: "Your approvals", description: "Resolve changes waiting for your approval in Exceptions.", href: "/exceptions" },
-  { id: "recovery", name: "Progress and recovery", description: "Track uploads and resume unfinished work. Completed steps stay saved.", href: "/upload" },
-  { id: "settings", name: "Models and outside knowledge", description: "Choose providers and models, and control whether outside knowledge is allowed.", href: "/settings" },
+  { id: "recovery", name: "Progress and recovery", description: "Track uploads and resume unfinished work.", href: "/upload" },
+  { id: "settings", name: "Models and outside knowledge", description: "Choose models and whether outside knowledge is allowed.", href: "/settings" },
 ] as const;
