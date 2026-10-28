@@ -1,13 +1,13 @@
 import { type ClusterCircle, facingEdges, type GraphColor, type GraphDisplay, type GraphNode, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute, summaryDomains } from "@/lib/graph";
-import { type Camera, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
+import { type Camera, hierarchyOpacity, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import type { CanvasPalette } from "./palette";
 
 // =====================================================================
 // DRAW GRAPH: paints one frame on a 2D canvas, back to front: domain
 // circles, links, dots, circle names, note labels. Links share one path per style so 5,000 lines are a few
-// draw calls. While a dot is hovered, it and its neighbors stay bright
-// and the rest dims (Obsidian's hover focus).
+// draw calls. While a dot is focused (clicked), it and its neighbors stay
+// bright and the rest fades out by focusMix, so the dimming eases in and out.
 // =====================================================================
 
 export interface DrawInput {
@@ -25,9 +25,13 @@ export interface DrawInput {
   display: GraphDisplay;
   palette: CanvasPalette;
   colorOf: (node: GraphNode) => GraphColor | null;
-  hoveredId: string | null;
+  // The focused (clicked) dot, and how far the rest has faded for it (0 none, 1 fully dimmed)
+  focusId: string | null;
+  focusMix?: number;
   focusIds: ReadonlySet<string>;
-  // While hovering, show only the hovered dot's text (no neighbor or circle names); its links and neighbors still light up
+  // The dot under the pointer: its title shows on a box, nothing dims
+  hoveredId?: string | null;
+  // While focused, show only the focused dot's text (no neighbor or circle names); its links and neighbors still light up
   hoverLabelOnly: boolean;
   domainLabelBoxes?: {path:string;x:number;y:number;width:number;height:number}[];
   focusedDomain?: string | null;
@@ -47,8 +51,23 @@ function inDomain(node: GraphNode, domain: string | null | undefined): boolean {
   return !domain || node.domainPaths.some((path) => path === domain || path.startsWith(`${domain}/`));
 }
 
-// OPACITY OF EVERYTHING OUTSIDE THE HOVER FOCUS
-const DIMMED = 0.15;
+// OPACITY OF EVERYTHING OUTSIDE THE FOCUS: dots and titles, links, and domain circles not holding the focus
+const DIMMED = 0.06;
+const DIMMED_LINK = 0.12;
+const DIMMED_CIRCLE = 0.25;
+
+// Opacity between its resting value and its focused value, by how far the focus has faded in
+function faded(input: DrawInput, rest: number, focused: number): number {
+  const mix = input.focusId === null ? 0 : (input.focusMix ?? 1);
+  return rest + (focused - rest) * mix;
+}
+
+// How much a domain circle dims for the focus: circles holding the focused dot stay bright
+function circleDim(input: DrawInput, circle: ClusterCircle): number {
+  const node = input.focusId === null ? undefined : input.nodes.find((candidate) => candidate.id === input.focusId);
+  const holdsFocus = node?.domainPaths.some((path) => path === circle.key || path.startsWith(`${circle.key}/`));
+  return holdsFocus ? 1 : faded(input, 1, DIMMED_CIRCLE);
+}
 // LABEL SIZE IN SCREEN PIXELS (labels stay readable at any zoom)
 const LABEL_PX = 12;
 // WRAPPED LABELS: max line width, line height and canvas margin, in screen pixels.
@@ -74,18 +93,34 @@ const CIRCLE_COLORS: readonly GraphColor[] = ["link", "applied", "needs-you", "s
 const CIRCLE_FILL_ALPHA = 0.16;
 const CIRCLE_RING_ALPHA = 0.8;
 const CIRCLE_RING_PX = 1.2;
-const CIRCLE_LABEL_PX = { branch: 14, leaf: 12 } as const;
+// Domain names shrink by level: the top level is the biggest, then each level down is smaller, down to the smallest
+const CIRCLE_LABEL_PX = { top: 20, step: 3, smallest: 12 } as const;
 const CIRCLE_LABEL_HALO_PX = 3;
+// How far a domain name's color is pulled toward the text color (darker in light mode, lighter in dark mode)
+const CIRCLE_LABEL_CONTRAST = 0.5;
+
+function circleLabelPx(depth: number): number {
+  return Math.max(CIRCLE_LABEL_PX.smallest, CIRCLE_LABEL_PX.top - CIRCLE_LABEL_PX.step * depth);
+}
+
+// Blend two #rrggbb colors; anything else comes back as the first color unchanged
+function mixHex(color: string, toward: string, amount: number): string {
+  const parse = (hex: string) => /^#[0-9a-f]{6}$/i.test(hex) ? [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)) : null;
+  const [from, to] = [parse(color), parse(toward)];
+  if (!from || !to) return color;
+  return `#${from.map((value, i) => Math.round(value + (to[i]! - value) * amount).toString(16).padStart(2, "0")).join("")}`;
+}
 
 // Paint text in screen space. Canvas clamps enormous world-space font sizes
 // (10,000px in Chrome), making labels vanish at very small overview scales.
-function paintText(input: DrawInput, text: string, x: number, y: number, size = LABEL_PX, weight = "", halo = false): void {
+// `halo` is the outline width in screen pixels (0 = none), stroked in the current strokeStyle.
+function paintText(input: DrawInput, text: string, x: number, y: number, size = LABEL_PX, weight = "", halo = 0): void {
   const { ctx, camera, pixelRatio, palette } = input;
   ctx.save();
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   ctx.font = `${weight ? `${weight} ` : ""}${size}px ${palette.fontFamily}`;
   const sx = x * camera.k + camera.x, sy = y * camera.k + camera.y;
-  if (halo) { ctx.lineWidth = CIRCLE_LABEL_HALO_PX; ctx.strokeText(text, sx, sy); }
+  if (halo > 0) { ctx.lineWidth = halo; ctx.lineJoin = "round"; ctx.strokeText(text, sx, sy); }
   ctx.fillText(text, sx, sy);
   ctx.restore();
 }
@@ -141,11 +176,11 @@ interface DomainSummary {
 // of domains that links join, faded out as the single links fade in. Edges, not middles: a big
 // domain's middle often sits over one of its children, which would look like the line's owner.
 function drawSummaries(input: DrawInput, summaries: Iterable<DomainSummary>, shown: number): void {
-  const { ctx, palette, camera, display, hoveredId } = input;
+  const { ctx, palette, camera, display } = input;
   if (shown <= 0.01) return;
   ctx.strokeStyle = palette.muted;
   ctx.lineCap = "round";
-  ctx.globalAlpha = SUMMARY_ALPHA * shown * (hoveredId === null ? 1 : 0.5);
+  ctx.globalAlpha = SUMMARY_ALPHA * shown * faded(input, 1, 0.5);
   for (const { from, to, count } of summaries) {
     ctx.lineWidth = Math.min(SUMMARY_MAX_PX, LINK_PX * display.linkThickness * (1 + Math.sqrt(count))) / camera.k;
     const [start, end] = facingEdges(from, to, SUMMARY_TUCK_PX / camera.k);
@@ -164,8 +199,8 @@ function drawSummaries(input: DrawInput, summaries: Iterable<DomainSummary>, sho
 // summed into one line per pair of domains, and the single links fade in as the camera zooms in.
 // With a hover, focused links go in a brighter path of their own and are never summed.
 function drawLinks(input: DrawInput): void {
-  const { ctx, links, palette, hoveredId, camera, display, circles } = input;
-  const isFocused = (source: SimNode, target: SimNode) => hoveredId !== null && (source.id === hoveredId || target.id === hoveredId);
+  const { ctx, links, palette, focusId, camera, display, circles } = input;
+  const isFocused = (source: SimNode, target: SimNode) => focusId !== null && (source.id === focusId || target.id === focusId);
   const centers = new Map<string, RouteCircle>(circles.map((circle) => [circle.key, circle]));
   // Control points for a link, start and end included (none: a straight line)
   const route = (source: SimNode, target: SimNode): RoutePoint[] => {
@@ -200,7 +235,7 @@ function drawLinks(input: DrawInput): void {
   for (const similar of [true, false]) {
     ctx.setLineDash(similar ? [SIMILAR_DASH_PX / camera.k, SIMILAR_DASH_PX / camera.k] : []);
     for (const focused of [false, true]) {
-      const alpha = focused ? 1 : hoveredId === null ? 0.7 : 0.45;
+      const alpha = focused ? faded(input, 0.7, 1) : faded(input, 0.7, DIMMED_LINK);
       const shown = similar && !focused ? alpha * SIMILAR_ALPHA * similarShown : alpha;
       // Links summed at the overview also draw one by one, in a path of their own that fades in with the zoom
       for (const faded of similar || focused ? [false] : [false, true]) {
@@ -224,10 +259,10 @@ function drawLinks(input: DrawInput): void {
 
 // DOTS PASS: group color first, else the kind's gray
 function drawNodes(input: DrawInput): void {
-  const { ctx, nodes, palette, colorOf, hoveredId, focusIds, display } = input;
+  const { ctx, nodes, palette, colorOf, focusId, focusIds, display } = input;
   for (const node of nodes) {
     const group = colorOf(node);
-    ctx.globalAlpha = !inDomain(node, input.focusedDomain) ? 0.08 : hoveredId === null || focusIds.has(node.id) ? 1 : DIMMED;
+    ctx.globalAlpha = !inDomain(node, input.focusedDomain) ? 0.08 : focusId === null || focusIds.has(node.id) ? 1 : faded(input, 1, DIMMED);
     ctx.fillStyle = group ? palette.token(group) : baseColor(node, palette);
     ctx.beginPath();
     ctx.arc(node.x ?? 0, node.y ?? 0, nodeRadius(node, display.nodeSize), 0, Math.PI * 2);
@@ -285,14 +320,27 @@ function titleAnchor(node: SimNode, lineCount: number, lineHeight: number, displ
   }
 }
 
-// Opacity of the backing box behind the hovered title (0 = none, 1 = solid canvas colour)
+// Opacity of the backing box behind the focused or hovered title (0 = none, 1 = solid canvas colour)
 const HOVER_LABEL_BG_ALPHA = 0.95;
-// Backing box behind every other title: opacity (times the title's own), and side padding in screen pixels
-const LABEL_BG_ALPHA = 0.85;
-const LABEL_BG_PAD_PX = 3;
+// Thick outline around every other title, in screen pixels, so lines and dots behind it do not cut through
+const TITLE_HALO_PX = 4;
+// Room kept between a title set inside its dot and the dot's edge, in screen pixels
+const INSIDE_PAD_PX = 6;
+
+// INSIDE TITLE: the title wrapped to fit inside its dot, or null when the dot is too small on screen.
+// The wrap width is rounded so the wrap cache is not refilled on every zoom step.
+function insideTitle(ctx: CanvasRenderingContext2D, node: SimNode, input: DrawInput): { lines: string[]; widthPx: number } | null {
+  const radiusPx = nodeRadius(node, input.display.nodeSize) * input.camera.k - INSIDE_PAD_PX;
+  if (radiusPx < LABEL_PX * 2) return null;
+  const wrapPx = Math.min(LABEL_WRAP_PX, Math.floor((radiusPx * 1.6) / 10) * 10);
+  const wrapped = wrapLabel(ctx, node.label, wrapPx, input.palette.fontFamily);
+  const heightPx = wrapped.lines.length * LABEL_PX * LINE_HEIGHT;
+  // The text block's corners must stay inside the circle
+  return (wrapped.widthPx / 2) ** 2 + (heightPx / 2) ** 2 <= radiusPx ** 2 ? wrapped : null;
+}
 
 // HOVERED LABEL: same wrap as the resting label, on a backing box, nudged inside the canvas so it is never cut off
-function drawHoveredLabel(input: DrawInput, node: SimNode): void {
+function drawHoveredLabel(input: DrawInput, node: SimNode, alpha = 1): void {
   const { ctx, palette, camera, display } = input;
   const k = camera.k;
   const { lines, widthPx } = wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
@@ -307,15 +355,16 @@ function drawHoveredLabel(input: DrawInput, node: SimNode): void {
   const left = -camera.x / k + margin, right = (input.width - camera.x) / k - margin;
   const shift = Math.min(Math.max(boxLeft, left + pad), right - width - pad) - boxLeft;
   const x = anchor.x + shift, y = anchor.y;
-  ctx.globalAlpha = HOVER_LABEL_BG_ALPHA;
+  ctx.globalAlpha = HOVER_LABEL_BG_ALPHA * alpha;
   ctx.fillStyle = palette.background;
   ctx.beginPath();
   ctx.roundRect(boxLeft + shift - pad, y - pad / 2, width + 2 * pad, height + pad, 4 / k);
   ctx.fill();
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = alpha;
   ctx.fillStyle = palette.text;
   ctx.textAlign = anchor.align;
   lines.forEach((line, i) => paintText(input, line, x, y + i * lineHeight));
+  ctx.globalAlpha = 1;
 }
 
 // Opacity of note titles at this zoom (in layers from the overview, or by plain zoom when there is none)
@@ -325,13 +374,17 @@ function titleOpacity({ camera, display, overviewZoom }: DrawInput): number {
     : revealOpacity(camera.k, overviewZoom, REVEAL_AT.title, display.textFadeThreshold);
 }
 
-// LABELS PASS: wrapped, faded in by zoom; the hover focus always shows its labels (or, with
-// hoverLabelOnly, only the hovered one does), and the hovered label is drawn last so it sits on top
+// LABELS PASS: wrapped, faded in by zoom; the focus shows its labels (or, with hoverLabelOnly,
+// only the focused one does), and the focused and hovered labels are drawn last so they sit on top
 function drawLabels(input: DrawInput): void {
-  const { ctx, nodes, palette, camera, display, hoveredId, focusIds, hoverLabelOnly } = input;
+  const { ctx, nodes, palette, camera, display, focusId, focusIds, hoverLabelOnly } = input;
+  const hoveredId = input.hoveredId ?? null;
+  const mix = faded(input, 0, 1);
+  const hovered = hoveredId === null || hoveredId === focusId ? null : nodes.find((node) => node.id === hoveredId) ?? null;
   ctx.textBaseline = "top";
-  if (hoveredId !== null && hoverLabelOnly) {
-    const hovered = nodes.find((node) => node.id === hoveredId);
+  if (focusId !== null && hoverLabelOnly) {
+    const focused = nodes.find((node) => node.id === focusId);
+    if (focused) drawHoveredLabel(input, focused, mix);
     if (hovered) drawHoveredLabel(input, hovered);
     return;
   }
@@ -340,40 +393,39 @@ function drawLabels(input: DrawInput): void {
   ctx.font = `${LABEL_PX}px ${palette.fontFamily}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.fillStyle = palette.muted;
-  let hovered: SimNode | null = null;
+  let focused: SimNode | null = null;
   for (const node of nodes) {
-    if (node.id === hoveredId) { hovered = node; continue; }
+    if (node.id === focusId) { focused = node; continue; }
+    if (node.id === hoveredId) continue;
     if (!inDomain(node, input.focusedDomain)) continue;
-    const inFocus = hoveredId !== null && focusIds.has(node.id);
-    const opacity = inFocus ? 1 : hoveredId === null ? zoomOpacity : zoomOpacity * DIMMED;
+    const inFocus = focusId !== null && focusIds.has(node.id);
+    const opacity = inFocus ? faded(input, zoomOpacity, 1) : zoomOpacity * faded(input, 1, DIMMED);
     if (opacity <= 0.01 || !isOnScreen(node, input)) continue;
     ctx.globalAlpha = opacity;
-    const { lines, widthPx } = wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
-    const { x, y, align } = titleAnchor(node, lines.length, lineHeight, display, camera.k);
+    // A dot big enough on screen holds its own title; otherwise the title sits beside it (above by default)
+    const inside = insideTitle(ctx, node, input);
+    const { lines, widthPx } = inside ?? wrapLabel(ctx, node.label, LABEL_WRAP_PX, palette.fontFamily);
+    const { x, y, align } = inside
+      ? { x: node.x ?? 0, y: (node.y ?? 0) - (lines.length * lineHeight) / 2, align: "center" as const }
+      : titleAnchor(node, lines.length, lineHeight, display, camera.k);
     const left = align === "center" ? x - widthPx / camera.k / 2 : align === "right" ? x - widthPx / camera.k : x;
     if (!reserveLabel(input, left, y, widthPx, lines.length * LABEL_PX * LINE_HEIGHT)) continue;
-    // Backing box in the canvas colour, so lines and dots behind the title do not cut through it
-    const pad = LABEL_BG_PAD_PX / camera.k;
-    ctx.globalAlpha = opacity * LABEL_BG_ALPHA;
-    ctx.fillStyle = palette.background;
-    ctx.beginPath();
-    ctx.roundRect(left - pad, y - pad / 2, widthPx / camera.k + 2 * pad, lines.length * lineHeight + pad, 3 / camera.k);
-    ctx.fill();
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = palette.muted;
+    // Inside: canvas-coloured text outlined in the dot's own colour. Outside: text outlined in the canvas colour.
+    const group = inside ? input.colorOf(node) : null;
+    ctx.strokeStyle = inside ? (group ? palette.token(group) : baseColor(node, palette)) : palette.background;
+    ctx.fillStyle = inside ? palette.background : palette.text;
     ctx.textAlign = align;
-    lines.forEach((line, i) => paintText(input, line, x, y + i * lineHeight));
+    lines.forEach((line, i) => paintText(input, line, x, y + i * lineHeight, LABEL_PX, "", TITLE_HALO_PX));
   }
   ctx.globalAlpha = 1;
+  if (focused) drawHoveredLabel(input, focused, Math.max(mix, zoomOpacity));
   if (hovered) drawHoveredLabel(input, hovered);
 }
 
 // CIRCLES PASS (under everything): every domain gets a tinted disc, so the tints stack and deeper
 // domains read lighter; domains holding other domains get a solid ring, the innermost a dashed ring
 function drawCircles(input: DrawInput): void {
-  const { ctx, circles, palette, camera, hoveredId } = input;
-  const dim = hoveredId === null ? 1 : 0.4;
+  const { ctx, circles, palette, camera } = input;
   // All parents paint before descendants, including across overlapping roots.
   const ordered = [...circles].sort((a, b) => a.depth - b.depth);
   for (const circle of ordered) {
@@ -389,7 +441,7 @@ function drawCircles(input: DrawInput): void {
       ctx.fillStyle = palette.background;
       ctx.fill();
     }
-    ctx.globalAlpha = CIRCLE_FILL_ALPHA * dim * visibility * scope;
+    ctx.globalAlpha = CIRCLE_FILL_ALPHA * circleDim(input, circle) * visibility * scope;
     ctx.fillStyle = color;
     ctx.fill();
   }
@@ -400,7 +452,7 @@ function drawCircles(input: DrawInput): void {
     ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
     ctx.setLineDash(circle.isBranch ? [] : [4 / camera.k, 4 / camera.k]);
     ctx.lineWidth = CIRCLE_RING_PX / camera.k;
-    ctx.globalAlpha = CIRCLE_RING_ALPHA;
+    ctx.globalAlpha = CIRCLE_RING_ALPHA * circleDim(input, circle);
     ctx.strokeStyle = color;
     ctx.stroke();
   }
@@ -413,10 +465,10 @@ function drawCircles(input: DrawInput): void {
 // once note titles fade in (the two cross-fade, so the name never sits on the titles). Each name has
 // a background-colored outline so it reads over dots and lines.
 function drawCircleLabels(input: DrawInput): void {
-  const { ctx, circles, palette, camera, hoveredId, overviewZoom, hoverLabelOnly } = input;
-  if (circles.length === 0 || (hoveredId !== null && hoverLabelOnly)) return;
-  // Domain names stay readable independently of ring depth and dot hover.
-  const dim = 1;
+  const { ctx, circles, palette, camera, focusId, overviewZoom, hoverLabelOnly } = input;
+  if (circles.length === 0 || (focusId !== null && hoverLabelOnly)) return;
+  // Only the top levels are named at the overview; deeper names fade in as the camera zooms in
+  const level = (circle: ClusterCircle) => hierarchyOpacity(circle.depth, camera.k, overviewZoom);
   const titles = overviewZoom === null ? 1 : titleOpacity(input);
   const shown = overviewZoom === null ? 1 : revealOpacity(camera.k, overviewZoom, REVEAL_AT.subdomain);
   ctx.textAlign = "center";
@@ -428,19 +480,21 @@ function drawCircleLabels(input: DrawInput): void {
     if (input.focusedDomain && circle.key !== input.focusedDomain && !circle.key.startsWith(`${input.focusedDomain}/`)) return;
     if (alpha <= 0.01) return;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
-    const fontSize = CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"];
-    const weight = circle.isBranch ? "600" : "500";
+    ctx.fillStyle = mixHex(palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!), palette.text, CIRCLE_LABEL_CONTRAST);
+    const fontSize = circleLabelPx(circle.depth);
+    const weight = circle.depth < 2 ? "700" : circle.isBranch ? "600" : "500";
     ctx.font = `${weight} ${fontSize}px ${palette.fontFamily}`;
     ctx.textBaseline = place === "top" ? "bottom" : "middle";
     const y = place === "top" ? circle.y - circle.r - 3 / camera.k : circle.y;
     const width = ctx.measureText(circle.label).width;
-    const height = CIRCLE_LABEL_PX[circle.isBranch ? "branch" : "leaf"];
+    const height = fontSize;
     if (!reserveLabel(input, circle.x - width / camera.k / 2, y - (place === "top" ? height : height / 2) / camera.k, width, height)) return;
     input.domainLabelBoxes?.push({path:circle.key,x:circle.x*camera.k+camera.x-width/2,y:y*camera.k+camera.y-(place==="top"?height:height/2),width,height});
-    paintText(input, circle.label, circle.x, y, fontSize, weight, true);
+    paintText(input, circle.label, circle.x, y, fontSize, weight, CIRCLE_LABEL_HALO_PX);
   };
-  for (const circle of circles) {
+  // Bigger circles (more notes) claim their name's space first, so a smaller circle's name gives way when they overlap
+  for (const circle of [...circles].sort((a, b) => b.r - a.r)) {
+    const dim = level(circle) * circleDim(input, circle);
     if (circle.isBranch) name(circle, "top", dim);
     else {
       name(circle, "middle", dim * Math.min(shown, 1 - titles));

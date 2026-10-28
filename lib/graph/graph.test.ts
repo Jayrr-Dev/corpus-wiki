@@ -404,9 +404,10 @@ describe("progressive zoom", () => {
     expect(parseSavedSettings({ ...DEFAULT_GRAPH_SETTINGS, forces: custom }).forces).toEqual(custom);
   });
   it("keeps three hierarchy levels in the overview and reveals deeper ones on zoom", () => {
-    expect([0, 1, 2, 3].map((depth) => hierarchyOpacity(depth, 1, 1))).toEqual([1, 1, 1, 0]);
-    expect(hierarchyOpacity(2, 2.4, 1)).toBeCloseTo(1);
-    expect(hierarchyOpacity(3, 2.4, 1)).toBe(1);
+    expect([0, 1, 2, 3].map((depth) => hierarchyOpacity(depth, 1, 1))).toEqual([1, 1, 0, 0]);
+    expect(hierarchyOpacity(2, 2, 1)).toBe(1);
+    expect(hierarchyOpacity(3, 2, 1)).toBeLessThan(1);
+    expect(hierarchyOpacity(3, 2.6, 1)).toBe(1);
     expect(hierarchyOpacity(3, 4, 1)).toBe(1);
     expect(hierarchyOpacity(5, 1, null)).toBe(1);
   });

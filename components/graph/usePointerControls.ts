@@ -7,8 +7,9 @@ import type { ForceLayout } from "./useForceLayout";
 
 // =====================================================================
 // POINTER CONTROLS (Obsidian's canvas behavior):
-//   hover a dot   -> focus it and its neighbors
-//   click a dot   -> open it
+//   hover a dot   -> pointer cursor and its title
+//   click a dot   -> focus it and its neighbors; click it again -> open it
+//   click empty   -> drop the focus (or, with none, focus the group there)
 //   drag a dot    -> pin it to the pointer while the layout reacts
 //   drag empty    -> pan;  wheel -> zoom around the cursor
 // Touch adds:
@@ -39,6 +40,9 @@ interface PointerOptions {
   layout: RefObject<ForceLayout>;
   camera: RefObject<Camera>;
   hoveredId: RefObject<string | null>;
+  // The clicked dot whose neighbors stay bright; without onFocus a click opens straight away
+  focusedId?: RefObject<string | null>;
+  onFocus?: (id: string | null) => void;
   // Set false once the person moves the view themselves
   isAutoFit: RefObject<boolean>;
   nodeSize: number;
@@ -75,12 +79,12 @@ function nodeAt(nodes: readonly SimNode[], world: Point, nodeSize: number, zoom:
 }
 
 // Wires the canvas's pointer and wheel events to the camera, hover and layout
-export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFit, nodeSize, onOpen, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, motion, redraw }: PointerOptions): void {
-  const latest = useRef({ nodeSize, onOpen, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw });
+export function usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, motion, redraw }: PointerOptions): void {
+  const latest = useRef({ nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw });
   // Latest props for the listeners below (synced after render, read in events)
   useLayoutEffect(() => {
-    latest.current = { nodeSize, onOpen, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw };
-  }, [nodeSize, onOpen, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw]);
+    latest.current = { nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw };
+  }, [nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, redraw]);
 
   useEffect(() => {
     const element = canvas.current;
@@ -189,7 +193,7 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
       return isDouble;
     };
 
-    // RELEASE: a short press on a dot opens it; a dragged dot is let go; a pinch ends when a finger lifts
+    // RELEASE: a short press on a dot focuses it, and on the focused dot opens it; a dragged dot is let go; a pinch ends when a finger lifts
     const onUp = (event: PointerEvent) => {
       if (event.button !== 0) return;
       const point = localPoint(element, event);
@@ -215,9 +219,14 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
       if (gesture.mode === "drag") {
         const { node, moved } = gesture;
         releaseDrag();
-        if (!moved) latest.current.onOpen(node);
+        if (!moved) {
+          const { onFocus } = latest.current;
+          if (onFocus && focusedId?.current !== node.id) onFocus(node.id);
+          else latest.current.onOpen(node);
+        }
       } else if (gesture.mode === "pan" && gesture.start && Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < slop) {
         if (isDoubleTap(event, point)) zoomInAt(point);
+        else if (focusedId?.current != null && latest.current.onFocus) latest.current.onFocus(null);
         else latest.current.onBackgroundClick?.(toWorld(camera.current, point));
       }
       gesture = { mode: "idle" };
@@ -284,5 +293,5 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, isAutoFi
       element.removeEventListener("dblclick", onDoubleClick);
       element.removeEventListener("wheel", onWheel);
     };
-  }, [canvas, layout, camera, hoveredId, isAutoFit, motion]);
+  }, [canvas, layout, camera, hoveredId, focusedId, isAutoFit, motion]);
 }

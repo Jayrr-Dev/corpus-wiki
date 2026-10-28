@@ -21,16 +21,16 @@ it("keeps domain text at readable screen sizes even below the canvas font limit"
     nodes:[],links:[],circles:[{key:"root",label:"Domain",depth:0,isBranch:true,x:0,y:0,r:100,index:0}],
     display:DEFAULT_GRAPH_SETTINGS.display,
     palette:{background:"#111",border:"#333",text:"#fff",muted:"#aaa",faint:"#666",fontFamily:"sans-serif",token:()=>"#aaf"},
-    colorOf:()=>null,hoveredId:null,focusIds:new Set(),hoverLabelOnly:false,
+    colorOf:()=>null,focusId:null,focusIds:new Set(),hoverLabelOnly:false,
   });
   expect(labels).toHaveLength(1);
-  expect(labels[0]!.font).toBe("600 14px sans-serif");
+  expect(labels[0]!.font).toBe("700 20px sans-serif");
   expect(labels[0]!.transform).toEqual([2,0,0,2,0,0]);
   expect(labels[0]!.x).toBe(400);
   expect(labels[0]!.y).toBeCloseTo(297);
 });
 
-it("paints nested domain circles progressively fainter without fading their names", () => {
+it("paints nested domain circles progressively fainter and names only the top two levels at the overview", () => {
   const fills: number[] = [];
   const outlines: number[] = [];
   const labels: number[] = [];
@@ -55,7 +55,7 @@ it("paints nested domain circles progressively fainter without fading their name
     circles: [0, 1, 2, 3].map((depth) => ({ key: `domain-${depth}`, label: `Domain ${depth}`, depth, isBranch: true, x: 100 + depth * 150, y: 300, r: 30, index: 0 })),
     display: DEFAULT_GRAPH_SETTINGS.display,
     palette: { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" },
-    colorOf: () => null, hoveredId: null, focusIds: new Set(), hoverLabelOnly: false,
+    colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
   };
   drawGraph(input);
   expect(paint.map((entry) => entry.color)).toEqual(["#aaf", "#111", "#aaf", "#111", "#aaf", "#111", "#aaf"]);
@@ -65,6 +65,10 @@ it("paints nested domain circles progressively fainter without fading their name
   expect(fills[2]).toBeLessThan(0.006);
   expect(fills[3]).toBeLessThan(0.001);
   expect(outlines.slice(0, 4)).toEqual([0.8, 0.8, 0.8, 0.8]);
+  expect(labels).toEqual([1, 1]);
+  labels.length = 0;
+  // Four times the overview zoom: every level is named
+  drawGraph({ ...input, overviewZoom: 0.25 });
   expect(labels).toEqual([1, 1, 1, 1]);
 });
 
@@ -91,7 +95,7 @@ it("sums links between domains into one line at the overview, then shows them bu
     circles: [{ key: "Left", label: "Left", depth: 0, isBranch: false, x: 0, y: 100, r: 50, index: 0 }, { key: "Right", label: "Right", depth: 0, isBranch: false, x: 400, y: 100, r: 50, index: 1 }],
     display: DEFAULT_GRAPH_SETTINGS.display,
     palette: { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" },
-    colorOf: () => null, hoveredId: null, focusIds: new Set(), hoverLabelOnly: false,
+    colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
   });
   drawGraph(input(1));
   // Overview: one summary line between the two domains; similar links and single links hidden

@@ -4,16 +4,21 @@ import Link from "next/link";
 import { Facts, QueryState } from "@/app/(app)/_components/bits";
 import { formatDate } from "@/app/(app)/_lib/format";
 import { Button } from "@/components/ui/button";
-import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { GraphNode } from "@/lib/graph";
 import { useEntity, usePage, useSections, useSectionLines } from "@/lib/queries";
+import type { ReactNode } from "react";
+
+// FOOTER: the actions strip along a preview card's bottom edge
+export function PreviewFooter({ children }: { children: ReactNode }) {
+  return <div className="-mx-4 -mb-4 flex justify-end gap-2 rounded-b-xl border-t bg-muted/50 p-4">{children}</div>;
+}
 
 function PreviewHeader({ node, kind }: { node: GraphNode; kind: string }) {
-  return <DialogHeader><DialogDescription asChild><p className="text-xs font-medium tracking-wide uppercase">{kind}</p></DialogDescription><DialogTitle>{node.label}</DialogTitle></DialogHeader>;
+  return <div data-drag-handle className="flex cursor-move flex-col gap-2 pr-6"><p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{kind}</p><h2 className="text-body leading-none font-medium">{node.label}</h2></div>;
 }
 
 function OpenPage({ node }: { node: GraphNode }) {
-  return <DialogFooter><Button asChild><Link href={node.href}>Open page</Link></Button></DialogFooter>;
+  return <PreviewFooter><Button asChild><Link href={node.href}>Open page</Link></Button></PreviewFooter>;
 }
 
 export function EntityPreview({ node }: { node: GraphNode }) {

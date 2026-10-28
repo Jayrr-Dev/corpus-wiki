@@ -69,3 +69,24 @@ it("holding a node pauses settling; dragging moves only that node without reheat
  expect(t.simulation.restart).toHaveBeenCalledOnce();
  expect(t.onOpen).not.toHaveBeenCalled();
 });
+
+it("first click on a dot focuses it, a second click opens it, and a background click lets go",()=>{
+ const listeners=new Map<string,(e:unknown)=>void>();
+ const element={getBoundingClientRect:()=>({left:10,top:20}),setPointerCapture:vi.fn(),addEventListener:(name:string,fn:(e:unknown)=>void)=>listeners.set(name,fn),removeEventListener:vi.fn(),style:{}};
+ const nodes=[{id:"a",x:10,y:20,degree:1}] as SimNode[];
+ const simulation={stop:vi.fn(),alpha:vi.fn(()=>0.01),alphaTarget:vi.fn(),restart:vi.fn()};
+ const onOpen=vi.fn(),onBackgroundClick=vi.fn();
+ const focusedId={current:null as string|null};
+ const onFocus=vi.fn((id:string|null)=>{focusedId.current=id;});
+  
+ usePointerControls({canvas:{current:element as unknown as HTMLCanvasElement},layout:{current:{nodes,links:[],simulation:simulation as never,revision:0}},camera:{current:{x:100,y:50,k:2}},hoveredId:{current:null},focusedId,isAutoFit:{current:false},nodeSize:1,onOpen,onFocus,onBackgroundClick,motion:{cancel:vi.fn(),animateTo:vi.fn(),target:{current:null}},redraw:vi.fn()});
+ const click=(x:number,y:number)=>{for(const type of ["pointerdown","pointerup"]) listeners.get(type)!({clientX:x,clientY:y,button:0,pointerId:1,pointerType:"mouse"});};
+ click(130,110);
+ expect(onFocus).toHaveBeenLastCalledWith("a");expect(onOpen).not.toHaveBeenCalled();
+ click(130,110);
+ expect(onOpen.mock.calls[0]?.[0].id).toBe("a");
+ click(400,400);
+ expect(onFocus).toHaveBeenLastCalledWith(null);expect(onBackgroundClick).not.toHaveBeenCalled();
+ click(400,400);
+ expect(onBackgroundClick).toHaveBeenCalledOnce();
+});

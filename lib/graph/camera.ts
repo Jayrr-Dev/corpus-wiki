@@ -67,10 +67,13 @@ export function labelOpacity(zoom: number, threshold: number): number {
 // line per pair of domains at the overview), then note titles.
 export const REVEAL_AT = { subdomain: 0.6, similar: 1, links: 1.15, title: 1.4 } as const;
 
-// Keep three levels in the overview; reveal deeper levels gradually on zoom.
+// DOMAIN LAYERS: the overview shows the top two levels of domains; each deeper level fades in at
+// LEVEL_STEP times the zoom of the level above it.
+const OVERVIEW_LEVELS = 2;
+const LEVEL_STEP = 1.3;
 export function hierarchyOpacity(depth: number, zoom: number, overviewZoom: number | null): number {
-  if (overviewZoom === null || depth < 3) return 1;
-  return revealOpacity(zoom, overviewZoom, 1.4 ** (depth - 2));
+  if (overviewZoom === null || depth < OVERVIEW_LEVELS) return 1;
+  return revealOpacity(zoom, overviewZoom, LEVEL_STEP ** (depth - OVERVIEW_LEVELS + 1));
 }
 
 // Opacity for a layer that fades in at `reveal` times the overview zoom (the text fade threshold shifts it)

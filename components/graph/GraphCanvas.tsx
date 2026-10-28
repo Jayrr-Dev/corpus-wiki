@@ -30,7 +30,7 @@ export interface GraphCanvasProps {
   onFocusDomain?: (path: string | null) => void;
   // Reveal text in layers as you zoom in from the whole-graph view (off for small local graphs, where titles always fit)
   progressiveZoom?: boolean;
-  // While hovering, show only the hovered dot's text (small panels, where neighbor titles pile up)
+  // While a dot is focused, show only its text (small panels, where neighbor titles pile up)
   hoverLabelOnly?: boolean;
   className?: string;
 }
@@ -39,17 +39,20 @@ export interface GraphCanvasProps {
 const BUTTON_ZOOM = 1.5;
 
 // Room above a ring for its label, in world units at the fitted zoom (roughly)
-const CIRCLE_LABEL_ROOM = 20;
+const CIRCLE_LABEL_ROOM = 26;
 
-// The hovered dot and every dot it shares a link with
-function focusOf(hoveredId: string | null, links: readonly SimLink[]): Set<string> {
-  if (!hoveredId) return new Set();
-  const focus = new Set([hoveredId]);
+// How long the rest of the graph takes to fade out (or back) when a dot is focused or let go
+const FOCUS_FADE_MS = 280;
+
+// The focused dot and every dot it shares a link with
+function focusOf(focusId: string | null, links: readonly SimLink[]): Set<string> {
+  if (!focusId) return new Set();
+  const focus = new Set([focusId]);
   for (const link of links) {
     const source = (link.source as SimNode).id;
     const target = (link.target as SimNode).id;
-    if (source === hoveredId) focus.add(target);
-    if (target === hoveredId) focus.add(source);
+    if (source === focusId) focus.add(target);
+    if (target === focusId) focus.add(source);
   }
   return focus;
 }
@@ -84,6 +87,10 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   // Keeps the whole graph in view while it settles, until the person pans, zooms or drags
   const isAutoFit = useRef(true);
   const hoveredId = useRef<string | null>(null);
+  // The clicked dot, and the fade toward it: `mix` eases to 1 while a dot is focused and back to 0
+  // after; the old dot stays in `id` until the fade out ends, so it does not snap off
+  const focusedId = useRef<string | null>(null);
+  const focusFade = useRef({ id: null as string | null, mix: 0, at: 0 });
   const [focusedDomain, setFocusedDomain] = useState<string | null>(null);
   const [selectionBox,setSelectionBox] = useState<{x:number;y:number;width:number;height:number}|null>(null);
   const selection = useRef(selectedIds);
@@ -126,6 +133,16 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     const palette = readCanvasPalette(element);
     if (isAutoFit.current) camera.current = overview;
     domainLabelBoxes.current=[];
+    // FOCUS FADE: step the mix toward its target and keep frames coming until it gets there
+    const fade = focusFade.current;
+    const now = performance.now();
+    const step = fade.at === 0 ? 1 : Math.min(1, (now - fade.at) / FOCUS_FADE_MS);
+    if (focusedId.current !== null) fade.id = focusedId.current;
+    const target = focusedId.current === null ? 0 : 1;
+    fade.mix = target > fade.mix ? Math.min(target, fade.mix + step) : Math.max(target, fade.mix - step);
+    if (fade.mix === 0) fade.id = null;
+    fade.at = fade.mix === target ? 0 : now;
+    if (fade.at !== 0) redrawRef.current();
     drawGraph({
       domainLabelBoxes:domainLabelBoxes.current,
       ctx,
@@ -139,8 +156,11 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
       display,
       palette,
       colorOf: latest.current.colorOf,
+      focusId: fade.id,
+      // Smoothstep: the fade starts and ends gently
+      focusMix: fade.mix * fade.mix * (3 - 2 * fade.mix),
       hoveredId: hoveredId.current,
-      focusIds: focusOf(hoveredId.current, links),
+      focusIds: focusOf(fade.id, links),
       hoverLabelOnly: latest.current.hoverLabelOnly,
       focusedDomain: latest.current.focusedDomain,
     });
@@ -185,6 +205,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     setFocusedDomain(null);
     onFocusDomain?.(null);
     hoveredId.current = null;
+    focusedId.current = null;
     isAutoFit.current = false;
     motion.animateTo(overview, () => {
       isAutoFit.current = true;
@@ -213,10 +234,17 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     const fitted = fitCamera([...members, ...circleExtents(childRings, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height, 70);
     motion.animateTo(fitted);
     hoveredId.current = null;
+    focusedId.current = null;
     isAutoFit.current = false;
     redraw();
   }, [layout, progressiveZoom, showCircles, settings.display, redraw, motion, fitView, onFocusDomain]);
-  usePointerControls({ canvas, layout, camera, hoveredId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, onContextNode, onContextTitle: (point,client) => {const label=[...domainLabelBoxes.current].reverse().find(b=>point.x>=b.x-5&&point.x<=b.x+b.width+5&&point.y>=b.y-4&&point.y<=b.y+b.height+4);if(!label||!onContextDomain)return false;onContextDomain(label.path,client);return true;}, onSelect: onSelect ? (nodes,toggle) => onSelect(nodes.filter(n=>!focusedDomain||n.domainPaths.some(p=>p===focusedDomain||p.startsWith(focusedDomain+"/"))),toggle) : undefined, onSelectionBox: setSelectionBox, onBackgroundClick: focusGroup, motion, redraw });
+  // FOCUS A DOT: start the fade toward it (null lets go)
+  const focusNode = useCallback((id: string | null) => {
+    focusedId.current = id;
+    focusFade.current.at = performance.now();
+    redraw();
+  }, [redraw]);
+  usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, onFocus: focusNode, onContextNode, onContextTitle: (point,client) => {const label=[...domainLabelBoxes.current].reverse().find(b=>point.x>=b.x-5&&point.x<=b.x+b.width+5&&point.y>=b.y-4&&point.y<=b.y+b.height+4);if(!label||!onContextDomain)return false;onContextDomain(label.path,client);return true;}, onSelect: onSelect ? (nodes,toggle) => onSelect(nodes.filter(n=>!focusedDomain||n.domainPaths.some(p=>p===focusedDomain||p.startsWith(focusedDomain+"/"))),toggle) : undefined, onSelectionBox: setSelectionBox, onBackgroundClick: focusGroup, motion, redraw });
 
   // ZOOM BUTTONS: zoom around the canvas center; fit hands the camera back to auto-fit
   const zoomCenter = useCallback(
@@ -246,7 +274,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
       {selectionBox && <div className="pointer-events-none absolute left-[var(--box-x)] top-[var(--box-y)] h-[var(--box-h)] w-[var(--box-w)] border-2 border-link bg-link/15" style={{"--box-x":`${selectionBox.x}px`,"--box-y":`${selectionBox.y}px`,"--box-w":`${selectionBox.width}px`,"--box-h":`${selectionBox.height}px`} as CSSProperties} />}
       <ZoomControls onZoomIn={() => zoomCenter(BUTTON_ZOOM)} onZoomOut={() => zoomCenter(1 / BUTTON_ZOOM)} onFit={fitView} />
       {focusedDomain && <Button type="button" variant="outline" className="absolute top-3 right-3" onClick={fitView}>Back to overview</Button>}
-      {progressiveZoom && <p className="pointer-events-none absolute bottom-2 left-3 text-xs text-muted-foreground">Scroll to reveal detail · Click inside a group to focus · Ctrl-click or Ctrl-drag to select</p>}
+      {progressiveZoom && <p className="pointer-events-none absolute bottom-2 left-3 text-xs text-muted-foreground">Scroll to zoom · Click a dot twice to open · Click a group to focus · Ctrl-drag to select</p>}
     </div>
   );
 }
