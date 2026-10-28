@@ -5,7 +5,7 @@ import { Note, QueryState } from "@/app/(app)/_components/bits";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { listAgentCalls } from "@/lib/server-actions/agentKeys";
 
-// RECENT CALLS: one key's audit log, newest first
+// RECENT CALLS: one personal key's or connected agent's audit log, newest first
 export function AgentCalls({ keyId }: { keyId: string }) {
   const calls = useQuery({
     queryKey: ["agent-calls", keyId],

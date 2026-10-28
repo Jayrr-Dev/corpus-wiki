@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { SCOPE_INFO } from "@/lib/agents/scopes";
 import { listAgentKeys, revokeAgentKey, type AgentKeyRow } from "@/lib/server-actions/agentKeys";
 import { AgentCalls } from "./AgentCalls";
+import { AgentConnections } from "./AgentConnections";
 import { AgentKeyCreated } from "./AgentKeyCreated";
 import { AgentKeyForm } from "./AgentKeyForm";
 
@@ -24,7 +25,8 @@ function keyState(key: AgentKeyRow): "live" | "expired" | "revoked" {
   return "live";
 }
 
-// AGENTS TAB: make keys for outside agents (MCP), see each key's use, revoke keys
+// AGENTS TAB: agents connected by sign-in, then personal keys for scripts;
+// each with its Space, scopes, use and calls, and a way to revoke it
 export function AgentKeys() {
   const queryClient = useQueryClient();
   const [newKey, setNewKey] = useState<string | null>(null);
@@ -53,19 +55,24 @@ export function AgentKeys() {
   return (
     <div className="grid gap-6">
       <p className="text-panel text-muted-foreground">
-        A key lets an outside agent, such as Claude Code or Claude Desktop, use this wiki through its MCP server. Each key works in one Space, or in all of them, and only does what its scopes allow. Every call is logged below.
+        Outside agents, such as Claude, Claude Code or Claude Desktop, can use this wiki through its MCP server. Each one works in one Space, or in all of them, and only does what you allowed. Every call is logged.
       </p>
       <QueryState query={keys}>
+        <AgentConnections spaceName={spaceName} />
+        <div className="border-t pt-6">
+          <h3 className="font-medium">Personal keys</h3>
+          <p className="mt-1 text-panel text-muted-foreground">For scripts and tools that cannot sign in: the key goes in a request header.</p>
+        </div>
         {newKey ? (
           <AgentKeyCreated agentKey={newKey} onDone={() => setNewKey(null)} />
         ) : (
           <div>
-            <h3 className="mb-4 font-medium">New key</h3>
+            <h4 className="mb-4 text-sm font-medium">New key</h4>
             <AgentKeyForm spaces={keys.data?.spaces ?? []} onCreated={(key) => { setNewKey(key); void refresh(); }} />
           </div>
         )}
-        <div className="border-t pt-6">
-          <h3 className="mb-4 font-medium">Keys</h3>
+        <div>
+          <h4 className="mb-4 text-sm font-medium">Keys</h4>
           {keys.data?.keys.length ? (
             <ul className="grid gap-3">
               {keys.data.keys.map((key) => {

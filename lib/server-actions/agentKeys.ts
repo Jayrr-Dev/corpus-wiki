@@ -10,12 +10,12 @@ import { isSpaceId as isUuid } from "@/lib/spaces/shared";
 import { toActionResult } from "./result";
 
 // =====================================================================
-// AGENT KEYS IN SETTINGS: a person makes, lists and revokes the keys
-// outside agents use for the MCP server. Only a person may do this, never
-// an agent (docs/mcp-server-plan.md). Reads go through the person's own
-// session (RLS shows their keys, never key_hash); writes go through
-// create_agent_key and revoke_agent_key
-// (supabase/migrations/20261119030500_agent_keys.sql).
+// AGENTS IN SETTINGS: a person sees and revokes the agents connected
+// through OAuth sign-in, and makes, lists and revokes personal keys for
+// scripts. Only a person may do this, never an agent
+// (docs/mcp-server-plan.md). Reads go through the person's own session
+// (RLS shows their rows, never key_hash); writes go through the database
+// functions (supabase/migrations/20261119030500_agent_auth.sql).
 // =====================================================================
 
 export type AgentKeyRow = {
@@ -94,19 +94,70 @@ export async function revokeAgentKey(id: string) {
   });
 }
 
-// The latest calls one key made (the audit log), newest first
-export async function listAgentCalls(keyId: string) {
+// The latest calls one key or connection made (the audit log), newest first
+export async function listAgentCalls(id: string) {
   return toActionResult(async () => {
     await requirePerson();
-    if (typeof keyId !== "string" || !isUuid(keyId)) throw new Error("Choose a valid key.");
+    if (typeof id !== "string" || !isUuid(id)) throw new Error("Choose a valid key or connection.");
     const { data, error } = await (await getServerSupabase())
       .from("agent_calls")
       .select("id, tool, scope, ok, error, ms, summary, created_at")
-      .eq("key_id", keyId)
+      .or(`key_id.eq.${id},grant_id.eq.${id}`)
       .order("created_at", { ascending: false })
       .limit(RECENT_CALLS);
     if (error) throw new Error(error.message);
     const calls: AgentCallRow[] = data ?? [];
     return { calls };
+  });
+}
+
+// =====================================================================
+// CONNECTED AGENTS: MCP clients the person allowed through OAuth sign-in
+// (one live grant per client). Revoking one ends its tokens at once.
+// =====================================================================
+
+export type AgentConnectionRow = {
+  id: string;
+  client_id: string;
+  client_name: string;
+  space_id: string | null;
+  scopes: AgentScope[];
+  created_at: string;
+  last_used_at: string | null;
+};
+
+// The person's live connections, newest first
+export async function listAgentConnections() {
+  return toActionResult(async () => {
+    await requirePerson();
+    const supabase = await getServerSupabase();
+    const grants = await supabase
+      .from("oauth_grants")
+      .select("id, client_id, space_id, scopes, created_at, last_used_at")
+      .is("revoked_at", null)
+      .order("created_at", { ascending: false });
+    if (grants.error) throw new Error(grants.error.message);
+    const clientIds = [...new Set((grants.data ?? []).map((grant) => grant.client_id))];
+    const clients = clientIds.length
+      ? await supabase.from("oauth_clients").select("client_id, name").in("client_id", clientIds)
+      : { data: [], error: null };
+    if (clients.error) throw new Error(clients.error.message);
+    const names = new Map((clients.data ?? []).map((client) => [client.client_id, client.name]));
+    const connections: AgentConnectionRow[] = (grants.data ?? []).map((grant) => ({
+      ...grant,
+      client_name: names.get(grant.client_id) ?? grant.client_id,
+      scopes: grant.scopes.filter(isAgentScope),
+    }));
+    return { connections };
+  });
+}
+
+// Disconnects an agent: its grant and every token it holds stop working
+export async function revokeAgentConnection(id: string) {
+  return toActionResult(async () => {
+    await requirePerson();
+    if (typeof id !== "string" || !isUuid(id)) throw new Error("Choose a valid connection.");
+    await supabaseRpc(getAdminSupabase()).call("revoke_oauth_grant", { p_id: id });
+    return {};
   });
 }

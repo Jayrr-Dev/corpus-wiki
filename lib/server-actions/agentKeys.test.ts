@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { createAgentKey, revokeAgentKey } from "./agentKeys";
+import { createAgentKey, revokeAgentConnection, revokeAgentKey } from "./agentKeys";
 
 const mocks = vi.hoisted(() => ({ requireUser: vi.fn(), call: vi.fn(), agent: vi.fn() }));
 vi.mock("@/lib/auth/requireUser", () => ({ requireUser: mocks.requireUser }));
@@ -49,4 +49,18 @@ it("revokes a key by id", async () => {
   mocks.call.mockResolvedValue(null);
   expect(await revokeAgentKey(keyId)).toEqual({ ok: true });
   expect(mocks.call).toHaveBeenCalledWith("revoke_agent_key", { p_id: keyId });
+});
+
+it("disconnects an agent by its grant id, and never for an agent", async () => {
+  mocks.call.mockResolvedValue(null);
+  expect(await revokeAgentConnection(keyId)).toEqual({ ok: true });
+  expect(mocks.call).toHaveBeenCalledWith("revoke_oauth_grant", { p_id: keyId });
+  mocks.agent.mockReturnValue({ key: { personId: "p" }, spaceId: space });
+  expect((await failing(() => revokeAgentConnection(keyId))).ok).toBe(false);
+  expect(mocks.call).toHaveBeenCalledOnce();
+});
+
+it("refuses a malformed id before the database", async () => {
+  expect((await failing(() => revokeAgentConnection("x),key_id.neq.("))).ok).toBe(false);
+  expect(mocks.call).not.toHaveBeenCalled();
 });
