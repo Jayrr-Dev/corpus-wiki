@@ -26,7 +26,7 @@ call is logged; typecheck, lint and tests pass; merged to main.
 | spaces | S1 `lib/mcp/tools/spaces.ts` and `lib/mcp/tools/settings.ts` | M0 | merged 1ba63a6 |
 | spaces | S2 "Agent" label where uploads and changes name who started them | M0 | merged 1ba63a6 |
 | ops | D1 Apply `20261119030500_agent_auth` to the database | K1 | done |
-| check | E1 End to end: `claude mcp add --transport http` on the local server, sign in and consent, each scope allowed, step-up for a missing one, revoke | K3, K4, T2, W2, S1 | planned |
+| check | E1 End to end: `claude mcp add --transport http` on the local server, sign in and consent, each scope allowed, step-up for a missing one, revoke | K3, K4, T2, W2, S1 | done 2026-10-28 with a scripted standard OAuth client (DCR, PKCE, loopback): reads, Space limits, 403 step-up, write through Change control, refresh reuse cuts the family, call log, revoke. Refused step-up calls now logged (55871e5). Not yet tried from Claude Code itself or claude.ai (needs a deployed URL) |
 
 Critical path: M0, M1, K1, K2, K3, E1.
 
