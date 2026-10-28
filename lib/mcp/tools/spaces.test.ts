@@ -18,7 +18,7 @@ vi.mock("@/lib/supabase/server", () => ({
 const person = "20000000-0000-4000-8000-000000000001";
 const home = "10000000-0000-4000-8000-000000000001";
 const other = "10000000-0000-4000-8000-000000000002";
-const session = (spaceId: string | null): AgentSession => ({ key: { keyId: "k", name: "Agent", personId: person, spaceId, scopes: ["spaces"] }, spaceId: home });
+const session = (spaceId: string | null): AgentSession => ({ key: { kind: "key", keyId: "k", clientId: null, name: "Agent", personId: person, spaceId, scopes: ["spaces"] }, spaceId: home });
 const tool = (name: string) => spacesTools.find((entry) => entry.name === name)!;
 const run = (name: string, args: unknown) => (tool(name).run as (args: unknown, context: unknown) => Promise<unknown>)(tool(name).input.parse(args), { session: session(null) });
 const rows = [

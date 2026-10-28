@@ -128,7 +128,7 @@ describe("uploads", () => {
   it("refuses unknown types, empty files and files over the limit", () => {
     expect(() => fileFromBase64("tool.exe", "AAAA")).toThrow("can't be read");
     expect(() => fileFromBase64("a.pdf", "")).toThrow("empty");
-    expect(() => fileFromBase64("a.pdf", Buffer.alloc(MAX_UPLOAD_BYTES + 1).toString("base64"))).toThrow("20 MB");
+    expect(() => fileFromBase64("a.pdf", Buffer.alloc(MAX_UPLOAD_BYTES + 1).toString("base64"))).toThrow("3 MB");
   });
 
   it("replaces a source's file and follows the new upload", async () => {
