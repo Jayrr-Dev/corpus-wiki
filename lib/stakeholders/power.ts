@@ -526,10 +526,23 @@ function computeAll(cards: StakeholderCard[], relations: StructureRelation[], no
 
 const withoutPower = ({ score, level, reasons, estimated }: PowerResult): PowerResult => ({ score, level, reasons, estimated });
 
+// WHO GETS A LEVEL: not a role (a seat, not a party), and a place only when it is a jurisdiction
+const JURISDICTION_KINDS = /\b(country|nation|province|state|territory|city|town|municipality|county)\b/;
+export function hasPower(card: Pick<StakeholderCard, "type" | "kind">): boolean {
+  const type = card.type.trim().toLowerCase();
+  if (type === "role") return false;
+  if (type === "place") return JURISDICTION_KINDS.test((card.kind ?? "").toLowerCase());
+  return true;
+}
+const withLevels = (cards: StakeholderCard[], entries: [string, PowerResult][]): Map<string, PowerResult> => {
+  const skipped = new Set(cards.filter((card) => !hasPower(card)).map((card) => card.entityId));
+  return new Map(entries.filter(([id]) => !skipped.has(id)));
+};
+
 // General power of every stakeholder in the cards and relations, keyed by entity id
 export function computePower(cards: StakeholderCard[], relations: StructureRelation[], now: Date = new Date()): Map<string, PowerResult> {
   const { results } = computeAll(cards, relations, now);
-  return new Map([...results].map(([id, result]) => [id, withoutPower(result)]));
+  return withLevels(cards, [...results].map(([id, result]) => [id, withoutPower(result)]));
 }
 
 // ---------------------------------------------------------------------
@@ -600,10 +613,10 @@ function closenessToUs(graph: Graph, ourId: string): Map<string, Closeness> {
 // Power that bears on our work: general power scaled by how close each stakeholder is to us
 export function computePowerOverUs(cards: StakeholderCard[], relations: StructureRelation[], ourEntityId: string | null, now: Date = new Date()): Map<string, PowerResult> {
   const { graph, results } = computeAll(cards, relations, now);
-  if (ourEntityId === null || !graph.nodes.has(ourEntityId)) return new Map([...results].map(([id, result]) => [id, withoutPower(result)]));
+  if (ourEntityId === null || !graph.nodes.has(ourEntityId)) return withLevels(cards, [...results].map(([id, result]) => [id, withoutPower(result)]));
   const closeness = closenessToUs(graph, ourEntityId);
   const ourName = graph.nodes.get(ourEntityId)!.name;
-  return new Map([...results].map(([id, result]) => {
+  return withLevels(cards, [...results].map(([id, result]): [string, PowerResult] => {
     const near = closeness.get(id) ?? { c: POWER_MODEL.powerOverUs.unconnected, reason: `Not connected to ${ourName}` };
     return [id, resultOf(Math.max(result.power * near.c, 1e-6), [near.reason, ...result.reasons], result.estimated)];
   }));

@@ -287,3 +287,19 @@ describe("computePowerOverUs", () => {
     expect(computePowerOverUs(cards, relations, null, NOW)).toEqual(computePower(cards, relations, NOW));
   });
 });
+
+describe("who gets a level", () => {
+  it("leaves out roles and plain places, keeps jurisdictions", () => {
+    const results = power([
+      card("designer", "role", {}, { kind: "role" }),
+      card("edmonton-alberta", "place", {}, { kind: "place" }),
+      card("china", "place", { Population: "1.4 billion" }, { kind: "country" }),
+      card("epcor", "company"),
+    ], []);
+    expect(results.has("designer")).toBe(false);
+    expect(results.has("edmonton-alberta")).toBe(false);
+    expect(results.get("china")?.level).toBe(5);
+    expect(results.has("epcor")).toBe(true);
+    expect(computePowerOverUs([card("designer", "role"), card("epcor", "company", {}, { isOurs: true })], [], "epcor", NOW).has("designer")).toBe(false);
+  });
+});

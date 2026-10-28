@@ -8,6 +8,12 @@ facts; the AI only finds the facts (claim structure labels, card facts).
 Inputs: stakeholder cards (`StakeholderCard`), relations (`StructureRelation`,
 see `lib/stakeholders/structure.ts`), our organization's id (or null), and `now`.
 
+Who gets a level: every stakeholder except roles (a job like "inspector" is a
+seat, not a party) and places that are not jurisdictions. A place whose kind is
+a country, province, state, territory, city or municipality counts as a
+government; "Edmonton, Alberta" as a plain place does not. Roles and plain
+places still count as links in the graph; they just get no level.
+
 Units: power is measured in **staff-equivalents**, roughly "how many people's
 worth of resources this controls". Levels are powers of ten of that number.
 
