@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Sparkles } from "lucide-react";
 import { InfoPopover } from "@/components/standard/info-popover";
+import { Masonry } from "@/components/standard/masonry";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -68,7 +69,7 @@ export function RolesTab({ library, modelSettings, initialMemory }: { library: S
       </InfoPopover>
     </div>
     <RoleSpendPanel calls={calls} />
-    <div className="grid items-start gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    <Masonry columns={{ base: 1, sm: 2, xl: 3 }}>
       {roster.map((role, index) => {
         const Icon = ROLE_ICONS[role.id] ?? Sparkles;
         const override = library.roleInstructions?.find((item) => item.role === role.id);
@@ -122,7 +123,7 @@ export function RolesTab({ library, modelSettings, initialMemory }: { library: S
           </div>
         </article>;
       })}
-    </div>
+    </Masonry>
     <RoleMemoryPanel initialMemory={initialMemory} />
   </section>;
 }
