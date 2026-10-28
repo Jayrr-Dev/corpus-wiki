@@ -11,6 +11,13 @@ Done looks like: no `kind === "<literal>"` checks outside the two registries
 Stakeholder ships as a type and a grouping; typecheck, lint and tests pass;
 the graph looks the same as before for the existing settings; merged to main.
 
+Browser check when D4 lands, and again at the end (screenshots of each):
+1. Nodes: only Entities on. Group by Domain, then Entities, then Pages. Every
+   entity sits inside a circle: its domain, its own circle, its article.
+2. Nodes: only Pages on. Group by Domain, then Entities, then Pages. Every
+   page sits inside a circle: its domain, its entity, its own article circle.
+3. Put the user's settings back afterwards.
+
 ### Chart
 
 | Lane | Task | Needs | Status |
