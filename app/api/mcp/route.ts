@@ -1,34 +1,47 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { resolveAgentKey } from "@/lib/agents/keys";
 import { bearerToken } from "@/lib/auth/apiKey";
-import { createMcpServer } from "@/lib/mcp/server";
+import { createMcpServer, missingScope } from "@/lib/mcp/server";
 import { originAllowed } from "./origin";
+import { insufficientScope, mcpResourceUrl, unauthorized } from "./resource";
 
 // =====================================================================
-// MCP SERVER for outside agents (Claude Code, Claude Desktop, any MCP
-// client). Stateless Streamable HTTP: every POST carries its own agent
-// key and gets a fresh server, so nothing is kept between requests.
+// MCP SERVER for outside agents (Claude connectors, Claude Code, any MCP
+// client). Stateless Streamable HTTP: every POST carries its own token
+// and gets a fresh server, so nothing is kept between requests.
 //
-// Auth: `Authorization: Bearer cwk_...`, an agent key made in Settings.
-// The proxy lets /api/mcp through signed out; the key is checked here.
-// Design: docs/mcp-server-plan.md
+// Auth (MCP authorization spec): an OAuth access token issued for this
+// exact URL, or a personal key made in Settings, in the Authorization
+// header only, never the query string. No token, or a bad one: 401
+// pointing at the Protected Resource Metadata, which starts sign-in.
+// A call outside the token's scopes: 403 insufficient_scope (step-up).
+// The proxy lets /api/mcp through signed out. Design: docs/mcp-server-plan.md
 // =====================================================================
 
 // A tool can run the upload pipeline or rewrite a page; give it time
 export const maxDuration = 300;
 
+// The SDK's own cap; it skips the cap when the route has read the body
+const MAX_BODY_BYTES = 4 * 1024 * 1024;
+
 export async function POST(request: Request): Promise<Response> {
-  if (!originAllowed(request)) return fail(403, "Origin not allowed.");
+  if (!originAllowed(request)) return Response.json({ error: "Origin not allowed." }, { status: 403 });
   const token = bearerToken(request.headers.get("authorization"));
-  const key = token ? await resolveAgentKey(token) : null;
-  if (!key) return unauthorized(token ? "Invalid, revoked or expired agent key." : "Send Authorization: Bearer <agent key>. Make one in Settings, Agents.");
+  if (!token) return unauthorized(request, "Sign in, or send Authorization: Bearer <token>.");
+  const key = await resolveAgentKey(token, mcpResourceUrl(request));
+  if (!key) return unauthorized(request, "The token is unknown, expired, revoked or meant for another server.");
+
+  const body = await readJson(request);
+  if (!body.ok) return body.response;
+  const missing = missingScope(key, body.value);
+  if (missing) return insufficientScope(request, missing.scope, `${missing.tool} needs the "${missing.scope}" scope.`);
 
   const server = createMcpServer(key);
   // JSON responses, not a stream: the answer is whole when handleRequest resolves
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   await server.connect(transport);
   try {
-    return await transport.handleRequest(request);
+    return await transport.handleRequest(request, { parsedBody: body.value });
   } finally {
     await server.close();
   }
@@ -43,17 +56,23 @@ export function DELETE(): Response {
   return methodNotAllowed();
 }
 
-function unauthorized(message: string): Response {
-  return Response.json({ error: message }, { status: 401, headers: { "WWW-Authenticate": 'Bearer realm="corpus-wiki"' } });
+// The route reads the body itself to find the tools a call needs
+async function readJson(request: Request): Promise<{ ok: true; value: unknown } | { ok: false; response: Response }> {
+  const tooLarge = { ok: false as const, response: rpcError(413, -32000, "Request body too large.") };
+  if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return tooLarge;
+  const text = await request.text();
+  if (new TextEncoder().encode(text).length > MAX_BODY_BYTES) return tooLarge;
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch {
+    return { ok: false, response: rpcError(400, -32700, "Parse error: the body is not valid JSON.") };
+  }
 }
 
 function methodNotAllowed(): Response {
-  return Response.json(
-    { jsonrpc: "2.0", error: { code: -32000, message: "Method not allowed. Send MCP requests as POST." }, id: null },
-    { status: 405, headers: { Allow: "POST" } },
-  );
+  return rpcError(405, -32000, "Method not allowed. Send MCP requests as POST.", { Allow: "POST" });
 }
 
-function fail(status: number, message: string): Response {
-  return Response.json({ error: message }, { status });
+function rpcError(status: number, code: number, message: string, headers?: Record<string, string>): Response {
+  return Response.json({ jsonrpc: "2.0", error: { code, message }, id: null }, { status, headers });
 }

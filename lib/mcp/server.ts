@@ -5,6 +5,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { checkAgentCall, recordAgentCall } from "@/lib/agents/keys";
 import { withAgentSession } from "@/lib/agents/session";
+import type { AgentScope } from "@/lib/agents/scopes";
 import type { AgentKeyIdentity } from "@/lib/agents/types";
 import { withSpaceActor } from "@/lib/auth/currentPerson";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -12,11 +13,13 @@ import { ALL_TOOLS } from "./tools";
 import type { AgentToolDef } from "./types";
 
 // =====================================================================
-// THE MCP SERVER for one verified agent key, built fresh per request
-// (the transport is stateless). It lists only the tools whose scope the
-// key holds. Each call checks the scope again, asks checkAgentCall,
-// parses the input, picks the Space, runs inside withAgentSession and
-// writes one audit line, whether the call worked or not.
+// THE MCP SERVER for one verified agent credential, built fresh per
+// request (the transport is stateless). It lists every tool, each saying
+// the scope it needs; the route answers a call outside the token's
+// scopes with a 403 step-up before this server runs (missingScope).
+// Each call checks the scope again, asks checkAgentCall, parses the
+// input, picks the Space, runs inside withAgentSession and writes one
+// audit line, whether the call worked or not.
 // The SDK also checks the arguments against the listed schema first.
 // =====================================================================
 
@@ -41,15 +44,28 @@ export function createMcpServer(key: AgentKeyIdentity, deps: McpServerDeps = {})
   const accountWide = key.spaceId === null;
 
   for (const tool of tools) {
-    if (!key.scopes.includes(tool.scope)) continue;
     const inputSchema = accountWide ? tool.input.extend({ space: SPACE_ARG }) : tool.input;
     server.registerTool(
       tool.name,
-      { title: tool.title, description: tool.description, inputSchema, annotations: { title: tool.title, ...tool.annotations } },
+      { title: tool.title, description: `${tool.description} [needs ${tool.scope}]`, inputSchema, annotations: { title: tool.title, ...tool.annotations } },
       (args: Record<string, unknown>) => callTool(key, tool, args, ownedSpaceIds),
     );
   }
   return server;
+}
+
+// THE SCOPE A REQUEST NEEDS and the credential lacks: the first tools/call
+// in the JSON-RPC body (one message or a batch) whose tool needs a scope
+// the key does not hold. Unknown tools are left to the server to refuse.
+export function missingScope(key: AgentKeyIdentity, body: unknown, tools: AgentToolDef[] = ALL_TOOLS): { tool: string; scope: AgentScope } | null {
+  for (const message of Array.isArray(body) ? body : [body]) {
+    if (!message || typeof message !== "object") continue;
+    const { method, params } = message as { method?: unknown; params?: { name?: unknown } };
+    if (method !== "tools/call") continue;
+    const tool = tools.find((candidate) => candidate.name === params?.name);
+    if (tool && !key.scopes.includes(tool.scope)) return { tool: tool.name, scope: tool.scope };
+  }
+  return null;
 }
 
 async function callTool(

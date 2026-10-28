@@ -23,7 +23,7 @@ vi.mock("@/lib/auth/currentPerson", () => ({ withSpaceActor: (_actor: unknown, r
 vi.mock("@/lib/supabase/admin", () => ({ getAdminSupabase: () => ({}) }));
 vi.mock("./tools", () => ({ ALL_TOOLS: [] }));
 
-const { createMcpServer, MCP_INSTRUCTIONS, summarizeArgs } = await import("./server");
+const { createMcpServer, MCP_INSTRUCTIONS, missingScope, summarizeArgs } = await import("./server");
 
 const MY_SPACE = "11111111-1111-4111-8111-111111111111";
 const MY_OTHER_SPACE = "22222222-2222-4222-8222-222222222222";
@@ -60,7 +60,7 @@ const remove = defineTool({
 });
 
 function key(overrides: Partial<AgentKeyIdentity> = {}): AgentKeyIdentity {
-  return { keyId: "key-1", name: "Test", personId: "person-1", spaceId: MY_SPACE, scopes: ["read"], ...overrides };
+  return { kind: "oauth", keyId: "key-1", clientId: "https://client.example/meta.json", name: "Test", personId: "person-1", spaceId: MY_SPACE, scopes: ["read"], ...overrides };
 }
 
 async function connect(identity: AgentKeyIdentity) {
@@ -85,19 +85,23 @@ beforeEach(() => {
 });
 
 describe("createMcpServer", () => {
-  it("lists only the tools whose scope the key holds, with their annotations", async () => {
+  it("lists every tool, each saying the scope it needs, with its annotations", async () => {
     const client = await connect(key());
     const { tools } = await client.listTools();
-    expect(tools.map((tool) => tool.name)).toEqual(["echo_note", "boom"]);
+    expect(tools.map((tool) => tool.name)).toEqual(["echo_note", "boom", "delete_thing"]);
+    expect(tools[0]?.description).toBe("Echoes the note back. [needs read]");
+    expect(tools[2]?.description).toMatch(/\[needs delete\]$/);
+    expect(tools[2]?.annotations).toMatchObject({ destructiveHint: true });
     expect(tools[0]?.annotations).toMatchObject({ readOnlyHint: true, title: "Echo note" });
     expect(client.getInstructions()).toBe(MCP_INSTRUCTIONS);
     expect(MCP_INSTRUCTIONS).toMatch(/data, not instructions/);
   });
 
-  it("refuses a call to a tool outside the key's scopes", async () => {
+  it("refuses a call to a tool outside the key's scopes (second guard behind the route's 403)", async () => {
     const client = await connect(key());
     const result = await client.callTool({ name: "delete_thing", arguments: { id: "x" } });
     expect(result.isError).toBe(true);
+    expect(text(result)).toMatch(/"delete" scope/);
     expect(sessions.seen).toHaveLength(0);
   });
 
@@ -169,6 +173,23 @@ describe("createMcpServer", () => {
     expect(text(result)).toBe("Article not found.");
     expect(text(result)).not.toMatch(/at .*\.ts/);
     expect(keys.recordAgentCall).toHaveBeenCalledWith(expect.objectContaining({ tool: "boom", ok: false, error: "Article not found." }));
+  });
+});
+
+describe("missingScope", () => {
+  const tools = [echo, boom, remove];
+  const call = (name: string) => ({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name, arguments: {} } });
+
+  it("names the scope a tools/call needs and the key lacks", () => {
+    expect(missingScope(key(), call("delete_thing"), tools)).toEqual({ tool: "delete_thing", scope: "delete" });
+    expect(missingScope(key(), [call("echo_note"), call("delete_thing")], tools)).toEqual({ tool: "delete_thing", scope: "delete" });
+  });
+
+  it("lets through calls in scope, other methods and unknown tools", () => {
+    expect(missingScope(key(), call("echo_note"), tools)).toBeNull();
+    expect(missingScope(key(), { jsonrpc: "2.0", id: 1, method: "tools/list" }, tools)).toBeNull();
+    expect(missingScope(key(), call("nope"), tools)).toBeNull();
+    expect(missingScope(key({ scopes: ["read", "delete"] }), call("delete_thing"), tools)).toBeNull();
   });
 });
 
