@@ -1,10 +1,15 @@
 import type { AgentScope } from "./scopes";
 
-// A verified agent key: who it acts as, where, and what it may do.
-// spaceId null means the key may act in any Space its owner owns,
+// A verified agent credential: who it acts as, where, and what it may do.
+// kind "oauth": an access token a connector got through OAuth sign-in and
+// consent (keyId is the grant, name is the client's name). kind "key": a
+// personal key made in Settings, for scripts and static request headers.
+// spaceId null means it may act in any Space its owner owns,
 // chosen per call (tools take an optional `space` argument).
 export type AgentKeyIdentity = {
+  kind: "oauth" | "key";
   keyId: string;
+  clientId: string | null;
   name: string;
   personId: string;
   spaceId: string | null;

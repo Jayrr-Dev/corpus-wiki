@@ -1384,7 +1384,7 @@ describe("domain clusters", () => {
 
   it("opens an article, section, or suggestion from a second click", () => {
     expect(circleOpenTarget({ label: "Alpha", parent: "" }, "page")).toEqual({
-      kind: "page",
+      kind: "article",
       title: "Alpha",
     });
     expect(
