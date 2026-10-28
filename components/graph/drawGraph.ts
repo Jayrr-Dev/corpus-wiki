@@ -24,6 +24,13 @@ import {
   REVEAL_AT,
   revealOpacity,
 } from "@/lib/graph/camera";
+import { GROUPINGS, type GroupingId } from "@/lib/graph/groupings";
+import {
+  centersGrouping,
+  hasHubBody,
+  isContent,
+  nodeType,
+} from "@/lib/graph/nodeTypes";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import { recentMarkedKeys, recentUnitIds } from "@/lib/graph/recentUnits";
 import type { CanvasPalette } from "./palette";
@@ -112,21 +119,22 @@ function reserveLabel(
   return true;
 }
 
-function clusterModeOf(groupBy: GraphGroupBy): "domain" | "entity" | "page" {
-  return groupBy === "entity" || groupBy === "page" ? groupBy : "domain";
+// The grouping whose circle rules apply. With circles off, dots still file by domain.
+export function groupingOf(groupBy: GraphGroupBy): GroupingId {
+  return groupBy === "off" ? "domain" : groupBy;
 }
 
 function circleOutsideFocus(circle: ClusterCircle, input: DrawInput): boolean {
   if (input.connectedCircleKeys?.has(circle.key)) return false;
-  if (!input.focusedDomain || circle.key === input.focusedDomain) return false;
-  if (input.groupBy === "entity") return true;
-  if (input.groupBy === "page") {
-    return (
-      !circleNestedIn(circle.key, input.focusedDomain, "page") &&
-      !circleNestedIn(input.focusedDomain, circle.key, "page")
-    );
-  }
-  return !circle.key.startsWith(`${input.focusedDomain}/`);
+  const focus = input.focusedDomain;
+  if (!focus || circle.key === focus) return false;
+  const mode = groupingOf(input.groupBy);
+  if (!GROUPINGS[mode].nests) return true;
+  const inside = circleNestedIn(circle.key, focus, mode);
+  // Page only: a selected section keeps its article lit
+  if (mode === "page")
+    return !inside && !circleNestedIn(focus, circle.key, mode);
+  return !inside;
 }
 
 // A dot stays visible when it sits in the selected circle or a link joins it to that circle
@@ -193,7 +201,7 @@ function linkReachesGroup(
   key: string | null,
 ): boolean {
   if (!key) return true;
-  const mode = clusterModeOf(input.groupBy);
+  const mode = groupingOf(input.groupBy);
   return nodeInCluster(source, key, mode) || nodeInCluster(target, key, mode);
 }
 
@@ -221,7 +229,7 @@ function inFocusGroup(
   groupBy: GraphGroupBy,
 ): boolean {
   if (!focus) return true;
-  return nodeInCluster(node, focus, clusterModeOf(groupBy));
+  return nodeInCluster(node, focus, groupingOf(groupBy));
 }
 
 function circlePaint(circle: ClusterCircle, input: DrawInput): string {
@@ -234,7 +242,7 @@ function circlePaint(circle: ClusterCircle, input: DrawInput): string {
   if (!circle.color && input.groupBy === "domain") {
     const domain = input.nodes.find(
       (node) =>
-        node.kind === "domain" &&
+        centersGrouping(node, "domain") &&
         [...node.domainPaths].sort()[0] === circle.key,
     );
     const shaded = domain ? shadedConnection(domain, input) : null;
@@ -250,7 +258,7 @@ function litOrphan(node: GraphNode, input: DrawInput): boolean {
   return (
     Boolean(input.focusedDomain) &&
     shownWithGroup(node, input) &&
-    node.kind === "unit" &&
+    isContent(node) &&
     node.degree === 0 &&
     !node.recommendedTitle &&
     !node.pageTitles?.length &&
@@ -286,7 +294,7 @@ function circlesHolding(
   input: DrawInput,
   ids: ReadonlySet<string>,
 ): Set<string> {
-  const mode = clusterModeOf(input.groupBy);
+  const mode = groupingOf(input.groupBy);
   const keys = new Set<string>();
   if (ids.size === 0) return keys;
   for (const node of input.nodes) {
@@ -434,7 +442,7 @@ function majorityHex(
 ): string | null {
   const counts = new Map<string, number>();
   for (const node of nodes) {
-    if (node.kind === "domain") continue;
+    if (hasHubBody(node)) continue;
     const token = input.colorOf(node);
     if (!token) continue;
     const hex = input.palette.token(token);
@@ -454,19 +462,18 @@ function majorityHex(
 // The color of the notes a domain bubble connects to, shifted so it stays readable:
 // three shades darker on a light canvas, three shades brighter on a dark one.
 function shadedConnection(node: SimNode, input: DrawInput): string | null {
-  if (node.kind !== "domain") return null;
+  if (!hasHubBody(node)) return null;
   const linked: SimNode[] = [];
   for (const link of input.links) {
     const other = otherEnd(link, node.id, input.nodes);
-    if (other && other.kind !== "domain") linked.push(other);
+    if (other && !hasHubBody(other)) linked.push(other);
   }
   const fromLinks = majorityHex(linked, input);
   if (fromLinks) return shadeForCanvas(fromLinks, input.palette.background);
   const path = [...node.domainPaths].sort()[0];
   if (!path) return null;
   const members = input.nodes.filter(
-    (other) =>
-      other.kind !== "domain" && nodeInCluster(other, path, "domain"),
+    (other) => !hasHubBody(other) && nodeInCluster(other, path, "domain"),
   );
   const fromMembers = majorityHex(members, input);
   return fromMembers
@@ -520,10 +527,7 @@ function paintText(
 
 // Default dot color for a node kind (grays only; groups add the accents)
 function baseColor(node: GraphNode, palette: CanvasPalette): string {
-  if (node.kind === "page") return palette.text;
-  if (node.kind === "domain") return palette.muted;
-  if (node.kind === "entity") return palette.faint;
-  return palette.muted;
+  return palette[nodeType(node).shade];
 }
 
 function nodePaint(node: GraphNode, input: DrawInput): string {
@@ -776,7 +780,7 @@ const NEW_UNIT_RING_PX = 2.5;
 function drawNodes(input: DrawInput, domainHubs = false): void {
   const { ctx, nodes, palette, colorOf, focusId, focusIds, display, camera } =
     input;
-  const mode = clusterModeOf(input.groupBy);
+  const mode = groupingOf(input.groupBy);
   const focus = input.focusedDomain;
   const scoped = focus
     ? nodes.filter((node) => nodeInCluster(node, focus, mode))
@@ -784,9 +788,10 @@ function drawNodes(input: DrawInput, domainHubs = false): void {
   const recentIds =
     domainHubs || !display.showNew ? null : recentUnitIds(scoped);
   for (const node of nodes) {
-    if ((node.kind === "domain") !== domainHubs) continue;
-    const shaded = node.kind === "domain" ? shadedConnection(node, input) : null;
-    const group = node.kind === "domain" ? null : colorOf(node);
+    const hub = hasHubBody(node);
+    if (hub !== domainHubs) continue;
+    const shaded = hub ? shadedConnection(node, input) : null;
+    const group = hub ? null : colorOf(node);
     ctx.globalAlpha = !shownWithGroup(node, input)
       ? 0.08
       : focusId === null || focusIds.has(node.id)
@@ -1387,7 +1392,7 @@ function titleOpacity(input: DrawInput): number {
 // How far the group name should leave the middle of the circle.
 // It stays large across the bubbles until a note title is actually drawn there.
 function groupNameLift(input: DrawInput, circle: ClusterCircle): number {
-  const mode = clusterModeOf(input.groupBy);
+  const mode = groupingOf(input.groupBy);
   const zoomed = titleOpacity(input);
   let notes = false;
   for (const node of input.nodes) {
@@ -1543,7 +1548,7 @@ function drawCircles(input: DrawInput): void {
     ctx.stroke();
   }
   ctx.setLineDash([]);
-  const mode = clusterModeOf(input.groupBy);
+  const mode = groupingOf(input.groupBy);
   const focus = input.focusedDomain;
   const dated = (circle: ClusterCircle) =>
     circle.createdAt ? [{ key: circle.key, at: circle.createdAt }] : [];
@@ -1787,7 +1792,7 @@ function drawCircleLabels(input: DrawInput): void {
 
 // FRAME: clear, move into world space, then the passes from back to front
 export function drawGraph(input: DrawInput): void {
-  const mode = clusterModeOf(input.groupBy);
+  const mode = groupingOf(input.groupBy);
   const connected = input.focusedDomain
     ? clusterConnections(
         input.nodes,
