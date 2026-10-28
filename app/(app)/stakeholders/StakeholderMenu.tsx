@@ -67,7 +67,7 @@ export function ContactsForm({ card, close }: { card: StakeholderCard; close: ()
   return (
     <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void save(); }}>
       <DialogTitle>Edit contacts</DialogTitle>
-      <DialogDescription className="flex items-center gap-1.5">{card.name}<InfoHint>Contacts you add here stay when the card is rewritten. Contacts found in sources are listed on the card separately.</InfoHint></DialogDescription>
+      <DialogDescription>{card.name}<span className="ml-1.5 inline-flex align-middle"><InfoHint>Contacts you add here stay when the card is rewritten. Contacts found in sources are listed on the card separately.</InfoHint></span></DialogDescription>
       <ul className="space-y-2">
         {rows.map((row, index) => (
           <li key={index} className="grid grid-cols-[7.5rem_1fr_8rem_auto] items-center gap-2">

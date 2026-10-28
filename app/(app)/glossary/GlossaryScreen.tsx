@@ -250,7 +250,7 @@ function DefinitionForm({ entry, close, deleting = false }: { entry: GlossaryEnt
   });
   return <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
     <DialogTitle>{deleting ? "Delete definition" : "Edit definition"}</DialogTitle>
-    <DialogDescription className="flex items-center gap-1.5">{entry.term}<InfoHint>Glossary updates keep your edit. Evidence and usage notes stay attached.</InfoHint></DialogDescription>
+    <DialogDescription>{entry.term}<span className="ml-1.5 inline-flex align-middle"><InfoHint>Glossary updates keep your edit. Evidence and usage notes stay attached.</InfoHint></span></DialogDescription>
     {deleting ? <p className="text-panel">Delete this definition from the glossary?</p> : <label className="block space-y-2 text-panel"><span>Definition</span><Textarea value={definition} onChange={(event) => setDefinition(event.target.value)} required maxLength={1000} rows={5} /></label>}
     {mutation.error && <p role="alert" className="text-panel text-destructive">{mutation.error.message}</p>}
     <div className="flex justify-end gap-2">
