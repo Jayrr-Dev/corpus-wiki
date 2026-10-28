@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { BookOpen, Bot, Globe2, Images, MessageCircle, Users } from "lucide-react";
+import { BookOpen, Bot, Images, MessageCircle, Users } from "lucide-react";
 import {
   ChangeIcon,
   DecisionIcon,
@@ -43,11 +43,10 @@ export const NAV_GROUPS: readonly (readonly NavItem[])[] = [
     { label: "Decisions", href: "/decisions", icon: DecisionIcon, admin: true },
     { label: "Exceptions", href: "/exceptions", icon: ExceptionIcon, admin: true },
   ],
-  // organize and publish
+  // organize the wiki
   [
     { label: "Domains", href: "/domains", icon: DomainIcon, admin: true },
     { label: "Entities", href: "/entities", icon: EntityIcon, admin: true },
-    { label: "Publishing", href: "/publishing", icon: Globe2, admin: true },
   ],
   // how the AI runs
   [
