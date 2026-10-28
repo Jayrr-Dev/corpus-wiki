@@ -14,28 +14,35 @@ call is logged; typecheck, lint and tests pass; merged to main.
 | Lane | Task | Needs | Status |
 |---|---|---|---|
 | contract | M0 `lib/agents/{scopes,types,session,keys}.ts`, `lib/mcp/{types,tools/*}.ts`; `requireUser` and `getServerSupabase` honor the agent session; `via = "agent"`; `/api/mcp` public in the proxy | | merged |
-| keys | K1 Migration: `agent_keys`, `agent_calls`, RPCs (B-tree only) | M0 | planned |
-| keys | K2 Real `resolveAgentKey`, `checkAgentCall`, `recordAgentCall` | K1 | planned |
-| keys | K3 Settings, Agents tab: create (name, Space or all, scopes, expiry), show once, revoke, last used, call log, config snippet | K2 | planned |
-| mcp | T1 SDK, `app/api/mcp/route.ts`, `lib/mcp/server.ts`: auth, Origin check, Space pick, scope filter, rate check, audit, errors | M0 | planned |
+| contract | M1 OAuth: identity gains `kind` and `clientId`; `resolveAgentKey(token, resource)` | M0 | merged |
+| auth | K1 Migration: personal keys, OAuth clients, codes, tokens, grants, `agent_calls` (B-tree only) | M1 | in progress (session mcp-keys) |
+| auth | K2 Real `resolveAgentKey`, `checkAgentCall`, `recordAgentCall`; token store | K1 | planned |
+| auth | K3 OAuth server: metadata, CIMD, DCR, `/oauth/authorize` consent, `/oauth/token`, `/oauth/revoke` | K2 | planned |
+| auth | K4 Settings, Agents tab: connected agents (revoke, Space, scopes, last used, call log) and personal keys | K2 | planned |
+| mcp | T1 SDK, `app/api/mcp/route.ts`, `lib/mcp/server.ts`, Protected Resource Metadata: 401 challenge, audience, Origin check, Space pick, 403 step-up, rate check, audit | M1 | in progress (session mcp-route) |
 | mcp | T2 Read tools in `lib/mcp/tools/read.ts` | T1 | planned |
 | knowledge | W1 Write tools in `lib/mcp/tools/write.ts` (notes, files, links, upload status, articles, sections, lines, organize) | M0 | planned |
 | knowledge | W2 Delete tools in `lib/mcp/tools/delete.ts` | W1 | planned |
 | spaces | S1 `lib/mcp/tools/spaces.ts` and `lib/mcp/tools/settings.ts` | M0 | planned |
 | spaces | S2 "Agent" label where uploads and changes name who started them | M0 | planned |
-| check | E1 End to end: real key, Claude Code connected to the local server, each scope allowed and refused | K3, T2, W2, S1 | planned |
+| check | E1 End to end: `claude mcp add --transport http` on the local server, sign in and consent, each scope allowed, step-up for a missing one, revoke | K3, K4, T2, W2, S1 | planned |
 
-Critical path: M0, K1, K2, T1 wired to real keys, E1.
+Critical path: M0, M1, K1, K2, K3, E1.
 
-Cut in review: OAuth (later, for claude.ai connectors); agents managing
-their own keys (a person must grant every power); permanent delete of
-archived items; MCP resources and prompts (tools cover the need).
+Sign-in follows the MCP authorization spec (2026-07-28) and Claude's
+connector rules; details in `docs/mcp-server-plan.md`. Supabase's own OAuth
+server was considered and not used: it has no custom scopes, no audience
+binding (RFC 8707) and no documented Client ID Metadata Documents.
+
+Cut in review: agents managing their own access (a person must grant every
+power); permanent delete of archived items; MCP resources and prompts
+(tools cover the need); Enterprise Managed Auth (later).
 
 ### Lanes, owned paths and contracts
 
 - **contract** (orchestrator): `lib/agents/{scopes,types,session}.ts`, `lib/mcp/types.ts`, `lib/mcp/tools/index.ts`, `docs/mcp-server-plan.md`.
-- **keys** owns `supabase/migrations/<new>_agent_keys.sql`, `lib/agents/keys.ts` (bodies only, signatures fixed) and tests, `lib/server-actions/agentKeys.ts`, `app/(app)/settings/Agent*.tsx`, the Agents entry in `app/(app)/settings/page.tsx`, the new rows in `lib/database/types.ts`.
-- **mcp** owns `package.json`, lockfiles, `app/api/mcp/**`, `lib/mcp/server.ts` and its tests, `lib/mcp/tools/read.ts`.
+- **auth** owns `supabase/migrations/<new>_agent_auth.sql`, `lib/agents/keys.ts` (bodies only, signatures fixed), `lib/agents/oauth/**`, `app/oauth/**`, `app/.well-known/oauth-authorization-server/**`, `app/.well-known/openid-configuration/**`, `lib/server-actions/agentKeys.ts`, `app/(app)/settings/Agent*.tsx`, the Agents entry in `app/(app)/settings/page.tsx`, new rows in `lib/database/types.ts`, the `/oauth` entries in `lib/supabase/proxy.ts`.
+- **mcp** owns `package.json`, lockfiles, `app/api/mcp/**`, `app/.well-known/oauth-protected-resource/**`, `lib/mcp/server.ts` and its tests, `lib/mcp/tools/read.ts`, the `/.well-known/oauth-protected-resource` entry in `lib/supabase/proxy.ts`.
 - **knowledge** owns `lib/mcp/tools/{write,delete}.ts` and tests.
 - **spaces** owns `lib/mcp/tools/{spaces,settings}.ts` and tests, and the three via labels (`app/(app)/_lib/uploaderLabel.ts`, `ChangeDetail.tsx`, `SourceDetail.tsx`).
 - Tools wrap existing server actions and `lib/` functions. Do not edit `lib/server-actions/**` or `lib/ingest/**`; ask the orchestrator if one needs a change.
