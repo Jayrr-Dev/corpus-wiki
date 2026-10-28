@@ -1,3 +1,4 @@
+import { clusterCircles, ORPHANS_LABEL } from "@/lib/graph";
 import { DEFAULT_GRAPH_SETTINGS } from "@/lib/graph/settings";
 import { hasHubBody } from "@/lib/graph/nodeTypes";
 import { expect, it } from "vitest";
@@ -1012,4 +1013,57 @@ it("paints a domain bubble and its ring from the connection, shifted for the can
   });
   expect(fills).toContain("#3b4c69");
   expect(fills).toContain("#8ab4f8");
+});
+
+it("lights orphan notes when the Orphans circle is selected", () => {
+  const fills: { style: string; alpha: number }[] = [];
+  let fillStyle = "";
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(target, key) {
+        if (key === "globalAlpha") return target.globalAlpha;
+        if (key === "fillStyle") return fillStyle;
+        if (key === "fill")
+          return () => {
+            fills.push({ style: fillStyle, alpha: target.globalAlpha });
+          };
+        if (key === "measureText") return () => ({ width: 10 });
+        return () => {};
+      },
+      set(target, key, value) {
+        if (key === "fillStyle") fillStyle = String(value);
+        if (key === "globalAlpha") target.globalAlpha = Number(value);
+        return true;
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  const orphan = {
+    ...dot("orphan", 0, 0, 0, "Loose"),
+    pageTitles: [] as string[],
+  };
+  const circles = clusterCircles([orphan], 1, "page");
+  const group = circles.find((circle) => circle.label === ORPHANS_LABEL)!;
+  drawGraph({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k: 1 },
+    overviewZoom: 1,
+    nodes: [orphan],
+    links: [],
+    circles,
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "page",
+    palette,
+    colorOf: () => null,
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+    focusedDomain: group.key,
+  });
+  expect(
+    fills.some((fill) => fill.style === palette.text && fill.alpha === 1),
+  ).toBe(true);
 });

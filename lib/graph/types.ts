@@ -44,6 +44,8 @@ export interface GraphNode {
   domainScopePaths?: { internal: string[]; external: string[] };
   sourceScopes?: ("internal" | "external")[];
   entityNames: string[];
+  // The named entities that are stakeholders (the Stakeholders grouping reads these)
+  stakeholderNames?: string[];
   // Pages that cite this unit (own title on page nodes; omitted on older fixtures)
   pageTitles?: string[];
   // Title of a pending article suggestion that includes this unit

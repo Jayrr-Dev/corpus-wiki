@@ -2,6 +2,7 @@ import {
   groupColorLookup,
   primaryEntityName,
   primaryPageTitle,
+  primaryStakeholderName,
   type GraphColor,
   type GraphGroup,
   type GraphNode,
@@ -26,6 +27,11 @@ export const GROUP_COLORS: Readonly<
   entity: () => (node) => {
     if (hasHubBody(node)) return null;
     const name = primaryEntityName(node);
+    return name ? entityColor(name) : null;
+  },
+  stakeholder: () => (node) => {
+    if (hasHubBody(node)) return null;
+    const name = primaryStakeholderName(node);
     return name ? entityColor(name) : null;
   },
   // Cited units take their article's color; suggestions are blue, or orange for a merge

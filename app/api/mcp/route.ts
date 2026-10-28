@@ -21,8 +21,8 @@ import { insufficientScope, mcpResourceUrl, unauthorized } from "./resource";
 // A tool can run the upload pipeline or rewrite a page; give it time
 export const maxDuration = 300;
 
-// The SDK's own cap; it skips the cap when the route has read the body
-const MAX_BODY_BYTES = 4 * 1024 * 1024;
+// Vercel's request body limit; upload_file keeps files small enough to fit (lib/mcp/tools/write.ts)
+const MAX_BODY_BYTES = 4.5 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<Response> {
   if (!originAllowed(request)) return Response.json({ error: "Origin not allowed." }, { status: 403 });

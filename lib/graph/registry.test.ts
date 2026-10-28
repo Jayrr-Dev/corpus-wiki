@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { clusterKey } from "./clusters";
 import { graphForGrouping, keepNodes } from "./filters";
-import { GROUPING_IDS, GROUPING_LIST, GROUPINGS } from "./groupings";
+import {
+  GROUPING_IDS,
+  GROUPING_LIST,
+  GROUPINGS,
+  NO_STAKEHOLDER_LABEL,
+} from "./groupings";
 import {
   NODE_KINDS,
   NODE_TYPE_LIST,
@@ -32,16 +37,18 @@ function sample(): GraphData {
   return {
     nodes: [
       node("u1", "unit", {
-        domainPaths: ["Ops"], entityNames: ["Acme"], pageTitles: ["Guide"],
+        domainPaths: ["Ops"], entityNames: ["Acme", "Pat"], stakeholderNames: ["Pat"], pageTitles: ["Guide"],
         pageSections: [{ page: "Guide", section: "Intro", position: 0 }],
       }),
       node("Ops", "domain", { domainPaths: ["Ops"] }),
       node("Acme", "entity", { entityNames: ["Acme"] }),
+      node("Pat", "stakeholder", { entityNames: ["Pat"], stakeholderNames: ["Pat"] }),
       node("Guide", "page", { pageTitles: ["Guide"] }),
     ],
     links: [
       link("u1", "Ops", "in"),
       link("u1", "Acme", "about"),
+      link("u1", "Pat", "about"),
       link("Guide", "u1", "cites"),
     ],
   };
@@ -93,22 +100,44 @@ describe("every node type in every grouping", () => {
 describe("a node type added only to the registry", () => {
   const types = NODE_TYPES as Record<string, NodeTypeRule>;
   afterEach(() => {
-    delete types.stakeholder;
+    delete types.volunteer;
   });
 
   it("is placed by its knowledge in every grouping", () => {
-    types.stakeholder = {
+    types.volunteer = {
       ...NODE_TYPES.entity,
-      kind: "stakeholder" as GraphNodeKind,
-      label: "Stakeholder",
-      plural: "Stakeholders",
+      kind: "volunteer" as GraphNodeKind,
+      label: "Volunteer",
+      plural: "Volunteers",
       centers: undefined,
     };
     const data = sample();
-    data.nodes[0]!.entityNames = ["Acme", "Pat"];
-    data.nodes.push(node("Pat", "stakeholder", { entityNames: ["Pat"] }));
-    data.links.push(link("u1", "Pat", "about"));
+    data.nodes[0]!.entityNames = ["Acme", "Pat", "Sam"];
+    data.nodes.push(node("Sam", "volunteer", { entityNames: ["Sam"] }));
+    data.links.push(link("u1", "Sam", "about"));
     for (const grouping of GROUPING_IDS)
-      expectAllInCircles("stakeholder", grouping, data);
+      expectAllInCircles("volunteer", grouping, data);
+  });
+});
+
+describe("the No stakeholder circle", () => {
+  it("holds entities, pages and units that name no stakeholder", () => {
+    const data: GraphData = {
+      nodes: [
+        node("u2", "unit", { entityNames: ["Lone"], pageTitles: ["Notes"] }),
+        node("Lone", "entity", { entityNames: ["Lone"] }),
+        node("Notes", "page", { pageTitles: ["Notes"] }),
+      ],
+      links: [link("u2", "Lone", "about"), link("Notes", "u2", "cites")],
+    };
+    const grouped = graphForGrouping(data, "stakeholder", data);
+    for (const dot of grouped.nodes)
+      expect(clusterKey(dot, "stakeholder"), dot.id).toBe(NO_STAKEHOLDER_LABEL);
+  });
+
+  it("keeps a dot with a stakeholder in that stakeholder's circle", () => {
+    const grouped = graphForGrouping(sample(), "stakeholder", sample());
+    const unit = grouped.nodes.find((dot) => dot.id === "u1")!;
+    expect(clusterKey(unit, "stakeholder")).toBe("Pat");
   });
 });

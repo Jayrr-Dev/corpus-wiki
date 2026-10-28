@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   applyFilters,
-  coalesceGraph,
   createdBy,
   DEFAULT_GRAPH_SETTINGS,
   graphForGrouping,
@@ -152,7 +151,6 @@ export function GraphView({
     GLOBAL_GRAPH_SETTINGS_KEY,
     data.nodes,
   );
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [focusedDomain, setFocusedDomain] = useState<{
     path: string | null;
     filter: string;
@@ -271,26 +269,8 @@ export function GraphView({
       inDomainScope(grown, settings.filters.domainScope),
       settings.filters.domain,
     );
-    const grouped = graphForGrouping(
-      filtered,
-      settings.display.groupBy,
-      evidence,
-    );
-    if (!settings.display.coalesce) return grouped;
-    const mode =
-      settings.display.groupBy === "entity" ||
-      settings.display.groupBy === "page"
-        ? settings.display.groupBy
-        : "domain";
-    return coalesceGraph(grouped, mode, openGroup);
-  }, [
-    openGroup,
-    related,
-    replay.cutoff,
-    settings.display.coalesce,
-    settings.display.groupBy,
-    settings.filters,
-  ]);
+    return graphForGrouping(filtered, settings.display.groupBy, evidence);
+  }, [related, replay.cutoff, settings.display.groupBy, settings.filters]);
 
   return (
     <div className="relative h-full">
@@ -330,7 +310,6 @@ export function GraphView({
           setContext({ node, ...point });
         }}
         onMoveNode={moveNode}
-        onCoalesceGroup={setOpenGroup}
       />
       {visible.nodes.length === 0 && data.nodes.length > 0 && (
         <div

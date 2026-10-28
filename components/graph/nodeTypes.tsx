@@ -1,12 +1,8 @@
 import type { GraphNode } from "@/lib/graph";
 import type { GraphNodeKind } from "@/lib/graph/nodeTypes";
 import type { ReactNode } from "react";
-import {
-  DomainPreview,
-  EntityPreview,
-  PagePreview,
-  UnitPreview,
-} from "./NodePreviews";
+import { DomainPreview, EntityPreview, PagePreview } from "./NodePreviews";
+import { UnitPreview } from "./UnitPreview";
 
 // =====================================================================
 // NODE SCREENS: what each kind of dot shows on screen, beside the
@@ -27,6 +23,13 @@ export const NODE_SCREENS: Readonly<Record<GraphNodeKind, NodeScreenRule>> = {
     listsUnits: false,
   },
   entity: {
+    preview: (node, units) => (
+      <EntityPreview key={node.id} node={node} units={units} />
+    ),
+    listsUnits: true,
+  },
+  // A stakeholder is an entity with a profile, so it previews the same way
+  stakeholder: {
     preview: (node, units) => (
       <EntityPreview key={node.id} node={node} units={units} />
     ),

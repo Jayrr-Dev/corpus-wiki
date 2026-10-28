@@ -33,6 +33,8 @@ export interface GraphDisplay {
   edgeOpacity: number;
   // Claims that share a group draw as one dot.
   coalesce: boolean;
+  // Step lists and article sections wind out in order. Off keeps the packed circles.
+  ordered: boolean;
 }
 
 export interface GraphForces {
@@ -86,6 +88,7 @@ export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
     linkThickness: 1,
     edgeOpacity: 0.7,
     coalesce: false,
+    ordered: false,
   },
   forces: { center: 0.4, repel: 11, link: 0.8, linkDistance: 80, cluster: 0.5 },
 };
@@ -108,6 +111,7 @@ export const DISPLAY_SLIDERS: readonly SliderRule<
     | "titlePosition"
     | "edgeOpacity"
     | "coalesce"
+    | "ordered"
   >
 >[] = [
   {
@@ -185,6 +189,7 @@ const settingsSchema = z.object({
     linkThickness: z.number(),
     edgeOpacity: z.number().default(DEFAULT_DISPLAY.edgeOpacity),
     coalesce: z.boolean().default(false),
+    ordered: z.boolean().default(false),
   }),
   forces: z.object({
     center: z.number(),
@@ -210,13 +215,16 @@ const LEGACY_SHOWN: Partial<
 
 type SavedFilters = z.infer<typeof settingsSchema>["filters"];
 
-// Saved switches win, then the old per-type fields, then the registry default
+// Saved switches win, then the old per-type fields, then the kind it split from, then the registry default
 function shownFrom(saved: SavedFilters): Record<GraphNodeKind, boolean> {
   const shown = defaultShown();
   for (const kind of NODE_KINDS) {
     const field = LEGACY_SHOWN[kind];
     const legacy = field ? saved[field] : undefined;
-    shown[kind] = saved.shown?.[kind] ?? legacy ?? shown[kind];
+    // A split-off kind's parent comes earlier in NODE_KINDS, so its switch is already read
+    const parent = NODE_TYPES[kind].splitFrom;
+    shown[kind] =
+      saved.shown?.[kind] ?? legacy ?? (parent ? shown[parent] : shown[kind]);
   }
   return shown;
 }

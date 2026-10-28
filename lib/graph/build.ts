@@ -148,6 +148,7 @@ function unitNodes(rows: GraphRows): GraphNode[] {
   const entitiesByUnit = groupBy(
     rows.unitEntities.map((row) => [row.unit_id, row.entity_id] as const),
   );
+  const stakeholderIds = stakeholderEntityIds(rows);
   return rows.units.map((unit) => {
     const content = contentByRevision.get(unit.current_revision_id) ?? unit.id;
     return {
@@ -167,6 +168,11 @@ function unitNodes(rows: GraphRows): GraphNode[] {
       entityNames: present(
         (entitiesByUnit.get(unit.id) ?? []).map((id) => nameByEntity.get(id)),
       ),
+      stakeholderNames: present(
+        (entitiesByUnit.get(unit.id) ?? []).map((id) =>
+          stakeholderIds.has(id) ? nameByEntity.get(id) : undefined,
+        ),
+      ),
       pageTitles: pagesByUnit.get(unit.id) ?? [],
       pageSections: sectionsByUnit.get(unit.id) ?? [],
       recommendedTitle: recommendedByUnit.get(unit.id)?.title,
@@ -177,11 +183,18 @@ function unitNodes(rows: GraphRows): GraphNode[] {
   });
 }
 
-// ENTITY NODES: an entity matches `entity:` queries on its own name
+// Entities a visible stakeholder profile marks as stakeholders
+function stakeholderEntityIds(rows: GraphRows): Set<string> {
+  return new Set(
+    rows.entities.filter((entity) => entity.stakeholder).map((entity) => entity.id),
+  );
+}
+
+// ENTITY NODES: an entity matches `entity:` queries on its own name. Stakeholders are their own kind.
 function entityNodes(rows: GraphRows): GraphNode[] {
   return rows.entities.map((entity) => ({
     id: entity.id,
-    kind: "entity",
+    kind: entity.stakeholder ? "stakeholder" : "entity",
     label: entity.name,
     text: entity.name,
     href: `/entities/${entity.id}`,
@@ -189,6 +202,7 @@ function entityNodes(rows: GraphRows): GraphNode[] {
     degree: 0,
     domainPaths: [],
     entityNames: [entity.name],
+    stakeholderNames: entity.stakeholder ? [entity.name] : [],
     pageTitles: [],
     unitKind: null,
     status: null,
@@ -225,6 +239,7 @@ function pageNodes(rows: GraphRows): GraphNode[] {
   const nameByEntity = new Map(
     rows.entities.map((entity) => [entity.id, entity.name]),
   );
+  const stakeholderIds = stakeholderEntityIds(rows);
   return rows.pages.map((page) => ({
     id: page.id,
     kind: "page",
@@ -238,6 +253,11 @@ function pageNodes(rows: GraphRows): GraphNode[] {
     ]),
     entityNames: present([
       page.entity_id ? nameByEntity.get(page.entity_id) : undefined,
+    ]),
+    stakeholderNames: present([
+      page.entity_id && stakeholderIds.has(page.entity_id)
+        ? nameByEntity.get(page.entity_id)
+        : undefined,
     ]),
     pageTitles: [page.title],
     unitKind: null,

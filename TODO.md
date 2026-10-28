@@ -15,16 +15,17 @@ call is logged; typecheck, lint and tests pass; merged to main.
 |---|---|---|---|
 | contract | M0 `lib/agents/{scopes,types,session,keys}.ts`, `lib/mcp/{types,tools/*}.ts`; `requireUser` and `getServerSupabase` honor the agent session; `via = "agent"`; `/api/mcp` public in the proxy | | merged |
 | contract | M1 OAuth: identity gains `kind` and `clientId`; `resolveAgentKey(token, resource)` | M0 | merged |
-| auth | K1 Migration: personal keys, OAuth clients, codes, tokens, grants, `agent_calls` (B-tree only) | M1 | in progress (session mcp-keys) |
-| auth | K2 Real `resolveAgentKey`, `checkAgentCall`, `recordAgentCall`; token store | K1 | planned |
-| auth | K3 OAuth server: metadata, CIMD, DCR, `/oauth/authorize` consent, `/oauth/token`, `/oauth/revoke` | K2 | planned |
-| auth | K4 Settings, Agents tab: connected agents (revoke, Space, scopes, last used, call log) and personal keys | K2 | planned |
-| mcp | T1 SDK, `app/api/mcp/route.ts`, `lib/mcp/server.ts`, Protected Resource Metadata: 401 challenge, audience, Origin check, Space pick, 403 step-up, rate check, audit | M1 | in progress (session mcp-route) |
-| mcp | T2 Read tools in `lib/mcp/tools/read.ts` | T1 | planned |
-| knowledge | W1 Write tools in `lib/mcp/tools/write.ts` (notes, files, links, upload status, articles, sections, lines, organize) | M0 | planned |
-| knowledge | W2 Delete tools in `lib/mcp/tools/delete.ts` | W1 | planned |
-| spaces | S1 `lib/mcp/tools/spaces.ts` and `lib/mcp/tools/settings.ts` | M0 | planned |
-| spaces | S2 "Agent" label where uploads and changes name who started them | M0 | planned |
+| auth | K1 Migration: personal keys, OAuth clients, codes, tokens, grants, `agent_calls` (B-tree only) | M1 | merged 46284e5; applied |
+| auth | K2 Real `resolveAgentKey`, `checkAgentCall`, `recordAgentCall`; token store | K1 | merged 46284e5 |
+| auth | K3 OAuth server: metadata, CIMD, DCR, `/oauth/authorize` consent, `/oauth/token`, `/oauth/revoke` | K2 | merged 46284e5 |
+| auth | K4 Settings, Agents tab: connected agents (revoke, Space, scopes, last used, call log) and personal keys | K2 | merged 46284e5 |
+| mcp | T1 SDK, `app/api/mcp/route.ts`, `lib/mcp/server.ts`, Protected Resource Metadata: 401 challenge, audience, Origin check, Space pick, 403 step-up, rate check, audit | M1 | merged 1bdf7aa |
+| mcp | T2 Read tools in `lib/mcp/tools/read.ts` | T1 | in progress (session mcp-route) |
+| knowledge | W1 Write tools in `lib/mcp/tools/write.ts` (notes, files, links, upload status, articles, sections, lines, organize) | M0 | merged 3301e76; uploads capped at 3 MB in 47afd6a |
+| knowledge | W2 Delete tools in `lib/mcp/tools/delete.ts` | W1 | merged 3301e76 |
+| spaces | S1 `lib/mcp/tools/spaces.ts` and `lib/mcp/tools/settings.ts` | M0 | merged 1ba63a6 |
+| spaces | S2 "Agent" label where uploads and changes name who started them | M0 | merged 1ba63a6 |
+| ops | D1 Apply `20261119030500_agent_auth` to the database | K1 | done |
 | check | E1 End to end: `claude mcp add --transport http` on the local server, sign in and consent, each scope allowed, step-up for a missing one, revoke | K3, K4, T2, W2, S1 | planned |
 
 Critical path: M0, M1, K1, K2, K3, E1.
@@ -82,8 +83,8 @@ Browser check when D4 lands, and again at the end (screenshots of each):
 | canvas | V1 `drawGraph.ts`, `GraphCanvas.tsx`: color, shape and size from the registry; per-grouping colors in `groupColors.ts`; `clusterModeOf` removed | C1 | merged c9c87a6 |
 | panel | P1 Nodes and Group switches built from the registries; `components/graph/nodeTypes.tsx` holds previews per type | C1 | merged 9e3ec94 |
 | guard | G1 Lint rule against literal kind checks; every-type-by-every-grouping test; made-up type test | L2, D2, D3, D4, D5, V1, P1 | merged |
-| stakeholder | S1 `stakeholder` node type from `entities.is_stakeholder` (rows, builder, preview) | G1 | planned |
-| stakeholder | S2 Stakeholder grouping entry | S1 | planned |
+| stakeholder | S1 `stakeholder` node type from `entities.is_stakeholder` (rows, builder, preview) | G1 | merged |
+| stakeholder | S2 Stakeholder grouping entry | S1 | merged |
 
 Critical path: C1, L1, L2, D3, D4, G1, S1, S2. D4 was added after a browser check: with only Entities shown, entities sat in no circle (Domain), vanished (Entities) or all fell into No article (Pages). After C1, the layout, data, canvas
 and panel lanes start at once.

@@ -7,7 +7,13 @@ import type { GraphNode } from "./types";
 // one entry in NODE_TYPES plus a builder in build.ts.
 // =====================================================================
 
-export const NODE_KINDS = ["unit", "entity", "page", "domain"] as const;
+export const NODE_KINDS = [
+  "unit",
+  "entity",
+  "stakeholder",
+  "page",
+  "domain",
+] as const;
 export type GraphNodeKind = (typeof NODE_KINDS)[number];
 
 // content: the knowledge itself (selectable as claims, coalesced, scored for relatedness).
@@ -32,6 +38,8 @@ export interface NodeTypeRule {
   // Has no domain, scope or page of its own: domain and scope filters keep it only when it
   // links to a kept note, and it is not evidence when placing domain hubs.
   placedByLinks: boolean;
+  // Split off this kind: settings saved before the split start with that kind's switch
+  splitFrom?: GraphNodeKind;
 }
 
 export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
@@ -67,6 +75,18 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
     centers: "entity",
     placedByLinks: true,
   },
+  stakeholder: {
+    kind: "stakeholder",
+    label: "Stakeholder",
+    plural: "Stakeholders",
+    role: "hub",
+    shownByDefault: false,
+    shade: "faint",
+    body: "degree",
+    centers: "stakeholder",
+    placedByLinks: true,
+    splitFrom: "entity",
+  },
   page: {
     kind: "page",
     label: "Page",
@@ -85,6 +105,7 @@ export const NODE_TYPE_LIST: readonly NodeTypeRule[] = [
   NODE_TYPES.unit,
   NODE_TYPES.domain,
   NODE_TYPES.entity,
+  NODE_TYPES.stakeholder,
   NODE_TYPES.page,
 ];
 

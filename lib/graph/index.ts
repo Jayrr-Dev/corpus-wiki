@@ -23,23 +23,27 @@ export {
   clusterCircles,
   clusterConnections,
   clusterKey,
+  circleSubgroups,
+  noArticleGroups,
   clusterTree,
   deepestPaths,
   moveTarget,
   NO_ARTICLE_LABEL,
+  NO_STAKEHOLDER_LABEL,
   nodeInCluster,
   ORPHANS_LABEL,
   pageDropLabel,
   pageMoveTarget,
   primaryEntityName,
   primaryPageTitle,
+  primaryStakeholderName,
   type CircleOpenTarget,
   type ClusterCircle,
   type ClusterGroup,
   type ClusterMode,
   type PageDrop,
 } from "./clusters";
-export { coalesceGraph } from "./coalesce";
+export { coalesceDrawn, coalesceGraph } from "./coalesce";
 export {
   applyFilters,
   createdBy,

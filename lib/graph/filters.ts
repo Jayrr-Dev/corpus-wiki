@@ -381,6 +381,14 @@ const ENTITY_HOME: HomeRule<string> = {
   place: (node, name) => ({ ...node, entityNames: [name] }),
 };
 
+// Stakeholders grouping: the stakeholder that shares the most of its claims
+const STAKEHOLDER_HOME: HomeRule<string> = {
+  votes: (claim) => claim.stakeholderNames ?? [],
+  home: (name) => name,
+  closer: byName,
+  place: (node, name) => ({ ...node, stakeholderNames: [name] }),
+};
+
 interface PageHome {
   page: string;
   section: string | null;
@@ -467,6 +475,14 @@ function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
   return paths;
 }
 
+// Where each grouping puts the hubs it does not center. Keyed by grouping, so a new one needs a rule.
+const HOME_RULES = {
+  domain: DOMAIN_HOME,
+  entity: ENTITY_HOME,
+  stakeholder: STAKEHOLDER_HOME,
+  page: PAGE_HOME,
+} satisfies Record<GroupingId, unknown>;
+
 // GROUP LAYERS: each grouping keeps its own hub dots, pinned in the middle of their circles,
 // and places the other link-placed hubs (domains, entities) inside the circles.
 export function graphForGrouping(
@@ -476,9 +492,7 @@ export function graphForGrouping(
   evidence: GraphData = data,
 ): GraphData {
   if (groupBy === "off") return data;
-  const rule = { domain: DOMAIN_HOME, entity: ENTITY_HOME, page: PAGE_HOME }[
-    groupBy
-  ] as HomeRule<unknown>;
+  const rule = HOME_RULES[groupBy] as HomeRule<unknown>;
   const placed = placeLinkedHubs(
     data.nodes,
     evidence.nodes,

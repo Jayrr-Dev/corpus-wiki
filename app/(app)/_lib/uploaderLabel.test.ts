@@ -11,3 +11,6 @@ it("distinguishes API submissions from autonomous AI sources", () => {
   expect(uploaderLabel({ person_id: null, via: "api", actor: "ai" }, null)).toBe("API key");
   expect(uploaderLabel({ person_id: null, via: null, actor: "ai" }, null)).toBe("AI");
 });
+it("names an agent key, not the owner it acts as", () => {
+  expect(uploaderLabel({ person_id: "person", via: "agent", actor: "ai" }, "Jayrr")).toBe("Agent key");
+});

@@ -1,15 +1,11 @@
 "use client";
 
 import { Facts, QueryState } from "@/app/(app)/_components/bits";
-import { formatDate, statusLabel } from "@/app/(app)/_lib/format";
-import { useActorLabel } from "@/app/(app)/_lib/useActorLabel";
-import {
-  PassageList,
-  type UnitPassages,
-  useUnitPassages,
-} from "@/app/(app)/units/[id]/UnitSources";
-import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
-import { StatusGlyph } from "@/components/icons";
+import { formatDate } from "@/app/(app)/_lib/format";
+import { LineBlock } from "@/components/living-page/LineBlock";
+import { ArticleTextLink, PreviewTabProvider } from "@/components/living-page/previewTabs";
+import { UnitPreview } from "@/components/graph/UnitPreview";
+import { DynamicTabs } from "@/components/standard/dynamic-tabs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Enums } from "@/lib/database/types";
 import {
   GROUPINGS,
   isContent,
@@ -27,28 +22,39 @@ import {
   type CircleOpenTarget,
   type GraphNode,
 } from "@/lib/graph";
+import { articleNavigation } from "@/lib/living-page/articleNavigation";
+import type { ArticleLink } from "@/lib/living-page/articleEvidence";
 import {
   useArticleSuggestions,
+  useEntities,
   useEntity,
   usePage,
+  usePages,
   useSectionLines,
   useSections,
+  type ShownLine,
 } from "@/lib/queries";
-import { type UnitSummary, useRowsByIds } from "@/lib/queries/screens";
+import { useArticleTopicLinks } from "@/lib/queries/articleTopicLinks";
+import { useRelatedArticles } from "@/lib/queries/relatedArticles";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { type ReactNode, useState } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 
-function PreviewHeader({ label, kind }: { label: string; kind: string }) {
+const PREVIEW_TITLE_CLASS = "text-title font-semibold";
+
+function PreviewKind({ kind }: { kind: string }) {
   return (
     <DialogHeader>
       <DialogDescription asChild>
         <p className="text-xs font-medium tracking-wide uppercase">{kind}</p>
       </DialogDescription>
-      <DialogTitle>{label}</DialogTitle>
     </DialogHeader>
   );
+}
+
+function PreviewTitle({ children }: { children: string }) {
+  return <DialogTitle size="title">{children}</DialogTitle>;
 }
 
 function OpenPage({ node }: { node: GraphNode }) {
@@ -75,13 +81,14 @@ function PreviewSplit({
     ? "Collapse knowledge units"
     : "Expand knowledge units";
   return (
-    <div className="flex w-fit max-w-full flex-col gap-4">
-      <div className="flex items-start gap-4">
+    <div className="flex w-fit max-w-full flex-col gap-4 in-data-[maximized]:h-full in-data-[maximized]:min-h-0 in-data-[maximized]:w-full in-data-[maximized]:max-w-none in-data-[maximized]:flex-1">
+      <div className="flex items-start gap-4 in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1 in-data-[maximized]:items-stretch">
         <aside
           aria-label="Knowledge units"
           className={cn(
             "flex shrink-0 flex-col border-r",
             unitsOpen ? "w-56 pr-4" : "pr-2",
+            "in-data-[maximized]:min-h-0",
           )}
         >
           <div className="flex items-center gap-1">
@@ -107,7 +114,7 @@ function PreviewSplit({
             </button>
           </div>
           {unitsOpen ? (
-            <div className="mt-3 max-h-[min(52vh,28rem)] overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable]">
+            <div className="mt-3 max-h-[min(52vh,28rem)] overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable] in-data-[maximized]:max-h-none in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1">
               {sidebar}
             </div>
           ) : null}
@@ -118,9 +125,15 @@ function PreviewSplit({
             unitsOpen
               ? "w-[min(32rem,calc(100vw-18rem))]"
               : "w-fit max-w-[min(32rem,calc(100vw-6rem))]",
+            "in-data-[maximized]:max-h-none in-data-[maximized]:min-h-0 in-data-[maximized]:w-auto in-data-[maximized]:max-w-none in-data-[maximized]:flex-1",
           )}
         >
-          <div className={cn("flex flex-col gap-4 pl-2", unitsOpen && "pr-8")}>
+          <div
+            className={cn(
+              "flex flex-col gap-4 pl-2",
+              unitsOpen && "pr-8",
+            )}
+          >
             {children}
           </div>
         </div>
@@ -136,7 +149,9 @@ function listedUnits(units: readonly GraphNode[]) {
 
 function unitsForEntity(units: readonly GraphNode[], name: string) {
   return listedUnits(
-    units.filter((unit) => isContent(unit) && unit.entityNames.includes(name)),
+    units.filter(
+      (unit) => isContent(unit) && unit.entityNames.includes(name),
+    ),
   );
 }
 
@@ -186,13 +201,13 @@ export function EntityPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader label={node.label} kind={nodeType(node).label} />
+      <PreviewKind kind={nodeType(node).label} />
+      {entity && !query.isPending && !query.error ? null : (
+        <DialogTitle className="sr-only">{node.label}</DialogTitle>
+      )}
       <QueryState query={query}>
         {entity ? (
           <>
-            <p className="text-body whitespace-pre-wrap">
-              {entity.description || "No description yet."}
-            </p>
             <Facts
               items={[
                 ["Type", entity.type],
@@ -203,6 +218,10 @@ export function EntityPreview({
                 ["Created", formatDate(entity.created_at)],
               ]}
             />
+            <PreviewTitle>{node.label}</PreviewTitle>
+            <p className="text-body whitespace-pre-wrap">
+              {entity.description || "No description yet."}
+            </p>
           </>
         ) : (
           <p className="text-muted-foreground">
@@ -227,13 +246,14 @@ export function DomainPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader label={node.label} kind={nodeType(node).label} />
+      <PreviewKind kind={nodeType(node).label} />
       <Facts
         items={[
           ["Path", node.text],
           ["Connections", node.degree],
         ]}
       />
+      <PreviewTitle>{node.label}</PreviewTitle>
     </PreviewSplit>
   );
 }
@@ -254,15 +274,53 @@ export function PagePreview({
     sectionTitle ? section.title === sectionTitle : true,
   );
   const related = unitsForPage(units, node.label, sectionTitle);
+  const title = sectionTitle ?? node.label;
+  const showTitle = Boolean(query.data && !query.isPending && !query.error);
+  const allPages = usePages();
+  const entities = useEntities();
+  const allSections = useSections();
+  const pageText = (lines.data ?? []).map((line) => line.content).join(" ");
+  const navigation = useMemo(
+    () =>
+      articleNavigation(
+        allPages.data ?? [],
+        entities.data ?? [],
+        allSections.data ?? [],
+        node.id,
+        pageText,
+      ),
+    [allPages.data, entities.data, allSections.data, node.id, pageText],
+  );
+  const navigationContext = useMemo(
+    () => JSON.stringify([allPages.data, allSections.data, entities.data]),
+    [allPages.data, allSections.data, entities.data],
+  );
+  const navigationReady =
+    !!allPages.data && !!allSections.data && !!entities.data;
+  const topicLinks = useArticleTopicLinks(
+    node.id,
+    navigationContext,
+    navigationReady,
+  );
+  const articleLinks = useMemo(
+    () => [...navigation.links, ...(topicLinks.data ?? [])],
+    [navigation.links, topicLinks.data],
+  );
+  const recommendations = useRelatedArticles(
+    node.id,
+    navigationContext,
+    navigationReady,
+  );
+  const seeAlso = recommendations.data ?? navigation.related;
   return (
     <PreviewSplit
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader
-        label={sectionTitle ?? node.label}
-        kind={sectionTitle ? "Section" : "Article"}
-      />
+      <PreviewKind kind={sectionTitle ? "Section" : "Article"} />
+      {showTitle ? null : (
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+      )}
       <QueryState query={query}>
         {query.data ? (
           <>
@@ -283,26 +341,23 @@ export function PagePreview({
                 ["Created", formatDate(query.data.created_at)],
               ]}
             />
+            <PreviewTitle>{title}</PreviewTitle>
             <QueryState query={sections}>
               <QueryState query={lines}>
                 {shown?.length ? (
-                  shown.map((section) => {
-                    const content =
-                      (lines.data ?? [])
-                        .filter((line) => line.sectionId === section.id)
-                        .map((line) => line.content)
-                        .join("\n\n") || section.body;
-                    return (
-                      <section key={section.id} className="flex flex-col gap-2">
-                        {sectionTitle ? null : (
-                          <h3 className="font-medium">{section.title}</h3>
-                        )}
-                        <p className="text-body whitespace-pre-wrap">
-                          {content || "No content yet."}
-                        </p>
-                      </section>
-                    );
-                  })
+                  shown.map((section) => (
+                    <section key={section.id} className="flex flex-col gap-2">
+                      {sectionTitle ? null : (
+                        <h3 className={PREVIEW_TITLE_CLASS}>{section.title}</h3>
+                      )}
+                      <SectionBody
+                        sectionId={section.id}
+                        body={section.body}
+                        lines={lines.data ?? []}
+                        links={articleLinks}
+                      />
+                    </section>
+                  ))
                 ) : (
                   <p className="text-muted-foreground">
                     {sectionTitle
@@ -312,6 +367,12 @@ export function PagePreview({
                 )}
               </QueryState>
             </QueryState>
+            <SeeAlso
+              articles={seeAlso}
+              pending={recommendations.isPending}
+              failed={!!recommendations.error}
+              onRetry={() => void recommendations.refetch()}
+            />
           </>
         ) : (
           <p className="text-muted-foreground">
@@ -323,15 +384,93 @@ export function PagePreview({
   );
 }
 
+function SectionBody({
+  sectionId,
+  body,
+  lines,
+  links,
+}: {
+  sectionId: string;
+  body: string | null;
+  lines: readonly ShownLine[];
+  links: ArticleLink[];
+}) {
+  const sectionLines = lines.filter((line) => line.sectionId === sectionId);
+  if (sectionLines.length) {
+    return (
+      <>
+        {sectionLines.map((line) => (
+          <LineBlock key={line.lineId} content={line.content} links={links} />
+        ))}
+      </>
+    );
+  }
+  if (body) return <LineBlock content={body} links={links} />;
+  return <p className="text-muted-foreground">No content yet.</p>;
+}
+
+function SeeAlso({
+  articles,
+  pending,
+  failed,
+  onRetry,
+}: {
+  articles: { id: string; slug: string; title: string }[];
+  pending: boolean;
+  failed: boolean;
+  onRetry: () => void;
+}) {
+  if (!articles.length && !pending && !failed) return null;
+  return (
+    <section className="border-t pt-4">
+      <h3 className="mb-2 font-serif text-title">See also</h3>
+      {pending && !articles.length ? (
+        <p role="status" className="text-panel text-faint">
+          Finding related articles…
+        </p>
+      ) : null}
+      {failed ? (
+        <p className="mb-2 text-panel text-faint">
+          Related articles are temporarily unavailable.{" "}
+          <button
+            type="button"
+            className="text-link hover:underline"
+            onClick={onRetry}
+          >
+            Retry
+          </button>
+        </p>
+      ) : null}
+      <ul className="list-disc space-y-1 pl-5 text-body">
+        {articles.map((other) => (
+          <li key={other.id}>
+            <ArticleTextLink
+              href={`/p/${other.slug}`}
+              label={other.title}
+              className="text-link hover:underline"
+            >
+              {other.title}
+            </ArticleTextLink>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function UnitLinkList({ units }: { units: readonly GraphNode[] }) {
   if (!units.length) return null;
   return (
     <ul className="flex flex-col gap-1">
       {units.map((unit) => (
         <li key={unit.id}>
-          <Link href={unit.href} className="text-link hover:underline">
+          <ArticleTextLink
+            href={unit.href}
+            label={unit.label}
+            className="text-link hover:underline"
+          >
             {unit.label}
-          </Link>
+          </ArticleTextLink>
         </li>
       ))}
     </ul>
@@ -381,7 +520,7 @@ function RecommendationPreview({
         <QueryState query={query}>
           {planned.map((section) => (
             <section key={section.title} className="flex flex-col gap-2">
-              <h3 className="font-medium">{section.title}</h3>
+              <h3 className={PREVIEW_TITLE_CLASS}>{section.title}</h3>
               <UnitLinkList
                 units={section.unitIds.flatMap((id) => byId.get(id) ?? [])}
               />
@@ -403,7 +542,8 @@ function RecommendationPreview({
         </DialogFooter>
       }
     >
-      <PreviewHeader label={title} kind="Suggestion" />
+      <PreviewKind kind="Suggestion" />
+      <PreviewTitle>{title}</PreviewTitle>
       <QueryState query={query}>
         {suggestion?.rationale ? (
           <p className="text-body whitespace-pre-wrap">
@@ -412,6 +552,125 @@ function RecommendationPreview({
         ) : null}
       </QueryState>
     </PreviewSplit>
+  );
+}
+
+type PreviewTab = {
+  id: string;
+  label: string;
+  closable?: boolean;
+} & (
+  | { kind: "article"; pageId: string; sectionTitle?: string }
+  | { kind: "claim"; unitId: string }
+);
+
+function ArticlePreviewTabs({
+  page,
+  sectionTitle,
+  pages,
+  units,
+}: {
+  page: GraphNode;
+  sectionTitle?: string;
+  pages: readonly GraphNode[];
+  units: readonly GraphNode[];
+}) {
+  const first: PreviewTab = {
+    kind: "article",
+    id: sectionTitle ? `${page.id}:${sectionTitle}` : page.id,
+    label: sectionTitle ?? page.label,
+    pageId: page.id,
+    sectionTitle,
+    closable: false,
+  };
+  const [tabs, setTabs] = useState<PreviewTab[]>([first]);
+  const [active, setActive] = useState(first.id);
+  const openTarget = useCallback(
+    (href: string, label: string) => {
+      const path = href.split(/[?#]/)[0] ?? href;
+      const pageMatch = pages.find(
+        (node) => node.kind === GROUPINGS.page.hubKind && node.href === path,
+      );
+      if (pageMatch) {
+        setTabs((current) =>
+          current.some((tab) => tab.id === pageMatch.id)
+            ? current
+            : [
+                ...current,
+                {
+                  kind: "article",
+                  id: pageMatch.id,
+                  label: pageMatch.label || label,
+                  pageId: pageMatch.id,
+                },
+              ],
+        );
+        setActive(pageMatch.id);
+        return;
+      }
+      const unitMatch = units.find(
+        (node) => isContent(node) && node.href === path,
+      );
+      if (!unitMatch) {
+        window.location.assign(href);
+        return;
+      }
+      const id = `unit:${unitMatch.id}`;
+      setTabs((current) =>
+        current.some((tab) => tab.id === id)
+          ? current
+          : [
+              ...current,
+              {
+                kind: "claim",
+                id,
+                label: unitMatch.label || label,
+                unitId: unitMatch.id,
+              },
+            ],
+      );
+      setActive(id);
+    },
+    [pages, units],
+  );
+  const shown = tabs.find((tab) => tab.id === active) ?? tabs[0] ?? first;
+  const node =
+    shown.kind === "article"
+      ? (pages.find((item) => item.id === shown.pageId) ?? page)
+      : null;
+  const unit =
+    shown.kind === "claim"
+      ? units.find((item) => item.id === shown.unitId)
+      : null;
+  return (
+    <PreviewTabProvider onOpen={openTarget}>
+      <DynamicTabs
+        items={tabs.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          closable: tab.closable,
+        }))}
+        value={active}
+        onValueChange={setActive}
+        onClose={(id) =>
+          setTabs((current) => current.filter((tab) => tab.id !== id))
+        }
+        aria-label="Open articles"
+        className="in-data-[maximized]:h-full in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1 [&_[data-slot=dynamic-tabs-bar]]:pr-20"
+      >
+        {shown.kind === "claim" && unit ? (
+          <UnitPreview key={shown.id} node={unit} />
+        ) : null}
+        {shown.kind === "article" && node ? (
+          <PagePreview
+            key={shown.id}
+            node={node}
+            units={units}
+            sectionTitle={shown.sectionTitle}
+          />
+        ) : null}
+      </DynamicTabs>
+    </PreviewTabProvider>
   );
 }
 
@@ -452,14 +711,20 @@ export function CirclePreviewDialog({
     >
       <DialogContent className="w-fit max-w-[min(52rem,calc(100%-2rem))] sm:max-w-[min(52rem,calc(100%-2rem))]">
         {target?.kind === "article" && page ? (
-          <PagePreview key={page.id} node={page} units={units} />
+          <ArticlePreviewTabs
+            key={page.id}
+            page={page}
+            pages={pages}
+            units={units}
+          />
         ) : null}
         {target?.kind === "section" && page ? (
-          <PagePreview
+          <ArticlePreviewTabs
             key={`${page.id}:${target.section}`}
-            node={page}
-            units={units}
+            page={page}
             sectionTitle={target.section}
+            pages={pages}
+            units={units}
           />
         ) : null}
         {target && target.kind !== "recommendation" && !page ? (
@@ -481,150 +746,4 @@ export function CirclePreviewDialog({
       </DialogContent>
     </Dialog>
   );
-}
-
-// KIND COLORS: one accent per unit kind, for the kind line
-const KIND_COLOR: Record<Enums<"unit_kind">, string> = {
-  fact: "text-link",
-  definition: "text-stale",
-  procedure: "text-applied",
-  decision: "text-needs-you",
-  preference: "text-muted-foreground",
-};
-
-// A unit counts as updated when it changed more than a minute after it was created
-const UPDATED_AFTER_MS = 60_000;
-
-// BODY: the kind line, the content, then entities, domains and dates
-export function UnitPreview({ node }: { node: GraphNode }) {
-  const query = useUnitSummariesByIds([node.id]);
-  const unit = query.data?.[0];
-  // The current revision's author is who made the latest change
-  const revision = useRowsByIds("revisions", [unit?.current_revision_id])
-    .data?.[0];
-  const label = useActorLabel();
-  const author = revision
-    ? label(revision.author, revision.author_id, revision.model_version)
-    : undefined;
-  const cited = useUnitPassages(node.id);
-  const [showSources, setShowSources] = useState(false);
-  const sourceCount = new Set(
-    cited.passages.map((passage) => passage.source_id),
-  ).size;
-  const sourcesButton = (
-    <button
-      type="button"
-      className="text-link underline-offset-4 hover:underline"
-      onClick={() => setShowSources(true)}
-    >
-      {sourceCount} {sourceCount === 1 ? "source" : "sources"}
-    </button>
-  );
-  return (
-    <div className="flex flex-col gap-4">
-      <DialogHeader>
-        <KindLine node={node} />
-        <DialogTitle asChild>
-          <h2 className="text-title font-semibold">{node.label}</h2>
-        </DialogTitle>
-      </DialogHeader>
-      <QueryState query={query}>
-        <p className="text-body">{unit?.content ?? node.text}</p>
-      </QueryState>
-      <Facts
-        items={facts(
-          node,
-          unit,
-          author,
-          sourceCount > 0 ? sourcesButton : null,
-        )}
-      />
-      <DialogFooter>
-        <Button asChild>
-          <Link href={node.href}>Open page</Link>
-        </Button>
-      </DialogFooter>
-      <SourcesDialog
-        open={showSources}
-        onOpenChange={setShowSources}
-        title={node.label}
-        cited={cited}
-      />
-    </div>
-  );
-}
-
-// SOURCES DIALOG: every passage the unit cites, each with a link to its source, stacked over the preview
-function SourcesDialog({
-  open,
-  onOpenChange,
-  title,
-  cited,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  cited: UnitPassages;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Sources</DialogTitle>
-          <DialogDescription>{title}</DialogDescription>
-        </DialogHeader>
-        <PassageList cited={cited} />
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// KIND LINE: "● ESTABLISHED FACT" above the title, in the kind's color
-function KindLine({ node }: { node: GraphNode }) {
-  const color = node.unitKind ? KIND_COLOR[node.unitKind] : undefined;
-  return (
-    <DialogDescription asChild>
-      <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
-        {node.status ? (
-          <StatusGlyph status={node.status} className={color} />
-        ) : null}
-        <span className={color}>
-          {[node.status ? statusLabel(node.status) : null, node.unitKind]
-            .filter(Boolean)
-            .join(" ")}
-        </span>
-      </p>
-    </DialogDescription>
-  );
-}
-
-// FACTS: entities, domains, sources, valid-from and (when it changed since) updated and by whom, only the ones the unit has
-function facts(
-  node: GraphNode,
-  unit: UnitSummary | undefined,
-  author: string | undefined,
-  sources: ReactNode,
-): [string, ReactNode][] {
-  const lines = (values: string[]) =>
-    values.map((value) => (
-      <span key={value} className="block">
-        {value}
-      </span>
-    ));
-  const date = (value: string) => (
-    <span className="font-mono">{formatDate(value)}</span>
-  );
-  const wasUpdated = unit
-    ? Date.parse(unit.last_changed_at) - Date.parse(unit.created_at) >
-      UPDATED_AFTER_MS
-    : false;
-  const rows: [string, ReactNode | null][] = [
-    ["Entities", node.entityNames.length > 0 ? lines(node.entityNames) : null],
-    ["Domains", node.domainPaths.length > 0 ? lines(node.domainPaths) : null],
-    ["Sources", sources],
-    ["Valid from", unit ? date(unit.valid_from) : null],
-    ["Updated", unit && wasUpdated ? date(unit.last_changed_at) : null],
-    ["Updated by", wasUpdated && author ? author : null],
-  ];
-  return rows.filter(([, value]) => value !== null);
 }

@@ -10,7 +10,7 @@ import type { GraphNode } from "./types";
 // circle rules, all read from here, so a new grouping is one entry.
 // =====================================================================
 
-export const GROUPING_IDS = ["domain", "entity", "page"] as const;
+export const GROUPING_IDS = ["domain", "entity", "stakeholder", "page"] as const;
 export type GroupingId = (typeof GROUPING_IDS)[number];
 
 // Page and section titles can contain "/". Keep their circle keys apart with a separator they cannot include.
@@ -21,6 +21,7 @@ export type PlacedNode = Pick<
   GraphNode,
   | "domainPaths"
   | "entityNames"
+  | "stakeholderNames"
   | "pageTitles"
   | "recommendedTitle"
   | "recommendedKind"
@@ -64,7 +65,11 @@ export interface GroupingRule {
     subgroups: ReadonlyMap<string, string> | null,
   ): string[];
   // True when this dot belongs in the circle with this key
-  holds(node: PlacedNode, key: string): boolean;
+  holds(
+    node: PlacedNode,
+    key: string,
+    subgroups: ReadonlyMap<string, string> | null,
+  ): boolean;
   // Nested circles worked out from the links, by node id (page: the groups inside No article)
   subgroups?(
     nodes: readonly PlacedNode[],
@@ -99,6 +104,16 @@ export function primaryEntityName(
   );
 }
 
+// The stakeholder a dot sits inside when several are named (same rule as entities)
+export function primaryStakeholderName(
+  node: Pick<GraphNode, "stakeholderNames">,
+): string | null {
+  return (
+    [...(node.stakeholderNames ?? [])].sort((a, b) => a.localeCompare(b))[0] ??
+    null
+  );
+}
+
 // The page a dot sits inside when several cite it
 export function primaryPageTitle(
   node: Pick<GraphNode, "pageTitles">,
@@ -110,6 +125,8 @@ export function primaryPageTitle(
 
 // Catch-all circle for knowledge that no article cites. It only appears when something sits in it.
 export const NO_ARTICLE_LABEL = "No article";
+// Catch-all circle for dots no stakeholder is named on, like No article for pages
+export const NO_STAKEHOLDER_LABEL = "No stakeholder";
 export const ORPHANS_LABEL = "Orphans";
 export const EXTERNAL_LABEL = "External";
 export const LINKED_LABEL = "Linked";
@@ -228,8 +245,25 @@ function suggestionColor(group: ClusterGroup): GraphColor {
   return merge ? "needs-you" : "link";
 }
 
+// "Step 2" or "2. Setup". Ordinary topic names do not match, so they keep the packed look.
+export function stepNumber(label: string): number | null {
+  const match = /^(?:step\s+)?(\d+)\b/i.exec(label.trim());
+  if (!match?.[1]) return null;
+  return Number(match[1]);
+}
+
+// Steps in number order, everything else by name
+function compareSiblingLabels(a: string, b: string): number {
+  const aStep = stepNumber(a);
+  const bStep = stepNumber(b);
+  if (aStep !== null) {
+    if (bStep !== null) return aStep - bStep || a.localeCompare(b);
+  }
+  return a.localeCompare(b);
+}
+
 function byLabel(a: ClusterGroup, b: ClusterGroup): number {
-  return a.label.localeCompare(b.label);
+  return compareSiblingLabels(a.label, b.label);
 }
 
 // Topic tree: the primary domain path, one segment per level
@@ -241,6 +275,13 @@ function domainSegments(node: PlacedNode): string[] {
 function entitySegments(node: PlacedNode): string[] {
   const name = primaryEntityName(node);
   return name ? [name] : [];
+}
+
+// The primary stakeholder. Dots with none join the No stakeholder catch-all; domain hubs stay a layer of their own.
+function stakeholderSegments(node: PlacedNode): string[] {
+  const name = primaryStakeholderName(node);
+  if (name) return [name];
+  return hubBodied(node) ? [] : [NO_STAKEHOLDER_LABEL];
 }
 
 // Article, then section. Notes with no article sit in No article, nested by suggestion or hub.
@@ -295,6 +336,26 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
       "Entities draws a colored circle around each entity. Knowledge units sit inside it. Domain nodes show there only when Domains is on in Nodes. Each domain sits in the entity most of its knowledge is about. A domain with none of its own sits with the domain it connects to most.",
     ],
   },
+  stakeholder: {
+    id: "stakeholder",
+    label: "Stakeholders",
+    hubKind: "stakeholder",
+    separator: "/",
+    nests: false,
+    segments: stakeholderSegments,
+    holds: (node, key) => stakeholderSegments(node)[0] === key,
+    // No stakeholder comes last
+    compare: (a, b) => {
+      if (a.label === NO_STAKEHOLDER_LABEL) return 1;
+      if (b.label === NO_STAKEHOLDER_LABEL) return -1;
+      return byLabel(a, b);
+    },
+    color: (group) =>
+      group.label === NO_STAKEHOLDER_LABEL ? "muted" : entityColor(group.label),
+    help: [
+      "Stakeholders draws a colored circle around each stakeholder: an entity whose profile marks it as one. Knowledge units about it sit inside, and the stakeholder node sits in the middle when Stakeholders is on in Nodes. Other entities, domains and pages sit in the stakeholder most of their knowledge is about. Anything that names no stakeholder sits in a gray No stakeholder circle.",
+    ],
+  },
   page: {
     id: "page",
     label: "Pages",
@@ -302,8 +363,9 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
     separator: PAGE_SEP,
     nests: true,
     segments: pageSegments,
-    holds: (node, key) => {
-      const segments = pageSegments(node, null);
+    // The No article groups (Orphans, Linked, External) count, or every loose note looks like it sits only in No article
+    holds: (node, key, subgroups) => {
+      const segments = pageSegments(node, subgroups);
       if (segments.length === 0) return false;
       const path = segments.join(PAGE_SEP);
       return path === key || path.startsWith(`${key}${PAGE_SEP}`);
@@ -323,7 +385,7 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
         return a.order - b.order || a.label.localeCompare(b.label);
       if (a.label === NO_ARTICLE_LABEL) return 1;
       if (b.label === NO_ARTICLE_LABEL) return -1;
-      return a.label.localeCompare(b.label);
+      return compareSiblingLabels(a.label, b.label);
     },
     color: (group) =>
       group.quiet
