@@ -19,25 +19,25 @@ it("hashes a key as hex sha256, the form the database stores", () => {
 
 it("rejects anything that is not a cwk_ key without a database call", async () => {
   for (const bad of ["", "sk-abc", "Bearer cwk_abc", "CWK_abc", `cwk_${"a".repeat(300)}`]) {
-    expect(await resolveAgentKey(bad)).toBeNull();
+    expect(await resolveAgentKey(bad, "https://x/api/mcp")).toBeNull();
   }
   expect(mocks.call).not.toHaveBeenCalled();
 });
 
 it("resolves a live key by its hash and keeps only known scopes", async () => {
   mocks.call.mockResolvedValue({ id: keyId, name: "Laptop", owner_id: person, space_id: space, scopes: ["read", "write", "admin"] });
-  expect(await resolveAgentKey(token)).toEqual({ keyId, name: "Laptop", personId: person, spaceId: space, scopes: ["read", "write"] });
+  expect(await resolveAgentKey(token, "https://x/api/mcp")).toEqual({ kind: "key", keyId, clientId: null, name: "Laptop", personId: person, spaceId: space, scopes: ["read", "write"] });
   expect(mocks.call).toHaveBeenCalledWith("resolve_agent_key", { p_hash: hashAgentKey(token) });
 });
 
 it("returns null for an unknown, revoked or expired key", async () => {
   mocks.call.mockResolvedValue(null);
-  expect(await resolveAgentKey(token)).toBeNull();
+  expect(await resolveAgentKey(token, "https://x/api/mcp")).toBeNull();
 });
 
 it("keeps an account-wide key's Space empty", async () => {
   mocks.call.mockResolvedValue({ id: keyId, name: "All", owner_id: person, space_id: null, scopes: ["spaces"] });
-  expect((await resolveAgentKey(token))?.spaceId).toBeNull();
+  expect((await resolveAgentKey(token, "https://x/api/mcp"))?.spaceId).toBeNull();
 });
 
 it("allows calls under the limits", async () => {

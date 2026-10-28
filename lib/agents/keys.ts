@@ -30,13 +30,16 @@ export function hashAgentKey(token: string): string {
 }
 
 // The live key a bearer token belongs to, or null (unknown, revoked or expired)
-export async function resolveAgentKey(token: string): Promise<AgentKeyIdentity | null> {
+export async function resolveAgentKey(token: string, resource: string): Promise<AgentKeyIdentity | null> {
+  void resource;
   // Not a key at all: answer without a database call
   if (typeof token !== "string" || !token.startsWith(KEY_PREFIX) || token.length > MAX_TOKEN_LENGTH) return null;
   const key = await supabaseRpc(getAdminSupabase()).call<ResolvedKey | null>("resolve_agent_key", { p_hash: hashAgentKey(token) });
   if (!key) return null;
   return {
+    kind: "key",
     keyId: key.id,
+    clientId: null,
     name: key.name,
     personId: key.owner_id,
     spaceId: key.space_id,
