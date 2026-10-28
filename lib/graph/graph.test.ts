@@ -1111,6 +1111,32 @@ describe("entity homes", () => {
     const grouped = graphForGrouping(entityOnly, "entity", evidence);
     expect(grouped.nodes).toEqual([acme]);
   });
+
+  // Beta cites u2 and u3, both about Acme in Quality
+  const beta = node("p2", "page", { pageTitles: ["Beta"] });
+  const pagesOnly = { nodes: [beta], links: [] };
+  const withPage = { ...evidence, nodes: [...evidence.nodes, beta] };
+
+  it("puts a page with no entity in the entity most of its cited units are about", () => {
+    const grouped = graphForGrouping(pagesOnly, "entity", withPage);
+    expect(grouped.nodes[0]?.entityNames).toEqual(["Acme"]);
+  });
+
+  it("puts a page with no domain in the domain most of its cited units sit in", () => {
+    const grouped = graphForGrouping(pagesOnly, "domain", withPage);
+    expect(grouped.nodes[0]?.domainPaths).toEqual(["Quality"]);
+  });
+
+  it("keeps a page's own domain and entity", () => {
+    const owned = node("p2", "page", {
+      pageTitles: ["Beta"],
+      domainPaths: ["Safety"],
+      entityNames: ["Other"],
+    });
+    const data = { nodes: [owned], links: [] };
+    expect(graphForGrouping(data, "domain", withPage).nodes).toEqual([owned]);
+    expect(graphForGrouping(data, "entity", withPage).nodes).toEqual([owned]);
+  });
 });
 
 describe("domain clusters", () => {
