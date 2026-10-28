@@ -12,6 +12,12 @@ const link = (from: string, to: string, extra: Record<string, unknown> = {}) => 
 });
 
 describe("readBackfill", () => {
+  it("drops links to things that are not stakeholders", () => {
+    const withPermit: BackfillClaim = { ...claim, entities: [...claim.entities, { type: "procedure", key: "ula", name: "ULA", stakeholder: false }] };
+    const labels = readBackfill({ claims: [{ ref: "C1", links: [{ ...link("epcor", "city-of-edmonton"), to: { type: "procedure", key: "ula" }, link: "works_in" as const }] }] }, [withPermit]);
+    expect(labels.get("u1")).toEqual([]);
+  });
+
   it("keeps links between the claim's own entities, once each", () => {
     const labels = readBackfill({ claims: [{ ref: "c1", links: [link("epcor", "city-of-edmonton"), link("epcor", "city-of-edmonton")] }] }, [claim]);
     expect(labels.get("u1")).toEqual([{ from: { type: "company", key: "epcor" }, link: "owned_by", to: { type: "government_body", key: "city-of-edmonton" },

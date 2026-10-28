@@ -34,7 +34,8 @@ Answer with JSON only: { "claims": [{ "ref": "C1", "links": [{ "from": { "type",
 - current: false only when the claim says the tie has ended. since and until: only stated dates, as "2019", "2021-03" or "2021-03-15"; otherwise null.`;
 
 export function buildBackfillMessages(claims: BackfillClaim[]): ChatMessage[] {
-  const payload = claims.map((claim, index) => ({ ref: `C${index + 1}`, claim: claim.content, entities: claim.entities.map(({ type, key, name }) => ({ type, key, name })) }));
+  const payload = claims.map((claim, index) => ({ ref: `C${index + 1}`, claim: claim.content,
+    entities: claim.entities.filter((entity) => entity.stakeholder).map(({ type, key, name }) => ({ type, key, name })) }));
   return [{ role: "system", content: PROMPT }, { role: "user", content: JSON.stringify({ claims: payload }) }];
 }
 
@@ -46,7 +47,8 @@ export function readBackfill(value: z.infer<typeof answer>, claims: BackfillClai
   for (const item of value.claims) {
     const claim = byRef.get(item.ref.trim().toUpperCase());
     if (!claim || labels.has(claim.unitId)) continue;
-    const own = new Set(claim.entities.map((entity) => `${entity.type}:${entity.key}`));
+    // Only stakeholders take part: a permit, standard or procedure is not inside or over anyone
+    const own = new Set(claim.entities.filter((entity) => entity.stakeholder).map((entity) => `${entity.type}:${entity.key}`));
     const date = (text: string | null) => (text && PARTIAL_DATE.test(text.trim()) ? text.trim() : null);
     const seen = new Set<string>();
     const kept = item.links.flatMap((link): StructureLabel[] => {
