@@ -1,5 +1,5 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { resolveAgentKey } from "@/lib/agents/keys";
+import { recordAgentCall, resolveAgentKey } from "@/lib/agents/keys";
 import { bearerToken } from "@/lib/auth/apiKey";
 import { createMcpServer, missingScope } from "@/lib/mcp/server";
 import { originAllowed } from "./origin";
@@ -34,7 +34,12 @@ export async function POST(request: Request): Promise<Response> {
   const body = await readJson(request);
   if (!body.ok) return body.response;
   const missing = missingScope(key, body.value);
-  if (missing) return insufficientScope(request, missing.scope, `${missing.tool} needs the "${missing.scope}" scope.`);
+  if (missing) {
+    const reason = `${missing.tool} needs the "${missing.scope}" scope.`;
+    // The person sees refused calls in Settings, Agents, beside the ones that ran
+    await recordAgentCall({ keyId: key.keyId, spaceId: key.spaceId ?? "", tool: missing.tool, scope: missing.scope, ok: false, error: reason, ms: 0, summary: "" });
+    return insufficientScope(request, missing.scope, reason);
+  }
 
   const server = createMcpServer(key);
   // JSON responses, not a stream: the answer is whole when handleRequest resolves

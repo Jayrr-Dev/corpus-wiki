@@ -138,7 +138,7 @@ describe("/api/mcp", () => {
     expect(challenge).toContain('scope="delete"');
     expect(challenge).toContain(`resource_metadata="${PRM_URL}"`);
     expect(challenge).toContain("error_description=");
-    expect(keys.recordAgentCall).not.toHaveBeenCalled();
+    expect(keys.recordAgentCall).toHaveBeenCalledWith(expect.objectContaining({ tool: "erase", scope: "delete", ok: false }));
   });
 
   it("answers 400 to a body that is not JSON", async () => {
