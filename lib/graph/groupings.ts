@@ -42,7 +42,7 @@ export type LinkEnd<N extends { id: string } = { id: string }> =
 
 // What a second click on an already selected page-mode circle opens.
 export type CircleOpenTarget =
-  | { kind: "page"; title: string }
+  | { kind: "article"; title: string }
   | { kind: "section"; page: string; section: string }
   | { kind: "recommendation"; title: string };
 
@@ -362,7 +362,7 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
     openTarget: (circle) => {
       if (circle.parent === "") {
         if (circle.label === NO_ARTICLE_LABEL) return null;
-        return { kind: "page", title: circle.label };
+        return { kind: "article", title: circle.label };
       }
       if (circle.parent === NO_ARTICLE_LABEL) {
         if (isReservedCircleLabel(circle.label)) return null;

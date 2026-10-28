@@ -433,7 +433,7 @@ export function CirclePreviewDialog({
           (node) =>
             node.kind === GROUPINGS.page.hubKind &&
             node.label ===
-              (target.kind === "page" ? target.title : target.page),
+              (target.kind === "article" ? target.title : target.page),
         )
       : undefined;
   const suggested =
@@ -451,7 +451,7 @@ export function CirclePreviewDialog({
       onOpenChange={(isOpen) => (isOpen ? null : onClose())}
     >
       <DialogContent className="w-fit max-w-[min(52rem,calc(100%-2rem))] sm:max-w-[min(52rem,calc(100%-2rem))]">
-        {target?.kind === "page" && page ? (
+        {target?.kind === "article" && page ? (
           <PagePreview key={page.id} node={page} units={units} />
         ) : null}
         {target?.kind === "section" && page ? (
