@@ -64,6 +64,7 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
     shownByDefault: false,
     shade: "faint",
     body: "degree",
+    centers: "entity",
     placedByLinks: true,
   },
   page: {
@@ -74,6 +75,7 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
     shownByDefault: false,
     shade: "text",
     body: "degree",
+    centers: "page",
     placedByLinks: false,
   },
 };

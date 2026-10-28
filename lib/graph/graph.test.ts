@@ -703,14 +703,26 @@ describe("entity groups", () => {
       "entity",
     );
     expect(shown.nodes.some((node) => node.kind === "domain")).toBe(true);
-    expect(shown.nodes.some((node) => node.kind === "entity")).toBe(false);
+    expect(shown.nodes.some((node) => node.kind === "entity")).toBe(true);
   });
 
-  it("drops the entity dot and the about line so units sit inside the circle", () => {
+  it("keeps the entity dot and its about lines so it sits in the middle of its circle", () => {
     const grouped = graphForGrouping(graph, "entity");
-    expect(grouped.nodes.map((node) => node.id)).not.toContain("e1");
-    expect(grouped.links.some((link) => link.kind === "about")).toBe(false);
+    expect(grouped.nodes.map((node) => node.id)).toContain("e1");
+    expect(grouped.links.some((link) => link.kind === "about")).toBe(true);
     expect(grouped.links.some((link) => link.kind === "depends_on")).toBe(true);
+  });
+
+  it("shows entity nodes in entity grouping when they are the only layer on", () => {
+    const entitiesOnly = applyFilters(graph, {
+      ...ALL_LAYERS,
+      showUnits: false,
+      showDomains: false,
+      showPages: false,
+    });
+    const grouped = graphForGrouping(entitiesOnly, "entity", graph);
+    expect(grouped.nodes.length).toBeGreaterThan(0);
+    expect(grouped.nodes.every((node) => node.kind === "entity")).toBe(true);
   });
 
   it("puts the domain hub inside the entity group that shares its claims", () => {
@@ -980,11 +992,11 @@ describe("entity groups", () => {
     expect(hidden.links.some((link) => link.kind === "depends_on")).toBe(true);
   });
 
-  it("drops page dots and cites links so cited units sit inside the circle", () => {
+  it("keeps page dots and their cites lines so each page sits in the middle of its circle", () => {
     expect(nodeById("u1").pageTitles).toEqual(["Alpha"]);
     const grouped = graphForGrouping(graph, "page");
-    expect(grouped.nodes.map((node) => node.id)).not.toContain("p1");
-    expect(grouped.links.some((link) => link.kind === "cites")).toBe(false);
+    expect(grouped.nodes.map((node) => node.id)).toContain("p1");
+    expect(grouped.links.some((link) => link.kind === "cites")).toBe(true);
     expect(grouped.links.some((link) => link.kind === "depends_on")).toBe(true);
   });
 });

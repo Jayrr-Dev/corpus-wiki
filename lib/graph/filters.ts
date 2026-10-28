@@ -457,7 +457,8 @@ function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
   return paths;
 }
 
-// GROUP LAYERS: when circles stand in for hubs, drop that layer's dots and spokes so units sit inside.
+// GROUP LAYERS: each grouping keeps its own hub dots, pinned in the middle of their circles,
+// and places the other link-placed hubs (today: domains) inside the circles.
 export function graphForGrouping(
   data: GraphData,
   groupBy: "domain" | "entity" | "page" | "off",
@@ -465,33 +466,23 @@ export function graphForGrouping(
   evidence: GraphData = data,
 ): GraphData {
   if (groupBy === "entity") {
-    const nodes = domainsInsideEntityGroups(
-      data.nodes,
-      evidence.nodes,
-      evidence.links,
-    ).filter((node) => node.kind !== GROUPINGS.entity.hubKind);
-    const ids = new Set(nodes.map((node) => node.id));
     return {
-      nodes,
-      links: data.links.filter(
-        (link) =>
-          link.kind !== "about" && ids.has(link.source) && ids.has(link.target),
+      nodes: domainsInsideEntityGroups(
+        data.nodes,
+        evidence.nodes,
+        evidence.links,
       ),
+      links: data.links,
     };
   }
   if (groupBy === "page") {
-    const nodes = domainsInsidePageGroups(
-      data.nodes,
-      evidence.nodes,
-      evidence.links,
-    ).filter((node) => node.kind !== GROUPINGS.page.hubKind);
-    const ids = new Set(nodes.map((node) => node.id));
     return {
-      nodes,
-      links: data.links.filter(
-        (link) =>
-          link.kind !== "cites" && ids.has(link.source) && ids.has(link.target),
+      nodes: domainsInsidePageGroups(
+        data.nodes,
+        evidence.nodes,
+        evidence.links,
       ),
+      links: data.links,
     };
   }
   if (groupBy === "domain") {
