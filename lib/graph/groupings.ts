@@ -125,6 +125,8 @@ export function primaryPageTitle(
 
 // Catch-all circle for knowledge that no article cites. It only appears when something sits in it.
 export const NO_ARTICLE_LABEL = "No article";
+// Catch-all circle for dots no stakeholder is named on, like No article for pages
+export const NO_STAKEHOLDER_LABEL = "No stakeholder";
 export const ORPHANS_LABEL = "Orphans";
 export const EXTERNAL_LABEL = "External";
 export const LINKED_LABEL = "Linked";
@@ -275,9 +277,11 @@ function entitySegments(node: PlacedNode): string[] {
   return name ? [name] : [];
 }
 
+// The primary stakeholder. Dots with none join the No stakeholder catch-all; domain hubs stay a layer of their own.
 function stakeholderSegments(node: PlacedNode): string[] {
   const name = primaryStakeholderName(node);
-  return name ? [name] : [];
+  if (name) return [name];
+  return hubBodied(node) ? [] : [NO_STAKEHOLDER_LABEL];
 }
 
 // Article, then section. Notes with no article sit in No article, nested by suggestion or hub.
@@ -339,11 +343,17 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
     separator: "/",
     nests: false,
     segments: stakeholderSegments,
-    holds: (node, key) => primaryStakeholderName(node) === key,
-    compare: byLabel,
-    color: (group) => entityColor(group.label),
+    holds: (node, key) => stakeholderSegments(node)[0] === key,
+    // No stakeholder comes last
+    compare: (a, b) => {
+      if (a.label === NO_STAKEHOLDER_LABEL) return 1;
+      if (b.label === NO_STAKEHOLDER_LABEL) return -1;
+      return byLabel(a, b);
+    },
+    color: (group) =>
+      group.label === NO_STAKEHOLDER_LABEL ? "muted" : entityColor(group.label),
     help: [
-      "Stakeholders draws a colored circle around each stakeholder: an entity whose profile marks it as one. Knowledge units about it sit inside, and the stakeholder node sits in the middle when Stakeholders is on in Nodes. Other entities, domains and pages sit in the stakeholder most of their knowledge is about.",
+      "Stakeholders draws a colored circle around each stakeholder: an entity whose profile marks it as one. Knowledge units about it sit inside, and the stakeholder node sits in the middle when Stakeholders is on in Nodes. Other entities, domains and pages sit in the stakeholder most of their knowledge is about. Anything that names no stakeholder sits in a gray No stakeholder circle.",
     ],
   },
   page: {

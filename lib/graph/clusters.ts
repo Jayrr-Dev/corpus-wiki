@@ -24,6 +24,7 @@ export {
   EXTERNAL_LABEL,
   LINKED_LABEL,
   NO_ARTICLE_LABEL,
+  NO_STAKEHOLDER_LABEL,
   ORPHANS_LABEL,
   primaryEntityName,
   primaryPageTitle,

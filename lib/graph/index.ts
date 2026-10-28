@@ -29,6 +29,7 @@ export {
   deepestPaths,
   moveTarget,
   NO_ARTICLE_LABEL,
+  NO_STAKEHOLDER_LABEL,
   nodeInCluster,
   ORPHANS_LABEL,
   pageDropLabel,
