@@ -1,7 +1,15 @@
 "use client";
 
 import { Facts, QueryState } from "@/app/(app)/_components/bits";
-import { formatDate } from "@/app/(app)/_lib/format";
+import { formatDate, statusLabel } from "@/app/(app)/_lib/format";
+import { useActorLabel } from "@/app/(app)/_lib/useActorLabel";
+import {
+  PassageList,
+  type UnitPassages,
+  useUnitPassages,
+} from "@/app/(app)/units/[id]/UnitSources";
+import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
+import { StatusGlyph } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,7 +19,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { CircleOpenTarget, GraphNode } from "@/lib/graph";
+import type { Enums } from "@/lib/database/types";
+import {
+  GROUPINGS,
+  isContent,
+  nodeType,
+  type CircleOpenTarget,
+  type GraphNode,
+} from "@/lib/graph";
 import {
   useArticleSuggestions,
   useEntity,
@@ -19,10 +34,11 @@ import {
   useSectionLines,
   useSections,
 } from "@/lib/queries";
+import { type UnitSummary, useRowsByIds } from "@/lib/queries/screens";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 function PreviewHeader({ label, kind }: { label: string; kind: string }) {
   return (
@@ -104,12 +120,7 @@ function PreviewSplit({
               : "w-fit max-w-[min(32rem,calc(100vw-6rem))]",
           )}
         >
-          <div
-            className={cn(
-              "flex flex-col gap-4 pl-2",
-              unitsOpen && "pr-8",
-            )}
-          >
+          <div className={cn("flex flex-col gap-4 pl-2", unitsOpen && "pr-8")}>
             {children}
           </div>
         </div>
@@ -125,9 +136,7 @@ function listedUnits(units: readonly GraphNode[]) {
 
 function unitsForEntity(units: readonly GraphNode[], name: string) {
   return listedUnits(
-    units.filter(
-      (unit) => unit.kind === "unit" && unit.entityNames.includes(name),
-    ),
+    units.filter((unit) => isContent(unit) && unit.entityNames.includes(name)),
   );
 }
 
@@ -135,7 +144,7 @@ function unitsForDomain(units: readonly GraphNode[], path: string) {
   return listedUnits(
     units.filter(
       (unit) =>
-        unit.kind === "unit" &&
+        isContent(unit) &&
         unit.domainPaths.some(
           (domain) => domain === path || domain.startsWith(`${path}/`),
         ),
@@ -150,7 +159,7 @@ function unitsForPage(
 ) {
   return listedUnits(
     units.filter((unit) => {
-      if (unit.kind !== "unit") return false;
+      if (!isContent(unit)) return false;
       if (sectionTitle) {
         return unit.pageSections?.some(
           (section) =>
@@ -177,7 +186,7 @@ export function EntityPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader label={node.label} kind="Entity" />
+      <PreviewHeader label={node.label} kind={nodeType(node).label} />
       <QueryState query={query}>
         {entity ? (
           <>
@@ -218,7 +227,7 @@ export function DomainPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader label={node.label} kind="Domain" />
+      <PreviewHeader label={node.label} kind={nodeType(node).label} />
       <Facts
         items={[
           ["Path", node.text],
@@ -422,7 +431,7 @@ export function CirclePreviewDialog({
     target && target.kind !== "recommendation"
       ? pages.find(
           (node) =>
-            node.kind === "page" &&
+            node.kind === GROUPINGS.page.hubKind &&
             node.label ===
               (target.kind === "page" ? target.title : target.page),
         )
@@ -431,7 +440,7 @@ export function CirclePreviewDialog({
     target?.kind === "recommendation"
       ? units.filter(
           (node) =>
-            node.kind === "unit" &&
+            isContent(node) &&
             node.recommendedTitle === target.title &&
             !node.pageTitles?.length,
         )
@@ -472,4 +481,150 @@ export function CirclePreviewDialog({
       </DialogContent>
     </Dialog>
   );
+}
+
+// KIND COLORS: one accent per unit kind, for the kind line
+const KIND_COLOR: Record<Enums<"unit_kind">, string> = {
+  fact: "text-link",
+  definition: "text-stale",
+  procedure: "text-applied",
+  decision: "text-needs-you",
+  preference: "text-muted-foreground",
+};
+
+// A unit counts as updated when it changed more than a minute after it was created
+const UPDATED_AFTER_MS = 60_000;
+
+// BODY: the kind line, the content, then entities, domains and dates
+export function UnitPreview({ node }: { node: GraphNode }) {
+  const query = useUnitSummariesByIds([node.id]);
+  const unit = query.data?.[0];
+  // The current revision's author is who made the latest change
+  const revision = useRowsByIds("revisions", [unit?.current_revision_id])
+    .data?.[0];
+  const label = useActorLabel();
+  const author = revision
+    ? label(revision.author, revision.author_id, revision.model_version)
+    : undefined;
+  const cited = useUnitPassages(node.id);
+  const [showSources, setShowSources] = useState(false);
+  const sourceCount = new Set(
+    cited.passages.map((passage) => passage.source_id),
+  ).size;
+  const sourcesButton = (
+    <button
+      type="button"
+      className="text-link underline-offset-4 hover:underline"
+      onClick={() => setShowSources(true)}
+    >
+      {sourceCount} {sourceCount === 1 ? "source" : "sources"}
+    </button>
+  );
+  return (
+    <div className="flex flex-col gap-4">
+      <DialogHeader>
+        <KindLine node={node} />
+        <DialogTitle asChild>
+          <h2 className="text-title font-semibold">{node.label}</h2>
+        </DialogTitle>
+      </DialogHeader>
+      <QueryState query={query}>
+        <p className="text-body">{unit?.content ?? node.text}</p>
+      </QueryState>
+      <Facts
+        items={facts(
+          node,
+          unit,
+          author,
+          sourceCount > 0 ? sourcesButton : null,
+        )}
+      />
+      <DialogFooter>
+        <Button asChild>
+          <Link href={node.href}>Open page</Link>
+        </Button>
+      </DialogFooter>
+      <SourcesDialog
+        open={showSources}
+        onOpenChange={setShowSources}
+        title={node.label}
+        cited={cited}
+      />
+    </div>
+  );
+}
+
+// SOURCES DIALOG: every passage the unit cites, each with a link to its source, stacked over the preview
+function SourcesDialog({
+  open,
+  onOpenChange,
+  title,
+  cited,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  cited: UnitPassages;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Sources</DialogTitle>
+          <DialogDescription>{title}</DialogDescription>
+        </DialogHeader>
+        <PassageList cited={cited} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// KIND LINE: "● ESTABLISHED FACT" above the title, in the kind's color
+function KindLine({ node }: { node: GraphNode }) {
+  const color = node.unitKind ? KIND_COLOR[node.unitKind] : undefined;
+  return (
+    <DialogDescription asChild>
+      <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
+        {node.status ? (
+          <StatusGlyph status={node.status} className={color} />
+        ) : null}
+        <span className={color}>
+          {[node.status ? statusLabel(node.status) : null, node.unitKind]
+            .filter(Boolean)
+            .join(" ")}
+        </span>
+      </p>
+    </DialogDescription>
+  );
+}
+
+// FACTS: entities, domains, sources, valid-from and (when it changed since) updated and by whom, only the ones the unit has
+function facts(
+  node: GraphNode,
+  unit: UnitSummary | undefined,
+  author: string | undefined,
+  sources: ReactNode,
+): [string, ReactNode][] {
+  const lines = (values: string[]) =>
+    values.map((value) => (
+      <span key={value} className="block">
+        {value}
+      </span>
+    ));
+  const date = (value: string) => (
+    <span className="font-mono">{formatDate(value)}</span>
+  );
+  const wasUpdated = unit
+    ? Date.parse(unit.last_changed_at) - Date.parse(unit.created_at) >
+      UPDATED_AFTER_MS
+    : false;
+  const rows: [string, ReactNode | null][] = [
+    ["Entities", node.entityNames.length > 0 ? lines(node.entityNames) : null],
+    ["Domains", node.domainPaths.length > 0 ? lines(node.domainPaths) : null],
+    ["Sources", sources],
+    ["Valid from", unit ? date(unit.valid_from) : null],
+    ["Updated", unit && wasUpdated ? date(unit.last_changed_at) : null],
+    ["Updated by", wasUpdated && author ? author : null],
+  ];
+  return rows.filter(([, value]) => value !== null);
 }

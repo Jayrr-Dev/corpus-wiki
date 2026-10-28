@@ -12,7 +12,7 @@ import { useServerAction } from "@/components/actions/useServerAction";
 import { organizeGraphSelection } from "@/lib/server-actions/graphNodes";
 import { GenerateDomainDialog } from "./GenerateDomainDialog";
 
-import type { GraphNode } from "@/lib/graph";
+import { isContent, type GraphNode } from "@/lib/graph";
 
 export function SelectionActions({ nodes, onClear }: { nodes: GraphNode[]; onClear: () => void }) {
   const [mode, setMode] = useState<"move" | "create" | null>(null);
@@ -25,7 +25,7 @@ export function SelectionActions({ nodes, onClear }: { nodes: GraphNode[]; onCle
   const [generateExtra, setGenerateExtra] = useState(0);
   const domains = useDomains();
   const action = useServerAction(organizeGraphSelection);
-  const claimIds = nodes.filter((node) => node.kind === "unit").map((node) => node.id);
+  const claimIds = nodes.filter((node) => isContent(node)).map((node) => node.id);
   const start = (next: "move" | "create") => {
     setIds(nodes.map((node) => node.id));
     setMode(next);
@@ -42,7 +42,7 @@ export function SelectionActions({ nodes, onClear }: { nodes: GraphNode[]; onCle
       <span className="text-sm">{nodes.length} selected</span>
       <Button size="sm" variant="outline" onClick={() => start("move")}>Move selected</Button>
       <Button size="sm" variant="outline" onClick={() => start("create")}>Create domain</Button>
-      {claimIds.length === 0 ? <Tooltip content="Select claims to generate a domain."><span><Button size="sm" variant="outline" disabled>Generate domain</Button></span></Tooltip> : <Button size="sm" variant="outline" onClick={() => { setGenerateClaims(nodes.filter((node) => node.kind === "unit").map((node) => ({ id: node.id, label: node.label, text: node.text }))); setGenerateExtra(nodes.length - claimIds.length); setGenerateOpen(true); }}>Generate domain</Button>}
+      {claimIds.length === 0 ? <Tooltip content="Select claims to generate a domain."><span><Button size="sm" variant="outline" disabled>Generate domain</Button></span></Tooltip> : <Button size="sm" variant="outline" onClick={() => { setGenerateClaims(nodes.filter((node) => isContent(node)).map((node) => ({ id: node.id, label: node.label, text: node.text }))); setGenerateExtra(nodes.length - claimIds.length); setGenerateOpen(true); }}>Generate domain</Button>}
       <Button size="sm" variant="ghost" onClick={onClear}>Clear selection</Button>
       {message && <p role="status" className="text-xs">{message}</p>}
     </div>}
