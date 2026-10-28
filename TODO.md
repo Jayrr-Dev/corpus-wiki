@@ -68,10 +68,10 @@ Browser check when D4 lands, and again at the end (screenshots of each):
 | layout | L1 `clusters.ts`, `physics.ts`, `coalesce.ts` ask traits, not names; no behavior change | C1 | merged 51f6cbe |
 | layout | L2 Per-grouping rules move into `GROUPINGS` entries; any hub pins to its circle center | L1 | merged 51f6cbe |
 | data | D1 `filters.ts`, `build.ts`, `related.ts`, `recentUnits.ts` ask traits, not names; no behavior change | C1 | merged 2831458 |
-| data | D2 Settings: `shown` map replaces `showUnits`/`showEntities`/`showDomains`/`showPages`; old saves migrate | D1, P1 | planned |
+| data | D2 Settings: `shown` map replaces `showUnits`/`showEntities`/`showDomains`/`showPages`; old saves migrate | D1, P1 | merged 3429349 |
 | data | D3 `graphForGrouping` keeps the active grouping's hub nodes (stops hiding pages and entities) | D1, L2 | merged |
 | data | D4 Place entity nodes by their knowledge: in Domain grouping, the domain most of their units sit in; in Pages grouping, the article and section that cite most of their units. Generalize `domainsInsideEntityGroups` / `domainsInsidePageGroups` to every `isPlacedByLinks` node, using the `evidence` graph so it works with units hidden | D3 | merged 0e1a286 |
-| data | D5 Pages with no `domain_id` / `entity_id` take the domain and entity most of their cited units sit in or are about (browser check: 6 of 9 pages loose in Domain, 4 in Entities) | D4 | planned |
+| data | D5 Pages with no `domain_id` / `entity_id` take the domain and entity most of their cited units sit in or are about (browser check: 6 of 9 pages loose in Domain, 4 in Entities) | D4 | merged 3429349 |
 | canvas | V1 `drawGraph.ts`, `GraphCanvas.tsx`: color, shape and size from the registry; per-grouping colors in `groupColors.ts`; `clusterModeOf` removed | C1 | merged c9c87a6 |
 | panel | P1 Nodes and Group switches built from the registries; `components/graph/nodeTypes.tsx` holds previews per type | C1 | merged 9e3ec94 |
 | guard | G1 Lint rule against literal kind checks; every-type-by-every-grouping test; made-up type test | L2, D2, D3, D4, D5, V1, P1 | planned |
