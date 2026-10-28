@@ -1,4 +1,6 @@
 import { circleNestedIn, clusterKey, type ClusterMode } from "./clusters";
+import { GROUPINGS } from "./groupings";
+import { centersAnyGrouping } from "./nodeTypes";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
 // =====================================================================
@@ -9,10 +11,11 @@ import type { GraphData, GraphLink, GraphNode } from "./types";
 // every group inside it. The rest stay combined.
 // =====================================================================
 
-// The name at the end of a circle key. Entity names are one piece, even with a slash.
+// The name at the end of a circle key. Flat names (entities) are one piece, even with a slash.
 function leafName(key: string, mode: ClusterMode): string {
-  if (mode === "entity") return key;
-  const parts = key.split(mode === "page" ? "\u001f" : "/").filter(Boolean);
+  const { nests, separator } = GROUPINGS[mode];
+  if (!nests) return key;
+  const parts = key.split(separator).filter(Boolean);
   return parts[parts.length - 1] ?? key;
 }
 
@@ -70,7 +73,7 @@ export function coalesceGraph(
 ): GraphData {
   const buckets = new Map<string, GraphNode[]>();
   for (const node of data.nodes) {
-    if (node.kind === "domain") continue;
+    if (centersAnyGrouping(node)) continue;
     const key = clusterKey(node, mode);
     if (!key) continue;
     const bucket = buckets.get(key);

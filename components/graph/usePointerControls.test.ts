@@ -19,8 +19,8 @@ function setup() {
     style: {},
   };
   const nodes = [
-    { id: "a", x: 10, y: 20, degree: 1 },
-    { id: "b", x: 40, y: 50, degree: 1 },
+    { id: "a", x: 10, y: 20, degree: 1, kind: "unit" },
+    { id: "b", x: 40, y: 50, degree: 1, kind: "unit" },
   ] as SimNode[];
   const simulation = {
     stop: vi.fn(),
@@ -241,7 +241,9 @@ it("first click on a dot focuses it, a second click opens it, and a background c
     removeEventListener: vi.fn(),
     style: {},
   };
-  const nodes = [{ id: "a", x: 10, y: 20, degree: 1 }] as SimNode[];
+  const nodes = [
+    { id: "a", x: 10, y: 20, degree: 1, kind: "unit" },
+  ] as SimNode[];
   const simulation = {
     stop: vi.fn(),
     alpha: vi.fn(() => 0.01),
