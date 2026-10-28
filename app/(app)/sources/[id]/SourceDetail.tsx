@@ -5,6 +5,7 @@ import { DateTime } from "@/app/(app)/_components/DateTime";
 import { formatBytes, formatDate } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { usePersonName } from "@/app/(app)/_lib/useActorLabel";
+import { uploaderLabel } from "@/app/(app)/_lib/uploaderLabel";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -89,7 +90,7 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
   // Who uploaded it: the person on its first upload event (reruns are later events)
   const firstUpload = useShiftEvents({ filters: { source_id: source.id, cause: "upload" }, ascending: true, limit: 1 }).data?.[0];
   const uploaderName = usePersonName(firstUpload?.person_id);
-  const uploader = uploaderName ?? (firstUpload?.via === "api" ? "API key" : null);
+  const uploader = uploaderLabel(firstUpload && { person_id: firstUpload.person_id, via: firstUpload.via }, uploaderName);
   const usage = useOneSourceUsage(source.id).data;
   const reach = useSourceReach(source.id).data;
   const facts: [string, ReactNode][] = [["State", <SourceState key="state" source={source} />]];
