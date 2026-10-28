@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { iconCandidates, isPrivateAddress } from "@/lib/knowledge/logoFetch";
-import { officialSite, readWebProfiles, readWebSites, siteNamesParty, readWebQueries, webHash, type WebResult, type WebSubject } from "./entityWeb";
+import { isSizeFact, officialSite, readWebProfiles, readWebSites, readWebSizes, siteNamesParty, readWebQueries, webHash, withSourcedFacts, type WebResult, type WebSubject } from "./entityWeb";
 
 const subject = (entityId: string, name: string): WebSubject => ({ entityId, name, kind: "company", aliases: [], relation: null, facts: [] });
 const results: WebResult[] = [
@@ -72,5 +72,34 @@ describe("logo fetching", () => {
   it("treats private, loopback and link-local addresses as private", () => {
     for (const address of ["10.1.2.3", "127.0.0.1", "192.168.1.1", "172.20.0.1", "169.254.169.254", "::1", "fd00::1", "::ffff:10.0.0.1"]) expect(isPrivateAddress(address)).toBe(true);
     for (const address of ["8.8.8.8", "172.32.0.1", "2606:4700::1111"]) expect(isPrivateAddress(address)).toBe(false);
+  });
+});
+
+describe("web sizes", () => {
+  const subject = { entityId: "epcor", name: "EPCOR", kind: "company", aliases: [], relation: null, facts: [] };
+  const results = new Map([["epcor", [
+    { title: "EPCOR at a glance", url: "https://epcor.com/about", content: "EPCOR employs about 3,400 people." },
+    { title: "EPCOR annual report", url: "https://epcor.com/report", content: "Revenue of C$2.4 billion in 2023." },
+  ]]]);
+
+  it("keeps stated numbers with their year and result, drops repeats and numberless values", () => {
+    const sizes = readWebSizes({ sizes: [{ ref: "E1", facts: [
+      { label: "Employees", value: "3,400", year: null, result: 1 },
+      { label: "Revenue", value: "C$2.4 billion", year: 2023, result: 2 },
+      { label: "Revenue", value: "C$9 billion", year: 2024, result: 2 },
+      { label: "Budget", value: "unknown", year: null, result: 1 },
+      { label: "Total assets", value: "C$1 billion", year: null, result: 9 },
+    ] }] }, [subject], results);
+    expect(sizes.get("epcor")?.facts.map((fact) => `${fact.label}: ${fact.value}`)).toEqual(["Employees: 3,400", "Revenue: C$2.4 billion (2023)"]);
+  });
+
+  it("adds facts citing their results, reusing a source already listed", () => {
+    const profile = { summary: "A utility.", website: null, facts: [{ label: "Headquarters", value: "Edmonton", sourceIndex: 0 }], sources: [{ title: "EPCOR at a glance", url: "https://epcor.com/about" }] };
+    const [about, report] = results.get("epcor")!;
+    const next = withSourcedFacts(profile, [{ label: "Employees", value: "3,400", result: about! }, { label: "Revenue", value: "C$2.4 billion (2023)", result: report! }]);
+    expect(next.sources.map((source) => source.url)).toEqual(["https://epcor.com/about", "https://epcor.com/report"]);
+    expect(next.facts.slice(1)).toEqual([{ label: "Employees", value: "3,400", sourceIndex: 0 }, { label: "Revenue", value: "C$2.4 billion (2023)", sourceIndex: 1 }]);
+    expect(isSizeFact(next.facts[1]!)).toBe(true);
+    expect(isSizeFact(next.facts[0]!)).toBe(false);
   });
 });

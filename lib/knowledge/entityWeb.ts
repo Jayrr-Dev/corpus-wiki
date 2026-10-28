@@ -4,6 +4,12 @@ import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import {
   buildWebProfileMessages,
   buildWebQueryMessages,
+  buildWebSizeMessages,
+  isSizeFact,
+  readWebSizes,
+  webSizeAnswerJsonSchema,
+  webSizeAnswerSchema,
+  withSourcedFacts,
   readWebProfiles,
   readWebQueries,
   buildWebSiteMessages,
@@ -153,6 +159,7 @@ export async function lookUpWebBatch(deps: Deps, entityIds: string[], force = fa
   await mapConcurrent(subjects.filter((subject) => profiles.has(subject.entityId)), WEB_BATCH_SIZE, async (subject) => {
     profiles.set(subject.entityId, await withWikidataSizes(subject.name, profiles.get(subject.entityId)!));
   }, uploadExecution.getStore()?.signal);
+  await addSearchedSizes(deps, key, subjects, profiles);
 
   let logos = 0;
   const now = new Date().toISOString();
@@ -175,6 +182,30 @@ export async function lookUpWebBatch(deps: Deps, entityIds: string[], force = fa
     if (error) throw error;
   }
   return { found: profiles.size, checked: subjects.length, logos };
+}
+
+// SIZES WIKIDATA LACKED: one search per sure-matched organization with no size yet, aimed at its
+// staff and money; the model copies only numbers stated for that party, each citing its result
+const NO_SIZE_KINDS = /\b(role|person|people|individual|job)\b/;
+async function addSearchedSizes(deps: Deps, key: string | null, subjects: WebSubject[], profiles: Map<string, WebProfile>): Promise<void> {
+  const wanting = subjects.filter((subject) => {
+    const profile = profiles.get(subject.entityId);
+    return profile && !NO_SIZE_KINDS.test(subject.kind.toLowerCase()) && !profile.facts.some(isSizeFact);
+  });
+  const sizeResults = new Map<string, WebResult[]>();
+  await mapConcurrent(wanting, WEB_BATCH_SIZE, async (subject) => {
+    const government = /govern|ministry|agency|regulat|municipal|city|department|program|authority/.test(subject.kind.toLowerCase());
+    const query = `${subject.name} ${government ? "number of employees annual budget" : "number of employees annual revenue"}`;
+    try { sizeResults.set(subject.entityId, await searchSnippets(key, query, 5)); } catch { await assertActiveUpload(); /* no size: an estimate stays */ }
+  }, uploadExecution.getStore()?.signal);
+  const searched = wanting.filter((subject) => (sizeResults.get(subject.entityId) ?? []).length > 0);
+  if (!searched.length) return;
+  const summaries = new Map(searched.map((subject) => [subject.entityId, profiles.get(subject.entityId)!.summary]));
+  const sizes = readWebSizes((await chatJson(deps.settings, {
+    name: "entity_web_sizes", schema: webSizeAnswerSchema, jsonSchema: webSizeAnswerJsonSchema,
+    messages: buildWebSizeMessages(searched, summaries, sizeResults), reasoningEffort: "low",
+  })).value, searched, sizeResults);
+  for (const [entityId, found] of sizes) profiles.set(entityId, withSourcedFacts(profiles.get(entityId)!, found.facts));
 }
 
 // The site's logo in the public bucket; a fresh query string makes browsers drop an old copy

@@ -164,6 +164,73 @@ export function siteNamesParty(website: string, subject: Pick<WebSubject, "name"
 // 3. OFFICIAL SITES (for sure matches whose overview results were not their own site)
 // ---------------------------------------------------------------------
 
+// ---------------------------------------------------------------------
+// 4. SIZES (for the Power Level, when Wikidata gave none)
+// ---------------------------------------------------------------------
+
+export const SIZE_LABELS = ["Employees", "Revenue", "Budget", "Total assets", "Population"] as const;
+// A fact the Power Level reads as a size (lib/stakeholders/power.ts)
+export const isSizeFact = (fact: { label: string }) => /employ|staff|headcount|workforce|revenue|sales|turnover|budget|spending|assets|population|residents/i.test(fact.label);
+
+const sizeAnswer = z.object({
+  sizes: z.array(z.object({
+    ref: z.string(),
+    facts: z.array(z.object({ label: z.enum(SIZE_LABELS), value: z.string(), year: z.number().int().nullable().default(null), result: z.number().int() })).default([]),
+  })),
+});
+export const webSizeAnswerSchema = sizeAnswer;
+export const webSizeAnswerJsonSchema = z.toJSONSchema(sizeAnswer);
+
+const SIZE_PROMPT = `For each party, copy its size from the web search results: how many employees, its annual revenue, its budget (for a government or public body), its total assets, or the population it serves (for a government of a place).
+
+Answer with JSON only: { "sizes": [{ "ref": "E1", "facts": [{ "label": "Employees", "value": "3,400", "year": 2023, "result": 2 }] }] }, one item per party.
+- Use a result only when it is clearly about THIS party (its name, and it fits the summary given). A parent company, a subsidiary, a namesake or an industry total is not this party.
+- label: exactly one of ${SIZE_LABELS.join(", ")}. At most one fact per label.
+- value: the number as the result states it, with its currency for money ("3,400", "C$2.4 billion", "US$850 million"). Never estimate, round up, add or convert.
+- year: the year the number is for, when the result says it; otherwise null.
+- result: the number of the result it came from.
+- No number stated for this party: facts is [].`;
+
+export function buildWebSizeMessages(subjects: WebSubject[], summaries: Map<string, string>, results: Map<string, WebResult[]>): ChatMessage[] {
+  const payload = subjects.map((subject, index) => ({
+    ref: `E${index + 1}`, name: subject.name, kind: subject.kind, summary: summaries.get(subject.entityId) ?? "",
+    results: (results.get(subject.entityId) ?? []).map((result, r) => ({ number: r + 1, title: result.title, url: result.url, text: result.content })),
+  }));
+  return [{ role: "system", content: SIZE_PROMPT }, { role: "user", content: JSON.stringify({ parties: payload }) }];
+}
+
+// ANSWER -> each party's size facts, with the results they came from as sources
+export function readWebSizes(answer: z.infer<typeof sizeAnswer>, subjects: WebSubject[], results: Map<string, WebResult[]>): Map<string, { facts: { label: string; value: string; result: WebResult }[] }> {
+  const byRef = new Map(subjects.map((subject, index) => [`E${index + 1}`, subject]));
+  const sizes = new Map<string, { facts: { label: string; value: string; result: WebResult }[] }>();
+  for (const item of answer.sizes) {
+    const subject = byRef.get(item.ref.trim().toUpperCase());
+    if (!subject || sizes.has(subject.entityId)) continue;
+    const found = results.get(subject.entityId) ?? [];
+    const seen = new Set<string>();
+    const facts = item.facts.flatMap((fact) => {
+      const result = found[fact.result - 1];
+      const value = clip(fact.value, 60);
+      if (!result || !/\d/.test(value) || seen.has(fact.label)) return [];
+      seen.add(fact.label);
+      return [{ label: fact.label, value: fact.year ? `${value} (${fact.year})` : value, result }];
+    });
+    if (facts.length) sizes.set(subject.entityId, { facts });
+  }
+  return sizes;
+}
+
+// A profile with these facts added, each citing its result (a result already a source is reused)
+export function withSourcedFacts(profile: WebProfile, facts: { label: string; value: string; result: WebResult }[]): WebProfile {
+  const sources = [...profile.sources];
+  const added = facts.map((fact) => {
+    let index = sources.findIndex((source) => source.url === fact.result.url);
+    if (index < 0) index = sources.push({ title: clip(fact.result.title, 120), url: fact.result.url }) - 1;
+    return { label: fact.label, value: fact.value, sourceIndex: index };
+  });
+  return { ...profile, facts: [...profile.facts.filter((fact) => !facts.some((next) => next.label === fact.label)), ...added], sources };
+}
+
 const siteAnswer = z.object({ sites: z.array(z.object({ ref: z.string(), result: z.number().int().nullable().default(null) })) });
 export const webSiteAnswerSchema = siteAnswer;
 export const webSiteAnswerJsonSchema = z.toJSONSchema(siteAnswer);
