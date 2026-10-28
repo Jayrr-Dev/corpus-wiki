@@ -1001,6 +1001,77 @@ describe("entity groups", () => {
   });
 });
 
+describe("entity homes", () => {
+  const node = (
+    id: string,
+    kind: GraphNode["kind"],
+    extra: Partial<GraphNode> = {},
+  ): GraphNode => ({
+    id,
+    kind,
+    label: id,
+    text: "",
+    href: "/",
+    createdAt: T1,
+    degree: 0,
+    domainPaths: [],
+    entityNames: [],
+    pageTitles: [],
+    unitKind: null,
+    status: null,
+    ...extra,
+  });
+  const acme = node("e1", "entity", { entityNames: ["Acme"] });
+  const evidence = {
+    nodes: [
+      acme,
+      node("u1", "unit", {
+        domainPaths: ["Safety"],
+        entityNames: ["Acme"],
+        pageTitles: ["Alpha"],
+        pageSections: [{ page: "Alpha", section: "Intro", position: 0 }],
+      }),
+      node("u2", "unit", {
+        domainPaths: ["Quality"],
+        entityNames: ["Acme"],
+        pageTitles: ["Beta"],
+        pageSections: [{ page: "Beta", section: "Rules", position: 1 }],
+      }),
+      node("u3", "unit", {
+        domainPaths: ["Quality"],
+        entityNames: ["Acme"],
+        pageTitles: ["Beta"],
+        pageSections: [{ page: "Beta", section: "Rules", position: 1 }],
+      }),
+      node("u4", "unit", { domainPaths: ["Safety"], entityNames: ["Other"] }),
+    ],
+    links: [],
+  };
+  // Units hidden: only the entity is visible, the evidence still has its units
+  const entityOnly = { nodes: [acme], links: [] };
+
+  it("puts an entity in the domain most of its units sit in", () => {
+    const grouped = graphForGrouping(entityOnly, "domain", evidence);
+    expect(grouped.nodes.find((item) => item.id === "e1")?.domainPaths).toEqual(
+      ["Quality"],
+    );
+  });
+
+  it("puts an entity in the article and section that cite most of its units", () => {
+    const grouped = graphForGrouping(entityOnly, "page", evidence);
+    const placed = grouped.nodes.find((item) => item.id === "e1");
+    expect(placed?.pageTitles).toEqual(["Beta"]);
+    expect(placed?.pageSections).toEqual([
+      { page: "Beta", section: "Rules", position: 1 },
+    ]);
+  });
+
+  it("leaves the entity in place in its own grouping", () => {
+    const grouped = graphForGrouping(entityOnly, "entity", evidence);
+    expect(grouped.nodes).toEqual([acme]);
+  });
+});
+
 describe("domain clusters", () => {
   const dot = (
     id: string,
