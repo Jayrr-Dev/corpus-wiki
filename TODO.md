@@ -1,5 +1,67 @@
 # To-do
 
+## Plan: rebuild the landing page
+
+Goal: rebuild `/welcome` from `docs/landing-page-plan.md` (teams first),
+porting the approved mockups (concepts 6 to 12) into React. Done looks like:
+every section in the plan is live, each demo animates only while on screen
+and shows a still frame for reduced motion, no real names (generic city, made
+up people), typecheck, lint and tests pass, checked at desktop and phone
+width, merged to main.
+
+Contract (L0, fixed before the demo lanes start):
+- Each demo lives in its own folder `components/landing/<demo>/index.tsx`
+  and exports one client component, `export function <Name>Demo({ className }: { className?: string })`.
+- `components/landing/demo-kit/`: `useInView(ref)` (play only on screen),
+  `useTimeline(steps, { loopMs, active })` (timed steps that loop and reset),
+  `writeWords(el, text)` (word by word text with a caret), `DemoFrame`
+  (the centered and split section layouts). Demos use only the existing
+  `landing-*` colors and `ease-landing` in `app/globals.css`.
+- Demo lanes never edit `app/(marketing)/welcome/page.tsx`,
+  `components/landing/landing-nav.tsx` or `app/globals.css`.
+
+| Lane | Task | Needs | Status |
+|---|---|---|---|
+| kit | L0 Demo kit and contract in `components/landing/demo-kit/` | | waiting for go |
+| hero | H1 `live-page` demo (concept 7): 3D paragraph card, facts, conflict, change log | L0 | waiting |
+| machine | M1 `glass-machine` demo (concept 6): canvas graph that grows, sorts, labels, outputs | L0 | waiting |
+| glossary | G1 `live-glossary` demo (concept 8) | L0 | waiting |
+| glossary | G2 `living-dictionary` demo (concept 9) | G1 | waiting |
+| stakeholders | S1 `stakeholder-map` demo (concept 12) | L0 | waiting |
+| agents | A1 `agent-memory` demo (concept 10) | L0 | waiting |
+| agents | A2 `auto-docs` demo (concept 11) | A1 | waiting |
+| page | P1 New section order and static sections: problem, trust, use cases, pricing preview, FAQ, final CTA, footer; nav links | | waiting for go |
+| page | P2 Wire each demo into its section as it lands; remove `hero-neuron` and `product-mocks` | P1, each demo | waiting |
+| page | P3 Phone width, reduced motion, page speed check | P2 | waiting |
+
+Source mockups: `docs/landing-mockups/concept-<n>.html` (open with any static
+server). Port the look and timing; don't copy the vanilla DOM code as is.
+
+Done for every demo: typecheck, lint and tests pass; checked in the browser
+at desktop and phone width; reduced motion shows a still frame; **centering
+checked by eye**, not only by numbers: icons and initials inside circles,
+text in chips, pills and buttons, the logo in its circle (its wide top makes it
+look high when centered by the box; nudge it down), labels under nodes.
+
+Owned paths: kit `components/landing/demo-kit/**`; each demo lane its own
+`components/landing/<demo>/**`; page `app/(marketing)/welcome/**`,
+`components/landing/landing-nav.tsx`, the reused `reveal.tsx` and
+`tagline-reveal.tsx`, and `app/globals.css` (landing tokens only).
+
+Keep from today's page: the layout (Geist, skip link, metadata),
+`landing-nav.tsx`, `reveal.tsx` (scroll fade in), `tagline-reveal.tsx` and its
+two lines, the problem section copy, the FAQ content and its schema, the
+benefit copy (reworked into the trust section), the final call to action.
+Replace: the neuron hero (with the live page demo), the three step how it
+works (with the glass machine), the claim graph and policy diff mocks (with
+the glossary, dictionary and stakeholder demos), the placeholder testimonials
+and logo row (removed until real proof exists).
+
+Cut: generated images (no OpenRouter key in this environment, and the coded
+visuals are enough), the proof strip and testimonials (no real proof yet;
+placeholders would hurt trust), a competitor comparison (not in the plan),
+the full pricing page (preview and link only), concepts 1 to 5.
+
 ## Plan: say less on screen
 
 Goal: every app screen follows the "Say less on screen" UI rules in

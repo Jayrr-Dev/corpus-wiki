@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root {
+    --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131;
+    --fade: #9b9b9b; --gold: #d9a441; --gold-pale: #f4d9a0; --glow: #f2c063; --ember: #8a5a1c;
+    --green: #496748; --green-hover: #557a54; --green-light: #6e9a6c; --green-pale: #cfe3cd; --conflict: #e0705a;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+  .wrap { width: 100%; max-width: 1200px; margin: 0 auto; }
+  .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
+  .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .logo svg { width: 20px; height: 20px; color: var(--green-light); }
+  .intro { text-align: center; }
+  h1 { max-width: 680px; margin: 0 auto; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(to right, #fff, var(--fade)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  .cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; background: var(--green); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 8px 12px; border-radius: 12px; transition: background-color .3s var(--ease), transform .3s var(--ease); }
+  .cta:hover { background: var(--green-hover); } .cta:active { transform: scale(.98); }
+  .cta:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .works { margin-top: 24px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; font-size: 14px; line-height: 20px; color: var(--fade); }
+  .works span { padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--line); }
+  @media (min-width: 768px) { h1 { font-size: 60px; line-height: 1; } .sub { font-size: 20px; } }
+
+  .demo { margin-top: 64px; display: grid; gap: 24px; grid-template-columns: 1fr; align-items: stretch; }
+  @media (min-width: 1024px) { .demo { grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr); } }
+  .panel { border-radius: 24px; background: var(--surface); border: 1px solid #3a3a3a; box-shadow: 0 48px 96px rgba(0,0,0,.45); overflow: hidden; display: flex; flex-direction: column; height: 520px; transition: opacity .4s var(--ease); }
+  .demo.fading .panel, .demo.fading .pipe { opacity: 0; }
+
+  /* AGENT WINDOW */
+  .tabs { display: flex; gap: 4px; padding: 12px; border-bottom: 1px solid var(--line); }
+  .tab { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 20px; color: var(--fade); transition: background-color .3s var(--ease), color .3s var(--ease); }
+  .tab .av { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--hi); color: var(--fade); }
+  .tab.on { background: var(--hi); color: #fff; } .tab.on .av { background: var(--gold); color: #131209; }
+  .chat { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 16px; overflow: hidden; }
+  .msg { max-width: 88%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 20px; opacity: 0; transform: translateY(8px); transition: opacity .4s var(--ease), transform .4s var(--ease); text-wrap: pretty; }
+  .msg.in { opacity: 1; transform: none; }
+  .msg.user { align-self: flex-end; background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--raised); border: 1px solid var(--line); color: rgba(255,255,255,.9); border-bottom-left-radius: 4px; }
+  .msg .k { display: inline-block; padding: 0 6px; margin: 0 2px; border-radius: 6px; font-size: 12px; line-height: 16px; background: rgba(217,164,65,.16); color: var(--gold-pale); }
+  .tool { align-self: flex-start; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; border: 1px dashed rgba(217,164,65,.5); font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; line-height: 16px; color: var(--gold-pale); opacity: 0; transform: translateY(8px); transition: opacity .4s var(--ease), transform .4s var(--ease), border-color .3s var(--ease); }
+  .tool.in { opacity: 1; transform: none; }
+  .tool.done { border-style: solid; border-color: rgba(110,154,108,.6); }
+  .tool i { font-size: 16px; }
+  .divider { align-self: center; font-size: 12px; line-height: 16px; color: var(--fade); padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--line); opacity: 0; transition: opacity .4s var(--ease); }
+  .divider.in { opacity: 1; }
+  .typing { display: inline-flex; gap: 4px; } .typing b { width: 6px; height: 6px; border-radius: 9999px; background: var(--fade); animation: dot 1s var(--ease) infinite; } .typing b:nth-child(2) { animation-delay: .15s; } .typing b:nth-child(3) { animation-delay: .3s; }
+  @keyframes dot { 50% { transform: translateY(-4px); opacity: .5; } }
+
+  /* MCP PIPE */
+  .pipe { position: relative; display: none; transition: opacity .4s var(--ease); }
+  @media (min-width: 1024px) { .pipe { display: block; } }
+  .pipe .rail { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--line); }
+  .pipe .lbl { position: absolute; left: 50%; top: calc(50% - 40px); transform: translateX(-50%); font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; line-height: 16px; color: var(--gold); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--ember); background: var(--base); }
+  .pipe .lbl2 { top: calc(50% + 20px); color: var(--fade); border-color: var(--line); }
+  .pulse { position: absolute; top: calc(50% - 4px); width: 10px; height: 10px; border-radius: 9999px; opacity: 0; }
+  .pulse.req { background: var(--gold-pale); left: 0; animation: req .8s var(--ease) forwards; }
+  .pulse.res { background: var(--green-light); right: 0; animation: res .8s var(--ease) forwards; }
+  @keyframes req { 0% { opacity: 1; transform: translateX(0); } 100% { opacity: 1; transform: translateX(86px); } }
+  @keyframes res { 0% { opacity: 1; transform: translateX(0); } 100% { opacity: 1; transform: translateX(-86px); } }
+
+  /* MEMORY PANEL */
+  .mem-head { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 20px; }
+  .mem-head .who { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+  .mem-head svg { width: 20px; height: 20px; color: var(--green-light); }
+  .mem-head small { font-size: 12px; line-height: 16px; color: var(--fade); }
+  .kus { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
+  .ku { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center; padding: 12px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); transition: border-color .4s var(--ease), background-color .4s var(--ease), opacity .5s var(--ease), transform .5s var(--ease); }
+  .ku .id { font-size: 12px; line-height: 16px; color: var(--gold); font-weight: 600; }
+  .ku .claim { font-size: 14px; line-height: 20px; }
+  .ku .src { font-size: 12px; line-height: 16px; color: var(--fade); white-space: nowrap; }
+  .ku.lit { border-color: rgba(242,192,99,.7); background: rgba(242,192,99,.08); }
+  .ku.hidden { opacity: 0; transform: translateY(-8px); } .ku.gone { display: none; }
+  .ku .new { font-size: 12px; line-height: 16px; padding: 0 8px; border-radius: 9999px; background: var(--green); color: #fff; }
+  .pack { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 12px; line-height: 16px; color: var(--fade); }
+  .pack b { color: #fff; font-weight: 500; transition: color .3s var(--ease); }
+  .pack.lit b { color: var(--gold-pale); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero">
+  <span class="tag">Concept 10 · Memory for your agents</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <div class="intro">
+      <h1>One memory<br>for every agent.</h1>
+      <p class="sub">Connect your AI tools through MCP. They read sourced, current facts and remember what you teach them, across every session.</p>
+      <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
+      <div class="works"><span>Claude</span><span>Cursor</span><span>ChatGPT</span><span>Gemini</span><span>Any MCP client</span></div>
+    </div>
+    <div class="demo" id="demo" aria-hidden="true">
+      <div class="panel">
+        <div class="tabs" id="tabs"></div>
+        <div class="chat" id="chat"></div>
+      </div>
+      <div class="pipe" id="pipe"><div class="rail"></div><span class="lbl">MCP</span><span class="lbl lbl2" id="pipeTool">idle</span></div>
+      <div class="panel">
+        <div class="mem-head"><span class="who"><svg><use href="#mark"/></svg>Corpus Wiki</span><small>Space: Field Ops · 1,284 facts</small></div>
+        <div class="kus" id="kus">
+          <div class="ku" data-k="K-118"><span class="id">K-118</span><span class="claim">Alpha launches on 3 March</span><span class="src">standup.mp4</span></div>
+          <div class="ku" data-k="K-142"><span class="id">K-142</span><span class="claim">Alpha budget is 55,000</span><span class="src">Email, Priya</span></div>
+          <div class="ku" data-k="K-231"><span class="id">K-231</span><span class="claim">Cabling from Northwind Cables</span><span class="src">contract.pdf</span></div>
+          <div class="ku" data-k="K-096"><span class="id">K-096</span><span class="claim">Marco Ruiz owns Project Alpha</span><span class="src">Email, 24 Oct</span></div>
+          <div class="ku hidden gone" data-k="K-307" id="kNew"><span class="id">K-307</span><span class="claim">Dana wants weekly updates</span><span class="new">New</span></div>
+        </div>
+        <div class="pack" id="pack"><span>Context package</span><span><b id="pFacts">0</b> facts · <b id="pSrc">0</b> sources · <b id="pTok">0</b> tokens</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// =====================================================================
+// MEMORY FOR YOUR AGENTS: one agent asks Corpus Wiki for context over MCP and
+// answers with fact ids; it is taught something new, which is saved as a fact;
+// days later a different agent, in a fresh session, already knows it.
+// The agents rotate each loop. One loop of 27 seconds.
+// =====================================================================
+const AGENTS = [["Claude", "C"], ["Cursor", "Cu"], ["ChatGPT", "G"], ["Gemini", "Ge"]];
+const LOOP = 27000, reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = (id) => document.getElementById(id);
+const nextFrame = (fn) => requestAnimationFrame(() => requestAnimationFrame(fn));
+let round = 0, timers = [];
+const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+function tabs(active) {
+  $("tabs").innerHTML = AGENTS.map(([n, a], i) => `<span class="tab${i === active ? " on" : ""}"><span class="av">${a}</span>${n}</span>`).join("");
+}
+function add(cls, html) {
+  const el = document.createElement("div"); el.className = cls; el.innerHTML = html; $("chat").append(el);
+  while ($("chat").children.length > 7) $("chat").firstElementChild.remove();
+  nextFrame(() => el.classList.add("in")); return el;
+}
+function typing() { return add("msg bot", `<span class="typing"><b></b><b></b><b></b></span>`); }
+function answer(el, html) { el.innerHTML = html; }
+function call(tool, arg) {
+  const el = add("tool", `<i class="ph ph-plug"></i>${tool}("${arg}")`);
+  $("pipeTool").textContent = tool;
+  const p = document.createElement("span"); p.className = "pulse req"; $("pipe").append(p); setTimeout(() => p.remove(), 900);
+  return el;
+}
+function reply(el) {
+  const p = document.createElement("span"); p.className = "pulse res"; $("pipe").append(p); setTimeout(() => p.remove(), 900);
+  setTimeout(() => el.classList.add("done"), 700);
+}
+function light(ids, facts, srcs, tokens) {
+  document.querySelectorAll(".ku").forEach((k) => k.classList.toggle("lit", ids.includes(k.dataset.k)));
+  $("pFacts").textContent = facts; $("pSrc").textContent = srcs; $("pTok").textContent = tokens; $("pack").classList.add("lit");
+}
+function dim() { document.querySelectorAll(".ku").forEach((k) => k.classList.remove("lit")); $("pack").classList.remove("lit"); $("pipeTool").textContent = "idle"; }
+function reset() {
+  timers.forEach(clearTimeout); timers = []; $("chat").innerHTML = ""; dim();
+  $("pFacts").textContent = $("pSrc").textContent = $("pTok").textContent = "0";
+  $("kNew").classList.add("hidden", "gone");
+}
+
+function run() {
+  reset(); $("demo").classList.remove("fading");
+  const first = round % AGENTS.length, second = (round + 1) % AGENTS.length; round++;
+  tabs(first);
+  // 1. ASK: the agent pulls a cited context package instead of guessing
+  let t1, w1, t2, w2, t3, w3;
+  at(600, () => add("msg user", "When does Alpha launch, and what is the budget?"));
+  at(1600, () => { t1 = call("get_context", "Alpha launch and budget"); });
+  at(2400, () => { reply(t1); light(["K-118", "K-142"], 2, 2, 418); });
+  at(3200, () => { w1 = typing(); });
+  at(4200, () => answer(w1, `Alpha launches on 3 March <span class="k">K-118</span> with a budget of 55,000 <span class="k">K-142</span>, confirmed by Priya on 28 Oct.`));
+  at(6200, dim);
+  // 2. TEACH: what you tell one agent becomes a sourced fact for all of them
+  at(6800, () => add("msg user", "Remember that Dana wants weekly updates on Alpha."));
+  at(7800, () => { t2 = call("add_note", "Dana wants weekly updates"); });
+  at(8600, () => { reply(t2); const k = $("kNew"); k.classList.remove("gone"); nextFrame(() => k.classList.remove("hidden")); light(["K-307"], 1, 1, 64); });
+  at(9400, () => { w2 = typing(); });
+  at(10200, () => answer(w2, `Saved as <span class="k">K-307</span>. Every agent connected to this space will know it.`));
+  at(12400, dim);
+  // 3. RECALL: a different agent, days later, in a fresh session
+  at(13200, () => { $("chat").innerHTML = ""; tabs(second); add("divider", `New session in ${AGENTS[second][0]} · 3 days later`); });
+  at(14200, () => add("msg user", "Draft this week's Alpha update for Dana."));
+  at(15200, () => { t3 = call("get_context", "Alpha update for Dana"); });
+  at(16000, () => { reply(t3); light(["K-118", "K-231", "K-096", "K-307"], 4, 4, 612); });
+  at(16800, () => { w3 = typing(); });
+  at(18000, () => answer(w3, `Here is the weekly update <span class="k">K-307</span>: Alpha is on track for 3 March <span class="k">K-118</span>. Cabling comes from Northwind Cables <span class="k">K-231</span>, and Marco Ruiz owns delivery <span class="k">K-096</span>.`));
+  at(23500, dim);
+  at(LOOP - 500, () => $("demo").classList.add("fading"));
+  at(LOOP, run);
+}
+
+if (reduce) {
+  tabs(1);
+  add("divider", "New session in Cursor · 3 days later");
+  add("msg user", "Draft this week's Alpha update for Dana.");
+  add("tool done", `<i class="ph ph-plug"></i>get_context("Alpha update for Dana")`);
+  add("msg bot", `Here is the weekly update <span class="k">K-307</span>: Alpha is on track for 3 March <span class="k">K-118</span>. Cabling comes from Northwind Cables <span class="k">K-231</span>.`);
+  $("kNew").classList.remove("hidden", "gone"); light(["K-118", "K-231", "K-307"], 3, 3, 540);
+  document.querySelectorAll(".msg, .tool, .divider").forEach((e) => e.classList.add("in"));
+} else {
+  document.fonts.ready.then(run);
+}
+</script>
+</body>
+</html>

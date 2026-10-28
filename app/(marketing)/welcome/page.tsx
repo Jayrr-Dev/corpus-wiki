@@ -1,12 +1,12 @@
 import Link from "next/link";
 import {
-  ArrowRight, ArrowsClockwise, Asterisk, Circle, CircleHalf, Diamond, Files, Graph, Hexagon,
-  LinkSimple, Plus, ShieldCheck, Stack, Triangle,
+  ArrowCounterClockwise, ArrowRight, ArrowsClockwise, BookOpenText, Brain, ClipboardText,
+  LinkSimple, Plus, ShieldCheck, Stack,
 } from "@phosphor-icons/react/dist/ssr";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { HeroNeuron } from "@/components/landing/hero-neuron";
+import { DemoEmbed } from "@/components/landing/demo-embed";
 import { LandingNav } from "@/components/landing/landing-nav";
-import { ClaimGraphMock, PlaceholderTag, PolicyDiffMock } from "@/components/landing/product-mocks";
+import { PlaceholderTag } from "@/components/landing/product-mocks";
 import { Reveal } from "@/components/landing/reveal";
 import { TaglineReveal } from "@/components/landing/tagline-reveal";
 
@@ -33,25 +33,26 @@ function StartButton() {
   );
 }
 
-const LOGO_SHAPES = [Hexagon, CircleHalf, Asterisk, Diamond, Triangle, Circle];
-
 const PROBLEMS = [
   "A policy changes in a PDF. The wiki page that quotes it stays the same.",
   "Three teams keep three versions of the same answer.",
   "Nobody can say where a statement came from, or whether it still holds.",
 ];
 
-const BENEFITS = [
-  { icon: ArrowsClockwise, title: "Always current", body: "A new version of a file updates the claims it touches, not at the next yearly review." },
-  { icon: LinkSimple, title: "Traced to the source", body: "Every claim links to the file and the page it came from." },
-  { icon: ShieldCheck, title: "You stay in charge", body: "AI drafts each change. Anything risky waits for a person to approve it." },
-  { icon: Stack, title: "One answer, not ten versions", body: "Matching claims merge into one, and every source stays attached." },
+// TRUST: what keeps people in charge; the difference from other AI tools
+const TRUST = [
+  { icon: LinkSimple, title: "Every line has a source", body: "Every sentence links to the file and the page it came from." },
+  { icon: ShieldCheck, title: "Risky changes wait for you", body: "Safe updates apply on their own. Conflicts and deletions wait for a person." },
+  { icon: ArrowCounterClockwise, title: "Undo anything", body: "Every change is recorded with its cause and can be reversed." },
+  { icon: Stack, title: "One answer, not ten versions", body: "Matching facts merge into one, and every source stays attached." },
 ];
 
-const STEPS = [
-  { n: "01", icon: Files, title: "Upload documents", body: "Add PDF, Word and Markdown files: policies, reports and handbooks." },
-  { n: "02", icon: Graph, title: "Connect the claims", body: "Each file is broken into single claims, linked across every source." },
-  { n: "03", icon: ArrowsClockwise, title: "Stay current", body: "Newer files update only the claims that changed, with a record of why." },
+const USE_CASES = [
+  { icon: ClipboardText, title: "Process handbooks", body: "Steps that change when the rules change, each traced to the rule." },
+  { icon: ArrowsClockwise, title: "Project memory", body: "Dates, owners and decisions that stay current as notes come in." },
+  { icon: ShieldCheck, title: "Rules and compliance", body: "Newer documents win, and same day conflicts go to a person." },
+  { icon: BookOpenText, title: "Learning a big subject", body: "Long books become linked, sourced pages in minutes." },
+  { icon: Brain, title: "Memory for AI agents", body: "One sourced memory your AI tools read and write over MCP." },
 ];
 
 const FAQ: { q: string; a: string; placeholder?: boolean }[] = [
@@ -86,18 +87,16 @@ export default function WelcomePage() {
     <>
       <LandingNav />
       <main id="main">
-        {/* HERO: outcome headline, one action, one proof row, the golden neuron behind */}
+        {/* HERO: the live page demo beside the outcome headline and the one action */}
         <section className="relative isolate flex min-h-svh flex-col justify-center overflow-hidden px-4 pt-24 pb-12 sm:px-6">
-          <HeroNeuron className="absolute inset-0 -z-10 size-full opacity-60 [mask-image:linear-gradient(to_right,transparent_10%,black_60%)] sm:opacity-90" />
-          <div className="mx-auto w-full max-w-6xl">
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-8 lg:grid-cols-[4fr_7fr]">
             <Reveal>
               <h1 className="max-w-[680px] bg-linear-to-r from-white to-landing-fade bg-clip-text pb-1 text-4xl font-semibold tracking-tight text-balance text-transparent sm:text-5xl">
-                {/* The break only on wider screens; phones balance the lines themselves */}
-                Business documents <br className="hidden sm:inline" />
-                that are never out of date
+                Pages that <br className="hidden sm:inline" />
+                rewrite themselves.
               </h1>
               <p className="mt-6 max-w-[680px] text-lg text-white/70 text-pretty sm:text-xl">
-                Corpus Wiki turns your files into linked claims that trace back to their source and update when a new version arrives.
+                A new file arrives. Only the sentences it changes are rewritten, each with its source.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <StartButton />
@@ -105,23 +104,10 @@ export default function WelcomePage() {
                 <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
               </div>
             </Reveal>
-            <Reveal delay={150} className="mt-20">
-              <p className="sr-only">Teams that use Corpus Wiki</p>
-              <ul className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
-                {LOGO_SHAPES.map((Shape, i) => (
-                  <li key={i} className="flex items-center gap-3 text-white/40">
-                    <Shape weight="fill" className="size-6 shrink-0" />
-                    <span className="text-xs">Company logo<br />placeholder</span>
-                  </li>
-                ))}
-              </ul>
+            <Reveal delay={150}>
+              <DemoEmbed concept={7} title="A wiki page rewriting itself as new sources arrive" minHeight={640} />
             </Reveal>
           </div>
-        </section>
-
-        {/* TAGLINE REVEAL: the core promise, word by word */}
-        <section aria-label="What Corpus Wiki promises" className="px-4 py-24 sm:px-6">
-          <TaglineReveal lines={["Every fact knows where it came from.", "Every change knows what it touched."]} />
         </section>
 
         {/* PROBLEM TO SOLUTION */}
@@ -141,19 +127,62 @@ export default function WelcomePage() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8">
               <p className="text-sm font-semibold text-landing-gold">With Corpus Wiki</p>
               <p className="mt-4 text-xl text-white text-pretty">
-                Each new document is read, the claims it touches are found, and only those lines change. Every claim keeps a link to its source, so you can always check it.
+                Each new document is read, the facts it touches are found, and only those lines change. Every fact keeps a link to its source, so you can always check it.
               </p>
             </div>
           </Reveal>
         </section>
 
-        {/* BENEFITS */}
+        {/* TAGLINE REVEAL: the core promise, word by word */}
+        <section aria-label="What Corpus Wiki promises" className="px-4 py-24 sm:px-6">
+          <TaglineReveal lines={["Every fact knows where it came from.", "Every change knows what it touched."]} />
+        </section>
+
+        {/* HOW IT WORKS: the glass machine */}
+        <section id="how" className="scroll-mt-24 px-4 py-24 sm:px-6">
+          <Reveal>
+            <SectionHeading eyebrow="How it works" title="Feed it everything. Watch it organize." body="Corpus Wiki grows a map of what you know, then writes the pages, guides and lists your team needs." />
+          </Reveal>
+          <Reveal delay={120} className="mx-auto mt-12 max-w-6xl">
+            <DemoEmbed concept={6} title="Files feed a graph that organizes itself and produces pages, a glossary and more" minHeight={460} />
+          </Reveal>
+        </section>
+
+        {/* WHAT YOU GET: glossary, dictionary, stakeholders */}
+        <section className="scroll-mt-24 px-4 py-24 sm:px-6">
+          <Reveal>
+            <SectionHeading eyebrow="Glossary" title="One meaning for every term." body="Definitions update as your sources change. Duplicates merge, and new terms define themselves." />
+          </Reveal>
+          <Reveal delay={120} className="mx-auto mt-12 max-w-6xl">
+            <DemoEmbed concept={8} title="A glossary that updates, merges duplicates and adds new terms" minHeight={620} />
+          </Reveal>
+        </section>
+
+        <section className="scroll-mt-24 px-4 py-24 sm:px-6">
+          <Reveal>
+            <SectionHeading eyebrow="Dictionary" title="Your team&apos;s dictionary, written by your files." body="Every term your documents use, defined in plain words, with real examples from your sources." />
+          </Reveal>
+          <Reveal delay={120} className="mx-auto mt-12 max-w-6xl">
+            <DemoEmbed concept={9} title="A dictionary entry gaining meanings and examples from new sources" minHeight={620} />
+          </Reveal>
+        </section>
+
+        <section className="scroll-mt-24 px-4 py-24 sm:px-6">
+          <Reveal>
+            <SectionHeading eyebrow="Stakeholders" title="Know who matters, and why." body="Every person and organization in your files, how they connect and how much say they have. Kept current." />
+          </Reveal>
+          <Reveal delay={120} className="mx-auto mt-12 max-w-6xl">
+            <DemoEmbed concept={12} title="A stakeholder map that rewires as new sources arrive" minHeight={560} />
+          </Reveal>
+        </section>
+
+        {/* TRUST AND CONTROL */}
         <section className="px-4 py-24 sm:px-6">
           <Reveal>
-            <SectionHeading eyebrow="Why teams use it" title="Knowledge you can trust and check" />
+            <SectionHeading eyebrow="You stay in charge" title="Knowledge you can trust and check" />
           </Reveal>
           <div className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {BENEFITS.map((b, i) => (
+            {TRUST.map((b, i) => (
               <Reveal key={b.title} delay={i * 80}>
                 <div className="h-full rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-transform duration-500 hover:-translate-y-1 ease-landing">
                   <b.icon className="size-6 text-landing-gold" />
@@ -165,75 +194,42 @@ export default function WelcomePage() {
           </div>
         </section>
 
-        {/* HOW IT WORKS */}
-        <section id="how" className="scroll-mt-24 px-4 py-24 sm:px-6">
+        {/* USE CASES */}
+        <section className="px-4 py-24 sm:px-6">
           <Reveal>
-            <SectionHeading title="From documents to living knowledge" body="A clear path from source material to shared understanding." />
+            <SectionHeading eyebrow="Use cases" title="For knowledge that keeps changing" />
           </Reveal>
-          <div className="mx-auto mt-16 grid max-w-6xl gap-12 md:grid-cols-3">
-            {STEPS.map((s, i) => (
-              <Reveal key={s.n} delay={i * 100}>
-                <div className="flex flex-col items-center text-center">
-                  <span className="grid size-20 place-items-center rounded-full border border-landing-gold/40 text-landing-glow">
-                    <s.icon className="size-8" />
-                  </span>
-                  <p className="mt-6 text-sm font-semibold text-landing-gold">{s.n}</p>
-                  <h3 className="mt-2 text-xl font-semibold">{s.title}</h3>
-                  <p className="mt-2 max-w-xs text-white/60 text-pretty">{s.body}</p>
+          <div className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {USE_CASES.map((b, i) => (
+              <Reveal key={b.title} delay={i * 80}>
+                <div className="h-full rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition-transform duration-500 hover:-translate-y-1 ease-landing">
+                  <b.icon className="size-6 text-landing-gold" />
+                  <h3 className="mt-4 text-base font-semibold">{b.title}</h3>
+                  <p className="mt-2 text-sm text-white/60 text-pretty">{b.body}</p>
                 </div>
               </Reveal>
             ))}
           </div>
         </section>
 
-        {/* FEATURE: trace a claim */}
-        <section className="px-4 py-24 sm:px-6">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1fr_2fr]">
-            <Reveal>
-              <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Follow every claim back to its source.</h2>
-              <p className="mt-4 text-lg text-white/60 text-pretty">See the evidence behind a claim, the claims that support it, and the ones that disagree.</p>
-            </Reveal>
-            <Reveal delay={120}>
-              <ClaimGraphMock />
-            </Reveal>
-          </div>
-        </section>
-
-        {/* FEATURE: update what changed */}
-        <section className="px-4 py-24 sm:px-6">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[3fr_2fr]">
-            <Reveal className="order-2 lg:order-1">
-              <PolicyDiffMock />
-            </Reveal>
-            <Reveal delay={120} className="order-1 lg:order-2">
-              <h2 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Keep the knowledge. Update what changed.</h2>
-              <p className="mt-4 text-lg text-white/60 text-pretty">A new document refreshes the claims it affects, with a trail back to the evidence.</p>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* SOCIAL PROOF: placeholders until real quotes arrive */}
-        <section className="px-4 py-24 sm:px-6">
+        {/* FOR AI AGENTS */}
+        <section id="agents" className="scroll-mt-24 px-4 py-24 sm:px-6">
           <Reveal>
-            <SectionHeading eyebrow="Customer stories" title="What teams say" />
+            <SectionHeading eyebrow="For AI agents" title="One memory for every agent." body="Connect your AI tools through MCP. They read sourced, current facts and remember what you teach them, across every session." />
           </Reveal>
-          <div className="mx-auto mt-12 grid max-w-6xl gap-4 md:grid-cols-3">
-            {["saving time when policies change", "trusting answers without checking", "onboarding new staff faster"].map((topic, i) => (
-              <Reveal key={topic} delay={i * 80}>
-                <figure className="flex h-full flex-col rounded-2xl border border-dashed border-white/15 bg-white/[0.03] p-6">
-                  <PlaceholderTag />
-                  <blockquote className="mt-4 flex-1 text-white/50 text-pretty">A short customer quote about {topic}.</blockquote>
-                  <figcaption className="mt-6 flex items-center gap-3">
-                    <span className="grid size-10 place-items-center rounded-full bg-landing-gold/20 text-sm font-semibold text-landing-glow">AB</span>
-                    <span className="text-sm">
-                      <span className="block text-white/80">Customer name</span>
-                      <span className="block text-white/40">Role, company</span>
-                    </span>
-                  </figcaption>
-                </figure>
-              </Reveal>
-            ))}
-          </div>
+          <Reveal delay={120} className="mx-auto mt-12 max-w-6xl">
+            <DemoEmbed concept={10} title="AI agents sharing one sourced memory over MCP" minHeight={620} />
+          </Reveal>
+        </section>
+
+        {/* FOR BUILDERS */}
+        <section className="scroll-mt-24 px-4 py-24 sm:px-6">
+          <Reveal>
+            <SectionHeading eyebrow="For builders" title="Just build. Docs write themselves." body="While you work with your coding agent, every feature, endpoint and decision is documented in the background." />
+          </Reveal>
+          <Reveal delay={120} className="mx-auto mt-12 max-w-6xl">
+            <DemoEmbed concept={11} title="A week of coding while the docs fill in by themselves" minHeight={680} />
+          </Reveal>
         </section>
 
         {/* FAQ */}

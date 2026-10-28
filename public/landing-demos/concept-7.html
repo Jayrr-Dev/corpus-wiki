@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link rel="stylesheet" href="live-demo.css">
+<style>
+  /* FACTS: the knowledge units each source turns into, floating between the sources and the page */
+  .kus { left: 8px; top: 340px; width: 260px; transform: translateZ(150px); display: flex; flex-direction: column; gap: 8px; }
+  .kus .title { align-self: flex-start; font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 9999px; background: var(--raised); border: 1px solid var(--line); opacity: 0; transition: opacity .4s var(--ease); }
+  .kus.has .title { opacity: 1; }
+  .ku { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; padding: 12px; border-radius: 12px; background: var(--hi); border: 1px solid #3c3c3c; box-shadow: 0 24px 48px rgba(0,0,0,.5); opacity: 0; transform: translateY(8px) scale(.96); transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
+  .ku.in { opacity: 1; transform: none; }
+  .ku .id { font-size: 12px; line-height: 16px; color: var(--gold); font-weight: 600; }
+  .ku .claim { font-size: 14px; line-height: 20px; color: #fff; }
+  .ku .was { grid-column: 2 / 4; font-size: 12px; line-height: 16px; color: var(--fade); }
+  .ku .was s { color: var(--conflict); }
+  .st { font-size: 12px; line-height: 16px; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; transition: background-color .3s var(--ease), color .3s var(--ease); }
+  .st.rev { background: rgba(242,192,99,.16); color: var(--gold-pale); }
+  .st.new { background: rgba(110,154,108,.2); color: var(--green-pale); }
+  .st.dis { background: rgba(224,112,90,.18); color: #f2b3a6; }
+</style>
+<script>
+// EMBED MODE (?embed): the landing page supplies the headline, so hide this page's own
+// heading, tag and logo, drop the full-screen height, and report the height to the parent.
+if (location.search.includes("embed")) {
+  document.documentElement.classList.add("embed");
+  const send = () => parent.postMessage({ landingDemo: location.pathname, height: document.documentElement.scrollHeight }, location.origin);
+  addEventListener("load", () => { send(); new ResizeObserver(send).observe(document.body); });
+}
+</script>
+<style>
+html.embed, html.embed body { background: transparent; }
+html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
+html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
+html.embed .wrap { grid-template-columns: 1fr !important; }
+html.embed .wrap > h1, html.embed .wrap > .sub, html.embed .wrap > .cta { display: none !important; }
+html.embed .demo, html.embed .fit, html.embed .week { margin-top: 0; }
+html.embed .week + .demo { margin-top: 24px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero">
+  <span class="tag">Concept 7 · The live page</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <div>
+      <h1>Pages that<br>rewrite themselves.</h1>
+      <p class="sub">A new file arrives. Only the sentences it changes are rewritten, each with its source.</p>
+      <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="scene" id="scene">
+        <article class="card main">
+          <div class="crumb"><span>Projects / Project Alpha</span><span class="badge" id="badge"><i class="ph ph-check-circle"></i><span></span></span></div>
+          <h2>Project Alpha</h2>
+          <h3>Timeline</h3>
+          <p class="para">Project Alpha is the fibre upgrade for the east district, led by Marco Ruiz.<span class="ref">1</span> <span class="sent" id="s1"></span><span class="ref" id="r1">2</span></p>
+          <h3>Budget and suppliers</h3>
+          <p class="para"><span class="sent" id="s2"></span><span class="ref" id="r2">3</span> It covers cabling, permits and two field crews.<span class="ref">1</span> <span class="sent" id="s3"></span><span class="ref" id="r3" style="opacity:0">6</span></p>
+        </article>
+        <div class="float srcs" id="srcs"></div>
+        <div class="float kus" id="kus"><span class="title">Facts</span></div>
+        <div class="float ask" id="ask"><div class="box">
+          <p><i class="ph ph-question" style="color:var(--conflict)"></i> Plan v3 and Priya's email, both from 28 Oct, give different budgets. Which holds?</p>
+          <div class="opts"><button class="opt" id="optA" tabindex="-1">52,750<small>Plan v3</small></button><button class="opt" id="optB" tabindex="-1">55,000<small>Email</small></button></div>
+        </div></div>
+        <div class="float log" id="log"><span class="title">Change log</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="module">
+// THE LIVE PAGE: three sources arrive in turn. One rewrites a sentence, one
+// adds a sentence, one disagrees with another source and waits for a person.
+import { $, toggle, loop, write, rewrite, addChip, addEntry, badge, tilt, reduce } from "./live-demo.js";
+const START = {
+  s1: "The launch is planned for 12 February, after the kickoff review.",
+  s2: "The budget is 52,750, set in plan v3.",
+};
+function reset() {
+  $("s1").textContent = START.s1; $("s2").textContent = START.s2; $("s3").textContent = "";
+  $("r1").textContent = "2"; $("r2").textContent = "3"; $("r3").style.opacity = 0;
+  document.querySelectorAll(".sent, .ref").forEach((e) => e.classList.remove("hot", "warn", "fresh"));
+  $("srcs").innerHTML = ""; $("log").querySelectorAll(".entry").forEach((e) => e.remove());
+  $("kus").querySelectorAll(".ku").forEach((e) => e.remove()); toggle($("kus"), "has", false);
+  toggle($("badge"), "on", false); toggle($("ask"), "in", false); toggle($("optB"), "pick", false);
+}
+// FACT: one knowledge unit pulled from a source, with its status
+function addKu(id, claim, status, cls, was) {
+  const el = document.createElement("div"); el.className = "ku";
+  el.innerHTML = `<span class="id">${id}</span><span class="claim">${claim}</span><span class="st ${cls}">${status}</span>${was ? `<span class="was">was <s>${was}</s></span>` : ""}`;
+  toggle($("kus"), "has"); $("kus").append(el); requestAnimationFrame(() => requestAnimationFrame(() => toggle(el, "in")));
+  return el;
+}
+const setStatus = (ku, text, cls) => { const s = ku.querySelector(".st"); s.className = `st ${cls}`; s.textContent = text; };
+const fresh = (ref, n) => { ref.textContent = n; ref.style.opacity = 1; toggle(ref, "fresh"); setTimeout(() => toggle(ref, "fresh", false), 1800); };
+
+if (reduce) {
+  reset();
+  $("s1").textContent = "The launch moved to 3 March, after the supplier asked for more time."; $("r1").textContent = "4";
+  $("s2").textContent = "The budget is 55,000, confirmed in Priya's email."; $("r2").textContent = "5";
+  $("s3").textContent = "Cabling comes from Northwind Cables under a two year contract."; $("r3").style.opacity = 1;
+  addKu("K-118", "Launch date: 3 March", "Revised", "rev", "12 February"); addKu("K-231", "Supplier: Northwind Cables", "New", "new");
+  addKu("K-142", "Budget: 55,000", "Confirmed", "new", "52,750");
+} else {
+  tilt();
+  loop(24000, reset, (at) => {
+    let a, b, c, k3;
+    // 1. A SENTENCE CHANGES: the standup moves the launch date
+    at(700, () => { a = addChip($("srcs"), "ph-video", "standup.mp4", "28 Oct, 04:12"); });
+    at(1300, () => addKu("K-118", "Launch date: 3 March", "Revised", "rev", "12 February"));
+    at(7600, () => addKu("K-231", "Supplier: Northwind Cables", "New", "new"));
+    at(12900, () => { k3 = addKu("K-142", "Budget: 55,000", "Disputed", "dis", "52,750"); });
+    at(16800, () => setStatus(k3, "Confirmed", "new"));
+    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), "The launch moved to 3 March, after the supplier asked for more time.", () => { fresh($("r1"), "4"); toggle(a, "read"); badge("Updated just now"); addEntry($("log"), "ph-arrows-clockwise", "var(--gold)", "Launch date changed", "from standup.mp4"); }); });
+    at(6400, () => toggle($("s1"), "hot", false));
+    // 2. A SENTENCE IS ADDED: the contract names the supplier
+    at(7000, () => { b = addChip($("srcs"), "ph-file-pdf", "contract.pdf", "Section 2.1"); });
+    at(8200, () => { toggle($("s3"), "hot"); write($("s3"), "Cabling comes from Northwind Cables under a two year contract.", 45, () => { fresh($("r3"), "6"); toggle(b, "read"); badge("1 sentence added"); addEntry($("log"), "ph-plus-circle", "var(--green-light)", "New claim added", "from contract.pdf"); }); });
+    at(11600, () => toggle($("s3"), "hot", false));
+    // 3. TWO SOURCES DISAGREE: a person decides, then the page follows
+    at(12300, () => { c = addChip($("srcs"), "ph-envelope-simple", "Email from Priya", "28 Oct"); });
+    at(13500, () => { toggle($("s2"), "warn"); badge("1 question for you", true); toggle($("ask"), "in"); });
+    at(16300, () => toggle($("optB"), "pick"));
+    at(17000, () => { toggle($("ask"), "in", false); toggle($("s2"), "warn", false); toggle($("s2"), "hot"); rewrite($("s2"), "The budget is 55,000, confirmed in Priya's email.", () => { fresh($("r2"), "5"); toggle(c, "read"); badge("Updated just now"); addEntry($("log"), "ph-user-check", "var(--green-pale)", "Budget confirmed by you", "email over plan v3"); }); });
+    at(21000, () => toggle($("s2"), "hot", false));
+  });
+}
+</script>
+</body>
+</html>

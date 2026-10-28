@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 11</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root {
+    --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131;
+    --fade: #9b9b9b; --gold: #d9a441; --gold-pale: #f4d9a0; --glow: #f2c063; --ember: #8a5a1c;
+    --green: #496748; --green-hover: #557a54; --green-light: #6e9a6c; --green-pale: #cfe3cd; --conflict: #e0705a;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+  .wrap { width: 100%; max-width: 1240px; margin: 0 auto; }
+  .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
+  .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .logo svg { width: 20px; height: 20px; color: var(--green-light); }
+  .intro { text-align: center; }
+  h1 { max-width: 680px; margin: 0 auto; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(to right, #fff, var(--fade)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  .cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; background: var(--green); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 8px 12px; border-radius: 12px; transition: background-color .3s var(--ease), transform .3s var(--ease); }
+  .cta:hover { background: var(--green-hover); } .cta:active { transform: scale(.98); }
+  .cta:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  @media (min-width: 768px) { h1 { font-size: 60px; line-height: 1; } .sub { font-size: 20px; } }
+  .mono { font-family: "Geist Mono", ui-monospace, monospace; }
+
+  /* WEEK: the days of the build, lit as they pass */
+  .week { margin: 48px auto 0; display: flex; justify-content: center; gap: 8px; }
+  .day { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--line); font-size: 14px; line-height: 20px; color: var(--fade); transition: background-color .4s var(--ease), color .4s var(--ease), border-color .4s var(--ease); }
+  .day.past { color: var(--green-pale); border-color: rgba(110,154,108,.5); }
+  .day.now { background: var(--gold); border-color: var(--gold); color: #131209; font-weight: 600; }
+
+  .demo { margin-top: 24px; display: grid; gap: 24px; grid-template-columns: 1fr; transition: opacity .4s var(--ease); }
+  .demo.fading { opacity: 0; }
+  @media (min-width: 1024px) { .demo { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+  .panel { border-radius: 24px; background: var(--surface); border: 1px solid #3a3a3a; box-shadow: 0 48px 96px rgba(0,0,0,.45); overflow: hidden; display: flex; flex-direction: column; height: 540px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 20px; color: var(--fade); }
+  .bar .who { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 500; }
+  .bar .dots { display: flex; gap: 8px; } .bar .dots b { width: 12px; height: 12px; border-radius: 9999px; background: var(--hi); }
+  .bar svg { width: 20px; height: 20px; color: var(--green-light); }
+
+  /* CODING SESSION: only the user's work, nothing about docs */
+  .session { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 16px; overflow: hidden; }
+  .step { opacity: 0; transform: translateY(8px); transition: opacity .4s var(--ease), transform .4s var(--ease); }
+  .step.in { opacity: 1; transform: none; }
+  .user { align-self: flex-end; max-width: 88%; padding: 12px 16px; border-radius: 16px; border-bottom-right-radius: 4px; background: var(--green); font-size: 14px; line-height: 20px; }
+  .bot { align-self: flex-start; max-width: 92%; padding: 12px 16px; border-radius: 16px; border-bottom-left-radius: 4px; background: var(--raised); border: 1px solid var(--line); font-size: 14px; line-height: 20px; color: rgba(255,255,255,.9); }
+  .work { align-self: stretch; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); font-size: 12px; line-height: 16px; color: var(--fade); }
+  .work i { font-size: 16px; } .work .ok { color: var(--green-light); margin-left: auto; }
+  .divider { align-self: center; font-size: 12px; line-height: 16px; color: var(--fade); padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--line); }
+  /* TERMINAL LOOK: a generic coding agent in a terminal, prompt, bullets and result lines */
+  .term { background: #0f0e08; }
+  .term .bar { color: var(--fade); }
+  .term .session { font-family: "Geist Mono", ui-monospace, monospace; gap: 8px; padding: 16px 16px 8px; }
+  .term .user { align-self: stretch; max-width: none; padding: 8px 12px; border-radius: 8px; background: var(--raised); border: 0; font-size: 14px; line-height: 20px; color: #fff; }
+  .term .user::before { content: "› "; color: var(--gold); }
+  .term .bot, .term .act { align-self: stretch; max-width: none; padding: 0 0 0 20px; position: relative; border: 0; background: none; border-radius: 0; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.88); }
+  .term .bot::before, .term .act::before { content: "●"; position: absolute; left: 0; color: var(--green-light); }
+  .term .act::before { color: var(--gold); }
+  .term .act b { font-weight: 400; color: #fff; }
+  .term .act .res { display: block; color: var(--fade); }
+  .term .act .res::before { content: "└ "; color: var(--line); }
+  .term .act .res .ok { color: var(--green-light); }
+  .term .divider { border: 0; padding: 4px 0; align-self: stretch; text-align: center; color: #6b6b6b; }
+  .term .divider::before, .term .divider::after { content: " ── "; color: var(--line); }
+  .prompt { margin: 0 16px 8px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); font-family: "Geist Mono", ui-monospace, monospace; font-size: 14px; line-height: 20px; color: #6b6b6b; }
+  .prompt b { color: var(--gold); font-weight: 400; }
+  .prompt .cur { width: 8px; height: 16px; background: var(--fade); animation: blink 1s steps(2) infinite; }
+  .quiet { display: flex; align-items: center; gap: 8px; padding: 0 16px 12px; font-family: "Geist Mono", ui-monospace, monospace; font-size: 12px; line-height: 16px; color: var(--fade); }
+  .quiet .sep { margin-left: auto; color: #6b6b6b; }
+  .quiet .led { width: 8px; height: 8px; border-radius: 9999px; background: var(--green-light); animation: breathe 2s var(--ease) infinite; }
+  @keyframes breathe { 50% { opacity: .3; } }
+
+  /* DOCS SITE: the tree grows, the newest page writes itself */
+  .cover { display: flex; align-items: center; gap: 12px; min-width: 220px; }
+  .meter { flex: 1; height: 6px; border-radius: 9999px; background: var(--hi); overflow: hidden; }
+  .meter b { display: block; height: 100%; background: var(--green-light); transform-origin: left; transform: scaleX(0); transition: transform .8s var(--ease), background-color .4s var(--ease); }
+  .meter.full b { background: var(--gold); }
+  .pct { font-size: 12px; line-height: 16px; color: #fff; min-width: 32px; text-align: right; }
+  .docs { flex: 1; display: grid; grid-template-columns: 200px minmax(0, 1fr); overflow: hidden; }
+  .tree { padding: 16px 12px; border-right: 1px solid var(--line); overflow: hidden; }
+  .grp { margin-bottom: 12px; }
+  .grp > span { display: block; padding: 0 8px 4px; font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; }
+  .pg { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.8); transition: opacity .5s var(--ease), transform .5s var(--ease), background-color .3s var(--ease); }
+  .pg.hidden { opacity: 0; transform: translateX(-8px); } .pg.gone { display: none; }
+  .pg.cur { background: var(--hi); color: #fff; }
+  .pg .dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--gold); transition: opacity .6s var(--ease); }
+  .pg.seen .dot { opacity: 0; }
+  .page { padding: 24px 32px; overflow: hidden; }
+  .page .crumb { font-size: 12px; line-height: 16px; color: var(--fade); }
+  .page h2 { margin-top: 8px; font-size: 24px; line-height: 32px; font-weight: 600; }
+  .page p { margin-top: 12px; font-size: 16px; line-height: 28px; color: rgba(255,255,255,.82); text-wrap: pretty; }
+  .page .src { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .page .src span { font-size: 12px; line-height: 16px; padding: 2px 8px; border-radius: 9999px; background: rgba(217,164,65,.14); color: var(--gold-pale); }
+  .w { opacity: 0; transition: opacity .25s var(--ease); } .w.on { opacity: 1; }
+  .caret { display: inline-block; width: 2px; height: 18px; margin-left: 2px; vertical-align: -3px; background: var(--glow); animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .done { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: var(--fade); transition: color .4s var(--ease), background-color .4s var(--ease); }
+  .done.full { color: var(--gold-pale); background: rgba(217,164,65,.08); }
+  .done b { color: #fff; font-weight: 500; }
+  @media (max-width: 700px) { .docs { grid-template-columns: 1fr; } .tree { display: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero">
+  <span class="tag">Concept 11 · Docs that write themselves</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <div class="intro">
+      <h1>Just build.<br>Docs write themselves.</h1>
+      <p class="sub">While you work with your coding agent, every feature, endpoint and decision is documented in the background.</p>
+      <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
+    </div>
+    <div class="week" id="week" aria-hidden="true"></div>
+    <div class="demo" id="demo" aria-hidden="true">
+      <div class="panel term">
+        <div class="bar"><span class="who"><span class="dots"><b></b><b></b><b></b></span><span class="mono">~/crew-scheduler</span></span><span class="mono">coding agent</span></div>
+        <div class="session" id="session"></div>
+        <div class="prompt"><b>›</b><span class="cur"></span></div>
+        <div class="quiet"><span class="led"></span>Corpus Wiki: documenting in the background<span class="sep">MCP connected</span></div>
+      </div>
+      <div class="panel">
+        <div class="bar"><span class="who"><svg><use href="#mark"/></svg>Corpus Wiki · Docs</span><span class="cover"><span>Documented</span><span class="meter" id="meter"><b id="meterBar"></b></span><span class="pct" id="pct">0%</span></span></div>
+        <div class="docs">
+          <nav class="tree" id="tree"></nav>
+          <article class="page"><p class="crumb" id="crumb">&nbsp;</p><h2 id="title"></h2><p id="body"></p><div class="src" id="src"></div></article>
+        </div>
+        <div class="done" id="done"><i class="ph ph-books"></i><span><b id="pages">0</b> pages · <b id="facts">0</b> facts · from <b id="commits">0</b> commits</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// =====================================================================
+// DOCS THAT WRITE THEMSELVES: one working week, compressed. Each day the
+// developer asks their coding agent for one thing; the session on the left
+// shows only that work. On the right, the docs site gains pages for what was
+// built and why, and the coverage meter reaches 100% by Friday. 34 second loop.
+// =====================================================================
+const GROUPS = ["Getting started", "Features", "API", "Decisions", "Reference"];
+const DAYS = [
+  { day: "Mon", ask: "Set up the crew scheduler with a jobs table and seed data.", work: ["Write", "12 files", "schema, seed and config created"], reply: "Done. The project runs locally with 40 sample jobs.",
+    pages: [[0, "Overview"], [0, "Local setup"]], show: { crumb: "Getting started", title: "Local setup", body: "Run npm install, then npm run seed to load 40 sample jobs. The app starts on port 3000 and reads its settings from .env.", src: ["commit 7c21e0", "package.json"] } },
+  { day: "Tue", ask: "Skip jobs that don't have a valid dig permit.", work: ["Edit", "permits.ts, run.ts", "npm test: 18 passed"], reply: "Done. Jobs without a valid permit now go to a review queue.",
+    pages: [[1, "Permit checks"], [4, "Glossary: Dig permit"]], show: { crumb: "Features", title: "Permit checks", body: "Before each run the scheduler looks up the site's dig permit. Jobs without a valid one move to a review queue, and the crew lead is told why.", src: ["commit a3f9c2", "K-412"] } },
+  { day: "Wed", ask: "Add a jobs endpoint for the crew app.", work: ["Write", "routes/jobs.ts", "npm test: 9 passed"], reply: "Added GET /jobs with filters for crew and date.",
+    pages: [[2, "GET /jobs"], [4, "Data model"]], show: { crumb: "API", title: "GET /jobs", body: "Returns the jobs for one crew and day. Filter with crew and date. Jobs held for a missing permit come back with status review.", src: ["commit 51be7d", "routes/jobs.ts"] } },
+  { day: "Thu", ask: "Why not block these at booking instead?", work: "", reply: "Crews book days ahead, and a permit can lapse in between. Checking at run time catches that.",
+    pages: [[3, "Check permits at run time"]], show: { crumb: "Decisions", title: "Check permits at run time", body: "We check permits when a job runs, not when it is booked, because crews book days ahead and a permit can lapse in between.", src: ["chat, Thursday", "K-415"] } },
+  { day: "Fri", ask: "Deploy to staging.", work: ["Run", "npm run deploy:staging", "health check passed"], reply: "Staging is live and all checks pass.",
+    pages: [[0, "Deploying"], [4, "Changelog"]], show: { crumb: "Getting started", title: "Deploying", body: "Push to main to deploy staging. The health check must pass before traffic moves. Production deploys need one approval.", src: ["commit e90d14", "deploy.yml"] } },
+];
+const TOTAL = DAYS.reduce((n, d) => n + d.pages.length, 0), PER_DAY = 6000, LOOP = 300 + DAYS.length * PER_DAY + 3200;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = (id) => document.getElementById(id);
+const nextFrame = (fn) => requestAnimationFrame(() => requestAnimationFrame(fn));
+let timers = []; const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+$("week").innerHTML = DAYS.map((d, i) => `<span class="day" id="d${i}">${d.day}</span>`).join("");
+const pageEls = [];
+$("tree").innerHTML = GROUPS.map((g, gi) => `<div class="grp" id="g${gi}"><span>${g}</span></div>`).join("");
+DAYS.forEach((d) => d.pages.forEach(([g, name]) => { const el = document.createElement("div"); el.className = "pg hidden gone"; el.innerHTML = `<span class="dot"></span>${name}`; $(`g${g}`).append(el); pageEls.push(el); }));
+
+function step(cls, html) {
+  const el = document.createElement("div"); el.className = `step ${cls}`; el.innerHTML = html; $("session").append(el);
+  while ($("session").children.length > 10) $("session").firstElementChild.remove();
+  nextFrame(() => el.classList.add("in"));
+}
+function write(el, text, perWord = 35) {
+  el.innerHTML = ""; const words = text.split(" ").map((w) => { const s = document.createElement("span"); s.className = "w"; s.textContent = w; el.append(s, " "); return s; });
+  const caret = document.createElement("span"); caret.className = "caret"; el.append(caret);
+  words.forEach((w, i) => setTimeout(() => { w.classList.add("on"); if (i === words.length - 1) caret.remove(); }, i * perWord));
+}
+function show(p) {
+  $("crumb").textContent = p.crumb; $("title").textContent = p.title; $("src").innerHTML = "";
+  write($("body"), p.body);
+  setTimeout(() => { $("src").innerHTML = p.src.map((s) => `<span>${s}</span>`).join(""); }, 1400);
+}
+let done = 0, commits = 0, facts = 0;
+function progress() {
+  const f = done / TOTAL; $("meterBar").style.transform = `scaleX(${f})`; $("pct").textContent = `${Math.round(f * 100)}%`;
+  $("meter").classList.toggle("full", f === 1); $("pages").textContent = done; $("facts").textContent = facts; $("commits").textContent = commits;
+}
+function reset() {
+  timers.forEach(clearTimeout); timers = []; done = commits = facts = 0;
+  $("session").innerHTML = ""; pageEls.forEach((e) => { e.className = "pg hidden gone"; });
+  ["crumb", "title", "body", "src"].forEach((id) => { $(id).innerHTML = id === "crumb" ? "&nbsp;" : ""; });
+  DAYS.forEach((_, i) => { $(`d${i}`).className = "day"; }); $("done").classList.remove("full"); progress();
+}
+
+function run() {
+  reset(); $("demo").classList.remove("fading");
+  let k = 0;
+  DAYS.forEach((d, i) => {
+    const t = 300 + i * PER_DAY, first = k;
+    at(t, () => { DAYS.forEach((_, j) => { $(`d${j}`).className = j < i ? "day past" : j === i ? "day now" : "day"; }); step("divider", d.day === "Mon" ? "Monday" : d.day === "Tue" ? "Tuesday" : d.day === "Wed" ? "Wednesday" : d.day === "Thu" ? "Thursday" : "Friday"); });
+    at(t + 500, () => step("user", d.ask));
+    if (d.work) at(t + 1500, () => { const [verb, target, result] = d.work; step("act", `<b>${verb}</b>(${target})<span class="res">${result} <span class="ok">✓</span></span>`); commits++; progress(); });
+    at(t + 2400, () => step("bot", d.reply));
+    // the docs follow, a moment later and without being asked
+    d.pages.forEach((_, n) => {
+      const el = pageEls[first + n];
+      at(t + 2000 + n * 900, () => {
+        pageEls.forEach((p) => p.classList.remove("cur"));
+        el.classList.remove("gone"); nextFrame(() => el.classList.remove("hidden")); el.classList.add("cur");
+        done++; facts += 3 + ((first + n) % 3); progress();
+        setTimeout(() => el.classList.add("seen"), 4000);
+      });
+    });
+    at(t + 2000, () => show(d.show));
+    k += d.pages.length;
+  });
+  const end = 300 + DAYS.length * PER_DAY;
+  at(end - 600, () => { DAYS.forEach((_, j) => { $(`d${j}`).className = "day past"; }); $("done").classList.add("full"); step("divider", "Fully documented, without writing a single doc"); });
+  at(LOOP - 500, () => $("demo").classList.add("fading"));
+  at(LOOP, run);
+}
+
+if (reduce) {
+  reset(); done = TOTAL; commits = 4; facts = 34; progress(); $("done").classList.add("full");
+  pageEls.forEach((e) => e.className = "pg seen"); DAYS.forEach((_, j) => { $(`d${j}`).className = "day past"; });
+  const p = DAYS[1].show; $("crumb").textContent = p.crumb; $("title").textContent = p.title; $("body").textContent = p.body; $("src").innerHTML = p.src.map((s) => `<span>${s}</span>`).join("");
+  step("user", DAYS[4].ask); step("bot", DAYS[4].reply); document.querySelectorAll(".step").forEach((e) => e.classList.add("in"));
+} else {
+  document.fonts.ready.then(run);
+}
+</script>
+</body>
+</html>

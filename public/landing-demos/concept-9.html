@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link rel="stylesheet" href="glossary-demo.css">
+<style>
+  /* DICTIONARY PIECES: an A to Z index on the left, one entry in the middle */
+  .index { grid-area: terms; padding: 16px; }
+  .letters { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .letters span { display: grid; place-items: center; height: 24px; border-radius: 6px; font-size: 12px; line-height: 16px; color: var(--fade); }
+  .letters span.on { background: var(--gold); color: #131209; font-weight: 600; }
+  .words { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .word { padding: 8px; border-radius: 8px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.75); transition: opacity .5s var(--ease), transform .6s var(--ease); }
+  .word.cur { background: var(--hi); color: #fff; }
+  .word.merge { opacity: 0; transform: translateY(-36px) scale(.9); }
+  .word.gone { display: none; }
+  .entry-card .head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .headword { margin-top: 8px; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; }
+  .class { margin-top: 8px; font-size: 14px; line-height: 20px; color: var(--gold-pale); }
+  .class span { color: var(--fade); }
+  .also { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; font-size: 14px; line-height: 20px; color: var(--fade); }
+  .pill { padding: 2px 8px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--line); color: #fff; font-size: 12px; line-height: 16px; transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
+  .pill.hidden { opacity: 0; transform: scale(.8); } .pill.gone { display: none; } .pill.fresh { border-color: var(--gold); }
+  .senses { list-style: none; padding: 0; margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .sense { display: grid; grid-template-columns: 24px 1fr; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+  .sense .n { font-size: 16px; line-height: 28px; font-weight: 600; color: var(--gold); }
+  .sense p.def { font-size: 16px; line-height: 28px; color: rgba(255,255,255,.88); text-wrap: pretty; }
+  .sense p.ex { margin-top: 4px; font-size: 14px; line-height: 20px; color: var(--fade); }
+  .sense p.ex b { font-weight: 400; color: rgba(255,255,255,.7); }
+  .sense.hidden { opacity: 0; transform: translateY(8px); } .sense.gone { display: none; }
+  .see { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: var(--fade); }
+  .see a { color: var(--gold-pale); text-decoration: none; }
+  .num { display: inline-block; transition: transform .4s var(--ease), color .4s var(--ease); }
+  .num.bump { transform: scale(1.25); color: var(--gold-pale); }
+  .centered .scene { grid-template-areas: "page" "terms" "src" "log"; }
+  @media (min-width: 1024px) { .centered .scene { grid-template-areas: "terms page log" "src page log"; } }
+</style>
+<script>
+// EMBED MODE (?embed): the landing page supplies the headline, so hide this page's own
+// heading, tag and logo, drop the full-screen height, and report the height to the parent.
+if (location.search.includes("embed")) {
+  document.documentElement.classList.add("embed");
+  const send = () => parent.postMessage({ landingDemo: location.pathname, height: document.documentElement.scrollHeight }, location.origin);
+  addEventListener("load", () => { send(); new ResizeObserver(send).observe(document.body); });
+}
+</script>
+<style>
+html.embed, html.embed body { background: transparent; }
+html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
+html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
+html.embed .wrap { grid-template-columns: 1fr !important; }
+html.embed .wrap > h1, html.embed .wrap > .sub, html.embed .wrap > .cta { display: none !important; }
+html.embed .demo, html.embed .fit, html.embed .week { margin-top: 0; }
+html.embed .week + .demo { margin-top: 24px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero centered">
+  <span class="tag">Concept 9 · The living dictionary</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <div class="intro">
+      <h1>Your team's dictionary,<br>written by your files.</h1>
+      <p class="sub">Every term your documents use, defined in plain words, with real examples from your sources.</p>
+      <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="scene" id="scene">
+        <div class="card index">
+          <div class="letters"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>L</span><span>P</span><span>R</span><span class="on">S</span><span>T</span><span>U</span><span>W</span></div>
+          <div class="words">
+            <div class="word">Sidewalk closure</div>
+            <div class="word" id="wPermit">Street dig permit</div>
+            <div class="word cur">Street excavation permit</div>
+            <div class="word">Street space permit</div>
+          </div>
+        </div>
+        <article class="card main entry-card">
+          <div class="head"><span class="crumb">Glossary / S</span><span class="badge" id="badge"><i class="ph ph-check-circle"></i><span></span></span></div>
+          <h2 class="headword">street excavation permit</h2>
+          <p class="class">noun <span>· permits · <span class="num" id="senseCount">1</span> meaning<span id="plural"></span></span></p>
+          <div class="also">Also called <span class="pill">Dig permit</span><span class="pill hidden gone" id="aPermit">street dig permit</span></div>
+          <ol class="senses">
+            <li class="sense"><span class="n">1</span><div><p class="def"><span class="sent" id="s1"></span><span class="ref" id="r1">1</span></p><p class="ex">"Submit the dig permit before you book any crews." <b>Field guide, p. 3</b></p></div></li>
+            <li class="sense hidden gone" id="sense2"><span class="n">2</span><div><p class="def"><span class="sent" id="s2"></span><span class="ref" id="r2" style="opacity:0">4</span></p><p class="ex" id="ex2" style="opacity:0">"Keep a copy of the permit on site." <b>Safety memo, 28 Oct</b></p></div></li>
+          </ol>
+          <p class="see">See also <a href="#">right of way</a>, <a href="#">easement</a>, <a href="#">locate request</a></p>
+        </article>
+        <div class="float srcs" id="srcs"></div>
+        <div class="float log" id="log"><span class="title">Change log</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="module">
+// THE LIVING DICTIONARY: a bylaw sharpens the first meaning, a memo adds a
+// second meaning with its own example, and an email shows that another entry
+// is the same word, so it folds in as another name.
+import { $, toggle, loop, write, rewrite, addChip, addEntry, badge, reduce } from "./glossary-demo.js";
+const S1 = "The city's approval to dig in a public street or sidewalk, given before any digging.";
+const S1_NEW = "The city's approval to dig in a public street or sidewalk, given at least 10 business days before digging.";
+const S2 = "The signed record of that approval, kept on site while crews work.";
+const bump = (id, v) => { const n = $(id); n.textContent = v; toggle(n, "bump"); setTimeout(() => toggle(n, "bump", false), 700); };
+const fresh = (ref, n) => { ref.textContent = n; ref.style.opacity = 1; toggle(ref, "fresh"); setTimeout(() => toggle(ref, "fresh", false), 1800); };
+function reset() {
+  $("s1").textContent = S1; $("r1").textContent = "1"; $("s2").textContent = ""; $("r2").style.opacity = 0; $("ex2").style.opacity = 0;
+  $("senseCount").textContent = "1"; $("plural").textContent = "";
+  ["sense2", "aPermit"].forEach((id) => { toggle($(id), "hidden"); toggle($(id), "gone"); });
+  toggle($("wPermit"), "merge", false); toggle($("wPermit"), "gone", false); toggle($("aPermit"), "fresh", false);
+  document.querySelectorAll(".sent, .ref").forEach((e) => e.classList.remove("hot", "fresh"));
+  $("srcs").innerHTML = ""; $("log").querySelectorAll(".entry").forEach((e) => e.remove()); toggle($("badge"), "on", false);
+}
+const show = (id) => { toggle($(id), "gone", false); requestAnimationFrame(() => requestAnimationFrame(() => toggle($(id), "hidden", false))); };
+if (reduce) {
+  reset(); $("s1").textContent = S1_NEW; $("r1").textContent = "3"; show("sense2"); $("s2").textContent = S2; $("r2").style.opacity = 1; $("ex2").style.opacity = 1;
+  $("senseCount").textContent = "2"; $("plural").textContent = "s"; show("aPermit"); toggle($("wPermit"), "gone");
+} else {
+  loop(23000, reset, (at) => {
+    let a, b, c;
+    // 1. A MEANING SHARPENS: the bylaw adds the notice period
+    at(700, () => { a = addChip($("srcs"), "ph-file-pdf", "Bylaw 20145.pdf", "Section 4"); });
+    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), S1_NEW, () => { fresh($("r1"), "3"); toggle(a, "read"); badge("Meaning updated"); addEntry($("log"), "ph-arrows-clockwise", "var(--gold)", "Meaning 1 updated", "from Bylaw 20145"); }); });
+    at(7000, () => toggle($("s1"), "hot", false));
+    // 2. A NEW MEANING: the memo uses the word for the paper itself
+    at(7600, () => { b = addChip($("srcs"), "ph-file-text", "Safety memo", "28 Oct"); });
+    at(8800, () => { show("sense2"); bump("senseCount", "2"); $("plural").textContent = "s"; });
+    at(9300, () => { toggle($("s2"), "hot"); write($("s2"), S2, 50, () => { fresh($("r2"), "4"); $("ex2").style.transition = "opacity .5s"; $("ex2").style.opacity = 1; toggle(b, "read"); badge("Meaning added"); addEntry($("log"), "ph-plus-circle", "var(--green-light)", "Meaning 2 added", "from safety memo"); }); });
+    at(12600, () => toggle($("s2"), "hot", false));
+    // 3. SAME WORD, TWO ENTRIES: the email shows "line permit" is this term
+    at(13400, () => { c = addChip($("srcs"), "ph-envelope-simple", "Email from Dana", "Permits team"); });
+    at(14600, () => toggle($("wPermit"), "merge"));
+    at(15300, () => { toggle($("wPermit"), "gone"); show("aPermit"); toggle($("aPermit"), "fresh"); toggle(c, "read"); badge("Entries merged"); addEntry($("log"), "ph-git-merge", "var(--green-pale)", "Entries merged", "street dig permit into this word"); });
+    at(17500, () => toggle($("aPermit"), "fresh", false));
+  });
+}
+</script>
+</body>
+</html>

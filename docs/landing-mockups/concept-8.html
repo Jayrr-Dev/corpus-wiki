@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link rel="stylesheet" href="glossary-demo.css">
+<style>
+  /* GLOSSARY PIECES: the term list behind, the definition card in front */
+  .terms { left: -24px; top: 0; width: 240px; padding: 16px; transform: translateZ(-140px); }
+  .terms .head { font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 0 8px 8px; }
+  .term { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 8px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.75); transition: opacity .5s var(--ease), transform .6s var(--ease), background-color .3s var(--ease); }
+  .term.cur { background: var(--hi); color: #fff; }
+  .term.hidden { opacity: 0; transform: translateY(-8px); }
+  .term.merge { opacity: 0; transform: translateY(-36px) scale(.9); }
+  .term.gone { display: none; }
+  .term .new { font-size: 12px; line-height: 16px; padding: 0 8px; border-radius: 9999px; background: var(--green); color: #fff; }
+  .def.main { left: 200px; top: 56px; width: 520px; }
+  .alias { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; font-size: 14px; line-height: 20px; color: var(--fade); }
+  .pill { padding: 2px 8px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--line); color: #fff; font-size: 12px; line-height: 16px; transition: opacity .5s var(--ease), transform .5s var(--ease); }
+  .pill.hidden { opacity: 0; transform: scale(.8); }
+  .pill.fresh { border-color: var(--gold); }
+  .meta { display: flex; gap: 24px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: var(--fade); }
+  .meta b { color: #fff; font-weight: 500; }
+  .num { display: inline-block; transition: transform .4s var(--ease), color .4s var(--ease); }
+  .num.bump { transform: scale(1.25); color: var(--gold-pale); }
+  .newdef { right: -56px; top: 150px; width: 300px; transform: translateZ(150px) translateY(12px); opacity: 0; transition: opacity .5s var(--ease), transform .6s var(--ease); }
+  .newdef.in { opacity: 1; transform: translateZ(150px); }
+  .newdef .box { border-radius: 16px; background: var(--raised); border: 1px solid rgba(110,154,108,.6); padding: 16px; box-shadow: 0 32px 64px rgba(0,0,0,.6); }
+  .newdef h4 { font-size: 16px; line-height: 24px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .newdef p { margin-top: 8px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.82); min-height: 60px; }
+  .log { bottom: 0; }
+  .srcs { top: 340px; left: -16px; }
+  .centered .terms { grid-area: terms; padding: 16px; }
+  @media (min-width: 1024px) { .centered .scene { grid-template-areas: "terms page log" "src page log" "src ask log"; } }
+  @media (max-width: 1023px) { .centered .scene { grid-template-areas: "page" "ask" "terms" "src" "log"; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero centered">
+  <span class="tag">Concept 8 · The live glossary</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <div class="intro">
+      <h1>One meaning<br>for every term.</h1>
+      <p class="sub">Definitions update as your sources change. Duplicates merge, and new terms define themselves.</p>
+      <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
+    </div>
+    <div class="stage" aria-hidden="true">
+      <div class="scene" id="scene">
+        <div class="card terms">
+          <p class="head">Glossary</p>
+          <div class="term">Easement</div>
+          <div class="term" id="tLine">Line permit</div>
+          <div class="term">Locate request</div>
+          <div class="term hidden gone" id="tRoad">Road moratorium <span class="new">New</span></div>
+          <div class="term">Right of way</div>
+          <div class="term cur">Street excavation permit</div>
+        </div>
+        <article class="card def main">
+          <div class="crumb"><span>Glossary / Permits</span><span class="badge" id="badge"><i class="ph ph-check-circle"></i><span></span></span></div>
+          <h2>Street excavation permit</h2>
+          <div class="alias">Also called <span class="pill">Dig permit</span><span class="pill hidden" id="aLine">Line permit</span></div>
+          <p class="para">The city's approval to dig in a public street or sidewalk.<span class="ref">1</span> <span class="sent" id="s1"></span><span class="ref" id="r1">2</span> Each permit sets the work area, the dates and the traffic plan.<span class="ref">3</span></p>
+          <div class="meta"><span>Rests on <b><span class="num" id="claims">3</span> claims</b></span><span>Version <b><span class="num" id="ver">2</span></b></span><span>Used on <b>14 pages</b></span></div>
+        </article>
+        <div class="float srcs" id="srcs"></div>
+        <div class="float newdef" id="newdef"><div class="box">
+          <h4>Road moratorium <span class="pill">New term</span></h4>
+          <p id="nd"></p>
+        </div></div>
+        <div class="float log" id="log"><span class="title">Change log</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script type="module">
+// THE LIVE GLOSSARY: a bylaw sharpens a definition, an email reveals a
+// duplicate term that merges in, and site notes bring a new term that
+// defines itself.
+import { $, toggle, loop, write, rewrite, addChip, addEntry, badge, tilt, reduce } from "./glossary-demo.js";
+const START = "It must be granted before any digging starts.";
+const NEW = "It must be granted at least 10 business days before digging starts.";
+const ROAD = "A period when a newly paved road may not be dug up, usually three years.";
+const bump = (id, v) => { const n = $(id); n.textContent = v; toggle(n, "bump"); setTimeout(() => toggle(n, "bump", false), 700); };
+function reset() {
+  $("s1").textContent = START; $("r1").textContent = "2"; $("claims").textContent = "3"; $("ver").textContent = "2";
+  document.querySelectorAll(".sent, .ref").forEach((e) => e.classList.remove("hot", "fresh"));
+  toggle($("aLine"), "hidden"); toggle($("aLine"), "fresh", false); toggle($("tLine"), "merge", false); toggle($("tLine"), "gone", false); toggle($("tRoad"), "hidden"); toggle($("tRoad"), "gone");
+  toggle($("newdef"), "in", false); $("nd").textContent = "";
+  $("srcs").innerHTML = ""; $("log").querySelectorAll(".entry").forEach((e) => e.remove()); toggle($("badge"), "on", false);
+}
+if (reduce) {
+  reset(); $("s1").textContent = NEW; $("r1").textContent = "4"; $("claims").textContent = "4"; $("ver").textContent = "3";
+  toggle($("aLine"), "hidden", false); toggle($("tLine"), "gone"); toggle($("tRoad"), "hidden", false); toggle($("tRoad"), "gone", false); toggle($("newdef"), "in"); $("nd").textContent = ROAD;
+} else {
+  loop(23000, reset, (at) => {
+    let a, b, c;
+    // 1. A DEFINITION SHARPENS: the bylaw adds the notice period
+    at(700, () => { a = addChip($("srcs"), "ph-file-pdf", "Bylaw 20145.pdf", "Section 4"); });
+    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), NEW, () => { const r = $("r1"); r.textContent = "4"; toggle(r, "fresh"); setTimeout(() => toggle(r, "fresh", false), 1800); bump("claims", "4"); bump("ver", "3"); toggle(a, "read"); badge("Definition updated"); addEntry($("log"), "ph-arrows-clockwise", "var(--gold)", "Definition updated", "from Bylaw 20145"); }); });
+    at(6800, () => toggle($("s1"), "hot", false));
+    // 2. A DUPLICATE MERGES: "line permit" turns out to mean the same thing
+    at(7600, () => { b = addChip($("srcs"), "ph-envelope-simple", "Email from Dana", "Permits team"); });
+    at(8800, () => { toggle($("tLine"), "merge"); });
+    at(9500, () => toggle($("tLine"), "gone"));
+    at(9500, () => { toggle($("aLine"), "hidden", false); toggle($("aLine"), "fresh"); toggle(b, "read"); badge("Duplicate merged"); addEntry($("log"), "ph-git-merge", "var(--green-light)", "Duplicate merged", "Line permit into this term"); });
+    at(11500, () => toggle($("aLine"), "fresh", false));
+    // 3. A NEW TERM: the site notes use a word the glossary didn't have
+    at(12300, () => { c = addChip($("srcs"), "ph-note", "Site notes", "28 Oct"); });
+    at(13400, () => toggle($("tRoad"), "gone", false));
+    at(13500, () => { toggle($("tRoad"), "hidden", false); toggle($("newdef"), "in"); });
+    at(14100, () => write($("nd"), ROAD, 55, () => { toggle(c, "read"); badge("1 term added"); addEntry($("log"), "ph-plus-circle", "var(--green-pale)", "New term defined", "from site notes"); }));
+  });
+}
+</script>
+</body>
+</html>

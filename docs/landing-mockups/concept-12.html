@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root {
+    --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131;
+    --fade: #9b9b9b; --gold: #d9a441; --gold-pale: #f4d9a0; --glow: #f2c063; --ember: #8a5a1c;
+    --green: #496748; --green-hover: #557a54; --green-light: #6e9a6c; --green-pale: #cfe3cd; --conflict: #e0705a;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+  .wrap { width: 100%; max-width: 1240px; margin: 0 auto; }
+  .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
+  .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .logo svg { width: 20px; height: 20px; color: var(--green-light); }
+  .intro { text-align: center; }
+  h1 { max-width: 680px; margin: 0 auto; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(to right, #fff, var(--fade)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  .cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; background: var(--green); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 8px 12px; border-radius: 12px; transition: background-color .3s var(--ease), transform .3s var(--ease); }
+  .cta:hover { background: var(--green-hover); } .cta:active { transform: scale(.98); }
+  .cta:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  @media (min-width: 768px) { h1 { font-size: 60px; line-height: 1; } .sub { font-size: 20px; } }
+
+  .demo { margin-top: 64px; display: grid; gap: 24px; grid-template-columns: 1fr; align-items: start; transition: opacity .4s var(--ease); }
+  .demo.fading { opacity: 0; }
+  @media (min-width: 1024px) { .demo { grid-template-columns: 220px minmax(0, 1fr) 300px; } }
+  .col-title { font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 4px 0; }
+  .side { display: flex; flex-direction: column; gap: 8px; }
+  .side .gap { height: 16px; }
+  .chip, .entry { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); font-size: 14px; line-height: 20px; opacity: 0; transform: translateX(-12px); transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
+  .chip.in, .entry.in { opacity: 1; transform: none; }
+  .chip i, .entry i { font-size: 20px; color: var(--gold); flex: none; }
+  .chip small, .entry small { display: block; font-size: 12px; line-height: 16px; color: var(--fade); }
+  .chip.read { border-color: rgba(110,154,108,.6); } .chip.read i { color: var(--green-light); }
+
+  /* MAP */
+  .map { border-radius: 24px; background: var(--surface); border: 1px solid #3a3a3a; box-shadow: 0 48px 96px rgba(0,0,0,.45); padding: 16px; }
+  .map-head { display: flex; justify-content: space-between; align-items: center; padding: 0 8px 8px; font-size: 12px; line-height: 16px; color: var(--fade); }
+  .legend { display: flex; gap: 16px; } .legend span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend b { width: 8px; height: 8px; border-radius: 9999px; }
+  .map svg { display: block; width: 100%; height: auto; }
+  .node, .edge, .elabel { transition: opacity .6s var(--ease), transform .6s var(--ease); transform-box: fill-box; transform-origin: center; }
+  .node.hidden { opacity: 0; transform: scale(.6); }
+  .edge.hidden, .elabel.hidden { opacity: 0; }
+  .edge.old { stroke: var(--conflict) !important; stroke-dasharray: 4 4; }
+  .node.hot circle.ring { stroke: var(--glow); stroke-width: 3; }
+  .halo { opacity: 0; transition: opacity .4s var(--ease); }
+  .node.hot .halo { opacity: 1; }
+
+  /* CARD */
+  .card { border-radius: 24px; background: var(--surface); border: 1px solid #3a3a3a; box-shadow: 0 48px 96px rgba(0,0,0,.45); padding: 24px; transition: opacity .3s var(--ease), transform .3s var(--ease); }
+  .card.swap { opacity: 0; transform: translateY(6px); }
+  .card .kind { display: flex; justify-content: space-between; align-items: center; font-size: 12px; line-height: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: .08em; }
+  .badge { text-transform: none; letter-spacing: 0; padding: 4px 8px; border-radius: 9999px; background: rgba(110,154,108,.15); color: var(--green-pale); opacity: 0; transition: opacity .4s var(--ease); }
+  .badge.on { opacity: 1; }
+  .who { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
+  .av { width: 48px; height: 48px; border-radius: 9999px; display: grid; place-items: center; font-size: 16px; font-weight: 600; flex: none; }
+  .who h3 { font-size: 20px; line-height: 28px; font-weight: 600; }
+  .who p { font-size: 14px; line-height: 20px; color: var(--fade); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: rgba(255,255,255,.85); }
+  .row > span:first-child { color: var(--fade); }
+  .power { display: flex; gap: 4px; } .power b { width: 16px; height: 8px; border-radius: 2px; background: var(--hi); transition: background-color .4s var(--ease); } .power b.on { background: var(--gold); }
+  .was { color: var(--fade); font-size: 12px; } .was s { color: var(--conflict); }
+  .facts { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+  .facts p { font-size: 14px; line-height: 20px; color: rgba(255,255,255,.85); margin-top: 8px; }
+  .ref { display: inline-block; padding: 0 6px; margin-left: 4px; border-radius: 6px; font-size: 12px; line-height: 16px; background: rgba(217,164,65,.14); color: var(--gold-pale); }
+  .fresh { color: var(--gold-pale); }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero">
+  <span class="tag">Concept 12 · The living stakeholder map</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <div class="intro">
+      <h1>Know who matters,<br>and why.</h1>
+      <p class="sub">Every person and organization in your files, how they connect and how much say they have. Kept current.</p>
+      <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
+    </div>
+    <div class="demo" id="demo" aria-hidden="true">
+      <div class="side">
+        <span class="col-title">New sources</span>
+        <div id="srcs" class="side"></div>
+        <div class="gap"></div>
+        <span class="col-title">Change log</span>
+        <div id="log" class="side"></div>
+      </div>
+      <div class="map">
+        <div class="map-head"><span>Project Alpha · stakeholders</span><span class="legend"><span><b style="background:#f4d9a0"></b>Government</span><span><b style="background:#d9a441"></b>Organization</span><span><b style="background:#6e9a6c"></b>Person</span></span></div>
+        <svg viewBox="0 0 600 420" id="map">
+          <g font-family="Geist, system-ui" font-size="12">
+            <!-- edges -->
+            <line class="edge" x1="470" y1="100" x2="300" y2="210" stroke="#3c3c3c" stroke-width="2"/>
+            <line class="edge" x1="300" y1="210" x2="170" y2="330" stroke="#3c3c3c" stroke-width="2"/>
+            <line class="edge" id="eOldBoss" x1="170" y1="330" x2="70" y2="230" stroke="#3c3c3c" stroke-width="2"/>
+            <line class="edge" x1="300" y1="210" x2="330" y2="350" stroke="#3c3c3c" stroke-width="2"/>
+            <line class="edge hidden" id="eSponsor" x1="130" y1="90" x2="300" y2="210" stroke="#d9a441" stroke-width="2"/>
+            <line class="edge hidden" id="eSupplier" x1="480" y1="300" x2="300" y2="210" stroke="#d9a441" stroke-width="2"/>
+            <line class="edge hidden" id="eNewBoss" x1="170" y1="330" x2="130" y2="90" stroke="#d9a441" stroke-width="2"/>
+            <text class="elabel" x="372" y="146" text-anchor="end" fill="#9b9b9b">approves permits</text>
+            <text class="elabel hidden" id="lSponsor" x="222" y="138" text-anchor="middle" fill="#f4d9a0">sponsors</text>
+            <text class="elabel hidden" id="lSupplier" x="392" y="276" text-anchor="middle" fill="#f4d9a0">supplies cable</text>
+            <text class="elabel" id="lOldBoss" x="104" y="296" text-anchor="end" fill="#9b9b9b">reports to</text>
+            <text class="elabel hidden" id="lNewBoss" x="158" y="210" text-anchor="start" fill="#f4d9a0">reports to</text>
+            <!-- nodes -->
+            <g class="node" id="nCity"><circle class="halo" cx="470" cy="100" r="40" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="470" cy="100" r="28" fill="#272727" stroke="#f4d9a0" stroke-width="2"/><text x="470" y="105" text-anchor="middle" fill="#fff" font-weight="600">SF</text><text x="470" y="146" text-anchor="middle" fill="#fff">City of San Francisco</text></g>
+            <g class="node" id="nAlpha"><circle class="halo" cx="300" cy="210" r="44" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="300" cy="210" r="32" fill="#496748" stroke="#6e9a6c" stroke-width="2"/><svg x="284" y="197" width="32" height="32" viewBox="5 11 90 82" color="#fff"><use href="#mark"/></svg><text x="300" y="260" text-anchor="middle" fill="#fff" font-weight="500">Project Alpha</text></g>
+            <g class="node" id="nTom"><circle class="halo" cx="70" cy="230" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="70" cy="230" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="70" y="235" text-anchor="middle" fill="#cfe3cd" font-weight="600">TH</text><text x="70" y="270" text-anchor="middle" fill="#fff">Tom Hale</text></g>
+            <g class="node" id="nMarco"><circle class="halo" cx="170" cy="330" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="170" cy="330" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="170" y="335" text-anchor="middle" fill="#cfe3cd" font-weight="600">MR</text><text x="170" y="370" text-anchor="middle" fill="#fff">Marco Ruiz</text></g>
+            <g class="node" id="nDana"><circle class="halo" cx="330" cy="350" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="330" cy="350" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="330" y="355" text-anchor="middle" fill="#cfe3cd" font-weight="600">DL</text><text x="330" y="390" text-anchor="middle" fill="#fff">Dana Lee</text></g>
+            <g class="node hidden" id="nPriya"><circle class="halo" cx="130" cy="90" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="130" cy="90" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="130" y="95" text-anchor="middle" fill="#cfe3cd" font-weight="600">PN</text><text x="130" y="130" text-anchor="middle" fill="#fff">Priya Nair</text></g>
+            <g class="node hidden" id="nNorth"><circle class="halo" cx="480" cy="300" r="38" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="480" cy="300" r="26" fill="#272727" stroke="#d9a441" stroke-width="2"/><text x="480" y="305" text-anchor="middle" fill="#fff" font-weight="600">NC</text><text x="480" y="344" text-anchor="middle" fill="#fff">Northwind Cables</text></g>
+          </g>
+        </svg>
+      </div>
+      <article class="card" id="card"></article>
+    </div>
+  </div>
+</section>
+
+<script>
+// =====================================================================
+// THE LIVING STAKEHOLDER MAP: three sources arrive. An email names a new
+// sponsor, a contract adds a supplier, and an org chart moves who Marco
+// reports to. The map rewires and the card shows the stakeholder that
+// changed, with power level, links and sourced facts. 24 second loop.
+// =====================================================================
+const LOOP = 24000, reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = (id) => document.getElementById(id);
+const nextFrame = (fn) => requestAnimationFrame(() => requestAnimationFrame(fn));
+let timers = []; const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+const CARDS = {
+  marco: { kind: "Person", av: ["MR", "#3a4d39", "#cfe3cd"], name: "Marco Ruiz", role: "Project owner, Alpha", power: 3, rows: [["Reports to", "Tom Hale"], ["Contact", "Email, phone"]], facts: [["Owns delivery of Project Alpha", "K-096"], ["Leads two field crews", "K-120"]] },
+  priya: { kind: "Person", av: ["PN", "#3a4d39", "#cfe3cd"], name: "Priya Nair", role: "Director, Infrastructure", power: 4, rows: [["Role on Alpha", `<span class="fresh">Sponsor</span>`], ["Approves", "Budget over 50,000"]], facts: [["Sponsors Project Alpha", "K-322"], ["Signs off budget changes", "K-142"]] },
+  north: { kind: "Organization", av: ["NC", "#3a2a14", "#f2c063"], name: "Northwind Cables", role: "Supplier, fibre cabling", power: 2, rows: [["Contract", "Until March 2028"], ["Delivers", "Weekly batches"]], facts: [["Supplies cabling for Alpha", "K-231"], ["Two year contract", "K-232"]] },
+  marco2: { kind: "Person", av: ["MR", "#3a4d39", "#cfe3cd"], name: "Marco Ruiz", role: "Project owner, Alpha", power: 3, rows: [["Reports to", `<span class="fresh">Priya Nair</span> <span class="was">was <s>Tom Hale</s></span>`], ["Contact", "Email, phone"]], facts: [["Owns delivery of Project Alpha", "K-096"], ["Now reports to Priya Nair", "K-340"]] },
+};
+function render(c, badge) {
+  const card = $("card");
+  card.classList.add("swap");
+  setTimeout(() => {
+    card.innerHTML = `<div class="kind"><span>${c.kind}</span><span class="badge${badge ? " on" : ""}">${badge || ""}</span></div>
+      <div class="who"><span class="av" style="background:${c.av[1]};color:${c.av[2]}">${c.av[0]}</span><div><h3>${c.name}</h3><p>${c.role}</p></div></div>
+      <div class="row"><span>Power</span><span class="power">${[1, 2, 3, 4, 5].map((n) => `<b class="${n <= c.power ? "on" : ""}"></b>`).join("")}</span></div>
+      ${c.rows.map(([k, v]) => `<div class="row"><span>${k}</span><span>${v}</span></div>`).join("")}
+      <div class="facts"><span class="col-title">Key facts</span>${c.facts.map(([f, k]) => `<p>${f}<span class="ref">${k}</span></p>`).join("")}</div>`;
+    card.classList.remove("swap");
+  }, 300);
+}
+function addTo(list, cls, icon, name, meta) {
+  const el = document.createElement("div"); el.className = cls; el.innerHTML = `<i class="ph-duotone ${icon}"></i><span>${name}<small>${meta}</small></span>`;
+  $(list).append(el); nextFrame(() => el.classList.add("in")); return el;
+}
+const show = (id) => { $(id).classList.remove("hidden"); };
+const hot = (id, v = true) => $(id).classList.toggle("hot", v);
+function reset() {
+  timers.forEach(clearTimeout); timers = []; $("srcs").innerHTML = ""; $("log").innerHTML = "";
+  ["nPriya", "nNorth", "eSponsor", "eSupplier", "eNewBoss", "lSponsor", "lSupplier", "lNewBoss"].forEach((id) => $(id).classList.add("hidden"));
+  ["eOldBoss", "lOldBoss", "nTom"].forEach((id) => $(id).classList.remove("hidden", "old"));
+  document.querySelectorAll(".node").forEach((n) => n.classList.remove("hot"));
+  render(CARDS.marco);
+}
+function run() {
+  reset(); $("demo").classList.remove("fading");
+  let a, b, c;
+  // 1. A NEW SPONSOR: an email names Priya as Alpha's sponsor
+  at(1200, () => { a = addTo("srcs", "chip", "ph-envelope-simple", "Email from Priya", "28 Oct"); });
+  at(2400, () => { show("nPriya"); hot("nPriya"); });
+  at(3000, () => { show("eSponsor"); show("lSponsor"); render(CARDS.priya, "New stakeholder"); a.classList.add("read"); addTo("log", "entry", "ph-user-plus", "Priya Nair added", "sponsor, power 4"); });
+  at(6500, () => hot("nPriya", false));
+  // 2. A NEW SUPPLIER: the contract brings in Northwind Cables
+  at(7300, () => { b = addTo("srcs", "chip", "ph-file-pdf", "contract.pdf", "Section 2.1"); });
+  at(8500, () => { show("nNorth"); hot("nNorth"); });
+  at(9100, () => { show("eSupplier"); show("lSupplier"); render(CARDS.north, "New stakeholder"); b.classList.add("read"); addTo("log", "entry", "ph-buildings", "Northwind Cables added", "supplier, power 2"); });
+  at(12600, () => hot("nNorth", false));
+  // 3. A REPORTING LINE MOVES: the org chart puts Marco under Priya
+  at(13400, () => { c = addTo("srcs", "chip", "ph-tree-structure", "Org chart.pdf", "November"); });
+  at(14600, () => { hot("nMarco"); $("eOldBoss").classList.add("old"); });
+  at(15600, () => { $("eOldBoss").classList.add("hidden"); $("lOldBoss").classList.add("hidden"); show("eNewBoss"); show("lNewBoss"); render(CARDS.marco2, "Updated"); c.classList.add("read"); addTo("log", "entry", "ph-arrows-left-right", "Marco Ruiz moved", "now reports to Priya"); });
+  at(19500, () => hot("nMarco", false));
+  at(LOOP - 500, () => $("demo").classList.add("fading"));
+  at(LOOP, run);
+}
+if (reduce) {
+  reset(); ["nPriya", "nNorth", "eSponsor", "eSupplier", "eNewBoss", "lSponsor", "lSupplier", "lNewBoss"].forEach(show);
+  ["eOldBoss", "lOldBoss"].forEach((id) => $(id).classList.add("hidden")); render(CARDS.marco2, "Updated");
+} else {
+  document.fonts.ready.then(run);
+}
+</script>
+</body>
+</html>

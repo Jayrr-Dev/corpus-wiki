@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root {
+    --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131;
+    --fade: #9b9b9b; --gold: #d9a441; --gold-pale: #f4d9a0; --glow: #f2c063; --ember: #8a5a1c;
+    --green: #496748; --green-hover: #557a54; --green-light: #6e9a6c; --green-pale: #cfe3cd;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: center; }
+  .wrap { width: 100%; max-width: 1152px; margin: 0 auto; }
+  .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
+  .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .logo svg { width: 20px; height: 20px; color: var(--green-light); }
+  h1 { max-width: 680px; margin: 0 auto; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(to right, #fff, var(--fade)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  .cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; background: var(--green); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 8px 12px; border-radius: 12px; transition: background-color .3s var(--ease), transform .3s var(--ease); }
+  .cta:hover { background: var(--green-hover); } .cta:active { transform: scale(.98); }
+  .cta:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  @media (min-width: 768px) { h1 { font-size: 60px; line-height: 1; } .sub { font-size: 20px; } }
+
+  /* STAGE: drawn at 1152 wide, scaled to fit the column */
+  .fit { margin-top: 64px; position: relative; }
+  .stage { position: absolute; left: 0; top: 0; width: 1152px; height: 400px; transform-origin: top left; text-align: left; }
+  .belt { position: absolute; top: 300px; height: 16px; border-radius: 8px; background: repeating-linear-gradient(to right, #1f1f1f 0 12px, #272727 12px 24px); }
+  .belt.left { left: 0; width: 400px; } .belt.right { left: 752px; width: 400px; }
+  .wheel { position: absolute; top: 324px; width: 32px; height: 32px; border-radius: 9999px; background: var(--line); }
+  .item { position: absolute; left: 0; top: 0; will-change: transform, opacity; }
+  .out { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; border-radius: 12px; background: var(--hi); border: 1px solid #3c3c3c; font-size: 14px; line-height: 20px; white-space: nowrap; will-change: transform, opacity; }
+  .out i { font-size: 20px; }
+
+  /* MACHINE: a green housing with a glass window onto the growing graph */
+  .machine { position: absolute; left: 376px; top: 20px; width: 400px; height: 296px; border-radius: 24px; background: var(--green); border: 2px solid var(--green-light); padding: 12px; }
+  .glass { position: relative; width: 100%; height: 232px; border-radius: 12px; background: #0e0d07; border: 1px solid #2c3f2b; overflow: hidden; }
+  .glass canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .glass::after { content: ""; position: absolute; left: 12px; top: 8px; width: 120px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.08); }
+  .status { display: flex; align-items: center; justify-content: space-between; height: 32px; margin-top: 8px; padding: 0 8px; font-size: 12px; line-height: 16px; color: var(--green-pale); }
+  .status .left { display: flex; align-items: center; gap: 8px; }
+  .status svg { width: 16px; height: 16px; color: #fff; }
+  .lamp { width: 8px; height: 8px; border-radius: 9999px; background: var(--glow); box-shadow: 0 0 12px var(--glow); transition: opacity .3s var(--ease); }
+  .mouth { position: absolute; top: 236px; width: 8px; height: 64px; border-radius: 4px; background: #2c3f2b; }
+  .mouth.l { left: 368px; } .mouth.r { left: 776px; }
+  @media (prefers-reduced-motion: reduce) { .lamp { box-shadow: none; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero">
+  <span class="tag">Concept 6 · The glass machine</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <h1>Feed it everything.<br>Watch it organize.</h1>
+    <p class="sub">Corpus Wiki grows a map of what you know, then writes the pages, guides and lists your team needs.</p>
+    <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
+    <div class="fit" aria-hidden="true">
+      <div class="stage">
+        <div class="belt left"></div><div class="belt right"></div>
+        <span class="wheel" style="left:24px"></span><span class="wheel" style="left:304px"></span>
+        <span class="wheel" style="left:824px"></span><span class="wheel" style="left:1096px"></span>
+        <div class="mouth l"></div><div class="mouth r"></div>
+        <div id="items"></div>
+        <div id="outs"></div>
+        <div class="machine">
+          <div class="glass"><canvas id="graph"></canvas></div>
+          <div class="status"><span class="left"><svg><use href="#mark"/></svg><span id="phase">Waiting for files</span></span><span id="count">0 facts</span><span class="lamp" id="lamp"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<template id="t-doc"><svg width="76" height="88" viewBox="0 0 76 88"><path d="M4 86 L14 6 L62 0 L74 26 L58 86 Z" fill="#efe6d2"/><path d="M22 28 L56 24 M22 40 L52 37 M24 52 L46 50" stroke="#c9bc9f" stroke-width="4" stroke-linecap="round"/></svg></template>
+<template id="t-photo"><svg width="84" height="68" viewBox="0 0 84 68"><g transform="rotate(-6 42 34)"><rect x="4" y="6" width="76" height="56" rx="6" fill="#2a3b2a"/><circle cx="24" cy="24" r="7" fill="#cfe3cd"/><path d="M8 58 L36 34 L52 48 L68 32 L78 58 Z" fill="#6e9a6c"/></g></svg></template>
+<template id="t-video"><svg width="88" height="60" viewBox="0 0 88 60"><g transform="rotate(5 44 30)"><rect x="4" y="6" width="80" height="50" rx="6" fill="#3a2a14"/><path d="M38 20 L56 31 L38 42 Z" fill="#f2c063"/></g></svg></template>
+<template id="t-link"><svg width="72" height="56" viewBox="0 0 72 56"><rect x="2" y="6" width="68" height="46" rx="8" fill="#272727" stroke="#3c3c3c"/><path d="M24 34 L34 24 M30 20 L34 16 a7 7 0 0 1 10 10 L40 30 M42 36 L38 40 a7 7 0 0 1 -10 -10 L32 26" stroke="#f4d9a0" stroke-width="3" fill="none" stroke-linecap="round"/></svg></template>
+<template id="t-note"><svg width="64" height="64" viewBox="0 0 64 64"><g transform="rotate(8 32 32)"><rect x="6" y="6" width="52" height="52" rx="4" fill="#f4d9a0"/><path d="M16 22 H46 M16 32 H42 M16 42 H34" stroke="#c9a35a" stroke-width="3.5" stroke-linecap="round"/></g></svg></template>
+
+<script>
+// =====================================================================
+// THE GLASS MACHINE: files ride in on the left, a graph grows inside the
+// window (one point, then many), the points sort into labelled groups,
+// then the finished outputs ride out on the right. One loop of 24 seconds.
+// =====================================================================
+const LOOP = 28, FEED_END = 10.5, ORG_START = 10.5, ORG_END = 14, LABEL_START = 13.5, OUT_START = 15.5, FADE_START = 26.6;
+const W = 376, H = 232; // glass size in stage pixels (machine 400 minus padding)
+const GROUPS = [
+  { name: "Projects", color: "#f2c063", cx: 72, cy: 82 },
+  { name: "People", color: "#cfe3cd", cx: 190, cy: 74 },
+  { name: "Policies", color: "#6e9a6c", cx: 306, cy: 84 },
+  { name: "Clients", color: "#e8d3a6", cx: 126, cy: 180 },
+  { name: "Terms", color: "#d9a441", cx: 256, cy: 180 },
+];
+const INPUTS = ["t-doc", "t-photo", "t-video", "t-note", "t-doc", "t-link", "t-video", "t-doc"];
+const ADDS = [1, 2, 3, 5, 7, 9, 11, 12]; // points each file adds: one at first, then many
+const OUTPUTS = [
+  ["ph-article", "Wiki pages", "#f2c063"], ["ph-newspaper", "Articles", "#e8d3a6"], ["ph-graduation-cap", "Tutorials", "#6e9a6c"],
+  ["ph-book-open-text", "Glossary", "#cfe3cd"], ["ph-address-book", "Client list", "#d9a441"], ["ph-exam", "Quizzes", "#f4d9a0"],
+  ["ph-users-three", "Stakeholders", "#cfe3cd"], ["ph-image-square", "Visuals", "#f2c063"], ["ph-robot", "Agent context", "#6e9a6c"],
+];
+const ARRIVE = 2.6, SPACING = 1.15; // seconds on the belt, seconds between files
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const mix = (a, b, t) => a + (b - a) * t;
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+
+// SEEDED RANDOM: the same graph every loop, so it reads as one story
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const nodes = [], edges = [];
+INPUTS.forEach((_, f) => {
+  for (let k = 0; k < ADDS[f]; k++) {
+    const g = nodes.length === 0 ? 0 : Math.floor(rnd() * GROUPS.length), a = rnd() * Math.PI * 2, r = 10 + rnd() * 30;
+    const n = { born: f * SPACING + ARRIVE + k * 0.08, g, sx: 24 + rnd() * (W - 48), sy: 24 + rnd() * (H - 48), tx: GROUPS[g].cx + Math.cos(a) * r, ty: GROUPS[g].cy + Math.sin(a) * r * 0.8, size: 2.5 + rnd() * 2.5 };
+    if (nodes.length) {
+      const same = nodes.filter((m) => m.g === g), pick = same.length && rnd() < 0.8 ? same[Math.floor(rnd() * same.length)] : nodes[Math.floor(rnd() * nodes.length)];
+      edges.push([pick, n]);
+    }
+    nodes.push(n);
+  }
+});
+nodes[0].size = 6;
+
+// DOM: one element per file and per output, moved with transforms only
+const itemsEl = document.getElementById("items"), outsEl = document.getElementById("outs");
+const items = INPUTS.map((id) => { const d = document.createElement("div"); d.className = "item"; d.append(document.getElementById(id).content.cloneNode(true)); itemsEl.append(d); return d; });
+const outs = OUTPUTS.map(([icon, label, color]) => { const d = document.createElement("div"); d.className = "out"; d.innerHTML = `<i class="ph-duotone ${icon}" style="color:${color}"></i>${label}`; outsEl.append(d); return d; });
+
+const canvas = document.getElementById("graph"), ctx = canvas.getContext("2d");
+const phaseEl = document.getElementById("phase"), countEl = document.getElementById("count"), lamp = document.getElementById("lamp");
+function sizeCanvas() { const dpr = devicePixelRatio || 1; canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+sizeCanvas();
+
+function draw(t) {
+  const org = ease((t - ORG_START) / (ORG_END - ORG_START)), lab = ease((t - LABEL_START) / 1.2), fade = 1 - ease((t - FADE_START) / 1.2);
+  ctx.clearRect(0, 0, W, H);
+  const pos = (n) => [mix(n.sx, n.tx, org), mix(n.sy, n.ty, org)];
+  const grow = (n) => ease((t - n.born) / 0.6);
+  // group halos once organized
+  GROUPS.forEach((g) => { ctx.globalAlpha = 0.1 * org * fade; ctx.fillStyle = g.color; ctx.beginPath(); ctx.arc(g.cx, g.cy, 42, 0, 7); ctx.fill(); });
+  // edges
+  ctx.lineWidth = 1;
+  edges.forEach(([a, b]) => { const v = Math.min(grow(a), grow(b)); if (!v) return; const [ax, ay] = pos(a), [bx, by] = pos(b); ctx.globalAlpha = 0.35 * v * fade * (a.g === b.g ? 1 : 1 - org * 0.7); ctx.strokeStyle = a.g === b.g ? GROUPS[a.g].color : "#9b9b9b"; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); });
+  // nodes: grey while scattered, group colour as they sort
+  let alive = 0;
+  nodes.forEach((n) => {
+    const v = grow(n); if (!v) return; alive++;
+    const [x, y] = pos(n), c = hex(GROUPS[n.g].color), k = 0.35 + 0.65 * org;
+    ctx.globalAlpha = fade; ctx.fillStyle = `rgb(${mix(155, c[0], k)},${mix(155, c[1], k)},${mix(155, c[2], k)})`;
+    ctx.beginPath(); ctx.arc(x, y, n.size * v, 0, 7); ctx.fill();
+    const fresh = clamp(1 - (t - n.born) / 0.9); // a new point flashes as it lands
+    if (fresh > 0) { ctx.globalAlpha = fresh * 0.6 * fade; ctx.strokeStyle = "#fff4d6"; ctx.beginPath(); ctx.arc(x, y, n.size + 10 * (1 - fresh), 0, 7); ctx.stroke(); }
+  });
+  // labels
+  ctx.font = "500 12px Geist, system-ui"; ctx.textAlign = "center";
+  GROUPS.forEach((g, i) => {
+    const v = ease((t - LABEL_START - i * 0.25) / 0.8) * fade; if (!v) return;
+    const w = ctx.measureText(g.name).width + 16, y = g.cy - 50 + (1 - v) * 6;
+    ctx.globalAlpha = v; ctx.fillStyle = "#1f1f1f"; ctx.strokeStyle = g.color;
+    ctx.beginPath(); ctx.roundRect(g.cx - w / 2, y - 12, w, 22, 11); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.fillText(g.name, g.cx, y + 3);
+  });
+  ctx.globalAlpha = 1;
+  return alive;
+}
+
+function frame(now) {
+  const t = (now / 1000) % LOOP;
+  // files on the left belt: ride in, shrink into the machine
+  items.forEach((el, i) => {
+    const s = (t - i * SPACING) / ARRIVE;
+    if (s < 0 || s > 1.15) { el.style.opacity = 0; return; }
+    const x = mix(-90, 330, ease(Math.min(s, 1) * 0.98)), w = el.firstElementChild.width.baseVal.value, h = el.firstElementChild.height.baseVal.value;
+    const gone = clamp((s - 0.92) / 0.2);
+    el.style.opacity = clamp(s * 6) * (1 - gone);
+    el.style.transform = `translate(${x + gone * 50}px, ${300 - h}px) scale(${1 - gone * 0.5})`;
+  });
+  // outputs on the right belt: pop out of the machine one by one, ride off
+  outs.forEach((el, i) => {
+    const s = (t - OUT_START - i * 0.95) / 3.0;
+    if (s < 0 || s > 1) { el.style.opacity = 0; return; }
+    el.style.opacity = clamp(s * 10) * clamp((1 - s) * 8);
+    el.style.transform = `translate(${mix(700, 1200, s)}px, ${244 - (1 - ease(s * 4)) * 16}px)`;
+  });
+  const alive = draw(t);
+  countEl.textContent = `${alive} ${alive === 1 ? "fact" : "facts"}`;
+  phaseEl.textContent = t < 2.4 ? "Waiting for files" : t < FEED_END ? "Reading files" : t < LABEL_START ? "Organizing" : t < OUT_START ? "Naming groups" : t < FADE_START ? "Writing outputs" : "Ready for more";
+  lamp.style.opacity = (Math.sin(now / 160) > 0 && t > 2.4 && t < FADE_START) ? 1 : 0.35;
+  requestAnimationFrame(frame);
+}
+
+// FIT: scale the 1152 wide stage to the column
+const fit = document.querySelector(".fit"), stage = document.querySelector(".stage");
+function resize() { const s = Math.min(1, fit.clientWidth / 1152); stage.style.transform = `scale(${s})`; fit.style.height = `${400 * s}px`; }
+addEventListener("resize", resize); resize();
+
+if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  // STILL: the organised, labelled graph with every output lined up
+  draw(OUT_START + 1); countEl.textContent = `${nodes.length} facts`; phaseEl.textContent = "Ready";
+  outs.forEach((el, i) => { el.style.transform = `translate(${800 + (i % 2) * 176}px, ${40 + Math.floor(i / 2) * 64}px)`; });
+} else {
+  document.fonts.ready.then(() => requestAnimationFrame(frame));
+}
+</script>
+</body>
+</html>
