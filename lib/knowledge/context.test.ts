@@ -19,14 +19,16 @@ describe("knowledge context compatibility",()=>{
   expect(parseKnowledgeContext({...known,applicability:{status:"scoped",entities:[],conditions:null}})).toBeNull();
  });
  it("keeps structure labels sorted and deduped, and ignores them when merging",()=>{
-  const leads={from:{type:"person",key:"alex-1"},link:"leads" as const,to:{type:"team",key:"billing"},title:"Head of Billing",seniority:"director" as const,share:null,current:true};
+  const leads={from:{type:"person",key:"alex-1"},link:"leads" as const,to:{type:"team",key:"billing"},title:"Head of Billing",seniority:"director" as const,share:null,current:true,since:"2019",until:null};
   const partOf={from:{type:"team",key:"billing"},link:"part_of" as const,to:{type:"company",key:"acme"},title:"",seniority:null,share:null,current:true};
   const labelled={...known,structure:[partOf,leads,leads]};
-  expect(normalizeKnowledgeContext(labelled).structure).toEqual([leads,{...partOf,title:null}]);
+  expect(normalizeKnowledgeContext(labelled).structure).toEqual([leads,{...partOf,title:null,since:null,until:null}]);
   expect(normalizeKnowledgeContext(known)).not.toHaveProperty("structure");
   expect(normalizeKnowledgeContext({...known,structure:[]})).not.toHaveProperty("structure");
-  expect(contextsCompatibleForMerge(known,labelled)).toBe(true);
+  expect(contextsCompatibleForMerge(known,normalizeKnowledgeContext(labelled))).toBe(true);
   expect(parseKnowledgeContext({...known,structure:[{...leads,link:"friends_with"}]})).toBeNull();
   expect(parseKnowledgeContext({...known,structure:[{...leads,share:1.5}]})).toBeNull();
+  expect(parseKnowledgeContext({...known,structure:[{...leads,since:"March 2019"}]})).toBeNull();
+  expect(normalizeKnowledgeContext({...known,structure:[{...leads,until:"2021-03"}]}).structure).toEqual([{...leads,until:"2021-03",current:false}]);
  });
 });

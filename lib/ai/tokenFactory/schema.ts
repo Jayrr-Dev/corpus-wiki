@@ -55,6 +55,10 @@ const structureLabelSchema = z.object({
   seniority: z.enum(SENIORITIES).nullable(),
   share: z.number().min(0).max(1).nullable(),
   current: z.boolean(),
+  // When the seat, membership or ownership started and ended ("2019", "2021-03"); toDraft.ts drops a
+  // value that is not a partial date. Required in guided decoding; labels from before dates have none.
+  since: z.string().nullable().default(null),
+  until: z.string().nullable().default(null),
 });
 
 // ONE CLAIM READ FROM THE FILE

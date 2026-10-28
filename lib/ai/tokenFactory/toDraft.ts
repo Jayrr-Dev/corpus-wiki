@@ -4,7 +4,7 @@ import { normalizeKnowledgeContext } from "@/lib/knowledge/context";
 import { normalizeEntityType } from "@/lib/knowledge/entityTypes";
 import { sameClaimText } from "@/lib/knowledge/similarity";
 import { reuseDomainPaths } from "@/lib/domains/reusePaths";
-import type { StructureLabel } from "@/lib/stakeholders/structure";
+import { PARTIAL_DATE, type StructureLabel } from "@/lib/stakeholders/structure";
 import { claimRef, passageRef, unitRef } from "./prompt";
 import type { AnswerClaim, AnswerEntityRef, AnswerLink, ReconciliationAnswer } from "./schema";
 
@@ -307,15 +307,18 @@ function claimContext(claim: AnswerClaim) {
 
 // STRUCTURE LABELS (knowledge_context.structure): keys normalized like the entities; a label
 // whose ends are not both among the claim's own entities, or that links a thing to itself, is
-// dropped. A share is kept only on owned_by, as the contract says.
+// dropped. A share is kept only on owned_by, as the contract says. A date that is not a partial
+// ISO date is dropped; an end date means the link is no longer current.
 function structureLabels(claim: AnswerClaim, entities: { type: string; key: string }[]): StructureLabel[] {
   const own = new Set(entities.map((e) => `${e.type}:${e.key}`));
   const end = (ref: { type: string; key: string }) => ({ type: normalizeEntityType(ref.type), key: slug(ref.key) });
+  const date = (value: string | null | undefined) => (value && PARTIAL_DATE.test(value.trim()) ? value.trim() : null);
   return (claim.stakeholderLinks ?? []).flatMap((label) => {
     const from = end(label.from), to = end(label.to);
     if (!own.has(`${from.type}:${from.key}`) || !own.has(`${to.type}:${to.key}`) || (from.type === to.type && from.key === to.key)) return [];
+    const since = date(label.since), until = date(label.until);
     return [{ from, link: label.link, to, title: label.title?.trim() || null, seniority: label.seniority,
-      share: label.link === "owned_by" ? label.share : null, current: label.current }];
+      share: label.link === "owned_by" ? label.share : null, current: until ? false : label.current, since, until }];
   });
 }
 

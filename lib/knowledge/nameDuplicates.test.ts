@@ -43,7 +43,7 @@ describe("entity name duplicate guard", () => {
   it("moves structure label ends onto the reused identity", async () => {
     const known = entity("Utilitek Solutions Inc.", "utilitek");
     const labelled: AnswerClaim = { ...claim("Utiltek Solutions"), stakeholderLinks: [{ from: { type: "team", key: "billing" }, link: "part_of",
-      to: { type: "company", key: "utiltek-solutions" }, title: null, seniority: null, share: null, current: true }] };
+      to: { type: "company", key: "utiltek-solutions" }, title: null, seniority: null, share: null, current: true, since: null, until: null }] };
     const result = await reuseEntities([labelled], [known], vi.fn(async () => 0));
     expect(result[0]?.stakeholderLinks?.[0]).toMatchObject({ from: { type: "team", key: "billing" }, to: { type: "company", key: "utilitek" } });
   });

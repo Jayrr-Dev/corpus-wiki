@@ -23,9 +23,15 @@ describe("reconciliation answer schema", () => {
     expect(parse({ to: { type: "department", key: "billing" } }).data?.claims[0]?.stakeholderLinks?.[0]?.to.type).toBe("team");
   });
 
+  it("reads labels from before dates existed as having none", () => {
+    const parsed = reconciliationAnswerSchema.parse({ summary: "", claims: [{ ...historical, stakeholderLinks: [label] }] });
+    expect(parsed.claims[0]?.stakeholderLinks?.[0]).toMatchObject({ since: null, until: null });
+  });
+
   it("asks guided decoding for the labels on every claim", () => {
     const claim = (reconciliationJsonSchema as unknown as { properties: { claims: { items: { required: string[]; properties: Record<string, unknown> } } } }).properties.claims.items;
     expect(claim.required).toContain("stakeholderLinks");
     expect(JSON.stringify(claim.properties.stakeholderLinks)).toContain("board_member_of");
+    expect(JSON.stringify(claim.properties.stakeholderLinks)).toContain('"required":["from","link","to","title","seniority","share","current","since","until"]');
   });
 });
