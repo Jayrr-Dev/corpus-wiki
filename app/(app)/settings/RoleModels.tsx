@@ -41,7 +41,6 @@ export function RoleModels({ settings }: { settings: ModelSettings }) {
           );
         })}
       </ul>
-      <p className="text-xs text-faint">The Extractor and Organizer guide the Reconciler’s request, so they use its model. Unnamed steps (topic placement, entity clean-up, stakeholder cards, chat) use the active model. Each role is offered only the models that read the data it sends.</p>
     </div>
   );
 }

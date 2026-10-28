@@ -1,6 +1,7 @@
 import { BrainCircuit, Bot, ChartNoAxesCombined, CircleDollarSign, Gauge, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { ReadingPane } from "@/components/shell";
+import { InfoPopover } from "@/components/standard/info-popover";
 import { CostTable } from "@/components/usage/CostTable";
 import { UsagePanel } from "@/components/usage/UsagePanel";
 import { AgentKeys } from "./AgentKeys";
@@ -65,14 +66,22 @@ export default async function SettingsPage() {
         <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">AI model</h3><SettingHint>Used for uploads, line edits, and page builds.</SettingHint></div>
         <ModelPicker settings={modelSettings} />
         <div className="mt-6 border-t pt-6">
-          <h3 className="font-medium">OpenRouter</h3>
-          <p className="mt-2 text-panel text-muted-foreground">Composer automatically assesses settled article changes, remembers completed assessments, and preserves suitable images. Use a section’s Illustrate action to request a new image with optional guidance.</p>
-          <p className="mt-2 text-panel text-muted-foreground">{process.env.OPENROUTER_API_KEY ? "Connected. OpenRouter text and vision models are available in the model pickers." : "Add OPENROUTER_API_KEY to the server environment to connect."}</p>
-          <p className="mt-1 text-panel text-muted-foreground">Composer image model: {process.env.OPENROUTER_IMAGE_MODEL || "qwen/qwen-image-2.1-turbo"}.</p>
-          <p className="mt-1 text-panel text-muted-foreground">Composer vector model: {process.env.OPENROUTER_VECTOR_MODEL || "recraft/recraft-v4.1-pro-vector"}.</p>
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-medium">OpenRouter</h3>
+            <InfoPopover label="About OpenRouter">
+              <p>OpenRouter text and vision models show in the model pickers.</p>
+              <p className="mt-2">Composer automatically assesses settled article changes, remembers completed assessments, and preserves suitable images. Use a section’s Illustrate action to request a new image with optional guidance.</p>
+              <p className="mt-2">Composer image model: <code className="font-mono text-xs break-all">{process.env.OPENROUTER_IMAGE_MODEL || "qwen/qwen-image-2.1-turbo"}</code></p>
+              <p className="mt-1">Composer vector model: <code className="font-mono text-xs break-all">{process.env.OPENROUTER_VECTOR_MODEL || "recraft/recraft-v4.1-pro-vector"}</code></p>
+            </InfoPopover>
+          </div>
+          <p className="mt-1 text-panel text-muted-foreground">{process.env.OPENROUTER_API_KEY ? "Connected." : "Add OPENROUTER_API_KEY to the server environment to connect."}</p>
         </div>
         <div className="mt-6 border-t pt-6">
-          <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">Model by role</h3><SettingHint>Run a role on its own model: a fast one to write, a smart one to decide and review, a cheap one for routine work. Roles left on Active model follow the pick above.</SettingHint></div>
+          <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">Model by role</h3><InfoPopover label="About model by role">
+            <p>Run a role on its own model: a fast one to write, a smart one to decide and review, a cheap one for routine work. Roles left on Active model follow the pick above.</p>
+            <p className="mt-2">The Extractor and Organizer guide the Reconciler’s request, so they use its model. Unnamed steps (topic placement, entity clean-up, stakeholder cards, chat) use the active model. Each role is offered only the models that read the data it sends.</p>
+          </InfoPopover></div>
           <RoleModels settings={modelSettings} />
         </div>
         <div className="mt-6 border-t pt-6">
@@ -97,8 +106,7 @@ export default async function SettingsPage() {
   };
   return (
     <ReadingPane title="Settings">
-      <p className="-mt-2 text-panel text-muted-foreground">Make this workspace work the way you think.</p>
-      <div className="mt-4">
+      <div className="mt-2">
         <SettingsTabs tabs={sections.map(({ id, label, icon: Icon }) => ({ id, label, icon: <Icon size={16} aria-hidden="true" />, panel: panels[id] }))} />
       </div>
     </ReadingPane>

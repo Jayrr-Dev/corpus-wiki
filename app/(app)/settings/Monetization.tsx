@@ -26,7 +26,7 @@ export function Monetization({ enabled }: { enabled: boolean }) {
         </div>
         <Switch id="monetization" checked={enabled} disabled={save.isPending} onCheckedChange={(next) => void apply(next)} />
       </div>
-      {enabled ? <p className="text-panel text-muted-foreground">Limits are not enforced yet. The plans, meter and billing are still being built.</p> : null}
+      {enabled ? <p className="text-panel text-muted-foreground">Limits are not enforced yet; billing is still being built.</p> : null}
       <ErrorNote error={save.error} />
     </div>
   );
