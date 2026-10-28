@@ -3,7 +3,8 @@
 -- =====================================================================
 -- A claim may carry knowledge_context.structure: StructureLabel[] from
 -- lib/stakeholders/structure.ts (from, link, to, title, seniority, share,
--- current). The link and seniority lists below are that file's lists.
+-- current, since, until). The link and seniority lists and the partial
+-- date pattern below are that file's.
 -- 1. TABLE. public.entity_relations holds each claim's labels, one row
 --    per (claim, from, link, to), with both ends resolved to the entity
 --    that stayed when the claim was saved.
@@ -11,11 +12,12 @@
 --    entities. Like unit_entities, a retired claim's rows stay and stop
 --    counting in the read; a later merge resolves at read time.
 -- 3. VALIDATION. A label must use a known link and seniority, a share
---    from 0 to 1, and join two of the claim's own entities. A context
---    without structure stays valid.
+--    from 0 to 1, partial ISO dates, no end date on a current seat, and
+--    join two of the claim's own entities. A context without structure
+--    stays valid.
 -- 4. READ. public.stakeholder_structure() returns StructureRelation[]:
---    one per (from, link, to) over live claims, the latest claim's
---    title, seniority, share and current winning.
+--    one per (from, link, to) over live claims; the claim with the
+--    newest source date wins, and asOf is that date.
 -- =====================================================================
 
 
@@ -39,6 +41,9 @@ create table public.entity_relations (
     'vice_president', 'director', 'manager', 'lead', 'staff', 'entry', 'advisor')),
   share numeric check (share between 0 and 1),
   current boolean not null default true,
+  since text check (since ~ '^\d{4}(-\d{2}(-\d{2})?)?$'),  -- PARTIAL_DATE: a year, a month or a day
+  until text check (until ~ '^\d{4}(-\d{2}(-\d{2})?)?$'),
+  check (until is null or not current),
   primary key (space_id, unit_id, from_entity_id, link, to_entity_id),
   foreign key (space_id, unit_id) references public.units (space_id, id),
   foreign key (space_id, from_entity_id) references public.entities (space_id, id),
@@ -82,9 +87,9 @@ begin
   affected := change_control.project_knowledge_context_before_structure(p_unit);
   select r.knowledge_context into c from public.units u join public.revisions r on r.id = u.current_revision_id where u.id = p_unit;
   delete from public.entity_relations where unit_id = p_unit;
-  insert into public.entity_relations (unit_id, from_entity_id, to_entity_id, link, title, seniority, share, current)
+  insert into public.entity_relations (unit_id, from_entity_id, to_entity_id, link, title, seniority, share, current, since, until)
   select p_unit, ends.from_id, ends.to_id, x ->> 'link', nullif(btrim(x ->> 'title'), ''), x ->> 'seniority',
-    (x ->> 'share')::numeric, coalesce((x ->> 'current')::boolean, true)
+    (x ->> 'share')::numeric, coalesce((x ->> 'current')::boolean, true), x ->> 'since', x ->> 'until'
   from jsonb_array_elements(case when jsonb_typeof(c -> 'structure') = 'array' then c -> 'structure' else '[]'::jsonb end) x
   cross join lateral (select public.entity_id_for(x -> 'from' ->> 'type', x -> 'from' ->> 'key') from_id,
                              public.entity_id_for(x -> 'to' ->> 'type', x -> 'to' ->> 'key') to_id) ends
@@ -121,6 +126,13 @@ begin
   or (coalesce(jsonb_typeof(s->'share'),'null')<>'null' and (jsonb_typeof(s->'share')<>'number' or (s->>'share')::numeric not between 0 and 1)) then
    raise exception 'Invalid structure link';
   end if;
+  if coalesce(jsonb_typeof(s->'since'),'null') not in ('string','null') or coalesce(jsonb_typeof(s->'until'),'null') not in ('string','null')
+  or s->>'since' !~ '^\d{4}(-\d{2}(-\d{2})?)?$' or s->>'until' !~ '^\d{4}(-\d{2}(-\d{2})?)?$' then
+   raise exception 'Invalid date in structure link';
+  end if;
+  if s->>'until' is not null and coalesce((s->>'current')::boolean,true) then
+   raise exception 'A structure link that ended cannot be current';
+  end if;
   if not coalesce(public.entity_id_for(s->'from'->>'type',s->'from'->>'key')=any(own),false)
   or not coalesce(public.entity_id_for(s->'to'->>'type',s->'to'->>'key')=any(own),false) then
    raise exception 'A structure link must join entities of the claim';
@@ -139,17 +151,25 @@ alter function change_control.validate_knowledge_context(jsonb) owner to space_r
 -- =====================================================================
 
 -- EVERY LINK: merged ends resolved, one per (from, link, to) over live claims between live
--- entities (a link a merge folded onto one entity is left out), the latest claim winning
+-- entities (a link a merge folded onto one entity is left out). Each claim is dated by the
+-- newest source its current revision cites (not the upload time); the newest-dated claim's
+-- seat wins (then the latest changed), and asOf is that newest source date
 create function public.stakeholder_structure()
 returns jsonb language sql stable security definer set search_path = '' as $$
   with live as (
     select public.entity_canonical_id(er.from_entity_id) from_id, er.link, public.entity_canonical_id(er.to_entity_id) to_id,
-      er.unit_id, jsonb_build_object('title', er.title, 'seniority', er.seniority, 'share', er.share, 'current', er.current) seat,
-      u.last_changed_at changed
-    from public.entity_relations er join public.units u on u.id = er.unit_id and u.retired_at is null
+      er.unit_id, jsonb_build_object('title', er.title, 'seniority', er.seniority, 'share', er.share, 'current', er.current,
+        'since', er.since, 'until', er.until) seat,
+      dated.source_date, u.last_changed_at changed
+    from public.entity_relations er
+    join public.units u on u.id = er.unit_id and u.retired_at is null
+    join public.revisions r on r.id = u.current_revision_id
+    cross join lateral (select max(s.source_date) source_date from public.passages p join public.sources s on s.id = p.source_id
+                        where p.id = any (r.passage_ids)) dated
   ), grouped as (
     select from_id, link, to_id,
-      (array_agg(seat order by changed desc, unit_id desc))[1] latest,
+      (array_agg(seat order by source_date desc nulls last, changed desc, unit_id desc))[1] latest,
+      max(source_date) as_of,
       array_agg(distinct unit_id) unit_ids
     from live where from_id <> to_id
     group by from_id, link, to_id
@@ -157,6 +177,7 @@ returns jsonb language sql stable security definer set search_path = '' as $$
   select coalesce(jsonb_agg(jsonb_build_object(
     'fromId', g.from_id, 'toId', g.to_id, 'link', g.link,
     'title', g.latest -> 'title', 'seniority', g.latest -> 'seniority', 'share', g.latest -> 'share', 'current', g.latest -> 'current',
+    'since', g.latest -> 'since', 'until', g.latest -> 'until', 'asOf', to_char(g.as_of at time zone 'UTC', 'YYYY-MM-DD'),
     'unitIds', to_jsonb(g.unit_ids)
   ) order by g.from_id, g.link, g.to_id), '[]')
   from grouped g

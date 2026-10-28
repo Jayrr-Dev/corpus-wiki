@@ -817,9 +817,11 @@ export type Database = {
           link: string;
           seniority: string | null;
           share: number | null;
+          since: string | null;
           title: string | null;
           to_entity_id: string;
           unit_id: string;
+          until: string | null;
         };
         Insert: {
           current?: boolean;
@@ -827,9 +829,11 @@ export type Database = {
           link: string;
           seniority?: string | null;
           share?: number | null;
+          since?: string | null;
           title?: string | null;
           to_entity_id: string;
           unit_id: string;
+          until?: string | null;
         };
         Update: {
           current?: boolean;
@@ -837,9 +841,11 @@ export type Database = {
           link?: string;
           seniority?: string | null;
           share?: number | null;
+          since?: string | null;
           title?: string | null;
           to_entity_id?: string;
           unit_id?: string;
+          until?: string | null;
         };
         Relationships: [];
       };

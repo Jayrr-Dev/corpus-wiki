@@ -10,10 +10,10 @@ describe("stakeholder structure in PostgreSQL", () => {
   afterAll(async () => { await store?.pg.close(); });
 
   type StructuredContext = KnowledgeContext & { structure?: StructureLabel[] };
-  async function submit(actor: "ai" | "person", type: string, input: unknown, targetId: string | null = null) {
+  async function submit(actor: "ai" | "person", type: string, input: unknown, targetId: string | null = null, passageIds: string[] = []) {
     const draft = await store.db.call<{ changeSetId: string }>("submit_change_set", {
       p_event_id: null, p_cause: actor === "ai" ? "upload" : "edit", p_actor: actor, p_summary: "Structure test", p_trace: {},
-      p_actions: [{ type, input, targetId, expectedRevisionId: null, passageIds: [], speechAct: "stated" }],
+      p_actions: [{ type, input, targetId, expectedRevisionId: null, passageIds, speechAct: "stated" }],
     });
     const result = await store.db.call<{ status: string }>("commit_change_set", { p_change_set_id: draft.changeSetId });
     const action = (await store.pg.query<{ target_id: string }>("select target_id from actions where change_set_id=$1", [draft.changeSetId])).rows[0]!;
@@ -21,14 +21,14 @@ describe("stakeholder structure in PostgreSQL", () => {
   }
   const ref = (type: string, key: string) => ({ type, key });
   const label = (from: [string, string], link: StructureLabel["link"], to: [string, string], seat: Partial<StructureLabel> = {}): StructureLabel =>
-    ({ from: ref(...from), link, to: ref(...to), title: null, seniority: null, share: null, current: true, ...seat });
+    ({ from: ref(...from), link, to: ref(...to), title: null, seniority: null, share: null, current: true, since: null, until: null, ...seat });
   const context = (entities: [string, string][], structure?: StructureLabel[]): StructuredContext => ({
     entities: entities.map(([type, key], index) => ({ type, key, role: index === 0 ? "subject" : "object" })),
     applicability: { status: "unspecified", entities: [], conditions: null },
     ...(structure ? { structure } : {}),
   });
-  const addClaim = (content: string, ctx: StructuredContext) =>
-    submit("person", "add_claim", { content, kind: "fact", epistemicStatus: "supported", entities: ctx.entities, domainPaths: [], context: ctx });
+  const addClaim = (content: string, ctx: StructuredContext, passageIds: string[] = []) =>
+    submit("person", "add_claim", { content, kind: "fact", epistemicStatus: "supported", entities: ctx.entities, domainPaths: [], context: ctx }, null, passageIds);
   const entityId = async (type: string, key: string) =>
     (await store.pg.query<{ id: string }>("select id from entities where type=$1 and key=$2", [type, key])).rows[0]!.id;
   const structure = () => store.db.call<StructureRelation[]>("stakeholder_structure");
@@ -60,7 +60,7 @@ describe("stakeholder structure in PostgreSQL", () => {
     const merged = await structure();
     expect(merged).toHaveLength(2);
     expect(merged.find((r) => r.link === "leads")).toEqual({
-      fromId: jane, toId: acme, link: "leads", title: "Chief Executive", seniority: "executive", share: null, current: true,
+      fromId: jane, toId: acme, link: "leads", title: "Chief Executive", seniority: "executive", share: null, current: true, since: null, until: null, asOf: null,
       unitIds: [first.target_id, later.target_id].sort(),
     });
     expect(merged.find((r) => r.link === "part_of")).toMatchObject({ fromId: water, toId: acme, unitIds: [later.target_id, viaDup.target_id].sort() });
@@ -97,5 +97,30 @@ describe("stakeholder structure in PostgreSQL", () => {
     for (const seniority of SENIORITIES) {
       await store.pg.query("update entity_relations set seniority=$2 where unit_id=$1", [claim.target_id, seniority]);
     }
+  });
+
+  it("dates a seat by its newest source: a former seat wins over an older source saved later", async () => {
+    await store.pg.exec("insert into entities(type,key,name) values ('person','lee','Lee Park'),('company','globex','Globex')");
+    const passage = async (name: string, date: string) => {
+      const source = (await store.pg.query<{ id: string }>("insert into sources(title,mime_type,source_date,hash,storage_path) values ($1,'text/plain',$2,$1,'test/path') returning id", [name, date])).rows[0]!.id;
+      return (await store.pg.query<{ id: string }>("insert into passages(source_id,position,text,hash) values ($1,0,$2,$2) returning id", [source, name])).rows[0]!.id;
+    };
+    const newer = await passage("2024 annual report", "2024-06-15T12:00:00Z"), older = await passage("2020 press release", "2020-03-01T12:00:00Z");
+    const pair: [string, string][] = [["person", "lee"], ["company", "globex"]];
+
+    // Dates are partial ISO dates, and a seat that ended is not current
+    const seat = (extra: Partial<StructureLabel>) => context(pair, [label(["person", "lee"], "leads", ["company", "globex"], extra)]);
+    expect((await addClaim("Lee Park led Globex", seat({ since: "2019/01" }))).status).toBe("rejected");
+    expect((await addClaim("Lee Park led Globex", seat({ until: "2023-05", current: true }))).status).toBe("rejected");
+
+    const former = await addClaim("Lee Park was CEO of Globex from 2019 to May 2023",
+      seat({ title: "CEO", seniority: "executive", current: false, since: "2019", until: "2023-05" }), [newer]);
+    const stale = await addClaim("Lee Park is Chief Executive of Globex", seat({ title: "Chief Executive", seniority: "executive", since: "2019" }), [older]);
+    expect([former.status, stale.status]).toEqual(["applied", "applied"]);
+    const lee = await entityId("person", "lee");
+    expect((await structure()).find((r) => r.fromId === lee)).toMatchObject({
+      title: "CEO", current: false, since: "2019", until: "2023-05", asOf: "2024-06-15",
+      unitIds: [former.target_id, stale.target_id].sort(),
+    });
   });
 });
