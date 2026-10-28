@@ -36,6 +36,10 @@ describe("answerToActions", () => {
     const messages = buildReconciliationMessages({ ...INPUT, existingUnits: [{ ...INPUT.existingUnits[0]!, context }] });
     expect(JSON.parse(messages[1]!.content).existingUnits[0].context).toEqual(context);
     expect(messages[0]!.content).toContain("Two people sharing a name are not automatically identical");
+    expect(messages[0]!.content).toContain("stakeholderLinks");
+    expect(messages[0]!.content).toContain("owned_by (a person or organization owns it");
+    expect(messages[0]!.content).toContain("vice_president: Vice president");
+    expect(messages[0]!.content).toContain("never guess a date");
   });
 
   it("preserves legacy revision context and carries explicit context corrections", () => {
@@ -55,6 +59,52 @@ describe("answerToActions", () => {
       ["government_body", "health-canada"], ["legislation", "hazardous-products-act"],
     ]);
     expect(actions.at(-1)?.input).toMatchObject({ context: { entities: expect.arrayContaining([{ type: "government_body", key: "health-canada", role: "subject" }]) } });
+  });
+
+  it("keeps the claim's structure labels in its context, dropping ones whose ends are not its entities", () => {
+    const seat = { title: null, seniority: null, share: null, current: true, since: null, until: null };
+    const actions = answerToActions({ summary: "", claims: [claim({
+      entities: [
+        { type: "person", key: "dana-lee", name: "Dana Lee", role: "subject" },
+        { type: "team", key: "billing", name: "Billing", role: "object" },
+        { type: "company", key: "Acme Corp", name: "Acme Corp", role: "mentioned" },
+      ],
+      applicability: { status: "unspecified", entities: [], conditions: null },
+      stakeholderLinks: [
+        { ...seat, from: { type: "person", key: "dana-lee" }, link: "leads", to: { type: "team", key: "billing" }, title: " Head of Billing ", seniority: "director", share: 0.5 },
+        { ...seat, from: { type: "team", key: "billing" }, link: "part_of", to: { type: "company", key: "Acme Corp" } },
+        { ...seat, from: { type: "company", key: "acme-corp" }, link: "owned_by", to: { type: "company", key: "globex" }, share: 0.6 },
+        { ...seat, from: { type: "team", key: "billing" }, link: "part_of", to: { type: "team", key: "billing" } },
+      ],
+    })] }, INPUT);
+    expect(actions.at(-1)?.input).toMatchObject({ context: { structure: [
+      { ...seat, from: { type: "person", key: "dana-lee" }, link: "leads", to: { type: "team", key: "billing" }, title: "Head of Billing", seniority: "director" },
+      { ...seat, from: { type: "team", key: "billing" }, link: "part_of", to: { type: "company", key: "acme-corp" } },
+    ] } });
+  });
+
+  it("writes no structure key for a claim without labels, and carries labels on a revision", () => {
+    const plain = answerToActions({ summary: "", claims: [claim({ applicability: { status: "unspecified", entities: [], conditions: null } })] }, INPUT);
+    expect(plain.at(-1)?.input).not.toHaveProperty("context.structure");
+    const label = { from: { type: "person" as const, key: "dana-lee" }, link: "works_in" as const, to: { type: "project" as const, key: "alpha" }, title: null, seniority: "staff" as const, share: null, current: false, since: "2019", until: null };
+    const revised = answerToActions({ summary: "", claims: [claim({ action: "revise", unit: "U1",
+      entities: [{ type: "person", key: "dana-lee", name: "Dana Lee", role: "subject" }, { type: "project", key: "alpha", name: "Project Alpha", role: "object" }],
+      applicability: { status: "unspecified", entities: [], conditions: null }, stakeholderLinks: [label] })] }, INPUT);
+    expect(revised.at(-1)).toMatchObject({ type: "revise_claim", input: { context: { structure: [label] } } });
+  });
+
+  it("keeps stated partial dates, drops malformed ones, and treats an end date as not current", () => {
+    const entities = [{ type: "person" as const, key: "dana-lee", name: "Dana Lee", role: "subject" as const }, { type: "team" as const, key: "billing", name: "Billing", role: "object" as const }];
+    const label = (since: string | null, until: string | null) => ({ from: { type: "person" as const, key: "dana-lee" }, link: "works_in" as const,
+      to: { type: "team" as const, key: "billing" }, title: null, seniority: null, share: null, current: true, since, until });
+    const structureOf = (since: string | null, until: string | null) => {
+      const actions = answerToActions({ summary: "", claims: [claim({ entities, applicability: { status: "unspecified", entities: [], conditions: null }, stakeholderLinks: [label(since, until)] })] }, INPUT);
+      const input = actions.at(-1)?.input as { context: { structure: { since: string | null; until: string | null; current: boolean }[] } };
+      return input.context.structure[0];
+    };
+    expect(structureOf("2019", "2021-03")).toMatchObject({ since: "2019", until: "2021-03", current: false });
+    expect(structureOf(" 2021-03-15 ", null)).toMatchObject({ since: "2021-03-15", until: null, current: true });
+    expect(structureOf("March 2021", "2021/03")).toMatchObject({ since: null, until: null, current: true });
   });
 
   it("creates scope-only entities before a claim without treating them as subjects", () => {
