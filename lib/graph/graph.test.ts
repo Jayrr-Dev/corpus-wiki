@@ -756,7 +756,7 @@ describe("entity groups", () => {
     ).toEqual(["Acme"]);
     expect(
       grouped.nodes.find((item) => item.id === "small")?.entityNames,
-    ).toEqual([]);
+    ).toEqual(["Acme"]);
     const placed = grouped.nodes.map((item) => ({ ...item, x: 0, y: 0 }));
     const circles = clusterCircles(placed, 1, "entity");
     expect(circles.map((circle) => circle.key).sort()).toEqual([
@@ -767,8 +767,160 @@ describe("entity groups", () => {
     const { homes } = packDomains(placed, 1, "entity");
     const home = homes.get("hub")!;
     expect(home).toEqual(homes.get("u1"));
-    expect(homes.get("small")).not.toEqual(home);
+    expect(homes.get("small")).toEqual(home);
     expect(Math.hypot(acme.x - home.x, acme.y - home.y)).toBeLessThan(acme.r);
+    const flung = placed.map((item) =>
+      item.id === "hub" || item.id === "small"
+        ? { ...item, x: 5000, y: 5000 }
+        : item,
+    );
+    createContainment(flung, 1, "entity")();
+    for (const id of ["hub", "small"]) {
+      const node = flung.find((item) => item.id === id)!;
+      expect(
+        Math.hypot(node.x - acme.x, node.y - acme.y) + nodeRadius(node, 1),
+      ).toBeLessThanOrEqual(acme.r + 1e-6);
+    }
+  });
+
+  it("groups domain hubs by entity even when knowledge units are hidden", () => {
+    const base = {
+      text: "",
+      href: "/",
+      createdAt: T1,
+      pageTitles: [] as string[],
+      unitKind: null,
+      status: null,
+    };
+    const node = (
+      id: string,
+      kind: GraphNode["kind"],
+      extra: Partial<GraphNode>,
+    ): GraphNode => ({
+      ...base,
+      id,
+      kind,
+      label: id,
+      degree: kind === "domain" ? 4 : 1,
+      domainPaths: [],
+      entityNames: [],
+      ...extra,
+    });
+    const data = {
+      nodes: [
+        node("hub", "domain", { domainPaths: ["Safety"] }),
+        node("child", "domain", { domainPaths: ["Safety/Gloves"] }),
+        node("solo", "domain", { domainPaths: ["Solo"] }),
+        node("u1", "unit", { domainPaths: ["Safety"], entityNames: ["Acme"] }),
+        node("u2", "unit", { domainPaths: ["Solo"], entityNames: [] }),
+        node("u3", "unit", {
+          domainPaths: ["Safety"],
+          entityNames: ["Acme"],
+        }),
+      ],
+      links: [
+        {
+          id: "r1",
+          source: "u2",
+          target: "u3",
+          kind: "depends_on" as const,
+        },
+      ],
+    };
+    const domainsOnly = {
+      nodes: data.nodes.filter((item) => item.kind === "domain"),
+      links: [],
+    };
+    const grouped = graphForGrouping(domainsOnly, "entity", data);
+    expect(
+      grouped.nodes.find((item) => item.id === "hub")?.entityNames,
+    ).toEqual(["Acme"]);
+    expect(
+      grouped.nodes.find((item) => item.id === "child")?.entityNames,
+    ).toEqual(["Acme"]);
+    expect(
+      grouped.nodes.find((item) => item.id === "solo")?.entityNames,
+    ).toEqual(["Acme"]);
+    const placed = grouped.nodes.map((item) => ({ ...item, x: 0, y: 0 }));
+    expect(
+      clusterCircles(placed, 1, "entity").map((circle) => circle.key),
+    ).toEqual(["Acme"]);
+  });
+
+  it("groups domain hubs by the article and section that use them", () => {
+    const base = {
+      text: "",
+      href: "/",
+      createdAt: T1,
+      pageTitles: [] as string[],
+      unitKind: null,
+      status: null,
+    };
+    const node = (
+      id: string,
+      kind: GraphNode["kind"],
+      extra: Partial<GraphNode>,
+    ): GraphNode => ({
+      ...base,
+      id,
+      kind,
+      label: id,
+      degree: kind === "domain" ? 4 : 1,
+      domainPaths: [],
+      entityNames: [],
+      ...extra,
+    });
+    const cited = (
+      id: string,
+      path: string,
+      page: string,
+      section: string,
+      position: number,
+    ) =>
+      node(id, "unit", {
+        domainPaths: [path],
+        pageTitles: [page],
+        pageSections: [{ page, section, position }],
+      });
+    const data = {
+      nodes: [
+        node("hub", "domain", { domainPaths: ["Safety"] }),
+        node("child", "domain", { domainPaths: ["Safety/Gloves"] }),
+        node("solo", "domain", { domainPaths: ["Solo"] }),
+        cited("u1", "Safety", "Alpha", "History", 0),
+        cited("u2", "Safety", "Alpha", "Facts", 1),
+        cited("u3", "Safety", "Alpha", "Facts", 1),
+        cited("u4", "Safety", "Beta", "Notes", 0),
+        node("u5", "unit", { domainPaths: ["Solo"] }),
+        cited("u6", "Safety", "Alpha", "Facts", 1),
+      ],
+      links: [
+        {
+          id: "r1",
+          source: "u5",
+          target: "u6",
+          kind: "depends_on" as const,
+        },
+      ],
+    };
+    const domainsOnly = {
+      nodes: data.nodes.filter((item) => item.kind === "domain"),
+      links: [],
+    };
+    const grouped = graphForGrouping(domainsOnly, "page", data);
+    for (const id of ["hub", "child", "solo"]) {
+      const domain = grouped.nodes.find((item) => item.id === id);
+      expect(domain?.pageTitles).toEqual(["Alpha"]);
+      expect(domain?.pageSections).toEqual([
+        { page: "Alpha", section: "Facts", position: 1 },
+      ]);
+    }
+    const placed = grouped.nodes.map((item) => ({ ...item, x: 0, y: 0 }));
+    expect(
+      clusterCircles(placed, 1, "page")
+        .map((circle) => circle.key)
+        .sort(),
+    ).toEqual(["Alpha", pageSectionKey("Alpha", "Facts")]);
   });
 
   it("shows domain nodes and their circles when knowledge units are off", () => {
@@ -871,6 +1023,38 @@ describe("domain clusters", () => {
     const before = without.find((circle) => circle.key === "Co/Safety/PPE")!;
     const after = withNode.find((circle) => circle.key === "Co/Safety/PPE")!;
     expect(after.r).toBe(before.r);
+  });
+
+  it("grows a domain circle so the domain bubble fits inside", () => {
+    const note = dot("u", ["Co/Safety/PPE"]);
+    const hub = dot("d", ["Co/Safety/PPE"], 0, 0, [], "domain");
+    hub.degree = 80;
+    const before = clusterCircles([note], 1, "domain").find(
+      (circle) => circle.key === "Co/Safety/PPE",
+    )!;
+    const after = clusterCircles([note, hub], 1, "domain").find(
+      (circle) => circle.key === "Co/Safety/PPE",
+    )!;
+    expect(after.r).toBeGreaterThan(before.r);
+    expect(after.r).toBeGreaterThanOrEqual(nodeRadius(hub, 1) + 8);
+  });
+
+  it("grows the circle again when the domain bubble sits off center", () => {
+    const hub = dot("d", ["Co/Topic"], 0, 0, [], "domain");
+    hub.degree = 40;
+    const note = dot("a", ["Co/Topic"], 80, 0);
+    note.fx = 80;
+    note.fy = 0;
+    const nodes = [hub, note];
+    const links = [{ source: note.id, target: hub.id }];
+    createContainment(nodes, 1, "domain", links)();
+    const circle = packDomains(nodes, 1, "domain", links).circles.find(
+      (item) => item.key === "Co/Topic",
+    )!;
+    const edge =
+      Math.hypot((hub.x ?? 0) - circle.x, (hub.y ?? 0) - circle.y) +
+      nodeRadius(hub, 1);
+    expect(circle.r).toBeGreaterThanOrEqual(edge + 8 - 0.01);
   });
 
   it("pins a parent domain hub at the center of that circle", () => {

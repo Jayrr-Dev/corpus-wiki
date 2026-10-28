@@ -2,7 +2,6 @@
 
 import { Facts, QueryState } from "@/app/(app)/_components/bits";
 import { formatDate } from "@/app/(app)/_lib/format";
-import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -62,6 +61,41 @@ function PreviewSplit({
   return (
     <div className="flex w-fit max-w-full flex-col gap-4">
       <div className="flex items-start gap-4">
+        <aside
+          aria-label="Knowledge units"
+          className={cn(
+            "flex shrink-0 flex-col border-r",
+            unitsOpen ? "w-56 pr-4" : "pr-2",
+          )}
+        >
+          <div className="flex items-center gap-1">
+            {unitsOpen ? (
+              <h2 className="min-w-0 flex-1 text-xs font-medium tracking-wide text-faint uppercase">
+                Knowledge units
+              </h2>
+            ) : null}
+            <button
+              type="button"
+              aria-expanded={unitsOpen}
+              aria-label={unitsLabel}
+              onClick={() => setUnitsOpen((open) => !open)}
+              className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-hover hover:text-foreground"
+            >
+              <ChevronRight
+                className={cn(
+                  "size-3.5 transition-transform",
+                  unitsOpen && "rotate-180",
+                )}
+                aria-hidden
+              />
+            </button>
+          </div>
+          {unitsOpen ? (
+            <div className="mt-3 max-h-[min(52vh,28rem)] overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable]">
+              {sidebar}
+            </div>
+          ) : null}
+        </aside>
         <div
           className={cn(
             "max-h-[min(60vh,32rem)] overflow-y-auto",
@@ -70,45 +104,15 @@ function PreviewSplit({
               : "w-fit max-w-[min(32rem,calc(100vw-6rem))]",
           )}
         >
-          <div className="flex flex-col gap-4 pr-2">{children}</div>
-        </div>
-        <aside
-          aria-label="Knowledge units"
-          className={cn(
-            "flex shrink-0 flex-col border-l",
-            unitsOpen ? "w-56 pl-4" : "pl-2",
-          )}
-        >
-          <div className={cn("flex items-center gap-1", unitsOpen && "pr-8")}>
-            {unitsOpen ? (
-              <h2 className="min-w-0 flex-1 text-xs font-medium tracking-wide text-faint uppercase">
-                Knowledge units
-              </h2>
-            ) : null}
-            <Tooltip content={unitsLabel} side="left">
-              <button
-                type="button"
-                aria-expanded={unitsOpen}
-                aria-label={unitsLabel}
-                onClick={() => setUnitsOpen((open) => !open)}
-                className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-hover hover:text-foreground"
-              >
-                <ChevronRight
-                  className={cn(
-                    "size-3.5 transition-transform",
-                    !unitsOpen && "rotate-180",
-                  )}
-                  aria-hidden
-                />
-              </button>
-            </Tooltip>
+          <div
+            className={cn(
+              "flex flex-col gap-4 pl-2",
+              unitsOpen && "pr-8",
+            )}
+          >
+            {children}
           </div>
-          {unitsOpen ? (
-            <div className="mt-3 max-h-[min(52vh,28rem)] overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable]">
-              {sidebar}
-            </div>
-          ) : null}
-        </aside>
+        </div>
       </div>
       {footer ? <div className="shrink-0">{footer}</div> : null}
     </div>

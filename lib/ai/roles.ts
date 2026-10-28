@@ -37,7 +37,7 @@ export function roleName(role: string): string {
   return FIXED_ROLES.find((entry) => entry.id === role)?.name ?? STAGE_ROLES[role as AiStage] ?? ({ reconciler: "Reconciler", deduplicator: "Deduplicator", media_analyst: "Media analyst", embedder: "Index" }[role]) ?? role;
 }
 export function roleForPurpose(purpose: string): string | null {
-  if (["place_topics", "upload_domain_plan", "independent_upload_domain_review", "independent_upload_domain_issue_check"].includes(purpose)) return "domain_decider";
+  if (["place_topics", "upload_domain_plan", "independent_upload_domain_review", "independent_upload_domain_issue_check", "selection_domain_plan"].includes(purpose)) return "domain_decider";
   if (purpose === "domain_decision") return "domain_decider";
   if (purpose === "article_composition") return "composer";
   if (purpose === "composer_candidate_selection") return "composer";

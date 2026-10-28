@@ -24,6 +24,8 @@
   --sb-muted: #5c5c5c;
   --sb-faint: #9a9a9a;
   --sb-brand: #496748;
+  /* info is a small mark only, such as a dialog window-button on hover */
+  --sb-info: oklch(0.5 0.134 242.749);
   color-scheme: light;
 }
 
@@ -38,6 +40,7 @@
     --sb-muted: #a3a3a3;
     --sb-faint: #6b6b6b;
     --sb-brand: #8fae8d;
+    --sb-info: oklch(0.746 0.16 232.661);
     color-scheme: dark;
   }
 }
@@ -53,6 +56,7 @@
   --sb-faint: #6b6b6b;
   /* the brand green, lifted so the mark reads on dark grays */
   --sb-brand: #8fae8d;
+  --sb-info: oklch(0.746 0.16 232.661);
   color-scheme: dark;
 }
 
@@ -136,6 +140,7 @@
   --color-stale: var(--sb-stale);
   --color-link: var(--sb-link);
   --color-brand: var(--sb-brand);
+  --color-info: var(--sb-info);
 
   /* SHADCN NAMES, MAPPED ONTO THE SAME TOKENS */
   --color-foreground: var(--sb-text);

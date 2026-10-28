@@ -16,8 +16,8 @@ import type { GraphNode } from "./types";
 // a domain but never stretch one domain toward another.
 // Entity mode uses one flat circle per name. Page mode nests each section inside its article, and
 // also draws a gray "No article" circle when something is cited by no article. Domain nodes are a
-// separate layer: they are not packed into the circles, and a matching node is placed at that
-// circle's center.
+// separate layer: a matching node is placed at that circle's center, and the ring grows so the
+// whole domain bubble sits inside it.
 // =====================================================================
 
 // Which circle a dot sits in. Domain uses the topic tree. Page nests sections under an article.
@@ -164,10 +164,12 @@ function joinPath(segments: readonly string[], mode: ClusterMode): string {
   return segments.join(pathSep(mode));
 }
 
-// Topic hubs stay a layer of their own. Everything else with no article joins the catch-all.
+// A domain hub joins an article only when grouping gave it one. Other notes with
+// no article join the catch-all.
 function pageCircleName(node: ClusterNode): string | null {
-  if (node.kind === "domain") return null;
-  return primaryPageTitle(node) ?? NO_ARTICLE_LABEL;
+  const title = primaryPageTitle(node);
+  if (node.kind === "domain") return title;
+  return title ?? NO_ARTICLE_LABEL;
 }
 
 // Earliest section of the chosen article. A unit cited by several sections has one home.
@@ -474,6 +476,10 @@ const SPOT_MIN = 18;
 const LEAF_PAD = 8;
 const BRANCH_PAD = 16;
 const SIBLING_GAP = 10;
+// Air between a domain bubble's edge and its group ring. Scales with node size so a big hub still clears the ring.
+function domainRingGap(nodeSize: number): number {
+  return Math.max(6, nodeSize * 8);
+}
 
 // HOME: the circle a dot is kept inside (its innermost ring, or an undrawn spot inside a parent
 // ring for dots filed directly in a domain that also has child domains)
@@ -525,21 +531,45 @@ function packAround(items: Packed[]): number {
   return enclosing.r - SIBLING_GAP / 2;
 }
 
+// Radius of each domain bubble, by topic path. The ring must clear this edge.
+function domainHubRadii(
+  nodes: readonly SimNode[],
+  nodeSize: number,
+  mode: ClusterMode,
+): Map<string, number> {
+  const radii = new Map<string, number>();
+  if (mode !== "domain") return radii;
+  for (const node of nodes) {
+    if (node.kind !== "domain") continue;
+    const path = [...node.domainPaths].sort()[0];
+    if (!path) continue;
+    radii.set(path, nodeRadius(node, nodeSize));
+  }
+  return radii;
+}
+
 // A domain's circle: an innermost domain holds its notes; a parent packs its child rings plus, when it
-// has notes of its own, one undrawn spot for them. Domain nodes are not part of this packing.
-function packGroup(group: ClusterGroup, nodeSize: number): Packed {
+// has notes of its own, one undrawn spot for them. The ring is at least big enough for that topic's
+// domain bubble, with a gap so the bubble does not sit on the line.
+function packGroup(
+  group: ClusterGroup,
+  nodeSize: number,
+  hubs: ReadonlyMap<string, number>,
+): Packed {
+  const fit = (radius: number) =>
+    Math.max(radius, (hubs.get(group.path) ?? 0) + domainRingGap(nodeSize));
   if (group.children.length === 0) {
     return {
       x: 0,
       y: 0,
-      r: spotRadius(group.members, nodeSize) + LEAF_PAD,
+      r: fit(spotRadius(group.members, nodeSize) + LEAF_PAD),
       group,
       dots: group.members,
       inset: LEAF_PAD,
       items: [],
     };
   }
-  const items = group.children.map((child) => packGroup(child, nodeSize));
+  const items = group.children.map((child) => packGroup(child, nodeSize, hubs));
   if (group.members.length > 0)
     items.push({
       x: 0,
@@ -549,7 +579,36 @@ function packGroup(group: ClusterGroup, nodeSize: number): Packed {
       inset: 0,
       items: [],
     });
-  return { x: 0, y: 0, r: packAround(items) + BRANCH_PAD, group, items };
+  return { x: 0, y: 0, r: fit(packAround(items) + BRANCH_PAD), group, items };
+}
+
+// After a domain bubble has settled, grow its ring (and each parent ring) so the bubble stays inside.
+function fitCirclesAroundDomains(
+  circles: ClusterCircle[],
+  nodes: readonly SimNode[],
+  nodeSize: number,
+): void {
+  const gap = domainRingGap(nodeSize);
+  const byKey = new Map(circles.map((circle) => [circle.key, circle]));
+  for (const node of nodes) {
+    if (node.kind !== "domain") continue;
+    const path = [...node.domainPaths].sort()[0];
+    const circle = path ? byKey.get(path) : undefined;
+    if (!circle) continue;
+    const need =
+      Math.hypot((node.x ?? 0) - circle.x, (node.y ?? 0) - circle.y) +
+      nodeRadius(node, nodeSize) +
+      gap;
+    if (need > circle.r) circle.r = need;
+  }
+  const ordered = [...circles].sort((a, b) => b.depth - a.depth);
+  for (const circle of ordered) {
+    const parent = byKey.get(circle.parent);
+    if (!parent) continue;
+    const need =
+      Math.hypot(circle.x - parent.x, circle.y - parent.y) + circle.r + gap;
+    if (need > parent.r) parent.r = need;
+  }
 }
 
 // Domain nodes are a separate layer. When a circle exists for that topic, the node sits at its center.
@@ -612,12 +671,13 @@ export function packDomains(
   )
     return lastPacking.packing;
   const hubs = mode === "page" ? hubNesting(nodes, links) : null;
+  const hubRadii = domainHubRadii(nodes, nodeSize, mode);
   const tree = clusterTree(nodes, mode, hubs);
   const filed = deepestPaths(nodes, mode, hubs);
   const loose = nodes.filter(
     (node) => node.kind !== "domain" && !filed.has(node),
   );
-  const top = tree.map((group) => packGroup(group, nodeSize));
+  const top = tree.map((group) => packGroup(group, nodeSize, hubRadii));
   if (loose.length > 0)
     top.push({
       x: 0,
@@ -935,8 +995,10 @@ export function createContainment(
   const pin = new Map<string, { x: number; y: number }>();
   const placeInCircle = (node: SimNode, i: number) => {
     const home = homes.get(node.id);
-    if (!home || node.fx != null || node.fy != null || node.kind === "domain")
-      return;
+    // Domain grouping pins each hub at its topic center. Entity and page grouping
+    // keep a hub inside the circle it was filed in, the same as any other dot.
+    if (!home || node.fx != null || node.fy != null) return;
+    if (node.kind === "domain" && mode === "domain") return;
     const room = Math.max(0, home.r - nodeRadius(node, nodeSize));
     const dx = (node.x ?? 0) - home.x,
       dy = (node.y ?? 0) - home.y;
@@ -958,7 +1020,7 @@ export function createContainment(
     nodes.forEach(placeInCircle);
     // Place each domain node once. Repeating it every frame fights the solver: the node jumps
     // back to the centroid, notes get shoved out of it, and the next frame pulls them in again.
-    if (pin.size === 0) {
+    if (mode === "domain" && pin.size === 0) {
       for (const node of nodes) {
         const home = homes.get(node.id);
         if (!home?.pin || node.fx != null || node.fy != null) continue;
@@ -1004,6 +1066,7 @@ export function createContainment(
         if (node.fx != null || node.fy != null) continue;
         pin.set(node.id, { x: node.x ?? 0, y: node.y ?? 0 });
       }
+      fitCirclesAroundDomains(circles, nodes, nodeSize);
     }
     for (const node of nodes) {
       const held = pin.get(node.id);

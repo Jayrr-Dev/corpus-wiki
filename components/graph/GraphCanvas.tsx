@@ -39,7 +39,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { drawGraph } from "./drawGraph";
+import { drawGraph, openCoalesceGroup } from "./drawGraph";
 import { readCanvasPalette } from "./palette";
 import { useCameraMotion } from "./useCameraMotion";
 import { useForceLayout } from "./useForceLayout";
@@ -64,6 +64,8 @@ export interface GraphCanvasProps {
   // Second click on a selected article, section, or suggestion circle.
   onOpenCircle?: (target: CircleOpenTarget) => void;
   onMoveNode?: (node: GraphNode, path: string) => void;
+  // The group the camera is inside, so coalesced claims there can split.
+  onCoalesceGroup?: (key: string | null) => void;
   // Reveal text in layers as you zoom in from the whole-graph view (off for small local graphs, where titles always fit)
   progressiveZoom?: boolean;
   // While a dot is focused, show only its text (small panels, where neighbor titles pile up)
@@ -130,6 +132,7 @@ export function GraphCanvas({
   onFocusDomain,
   onOpenCircle,
   onMoveNode,
+  onCoalesceGroup,
   selectedIds = [],
   onSelect,
   progressiveZoom = true,
@@ -160,10 +163,13 @@ export function GraphCanvas({
   const dropHint = useRef<string | null>(null);
   const [dropLabel, setDropLabel] = useState<string | null>(null);
   const selection = useRef(selectedIds);
+  const onCoalesceGroupRef = useRef(onCoalesceGroup);
+  const reportedGroup = useRef<string | null>(null);
   useLayoutEffect(() => {
     selection.current = selectedIds;
+    onCoalesceGroupRef.current = onCoalesceGroup;
     redrawRef.current();
-  }, [selectedIds]);
+  }, [selectedIds, onCoalesceGroup]);
   const frame = useRef<number | null>(null);
   const redrawRef = useRef<() => void>(() => {});
   const groupBy = settings.display.groupBy;
@@ -279,6 +285,22 @@ export function GraphCanvas({
       geometry.current = bounds;
     }
     const { circles, overview } = bounds;
+    const openedGroup = display.coalesce
+      ? openCoalesceGroup(
+          {
+            focusedDomain: latest.current.focusedDomain,
+            camera: camera.current,
+            width: size.current.width,
+            height: size.current.height,
+            circles,
+          },
+          reportedGroup.current,
+        )
+      : null;
+    if (reportedGroup.current !== openedGroup) {
+      reportedGroup.current = openedGroup;
+      onCoalesceGroupRef.current?.(openedGroup);
+    }
     const palette = readCanvasPalette(element);
     if (isAutoFit.current) camera.current = overview;
     domainLabelBoxes.current = [];
@@ -333,7 +355,10 @@ export function GraphCanvas({
     ctx.lineWidth = 3;
     const selected = new Set(selection.current);
     for (const node of nodes)
-      if (selected.has(node.id)) {
+      if (
+        selected.has(node.id) ||
+        node.memberIds?.some((id) => selected.has(id))
+      ) {
         ctx.beginPath();
         ctx.arc(
           (node.x ?? 0) * camera.current.k + camera.current.x,

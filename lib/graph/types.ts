@@ -36,6 +36,8 @@ export interface GraphNode {
     sections: ReadonlyMap<string, string>;
   };
   degree: number;
+  // Set when this dot stands in for several claims. The ids are the real claims.
+  memberIds?: readonly string[];
   // What group queries match on
   domainPaths: string[];
   domainScopePaths?: { internal: string[]; external: string[] };

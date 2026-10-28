@@ -14,9 +14,12 @@ import {
 } from "@/components/ui/dialog";
 import {
   applyFilters,
+  coalesceGraph,
   createdBy,
   DEFAULT_GRAPH_SETTINGS,
   graphForGrouping,
+  inDomain,
+  inDomainScope,
   pageDropLabel,
   withRelated,
   type CircleOpenTarget,
@@ -146,6 +149,7 @@ export function GraphView({
     GLOBAL_GRAPH_SETTINGS_KEY,
     data.nodes,
   );
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [focusedDomain, setFocusedDomain] = useState<{
     path: string | null;
     filter: string;
@@ -199,7 +203,7 @@ export function GraphView({
   const busy = move.isPending || pageMove.isPending;
   const moveNode = useCallback(
     (node: GraphNode, destination: string | PageDrop) => {
-      if (node.kind !== "unit" || busy) return;
+      if (node.kind !== "unit" || node.memberIds || busy) return;
       setMoveError(null);
       if (typeof destination === "string") {
         const source = [...node.domainPaths].sort()[0] ?? "";
@@ -259,8 +263,31 @@ export function GraphView({
       replay.cutoff === null ? related : createdBy(related, replay.cutoff);
     // Entity dots and their connecting lines are gone. An entity is a circle in the Entities group.
     const filtered = applyFilters(grown, settings.filters);
-    return graphForGrouping(filtered, settings.display.groupBy);
-  }, [related, replay.cutoff, settings.display.groupBy, settings.filters]);
+    // Layer toggles hide units, but those units still say which entity a domain belongs to.
+    const evidence = inDomain(
+      inDomainScope(grown, settings.filters.domainScope),
+      settings.filters.domain,
+    );
+    const grouped = graphForGrouping(
+      filtered,
+      settings.display.groupBy,
+      evidence,
+    );
+    if (!settings.display.coalesce) return grouped;
+    const mode =
+      settings.display.groupBy === "entity" ||
+      settings.display.groupBy === "page"
+        ? settings.display.groupBy
+        : "domain";
+    return coalesceGraph(grouped, mode, openGroup);
+  }, [
+    openGroup,
+    related,
+    replay.cutoff,
+    settings.display.coalesce,
+    settings.display.groupBy,
+    settings.filters,
+  ]);
 
   return (
     <div className="relative h-full">
@@ -268,12 +295,21 @@ export function GraphView({
         key={`${settings.filters.domain}:${domainVersion}`}
         graph={visible}
         settings={settings}
-        onOpen={setPreview}
+        onOpen={(node) => {
+          if (node.memberIds) return;
+          setPreview(node);
+        }}
         onContextDomain={(path, point) => setDomainContext({ path, ...point })}
         selectedIds={selectedIds}
         onSelect={(nodes, toggle) =>
           setSelectedIds((previous) => {
-            const ids = nodes.filter((n) => n.kind === "unit").map((n) => n.id);
+            const ids = nodes.flatMap((node) =>
+              node.memberIds?.length
+                ? [...node.memberIds]
+                : node.kind === "unit"
+                  ? [node.id]
+                  : [],
+            );
             return toggle
               ? [
                   ...previous.filter((id) => !ids.includes(id)),
@@ -286,8 +322,12 @@ export function GraphView({
           setFocusedDomain({ path, filter: settings.filters.domain })
         }
         onOpenCircle={setOpenedCircle}
-        onContextNode={(node, point) => setContext({ node, ...point })}
+        onContextNode={(node, point) => {
+          if (node.memberIds) return;
+          setContext({ node, ...point });
+        }}
         onMoveNode={moveNode}
+        onCoalesceGroup={setOpenGroup}
       />
       {visible.nodes.length === 0 && data.nodes.length > 0 && (
         <div
@@ -349,7 +389,7 @@ export function GraphView({
         {visible.nodes.length} nodes · {visible.links.length} links
       </p>
       <SelectionActions
-        nodes={visible.nodes.filter((n) => selectedIds.includes(n.id))}
+        nodes={data.nodes.filter((node) => selectedIds.includes(node.id))}
         onClear={() => setSelectedIds([])}
       />
       <DomainContextMenu

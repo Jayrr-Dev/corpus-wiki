@@ -39,11 +39,14 @@ export {
   type ClusterMode,
   type PageDrop,
 } from "./clusters";
+export { coalesceGraph } from "./coalesce";
 export {
   applyFilters,
   createdBy,
   domainPathsForScope,
   graphForGrouping,
+  inDomain,
+  inDomainScope,
   keepNodes,
   mergeEntityDomainHubs,
   type GraphFilters,

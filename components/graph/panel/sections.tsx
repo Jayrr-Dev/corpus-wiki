@@ -237,11 +237,17 @@ export function GroupSection({
             <li>
               Entities draws a colored circle around each entity. Knowledge
               units sit inside it. Domain nodes show there only when Domains is
-              on in Nodes.
+              on in Nodes. Each domain sits in the entity most of its knowledge
+              is about. A domain with none of its own sits with the domain it
+              connects to most.
             </li>
             <li>
               Pages draws a circle around each article. Each section is a circle
-              inside it, and the knowledge that section uses sits there.
+              inside it, and the knowledge that section uses sits there. Domain
+              nodes show there only when Domains is on in Nodes. Each domain
+              sits in the article, and the section, that uses most of its
+              knowledge. A domain with none of its own sits with the domain it
+              connects to most.
             </li>
             <li>
               A unit used in more than one section sits in the earliest one.
@@ -1067,6 +1073,11 @@ export function TuningSection({
     <PanelSection title="Tuning">
       <TuningGroup title="Show">
         <ShowControls value={filters} onChange={onFiltersChange} />
+        <SwitchRow
+          label="Coalescence"
+          checked={display.coalesce}
+          onChange={(coalesce) => onDisplayChange({ ...display, coalesce })}
+        />
       </TuningGroup>
       <TuningGroup title="Labels">
         <LabelControls value={display} onChange={onDisplayChange} />

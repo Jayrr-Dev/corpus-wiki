@@ -557,7 +557,10 @@ it("hides note titles until the camera is inside an inner group", () => {
       },
     },
   ) as unknown as CanvasRenderingContext2D;
-  const node = dot("note", 4, 0, 0, "Average Twos");
+  const node = {
+    ...dot("note", 4, 0, 0, "Average Twos"),
+    domainPaths: ["Type Two/Stress"],
+  };
   const input = (k: number): DrawInput => ({
     ctx,
     width: 800,
@@ -649,6 +652,201 @@ it("wraps a long group title inside its circle", () => {
   expect(lines.join(" ")).toContain("Disorder");
 });
 
+it("shows a title inside a large bubble before the group fills the view", () => {
+  const { ctx, painted } = recordingContext((text) => text.length * 5);
+  drawGraph({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k: 2 },
+    overviewZoom: 1,
+    nodes: [
+      {
+        ...dot("hub", 40, 0, 0, "Instinctive Triad"),
+        domainPaths: ["Type Two/Stress"],
+      },
+    ],
+    links: [],
+    circles: [
+      {
+        key: "Type Two/Stress",
+        label: "Stress and movement",
+        depth: 1,
+        parent: "Type Two",
+        isBranch: false,
+        x: 0,
+        y: 0,
+        r: 30,
+        count: 4,
+        index: 0,
+      },
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => "applied",
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  });
+  expect(painted.map((item) => item.text).join(" ")).toContain("Instinctive");
+});
+
+it("leaves a note title off when it would sit on the domain title", () => {
+  const { ctx, painted } = recordingContext((text) => text.length * 6);
+  const domain = {
+    ...dot("domain", 30, 0, 0, "Levels of development"),
+    kind: "domain" as const,
+    domainPaths: ["Levels of development"],
+  };
+  const note = dot("note", 6, 0, 0, "Type One");
+  drawGraph({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k: 2 },
+    overviewZoom: 1,
+    nodes: [note, domain],
+    links: [],
+    circles: [
+      {
+        key: "Levels of development",
+        label: "Levels of development",
+        depth: 0,
+        parent: "",
+        isBranch: false,
+        x: 0,
+        y: 0,
+        r: 80,
+        count: 4,
+        index: 0,
+      },
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => "link",
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  });
+  const texts = painted.map((item) => item.text).join(" ");
+  expect(texts).toContain("Levels");
+  expect(texts).not.toContain("Type One");
+});
+
+it("paints a group name across the bubbles in dark ink", () => {
+  const paints: { text: string; fill: string }[] = [];
+  let fillStyle = "";
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(target, key) {
+        if (key === "globalAlpha") return target.globalAlpha;
+        if (key === "fillStyle") return fillStyle;
+        if (key === "fillText")
+          return (text: string) => {
+            if (target.globalAlpha > 0.2) paints.push({ text, fill: fillStyle });
+          };
+        if (key === "measureText")
+          return (text: string) => ({ width: text.length * 8 });
+        return () => {};
+      },
+      set(target, key, value) {
+        if (key === "fillStyle") fillStyle = String(value);
+        if (key === "globalAlpha") target.globalAlpha = Number(value);
+        return true;
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  drawGraph({
+    ctx,
+    width: 800,
+    height: 800,
+    pixelRatio: 1,
+    camera: { x: 400, y: 400, k: 2 },
+    overviewZoom: 1,
+    nodes: [],
+    links: [],
+    circles: [
+      {
+        key: "Type Two/Stress",
+        label: "Stress and movement",
+        depth: 1,
+        parent: "Type Two",
+        isBranch: false,
+        x: 0,
+        y: 0,
+        r: 40,
+        count: 4,
+        index: 0,
+      },
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: () => null,
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  });
+  const title = paints.find((item) => item.text.includes("Stress"));
+  expect(title?.fill).toBe(palette.background);
+});
+
+it("sizes a group name from the circle and keeps a minimum", () => {
+  const paint = (r: number, label: string) => {
+    const { ctx, painted } = recordingContext((text) => text.length * 8);
+    drawGraph({
+      ctx,
+      width: 800,
+      height: 800,
+      pixelRatio: 1,
+      camera: { x: 400, y: 400, k: 2 },
+      overviewZoom: 1,
+      nodes: [],
+      links: [],
+      circles: [
+        {
+          key: "group",
+          label,
+          depth: 1,
+          parent: "",
+          isBranch: false,
+          x: 0,
+          y: 0,
+          r,
+          count: 8,
+          index: 0,
+        },
+      ],
+      display: DEFAULT_GRAPH_SETTINGS.display,
+      groupBy: "domain",
+      palette,
+      colorOf: () => null,
+      focusId: null,
+      focusIds: new Set(),
+      hoverLabelOnly: false,
+    });
+    return painted.filter((item) => item.text.length > 0);
+  };
+  const sizeOf = (font: string) => Number(font.match(/(\d+)px/)?.[1]);
+  const large = paint(
+    120,
+    "Type Three Level 7: Dishonest Opportunist and a longer group name",
+  );
+  const small = paint(16, "Group");
+  expect(large.length).toBeGreaterThan(0);
+  expect(small.length).toBeGreaterThan(0);
+  expect(sizeOf(large[0]!.font)).toBe(64);
+  expect(sizeOf(small[0]!.font)).toBe(12);
+  expect(large.map((item) => item.text).join(" ").startsWith("Type")).toBe(
+    true,
+  );
+});
+
 it("fades groups the focus does not connect to and keeps linked groups bright", () => {
   const rings: number[] = [];
   const ctx = new Proxy(
@@ -734,4 +932,83 @@ it("fades groups the focus does not connect to and keeps linked groups bright", 
   expect(rings.slice(0, 4).map((alpha) => Number(alpha.toFixed(3)))).toEqual([
     0.8, 0.8, 0.096, 0.8,
   ]);
+});
+
+it("paints a domain bubble and its ring from the connection, shifted for the canvas", () => {
+  const fills: string[] = [];
+  let fillStyle = "";
+  const ctx = new Proxy(
+    { globalAlpha: 1 },
+    {
+      get(_, key) {
+        if (key === "fillStyle") return fillStyle;
+        if (key === "fill")
+          return () => {
+            fills.push(fillStyle);
+          };
+        if (key === "measureText") return () => ({ width: 10 });
+        return () => {};
+      },
+      set(_, key, value) {
+        if (key === "fillStyle") fillStyle = String(value);
+        return true;
+      },
+    },
+  ) as unknown as CanvasRenderingContext2D;
+  const domain = {
+    ...dot("d", 8, 0, 0, "Topic"),
+    kind: "domain" as const,
+    domainPaths: ["Topic"],
+  };
+  const note = { ...dot("u", 2, 40, 0, "Note"), domainPaths: ["Topic"] };
+  const palette = {
+    background: "#111111",
+    border: "#333333",
+    text: "#ffffff",
+    muted: "#aaaaaa",
+    faint: "#666666",
+    fontFamily: "sans-serif",
+    token: (name: string) => (name === "link" ? "#8ab4f8" : "#aaaaaa"),
+  };
+  const input: DrawInput = {
+    ctx,
+    width: 400,
+    height: 400,
+    pixelRatio: 1,
+    camera: { x: 200, y: 200, k: 1 },
+    overviewZoom: null,
+    nodes: [domain, note],
+    links: [{ id: "join", source: domain, target: note, kind: "supports" }],
+    circles: [
+      {
+        key: "Topic",
+        label: "Topic",
+        depth: 0,
+        parent: "",
+        isBranch: false,
+        x: 0,
+        y: 0,
+        r: 80,
+        count: 1,
+        index: 0,
+      },
+    ],
+    display: DEFAULT_GRAPH_SETTINGS.display,
+    groupBy: "domain",
+    palette,
+    colorOf: (node) => (node.kind === "domain" ? null : "link"),
+    focusId: null,
+    focusIds: new Set(),
+    hoverLabelOnly: false,
+  };
+  drawGraph(input);
+  expect(fills).toContain("#cee0fc");
+  expect(fills).toContain("#8ab4f8");
+  fills.length = 0;
+  drawGraph({
+    ...input,
+    palette: { ...palette, background: "#faf9f6" },
+  });
+  expect(fills).toContain("#3b4c69");
+  expect(fills).toContain("#8ab4f8");
 });

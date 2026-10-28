@@ -29,6 +29,8 @@ export interface GraphDisplay {
   linkThickness: number;
   // Resting opacity of graph lines (0 hidden, 1 solid). Focus still brightens a line.
   edgeOpacity: number;
+  // Claims that share a group draw as one dot.
+  coalesce: boolean;
 }
 
 export interface GraphForces {
@@ -77,6 +79,7 @@ export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
     nodeSize: 1,
     linkThickness: 1,
     edgeOpacity: 0.7,
+    coalesce: false,
   },
   forces: { center: 0.4, repel: 11, link: 0.8, linkDistance: 80, cluster: 0.5 },
 };
@@ -93,7 +96,12 @@ export interface SliderRule<K extends string> {
 export const DISPLAY_SLIDERS: readonly SliderRule<
   Exclude<
     keyof GraphDisplay,
-    "arrows" | "showNew" | "groupBy" | "titlePosition" | "edgeOpacity"
+    | "arrows"
+    | "showNew"
+    | "groupBy"
+    | "titlePosition"
+    | "edgeOpacity"
+    | "coalesce"
   >
 >[] = [
   {
@@ -167,6 +175,7 @@ const settingsSchema = z.object({
     nodeSize: z.number(),
     linkThickness: z.number(),
     edgeOpacity: z.number().default(DEFAULT_DISPLAY.edgeOpacity),
+    coalesce: z.boolean().default(false),
   }),
   forces: z.object({
     center: z.number(),

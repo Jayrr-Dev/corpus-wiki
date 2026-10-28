@@ -75,8 +75,11 @@ export function nodeRadius(
   nodeSize: number,
 ): number {
   // Domain hubs sit in the middle of a topic circle and grow with how many notes link in.
+  // Two thirds of that size: one third smaller than the full hub.
   if (node.kind === "domain")
-    return nodeSize * (8 + 5 * Math.sqrt(Math.max(0, node.degree)));
+    return (
+      nodeSize * (8 + 5 * Math.sqrt(Math.max(0, node.degree))) * (2 / 3)
+    );
   if (node.degree === 1) return nodeSize * 2;
   // Keep lightly connected satellites small without reducing established hubs.
   const connectionScale = Math.min(1, node.degree / 6);
@@ -383,7 +386,7 @@ export function applyForces(
   const towardCenter = (node: SimNode) =>
     forces.center * CENTER_SCALE * centerPullWeight(node);
   const towardHome = (node: SimNode) =>
-    homes ? forces.cluster * HOME_SCALE * pullWeight(node) : 0;
+    homes?.has(node.id) ? forces.cluster * HOME_SCALE * pullWeight(node) : 0;
   simulation
     // Drop the old combined x/y forces so a prior layout does not keep pulling to the wrong target
     .force("x", null)

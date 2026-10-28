@@ -1,4 +1,4 @@
-import type { GraphData, GraphNode, GraphNodeKind } from "./types";
+import type { GraphData, GraphLink, GraphNode, GraphNodeKind } from "./types";
 
 // =====================================================================
 // FILTERS (Obsidian's Filters section): which nodes show. Order:
@@ -186,10 +186,129 @@ export function mergeEntityDomainHubs(
   return { nodes, links };
 }
 
-// Each domain hub joins the entity that shares the most claims in that topic, as a dot inside that circle.
-function domainsInsideEntityGroups(nodes: readonly GraphNode[]): GraphNode[] {
+// The name used most often on a topic. Ties keep the name that sorts first.
+function preferredName(
+  counts: ReadonlyMap<string, number> | undefined,
+): string | null {
+  let best: string | null = null;
+  let bestCount = -1;
+  if (!counts) return null;
+  for (const [name, count] of counts) {
+    if (count <= 0) continue;
+    if (
+      best === null ||
+      count > bestCount ||
+      (count === bestCount && name.localeCompare(best) < 0)
+    ) {
+      best = name;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
+function topicPaths(nodes: readonly GraphNode[]): string[] {
+  return [
+    ...new Set(
+      nodes
+        .filter((node) => node.kind === "domain")
+        .map((node) => node.domainPaths[0] ?? "")
+        .filter(Boolean),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+}
+
+// Parent topics, child topics, and links between their notes. About, in, cites,
+// and similar lines are not bridges: the group counts already used those.
+function topicNeighbors(
+  domainPaths: readonly string[],
+  evidenceNodes: readonly GraphNode[],
+  evidenceLinks: readonly GraphLink[],
+): Map<string, Map<string, number>> {
+  const pathsOf = new Map<string, readonly string[]>();
+  for (const node of evidenceNodes) {
+    if (node.kind === "domain" || node.kind === "entity") continue;
+    pathsOf.set(node.id, node.domainPaths);
+  }
+  const neighbors = new Map<string, Map<string, number>>();
+  const connect = (left: string, right: string) => {
+    if (!left || !right || left === right) return;
+    const row = neighbors.get(left) ?? new Map<string, number>();
+    row.set(right, (row.get(right) ?? 0) + 1);
+    neighbors.set(left, row);
+  };
+  for (const path of domainPaths) {
+    const parent = path.split("/").slice(0, -1).join("/");
+    if (!parent) continue;
+    connect(path, parent);
+    connect(parent, path);
+  }
+  for (const link of evidenceLinks) {
+    if (
+      link.kind === "about" ||
+      link.kind === "in" ||
+      link.kind === "cites" ||
+      link.kind === "similar"
+    )
+      continue;
+    const left = pathsOf.get(link.source);
+    const right = pathsOf.get(link.target);
+    if (!left || !right) continue;
+    for (const sourcePath of left) {
+      for (const targetPath of right) {
+        connect(sourcePath, targetPath);
+        connect(targetPath, sourcePath);
+      }
+    }
+  }
+  return neighbors;
+}
+
+// A topic with no group of its own takes the group of the topic it connects to most.
+function spreadTopicGroups<T>(
+  domainPaths: readonly string[],
+  neighbors: ReadonlyMap<string, ReadonlyMap<string, number>>,
+  assigned: Map<string, T>,
+  closer: (candidate: T, current: T) => boolean,
+): void {
+  let pending = domainPaths.filter((path) => !assigned.has(path));
+  for (let hop = 0; hop < domainPaths.length && pending.length > 0; hop++) {
+    const next: string[] = [];
+    for (const path of pending) {
+      const row = neighbors.get(path);
+      let best: T | undefined;
+      let bestWeight = -1;
+      if (row) {
+        for (const [other, weight] of row) {
+          const value = assigned.get(other);
+          if (value === undefined) continue;
+          if (
+            best === undefined ||
+            weight > bestWeight ||
+            (weight === bestWeight && closer(value, best))
+          ) {
+            best = value;
+            bestWeight = weight;
+          }
+        }
+      }
+      if (best !== undefined) assigned.set(path, best);
+      else next.push(path);
+    }
+    if (next.length === pending.length) break;
+    pending = next;
+  }
+}
+
+// Each domain hub joins the entity that shares the most claims in that topic.
+// A topic with no entity of its own joins the topic it connects to most.
+function domainsInsideEntityGroups(
+  nodes: readonly GraphNode[],
+  evidenceNodes: readonly GraphNode[] = nodes,
+  evidenceLinks: readonly GraphLink[] = [],
+): GraphNode[] {
   const shared = new Map<string, Map<string, number>>();
-  for (const node of nodes) {
+  for (const node of evidenceNodes) {
     if (
       node.kind === "domain" ||
       node.kind === "entity" ||
@@ -203,39 +322,133 @@ function domainsInsideEntityGroups(nodes: readonly GraphNode[]): GraphNode[] {
       shared.set(path, counts);
     }
   }
-  const bestPath = new Map<string, string>();
-  const names = new Set(
-    [...shared.values()].flatMap((counts) => [...counts.keys()]),
+  const assigned = new Map<string, string>();
+  for (const [path, counts] of shared) {
+    const name = preferredName(counts);
+    if (name) assigned.set(path, name);
+  }
+  const domainPaths = topicPaths(nodes);
+  spreadTopicGroups(
+    domainPaths,
+    topicNeighbors(domainPaths, evidenceNodes, evidenceLinks),
+    assigned,
+    (candidate, current) => candidate.localeCompare(current) < 0,
   );
-  for (const name of names) {
-    const paths = [...shared.entries()].filter(([, counts]) =>
-      counts.has(name),
-    );
-    paths.sort((a, b) => {
-      const byClaims = (b[1].get(name) ?? 0) - (a[1].get(name) ?? 0);
-      if (byClaims !== 0) return byClaims;
-      return a[0].localeCompare(b[0]);
-    });
-    const winner = paths[0];
-    if (winner) bestPath.set(name, winner[0]);
-  }
-  const host = new Map<string, string>();
-  for (const [name, path] of bestPath) {
-    const current = host.get(path);
-    const counts = shared.get(path);
-    const nextCount = counts?.get(name) ?? 0;
-    const currentCount = current ? (counts?.get(current) ?? 0) : -1;
-    if (
-      !current ||
-      nextCount > currentCount ||
-      (nextCount === currentCount && name.localeCompare(current) < 0)
-    )
-      host.set(path, name);
-  }
   return nodes.map((node) => {
     if (node.kind !== "domain") return node;
-    const name = host.get(node.domainPaths[0] ?? "");
+    const name = assigned.get(node.domainPaths[0] ?? "");
     return name ? { ...node, entityNames: [name] } : node;
+  });
+}
+
+interface PageHome {
+  page: string;
+  section: string | null;
+  position: number;
+}
+
+// The section this note uses on one article. Several sections keep the earliest.
+function homeSection(
+  node: GraphNode,
+  page: string,
+): { section: string; position: number } | null {
+  const matches = (node.pageSections ?? []).filter(
+    (placement) => placement.page === page,
+  );
+  matches.sort(
+    (a, b) => a.position - b.position || a.section.localeCompare(b.section),
+  );
+  const first = matches[0];
+  return first ? { section: first.section, position: first.position } : null;
+}
+
+function closerPage(candidate: PageHome, current: PageHome): boolean {
+  const byPage = candidate.page.localeCompare(current.page);
+  if (byPage !== 0) return byPage < 0;
+  if (candidate.position !== current.position)
+    return candidate.position < current.position;
+  return (candidate.section ?? "").localeCompare(current.section ?? "") < 0;
+}
+
+// Each domain hub joins the article, then the section, that cites the most of its notes.
+// A topic with no article of its own joins the topic it connects to most.
+function domainsInsidePageGroups(
+  nodes: readonly GraphNode[],
+  evidenceNodes: readonly GraphNode[],
+  evidenceLinks: readonly GraphLink[],
+): GraphNode[] {
+  const pages = new Map<string, Map<string, number>>();
+  const sections = new Map<
+    string,
+    Map<string, Map<string, { count: number; position: number }>>
+  >();
+  for (const node of evidenceNodes) {
+    if (node.kind === "domain" || node.kind === "entity") continue;
+    const titles = node.pageTitles ?? [];
+    if (titles.length === 0) continue;
+    for (const path of node.domainPaths) {
+      const pageCounts = pages.get(path) ?? new Map<string, number>();
+      for (const title of titles) {
+        pageCounts.set(title, (pageCounts.get(title) ?? 0) + 1);
+        const section = homeSection(node, title);
+        if (!section) continue;
+        const byPage = sections.get(path) ?? new Map();
+        const bySection = byPage.get(title) ?? new Map();
+        const previous = bySection.get(section.section);
+        bySection.set(section.section, {
+          count: (previous?.count ?? 0) + 1,
+          position: section.position,
+        });
+        byPage.set(title, bySection);
+        sections.set(path, byPage);
+      }
+      pages.set(path, pageCounts);
+    }
+  }
+  const assigned = new Map<string, PageHome>();
+  for (const [path, counts] of pages) {
+    const page = preferredName(counts);
+    if (!page) continue;
+    let section: string | null = null;
+    let position = Number.POSITIVE_INFINITY;
+    let bestCount = -1;
+    for (const [name, tally] of sections.get(path)?.get(page) ?? []) {
+      if (
+        tally.count > bestCount ||
+        (tally.count === bestCount && tally.position < position) ||
+        (tally.count === bestCount &&
+          tally.position === position &&
+          (section === null || name.localeCompare(section) < 0))
+      ) {
+        section = name;
+        position = tally.position;
+        bestCount = tally.count;
+      }
+    }
+    assigned.set(path, {
+      page,
+      section,
+      position: section ? position : 0,
+    });
+  }
+  const domainPaths = topicPaths(nodes);
+  spreadTopicGroups(
+    domainPaths,
+    topicNeighbors(domainPaths, evidenceNodes, evidenceLinks),
+    assigned,
+    closerPage,
+  );
+  return nodes.map((node) => {
+    if (node.kind !== "domain") return node;
+    const home = assigned.get(node.domainPaths[0] ?? "");
+    if (!home) return node;
+    return {
+      ...node,
+      pageTitles: [home.page],
+      pageSections: home.section
+        ? [{ page: home.page, section: home.section, position: home.position }]
+        : [],
+    };
   });
 }
 
@@ -257,11 +470,15 @@ function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
 export function graphForGrouping(
   data: GraphData,
   groupBy: "domain" | "entity" | "page" | "off",
+  // Claims and links from before the layer toggles, so hidden units still place domain hubs.
+  evidence: GraphData = data,
 ): GraphData {
   if (groupBy === "entity") {
-    const nodes = domainsInsideEntityGroups(data.nodes).filter(
-      (node) => node.kind !== "entity",
-    );
+    const nodes = domainsInsideEntityGroups(
+      data.nodes,
+      evidence.nodes,
+      evidence.links,
+    ).filter((node) => node.kind !== "entity");
     const ids = new Set(nodes.map((node) => node.id));
     return {
       nodes,
@@ -272,7 +489,11 @@ export function graphForGrouping(
     };
   }
   if (groupBy === "page") {
-    const nodes = data.nodes.filter((node) => node.kind !== "page");
+    const nodes = domainsInsidePageGroups(
+      data.nodes,
+      evidence.nodes,
+      evidence.links,
+    ).filter((node) => node.kind !== "page");
     const ids = new Set(nodes.map((node) => node.id));
     return {
       nodes,
