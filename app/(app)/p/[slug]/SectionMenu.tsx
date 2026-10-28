@@ -14,24 +14,25 @@ export function SectionMenu({ section, className = "invisible group-focus-within
   const items = [
     {
       label: "Add External Info",
-      hint: "Ask Sourcer to find external sources and create cited knowledge focused on this section. Your request preapproves search and import.",
+      hint: "Sourcer finds outside sources and adds cited knowledge for this section. Asking preapproves the search and import.",
       render: (close: () => void) => <AddExternalInfoForm pageId={section.page_id} sectionId={section.id} sectionTitle={section.title} onDone={close} />,
     },
     {
       label: "Illustrate",
-      hint: "Ask Composer to create or replace this section’s illustration. Optional guidance lets you steer the drawing.",
+      hint: "Composer draws or replaces this section’s illustration.",
       render: (close: () => void) => <IllustrateSectionForm sectionId={section.id} title={section.title} onClose={close} />,
     },
     {
       label: "Update",
-      hint: "Rewrites this section from the latest saved knowledge and AI skills. You can add a note to steer it.",
+      separatorBefore: true,
+      hint: "Rewrites this section from the latest saved knowledge. A note can steer it.",
       render: (close: () => void) => (
         <UpdateArticleForm id={section.id} title={section.title} scope="section" onClose={close} />
       ),
     },
     {
       label: "Force Create",
-      hint: "Builds out this section from every saved claim that fits its heading, and from the web when Settings allows it.",
+      hint: "Builds this section from every saved claim that fits its heading, and the web if Settings allow.",
       render: (close: () => void) => (
         <ForceCreateForm sectionId={section.id} title={section.title} onClose={close} />
       ),

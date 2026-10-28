@@ -84,7 +84,7 @@ export function UnitsOverview() {
         columns={columns}
         getRowId={(article) => article.pageId}
         filterPlaceholder="Search articles…"
-        emptyState={<EmptyState icon={PageIcon} title="No articles yet" hint="Articles appear here once one is created." />}
+        emptyState={<EmptyState icon={PageIcon} title="No articles yet" />}
         detail={(article) => openId === article.pageId ? <ArticleSections sections={article.sections} /> : null}
       />
     </div>

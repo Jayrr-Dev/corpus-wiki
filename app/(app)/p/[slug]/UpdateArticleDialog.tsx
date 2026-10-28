@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { FormRow } from "@/components/actions/FormRow";
 import { useServerAction } from "@/components/actions/useServerAction";
+import { InfoHint } from "@/components/standard/info-hint";
 import { updateArticle } from "@/lib/server-actions/pages";
 
 type UpdateScope = "page" | "section" | "tree";
@@ -43,17 +44,15 @@ export function UpdateArticleForm({ id, title, scope, onClose, onBusy }: { id: s
   return <form onSubmit={submit} className="flex flex-col gap-4">
       <DialogHeader>
         <DialogTitle>{scope === "tree" ? "Update article & child pages" : `Update ${scope === "page" ? "article" : "section"}`}</DialogTitle>
-        <DialogDescription>Refresh “{title}”{scope === "tree" ? " and its child pages" : ""} with the latest saved knowledge and AI skills.</DialogDescription>
+        <DialogDescription>Refresh “{title}”{scope === "tree" ? " and its child pages" : ""} with the latest saved knowledge. Your handwritten text and citations stay.</DialogDescription>
       </DialogHeader>
       <>
-        <p className="text-xs text-muted-foreground">Your handwritten text and citations stay intact.</p>
         <div className="flex items-center justify-between gap-3">
-          <label htmlFor={toggleId} className="text-panel font-medium">Add a note</label>
+          <span className="flex items-center gap-1.5"><label htmlFor={toggleId} className="text-panel font-medium">Add a note</label><InfoHint>Ask for a split or reorganization to involve the article planner. Sections with handwritten text stay intact.</InfoHint></span>
           <Switch id={toggleId} checked={addNote} onCheckedChange={setAddNote} disabled={update.isPending} aria-controls={addNote ? noteId : undefined} />
         </div>
         {addNote ? <FormRow htmlFor={noteId} label="Note for this update">
           <Textarea id={noteId} value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} disabled={update.isPending} placeholder="e.g. Split this into separate sections by topic." rows={3} className="min-h-20 resize-y" />
-          <p className="text-xs text-muted-foreground">Ask for a split or reorganization to involve the article planner. Sections with handwritten text stay intact.</p>
         </FormRow> : null}
       </>
       {update.error ? <p role="alert">{update.error}</p> : null}

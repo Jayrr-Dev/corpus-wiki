@@ -133,7 +133,7 @@ function RestoreForm({ entry, version, queryKey, onDone }: { entry: GlossaryEntr
   return (
     <DialogForm
       title={`Restore the version from ${historyDate.format(new Date(version.createdAt))}?`}
-      description="The definition goes back to this text as a new edit on top of its history. Earlier versions stay in History, and this edit is preserved when the glossary updates."
+      description="The definition goes back to this text as a new edit; its history is kept. Glossary updates keep this edit."
       submitLabel="Restore"
       isDestructive
       isPending={restore.isPending}

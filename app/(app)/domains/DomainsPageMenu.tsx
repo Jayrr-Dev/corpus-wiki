@@ -56,7 +56,7 @@ export function DomainsPageMenu({ showRetired }: { showRetired: boolean }) {
         if (response.ok) setResult(response);
         setShowResult(true);
       } },
-      { label: showRetired ? "Hide retired" : "Show retired", href: showRetired ? "/domains" : "/domains?retired=1" },
+      { label: showRetired ? "Hide retired" : "Show retired", separatorBefore: true, href: showRetired ? "/domains" : "/domains?retired=1" },
     ]} />
     <DomainUpdateStatus update={update} />
     {organizeTabs && <OrganizeTabsDialog open={organizeTabs} onOpenChange={setOrganizeTabs} />}

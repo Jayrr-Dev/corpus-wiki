@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Network } from "lucide-react";
 import { useState } from "react";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { cn } from "@/lib/utils";
 import type { Power } from "./power";
@@ -24,8 +25,7 @@ export function StakeholderStructure({ structure, power, overUs }: Levels & { st
     return (
       <div className="py-16 text-center">
         <Network className="mx-auto mb-4 size-7 text-muted-foreground" />
-        <p className="text-panel font-medium">No structure yet</p>
-        <p className="mt-2 text-sm text-muted-foreground">New uploads label who is part of, owns, leads or works in what; the map fills in from those.</p>
+        <p className="flex items-center justify-center gap-1.5 text-panel font-medium">No structure yet<InfoHint>New uploads label who is part of, owns, leads or works in what; the map fills in from those.</InfoHint></p>
       </div>
     );
   }

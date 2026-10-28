@@ -17,6 +17,7 @@ import { DialogForm } from "@/components/actions/DialogForm";
 import { CitationChip } from "./CitationChip";
 import type { LinePreview } from "./LiveSection";
 import { TextEditor } from "./TextEditor";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Loader } from "@/components/standard/loader";
 import { RightPanelClose } from "@/components/shell/RightPanel";
 
@@ -47,12 +48,15 @@ export function LinePanel({ line, preview, onPreview, isEditing, onEdit }: LineP
 }
 
 // ONE PANEL SECTION: a ruled-off block with a small uppercase heading and optional header buttons;
-// the panel's top section passes closable to put the panel's X after its buttons
-export function PanelSection({ title, actions, closable = false, children }: { title: string; actions?: ReactNode; closable?: boolean; children: ReactNode }) {
+// the panel's top section passes closable to put the panel's X after its buttons; `hint` adds an info icon beside the heading
+export function PanelSection({ title, hint, actions, closable = false, children }: { title: string; hint?: string; actions?: ReactNode; closable?: boolean; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3 border-t py-4 first:border-t-0 first:pt-0">
       <header className="flex min-h-7 items-center justify-between gap-2">
-        <h2 className="text-panel font-medium tracking-wide whitespace-nowrap text-faint uppercase">{title}</h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-panel font-medium tracking-wide whitespace-nowrap text-faint uppercase">{title}</h2>
+          {hint ? <InfoHint>{hint}</InfoHint> : null}
+        </div>
         {actions || closable ? <div className="flex shrink-0 items-center gap-1">{actions}{closable ? <RightPanelClose /> : null}</div> : null}
       </header>
       {children}
@@ -177,7 +181,7 @@ function RestoreForm({ lineId, version, onDone }: { lineId: string; version: Lin
   return (
     <DialogForm
       title={`Restore the version from ${historyDate.format(new Date(version.created_at))}?`}
-      description="The line goes back to this text as a new edit on top of its history. Earlier versions stay in History, and the AI can still contest the restored text."
+      description="The line goes back to this text as a new edit; its history is kept. The AI can still contest it."
       submitLabel="Restore"
       isDestructive
       isPending={restore.isPending}

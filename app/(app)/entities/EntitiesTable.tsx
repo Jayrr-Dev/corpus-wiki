@@ -11,6 +11,7 @@ import { ENTITY_STATE_TONE } from "@/app/(app)/_lib/tone";
 import { EmptyState } from "@/components/EmptyState";
 import { DataTable } from "@/components/data-table";
 import { EntityIcon } from "@/components/icons";
+import { InfoHint } from "@/components/standard/info-hint";
 import { RowMenu, menuColumn } from "@/components/row-menu/RowMenu";
 import type { Tables } from "@/lib/database/types";
 import { queryKeys, useEntities } from "@/lib/queries";
@@ -50,14 +51,16 @@ export function EntitiesTable({ showRetired = false }: { showRetired?: boolean }
   const query = useEntityRows(showRetired, scope);
   return (
     <Tabs.Root value={scope} onValueChange={setScope} className="space-y-4">
-      <Tabs.List aria-label="Entity source origin" className="flex gap-1 border-b">
+      <div className="flex items-center gap-2 border-b">
+      <Tabs.List aria-label="Entity source origin" className="flex gap-1">
         {(["internal", "external"] as const).map((origin) => (
           <Tabs.Trigger key={origin} value={origin} className={cn("border-b-2 px-3 py-2 text-panel transition-colors", scope === origin ? "border-foreground font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
             {origin === "internal" ? "Internal" : "External"}
           </Tabs.Trigger>
         ))}
       </Tabs.List>
-      <p className="text-panel text-muted-foreground">Grouped by the sources cited by each entity’s knowledge. Entities with both source types appear in both tabs. Entities without source links appear under Internal.</p>
+      <InfoHint>Grouped by the sources behind each entity’s knowledge. Entities with both appear in both tabs; those with no sources, under Internal.</InfoHint>
+      </div>
       <Tabs.Content value={scope}>
     <DataTable
       query={query}

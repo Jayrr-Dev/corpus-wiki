@@ -46,7 +46,7 @@ export function ExceptionInbox() {
   const changePage = (next: number) => { setPage(next); setSelected(null); };
 
   return <div className="flex flex-col gap-4">
-    <p className="text-panel text-muted-foreground">Review proposed changes one at a time. Open an item to compare the evidence before deciding.</p>
+    <p className="text-panel text-muted-foreground">Review proposed changes one at a time.</p>
     <div className="flex flex-wrap items-center justify-between gap-3 border-b">
       <div className="flex gap-4" aria-label="Exception status">
         {(["open", "answered"] as const).map((view) => <button key={view} type="button" aria-pressed={status === view}
@@ -74,7 +74,7 @@ export function ExceptionInbox() {
         </div>
         {query.error ? <div className="space-y-2 p-4" role="alert"><p>Could not load exceptions: {query.error.message}</p><Button variant="outline" size="sm" onClick={() => void query.refetch()}>Try again</Button></div>
           : waiting ? <p className="p-6 text-panel text-muted-foreground" role="status">Loading your review queue…</p>
-          : !rows.length ? <div className="space-y-2 p-6"><p className="font-medium">{search || category !== "all" ? "No matching exceptions" : status === "open" ? "You’re all caught up" : "No answered exceptions yet"}</p><p className="text-panel text-muted-foreground">{search || category !== "all" ? "Try another search or clear your filters." : status === "open" ? "New questions will appear here when a change needs your decision." : "Decisions you make will appear here."}</p></div>
+          : !rows.length ? <div className="space-y-2 p-6"><p className="font-medium">{search || category !== "all" ? "No matching exceptions" : status === "open" ? "You’re all caught up" : "No answered exceptions yet"}</p></div>
           : <ul className="max-h-[60vh] divide-y overflow-y-auto">
             {rows.map((row, index) => {
               const evidence = asObject(row.exception.evidence);
@@ -109,7 +109,7 @@ export function ExceptionInbox() {
             </div>
           </div>
           <div key={selected.row.exception.id} className="max-h-[75vh] overflow-y-auto"><ExceptionReview row={selected.row} /></div>
-        </> : <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center"><p className="font-medium">Select an exception to review</p><p className="mt-2 max-w-xs text-panel text-muted-foreground">The proposed change, supporting evidence, and decision controls will appear here.</p><Button variant="outline" size="sm" disabled={waiting || !rows.length} onClick={() => select(0)} className="mt-4">{status === "open" ? "Start reviewing" : "View first decision"}</Button></div>}
+        </> : <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed p-8 text-center"><p className="font-medium">Select an exception to review</p><Button variant="outline" size="sm" disabled={waiting || !rows.length} onClick={() => select(0)} className="mt-4">{status === "open" ? "Start reviewing" : "View first decision"}</Button></div>}
       </section>
     </div>
   </div>;

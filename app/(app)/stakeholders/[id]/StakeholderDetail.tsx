@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Note, QueryState, Section, TextLink, UnitLink } from "@/app/(app)/_components/bits";
 import { formatDate } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { queryKeys, useUnitEntities } from "@/lib/queries";
 import type { UnitSummary } from "@/lib/queries/screens";
@@ -279,9 +280,9 @@ function OverviewSection({ card }: { card: StakeholderCard }) {
           );
         })}
       </ol>
-      <p className="text-xs text-faint">
+      <p className="flex items-center gap-1.5 text-xs text-faint">
         Found on the web{card.webCheckedAt ? ` on ${formatDate(card.webCheckedAt)}` : ""} and checked against your knowledge.
-        {storedByUrl.size > 0 ? " A page marked saved is in your knowledge as external knowledge, with its claims marked external." : " Update cards saves its best page as external knowledge once it is approved."}
+        <InfoHint>{storedByUrl.size > 0 ? "A page marked saved is in your knowledge as external knowledge, with its claims marked external." : "Update cards saves its best page as external knowledge once it is approved."}</InfoHint>
       </p>
     </Section>
   );
