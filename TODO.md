@@ -22,7 +22,7 @@ the graph looks the same as before for the existing settings; merged to main.
 | data | D1 `filters.ts`, `build.ts`, `related.ts`, `recentUnits.ts` ask traits, not names; no behavior change | C1 | planned |
 | data | D2 Settings: `shown` map replaces `showUnits`/`showEntities`/`showDomains`/`showPages`; old saves migrate | D1, P1 | planned |
 | data | D3 `graphForGrouping` keeps the active grouping's hub nodes (stops hiding pages and entities) | D1, L2 | planned |
-| canvas | V1 `drawGraph.ts`, `GraphCanvas.tsx`: color, shape and size from the registry; per-grouping colors in `groupColors.ts`; `clusterModeOf` removed | C1 | planned |
+| canvas | V1 `drawGraph.ts`, `GraphCanvas.tsx`: color, shape and size from the registry; per-grouping colors in `groupColors.ts`; `clusterModeOf` removed | C1 | merged c9c87a6 |
 | panel | P1 Nodes and Group switches built from the registries; `components/graph/nodeTypes.tsx` holds previews per type | C1 | planned |
 | guard | G1 Lint rule against literal kind checks; every-type-by-every-grouping test; made-up type test | L2, D2, D3, V1, P1 | planned |
 | stakeholder | S1 `stakeholder` node type from `entities.is_stakeholder` (rows, builder, preview) | G1 | planned |
