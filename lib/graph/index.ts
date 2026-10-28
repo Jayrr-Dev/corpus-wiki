@@ -80,6 +80,7 @@ export {
   hasHubBody,
   isContent,
   isHub,
+  isPlacedByLinks,
   NODE_KINDS,
   NODE_TYPE_LIST,
   NODE_TYPES,

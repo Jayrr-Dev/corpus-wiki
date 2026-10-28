@@ -29,6 +29,9 @@ export interface NodeTypeRule {
   body: "hub" | "degree";
   // The grouping whose circle this node sits pinned in the middle of
   centers?: GroupingId;
+  // Has no domain, scope or page of its own: domain and scope filters keep it only when it
+  // links to a kept note, and it is not evidence when placing domain hubs.
+  placedByLinks: boolean;
 }
 
 export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
@@ -40,6 +43,7 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
     shownByDefault: true,
     shade: "muted",
     body: "degree",
+    placedByLinks: false,
   },
   domain: {
     kind: "domain",
@@ -50,6 +54,7 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
     shade: "muted",
     body: "hub",
     centers: "domain",
+    placedByLinks: true,
   },
   entity: {
     kind: "entity",
@@ -59,6 +64,7 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
     shownByDefault: false,
     shade: "faint",
     body: "degree",
+    placedByLinks: true,
   },
   page: {
     kind: "page",
@@ -68,6 +74,7 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
     shownByDefault: false,
     shade: "text",
     body: "degree",
+    placedByLinks: false,
   },
 };
 
@@ -96,6 +103,11 @@ export function isHub(node: Kinded): boolean {
 // Sized and pushed as a hub (today: domains)
 export function hasHubBody(node: Kinded): boolean {
   return NODE_TYPES[node.kind].body === "hub";
+}
+
+// Placed by what it links to, not by its own domain or page
+export function isPlacedByLinks(node: Kinded): boolean {
+  return NODE_TYPES[node.kind].placedByLinks;
 }
 
 // Sits pinned in the middle of its circle when this grouping is on
