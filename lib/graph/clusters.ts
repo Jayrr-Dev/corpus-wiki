@@ -11,8 +11,8 @@ import {
 } from "./groupings";
 import type { GraphColor } from "./groups";
 import {
-  centersAnyGrouping,
   centersGrouping,
+  hasHubBody,
   isContent,
   NODE_TYPE_LIST,
 } from "./nodeTypes";
@@ -473,7 +473,8 @@ export function packDomains(
   const tree = clusterTree(nodes, mode, hubs);
   const filed = deepestPaths(nodes, mode, hubs);
   const loose = nodes.filter(
-    (node) => !centersAnyGrouping(node) && !filed.has(node),
+    (node) =>
+      !hasHubBody(node) && !centersGrouping(node, mode) && !filed.has(node),
   );
   const top = tree.map((group) => packGroup(group, nodeSize, hubRadii));
   if (loose.length > 0)
@@ -755,12 +756,12 @@ export function createContainment(
     const source = endOf(link.source);
     const target = endOf(link.target);
     if (!source || !target) continue;
-    if (centersAnyGrouping(source) && !centersAnyGrouping(target)) {
+    if (centersGrouping(source, mode) && !centersGrouping(target, mode)) {
       const list = connected.get(source.id) ?? [];
       list.push(target);
       connected.set(source.id, list);
     }
-    if (centersAnyGrouping(target) && !centersAnyGrouping(source)) {
+    if (centersGrouping(target, mode) && !centersGrouping(source, mode)) {
       const list = connected.get(target.id) ?? [];
       list.push(source);
       connected.set(target.id, list);
@@ -805,7 +806,7 @@ export function createContainment(
         let x = 0;
         let y = 0;
         for (const other of nodes) {
-          if (centersAnyGrouping(other)) continue;
+          if (hasHubBody(other) || centersGrouping(other, mode)) continue;
           const own = clusterKey(other, mode) ?? "";
           if (own !== path) continue;
           weight += 1;

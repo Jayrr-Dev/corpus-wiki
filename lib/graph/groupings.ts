@@ -1,7 +1,7 @@
 import type { ClusterGroup } from "./clusters";
 import { entityColor } from "./domainColors";
 import type { GraphColor } from "./groups";
-import { centersAnyGrouping, type GraphNodeKind } from "./nodeTypes";
+import { hasHubBody, type GraphNodeKind } from "./nodeTypes";
 import type { GraphNode } from "./types";
 
 // =====================================================================
@@ -122,16 +122,16 @@ export function isReservedCircleLabel(label: string): boolean {
   );
 }
 
-// Sits pinned in the middle of a circle in some grouping
-function centersAny(node: PlacedNode): boolean {
-  return node.kind !== undefined && centersAnyGrouping({ kind: node.kind });
+// A domain hub: a layer of its own that joins an article only when grouping gave it one
+function hubBodied(node: PlacedNode): boolean {
+  return node.kind !== undefined && hasHubBody({ kind: node.kind });
 }
 
 // A hub joins an article only when grouping gave it one. Other notes with
 // no article join the catch-all.
 function pageCircleName(node: PlacedNode): string | null {
   const title = primaryPageTitle(node);
-  if (centersAny(node)) return title;
+  if (hubBodied(node)) return title;
   return title ?? NO_ARTICLE_LABEL;
 }
 
@@ -155,7 +155,7 @@ function hubNesting(
   }[],
 ): Map<string, string> {
   const loose = nodes.filter((node) => {
-    if (centersAny(node) || !node.id) return false;
+    if (hubBodied(node) || !node.id) return false;
     if (primaryPageTitle(node)) return false;
     return !node.recommendedTitle?.split(PAGE_SEP).join(" ").trim();
   });

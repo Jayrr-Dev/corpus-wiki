@@ -264,7 +264,7 @@ export function GraphView({
   const visible = useMemo(() => {
     const grown =
       replay.cutoff === null ? related : createdBy(related, replay.cutoff);
-    // Entity dots and their connecting lines are gone. An entity is a circle in the Entities group.
+    // Each grouping keeps its own hub dots, and the layout pins them in the middle of their circles.
     const filtered = applyFilters(grown, settings.filters);
     // Layer toggles hide units, but those units still say which entity a domain belongs to.
     const evidence = inDomain(
