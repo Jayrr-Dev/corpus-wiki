@@ -1,49 +1,53 @@
 import "server-only";
 
-import { createHash } from "node:crypto";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
+import { isSpaceId as isUuid } from "@/lib/spaces/shared";
+import { ACCESS_TOKEN_PREFIX, MAX_SECRET_LENGTH, PERSONAL_KEY_PREFIX, hashSecret } from "./oauth/secrets";
 import type { AgentCallCheck, AgentCallRecord, AgentKeyIdentity } from "./types";
 import { isAgentScope, type AgentScope } from "./scopes";
 
 // =====================================================================
-// AGENT KEYS: bearer keys (cwk_...) for the MCP server. The database
-// stores only each key's sha256 hash, and these functions reach it only
-// through server-only functions
-// (supabase/migrations/20261119030500_agent_keys.sql).
+// AGENT CREDENTIALS: OAuth access tokens (cwa_...) and personal keys
+// (cwk_...) for the MCP server. The database stores only their sha256
+// hashes and is reached only through server-only functions
+// (supabase/migrations/20261119030500_agent_auth.sql).
 // =====================================================================
-
-export const KEY_PREFIX = "cwk_";
-// A real key is "cwk_" plus 43 base64url characters; anything far longer is not one
-const MAX_TOKEN_LENGTH = 200;
 
 // RATE LIMITS, counted from the audit log (agent_calls)
 export const CALLS_PER_MINUTE = 60;
 export const CHANGES_PER_DAY = 500;
 
-type ResolvedKey = { id: string; name: string; owner_id: string; space_id: string | null; scopes: string[] };
+type ResolvedCredential = { id: string; name: string; owner_id: string; space_id: string | null; scopes: string[]; client_id?: string };
 type CallCounts = { minute: number; day_changes: number };
 
-// The hex sha256 the database stores for a key
-export function hashAgentKey(token: string): string {
-  return createHash("sha256").update(token, "utf8").digest("hex");
+// The live credential a bearer token belongs to, or null (unknown, revoked,
+// expired, or an OAuth token issued for a different resource than `resource`,
+// the canonical MCP server URL, RFC 8707). Accepts OAuth access tokens and personal keys.
+export async function resolveAgentKey(token: string, resource: string): Promise<AgentKeyIdentity | null> {
+  // Not a credential at all: answer without a database call
+  if (typeof token !== "string" || token.length > MAX_SECRET_LENGTH) return null;
+  if (token.startsWith(PERSONAL_KEY_PREFIX)) {
+    const key = await supabaseRpc(getAdminSupabase()).call<ResolvedCredential | null>("resolve_agent_key", { p_hash: hashSecret(token) });
+    return key ? toIdentity("key", key) : null;
+  }
+  if (token.startsWith(ACCESS_TOKEN_PREFIX)) {
+    const grant = await supabaseRpc(getAdminSupabase()).call<ResolvedCredential | null>("resolve_oauth_token", { p_hash: hashSecret(token), p_resource: resource });
+    return grant ? toIdentity("oauth", grant) : null;
+  }
+  return null;
 }
 
-// The live key a bearer token belongs to, or null (unknown, revoked or expired)
-export async function resolveAgentKey(token: string, resource: string): Promise<AgentKeyIdentity | null> {
-  void resource;
-  // Not a key at all: answer without a database call
-  if (typeof token !== "string" || !token.startsWith(KEY_PREFIX) || token.length > MAX_TOKEN_LENGTH) return null;
-  const key = await supabaseRpc(getAdminSupabase()).call<ResolvedKey | null>("resolve_agent_key", { p_hash: hashAgentKey(token) });
-  if (!key) return null;
+// For OAuth, keyId is the grant (one per person and client) and name is the client's name
+function toIdentity(kind: AgentKeyIdentity["kind"], credential: ResolvedCredential): AgentKeyIdentity {
   return {
-    kind: "key",
-    keyId: key.id,
-    clientId: null,
-    name: key.name,
-    personId: key.owner_id,
-    spaceId: key.space_id,
-    scopes: key.scopes.filter(isAgentScope),
+    kind,
+    keyId: credential.id,
+    clientId: kind === "oauth" ? (credential.client_id ?? null) : null,
+    name: credential.name,
+    personId: credential.owner_id,
+    spaceId: credential.space_id,
+    scopes: credential.scopes.filter(isAgentScope),
   };
 }
 
@@ -55,13 +59,13 @@ export async function checkAgentCall(keyId: string, scope: AgentScope): Promise<
   } catch (error) {
     // Fail closed: a limit that cannot be checked is not lifted
     console.error("Agent rate limit check failed:", error);
-    return { ok: false, reason: "Could not check this key's rate limit. Try again shortly." };
+    return { ok: false, reason: "Could not check this connection's rate limit. Try again shortly." };
   }
   if (counts.minute >= CALLS_PER_MINUTE) {
-    return { ok: false, reason: `Rate limit: ${CALLS_PER_MINUTE} calls per minute for this key. Wait a minute, then try again.` };
+    return { ok: false, reason: `Rate limit: ${CALLS_PER_MINUTE} calls per minute. Wait a minute, then try again.` };
   }
   if (scope !== "read" && counts.day_changes >= CHANGES_PER_DAY) {
-    return { ok: false, reason: `Daily limit: ${CHANGES_PER_DAY} changes per day for this key. Reading still works.` };
+    return { ok: false, reason: `Daily limit: ${CHANGES_PER_DAY} changes per day. Reading still works.` };
   }
   return { ok: true };
 }
@@ -71,7 +75,8 @@ export async function recordAgentCall(record: AgentCallRecord): Promise<void> {
   try {
     await supabaseRpc(getAdminSupabase()).call("record_agent_call", {
       p_key: record.keyId,
-      p_space: record.spaceId,
+      // A refused call may name no Space, or something that is not one
+      p_space: isUuid(record.spaceId) ? record.spaceId : null,
       p_tool: record.tool,
       p_scope: record.scope,
       p_ok: record.ok,
