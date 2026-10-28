@@ -126,14 +126,12 @@ const nodeById = (id: string) =>
   graph.nodes.find((node) => node.id === id) as GraphNode;
 const ids = (data: { nodes: GraphNode[] }) =>
   data.nodes.map((node) => node.id).sort();
+const ALL_SHOWN = { unit: true, entity: true, domain: true, page: true };
 const ALL_LAYERS = {
   domainScope: "internal" as const,
   search: "",
   domain: "",
-  showUnits: true,
-  showEntities: true,
-  showDomains: true,
-  showPages: true,
+  shown: ALL_SHOWN,
   showOrphans: true,
   showConnectors: true,
   showRelated: false,
@@ -337,13 +335,18 @@ describe("applyFilters", () => {
 
   it("hides knowledge units while retaining the other selected layers", () => {
     expect(
-      ids(applyFilters(graph, { ...ALL_LAYERS, showUnits: false })),
+      ids(
+        applyFilters(graph, {
+          ...ALL_LAYERS,
+          shown: { ...ALL_SHOWN, unit: false },
+        }),
+      ),
     ).toEqual(["d1", "d2", "e1", "p1"]);
     expect(
       ids(
         applyFilters(graph, {
           ...DEFAULT_GRAPH_SETTINGS.filters,
-          showUnits: false,
+          shown: { ...DEFAULT_GRAPH_SETTINGS.filters.shown, unit: false },
         }),
       ),
     ).toEqual([]);
@@ -640,15 +643,57 @@ describe("saved settings", () => {
   });
 
   it("keeps older saved settings, defaulting the fields added since", () => {
-    const { search, showPages, showOrphans } = DEFAULT_GRAPH_SETTINGS.filters;
+    const { search, showOrphans } = DEFAULT_GRAPH_SETTINGS.filters;
     const older = {
       ...DEFAULT_GRAPH_SETTINGS,
-      filters: { search, showEntities: true, showPages, showOrphans },
+      filters: { search, showEntities: true, showPages: false, showOrphans },
     };
     expect(parseSavedSettings(older).filters).toEqual({
       ...DEFAULT_GRAPH_SETTINGS.filters,
-      showEntities: true,
+      shown: { ...DEFAULT_GRAPH_SETTINGS.filters.shown, entity: true },
     });
+  });
+
+  it("carries each old per-type switch into the shown map", () => {
+    const older = {
+      ...DEFAULT_GRAPH_SETTINGS,
+      filters: {
+        ...DEFAULT_GRAPH_SETTINGS.filters,
+        shown: undefined,
+        showUnits: false,
+        showEntities: true,
+        showDomains: true,
+        showPages: true,
+      },
+    };
+    expect(parseSavedSettings(older).filters.shown).toEqual({
+      unit: false,
+      entity: true,
+      domain: true,
+      page: true,
+    });
+  });
+
+  it("defaults a node type missing from a saved shown map", () => {
+    const saved = {
+      ...DEFAULT_GRAPH_SETTINGS,
+      filters: { ...DEFAULT_GRAPH_SETTINGS.filters, shown: { entity: true } },
+    };
+    expect(parseSavedSettings(saved).filters.shown).toEqual({
+      ...DEFAULT_GRAPH_SETTINGS.filters.shown,
+      entity: true,
+    });
+  });
+
+  it("falls back to domain grouping for a grouping that does not exist", () => {
+    const saved = {
+      ...DEFAULT_GRAPH_SETTINGS,
+      display: { ...DEFAULT_GRAPH_SETTINGS.display, groupBy: "planet" },
+      forces: { ...DEFAULT_GRAPH_SETTINGS.forces, repel: 5 },
+    };
+    const parsed = parseSavedSettings(saved);
+    expect(parsed.display.groupBy).toBe("domain");
+    expect(parsed.forces.repel).toBe(5);
   });
 
   it("reads the old domain circles switch as the group", () => {
@@ -694,14 +739,14 @@ describe("claims sharing a topic label", () => {
 describe("entity groups", () => {
   it("hides domain nodes in entity grouping until the Domains toggle is on", () => {
     const hidden = graphForGrouping(
-      applyFilters(graph, { ...ALL_LAYERS, showDomains: false }),
+      applyFilters(graph, {
+        ...ALL_LAYERS,
+        shown: { ...ALL_SHOWN, domain: false },
+      }),
       "entity",
     );
     expect(hidden.nodes.some((node) => node.kind === "domain")).toBe(false);
-    const shown = graphForGrouping(
-      applyFilters(graph, { ...ALL_LAYERS, showDomains: true }),
-      "entity",
-    );
+    const shown = graphForGrouping(applyFilters(graph, ALL_LAYERS), "entity");
     expect(shown.nodes.some((node) => node.kind === "domain")).toBe(true);
     expect(shown.nodes.some((node) => node.kind === "entity")).toBe(true);
   });
@@ -716,9 +761,7 @@ describe("entity groups", () => {
   it("shows entity nodes in entity grouping when they are the only layer on", () => {
     const entitiesOnly = applyFilters(graph, {
       ...ALL_LAYERS,
-      showUnits: false,
-      showDomains: false,
-      showPages: false,
+      shown: { unit: false, entity: true, domain: false, page: false },
     });
     const grouped = graphForGrouping(entitiesOnly, "entity", graph);
     expect(grouped.nodes.length).toBeGreaterThan(0);
@@ -938,9 +981,7 @@ describe("entity groups", () => {
   it("shows domain nodes and their circles when knowledge units are off", () => {
     const filtered = applyFilters(graph, {
       ...ALL_LAYERS,
-      showUnits: false,
-      showEntities: false,
-      showPages: false,
+      shown: { unit: false, entity: false, domain: true, page: false },
       showOrphans: false,
     });
     expect(filtered.nodes.map((node) => node.id).sort()).toEqual(["d1", "d2"]);

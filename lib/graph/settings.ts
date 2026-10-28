@@ -1,7 +1,9 @@
 import { z } from "zod";
 import { chooseDomainColor, themeAutomaticGroups } from "./domainColors";
 import type { GraphFilters } from "./filters";
+import { GROUPING_IDS } from "./groupings";
 import { GRAPH_COLORS, splitGroupQuery, type GraphGroup } from "./groups";
+import { NODE_KINDS, NODE_TYPES, type GraphNodeKind } from "./nodeTypes";
 import type { GraphNode } from "./types";
 
 // =====================================================================
@@ -15,7 +17,7 @@ export const TITLE_POSITIONS = ["top", "bottom", "left", "right"] as const;
 export type TitlePosition = (typeof TITLE_POSITIONS)[number];
 
 // Which circles gather the dots. Only one is on at a time. "off" draws no circles.
-export const GRAPH_GROUP_BY = ["domain", "entity", "page", "off"] as const;
+export const GRAPH_GROUP_BY = [...GROUPING_IDS, "off"] as const;
 export type GraphGroupBy = (typeof GRAPH_GROUP_BY)[number];
 
 export interface GraphDisplay {
@@ -52,16 +54,20 @@ export interface GraphSettings {
   forces: GraphForces;
 }
 
+// Each node type's switch as its registry entry sets it
+function defaultShown(): Record<GraphNodeKind, boolean> {
+  return Object.fromEntries(
+    NODE_KINDS.map((kind) => [kind, NODE_TYPES[kind].shownByDefault]),
+  ) as Record<GraphNodeKind, boolean>;
+}
+
 // DEFAULTS: domain color groups are populated when graph data arrives.
 export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
   filters: {
     domainScope: "internal",
     search: "",
     domain: "",
-    showUnits: true,
-    showEntities: false,
-    showDomains: false,
-    showPages: false,
+    shown: defaultShown(),
     showOrphans: true,
     showConnectors: true,
     showRelated: true,
@@ -149,10 +155,12 @@ const settingsSchema = z.object({
       .default("internal"),
     search: z.string(),
     domain: z.string().default(""),
-    showUnits: z.boolean().default(true),
-    showEntities: z.boolean(),
-    showDomains: z.boolean().default(false),
-    showPages: z.boolean(),
+    shown: z.record(z.string(), z.boolean()).optional(),
+    // Saved before the shown map. Read once to carry each switch over.
+    showUnits: z.boolean().optional(),
+    showEntities: z.boolean().optional(),
+    showDomains: z.boolean().optional(),
+    showPages: z.boolean().optional(),
     showOrphans: z.boolean(),
     showConnectors: z.boolean().default(true),
     showRelated: z.boolean().default(DEFAULT_RELATED.showRelated),
@@ -167,7 +175,8 @@ const settingsSchema = z.object({
     arrows: z.boolean(),
     showNew: z.boolean().default(true),
     domainCircles: z.boolean().optional(),
-    groupBy: z.enum(GRAPH_GROUP_BY).optional(),
+    // A grouping that no longer exists falls back like a missing one
+    groupBy: z.enum(GRAPH_GROUP_BY).optional().catch(undefined),
     titlePosition: z
       .enum(TITLE_POSITIONS)
       .default(DEFAULT_DISPLAY.titlePosition),
@@ -186,11 +195,47 @@ const settingsSchema = z.object({
   }),
 });
 
+// The switch each node type had before the shown map
+const LEGACY_SHOWN: Partial<
+  Record<
+    GraphNodeKind,
+    "showUnits" | "showEntities" | "showDomains" | "showPages"
+  >
+> = {
+  unit: "showUnits",
+  entity: "showEntities",
+  domain: "showDomains",
+  page: "showPages",
+};
+
+type SavedFilters = z.infer<typeof settingsSchema>["filters"];
+
+// Saved switches win, then the old per-type fields, then the registry default
+function shownFrom(saved: SavedFilters): Record<GraphNodeKind, boolean> {
+  const shown = defaultShown();
+  for (const kind of NODE_KINDS) {
+    const field = LEGACY_SHOWN[kind];
+    const legacy = field ? saved[field] : undefined;
+    shown[kind] = saved.shown?.[kind] ?? legacy ?? shown[kind];
+  }
+  return shown;
+}
+
 // Reads saved settings; the defaults when nothing valid was saved
 export function parseSavedSettings(saved: unknown): GraphSettings {
   const parsed = settingsSchema.safeParse(saved);
   if (!parsed.success) return DEFAULT_GRAPH_SETTINGS;
-  const settings = parsed.data;
+  const { filters: savedFilters, ...settings } = parsed.data;
+  const filters: GraphFilters = {
+    domainScope: savedFilters.domainScope,
+    search: savedFilters.search,
+    domain: savedFilters.domain,
+    shown: shownFrom(savedFilters),
+    showOrphans: savedFilters.showOrphans,
+    showConnectors: savedFilters.showConnectors,
+    showRelated: savedFilters.showRelated,
+    relatedness: savedFilters.relatedness,
+  };
   const {
     domainCircles,
     groupBy: savedGroup,
@@ -218,7 +263,7 @@ export function parseSavedSettings(saved: unknown): GraphSettings {
   ) {
     settings.forces = { ...DEFAULT_FORCES };
   }
-  return { ...settings, display };
+  return { ...settings, filters, display };
 }
 
 // Seed three domain levels once. Children precede their ancestors

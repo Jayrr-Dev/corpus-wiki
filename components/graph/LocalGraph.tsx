@@ -52,10 +52,9 @@ export function LocalGraph({ centerId }: { centerId: string }) {
       search: "",
       domain: "",
       showOrphans: true,
-      showUnits: settings.filters.showUnits || centerKind === "unit",
-      showEntities: settings.filters.showEntities || centerKind === "entity",
-      showDomains: settings.filters.showDomains || centerKind === "domain",
-      showPages: settings.filters.showPages || centerKind === "page",
+      shown: centerKind
+        ? { ...settings.filters.shown, [centerKind]: true }
+        : settings.filters.shown,
     });
     return neighborhood(layers, centerId, depth);
   }, [query.data, settings.filters, centerId, depth]);

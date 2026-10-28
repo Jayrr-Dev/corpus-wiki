@@ -13,10 +13,8 @@ export interface GraphFilters {
   search: string;
   // one domain path to focus on, with every subdomain below it ("" = all domains)
   domain: string;
-  showUnits: boolean;
-  showEntities: boolean;
-  showDomains: boolean;
-  showPages: boolean;
+  // Which node types show, one switch per type in the Nodes section
+  shown: Record<GraphNodeKind, boolean>;
   showOrphans: boolean;
   // Lines that attach a note to a domain, entity, or page
   showConnectors: boolean;
@@ -468,7 +466,7 @@ function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
 // and places the other link-placed hubs (domains, entities) inside the circles.
 export function graphForGrouping(
   data: GraphData,
-  groupBy: "domain" | "entity" | "page" | "off",
+  groupBy: GroupingId | "off",
   // Claims and links from before the layer toggles, so hidden units still place hubs.
   evidence: GraphData = data,
 ): GraphData {
@@ -509,16 +507,11 @@ export function applyFilters(
   data: GraphData,
   filters: GraphFilters,
 ): GraphData {
-  const shownKinds = new Set<GraphNodeKind>();
-  if (filters.showUnits) shownKinds.add("unit");
-  if (filters.showEntities) shownKinds.add("entity");
-  if (filters.showDomains) shownKinds.add("domain");
-  if (filters.showPages) shownKinds.add("page");
   const search = filters.search.trim().toLowerCase();
 
   const byLayer = keepNodes(
     inDomain(inDomainScope(data, filters.domainScope), filters.domain),
-    (node) => shownKinds.has(node.kind),
+    (node) => filters.shown[node.kind],
   );
   const bySearch = search
     ? keepNodes(
