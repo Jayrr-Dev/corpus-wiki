@@ -21,7 +21,7 @@ them, the page shows levels and the map; typecheck, lint and tests pass; merged 
 | power | P1 General power score and levels (`lib/stakeholders/power.ts`), exactly as `docs/power-model.md` | C2 | merged |
 | power | P2 Power over our work, relative to `our_entity_id` | P1 | merged |
 | page | U1 Power Level on cards, a Structure view (nested map) on `/stakeholders` | C1 (P1, D1 by contract) | merged 42bcf99, real score e00762e |
-| page | U2 Show power over our work beside the general level | U1, P2 | running |
+| page | U2 Show power over our work beside the general level | U1, P2 | merged |
 
 Critical path: D1 then U1 shown with real data. All four lanes start at once against C1.
 
