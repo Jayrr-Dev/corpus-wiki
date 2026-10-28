@@ -67,7 +67,7 @@ export function AgentKeyCreated({ agentKey, onDone }: { agentKey: string; onDone
     <div className="grid gap-4 rounded-xl border border-link/30 bg-link/5 p-4">
       <div>
         <h3 className="font-medium">Your new key</h3>
-        <p className="mt-1 text-panel text-muted-foreground">Copy it now. It is shown only once; if you lose it, revoke it and make a new one.</p>
+        <p className="mt-1 text-panel text-muted-foreground">Copy it now. It is shown only once.</p>
       </div>
       <CopyBlock label="Key" text={agentKey} hint="Copy the key" />
       <CopyBlock label="Claude Code" text={claudeCodeCommand(origin, agentKey)} hint="Copy the command; run it in a terminal" />

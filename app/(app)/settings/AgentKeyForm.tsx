@@ -9,12 +9,13 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { AGENT_SCOPES, DEFAULT_SCOPES, SCOPE_INFO, type AgentScope } from "@/lib/agents/scopes";
 import { createAgentKey } from "@/lib/server-actions/agentKeys";
+import { SettingHint } from "./SettingHint";
 
 const ALL_SPACES = "all";
 
 // NEW AGENT KEY: name, Space (one of mine or all), scopes and an optional expiry.
 // Read is on by default; Spaces is only offered for a key for all Spaces.
-export function AgentKeyForm({ spaces, onCreated }: { spaces: { id: string; name: string }[]; onCreated: (key: string) => void }) {
+export function AgentKeyForm({ spaces, onCreated, onCancel }: { spaces: { id: string; name: string }[]; onCreated: (key: string) => void; onCancel: () => void }) {
   const [name, setName] = useState("");
   const [space, setSpace] = useState(spaces[0]?.id ?? ALL_SPACES);
   const [scopes, setScopes] = useState<AgentScope[]>([...DEFAULT_SCOPES]);
@@ -55,17 +56,17 @@ export function AgentKeyForm({ spaces, onCreated }: { spaces: { id: string; name
       </FormRow>
       <fieldset className="sm:col-span-2">
         <legend className="mb-2 text-sm font-medium">What the agent may do</legend>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
           {AGENT_SCOPES.map((scope) => {
             const disabled = scope === "spaces" && !allSpaces;
             return (
-              <label key={scope} className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-panel ${disabled ? "opacity-50" : ""}`}>
-                <input type="checkbox" className="mt-1 accent-link" checked={scopes.includes(scope)} disabled={disabled} onChange={(event) => toggle(scope, event.target.checked)} />
-                <span>
+              <span key={scope} className={`flex items-center gap-1.5 text-panel ${disabled ? "opacity-50" : ""}`}>
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" className="accent-link" checked={scopes.includes(scope)} disabled={disabled} onChange={(event) => toggle(scope, event.target.checked)} />
                   <span className="font-medium">{SCOPE_INFO[scope].label}</span>
-                  <span className="block text-muted-foreground">{SCOPE_INFO[scope].description}</span>
-                </span>
-              </label>
+                </label>
+                <SettingHint>{SCOPE_INFO[scope].description}</SettingHint>
+              </span>
             );
           })}
         </div>
@@ -74,10 +75,11 @@ export function AgentKeyForm({ spaces, onCreated }: { spaces: { id: string; name
         <Input className="h-10" id="agent-key-expires" type="date" value={expires} onChange={(event) => setExpires(event.target.value)} />
       </FormRow>
       <ErrorNote error={create.error} />
-      <div className="sm:col-span-2">
+      <div className="flex gap-2 sm:col-span-2">
         <Button type="submit" size="sm" disabled={create.isPending || !name.trim() || scopes.length === 0}>
           {create.isPending ? "Creating…" : "Create key"}
         </Button>
+        <Button type="button" size="sm" variant="outline" onClick={onCancel} disabled={create.isPending}>Cancel</Button>
       </div>
     </form>
   );

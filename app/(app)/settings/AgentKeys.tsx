@@ -13,10 +13,10 @@ import { AgentCalls } from "./AgentCalls";
 import { AgentConnections } from "./AgentConnections";
 import { AgentKeyCreated } from "./AgentKeyCreated";
 import { AgentKeyForm } from "./AgentKeyForm";
+import { formatWhen } from "./agentFormat";
+import { SettingHint } from "./SettingHint";
 
 const KEYS_QUERY = ["agent-keys"];
-
-const formatDate = (value: string | null, empty: string) => (value ? new Date(value).toLocaleString() : empty);
 
 // Live, expired or revoked, as of now
 function keyState(key: AgentKeyRow): "live" | "expired" | "revoked" {
@@ -30,6 +30,7 @@ function keyState(key: AgentKeyRow): "live" | "expired" | "revoked" {
 export function AgentKeys() {
   const queryClient = useQueryClient();
   const [newKey, setNewKey] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const [revoking, setRevoking] = useState<AgentKeyRow | null>(null);
   const [openCalls, setOpenCalls] = useState<string | null>(null);
   const revoke = useServerAction(revokeAgentKey, { progress: false, refreshTables: [] });
@@ -54,25 +55,21 @@ export function AgentKeys() {
 
   return (
     <div className="grid gap-6">
-      <p className="text-panel text-muted-foreground">
-        Outside agents, such as Claude, Claude Code or Claude Desktop, can use this wiki through its MCP server. Each one works in one Space, or in all of them, and only does what you allowed. Every call is logged.
-      </p>
       <QueryState query={keys}>
         <AgentConnections spaceName={spaceName} />
-        <div className="border-t pt-6">
-          <h3 className="font-medium">Personal keys</h3>
-          <p className="mt-1 text-panel text-muted-foreground">For scripts and tools that cannot sign in: the key goes in a request header.</p>
+        <div className="flex items-center justify-between gap-3 border-t pt-6">
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-medium">Personal keys</h3>
+            <SettingHint>For scripts and tools that cannot sign in. The key goes in the Authorization header and is shown only once.</SettingHint>
+          </div>
+          {!newKey && !creating ? <Button type="button" size="sm" variant="outline" onClick={() => setCreating(true)}>New key</Button> : null}
         </div>
         {newKey ? (
           <AgentKeyCreated agentKey={newKey} onDone={() => setNewKey(null)} />
-        ) : (
-          <div>
-            <h4 className="mb-4 text-sm font-medium">New key</h4>
-            <AgentKeyForm spaces={keys.data?.spaces ?? []} onCreated={(key) => { setNewKey(key); void refresh(); }} />
-          </div>
-        )}
+        ) : creating ? (
+          <AgentKeyForm spaces={keys.data?.spaces ?? []} onCancel={() => setCreating(false)} onCreated={(key) => { setCreating(false); setNewKey(key); void refresh(); }} />
+        ) : null}
         <div>
-          <h4 className="mb-4 text-sm font-medium">Keys</h4>
           {keys.data?.keys.length ? (
             <ul className="grid gap-3">
               {keys.data.keys.map((key) => {
@@ -90,12 +87,12 @@ export function AgentKeys() {
                           {spaceName(key.space_id)} · {key.scopes.map((scope) => SCOPE_INFO[scope].label).join(", ")}
                         </p>
                         <p className="text-panel text-muted-foreground">
-                          Last used {formatDate(key.last_used_at, "never")} · {key.expires_at ? `Expires ${formatDate(key.expires_at, "")}` : "No expiry"}
+                          Last used {formatWhen(key.last_used_at, "never")}{key.expires_at ? ` · Expires ${formatWhen(key.expires_at)}` : ""}
                         </p>
                       </div>
                       <div className="flex shrink-0 gap-2">
                         <Button type="button" variant="outline" size="sm" aria-expanded={openCalls === key.id} onClick={() => setOpenCalls(openCalls === key.id ? null : key.id)}>
-                          {openCalls === key.id ? "Hide calls" : "Recent calls"}
+                          {openCalls === key.id ? "Hide calls" : "Calls"}
                         </Button>
                         {state !== "revoked" ? (
                           <Button type="button" variant="destructive" size="sm" onClick={() => { revoke.reset(); setRevoking(key); }}>Revoke</Button>
@@ -107,7 +104,7 @@ export function AgentKeys() {
                 );
               })}
             </ul>
-          ) : <Note>No keys yet.</Note>}
+          ) : creating || newKey ? null : <Note>No personal keys yet.</Note>}
         </div>
       </QueryState>
       <Dialog open={revoking !== null} onOpenChange={(open) => { if (!open && !revoke.isPending) setRevoking(null); }}>
