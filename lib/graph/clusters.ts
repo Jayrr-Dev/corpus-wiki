@@ -1,10 +1,33 @@
 import { packEnclose, packSiblings } from "d3-hierarchy";
-import { entityColor } from "./domainColors";
-import { PAGE_SEP, type GroupingId } from "./groupings";
+import {
+  GROUPINGS,
+  isReservedCircleLabel,
+  NO_ARTICLE_LABEL,
+  PAGE_SEP,
+  type CircleOpenTarget,
+  type GroupingId,
+  type LinkEnd,
+  type PlacedNode,
+} from "./groupings";
 import type { GraphColor } from "./groups";
-import { centersAnyGrouping, centersGrouping, isContent } from "./nodeTypes";
+import {
+  centersAnyGrouping,
+  centersGrouping,
+  isContent,
+  NODE_TYPE_LIST,
+} from "./nodeTypes";
 import { nodeRadius, type SimNode } from "./physics";
 import type { GraphNode } from "./types";
+
+export {
+  EXTERNAL_LABEL,
+  LINKED_LABEL,
+  NO_ARTICLE_LABEL,
+  ORPHANS_LABEL,
+  primaryEntityName,
+  primaryPageTitle,
+  type CircleOpenTarget,
+} from "./groupings";
 
 // =====================================================================
 // DOMAIN CLUSTERS: groups dots by the domain tree. A node sits in its
@@ -16,18 +39,14 @@ import type { GraphNode } from "./types";
 // by side, and each parent is just big enough for its children. Each
 // dot is then kept inside its own circle, so links arrange dots within
 // a domain but never stretch one domain toward another.
-// Entity mode uses one flat circle per name. Page mode nests each section inside its article, and
-// also draws a gray "No article" circle when something is cited by no article. Domain nodes are a
-// separate layer: a matching node is placed at that circle's center, and the ring grows so the
-// whole domain bubble sits inside it.
+// Other groupings follow the rules in their GROUPINGS entry (entity: one flat circle per name;
+// page: each section inside its article, plus a gray "No article" circle). A node that centers
+// the active grouping is a separate layer: it is placed at its circle's center, and the ring
+// grows so the whole bubble sits inside it.
 // =====================================================================
 
-// Which circle a dot sits in. Domain uses the topic tree. Page nests sections under an article.
-// Entity uses one flat name.
+// Which circle a dot sits in. Each grouping's rules are in its GROUPINGS entry.
 export type ClusterMode = GroupingId;
-
-// One end of a link: an id, or the node once d3 has swapped it in (d3 also allows numeric ids)
-type LinkEnd<N extends { id: string } = { id: string }> = string | number | N;
 
 // Circle key for one section inside an article. Titles may contain "/".
 export function pageSectionKey(page: string, section: string): string {
@@ -39,9 +58,9 @@ export function circleNestedIn(
   parentKey: string,
   mode: ClusterMode,
 ): boolean {
-  if (mode === "entity") return false;
-  const sep = mode === "page" ? PAGE_SEP : "/";
-  return childKey.startsWith(`${parentKey}${sep}`);
+  const rule = GROUPINGS[mode];
+  if (!rule.nests) return false;
+  return childKey.startsWith(`${parentKey}${rule.separator}`);
 }
 
 // GROUP: one domain in the tree, with the dots filed directly in it and its child domains
@@ -86,212 +105,27 @@ export interface ClusterCircle {
   quiet?: boolean;
 }
 
-// The entity a dot sits inside when several are named (same rule as the first domain path)
-export function primaryEntityName(
-  node: Pick<GraphNode, "entityNames">,
-): string | null {
-  return (
-    [...(node.entityNames ?? [])].sort((a, b) => a.localeCompare(b))[0] ?? null
-  );
-}
-
-// The page a dot sits inside when several cite it
-export function primaryPageTitle(
-  node: Pick<GraphNode, "pageTitles">,
-): string | null {
-  return (
-    [...(node.pageTitles ?? [])].sort((a, b) => a.localeCompare(b))[0] ?? null
-  );
-}
-
-// Catch-all circle for knowledge that no article cites. It only appears when something sits in it.
-export const NO_ARTICLE_LABEL = "No article";
-export const ORPHANS_LABEL = "Orphans";
-export const EXTERNAL_LABEL = "External";
-export const LINKED_LABEL = "Linked";
-
-function isReservedCircleLabel(label: string): boolean {
-  return (
-    label === ORPHANS_LABEL ||
-    label === EXTERNAL_LABEL ||
-    label === LINKED_LABEL
-  );
-}
-
-// What a second click on an already selected page-mode circle opens.
-export type CircleOpenTarget =
-  | { kind: "page"; title: string }
-  | { kind: "section"; page: string; section: string }
-  | { kind: "recommendation"; title: string };
-
-// Page circles open the article, section circles open that section, and a suggestion
-// circle inside No article opens the recommendation. The No article circle itself does not.
+// What a second click on an already selected circle opens (page circles only today)
 export function circleOpenTarget(
   circle: { label: string; parent: string },
   mode: ClusterMode,
 ): CircleOpenTarget | null {
-  if (mode !== "page") return null;
-  if (circle.parent === "") {
-    if (circle.label === NO_ARTICLE_LABEL) return null;
-    return { kind: "page", title: circle.label };
-  }
-  if (circle.parent === NO_ARTICLE_LABEL) {
-    if (isReservedCircleLabel(circle.label)) return null;
-    return { kind: "recommendation", title: circle.label };
-  }
-  return { kind: "section", page: circle.parent, section: circle.label };
+  return GROUPINGS[mode].openTarget?.(circle) ?? null;
 }
 
-type ClusterNode = Pick<
-  GraphNode,
-  | "domainPaths"
-  | "entityNames"
-  | "pageTitles"
-  | "recommendedTitle"
-  | "recommendedKind"
-  | "sourceScopes"
-> & {
-  id?: string;
-  label?: string;
-  degree?: number;
-  kind?: GraphNode["kind"];
-  pageSections?: GraphNode["pageSections"];
-};
-
-// Sits pinned in the middle of a circle in some grouping. Cluster callers may leave the kind out.
-function centersAny(node: { kind?: GraphNode["kind"] }): boolean {
-  return node.kind !== undefined && centersAnyGrouping({ kind: node.kind });
-}
-
-function pathSep(mode: ClusterMode): string {
-  return mode === "page" ? PAGE_SEP : "/";
-}
+type ClusterNode = PlacedNode;
 
 function joinPath(segments: readonly string[], mode: ClusterMode): string {
-  return segments.join(pathSep(mode));
+  return segments.join(GROUPINGS[mode].separator);
 }
 
-// A domain hub joins an article only when grouping gave it one. Other notes with
-// no article join the catch-all.
-function pageCircleName(node: ClusterNode): string | null {
-  const title = primaryPageTitle(node);
-  if (centersAny(node)) return title;
-  return title ?? NO_ARTICLE_LABEL;
-}
-
-// Earliest section of the chosen article. A unit cited by several sections has one home.
-function primarySectionTitle(node: ClusterNode, page: string): string | null {
-  const matches = (node.pageSections ?? []).filter(
-    (placement) => placement.page === page,
-  );
-  matches.sort(
-    (a, b) => a.position - b.position || a.section.localeCompare(b.section),
-  );
-  return matches[0]?.section ?? null;
-}
-
-// The most-connected dot in No article, and the dots linked to it, share one nested group.
-function hubNesting(
-  nodes: readonly ClusterNode[],
-  links: readonly {
-    source: LinkEnd;
-    target: LinkEnd;
-  }[],
-): Map<string, string> {
-  const loose = nodes.filter((node) => {
-    if (centersAny(node) || !node.id) return false;
-    if (primaryPageTitle(node)) return false;
-    return !node.recommendedTitle?.split(PAGE_SEP).join(" ").trim();
-  });
-  const ids = new Set(loose.map((node) => node.id!));
-  const degree = new Map(loose.map((node) => [node.id!, node.degree ?? 0]));
-  const neighbors = new Map<string, Set<string>>();
-  const linked = new Set<string>();
-  const endId = (end: LinkEnd) =>
-    typeof end === "object" ? end.id : String(end);
-  for (const link of links) {
-    const source = endId(link.source);
-    const target = endId(link.target);
-    linked.add(source);
-    linked.add(target);
-    if (!ids.has(source) || !ids.has(target) || source === target) continue;
-    const from = neighbors.get(source) ?? new Set<string>();
-    from.add(target);
-    neighbors.set(source, from);
-    const to = neighbors.get(target) ?? new Set<string>();
-    to.add(source);
-    neighbors.set(target, to);
-  }
-  const chosen = new Map<string, string>();
-  for (const node of loose) {
-    const id = node.id!;
-    if ((neighbors.get(id)?.size ?? 0) === 0) continue;
-    let best = id;
-    let bestDegree = degree.get(id) ?? 0;
-    for (const other of neighbors.get(id) ?? []) {
-      const next = degree.get(other) ?? 0;
-      if (next > bestDegree) {
-        best = other;
-        bestDegree = next;
-      }
-    }
-    if (bestDegree < 2) continue;
-    chosen.set(id, best);
-  }
-  const counts = new Map<string, number>();
-  for (const hub of chosen.values())
-    counts.set(hub, (counts.get(hub) ?? 0) + 1);
-  for (const [id, hub] of chosen) {
-    if ((counts.get(hub) ?? 0) < 2) chosen.delete(id);
-  }
-  for (const node of loose) {
-    const id = node.id!;
-    if (chosen.has(id)) continue;
-    if (node.sourceScopes?.includes("external")) {
-      chosen.set(id, EXTERNAL_LABEL);
-      continue;
-    }
-    if (!linked.has(id)) chosen.set(id, ORPHANS_LABEL);
-  }
-  // Linked nodes that never joined a hub share one circle. A claim title is the
-  // wrong name: their links usually leave the circle, so the busiest claim
-  // does not describe the group.
-  const rest: string[] = [];
-  for (const node of loose) {
-    const id = node.id!;
-    if (chosen.has(id)) continue;
-    rest.push(id);
-  }
-  if (rest.length >= 2) for (const id of rest) chosen.set(id, LINKED_LABEL);
-  return chosen;
-}
-
-// Segments of the circle path. Entity mode is one flat name. Page mode is article, then section.
+// Segments of the circle path, from the grouping's own rule
 function clusterSegments(
   node: ClusterNode,
   mode: ClusterMode,
   hubs: ReadonlyMap<string, string> | null = null,
 ): string[] {
-  if (mode === "entity") {
-    const name = primaryEntityName(node);
-    return name ? [name] : [];
-  }
-  if (mode === "page") {
-    const title = pageCircleName(node);
-    if (!title) return [];
-    if (title === NO_ARTICLE_LABEL) {
-      const recommended = node.recommendedTitle
-        ?.split(PAGE_SEP)
-        .join(" ")
-        .trim();
-      if (recommended) return [title, recommended];
-      const hub = node.id ? hubs?.get(node.id) : undefined;
-      return hub ? [title, hub] : [title];
-    }
-    const section = primarySectionTitle(node, title);
-    return section ? [title, section] : [title];
-  }
-  return ([...node.domainPaths].sort()[0] ?? "").split("/").filter(Boolean);
+  return GROUPINGS[mode].segments(node, hubs);
 }
 
 // Circle key for the dot's own ring (null when it sits in no circle)
@@ -304,7 +138,7 @@ export function clusterKey(
 }
 
 // Dots and circles a selected circle reaches by a link. Members of the
-// selected circle are left out; domain ancestors that also hold the
+// selected circle are left out; nested ancestors that also hold the
 // selection stay out so only the groups on the other side light up.
 export function clusterConnections(
   nodes: readonly (ClusterNode & { id: string })[],
@@ -320,6 +154,7 @@ export function clusterConnections(
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const nodeIds = new Set<string>();
   const circleKeys = new Set<string>();
+  const { nests, separator: sep } = GROUPINGS[mode];
   for (const link of links) {
     const sourceIn = members.has(link.source);
     const targetIn = members.has(link.target);
@@ -328,15 +163,10 @@ export function clusterConnections(
     if (!outside) continue;
     nodeIds.add(outside.id);
     const segments = clusterSegments(outside, mode);
-    const sep = pathSep(mode);
     for (let depth = 0; depth < segments.length; depth++) {
       const circleKey = joinPath(segments.slice(0, depth + 1), mode);
       if (circleKey === key || key.startsWith(`${circleKey}${sep}`)) continue;
-      if (
-        (mode === "domain" || mode === "page") &&
-        circleKey.startsWith(`${key}${sep}`)
-      )
-        continue;
+      if (nests && circleKey.startsWith(`${key}${sep}`)) continue;
       circleKeys.add(circleKey);
     }
   }
@@ -349,16 +179,7 @@ export function nodeInCluster(
   key: string,
   mode: ClusterMode,
 ): boolean {
-  if (mode === "entity") return primaryEntityName(node) === key;
-  if (mode === "page") {
-    const segments = clusterSegments(node, mode);
-    if (segments.length === 0) return false;
-    const path = joinPath(segments, mode);
-    return path === key || path.startsWith(`${key}${PAGE_SEP}`);
-  }
-  return node.domainPaths.some(
-    (path) => path === key || path.startsWith(`${key}/`),
-  );
+  return GROUPINGS[mode].holds(node, key);
 }
 
 // Segments of a node's primary domain path (empty when it has none)
@@ -368,12 +189,13 @@ export function primarySegments(
   return ([...node.domainPaths].sort()[0] ?? "").split("/").filter(Boolean);
 }
 
-// TREE: the domains the visible dots sit in, top-level domains first, children sorted by name
+// TREE: the circles the visible dots sit in, top level first, siblings in the grouping's order
 export function clusterTree(
   nodes: readonly SimNode[],
   mode: ClusterMode = "domain",
   hubs: ReadonlyMap<string, string> | null = null,
 ): ClusterGroup[] {
+  const rule = GROUPINGS[mode];
   const hubIds = new Set(
     [...(hubs?.values() ?? [])].filter(
       (value) => !isReservedCircleLabel(value),
@@ -387,19 +209,13 @@ export function clusterTree(
   const roots: ClusterGroup[] = [];
   const byPath = new Map<string, ClusterGroup>();
   for (const node of nodes) {
-    const domainNode = centersGrouping(node, mode);
+    const centered = centersGrouping(node, mode);
     let siblings = roots;
     let group: ClusterGroup | undefined;
     clusterSegments(node, mode, hubs).forEach((segment, depth, segments) => {
       const path = joinPath(segments.slice(0, depth + 1), mode);
       group = byPath.get(path);
-      const order =
-        mode === "page" && depth > 0
-          ? (node.pageSections?.find(
-              (placement) =>
-                placement.page === segments[0] && placement.section === segment,
-            )?.position ?? 0)
-          : 0;
+      const order = rule.order?.(node, segments, depth) ?? 0;
       if (!group) {
         group = {
           path,
@@ -419,44 +235,20 @@ export function clusterTree(
         };
         byPath.set(path, group);
         siblings.push(group);
-      } else if (mode === "page" && depth > 0)
+      } else if (rule.order && depth > 0)
         group.order = Math.min(group.order, order);
       group.size += 1;
       siblings = group.children;
     });
-    // The domain node is placed at the circle center later. It is not one of the notes in the circle.
-    if (!domainNode) group?.members.push(node);
+    // The centered node is placed at the circle center later. It is not one of the notes in the circle.
+    if (!centered) group?.members.push(node);
   }
   const sortTree = (groups: ClusterGroup[]) => {
-    groups.sort((a, b) => {
-      if (mode === "page" && a.depth > 0 && b.depth > 0)
-        return a.order - b.order || a.label.localeCompare(b.label);
-      if (mode === "page") {
-        if (a.label === NO_ARTICLE_LABEL) return 1;
-        if (b.label === NO_ARTICLE_LABEL) return -1;
-      }
-      return a.label.localeCompare(b.label);
-    });
+    groups.sort(rule.compare);
     groups.forEach((group) => sortTree(group.children));
   };
   sortTree(roots);
   return roots;
-}
-
-// Created time for an article or section circle. The No article catch-all has none.
-function pageCreatedAt(
-  nodes: readonly SimNode[],
-  mode: ClusterMode,
-  group: ClusterGroup,
-): string | undefined {
-  if (mode !== "page") return undefined;
-  if (group.label === NO_ARTICLE_LABEL || group.parent === NO_ARTICLE_LABEL)
-    return undefined;
-  const times = nodes.find((node) => node.articleCreatedAt)?.articleCreatedAt;
-  if (!times) return undefined;
-  return group.parent === ""
-    ? times.pages.get(group.label)
-    : times.sections.get(group.path);
 }
 
 // The deepest domain path each dot sits in (dots without a domain are left out)
@@ -473,6 +265,7 @@ export function deepestPaths(
   clusterTree(nodes, mode, hubs).forEach(walk);
   return paths;
 }
+
 
 // SPACING in world units: room per dot inside an innermost ring (its radius plus this, squared, times
 // the looseness, so dots and their links have space to move), the smallest spot, padding inside an
@@ -538,19 +331,18 @@ function packAround(items: Packed[]): number {
   return enclosing.r - SIBLING_GAP / 2;
 }
 
-// Radius of each domain bubble, by topic path. The ring must clear this edge.
-function domainHubRadii(
+// Radius of each centered bubble, by its circle key. The ring must clear this edge.
+function centeredRadii(
   nodes: readonly SimNode[],
   nodeSize: number,
   mode: ClusterMode,
 ): Map<string, number> {
   const radii = new Map<string, number>();
-  if (mode !== "domain") return radii;
   for (const node of nodes) {
     if (!centersGrouping(node, mode)) continue;
-    const path = [...node.domainPaths].sort()[0];
-    if (!path) continue;
-    radii.set(path, nodeRadius(node, nodeSize));
+    const key = clusterKey(node, mode);
+    if (!key) continue;
+    radii.set(key, nodeRadius(node, nodeSize));
   }
   return radii;
 }
@@ -589,18 +381,19 @@ function packGroup(
   return { x: 0, y: 0, r: fit(packAround(items) + BRANCH_PAD), group, items };
 }
 
-// After a domain bubble has settled, grow its ring (and each parent ring) so the bubble stays inside.
-function fitCirclesAroundDomains(
+// After a centered bubble has settled, grow its ring (and each parent ring) so the bubble stays inside.
+function fitCirclesAroundCenters(
   circles: ClusterCircle[],
   nodes: readonly SimNode[],
   nodeSize: number,
+  mode: ClusterMode,
 ): void {
   const gap = domainRingGap(nodeSize);
   const byKey = new Map(circles.map((circle) => [circle.key, circle]));
   for (const node of nodes) {
-    if (!centersGrouping(node, "domain")) continue;
-    const path = [...node.domainPaths].sort()[0];
-    const circle = path ? byKey.get(path) : undefined;
+    if (!centersGrouping(node, mode)) continue;
+    const key = clusterKey(node, mode);
+    const circle = key ? byKey.get(key) : undefined;
     if (!circle) continue;
     const need =
       Math.hypot((node.x ?? 0) - circle.x, (node.y ?? 0) - circle.y) +
@@ -618,18 +411,18 @@ function fitCirclesAroundDomains(
   }
 }
 
-// Domain nodes are a separate layer. When a circle exists for that topic, the node sits at its center.
-function pinDomainNodes(
+// Nodes that center this grouping are a separate layer. When their own circle exists
+// (found through the grouping's segments), the node sits at its center.
+function pinCenteredNodes(
   packing: DomainPacking,
   nodes: readonly SimNode[],
   mode: ClusterMode,
 ): void {
-  if (mode !== "domain") return;
   const byKey = new Map(packing.circles.map((circle) => [circle.key, circle]));
   for (const node of nodes) {
     if (!centersGrouping(node, mode)) continue;
-    const path = [...node.domainPaths].sort()[0];
-    const circle = path ? byKey.get(path) : undefined;
+    const key = clusterKey(node, mode);
+    const circle = key ? byKey.get(key) : undefined;
     if (!circle) continue;
     packing.homes.set(node.id, {
       x: circle.x,
@@ -655,12 +448,6 @@ let lastPacking: {
   packing: DomainPacking;
 } | null = null;
 
-// A suggestion inside No article. Merges are orange; a new article is blue.
-function suggestionColor(group: ClusterGroup): GraphColor {
-  const merge = group.members.some((node) => node.recommendedKind === "merge");
-  return merge ? "needs-you" : "link";
-}
-
 // PACK: rings and homes for these dots, centered on the world origin. Dots without a domain share
 // one undrawn spot beside the top-level domains. In page mode, dots with no article form a
 // "No article" circle instead of that spot.
@@ -680,8 +467,9 @@ export function packDomains(
     lastPacking.links === links
   )
     return lastPacking.packing;
-  const hubs = mode === "page" ? hubNesting(nodes, links) : null;
-  const hubRadii = domainHubRadii(nodes, nodeSize, mode);
+  const rule = GROUPINGS[mode];
+  const hubs = rule.subgroups?.(nodes, links) ?? null;
+  const hubRadii = centeredRadii(nodes, nodeSize, mode);
   const tree = clusterTree(nodes, mode, hubs);
   const filed = deepestPaths(nodes, mode, hubs);
   const loose = nodes.filter(
@@ -720,33 +508,10 @@ export function packDomains(
         r: item.r,
         count: group.size,
         index,
-        badge:
-          mode === "page" &&
-          group.parent === NO_ARTICLE_LABEL &&
-          !group.quiet &&
-          !isReservedCircleLabel(group.label)
-            ? suggestionColor(group) === "needs-you"
-              ? "Merge"
-              : "New Article"
-            : undefined,
+        badge: rule.badge?.(group),
         quiet: group.quiet,
-        color:
-          mode === "entity"
-            ? entityColor(group.label)
-            : mode === "page"
-              ? group.quiet
-                ? "muted"
-                : group.label === NO_ARTICLE_LABEL ||
-                    group.label === ORPHANS_LABEL ||
-                    group.label === LINKED_LABEL
-                  ? "muted"
-                  : group.label === EXTERNAL_LABEL
-                    ? "graph-teal"
-                    : group.parent === NO_ARTICLE_LABEL
-                      ? suggestionColor(group)
-                      : entityColor(group.parent || group.label)
-              : undefined,
-        createdAt: pageCreatedAt(nodes, mode, group),
+        color: rule.color?.(group),
+        createdAt: rule.createdAt?.(nodes, group),
       });
     }
     if (item.dots) {
@@ -756,7 +521,7 @@ export function packDomains(
     for (const child of item.items) place(child, x, y, index);
   };
   top.forEach((item, index) => place(item, 0, 0, index));
-  pinDomainNodes(packing, nodes, mode);
+  pinCenteredNodes(packing, nodes, mode);
   lastPacking = { nodes, nodeSize, mode, links, packing };
   return packing;
 }
@@ -873,16 +638,8 @@ function pageFocusAllows(hitKey: string, focused: string | null): boolean {
 
 // Spread for a dot placed fresh in its home: a golden-angle spiral by its index, so new dots start apart
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
-// A note outside this domain still tugs the domain node, but only this much of an inside note
+// A note outside this circle still tugs the centered node, but only this much of an inside note
 const OUTSIDE_DOMAIN_PULL = 0.03;
-
-function insideDomain(domain: SimNode, other: SimNode): boolean {
-  const path = [...domain.domainPaths].sort()[0];
-  if (!path) return false;
-  return other.domainPaths.some(
-    (candidate) => candidate === path || candidate.startsWith(`${path}/`),
-  );
-}
 const OVERLAP_PAD = 2;
 const SEPARATE_PASSES = 4;
 
@@ -914,10 +671,14 @@ function pushApart(
   right.vy = 0;
 }
 
-// Domain nodes settle apart first. Notes are then moved out of those discs.
-function separateOverlaps(nodes: readonly SimNode[], nodeSize: number): void {
+// Centered nodes settle apart first. Notes are then moved out of those discs.
+function separateOverlaps(
+  nodes: readonly SimNode[],
+  nodeSize: number,
+  mode: ClusterMode,
+): void {
   const domains = nodes.filter(
-    (node) => centersGrouping(node, "domain") && node.fx == null,
+    (node) => centersGrouping(node, mode) && node.fx == null,
   );
   for (let pass = 0; pass < SEPARATE_PASSES; pass++) {
     for (let i = 0; i < domains.length; i++) {
@@ -948,7 +709,7 @@ function separateOverlaps(nodes: readonly SimNode[], nodeSize: number): void {
     );
   };
   for (const other of nodes) {
-    if (centersGrouping(other, "domain") || other.fx != null) continue;
+    if (centersGrouping(other, mode) || other.fx != null) continue;
     for (let pass = 0; pass < SEPARATE_PASSES; pass++) {
       let hit: SimNode | undefined;
       let overlap = 0;
@@ -1006,10 +767,12 @@ export function createContainment(
     }
   }
   const pin = new Map<string, { x: number; y: number }>();
+  // Only a grouping some node type centers places and pins its hubs
+  const centers = NODE_TYPE_LIST.some((type) => type.centers === mode);
   const placeInCircle = (node: SimNode, i: number) => {
     const home = homes.get(node.id);
-    // Domain grouping pins each hub at its topic center. Entity and page grouping
-    // keep a hub inside the circle it was filed in, the same as any other dot.
+    // A hub that centers this grouping is pinned at its circle center. Other hubs
+    // stay inside the circle they were filed in, the same as any other dot.
     if (!home || node.fx != null || node.fy != null) return;
     if (centersGrouping(node, mode)) return;
     const room = Math.max(0, home.r - nodeRadius(node, nodeSize));
@@ -1031,19 +794,19 @@ export function createContainment(
   };
   return () => {
     nodes.forEach(placeInCircle);
-    // Place each domain node once. Repeating it every frame fights the solver: the node jumps
+    // Place each centered node once. Repeating it every frame fights the solver: the node jumps
     // back to the centroid, notes get shoved out of it, and the next frame pulls them in again.
-    if (mode === "domain" && pin.size === 0) {
+    if (centers && pin.size === 0) {
       for (const node of nodes) {
         const home = homes.get(node.id);
         if (!home?.pin || node.fx != null || node.fy != null) continue;
-        const path = [...node.domainPaths].sort()[0] ?? "";
+        const path = clusterKey(node, mode) ?? "";
         let weight = 0;
         let x = 0;
         let y = 0;
         for (const other of nodes) {
           if (centersAnyGrouping(other)) continue;
-          const own = [...other.domainPaths].sort()[0] ?? "";
+          const own = clusterKey(other, mode) ?? "";
           if (own !== path) continue;
           weight += 1;
           x += other.x ?? 0;
@@ -1058,7 +821,7 @@ export function createContainment(
           }
         }
         for (const other of connected.get(node.id) ?? []) {
-          if (insideDomain(node, other)) continue;
+          if (GROUPINGS[mode].holds(other, path)) continue;
           weight += OUTSIDE_DOMAIN_PULL;
           x += (other.x ?? 0) * OUTSIDE_DOMAIN_PULL;
           y += (other.y ?? 0) * OUTSIDE_DOMAIN_PULL;
@@ -1073,13 +836,13 @@ export function createContainment(
         node.vx = 0;
         node.vy = 0;
       }
-      separateOverlaps(nodes, nodeSize);
+      separateOverlaps(nodes, nodeSize, mode);
       for (const node of nodes) {
         if (!centersGrouping(node, mode) || !homes.get(node.id)?.pin) continue;
         if (node.fx != null || node.fy != null) continue;
         pin.set(node.id, { x: node.x ?? 0, y: node.y ?? 0 });
       }
-      fitCirclesAroundDomains(circles, nodes, nodeSize);
+      fitCirclesAroundCenters(circles, nodes, nodeSize, mode);
     }
     for (const node of nodes) {
       const held = pin.get(node.id);
