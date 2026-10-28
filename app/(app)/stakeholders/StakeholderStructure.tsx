@@ -11,12 +11,14 @@ import { type PressureLine, staleYear, type Structure, type StructureBox, type S
 
 const MEMBER_ROLES: Record<StructureMember["role"], string> = { owner: "Owner", leader: "Leads", board: "Board", member: "" };
 
-type BoxProps = { power: Map<string, Power>; showFormer: boolean };
+// overUs: power over our work, null when no organization is marked as ours
+type Levels = { power: Map<string, Power>; overUs: Map<string, Power> | null };
+type BoxProps = Levels & { showFormer: boolean };
 
 // STRUCTURE VIEW: organizations as boxes inside boxes (owners and leaders on top, then people,
 // then former people when asked, then smaller boxes); pressure links as a short line on the box
 // that presses
-export function StakeholderStructure({ structure, power }: { structure: Structure; power: Map<string, Power> }) {
+export function StakeholderStructure({ structure, power, overUs }: Levels & { structure: Structure }) {
   const [showFormer, setShowFormer] = useState(false);
   if (!structure.boxes.length) {
     return (
@@ -34,7 +36,7 @@ export function StakeholderStructure({ structure, power }: { structure: Structur
         Show former
       </label>
       <ul className="grid items-start gap-3 xl:grid-cols-2">
-        {structure.boxes.map((box) => <li key={box.entityId}><Box box={box} power={power} showFormer={showFormer} /></li>)}
+        {structure.boxes.map((box) => <li key={box.entityId}><Box box={box} power={power} overUs={overUs} showFormer={showFormer} /></li>)}
       </ul>
       {structure.loose.length > 0 && (
         <section aria-label="No known structure" className="space-y-2 border-t pt-5">
@@ -48,32 +50,30 @@ export function StakeholderStructure({ structure, power }: { structure: Structur
   );
 }
 
-function Box({ box, power, showFormer }: BoxProps & { box: StructureBox }) {
-  const level = power.get(box.entityId);
+function Box({ box, power, overUs, showFormer }: BoxProps & { box: StructureBox }) {
   return (
     <section aria-label={box.name} className="space-y-2 rounded-lg border bg-card p-3">
       <header className="flex items-center justify-between gap-2">
         <StakeholderLink id={box.entityId} name={box.name} className="truncate text-sm font-semibold" />
-        {level && <PowerBadge power={level} className="text-xs" />}
+        <Badges id={box.entityId} power={power} overUs={overUs} />
       </header>
       <Pressure lines={box.pressure} />
-      {box.leaders.length > 0 && <Members members={box.leaders} power={power} />}
-      {box.people.length > 0 && <Members members={box.people} power={power} muted />}
-      {showFormer && box.former.length > 0 && <Members members={box.former} power={power} former />}
+      {box.leaders.length > 0 && <Members members={box.leaders} power={power} overUs={overUs} />}
+      {box.people.length > 0 && <Members members={box.people} power={power} overUs={overUs} muted />}
+      {showFormer && box.former.length > 0 && <Members members={box.former} power={power} overUs={overUs} former />}
       {box.boxes.length > 0 && (
         <ul className="space-y-2">
-          {box.boxes.map((child) => <li key={child.entityId}><Box box={child} power={power} showFormer={showFormer} /></li>)}
+          {box.boxes.map((child) => <li key={child.entityId}><Box box={child} power={power} overUs={overUs} showFormer={showFormer} /></li>)}
         </ul>
       )}
     </section>
   );
 }
 
-function Members({ members, power, muted, former }: { members: StructureMember[]; power: Map<string, Power>; muted?: boolean; former?: boolean }) {
+function Members({ members, power, overUs, muted, former }: Levels & { members: StructureMember[]; muted?: boolean; former?: boolean }) {
   return (
     <ul className={cn("space-y-0.5 text-xs", (muted || former) && "text-muted-foreground", former && "opacity-60")} aria-label={former ? "Former" : undefined}>
       {members.map((member) => {
-        const level = power.get(member.entityId);
         const seat = [MEMBER_ROLES[member.role], member.title].filter(Boolean).join(" · ");
         // A former seat reads "Former · Director, 2016 to 2021"
         const role = former ? ["Former", [seat, yearsText(member.since, member.until)].filter(Boolean).join(", ")].filter(Boolean).join(" · ") : seat;
@@ -89,13 +89,25 @@ function Members({ members, power, muted, former }: { members: StructureMember[]
           <li key={member.entityId} className="space-y-0.5">
             <div className="flex items-center gap-1.5">
               {asOf ? <Tooltip content={`As of ${asOf}: the newest source that says so`}>{who}</Tooltip> : who}
-              {level && <PowerBadge power={level} className="ml-auto text-xs" />}
+              <span className="ml-auto"><Badges id={member.entityId} power={power} overUs={overUs} /></span>
             </div>
             <Pressure lines={member.pressure} />
           </li>
         );
       })}
     </ul>
+  );
+}
+
+// General power, then power over our work when we know who we are
+function Badges({ id, power, overUs }: Levels & { id: string }) {
+  const general = power.get(id);
+  const ours = overUs?.get(id);
+  return (
+    <span className="flex shrink-0 gap-1 text-xs">
+      {general && <PowerBadge power={general} />}
+      {ours && <PowerBadge power={ours} overUs />}
+    </span>
   );
 }
 

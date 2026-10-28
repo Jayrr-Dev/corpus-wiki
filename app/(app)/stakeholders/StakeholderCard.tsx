@@ -29,7 +29,7 @@ const FUNCTIONS_SHOWN = 3;
 
 // ONE CARD: who it is and what kind, how it relates to us, a few facts and functions, contacts,
 // and how much knowledge stands behind it. The name opens the full card.
-export function StakeholderCard({ card, power }: { card: Card; power?: Power }) {
+export function StakeholderCard({ card, power, overUs }: { card: Card; power?: Power; overUs?: Power }) {
   const kind = cardKind(card);
   const contacts = allContacts(card);
   return (
@@ -43,6 +43,7 @@ export function StakeholderCard({ card, power }: { card: Card; power?: Power }) 
           <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
             <span className={cn("rounded px-1.5 py-0.5 font-medium", kindColor(kind))}>{sentenceCase(kind)}</span>
             {power && <PowerBadge power={power} />}
+            {overUs && <PowerBadge power={overUs} overUs />}
             {card.isOurs && <span className="rounded bg-link/15 px-1.5 py-0.5 font-medium text-link">Our organization</span>}
             {card.hidden && <span className="text-faint">Hidden</span>}
           </div>
@@ -127,17 +128,19 @@ function ContactIcon({ contact }: { contact: ReturnType<typeof allContacts>[numb
   );
 }
 
-// POWER LEVEL 1 to 5, with the reasons behind it on hover
-export function PowerBadge({ power, className }: { power: Power; className?: string }) {
+// POWER LEVEL 1 to 5, with the reasons behind it on hover: general power, or (overUs) the
+// part of it that bears on our own work
+export function PowerBadge({ power, overUs, className }: { power: Power; overUs?: boolean; className?: string }) {
+  const name = overUs ? "Power over our work" : "Power Level";
   return (
     <Tooltip content={(
       <span className="block space-y-1">
-        <span className="block font-medium">Power Level {power.level} of 5{power.estimated ? " (estimate)" : ""}</span>
+        <span className="block font-medium">{name} {power.level} of 5{power.estimated ? " (estimate)" : ""}</span>
         {power.reasons.map((reason) => <span key={reason} className="block">{reason}</span>)}
       </span>
     )}>
-      <span className={cn("relative z-10 rounded border px-1.5 py-0.5 font-medium tabular-nums text-muted-foreground", className)} aria-label={`Power Level ${power.level} of 5${power.estimated ? ", estimate" : ""}`}>
-        Power {power.level}{power.estimated && <span className="text-faint">~</span>}
+      <span className={cn("relative z-10 rounded border px-1.5 py-0.5 font-medium tabular-nums text-muted-foreground", overUs && "border-link/40 text-link", className)} aria-label={`${name} ${power.level} of 5${power.estimated ? ", estimate" : ""}`}>
+        {overUs ? "Over us" : "Power"} {power.level}{power.estimated && <span className="text-faint">~</span>}
       </span>
     </Tooltip>
   );
