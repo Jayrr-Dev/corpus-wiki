@@ -1,3 +1,5 @@
+import { GROUPINGS } from "./groupings";
+import { centersGrouping, isPlacedByLinks } from "./nodeTypes";
 import type { GraphData, GraphLink, GraphNode, GraphNodeKind } from "./types";
 
 // =====================================================================
@@ -85,9 +87,7 @@ export function inDomain(data: GraphData, domain: string): GraphData {
   return keepNodes(
     data,
     (node) =>
-      matched.has(node.id) ||
-      ((node.kind === "entity" || node.kind === "domain") &&
-        linked.has(node.id)),
+      matched.has(node.id) || (isPlacedByLinks(node) && linked.has(node.id)),
   );
 }
 
@@ -111,8 +111,7 @@ export function inDomainScope(
     data.nodes
       .filter(
         (node) =>
-          node.kind !== "entity" &&
-          node.kind !== "domain" &&
+          !isPlacedByLinks(node) &&
           (node.sourceScopes
             ? node.sourceScopes.some(
                 (origin) => scope === "both" || scope === origin,
@@ -135,19 +134,16 @@ export function inDomainScope(
   const scoped = keepNodes(
     data,
     (node) =>
-      matched.has(node.id) ||
-      ((node.kind === "entity" || node.kind === "domain") &&
-        linked.has(node.id)),
+      matched.has(node.id) || (isPlacedByLinks(node) && linked.has(node.id)),
   );
   return {
     ...scoped,
     nodes: scoped.nodes.map((node) => ({
       ...node,
       // A domain node is the topic itself. Scope filters notes, not the topic path.
-      domainPaths:
-        node.kind === "domain"
-          ? node.domainPaths
-          : domainPathsForScope(node, scope),
+      domainPaths: centersGrouping(node, "domain")
+        ? node.domainPaths
+        : domainPathsForScope(node, scope),
     })),
   };
 }
@@ -159,13 +155,13 @@ export function mergeEntityDomainHubs(
 ): GraphData {
   const paths = new Set<string>();
   for (const node of filtered.nodes) {
-    if (node.kind !== "unit" && node.kind !== "page") continue;
+    if (isPlacedByLinks(node)) continue;
     for (const path of node.domainPaths) paths.add(path);
   }
   if (paths.size === 0) return filtered;
   const domainByPath = new Map(
     source.nodes
-      .filter((node) => node.kind === "domain" && node.domainPaths[0])
+      .filter((node) => centersGrouping(node, "domain") && node.domainPaths[0])
       .map((node) => [node.domainPaths[0]!, node]),
   );
   const byId = new Map(filtered.nodes.map((node) => [node.id, node]));
@@ -211,7 +207,7 @@ function topicPaths(nodes: readonly GraphNode[]): string[] {
   return [
     ...new Set(
       nodes
-        .filter((node) => node.kind === "domain")
+        .filter((node) => centersGrouping(node, "domain"))
         .map((node) => node.domainPaths[0] ?? "")
         .filter(Boolean),
     ),
@@ -227,7 +223,7 @@ function topicNeighbors(
 ): Map<string, Map<string, number>> {
   const pathsOf = new Map<string, readonly string[]>();
   for (const node of evidenceNodes) {
-    if (node.kind === "domain" || node.kind === "entity") continue;
+    if (isPlacedByLinks(node)) continue;
     pathsOf.set(node.id, node.domainPaths);
   }
   const neighbors = new Map<string, Map<string, number>>();
@@ -309,12 +305,7 @@ function domainsInsideEntityGroups(
 ): GraphNode[] {
   const shared = new Map<string, Map<string, number>>();
   for (const node of evidenceNodes) {
-    if (
-      node.kind === "domain" ||
-      node.kind === "entity" ||
-      node.entityNames.length === 0
-    )
-      continue;
+    if (isPlacedByLinks(node) || node.entityNames.length === 0) continue;
     for (const path of node.domainPaths) {
       const counts = shared.get(path) ?? new Map<string, number>();
       for (const name of node.entityNames)
@@ -335,7 +326,7 @@ function domainsInsideEntityGroups(
     (candidate, current) => candidate.localeCompare(current) < 0,
   );
   return nodes.map((node) => {
-    if (node.kind !== "domain") return node;
+    if (!centersGrouping(node, "domain")) return node;
     const name = assigned.get(node.domainPaths[0] ?? "");
     return name ? { ...node, entityNames: [name] } : node;
   });
@@ -383,7 +374,7 @@ function domainsInsidePageGroups(
     Map<string, Map<string, { count: number; position: number }>>
   >();
   for (const node of evidenceNodes) {
-    if (node.kind === "domain" || node.kind === "entity") continue;
+    if (isPlacedByLinks(node)) continue;
     const titles = node.pageTitles ?? [];
     if (titles.length === 0) continue;
     for (const path of node.domainPaths) {
@@ -439,7 +430,7 @@ function domainsInsidePageGroups(
     closerPage,
   );
   return nodes.map((node) => {
-    if (node.kind !== "domain") return node;
+    if (!centersGrouping(node, "domain")) return node;
     const home = assigned.get(node.domainPaths[0] ?? "");
     if (!home) return node;
     return {
@@ -456,7 +447,7 @@ function domainsInsidePageGroups(
 function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
   const paths = new Set<string>();
   for (const node of nodes) {
-    if (node.kind === "domain") continue;
+    if (centersGrouping(node, "domain")) continue;
     const path = [...node.domainPaths].sort()[0] ?? "";
     if (!path) continue;
     const segments = path.split("/").filter(Boolean);
@@ -478,7 +469,7 @@ export function graphForGrouping(
       data.nodes,
       evidence.nodes,
       evidence.links,
-    ).filter((node) => node.kind !== "entity");
+    ).filter((node) => node.kind !== GROUPINGS.entity.hubKind);
     const ids = new Set(nodes.map((node) => node.id));
     return {
       nodes,
@@ -493,7 +484,7 @@ export function graphForGrouping(
       data.nodes,
       evidence.nodes,
       evidence.links,
-    ).filter((node) => node.kind !== "page");
+    ).filter((node) => node.kind !== GROUPINGS.page.hubKind);
     const ids = new Set(nodes.map((node) => node.id));
     return {
       nodes,
@@ -506,7 +497,7 @@ export function graphForGrouping(
   if (groupBy === "domain") {
     const pathsWithContent = domainPathsWithContent(data.nodes);
     const nodes = data.nodes.filter((node) => {
-      if (node.kind !== "domain") return true;
+      if (node.kind !== GROUPINGS.domain.hubKind) return true;
       const path = [...node.domainPaths].sort()[0] ?? "";
       if (!path) return false;
       // Notes define which topic circles exist. With no notes, the domain nodes are the circles.
@@ -554,7 +545,7 @@ export function applyFilters(
         bySearch,
         (node) =>
           linkedIds(bySearch).has(node.id) ||
-          (node.kind === "domain" && node.degree > 0),
+          (centersGrouping(node, "domain") && node.degree > 0),
       );
   return applyConnectors(visible, filters.showConnectors);
 }

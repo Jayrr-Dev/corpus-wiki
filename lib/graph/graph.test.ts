@@ -203,7 +203,7 @@ describe("buildGraph", () => {
   it("marks the newest tenth of knowledge units, articles, and sections", () => {
     const nodes = Array.from({ length: 20 }, (_, index) => ({
       id: `u${String(index).padStart(2, "0")}`,
-      kind: "unit",
+      kind: "unit" as const,
       activityAt: `2026-10-${String(index + 1).padStart(2, "0")}T00:00:00Z`,
     }));
     const marked = recentUnitIds(nodes);
