@@ -1,6 +1,5 @@
-// THE ONE POWER IMPORT for this page. Once the power lane lands, change this line to
-// `import { computePower } from "@/lib/stakeholders/power";` and delete powerStandIn.ts.
-import { computePower } from "./powerStandIn";
+// THE ONE POWER IMPORT for this page (the algorithm is docs/power-model.md)
+import { computePower } from "@/lib/stakeholders/power";
 
 export { computePower };
 
