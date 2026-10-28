@@ -5,10 +5,10 @@ import { getPublicSupabaseEnv } from "./env";
 import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 
 // ROUTES THE PROXY LETS THROUGH WITHOUT A SESSION. /api/capture checks the
-// caller itself (session or API key); /api/mcp checks its agent key; /api/processing/recover requires its own
+// caller itself (session or API key); /api/mcp checks its agent token and /.well-known/oauth-protected-resource tells clients where to sign in; /api/processing/recover requires its own
 // worker key. /welcome is the public landing page. Scripts and schedulers have
 // no cookie to redirect; every other route, future /api routes included, stays behind sign-in
-export const PUBLIC_PATHS = ["/welcome", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics"] as const;
+export const PUBLIC_PATHS = ["/welcome", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics"] as const;
 
 export function isPublicWikiPath(pathname: string): boolean {
   return ["/explore", "/s", "/embed", "/api/public-wiki/metrics"].some(p => pathname === p || pathname.startsWith(`${p}/`));
