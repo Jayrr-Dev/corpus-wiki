@@ -48,15 +48,22 @@ Inside links between boxes form a tree. Each box has one **main parent**:
 the owner with the biggest share, else its `part_of` parent. Other parents
 still count as owners below.
 
-Repeat the passes below until nothing changes by more than 0.1 percent, at
-most 20 times (so ownership cycles finish):
+First cut cycles. For each ownership cycle, drop the one edge that closes it
+(the lowest share, then the lowest id). Every other edge counts as written.
+`reports_to` cycles are cut the same way. Then repeat the passes below until
+nothing changes by more than 0.1 percent, at most 20 times:
 
 1. **Top down.** A box with no own number gets `share × P(parent)`. Share is
-   the staff ratio when both are known, else 0.3.
-2. **Bottom up.** A parent is at least the sum of its `part_of` children.
-3. **Owners.** An owner (box or person) gets `share × P(owned)` for each thing
-   it owns. An owner with 50 percent or more controls it, and gets at least
-   `1.1 × P(owned)`. That way the top owner always ranks above what it owns.
+   the staff ratio, taken only from a `part_of` main parent with both numbers
+   known, and capped at 1. Otherwise the share is 0.3. A box under an owner
+   that has its own number keeps it.
+2. **Bottom up.** A parent is at least the sum of its `part_of` children's
+   own, fact-based mass `M`. It never uses power the children got from the
+   parent, because that would feed on itself.
+3. **Owners.** An owner (box or person) gets `share × P(owned) × t` for each
+   thing it owns. An unknown share counts as 0.5. An owner with 50 percent or
+   more controls it, and gets at least `1.1 × P(owned)`. That way the top owner
+   always ranks above what it owns.
 4. **Pressure.** A box gains `0.1 × P(target)` for each `regulates` link,
    `0.1 ×` for each `funds` link and `0.05 ×` for each `contracts_with` link
    (the client over the supplier), each times `t`.
@@ -102,9 +109,11 @@ years in seats, from `since` and `until` when known.
 The leftover from one former seat (its `v`) never beats the current holder of
 that seat. The person's total may, through other seats, network and experience.
 
+A person with no seats, network or experience gets a floor of 1.
+
 ## 5. Levels
 
-Use the same fixed bands in every workspace:
+`score` is `log10(power)`. Use the same fixed bands in every workspace:
 
 | Power (staff-equivalents) | Level |
 |---|---|
