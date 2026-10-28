@@ -373,7 +373,8 @@ async function runSuggestions(deps: SuggestionDeps, claim: Claim) {
   });
 }
 
-// GROUPING: current units no live article cites and no open suggestion holds.
+// GROUPING: current units no live article cites and no processed suggestion holds.
+// Pending, accepting, failed and applied suggestions hold their claims. Dismissed and stale do not.
 // "merge" is the clear-home pool. "leftover" groups whatever is still unused.
 async function groupForRun(
   deps: SuggestionDeps,
@@ -1103,64 +1104,19 @@ const trace = {
 };
 const noTarget = { expectedRevisionId: null, passageIds: [], speechAct: null };
 
-// The claims already belong on these sections. Add them to each section's claim
-// list and leave the article text as it is. Returns how many claims were added.
-async function attachClaims(
-  db: DbRpc,
-  sections: SuggestedSection[],
-): Promise<number> {
-  let added = 0;
-  for (const section of sections) {
-    if (!section.sectionId) continue;
-    const state = await db.call<SectionState>("read_section_state", {
-      p_section_id: section.sectionId,
-    });
-    const query: SectionQuery = state.query ?? {};
-    // A query without an explicit claim list selects by other filters. Adding
-    // unitIds would shrink it to only those claims.
-    if (
-      !query.unitIds &&
-      (query.domainPaths?.length ||
-        query.entity ||
-        query.kinds?.length ||
-        query.articleAliases?.length)
-    ) {
-      throw new Error(`Could not attach the claims to "${state.title}".`);
-    }
-    const have = new Set(query.unitIds ?? []);
-    const adding = section.unitIds.filter((id) => !have.has(id));
-    if (!adding.length) continue;
-    const next: SectionQuery = {
-      ...query,
-      unitIds: [...(query.unitIds ?? []), ...adding],
-    };
-    const { changeSetId } = await submitChangeSet(
-      db,
-      {
-        eventId: null,
-        cause: "edit",
-        actor: "ai",
-        operationKey: `suggestion-attach:${section.sectionId}:${[...adding].sort().join(",")}`,
-      },
-      {
-        summary: `Attached ${adding.length} claim(s) to "${state.title}"`,
-        actions: [
-          {
-            ...noTarget,
-            targetId: section.sectionId,
-            type: "update_section_query",
-            input: { query: next, fromQuery: state.query ?? null },
-          },
-        ],
-        trace,
-      },
-    );
-    const result = await commitChangeSet(db, changeSetId);
-    if (result.status === "rejected" || result.rejected > 0)
-      throw new Error(`Could not attach the claims to "${state.title}".`);
-    added += adding.length;
-  }
-  return added;
+function storedQuery(value: Json | null): SectionQuery {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as SectionQuery;
+}
+
+// A query without an explicit claim list selects by other filters. Adding
+// unitIds would shrink it to only those claims.
+function selectsByOtherFilters(query: SectionQuery): boolean {
+  if (query.unitIds) return false;
+  if (query.domainPaths?.length) return true;
+  if (query.entity) return true;
+  if (query.kinds?.length) return true;
+  return Boolean(query.articleAliases?.length);
 }
 
 type MergeProgress = {
@@ -1173,10 +1129,10 @@ type MergeProgress = {
   ) => void;
 };
 
-// MERGE INTO NAMED SECTIONS ONLY. Existing sections take their claims and keep
-// their text. Suggested new sections are added at the end and written one by
-// one. The rest of the article is not replanned. A retry finds the sections an
-// earlier attempt added by title, so it only writes what is still empty.
+// MERGE INTO NAMED SECTIONS ONLY. Existing sections take their claims in one
+// save and keep their text. Suggested new sections are added in that same save,
+// then written only when they are still empty. The rest of the article is not
+// replanned. A retry finds sections an earlier attempt added by title.
 async function mergeIntoSections(
   db: DbRpc,
   client: AdminSupabase,
@@ -1188,98 +1144,142 @@ async function mergeIntoSections(
 ): Promise<{ attached: number; written: number }> {
   const { data: live, error } = await client
     .from("sections")
-    .select("id,title")
+    .select("id,title,query,mode")
     .eq("page_id", pageId)
     .is("retired_at", null);
   if (error) throw new Error(error.message);
+  const rows = live ?? [];
+  const byId = new Map(rows.map((row) => [row.id, row]));
   const byTitle = new Map(
-    (live ?? []).map((row) => [row.title.trim().toLowerCase(), row.id]),
+    rows.map((row) => [row.title.trim().toLowerCase(), row.id]),
   );
-  const liveIds = new Set((live ?? []).map((row) => row.id));
   // A named section that was removed meanwhile falls back to a same-title section, or a new one
   const resolved = sections.map((section) => ({
     ...section,
     sectionId:
-      (section.sectionId && liveIds.has(section.sectionId)
+      (section.sectionId && byId.has(section.sectionId)
         ? section.sectionId
         : byTitle.get(section.title.trim().toLowerCase())) ?? null,
   }));
   const toCreate = resolved.filter((section) => !section.sectionId);
-  if (toCreate.length) {
-    progress.report(`Adding ${toCreate.length} new section(s)…`);
+  const actions: DraftAction[] = toCreate.map(
+    (section): DraftAction => ({
+      ...noTarget,
+      targetId: null,
+      type: "create_section",
+      input: {
+        pageId,
+        title: section.title,
+        query: { unitIds: section.unitIds, article: true },
+      },
+    }),
+  );
+  let attached = 0;
+  for (const section of resolved) {
+    if (!section.sectionId || toCreate.includes(section)) continue;
+    const row = byId.get(section.sectionId);
+    if (!row) continue;
+    if (row.mode !== "generated")
+      throw new Error(`Could not attach the claims to "${row.title}".`);
+    const query = storedQuery(row.query);
+    if (selectsByOtherFilters(query))
+      throw new Error(`Could not attach the claims to "${row.title}".`);
+    const have = new Set(query.unitIds ?? []);
+    const adding = section.unitIds.filter((id) => !have.has(id));
+    if (!adding.length) continue;
+    const next: SectionQuery = {
+      ...query,
+      unitIds: [...(query.unitIds ?? []), ...adding],
+    };
+    actions.push({
+      ...noTarget,
+      targetId: section.sectionId,
+      type: "update_section_query",
+      input: { query: next, fromQuery: row.query },
+    });
+    attached += adding.length;
+  }
+  // One save places every claim. The old path saved each section on its own.
+  if (actions.length) {
+    progress.report(
+      toCreate.length
+        ? `Adding ${toCreate.length} new section(s) and placing the claims…`
+        : "Placing the claims on the existing sections…",
+    );
     const { changeSetId } = await submitChangeSet(
       db,
       {
         eventId: null,
         cause: "edit",
         actor: "ai",
-        operationKey: `suggestion-sections:${attempt}`,
+        operationKey: `suggestion-merge:${attempt}`,
       },
       {
-        summary: `Added ${toCreate.length} section(s) from an accepted suggestion`,
-        actions: toCreate.map(
-          (section): DraftAction => ({
-            ...noTarget,
-            targetId: null,
-            type: "create_section",
-            input: {
-              pageId,
-              title: section.title,
-              query: { unitIds: section.unitIds, article: true },
-            },
-          }),
-        ),
+        summary: toCreate.length
+          ? `Added ${toCreate.length} section(s) and placed claims from an accepted suggestion`
+          : `Placed ${attached} claim(s) from an accepted suggestion`,
+        actions,
         trace,
       },
     );
     const result = await commitChangeSet(db, changeSetId);
     if (result.status === "rejected" || result.rejected > 0)
       throw new Error(
-        `The new section(s) could not be added. Review change set ${changeSetId} in Changes.`,
+        `The claims could not be placed. Review change set ${changeSetId} in Changes.`,
       );
-    const { data: created, error: createdError } = await client
-      .from("actions")
-      .select("target_id")
-      .eq("change_set_id", changeSetId)
-      .eq("type", "create_section")
-      .eq("outcome", "applied")
-      .order("position");
-    if (createdError) throw new Error(createdError.message);
-    toCreate.forEach((section, index) => {
-      section.sectionId = created?.[index]?.target_id ?? null;
-    });
-    if (toCreate.some((section) => !section.sectionId))
-      throw new Error("A new section is waiting in Exceptions.");
+    if (toCreate.length) {
+      const { data: created, error: createdError } = await client
+        .from("actions")
+        .select("target_id")
+        .eq("change_set_id", changeSetId)
+        .eq("type", "create_section")
+        .eq("outcome", "applied")
+        .order("position");
+      if (createdError) throw new Error(createdError.message);
+      toCreate.forEach((section, index) => {
+        section.sectionId = created?.[index]?.target_id ?? null;
+      });
+      if (toCreate.some((section) => !section.sectionId))
+        throw new Error("A new section is waiting in Exceptions.");
+    }
   }
-  const attached = await attachClaims(
-    db,
-    resolved.filter((section) => !toCreate.includes(section)),
+  const existingIds = resolved.flatMap((section) =>
+    section.sectionId && !toCreate.includes(section) ? [section.sectionId] : [],
   );
-  // Write every section in this merge that has no text yet: new ones, and ones an earlier attempt added
+  const alreadyWritten = new Set<string>();
+  if (existingIds.length) {
+    const { data: lines, error: linesError } = await client
+      .from("section_lines")
+      .select("section_id, content")
+      .in("section_id", existingIds);
+    if (linesError) throw new Error(linesError.message);
+    for (const line of lines ?? []) {
+      if (line.section_id && line.content?.trim())
+        alreadyWritten.add(line.section_id);
+    }
+  }
+  // Write only a section that has no text yet. A section that already reads stays as it is.
   let written = 0;
   let sectionWriter: SectionWriter | null = null;
   for (const section of resolved) {
     const id = section.sectionId!;
-    const state = await db.call<SectionState>("read_section_state", {
-      p_section_id: id,
-    });
-    if (state.lines.some((line) => line.content.trim())) {
-      progress.mark(`“${state.title}” is in place.`, state.title, "done", id);
+    if (alreadyWritten.has(id)) {
+      progress.mark(`“${section.title}” is in place.`, section.title, "done", id);
       continue;
     }
-    progress.mark(`Writing “${state.title}”…`, state.title, "current", id);
+    progress.mark(`Writing “${section.title}”…`, section.title, "current", id);
     sectionWriter ??= writerWithProgress(await writer(), progress.report);
     try {
       const built = await rebuildUploadSection(db, sectionWriter, id, null);
       if (!built || built.rebuildRequested)
         throw new Error(
-          `“${state.title}” is still being written. Retry when it finishes.`,
+          `“${section.title}” is still being written. Retry when it finishes.`,
         );
       const after = await db.call<SectionState>("read_section_state", {
         p_section_id: id,
       });
       if (!after.lines.some((line) => line.content.trim()))
-        throw new Error(`“${state.title}” came back with no text.`);
+        throw new Error(`“${section.title}” came back with no text.`);
     } catch (writeError) {
       // An empty section must not stay on the article. Its claims go back to unused.
       if (toCreate.includes(section))
@@ -1292,7 +1292,7 @@ async function mergeIntoSections(
       throw writeError;
     }
     written += 1;
-    progress.mark(`Wrote “${state.title}”.`, state.title, "done", id);
+    progress.mark(`Wrote “${section.title}”.`, section.title, "done", id);
   }
   return { attached, written };
 }
@@ -1373,22 +1373,13 @@ async function applyAcceptedSuggestion(
             .range(from, to),
         ),
       ),
-      readIdBatches(item.unit_ids, (batch) =>
-        readPages((from, to) =>
-          client
-            .from("section_knowledge")
-            .select("unit_id, page_id")
-            .in("unit_id", batch)
-            .order("unit_id")
-            .order("page_id")
-            .range(from, to),
-        ),
-      ),
+      // Which of these claims already sit on an article. This does not load article text.
+      db.call<string[]>("placed_unit_ids", { p_unit_ids: item.unit_ids }),
     ]);
     const expected = new Map(
       item.unit_ids.map((id, index) => [id, item.revision_ids[index]]),
     );
-    const citedIds = new Set(cited.map((row) => row.unit_id));
+    const citedIds = new Set(Array.isArray(cited) ? cited : []);
     const current = new Set(
       units
         .filter(

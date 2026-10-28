@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useState, type ReactNode } from "react";
+import { RoutedErrorBoundary } from "@/components/error";
 import { Toaster } from "@/components/toast";
 import { TooltipProvider } from "@/components/standard/tooltip";
 
@@ -21,7 +22,9 @@ export function Providers({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           {children}
-          <Toaster />
+          <RoutedErrorBoundary where="Notifications">
+            <Toaster />
+          </RoutedErrorBoundary>
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

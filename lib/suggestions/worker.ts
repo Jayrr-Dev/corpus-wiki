@@ -7,7 +7,7 @@ import { processSuggestionWork } from "./run";
 // How many accepted suggestions to apply at once. Merges into the same article still wait their turn.
 const APPLY_AT_ONCE = 3;
 
-// Works through the current space's suggestion jobs (accepted suggestions first)
+// Works through the current space's suggestion jobs (merges first, then new articles, then a run)
 export async function drainSuggestionWork(limit = 60): Promise<number> {
   const admin = getAdminSupabase();
   const db = supabaseRpc(admin);

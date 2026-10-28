@@ -1,5 +1,6 @@
 "use client";
 
+import { ErrorBoundary } from "@/components/error";
 import { UndoIcon } from "@/components/icons";
 import { Tooltip } from "@/components/standard/tooltip";
 import type { GraphNode, GraphSettings } from "@/lib/graph";
@@ -80,45 +81,59 @@ export function GraphPanel({
           </button>
         </Tooltip>
       </div>
-      <FiltersSection
-        value={settings.filters}
-        nodes={nodes}
-        onChange={(next) => update("filters", next)}
-      />
-      <ViewSection
-        value={settings.display}
-        onChange={(next) => update("display", next)}
-      />
-      <NodesSection
-        value={settings.filters}
-        onChange={(next) => update("filters", next)}
-      />
-      <EdgesSection
-        value={settings.filters}
-        display={settings.display}
-        onChange={(next) => update("filters", next)}
-        onDisplayChange={(next) => update("display", next)}
-      />
-      <GroupSection
-        value={settings.display}
-        onChange={(next) => update("display", next)}
-      />
-      <GroupsSection
-        value={settings.groups}
-        nodes={nodes}
-        onChange={(next) => update("groups", next)}
-      />
-      <TuningSection
-        filters={settings.filters}
-        display={settings.display}
-        forces={settings.forces}
-        onFiltersChange={(next) => update("filters", next)}
-        onDisplayChange={(next) => update("display", next)}
-        onForcesChange={(next) => update("forces", next)}
-        isReplaying={isReplaying}
-        onAnimate={onAnimate}
-        actions={actions}
-      />
+      <ErrorBoundary where="The Filters section">
+        <FiltersSection
+          value={settings.filters}
+          nodes={nodes}
+          onChange={(next) => update("filters", next)}
+        />
+      </ErrorBoundary>
+      <ErrorBoundary where="The View section">
+        <ViewSection
+          value={settings.display}
+          onChange={(next) => update("display", next)}
+        />
+      </ErrorBoundary>
+      <ErrorBoundary where="The Nodes section">
+        <NodesSection
+          value={settings.filters}
+          onChange={(next) => update("filters", next)}
+        />
+      </ErrorBoundary>
+      <ErrorBoundary where="The Edges section">
+        <EdgesSection
+          value={settings.filters}
+          display={settings.display}
+          onChange={(next) => update("filters", next)}
+          onDisplayChange={(next) => update("display", next)}
+        />
+      </ErrorBoundary>
+      <ErrorBoundary where="The Group section">
+        <GroupSection
+          value={settings.display}
+          onChange={(next) => update("display", next)}
+        />
+      </ErrorBoundary>
+      <ErrorBoundary where="The Groups section">
+        <GroupsSection
+          value={settings.groups}
+          nodes={nodes}
+          onChange={(next) => update("groups", next)}
+        />
+      </ErrorBoundary>
+      <ErrorBoundary where="The Tuning section">
+        <TuningSection
+          filters={settings.filters}
+          display={settings.display}
+          forces={settings.forces}
+          onFiltersChange={(next) => update("filters", next)}
+          onDisplayChange={(next) => update("display", next)}
+          onForcesChange={(next) => update("forces", next)}
+          isReplaying={isReplaying}
+          onAnimate={onAnimate}
+          actions={actions}
+        />
+      </ErrorBoundary>
     </aside>
   );
 }

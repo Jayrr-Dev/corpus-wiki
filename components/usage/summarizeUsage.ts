@@ -68,6 +68,27 @@ export function grandTotal(calls: readonly AiCall[]): UsageTotal {
   return calls.reduce(addCall, emptyTotal("all", "all"));
 }
 
+// TOTALS BY DAY, oldest first. One row per UTC day that has a call.
+export function totalsByDay(calls: readonly AiCall[]): UsageTotal[] {
+  const totals = new Map<string, UsageTotal>();
+  for (const call of calls) {
+    const day = call.created_at.slice(0, 10);
+    totals.set(day, addCall(totals.get(day) ?? emptyTotal(day, "all"), call));
+  }
+  return [...totals.values()].sort((a, b) => a.day.localeCompare(b.day));
+}
+
+// Inclusive UTC day window. A missing window returns the same calls.
+export function callsInRange<T extends { created_at: string }>(calls: readonly T[], range: { start: string; end: string } | null): readonly T[] {
+  if (range === null) return calls;
+  const start = range.start <= range.end ? range.start : range.end;
+  const end = range.start <= range.end ? range.end : range.start;
+  return calls.filter((call) => {
+    const day = call.created_at.slice(0, 10);
+    return day >= start && day <= end;
+  });
+}
+
 // THE ROLE A CALL WAS MADE FOR: the logged role, else the one its purpose maps to ("other" when neither)
 export const callRole = (call: AiCall): string => call.role ?? roleForPurpose(call.purpose) ?? "other";
 

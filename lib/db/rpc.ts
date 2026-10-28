@@ -33,7 +33,7 @@ const REPLAYABLE_READS = new Set([
   "missing_glossary_embeddings", "missing_unit_embeddings", "missing_passage_embeddings", "search_glossary", "similar_units", "similar_passages", "unit_vectors", "search_units_text", "linked_units",
   "article_index", "page_candidates", "list_affected_sections", "list_page_sections", "living_page_event_units", "living_page_change_summary",
   "read_section_state", "read_section_units", "read_page_context", "page_review_snapshot", "page_review_related", "page_review_status",
-  "pages_needing_editorial_review", "curator_snapshot", "curator_claim_vectors", "domain_review_snapshot", "held_suggestion_units",
+  "pages_needing_editorial_review", "curator_snapshot", "curator_claim_vectors", "domain_review_snapshot", "held_suggestion_units", "placed_unit_ids",
 ]);
 // A broken database connection can surface as an empty HTTP 400/5xx, with
 // no evidence of whether it committed. Only these token-fenced operations can

@@ -65,15 +65,18 @@ export async function acceptArticleSuggestion(id: string, title?: string): Promi
   });
 }
 
-// ACCEPT ALL: every open suggestion, applied by the same job as a single accept
-export async function acceptAllArticleSuggestions(): Promise<ActionResult<{ accepted: number }>> {
+// ACCEPT ALL: every open suggestion, or just the ids you pass, applied by the same job as a single accept
+export async function acceptAllArticleSuggestions(ids?: string[]): Promise<ActionResult<{ accepted: number }>> {
   return toActionResult(async () => {
+    const chosen = z.array(z.string().uuid()).max(5000).optional().parse(ids);
+    if (chosen?.length === 0) return { accepted: 0 };
     const user = await requireUser();
     const actor = await currentActor();
     if (!actor.spaceId) throw new Error("Choose a space first.");
-    const { data, error } = await getAdminSupabase().from("article_suggestions")
+    const query = getAdminSupabase().from("article_suggestions")
       .update({ status: "accepting", note: null, attempts: 0, decided_at: new Date().toISOString(), decided_by: user.id })
-      .eq("space_id", actor.spaceId).in("status", ["pending", "failed"]).select("id");
+      .eq("space_id", actor.spaceId).eq("status", "pending");
+    const { data, error } = await (chosen ? query.in("id", chosen) : query).select("id");
     if (error) throw new Error(error.message);
     if (data?.length) await startWork();
     return { accepted: data?.length ?? 0 };

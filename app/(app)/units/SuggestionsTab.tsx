@@ -16,9 +16,10 @@ import { DomainTreeSelect } from "@/components/actions/DomainTreeSelect";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { EmptyState } from "@/components/EmptyState";
 import { PageIcon } from "@/components/icons";
+import { InfoPopover } from "@/components/standard/info-popover";
 import { Tooltip } from "@/components/standard/tooltip";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PopoverDescription } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import type { Tables } from "@/lib/database/types";
 import {
@@ -42,7 +43,7 @@ import {
   runArticleSuggestions,
 } from "@/lib/server-actions/suggestions";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Circle, CircleAlert, LoaderCircle } from "lucide-react";
+import { ArrowRight, Check, Circle, CircleAlert, LoaderCircle } from "lucide-react";
 import {
   type CSSProperties,
   type ReactNode,
@@ -94,6 +95,19 @@ function isWriting(item: Suggestion) {
   return (
     item.status === "applied" && Boolean((item.signals as Signals)?.writing)
   );
+}
+
+function reasonPoints(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+    .map((sentence) => {
+      const count = sentence.split(/\s+/).filter(Boolean).length;
+      if (count <= 16) return sentence;
+      const clause = sentence.split(",")[0]?.trim() ?? sentence;
+      return clause.endsWith(".") ? clause : `${clause}.`;
+    });
 }
 
 function isOpen(item: Suggestion) {
@@ -192,19 +206,14 @@ function WhyGrouped({ signals }: { signals: Signals }) {
   ].filter(Boolean);
   if (!lines.length) return null;
   return (
-    <Tooltip
-      content={
-        <span className="flex flex-col">
-          {lines.map((line) => (
-            <span key={line}>{line}</span>
-          ))}
-        </span>
-      }
-    >
-      <span className="cursor-help text-panel text-faint underline decoration-dotted underline-offset-2">
-        Why grouped
-      </span>
-    </Tooltip>
+    <InfoPopover label="Why grouped">
+      <PopoverDescription>Why these claims were grouped.</PopoverDescription>
+      <ul className="mt-2 list-disc space-y-1 pl-4">
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </InfoPopover>
   );
 }
 
@@ -231,8 +240,8 @@ function SuggestionCard({
     progress: false,
     refreshTables: REFRESH,
   });
-  const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [viewing, setViewing] = useState(false);
   const [title, setTitle] = useState(suggestion.title);
   const sections = suggestion.sections as unknown as Section[];
   const signals = (suggestion.signals ?? {}) as Signals;
@@ -285,61 +294,74 @@ function SuggestionCard({
   const canAccept =
     suggestion.status === "pending" || suggestion.status === "failed";
   const merge = suggestion.kind === "merge";
-  return (
-    <li className="flex flex-col gap-2 rounded-lg border p-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-col gap-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={merge ? "outline" : "secondary"}>
-              {merge ? "Merge into" : "New article"}
-            </Badge>
-            {merge ? (
-              target ? (
-                <TextLink href={`/p/${target.slug}`} className="font-medium">
-                  {target.title}
-                </TextLink>
-              ) : (
-                <span className="font-medium">{suggestion.title}</span>
-              )
-            ) : editing ? (
-              <Input
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                maxLength={150}
-                aria-label="Article title"
-                className="h-7 w-72"
-              />
-            ) : (
-              <span className="font-medium">{title}</span>
-            )}
-            {!merge && suggestion.article_type ? (
-              <span className="text-panel text-faint">
-                {statusLabel(suggestion.article_type)}
+  const heading = merge ? (target?.title ?? suggestion.title) : title;
+  const claimCount = suggestion.unit_ids.length;
+  const sectionList = (
+    <ol className="flex max-h-48 flex-col gap-2 overflow-y-auto">
+      {sections.map((section) => {
+        const mark = sectionMark(section);
+        return (
+          <li key={section.title} className="flex flex-col gap-1">
+            <span className="flex items-start gap-1.5 font-medium">
+              {tracking ? (
+                <Mark state={mark} hint={SECTION_HINT[mark]} />
+              ) : null}
+              <span>
+                {section.title}
+                {section.sectionId ? (
+                  <span className="ml-2 font-normal text-faint">
+                    Existing section
+                  </span>
+                ) : null}
               </span>
-            ) : null}
+            </span>
+            <ul className="flex flex-col gap-0.5">
+              {section.unitIds.map((id) => {
+                const unit = units.get(id);
+                const place = placedIn(id);
+                return (
+                  <li key={id} className="flex items-start gap-1.5">
+                    {tracking ? (
+                      <Mark
+                        state={place ? "done" : "todo"}
+                        hint={
+                          place
+                            ? `Placed in “${place.title}”`
+                            : "Not placed on the article yet"
+                        }
+                      />
+                    ) : null}
+                    <TextLink
+                      href={`/units/${id}`}
+                      className="whitespace-normal"
+                    >
+                      {unit
+                        ? (unit.label ?? unit.content)
+                        : "Retired or unavailable knowledge"}
+                    </TextLink>
+                  </li>
+                );
+              })}
+            </ul>
+          </li>
+        );
+      })}
+    </ol>
+  );
+  const claimLabel =
+    claimCount === 1 ? "1 claim" : `${formatCount(claimCount)} claims`;
+  const destination = merge ? "Existing article" : suggestion.article_type ? statusLabel(suggestion.article_type) : "New article";
+  return (
+    <li className="rounded-md border p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-faint uppercase">
+            Recommended action
+            <WhyGrouped signals={signals} />
           </div>
-          {suggestion.scope ? (
-            <p className="text-panel text-muted-foreground">
-              {suggestion.scope}
-            </p>
-          ) : null}
-          {suggestion.rationale ? (
-            <p className="text-panel text-faint">{suggestion.rationale}</p>
-          ) : null}
-          {working ? (
-            <p className="text-panel text-muted-foreground">
-              {suggestion.note?.trim() ||
-                "Checking the knowledge still matches this suggestion…"}
-            </p>
-          ) : null}
-          {signals.similarTitle ? (
-            <Note>
-              Close to the existing article “{signals.similarTitle.title}”:
-              check it isn’t a duplicate.
-            </Note>
-          ) : null}
+          <p className="mt-1 font-medium">{merge ? "Merge" : "New article"}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           {working ? (
             <StatusDot
               tone="muted"
@@ -400,22 +422,72 @@ function SuggestionCard({
           ) : null}
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          aria-expanded={open}
-          className="text-panel text-link hover:underline"
-          onClick={() => setOpen((value) => !value)}
-        >
-          {open
-            ? "Hide sections"
-            : `${sections.length} section(s) · ${suggestion.unit_ids.length} unit(s)`}
-        </button>
-        <WhyGrouped signals={signals} />
-        {result ? (
-          <TextLink href={`/p/${result.slug}`}>Open article</TextLink>
-        ) : null}
+      <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+        <div className="flex min-h-16 flex-1 flex-col items-center justify-center gap-2 rounded-md border px-3 py-3 text-center">
+          <p className="font-medium">{claimLabel}</p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            aria-expanded={viewing}
+            onClick={() => setViewing((open) => !open)}
+          >
+            {viewing ? "Hide" : "View"}
+          </Button>
+        </div>
+        <ArrowRight
+          className="mx-auto size-4 shrink-0 rotate-90 text-faint sm:mx-0 sm:rotate-0"
+          aria-hidden
+        />
+        <div className="flex min-h-16 min-w-0 flex-1 flex-col items-center justify-center rounded-md border px-3 py-3 text-center">
+          {editing ? (
+            <Input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              maxLength={150}
+              aria-label="Article title"
+              className="h-8 w-full"
+            />
+          ) : target ? (
+            <TextLink href={`/p/${target.slug}`} className="font-medium">
+              {heading}
+            </TextLink>
+          ) : (
+            <p className="font-medium">{heading}</p>
+          )}
+          <p className="max-w-full truncate text-panel text-faint">{destination}</p>
+          {result ? (
+            <TextLink href={`/p/${result.slug}`}>Open article</TextLink>
+          ) : null}
+        </div>
       </div>
+      {suggestion.rationale ? (
+        <>
+          <p className="mt-3 text-xs font-medium tracking-wide text-faint uppercase">
+            Reason
+          </p>
+          <ul className="mt-1 list-disc space-y-1 pl-4">
+            {reasonPoints(suggestion.rationale).map((point) => (
+              <li key={point} className="text-panel">
+                {point}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      {viewing ? <div className="mt-3">{sections.length ? sectionList : <p className="text-muted-foreground">No claims are listed.</p>}</div> : null}
+      {working ? (
+        <p className="mt-3 text-panel text-muted-foreground">
+          {suggestion.note?.trim() ||
+            "Checking the knowledge still matches this suggestion…"}
+        </p>
+      ) : null}
+      {signals.similarTitle ? (
+        <Note>
+          Close to the existing article “{signals.similarTitle.title}”: check
+          it isn’t a duplicate.
+        </Note>
+      ) : null}
       {tracking ? (
         <PlacedBar placed={placedCount} total={suggestion.unit_ids.length} />
       ) : null}
@@ -425,60 +497,6 @@ function SuggestionCard({
         <Note>{suggestion.note}</Note>
       ) : null}
       <ErrorNote error={accept.error ?? cancel.error ?? dismiss.error} />
-      {open ? (
-        <ol className="flex flex-col gap-2 border-l pl-3">
-          {sections.map((section) => {
-            const mark = sectionMark(section);
-            return (
-              <li key={section.title} className="flex flex-col gap-1">
-                <span className="flex items-start gap-1.5 text-panel font-medium">
-                  {tracking ? (
-                    <Mark state={mark} hint={SECTION_HINT[mark]} />
-                  ) : null}
-                  <span>
-                    {section.title}
-                    {section.sectionId ? (
-                      <span className="ml-2 font-normal text-faint">
-                        existing section
-                      </span>
-                    ) : null}
-                  </span>
-                </span>
-                <ul
-                  className={`flex flex-col gap-0.5 ${tracking ? "pl-5" : ""}`}
-                >
-                  {section.unitIds.map((id) => {
-                    const unit = units.get(id);
-                    const place = placedIn(id);
-                    return (
-                      <li key={id} className="flex items-start gap-1.5">
-                        {tracking ? (
-                          <Mark
-                            state={place ? "done" : "todo"}
-                            hint={
-                              place
-                                ? `Placed in “${place.title}”`
-                                : "Not placed on the article yet"
-                            }
-                          />
-                        ) : null}
-                        <TextLink
-                          href={`/units/${id}`}
-                          className="whitespace-normal text-panel"
-                        >
-                          {unit
-                            ? (unit.label ?? unit.content)
-                            : "Retired or unavailable knowledge"}
-                        </TextLink>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </li>
-            );
-          })}
-        </ol>
-      ) : null}
     </li>
   );
 }
@@ -504,6 +522,7 @@ export function SuggestionsTab() {
     progress: false,
     refreshTables: REFRESH,
   });
+  const [kind, setKind] = useState<"merge" | "create" | null>(null);
   const latest = runs.data?.[0];
   const active = latest?.state === "queued" || latest?.state === "running";
   const unitById = useMemo(
@@ -594,12 +613,16 @@ export function SuggestionsTab() {
       unitDomains.data,
     ],
   );
+  const shown = useMemo(
+    () => open.filter((item) => kind === null || item.kind === kind),
+    [open, kind],
+  );
+  const mergeCount = open.filter((item) => item.kind === "merge").length;
+  const articleCount = open.filter((item) => item.kind === "create").length;
   const acceptable = useMemo(
     () =>
-      open.filter(
-        (item) => item.status === "pending" || item.status === "failed",
-      ),
-    [open],
+      shown.filter((item) => item.status === "pending"),
+    [shown],
   );
   const held = useMemo(
     () => new Set(open.flatMap((item) => item.unit_ids)),
@@ -610,6 +633,26 @@ export function SuggestionsTab() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="mr-auto flex gap-1" role="group" aria-label="Filter suggestions">
+          <Button
+            type="button"
+            size="sm"
+            variant={kind === "merge" ? "accent" : "outline"}
+            aria-pressed={kind === "merge"}
+            onClick={() => setKind((current) => (current === "merge" ? null : "merge"))}
+          >
+            Merge {formatCount(mergeCount)}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={kind === "create" ? "accent" : "outline"}
+            aria-pressed={kind === "create"}
+            onClick={() => setKind((current) => (current === "create" ? null : "create"))}
+          >
+            Articles {formatCount(articleCount)}
+          </Button>
+        </div>
         <DomainTreeSelect
           label="Domain"
           value={filters.domain}
@@ -620,7 +663,7 @@ export function SuggestionsTab() {
         <Tooltip
           content={
             countsReady
-              ? `${formatCount(free)} unused unit(s) to group. Likely merges are suggested first, then whatever is left.`
+              ? `${formatCount(free)} unused unit(s) to group. Claims already in a suggestion are skipped. Likely merges are suggested first, then whatever is left.`
               : "Counting unused knowledge…"
           }
         >
@@ -635,15 +678,15 @@ export function SuggestionsTab() {
             </Button>
           </span>
         </Tooltip>
-        <Tooltip content="Accept every open suggestion. Different articles are written at the same time; merges into one article stay in order.">
+        <Tooltip content={kind === null ? "Accept suggestions that are still waiting. Merges go first. Ones already running, finished, or failed stay as they are." : "Accept the waiting suggestions in this filter. Ones already running, finished, or failed stay as they are."}>
           <span>
             <Button
               variant="outline"
               size="sm"
               disabled={!acceptable.length || acceptAll.isPending}
-              onClick={() => acceptAll.run()}
+              onClick={() => acceptAll.run(kind === null ? undefined : acceptable.map((item) => item.id))}
             >
-              {acceptAll.isPending ? "Starting…" : "Run all"}
+              {acceptAll.isPending ? "Starting…" : "Apply all"}
             </Button>
           </span>
         </Tooltip>
@@ -653,9 +696,9 @@ export function SuggestionsTab() {
       </QueryState>
       <ErrorNote error={run.error ?? acceptAll.error} />
       <QueryState query={suggestions}>
-        {open.length ? (
+        {shown.length ? (
           <ul className="flex flex-col gap-3">
-            {open.map((item) => (
+            {shown.map((item) => (
               <SuggestionCard
                 key={`${item.id}:${item.title}`}
                 suggestion={item}
@@ -668,11 +711,13 @@ export function SuggestionsTab() {
         ) : (
           <EmptyState
             icon={PageIcon}
-            title="No open suggestions"
+            title={kind === "merge" ? "No merge suggestions" : kind === "create" ? "No article suggestions" : "No open suggestions"}
             hint={
-              active
-                ? "Suggestions appear here as each group is done."
-                : "Run suggestions to group unused knowledge into articles."
+              kind !== null
+                ? "The other filter may still have suggestions."
+                : active
+                  ? "Suggestions appear here as each group is done."
+                  : "Run suggestions to group unused knowledge into articles."
             }
           />
         )}

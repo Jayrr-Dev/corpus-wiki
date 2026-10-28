@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import type { DbRpc } from "@/lib/db/rpc";
-import { autoDecideGlossary } from "./autoDecide";
+import { autoDecideGlossary, glossaryDecisionGroups } from "./autoDecide";
 
 const { chat } = vi.hoisted(() => ({ chat: vi.fn() }));
 vi.mock("@/lib/ai/chat", () => ({ chatJson: chat }));
@@ -8,6 +8,16 @@ beforeEach(() => chat.mockReset());
 const saved = { meaningId: "saved", definition: "A manually written definition.", personEdited: true };
 const pending = { entry: { meaningId: "new", term: "Term" }, candidateIds: ["saved"] };
 const settings = { apiKey: "test", model: "test" };
+
+it("asks once when pending proposals share a saved meaning", () => {
+  const grouped = glossaryDecisionGroups([
+    { candidateIds: ["saved"] },
+    { candidateIds: ["other"] },
+    { candidateIds: ["saved", "other"] },
+  ]);
+  expect(grouped).toHaveLength(1);
+  expect(grouped[0]).toHaveLength(3);
+});
 
 it("makes no AI call while off or while generation owns the glossary", async () => {
   const call = vi.fn().mockResolvedValue(null);
@@ -22,6 +32,19 @@ it("saves a choice with the reviewed snapshot, preserves human wording, and stop
   expect(call).toHaveBeenNthCalledWith(2, "apply_glossary_auto_decision", {
     p_item: pending, p_candidates: [saved], p_decision: "merge", p_target: "saved", p_definition: saved.definition, p_reason: "Same meaning.",
   });
+  expect(chat).toHaveBeenCalledTimes(1);
+});
+
+it("uses one model call for proposals that share a candidate", async () => {
+  const second = { entry: { meaningId: "also", term: "Also" }, candidateIds: ["saved"] };
+  const call = vi.fn()
+    .mockResolvedValueOnce({ entries: [saved], pending: [pending, second] })
+    .mockResolvedValueOnce(true)
+    .mockResolvedValueOnce({ entries: [saved], pending: [second] })
+    .mockResolvedValueOnce(true)
+    .mockResolvedValueOnce(null);
+  chat.mockResolvedValue({ value: { decision: "keep", target: null, definition: null, reason: "Distinct meaning." } });
+  await autoDecideGlossary({ call } as DbRpc, settings);
   expect(chat).toHaveBeenCalledTimes(1);
 });
 

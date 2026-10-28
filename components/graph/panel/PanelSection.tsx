@@ -1,29 +1,45 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
-import { InfoIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  PopoverWizard,
+  type PopoverWizardStep,
+} from "@/components/standard/popover-wizard";
 import { cn } from "@/lib/utils";
+import { InfoIcon } from "lucide-react";
+import { useState, type ReactNode } from "react";
 
-// INFO TIP: a small info icon; clicking it opens a popover with the hint, to its right
-export function InfoTip({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+// SECTION GUIDE: the info icon opens a wizard, one step per control
+export function SectionGuide({
+  label,
+  steps,
+}: {
+  label: string;
+  steps: readonly PopoverWizardStep[];
+}) {
+  if (steps.length === 0) return null;
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button type="button" aria-label={label} className={cn("shrink-0 rounded text-faint hover:text-text data-[state=open]:text-text", className)}>
+    <PopoverWizard
+      steps={steps}
+      side="right"
+      align="start"
+      width="sm"
+      jumpFromDots
+      trigger={
+        <button
+          type="button"
+          aria-label={label}
+          className="shrink-0 rounded text-faint hover:text-text data-[state=open]:text-text"
+        >
           <InfoIcon className="size-3.5" aria-hidden="true" />
         </button>
-      </PopoverTrigger>
-      <PopoverContent variant="arrow" side="right" align="center" sideOffset={8} className="w-60">
-        {children}
-      </PopoverContent>
-    </Popover>
+      }
+    />
   );
 }
 
 // PANEL SECTION: a collapsible block with a small chevron, like Obsidian's Filters / Groups / Display / Forces.
-// `info` puts a hint behind an info icon on the right of the title.
-export function PanelSection({ title, info, defaultOpen = false, children }: { title: string; info?: ReactNode; defaultOpen?: boolean; children: ReactNode }) {
+// `steps` puts a wizard behind an info icon on the right of the title.
+export function PanelSection({ title, steps, defaultOpen = false, children }: { title: string; steps?: readonly PopoverWizardStep[]; defaultOpen?: boolean; children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
     <section className="flex flex-col gap-2 border-b py-2 last:border-b-0">
@@ -39,7 +55,7 @@ export function PanelSection({ title, info, defaultOpen = false, children }: { t
           </svg>
           {title}
         </button>
-        {info ? <InfoTip label={`About ${title}`}>{info}</InfoTip> : null}
+        {steps ? <SectionGuide label={`About ${title}`} steps={steps} /> : null}
       </div>
       {isOpen ? <div className="flex flex-col gap-3 pl-4">{children}</div> : null}
     </section>

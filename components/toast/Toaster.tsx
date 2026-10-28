@@ -2,6 +2,7 @@
 
 import { Toaster as Sonner } from "sonner";
 import { StatusDot } from "@/app/(app)/_components/StatusDot";
+import { ProgressDock, PROGRESS_DOCK_LIFT, useCollapsedProgress } from "./ProgressToast";
 
 // =====================================================================
 // TOASTER: where error and progress toasts appear (bottom-right).
@@ -20,14 +21,19 @@ const TOAST_CLASS_NAMES = {
 };
 
 export function Toaster() {
+  const collapsed = useCollapsedProgress();
+  const lift = collapsed.length > 0 ? PROGRESS_DOCK_LIFT : 0;
   return (
-    <Sonner
-      position="bottom-right"
-      expand
-      offset={{ right: 40, bottom: 24 }}
-      visibleToasts={6}
-      toastOptions={{ unstyled: true, classNames: TOAST_CLASS_NAMES }}
-      icons={{ error: <StatusDot tone="failed" /> }}
-    />
+    <>
+      <Sonner
+        position="bottom-right"
+        expand
+        offset={{ right: 40, bottom: 24 + lift }}
+        visibleToasts={6}
+        toastOptions={{ unstyled: true, classNames: TOAST_CLASS_NAMES }}
+        icons={{ error: <StatusDot tone="failed" /> }}
+      />
+      <ProgressDock items={collapsed} />
+    </>
   );
 }

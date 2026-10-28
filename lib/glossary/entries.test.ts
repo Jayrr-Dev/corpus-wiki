@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dictionaryAnswerSchema, dictionaryResponseSchema, glossaryLetter, glossaryScopeKey, mergeGlossaryEntries, visibleGlossaryEntries, type GlossaryEntry } from "./entries";
+import { dictionaryAnswerSchema, dictionaryResponseSchema, droppedProtectedClaims, glossaryClearHomes, glossaryLetter, glossaryScopeKey, mergeGlossaryEntries, restoreDroppedCitations, visibleGlossaryEntries, withoutMovedCitations, type GlossaryEntry } from "./entries";
 import { parseContent } from "../ai/chat";
 import { z } from "zod";
 
@@ -67,6 +67,41 @@ describe("generated dictionary entries", () => {
   });
   it("rejects entries with no source references or no meaning", () => {
     expect(dictionaryAnswerSchema.safeParse({ entries: [{ term: "PPE", expansion: null, aliases: [], category: "acronym", definition: "Protection", citations: [] }] }).success).toBe(false);
+  });
+  it("attaches a claim that already names a saved headword and leaves the rest", () => {
+    const scope = glossaryScopeKey([{ status: "general", entities: [] }]);
+    const saved = entry({ scopeKey: scope });
+    const cite = { unitId: "u9", revisionId: "r9", sourceId: "s9", sourceTitle: "Field note" };
+    const placed = glossaryClearHomes([
+      { text: "Workers wear personal protective equipment on site.", scopeKey: scope, citations: [cite], label: "home" },
+      { text: "Quality inspection is a separate idea.", scopeKey: scope, citations: [cite], label: "other" },
+    ], [saved]);
+    expect(placed.leftovers.map((item) => item.label)).toEqual(["other"]);
+    expect(placed.entries[0]?.citations.map((item) => item.unitId)).toEqual(["u1", "u9"]);
+    expect(saved.citations).toHaveLength(1);
+  });
+  it("does not attach a claim when two saved senses share the name", () => {
+    const scope = glossaryScopeKey([{ status: "general", entities: [] }]);
+    const cite = { unitId: "u9", revisionId: "r9", sourceId: "s9", sourceTitle: "Field note" };
+    const placed = glossaryClearHomes([
+      { text: "PPE is required in the plant.", scopeKey: scope, citations: [cite] },
+    ], [entry({ scopeKey: scope }), entry({ scopeKey: scope, expansion: "Property Plant and Equipment", definition: "Long-lived physical assets used in operations." })]);
+    expect(placed.leftovers).toHaveLength(1);
+    expect(placed.entries[0]?.citations).toHaveLength(1);
+  });
+  it("writes a dropped citation back onto the same headword and reports it missing", () => {
+    const scope = glossaryScopeKey([{ status: "general", entities: [] }]);
+    const kept = { unitId: "u1", revisionId: "r1", sourceId: "s1", sourceTitle: "Safety handbook" };
+    const dropped = { unitId: "u2", revisionId: "r2", sourceId: "s2", sourceTitle: "Training guide" };
+    const previous = entry({ scopeKey: scope, citations: [kept, dropped] });
+    const produced = entry({ scopeKey: scope, definition: "A rewritten meaning of the same equipment.", citations: [kept] });
+    const restored = restoreDroppedCitations([produced], [previous], [dropped]);
+    expect(restored).toHaveLength(1);
+    expect(restored[0]?.citations.map((item) => item.unitId)).toEqual(["u1", "u2"]);
+    expect(droppedProtectedClaims(["u1", "u2", "u3"], ["u1"], ["u2"])).toEqual(["u2"]);
+    const moved = withoutMovedCitations([previous, entry({ term: "Dropped", scopeKey: scope, citations: [dropped] })], new Set(["u2"]));
+    expect(moved).toHaveLength(1);
+    expect(moved[0]?.citations).toEqual([kept]);
   });
   it("indexes accented headwords and groups numeric terms separately", () => {
     expect(glossaryLetter("étiology")).toBe("E");

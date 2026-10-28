@@ -31,8 +31,18 @@ it("leases suggestion jobs, resumes stopped ones, allows one active run and hold
     await insert("dismissed", b!);
     expect(await db.call<string[]>("held_suggestion_units")).toEqual([a!.id]);
 
-    // An accepted suggestion goes before a run, once
+    // A claim already on an article is found without reading the article text.
+    // A claim only listed in a section query counts too.
+    const page = (await pg.query<{ id: string }>("insert into pages(title, slug, article_type) values('Enneagram', 'enneagram-merge', 'concept') returning id")).rows[0]!.id;
+    const section = (await pg.query<{ id: string }>("insert into sections(page_id, title, position, mode, query) values($1, 'Overview', 0, 'generated', $2::jsonb) returning id", [page, JSON.stringify({ unitIds: [b!.id] })])).rows[0]!.id;
+    await pg.query("insert into section_inputs(section_id, unit_id, revision_id) values($1, $2, $3)", [section, a!.id, a!.current_revision_id]);
+    expect((await db.call<string[]>("placed_unit_ids", { p_unit_ids: [a!.id, b!.id] })).sort()).toEqual([a!.id, b!.id].sort());
+
+    // A merge is claimed before a new article, even when the new article was accepted first
+    const merge = (await pg.query<{ id: string }>(`insert into article_suggestions(run_id,group_key,kind,page_id,title,sections,unit_ids,revision_ids,status,decided_at)
+      values($1,'m','merge',$2,'Enneagram','[]'::jsonb,array[$3::uuid],array[$4::uuid],'accepting',now()) returning id`, [run, page, a!.id, a!.current_revision_id])).rows[0]!.id;
     await pg.query("update suggestion_runs set lease_until=now()-interval '1 second' where id=$1", [run]);
+    expect(await db.call<Claim>("claim_suggestion_work")).toMatchObject({ kind: "apply", id: merge });
     expect(await db.call<Claim>("claim_suggestion_work")).toMatchObject({ kind: "apply", id: accepted });
     expect(await db.call<Claim>("claim_suggestion_work")).toMatchObject({ kind: "run", id: run });
 

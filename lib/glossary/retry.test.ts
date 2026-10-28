@@ -36,6 +36,7 @@ it("does not retry invalid data, and stops a pending retry on cancellation", asy
 
 it("retries database deadlines but never explicit cancellation", async () => {
   expect(isGlossaryInterruption(new Error("publish_glossary_meanings: canceling statement due to statement timeout"))).toBe(true);
+  expect(isGlossaryInterruption(Object.assign(new Error("canceling statement due to statement timeout"), { glossaryFinal: true }))).toBe(false);
   expect(isGlossaryInterruption(new Error("canceling statement due to user request"))).toBe(false);
   expect(isGlossaryInterruption(new DOMException("The operation was aborted due to timeout", "TimeoutError"))).toBe(true);
   expect(isGlossaryInterruption(new Error("TimeoutError: The operation was aborted due to timeout"))).toBe(true);

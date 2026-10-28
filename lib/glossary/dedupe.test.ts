@@ -8,6 +8,16 @@ const entry = (term: string, values: Partial<GlossaryEntry> = {}): GlossaryEntry
   context: null, scopeKey: "[null]", citations: [{ unitId: "u1", revisionId: "r1", sourceId: "s1", sourceTitle: "Handbook" }], ...values,
 });
 
+it("keeps an exact name even when more than five matches are waiting", async () => {
+  const inputs = Array.from({ length: 7 }, (_, index) => entry("Valve", { meaningId: `v${index}`, definition: `Meaning number ${index} of a valve in a pipeline system.` }));
+  const seen: number[] = [];
+  await dedupeGlossaryEntries(inputs, async (_proposed, candidates) => {
+    seen.push(candidates.length);
+    return { duplicateOf: null, definition: null, relationship: "different_meaning", reason: "Different sense." };
+  });
+  expect(seen.at(-1)).toBe(6);
+});
+
 it("checkpoints accepted definitions before a later comparison fails", async () => {
   const snapshots: GlossaryEntry[][] = [];
   const first = entry("Valve", { meaningId: "first" });

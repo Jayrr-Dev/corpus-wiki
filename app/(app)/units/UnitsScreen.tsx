@@ -128,7 +128,7 @@ export function UnitsScreen() {
               <li>Likely merges go first. A claim that already points at an article is suggested before the leftovers.</li>
               <li>The AI names a new article, or merges a group into an existing one.</li>
               <li>On the graph, open No article, Orphans, or Linked to suggest only merges, or only new articles.</li>
-              <li>Nothing changes until you accept. Run all accepts every open suggestion.</li>
+              <li>Nothing changes until you accept. Apply all accepts every open suggestion, merges first.</li>
               <li>Accepted work goes through Changes and can be undone.</li>
               <li>The Curator leaves knowledge in an open suggestion alone.</li>
             </ul>

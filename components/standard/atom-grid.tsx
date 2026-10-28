@@ -60,15 +60,18 @@ type AtomGridProps = {
   dot?: number // px
   gap?: number // px
   speed?: number // seconds per cycle
+  /** Hide it from assistive tech when a parent button already names the action. */
+  decorative?: boolean
   className?: string
 }
 
-function AtomGrid({ pattern = "orbit", size = 5, dot = 6, gap = 3, speed = 1.2, className }: AtomGridProps) {
+function AtomGrid({ pattern = "orbit", size = 5, dot = 6, gap = 3, speed = 1.2, decorative = false, className }: AtomGridProps) {
   const phase = PATTERNS[pattern]
   return (
     <div
-      role="status"
-      aria-label="Loading"
+      role={decorative ? undefined : "status"}
+      aria-label={decorative ? undefined : "Loading"}
+      aria-hidden={decorative ? true : undefined}
       className={cn("grid w-fit", className)}
       style={{ gridTemplateColumns: `repeat(${size}, ${dot}px)`, gap, ["--sb-atom-speed" as string]: `${speed}s` }}
     >

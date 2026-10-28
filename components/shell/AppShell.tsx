@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { RoutedErrorBoundary } from "@/components/error";
 import { Tutorial } from "@/components/tutorial";
 import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -15,20 +16,34 @@ export function AppShell({ children, defaultOpen = true, spaces, activeSpace, ac
   return (
     <RightPanelProvider>
       <SidebarProvider defaultOpen={defaultOpen} className="h-dvh min-h-0 overflow-hidden">
-        <AppSidebar spaces={spaces} activeSpace={activeSpace} accountEmail={accountEmail} />
+        <RoutedErrorBoundary where="The sidebar">
+          <AppSidebar spaces={spaces} activeSpace={activeSpace} accountEmail={accountEmail} />
+        </RoutedErrorBoundary>
         <SidebarInset className="min-h-0 flex-row overflow-hidden">
-          <SidebarTree />
+          <RoutedErrorBoundary where="The page list">
+            <SidebarTree />
+          </RoutedErrorBoundary>
           <div className="relative flex min-w-0 flex-1">
             <main className="min-w-0 flex-1 overflow-y-auto">
-              <MobileTopBar />
+              <RoutedErrorBoundary where="The top bar">
+                <MobileTopBar />
+              </RoutedErrorBoundary>
               {children}
             </main>
-            <div className="absolute top-2 right-3 z-10 hidden md:block"><ModuleHelp /></div>
+            <div className="absolute top-2 right-3 z-10 hidden md:block">
+              <RoutedErrorBoundary where="Page help">
+                <ModuleHelp />
+              </RoutedErrorBoundary>
+            </div>
           </div>
-          <RightPanel />
+          <RoutedErrorBoundary where="The side panel">
+            <RightPanel />
+          </RoutedErrorBoundary>
         </SidebarInset>
       </SidebarProvider>
-      <Tutorial />
+      <RoutedErrorBoundary where="The tutorial">
+        <Tutorial />
+      </RoutedErrorBoundary>
     </RightPanelProvider>
   );
 }

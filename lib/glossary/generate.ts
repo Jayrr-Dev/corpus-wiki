@@ -8,7 +8,7 @@ import type { AdminSupabase } from "@/lib/supabase/admin";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { assertActiveUpload, uploadExecution } from "@/lib/ingest/workflowContext";
-import { dictionaryAnswerSchema, dictionaryResponseSchema, dictionaryUsageSchema, DICTIONARY_PROMPT, GLOSSARY_MERGE_VERSION, GLOSSARY_VERSION, glossaryScopeKey, type GlossaryEntry } from "./entries";
+import { dictionaryAnswerSchema, dictionaryResponseSchema, dictionaryUsageSchema, DICTIONARY_PROMPT, droppedProtectedClaims, GLOSSARY_MERGE_VERSION, GLOSSARY_VERSION, glossaryClearHomes, glossaryScopeKey, restoreDroppedCitations, withoutMovedCitations, type GlossaryCitation, type GlossaryEntry } from "./entries";
 import { reviewGlossaryDuplicates, type GlossaryReviewProgress } from "./dedupe";
 import { identifyGlossaryEntries, glossaryRegistry, reuseReviewedMeanings } from "./identity";
 import { embedderFromEnv } from "@/lib/ai/embeddings";
@@ -96,6 +96,7 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
   await assertGenerationActive();
   const storage = glossaryClient(client);
   const claims = await currentClaims(client);
+  console.log(`Glossary snapshot: ${claims.length} claims`);
   const inputHash = hash([GLOSSARY_VERSION, GLOSSARY_MERGE_VERSION, settingsForCall(settings, "glossary_dictionary").model, claims]);
   await assertGenerationActive();
   const token = await supabaseRpc(client).call<string | null>("claim_glossary_generation", { p_hash: inputHash, p_force: force });
@@ -111,7 +112,8 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
           await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
           continue;
         }
-        throw Object.assign(new Error(result.error.message || `Glossary checkpoint failed (${result.error.code || result.status || "unknown response"}).`), { code: result.error.code, status: result.status });
+        const statementTimeout = result.error.code === "57014";
+        throw Object.assign(new Error(result.error.message || `Glossary checkpoint failed (${result.error.code || result.status || "unknown response"}).`), { code: result.error.code, status: result.status, glossaryFinal: statementTimeout });
       }
       if (!result.data) throw new Error("Another glossary generation took over. Retry to see its result.");
       return;
@@ -122,8 +124,21 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     await writeState(values);
   };
   try {
-    const state = await readGlossary(() => storage.from("glossary_state").select("batches, entries, identity_registry, definition_overrides, review_cache").eq("id", true).single());
-    if (!state) throw new Error("The glossary state is unavailable. Resume generation to retry.");
+    // OrioleDB fails to detoast when one statement reads several large JSON
+    // columns together. Each value has to come back on its own.
+    const loadGlossaryColumn = async (column: "batches" | "entries" | "identity_registry" | "definition_overrides" | "review_cache") => {
+      const row = await readGlossary(() => storage.from("glossary_state").select(column).eq("id", true).single());
+      if (!row) throw new Error("The glossary state is unavailable. Resume generation to retry.");
+      return row[column];
+    };
+    const state = {
+      batches: await loadGlossaryColumn("batches"),
+      entries: await loadGlossaryColumn("entries"),
+      identity_registry: await loadGlossaryColumn("identity_registry"),
+      definition_overrides: await loadGlossaryColumn("definition_overrides"),
+      review_cache: await loadGlossaryColumn("review_cache"),
+    };
+    console.log("Glossary saved groups loaded");
     const publicationKey = `publication:${inputHash}:${hash(state.definition_overrides ?? {})}`;
     const storedReviews = state.review_cache;
     const staged = storedReviews && typeof storedReviews === "object" && !Array.isArray(storedReviews) ? storedReviews[publicationKey] : undefined;
@@ -138,13 +153,31 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     // The matching staged publication was handled above. Old full snapshots can
     // dwarf individual decisions and needlessly travel with every checkpoint.
     for (const key of Object.keys(decisionCache)) if (key.startsWith("publication:")) delete decisionCache[key];
+    const citeClaim = (claim: InputClaim): GlossaryCitation[] => claim.sourceEvidence.map((source) => ({ unitId: claim.id, revisionId: claim.revisionId, sourceId: source.sourceId, sourceTitle: source.sourceTitle }));
+    const savedEntries = (state.entries ?? []) as unknown as GlossaryEntry[];
+    const placed = glossaryClearHomes(claims.map((claim) => ({ claim, text: claim.text, scopeKey: glossaryScopeKey([claim.context?.applicability]), citations: citeClaim(claim) })), savedEntries);
+    const movedIds = new Set(claims.map((claim) => claim.id).filter((id) => !placed.leftovers.some((item) => item.claim.id === id)));
+    const protectedIds = savedEntries.flatMap((entry) => entry.citations.map((cite) => cite.unitId)).filter((id) => !movedIds.has(id));
+    // Keep the saved groups. Pulling a claim onto an existing entry must not change the group hash,
+    // or every saved model answer would be thrown away.
     const batches = dictionaryBatches(claims, decisionCache["dictionary-batch-plan:v1"]);
     decisionCache["dictionary-batch-plan:v1"] = batches.map((batch) => batch.map((claim) => claim.id));
     delete decisionCache.review_progress;
     const batchHashes = batches.map((batch) => hash([GLOSSARY_VERSION, settingsForCall(settings, "glossary_dictionary").model, batch]));
+    const citedIds = (entries: GlossaryEntry[]) => entries.flatMap((entry) => entry.citations.map((cite) => cite.unitId));
+    const asking = (batch: InputClaim[]) => batch.filter((claim) => !movedIds.has(claim.id));
     const completed: GlossaryState["batches"] = {};
-    if (!force) for (const key of batchHashes) if (cached[key]) completed[key] = cached[key];
-    await save({ total_batches: batches.length, completed_batches: Object.keys(completed).length, review_cache: decisionCache as Json });
+    const fresh = new Set<string>();
+    const withheld = new Set<string>();
+    if (!force) for (const [index, key] of batchHashes.entries()) {
+      const hit = cached[key];
+      if (!hit) continue;
+      const reused = withoutMovedCitations(hit, movedIds);
+      if (droppedProtectedClaims(asking(batches[index]!).map((claim) => claim.id), citedIds(reused), protectedIds).length) continue;
+      completed[key] = reused;
+    }
+    console.log(`Glossary reused ${Object.keys(completed).length} of ${batches.length} groups`);
+    await save({ total_batches: batches.length, completed_batches: Object.keys(completed).length });
     let next = 0;
     let failed = false;
     let failure: unknown;
@@ -160,10 +193,22 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
           await assertGenerationActive();
           if (failed) return;
           if (completed[batchHash]) continue;
-          const result = await dictionaryBatchEntries(settings, batch, `Dictionary batch ${index + 1}/${batches.length}`);
+          const work = asking(batch);
+          let result = work.length ? await dictionaryBatchEntries(settings, work, `Dictionary batch ${index + 1}/${batches.length}`) : [];
+          let missing = droppedProtectedClaims(work.map((claim) => claim.id), citedIds(result), protectedIds);
+          if (missing.length) {
+            const retry = await dictionaryBatchEntries(settings, work.filter((claim) => missing.includes(claim.id)), `Recovered citations ${missing.length}`);
+            result = [...result, ...retry];
+            missing = droppedProtectedClaims(work.map((claim) => claim.id), citedIds(result), protectedIds);
+          }
           checkpoints = checkpoints.then(async () => {
             completed[batchHash] = result;
-            await save({ batches: { ...cached, ...completed } as unknown as Json, completed_batches: Object.keys(completed).length, lease_until: new Date(Date.now() + 600_000).toISOString() });
+            if (missing.length) withheld.add(batchHash);
+            else fresh.add(batchHash);
+            const persisted: GlossaryState["batches"] = { ...cached };
+            for (const key of fresh) persisted[key] = completed[key]!;
+            for (const key of withheld) delete persisted[key];
+            await save({ batches: persisted as unknown as Json, completed_batches: Object.keys(completed).length, lease_until: new Date(Date.now() + 600_000).toISOString() });
           });
           await checkpoints;
         }
@@ -176,11 +221,23 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     await assertGenerationActive();
     const claimById = new Map(claims.map((claim) => [claim.id, claim]));
     // Duplicate review sees source order, independent of which model call finished first.
-    const rescoped = batchHashes.flatMap((key) => completed[key]!).map((entry) => ({ ...entry,
+    const produced = batchHashes.flatMap((key) => completed[key] ?? []);
+    const droppedIds = droppedProtectedClaims(batches.flat().map((claim) => claim.id), citedIds(produced), protectedIds);
+    const droppedCites = droppedIds.flatMap((id) => citeClaim(claimById.get(id)!));
+    const restored = restoreDroppedCitations(produced, placed.entries, droppedCites);
+    const citedAfter = new Set(restored.flatMap((entry) => entry.citations.map((cite) => `${cite.revisionId}:${cite.sourceId}`)));
+    const savedKeys = new Set(savedEntries.flatMap((entry) => entry.citations.map((cite) => `${cite.revisionId}:${cite.sourceId}`)));
+    const homeCites = placed.entries.flatMap((entry) => entry.citations).filter((cite) => {
+      const key = `${cite.revisionId}:${cite.sourceId}`;
+      if (savedKeys.has(key)) return false;
+      return !citedAfter.has(key);
+    });
+    const withHomes = restoreDroppedCitations(restored, placed.entries, homeCites);
+    const rescoped = withHomes.map((entry) => ({ ...entry,
       scopeKey: glossaryScopeKey([...new Set(entry.citations.map((cite) => cite.unitId))].map((id) => claimById.get(id)?.context?.applicability)) }));
     const registry = (state.identity_registry ?? {}) as Record<string, string>;
     const overrides = (state.definition_overrides ?? {}) as unknown as NonNullable<GlossaryState["definition_overrides"]>;
-    const previous = (state.entries ?? []) as unknown as GlossaryEntry[];
+    const previous = placed.entries;
     const identified = reuseReviewedMeanings(identifyGlossaryEntries(rescoped, registry, overrides, previous), previous, registry,
       (cite) => claimById.get(cite.unitId)?.revisionId === cite.revisionId && !!claimById.get(cite.unitId)?.sourceEvidence.some((source) => source.sourceId === cite.sourceId));
     const pending: PendingGlossaryEntry[] = [];

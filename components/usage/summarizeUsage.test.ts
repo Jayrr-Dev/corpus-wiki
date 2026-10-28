@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Tables } from "@/lib/database/types";
-import { grandTotal, totalsByDayAndModel, totalsByRole } from "./summarizeUsage";
+import { callsInRange, grandTotal, totalsByDay, totalsByDayAndModel, totalsByRole } from "./summarizeUsage";
 
 // FIXTURE: one call with only the fields the totals read varying
 const call = (created_at: string, model: string, status: string, prompt: number | null, completion: number | null, reasoning: number | null): Tables<"ai_calls"> => ({
@@ -32,6 +32,20 @@ describe("usage totals", () => {
       { day: "2026-10-15", model: "glm", calls: 1, failed: 1, promptTokens: 0, completionTokens: 0, reasoningTokens: 0 },
       { day: "2026-10-14", model: "glm", calls: 2, failed: 1, promptTokens: 37_360, completionTokens: 33_960, reasoningTokens: 32_000 },
       { day: "2026-10-14", model: "nemotron", calls: 1, failed: 0, promptTokens: 20_620, completionTokens: 4319, reasoningTokens: 1769 },
+    ]);
+  });
+
+  it("sums tokens per day, oldest first", () => {
+    expect(totalsByDay(CALLS).map((total) => ({ day: total.day, calls: total.calls, failed: total.failed }))).toEqual([
+      { day: "2026-10-14", calls: 3, failed: 1 },
+      { day: "2026-10-15", calls: 1, failed: 1 },
+    ]);
+  });
+
+  it("keeps calls inside an inclusive day window", () => {
+    expect(callsInRange(CALLS, null)).toHaveLength(4);
+    expect(callsInRange(CALLS, { start: "2026-10-15", end: "2026-10-14" }).map((call) => call.created_at.slice(0, 10))).toEqual([
+      "2026-10-14", "2026-10-14", "2026-10-14", "2026-10-15",
     ]);
   });
 

@@ -11,9 +11,9 @@ import {
 import {
   Popover,
   PopoverContent,
-  PopoverDescription,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import type { PopoverWizardStep } from "@/components/standard/popover-wizard";
 import {
   DISPLAY_SLIDERS,
   domainPathsForScope,
@@ -49,13 +49,252 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { PanelSection } from "./PanelSection";
+import { PanelSection, SectionGuide } from "./PanelSection";
 import { SelectRow, SliderRow, SwitchRow } from "./rows";
 
 // =====================================================================
 // PANEL SECTIONS: Filters, View, Nodes, Group, Colors, Tuning. Each takes
 // its slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
+
+const FILTER_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "search",
+    title: "Search",
+    content: "Keeps dots whose name or text contains what you type.",
+  },
+  {
+    id: "domain",
+    title: "Show domain",
+    content: "Keeps one topic and the topics under it.",
+  },
+];
+
+const VIEW_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "newest",
+    title: "Highlight Newest",
+    content:
+      "Paints rings on the newest knowledge, articles, and sections.",
+  },
+  {
+    id: "coalesce",
+    title: "Coalescence",
+    content:
+      "Turns claims in the same circle into one dot. Open a circle to split it back apart.",
+  },
+  {
+    id: "ordered",
+    title: "Ordered",
+    content:
+      "Winds a step list, or the sections of an article, into a spiral in that order. Off keeps the usual packed circles.",
+  },
+];
+
+const NODE_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "units",
+    title: "Knowledge units",
+    content:
+      "A knowledge unit is one claim. It has evidence, a status, and a history. Article sections cite units.",
+  },
+  {
+    id: "domains",
+    title: "Domains",
+    content:
+      "A domain is a topic. Topics form a tree. A unit can belong to more than one domain.",
+  },
+  {
+    id: "entities",
+    title: "Entities",
+    content:
+      "An entity is a named thing a unit is about: a person, project, team, place, product, or standard.",
+  },
+  {
+    id: "stakeholders",
+    title: "Stakeholders",
+    content:
+      "A stakeholder is a person, organization, team or role that affects your work or is affected by it. Projects, products, standards and places are entities only.",
+  },
+  {
+    id: "pages",
+    title: "Pages",
+    content:
+      "A page is an article. Its sections cite knowledge units. This node is the article. The Pages group draws the circle around the sections.",
+  },
+];
+
+const EDGE_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "connectors",
+    title: "Connectors",
+    content: "Attach a knowledge unit to a domain, an entity, or a page.",
+  },
+  {
+    id: "relationships",
+    title: "Relationships",
+    content:
+      "Saved lines between knowledge units, such as supports. Zoomed out, they draw as the thin lines between circles.",
+  },
+  {
+    id: "related",
+    title: "Related links",
+    content:
+      "Connect similar units, even when no one saved that line.",
+  },
+  {
+    id: "opacity",
+    title: "Opacity",
+    content: "Sets how see-through the lines are.",
+  },
+  {
+    id: "relatedness",
+    title: "Min relatedness",
+    content:
+      "Hides related links below that score. The slider shows only when Related links is on.",
+  },
+];
+
+const COLOR_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "row",
+    title: "Color rows",
+    content: "Each row is one rule. The number is how many dots it paints.",
+  },
+  {
+    id: "swatch",
+    title: "Color dot",
+    content: "Click the color dot to change the color.",
+  },
+  {
+    id: "rule",
+    title: "Match",
+    content: "The sliders icon edits what the row matches.",
+  },
+  {
+    id: "add",
+    title: "Add a rule",
+    content: "Plus adds a rule.",
+  },
+];
+
+const SHOW_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "internal",
+    title: "Internal",
+    content: "Keeps knowledge from your own sources.",
+  },
+  {
+    id: "external",
+    title: "External",
+    content: "Keeps knowledge from outside sources.",
+  },
+  {
+    id: "orphans",
+    title: "Orphans",
+    content: "Keeps dots with no lines.",
+  },
+];
+
+const LABEL_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "position",
+    title: "Title position",
+    content: "Puts the name on the top, bottom, left, or right of the dot.",
+  },
+  {
+    id: "fade",
+    title: "Text fade threshold",
+    content:
+      "Sets how close you must zoom before names appear. Higher waits until you are closer.",
+  },
+];
+
+const SHAPE_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "size",
+    title: "Node size",
+    content: "Scales the dots.",
+  },
+  {
+    id: "thickness",
+    title: "Link thickness",
+    content: "Scales the lines.",
+  },
+  {
+    id: "arrows",
+    title: "Arrows",
+    content: "Adds an arrowhead to each line.",
+  },
+];
+
+const FORCE_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "center",
+    title: "Center force",
+    content: "Pulls dots toward the middle.",
+  },
+  {
+    id: "repel",
+    title: "Repel force",
+    content: "Pushes dots apart.",
+  },
+  {
+    id: "link",
+    title: "Link force",
+    content: "Pulls linked dots together.",
+  },
+  {
+    id: "distance",
+    title: "Link distance",
+    content: "How long those lines want to be.",
+  },
+  {
+    id: "cluster",
+    title: "Domain pull",
+    content:
+      "Keeps dots inside their group circle. At zero, the circles hide.",
+  },
+  {
+    id: "animate",
+    title: "Animate",
+    content: "Replays the dots settling.",
+  },
+];
+
+const TUNING_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "tuning",
+    title: "Tuning",
+    content: "Extra controls for what shows, and how the dots are drawn.",
+  },
+];
+
+const ACTION_STEPS: readonly PopoverWizardStep[] = [
+  {
+    id: "actions",
+    title: "Actions",
+    content:
+      "These change saved knowledge. The groups above only change the drawing.",
+  },
+];
+
+const GROUP_STEPS: readonly PopoverWizardStep[] = GROUPING_LIST.map(
+  (grouping) => ({
+    id: grouping.id,
+    title: grouping.label,
+    content:
+      grouping.help.length === 1 ? (
+        grouping.help[0]
+      ) : (
+        <div className="flex flex-col gap-2">
+          {grouping.help.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </div>
+      ),
+  }),
+);
 
 // NODES: which dot kinds appear on the canvas, one switch per node type.
 export function NodesSection({
@@ -66,7 +305,7 @@ export function NodesSection({
   onChange: (next: GraphFilters) => void;
 }) {
   return (
-    <PanelSection title="Nodes" defaultOpen>
+    <PanelSection title="Nodes" defaultOpen steps={NODE_STEPS}>
       {NODE_TYPE_LIST.map((type) => (
         <SwitchRow
           key={type.kind}
@@ -98,7 +337,7 @@ export function EdgesSection({
   const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) =>
     onChange({ ...value, [key]: next });
   return (
-    <PanelSection title="Edges" defaultOpen>
+    <PanelSection title="Edges" defaultOpen steps={EDGE_STEPS}>
       <SwitchRow
         label="Connectors"
         checked={value.showConnectors}
@@ -187,7 +426,7 @@ export function FiltersSection({
     onChange({ ...value, domain, domainScope });
   };
   return (
-    <PanelSection title="Filters">
+    <PanelSection title="Filters" steps={FILTER_STEPS}>
       <Input
         placeholder="Search…"
         value={value.search}
@@ -216,31 +455,7 @@ export function ViewSection({
   onChange: (next: GraphDisplay) => void;
 }) {
   return (
-    <PanelSection
-      title="View"
-      defaultOpen
-      info={
-        <>
-          <PopoverDescription>
-            How the graph is drawn, after the filters.
-          </PopoverDescription>
-          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
-            <li>
-              Highlight Newest paints rings on the newest knowledge, articles, and
-              sections.
-            </li>
-            <li>
-              Coalescence turns claims in the same circle into one dot. Open a
-              circle to split it back apart.
-            </li>
-            <li>
-              Ordered winds a step list, or the sections of an article, into a
-              spiral in that order. Off keeps the usual packed circles.
-            </li>
-          </ul>
-        </>
-      }
-    >
+    <PanelSection title="View" defaultOpen steps={VIEW_STEPS}>
       <SwitchRow
         label="Highlight Newest"
         checked={value.showNew}
@@ -271,24 +486,7 @@ export function GroupSection({
   const pick = (mode: GroupingId, on: boolean) =>
     onChange({ ...value, groupBy: on ? mode : "off" });
   return (
-    <PanelSection
-      title="Group"
-      defaultOpen
-      info={
-        <>
-          <PopoverDescription>
-            One grouping can be on at a time.
-          </PopoverDescription>
-          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
-            {GROUPING_LIST.flatMap((grouping) =>
-              grouping.help.map((line, index) => (
-                <li key={`${grouping.id}-${index}`}>{line}</li>
-              )),
-            )}
-          </ul>
-        </>
-      }
-    >
+    <PanelSection title="Group" defaultOpen steps={GROUP_STEPS}>
       {GROUPING_LIST.map((grouping) => (
         <SwitchRow
           key={grouping.id}
@@ -774,7 +972,7 @@ export function GroupsSection({
     [value, expanded, search],
   );
   return (
-    <PanelSection title="Colors" defaultOpen>
+    <PanelSection title="Colors" defaultOpen steps={COLOR_STEPS}>
       <div className="flex items-center gap-1">
         {value.length > 6 || search ? (
           <Input
@@ -1016,26 +1214,33 @@ function ShowControls({
 // TUNING GROUP: a smaller fold inside Tuning, closed until asked for
 function TuningGroup({
   title,
+  steps,
   children,
 }: {
   title: string;
+  steps?: readonly PopoverWizardStep[];
   children: ReactNode;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="flex flex-col gap-3">
-      <button
-        type="button"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((open) => !open)}
-        className="flex items-center gap-1.5 text-left text-xs font-medium text-faint hover:text-text"
-      >
-        <ChevronRight
-          className={cn("size-3 transition-transform", isOpen && "rotate-90")}
-          aria-hidden
-        />
-        {title}
-      </button>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          aria-expanded={isOpen}
+          onClick={() => setIsOpen((open) => !open)}
+          className="flex flex-1 items-center gap-1.5 text-left text-xs font-medium text-faint hover:text-text"
+        >
+          <ChevronRight
+            className={cn("size-3 transition-transform", isOpen && "rotate-90")}
+            aria-hidden
+          />
+          {title}
+        </button>
+        {steps ? (
+          <SectionGuide label={`About ${title}`} steps={steps} />
+        ) : null}
+      </div>
       {isOpen ? (
         <div className="flex flex-col gap-3 pl-4">{children}</div>
       ) : null}
@@ -1067,17 +1272,17 @@ export function TuningSection({
   actions?: ReactNode;
 }) {
   return (
-    <PanelSection title="Tuning">
-      <TuningGroup title="Show">
+    <PanelSection title="Tuning" steps={TUNING_STEPS}>
+      <TuningGroup title="Show" steps={SHOW_STEPS}>
         <ShowControls value={filters} onChange={onFiltersChange} />
       </TuningGroup>
-      <TuningGroup title="Labels">
+      <TuningGroup title="Labels" steps={LABEL_STEPS}>
         <LabelControls value={display} onChange={onDisplayChange} />
       </TuningGroup>
-      <TuningGroup title="Shapes">
+      <TuningGroup title="Shapes" steps={SHAPE_STEPS}>
         <ShapeControls value={display} onChange={onDisplayChange} />
       </TuningGroup>
-      <TuningGroup title="Forces">
+      <TuningGroup title="Forces" steps={FORCE_STEPS}>
         <ForceControls
           value={forces}
           onChange={onForcesChange}
@@ -1085,7 +1290,11 @@ export function TuningSection({
           onAnimate={onAnimate}
         />
       </TuningGroup>
-      {actions ? <TuningGroup title="Actions">{actions}</TuningGroup> : null}
+      {actions ? (
+        <TuningGroup title="Actions" steps={ACTION_STEPS}>
+          {actions}
+        </TuningGroup>
+      ) : null}
     </PanelSection>
   );
 }

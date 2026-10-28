@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Sparkles } from "lucide-react";
 import { InfoPopover } from "@/components/standard/info-popover";
@@ -12,8 +12,12 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { RoleSpendPanel, useAllAiCalls, useRoleSpend } from "@/components/usage/RoleSpend";
+import type { DayRange } from "@/components/usage/spendHeatmap";
+import { callsInRange } from "@/components/usage/summarizeUsage";
+import type { RoleTotal } from "@/components/usage/summarizeUsage";
 import { saveRoleInstructions } from "@/lib/server-actions/skills";
 import { setRoleAuto } from "@/lib/server-actions/settings";
+import { formatCount } from "@/app/(app)/_lib/format";
 import { formatUsd } from "@/lib/ai/pricing";
 import { AI_STAGES, type SkillLibrary } from "@/lib/ai/skills/types";
 import type { MemoryEntry } from "@/lib/ai/memory";
@@ -44,9 +48,18 @@ const APP_ROLES = {
 const appRole = (role: (typeof APP_ROLES)[keyof typeof APP_ROLES]) => ({ ...role, instructions: null, source: "Managed by the app", version: undefined });
 const GUIDES_RECONCILER = new Set(["extract_knowledge", "link_knowledge", "organize_topics"]);
 
+function rolePriceTip(range: DayRange | null, spent: RoleTotal | undefined): string {
+  if (range !== null && spent === undefined) return "No calls on the days you picked.";
+  const calls = formatCount(spent?.calls ?? 0);
+  if (range !== null) return `Estimated spend for the days you picked. ${calls} calls.`;
+  return `Estimated all-time spend in this space. ${calls} calls.`;
+}
+
 export function RolesTab({ library, modelSettings, initialMemory }: { library: SkillLibrary; modelSettings: ModelSettings; initialMemory?: Record<string, MemoryEntry[]> }) {
   const calls = useAllAiCalls();
-  const spend = useRoleSpend(calls);
+  const [range, setRange] = useState<DayRange | null>(null);
+  const priced = useMemo(() => callsInRange(calls.data ?? [], range), [calls.data, range]);
+  const spend = useRoleSpend({ data: priced });
   const roles = AI_STAGES.map((stage) => {
     const assignment = library.assignments.find((item) => item.stage === stage.id);
     const skill = assignment ? library.skills.find((item) => item.id === assignment.skill_id) : defaultSkill(stage.id);
@@ -68,7 +81,7 @@ export function RolesTab({ library, modelSettings, initialMemory }: { library: S
         <p>Each role has a responsibility and a set of instructions. Open a card’s instructions to see how it works.</p>
       </InfoPopover>
     </div>
-    <RoleSpendPanel calls={calls} />
+    <RoleSpendPanel calls={calls} range={range} onRangeChange={setRange} />
     <Masonry columns={{ base: 1, sm: 2, xl: 3 }}>
       {roster.map((role, index) => {
         const Icon = ROLE_ICONS[role.id] ?? Sparkles;
@@ -85,8 +98,8 @@ export function RolesTab({ library, modelSettings, initialMemory }: { library: S
                 </Tooltip> : null}
                 {GUIDES_RECONCILER.has(role.id) ? <Tooltip content="These calls run inside the Reconciler request, so this card stays at zero.">
                   <span className="font-mono text-xs text-muted-foreground">{formatUsd(0)}</span>
-                </Tooltip> : spent ? <Tooltip content={`Estimated all-time spend in this space · ${spent.calls.toLocaleString("en-US")} calls`}>
-                  <span className="font-mono text-xs text-muted-foreground">{formatUsd(spent.costUsd)}</span>
+                </Tooltip> : range !== null || spent ? <Tooltip content={rolePriceTip(range, spent)}>
+                  <span className="font-mono text-xs text-muted-foreground">{formatUsd(spent?.costUsd ?? 0)}</span>
                 </Tooltip> : null}
                 <span className="font-mono text-xs text-faint">{String(index + 1).padStart(2, "0")}</span>
               </div>

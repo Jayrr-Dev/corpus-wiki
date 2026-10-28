@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
+import { RoutedErrorBoundary } from "@/components/error";
 import { BrowserErrorReporter } from "@/components/error/BrowserErrorReporter";
 import { ExceptionNotifications } from "@/components/toast/ExceptionNotifications";
+import { SuggestionProgress } from "@/components/toast/SuggestionProgress";
 import { AppShell } from "@/components/shell";
 import { TimeZoneProvider } from "@/app/(app)/_components/DateTime";
 import { isTimeZone, TIME_ZONE_COOKIE } from "@/app/(app)/_lib/format";
@@ -24,7 +26,12 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <SpaceProvider space={activeSpace}>
         <TimeZoneProvider timeZone={timeZone}>
           <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email}>
-            <ExceptionNotifications />
+            <RoutedErrorBoundary where="Open questions">
+              <ExceptionNotifications />
+            </RoutedErrorBoundary>
+            <RoutedErrorBoundary where="Suggestion progress">
+              <SuggestionProgress />
+            </RoutedErrorBoundary>
             <BrowserErrorReporter />
             {children}
           </AppShell>

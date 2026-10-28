@@ -1,6 +1,7 @@
 "use client";
 
 import { useServerAction } from "@/components/actions/useServerAction";
+import { ErrorBoundary } from "@/components/error";
 import { InfoPopover } from "@/components/standard/info-popover";
 import { Button } from "@/components/ui/button";
 import {
@@ -274,6 +275,7 @@ export function GraphView({
 
   return (
     <div className="relative h-full">
+      <ErrorBoundary where="The graph">
       <GraphCanvas
         key={`${settings.filters.domain}:${domainVersion}`}
         graph={visible}
@@ -311,6 +313,7 @@ export function GraphView({
         }}
         onMoveNode={moveNode}
       />
+      </ErrorBoundary>
       {visible.nodes.length === 0 && data.nodes.length > 0 && (
         <div
           className="pointer-events-none absolute inset-0 flex items-center justify-center pl-64 pr-4"
@@ -370,6 +373,7 @@ export function GraphView({
       <p className="pointer-events-none absolute right-3 bottom-2 font-mono text-xs text-faint">
         {visible.nodes.length} nodes · {visible.links.length} links
       </p>
+      <ErrorBoundary where="Graph menus">
       <SelectionActions
         nodes={data.nodes.filter((node) => selectedIds.includes(node.id))}
         onClear={() => setSelectedIds([])}
@@ -486,6 +490,7 @@ export function GraphView({
           ) : null}
         </DialogContent>
       </Dialog>
+      </ErrorBoundary>
     </div>
   );
 }

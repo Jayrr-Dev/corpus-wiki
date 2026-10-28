@@ -63,6 +63,112 @@ export const GLOSSARY_MERGE_VERSION = "canonical-meanings-usage-v3";
 type Applicability = { status: string; entities: { key: string }[] } | null | undefined;
 // Which entities a meaning is limited to, from its cited claims. Free-text conditions are left out:
 // every claim words them differently, so one term would otherwise split into a definition per claim.
+export const GLOSSARY_REASON_WORD_LIMIT = 40;
+
+export function glossaryReasonWordCount(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+// A claim whose text already uses a saved headword or spelled-out acronym, and whose
+// scope joins that entry, is a citation. It does not need a new definition.
+export type GlossaryHomeClaim = { text: string; scopeKey: string; citations: GlossaryCitation[] };
+
+function comparableScope(scopeKey: string): string {
+  if (scopeKey === "general") return glossaryScopeKey([null]);
+  return scopeKey;
+}
+
+function containsPhrase(text: string, phrase: string): boolean {
+  const needle = normalized(phrase);
+  if (needle.length < 3) return false;
+  return ` ${normalized(text)} `.includes(` ${needle} `);
+}
+
+function sameScope(entry: GlossaryEntry, scopeKey: string): boolean {
+  const saved = { ...entry, scopeKey: comparableScope(entry.scopeKey) };
+  return mergeGlossaryEntries([saved, { ...saved, scopeKey: comparableScope(scopeKey) }]).length === 1;
+}
+
+export function glossaryClearHomes<T extends GlossaryHomeClaim>(claims: T[], entries: GlossaryEntry[]): { entries: GlossaryEntry[]; leftovers: T[] } {
+  const next = entries.map((entry) => ({ ...entry, citations: [...entry.citations] }));
+  const leftovers: T[] = [];
+  for (const claim of claims) {
+    if (!claim.citations.length) {
+      leftovers.push(claim);
+      continue;
+    }
+    const matches = next.filter((entry) => {
+      const named = containsPhrase(claim.text, entry.term) || (entry.expansion ? containsPhrase(claim.text, entry.expansion) : false);
+      if (!named) return false;
+      return sameScope(entry, claim.scopeKey);
+    });
+    if (!matches.length) {
+      leftovers.push(claim);
+      continue;
+    }
+    if (matches.length !== 1) {
+      if (mergeGlossaryEntries(matches).length !== 1) {
+        leftovers.push(claim);
+        continue;
+      }
+    }
+    const home = matches[0]!;
+    for (const cite of claim.citations) {
+      const present = home.citations.some((existing) => existing.revisionId === cite.revisionId && existing.sourceId === cite.sourceId);
+      if (present) continue;
+      home.citations.push(cite);
+    }
+  }
+  return { entries: next, leftovers };
+}
+
+// A saved citation the new batch forgot is written back onto the same headword.
+// When that headword was not rewritten, the saved entry itself stays in the list.
+export function restoreDroppedCitations(produced: GlossaryEntry[], previous: GlossaryEntry[], dropped: GlossaryCitation[]): GlossaryEntry[] {
+  const entries = produced.map((entry) => ({ ...entry, citations: [...entry.citations] }));
+  const cited = new Set(entries.flatMap((entry) => entry.citations.map((cite) => cite.unitId)));
+  for (const cite of dropped) {
+    if (cited.has(cite.unitId)) continue;
+    const prior = previous.find((entry) => entry.citations.some((existing) => existing.unitId === cite.unitId && existing.revisionId === cite.revisionId && existing.sourceId === cite.sourceId));
+    const home = prior ? entries.find((entry) => normalized(entry.expansion || entry.term) === normalized(prior.expansion || prior.term) && sameScope(entry, prior.scopeKey)) : undefined;
+    if (home) {
+      home.citations.push(cite);
+      cited.add(cite.unitId);
+      continue;
+    }
+    if (!prior) continue;
+    entries.push({ ...prior, citations: [...prior.citations] });
+    for (const existing of prior.citations) cited.add(existing.unitId);
+  }
+  return entries;
+}
+
+// A claim filed onto an existing entry leaves the saved batch result.
+// Entries that only cited those claims are dropped. The rest keep their other citations.
+export function withoutMovedCitations(entries: GlossaryEntry[], movedIds: ReadonlySet<string>): GlossaryEntry[] {
+  const kept: GlossaryEntry[] = [];
+  for (const entry of entries) {
+    const citations = entry.citations.filter((cite) => !movedIds.has(cite.unitId));
+    if (!citations.length) continue;
+    kept.push(citations.length === entry.citations.length ? entry : { ...entry, citations });
+  }
+  return kept;
+}
+
+// Claims already cited by a saved entry must still be cited after a batch.
+// A batch that drops one of them is not done.
+export function droppedProtectedClaims(batchIds: string[], citedIds: string[], protectedIds: string[]): string[] {
+  const cited = new Set(citedIds);
+  const guarded = new Set(protectedIds);
+  const missing: string[] = [];
+  for (const id of batchIds) {
+    if (!guarded.has(id)) continue;
+    if (cited.has(id)) continue;
+    missing.push(id);
+  }
+  return missing;
+}
+
 export function glossaryScopeKey(scopes: Applicability[]): string {
   const keys = scopes.map((scope) => scope?.status === "scoped" && scope.entities.length ? JSON.stringify([...new Set(scope.entities.map((entity) => entity.key))].sort()) : "null");
   return `[${[...new Set(keys)].sort().join(",")}]`;

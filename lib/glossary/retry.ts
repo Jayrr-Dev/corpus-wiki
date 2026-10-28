@@ -6,7 +6,8 @@ import { uploadExecution } from "@/lib/ingest/workflowContext";
 // lost ownership and cancellation must remain visible to their caller.
 export function isGlossaryInterruption(error: unknown, depth = 0): boolean {
   if (!error || typeof error !== "object" || depth > 3) return false;
-  const value = error as { name?: string; message?: string; code?: string; status?: number; cause?: unknown };
+  const value = error as { name?: string; message?: string; code?: string; status?: number; cause?: unknown; glossaryFinal?: boolean };
+  if (value.glossaryFinal) return false;
   if (value.name === "AbortError" || /cancelled|canceled|took over/i.test(value.message ?? "")) return false;
   if ([400, 401, 403, 404, 422].includes(value.status ?? 0) || (typeof value.code === "string" && /^(?:22|23|42)/.test(value.code))) return false;
   return [408, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526].includes(value.status ?? 0)

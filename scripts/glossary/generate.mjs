@@ -3,10 +3,30 @@ import { createServer } from "vite";
 import { createClient } from "@supabase/supabase-js";
 import { fileURLToPath } from "node:url";
 
+// A stalled response used to sit for minutes without reaching Postgres.
+// The timer rejects even when aborting the socket does not.
+const DATABASE_CALL_TIMEOUT_MS = 90_000;
+function fetchDatabase(input, init = {}) {
+  const timeout = AbortSignal.timeout(DATABASE_CALL_TIMEOUT_MS);
+  const signal = init.signal ? AbortSignal.any([init.signal, timeout]) : timeout;
+  let timer;
+  const limit = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new DOMException("The operation was aborted due to timeout", "TimeoutError")), DATABASE_CALL_TIMEOUT_MS);
+  });
+  const request = fetch(input, { ...init, signal }).then(async (response) => {
+    const body = await response.arrayBuffer();
+    clearTimeout(timer);
+    return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers });
+  });
+  request.catch(() => clearTimeout(timer));
+  return Promise.race([request, limit]);
+}
+
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const spaceFlag = process.argv.indexOf("--space");
 const spaceId = spaceFlag < 0 ? null : process.argv[spaceFlag + 1];
 if (spaceFlag >= 0 && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(spaceId ?? "")) throw new Error("--space requires a space UUID.");
+console.log("Starting glossary runner");
 const server = await createServer({
   root, configFile: false, server: { middlewareMode: true, hmr: false, watch: null },
   optimizeDeps: { noDiscovery: true },
@@ -19,9 +39,7 @@ try {
       headers: spaceId ? { "x-space-id": spaceId } : {},
       // The standalone runner must have the same bounded database calls as the
       // app; a missing HTTP response must not strand its generation lease.
-      fetch: (input, init = {}) => fetch(input, { ...init,
-        signal: init.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000),
-      }),
+      fetch: fetchDatabase,
     },
   });
   const { supabaseRpc } = await server.ssrLoadModule("/lib/db/rpc.ts");
