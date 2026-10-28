@@ -168,6 +168,37 @@ describe("computePower", () => {
     for (const id of ["X", "Y"]) expect(scoreOf(results, id)).toBeGreaterThan(0);
   });
 
+  it("keeps a parent steady over four children with no numbers", () => {
+    const teams = ["T1", "T2", "T3", "T4"];
+    const results = power(
+      [card("Co", "company", { Employees: "1,000" }), ...teams.map((id) => card(id, "team"))],
+      teams.map((id) => link(id, "part_of", "Co")),
+    );
+    expect(scoreOf(results, "Co")).toBeCloseTo(3, 2);
+    for (const id of teams) expect(scoreOf(results, id)).toBeCloseTo(Math.log10(300), 2);
+  });
+
+  it("keeps a 100 percent mutual ownership pair near its own size", () => {
+    const results = power(
+      [card("A", "company", { Employees: "100" }), card("B", "company", { Employees: "100" })],
+      [link("A", "owned_by", "B", { share: 1 }), link("B", "owned_by", "A", { share: 1 })],
+    );
+    for (const id of ["A", "B"]) {
+      expect(scoreOf(results, id)).toBeGreaterThanOrEqual(2);
+      expect(scoreOf(results, id)).toBeLessThan(Math.log10(250));
+    }
+  });
+
+  it("puts a small holding company just above its bigger operating company, without growing either", () => {
+    const results = power(
+      [card("Holding", "company", { Employees: "10" }), card("Operating", "company", { Employees: "5,000" })],
+      [link("Operating", "owned_by", "Holding", { share: 1 })],
+    );
+    expect(scoreOf(results, "Operating")).toBeCloseTo(Math.log10(5000), 2);
+    expect(scoreOf(results, "Holding")).toBeGreaterThan(scoreOf(results, "Operating"));
+    expect(scoreOf(results, "Holding")).toBeLessThan(Math.log10(5000 * 1.5));
+  });
+
   it("gives a child box a staff share of its parent, and a default share when unknown", () => {
     const results = power(
       [card("Co", "company", { Employees: "10,000" }), card("Eng", "department", { Employees: "1,000" }), card("Ops", "department")],
