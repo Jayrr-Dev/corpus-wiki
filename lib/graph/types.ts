@@ -12,7 +12,12 @@ export type GraphNodeKind = "unit" | "entity" | "page" | "domain";
 // LINK KINDS: the seven relationship types, plus "about" (unit or page -> entity), "cites" (page -> unit),
 // "in" (unit or page -> domain), and "similar" (derived relatedness between units, never stored; see related.ts)
 export type RelationshipType = Enums<"relationship_type">;
-export type GraphLinkKind = RelationshipType | "about" | "cites" | "in" | "similar";
+export type GraphLinkKind =
+  | RelationshipType
+  | "about"
+  | "cites"
+  | "in"
+  | "similar";
 
 // NODE: one dot. `degree` counts every link in the full graph and sizes the dot.
 export interface GraphNode {
@@ -29,6 +34,8 @@ export interface GraphNode {
   domainScopePaths?: { internal: string[]; external: string[] };
   sourceScopes?: ("internal" | "external")[];
   entityNames: string[];
+  // Pages that cite this unit (own title on page nodes; omitted on older fixtures)
+  pageTitles?: string[];
   unitKind: Enums<"unit_kind"> | null;
   status: Enums<"epistemic_status"> | null;
 }

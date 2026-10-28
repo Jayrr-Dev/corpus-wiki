@@ -5,11 +5,38 @@
 // the panel's settings. UI lives in components/graph.
 // =====================================================================
 
-export type * from "./types";
 export { buildGraph, countDegrees, shortLabel } from "./build";
-export { circleAt, circleExtents, clusterCircles, clusterTree, deepestPaths, moveTarget, nodeInCluster, primaryEntityName, type ClusterCircle, type ClusterGroup, type ClusterMode } from "./clusters";
-export { facingEdges, routeControls, routeDomains, straightenRoute, summaryDomains, type RouteCircle, type RoutePoint } from "./bundles";
-export { applyFilters, createdBy, domainPathsForScope, graphForGrouping, keepNodes, type GraphFilters } from "./filters";
+export {
+  facingEdges,
+  routeControls,
+  routeDomains,
+  straightenRoute,
+  summaryDomains,
+  type RouteCircle,
+  type RoutePoint,
+} from "./bundles";
+export {
+  circleAt,
+  circleExtents,
+  clusterCircles,
+  clusterTree,
+  deepestPaths,
+  moveTarget,
+  nodeInCluster,
+  primaryEntityName,
+  primaryPageTitle,
+  type ClusterCircle,
+  type ClusterGroup,
+  type ClusterMode,
+} from "./clusters";
+export {
+  applyFilters,
+  createdBy,
+  domainPathsForScope,
+  graphForGrouping,
+  keepNodes,
+  type GraphFilters,
+} from "./filters";
 export {
   GRAPH_COLORS,
   GROUP_FIELDS,
@@ -24,14 +51,20 @@ export {
   type GroupField,
 } from "./groups";
 export { neighborhood } from "./neighborhood";
-export { relatedLinks, scoreRelatedPairs, withRelated, type RelatedOptions, type ScoredPair } from "./related";
+export {
+  relatedLinks,
+  scoreRelatedPairs,
+  withRelated,
+  type RelatedOptions,
+  type ScoredPair,
+} from "./related";
 export {
   DEFAULT_GRAPH_SETTINGS,
   DISPLAY_SLIDERS,
   FORCE_SLIDERS,
+  GRAPH_GROUP_BY,
   parseSavedSettings,
   TITLE_POSITIONS,
-  GRAPH_GROUP_BY,
   type GraphDisplay,
   type GraphForces,
   type GraphGroupBy,
@@ -39,4 +72,5 @@ export {
   type SliderRule,
   type TitlePosition,
 } from "./settings";
+export type * from "./types";
 export { useGraphData } from "./useGraphData";

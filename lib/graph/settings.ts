@@ -15,7 +15,7 @@ export const TITLE_POSITIONS = ["top", "bottom", "left", "right"] as const;
 export type TitlePosition = (typeof TITLE_POSITIONS)[number];
 
 // Which circles gather the dots. Only one is on at a time. "off" draws no circles.
-export const GRAPH_GROUP_BY = ["domain", "entity", "off"] as const;
+export const GRAPH_GROUP_BY = ["domain", "entity", "page", "off"] as const;
 export type GraphGroupBy = (typeof GRAPH_GROUP_BY)[number];
 
 export interface GraphDisplay {

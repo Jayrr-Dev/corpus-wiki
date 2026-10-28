@@ -639,6 +639,14 @@ describe("entity groups", () => {
     expect(grouped.links.some((link) => link.kind === "in")).toBe(false);
     expect(graphForGrouping(graph, "off")).toBe(graph);
   });
+
+  it("drops page dots and cites links so cited units sit inside the circle", () => {
+    expect(nodeById("u1").pageTitles).toEqual(["Alpha"]);
+    const grouped = graphForGrouping(graph, "page");
+    expect(grouped.nodes.map((node) => node.id)).not.toContain("p1");
+    expect(grouped.links.some((link) => link.kind === "cites")).toBe(false);
+    expect(grouped.links.some((link) => link.kind === "depends_on")).toBe(true);
+  });
 });
 
 describe("domain clusters", () => {
@@ -675,6 +683,22 @@ describe("domain clusters", () => {
       entityColor("Acme"),
     );
     expect(circles.every((circle) => circle.color)).toBe(true);
+  });
+
+  it("draws one colored circle per page", () => {
+    const nodes: SimNode[] = [
+      { ...dot("a", []), pageTitles: ["Alpha"] },
+      { ...dot("b", []), pageTitles: ["Alpha"] },
+      { ...dot("c", []), pageTitles: ["Beta"] },
+    ];
+    const circles = clusterCircles(nodes, 1, "page");
+    expect(circles.map((circle) => circle.label).sort()).toEqual([
+      "Alpha",
+      "Beta",
+    ]);
+    expect(circles.find((circle) => circle.label === "Alpha")!.color).toBe(
+      entityColor("Alpha"),
+    );
   });
 
   it("packs sibling domains side by side without overlapping", () => {

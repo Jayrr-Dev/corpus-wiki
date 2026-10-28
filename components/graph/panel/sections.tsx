@@ -159,7 +159,7 @@ export function FiltersSection({
   );
 }
 
-// GROUP: domain circles or entity circles. One at a time.
+// GROUP: domain, entity, or page circles. One at a time.
 export function GroupSection({
   value,
   onChange,
@@ -167,7 +167,7 @@ export function GroupSection({
   value: GraphDisplay;
   onChange: (next: GraphDisplay) => void;
 }) {
-  const pick = (mode: "domain" | "entity", on: boolean) =>
+  const pick = (mode: "domain" | "entity" | "page", on: boolean) =>
     onChange({ ...value, groupBy: on ? mode : "off" });
   return (
     <PanelSection
@@ -184,6 +184,10 @@ export function GroupSection({
               Entities draws a colored circle around each entity. Knowledge
               units sit inside it.
             </li>
+            <li>
+              Pages draws a colored circle around each article. Cited units sit
+              inside it.
+            </li>
           </ul>
         </>
       }
@@ -197,6 +201,11 @@ export function GroupSection({
         label="Entities"
         checked={value.groupBy === "entity"}
         onChange={(on) => pick("entity", on)}
+      />
+      <SwitchRow
+        label="Pages"
+        checked={value.groupBy === "page"}
+        onChange={(on) => pick("page", on)}
       />
     </PanelSection>
   );

@@ -15,13 +15,18 @@ const UNIT_LABEL_MAX = 60;
 // Shortens a claim to one label, ending in "…" when cut
 export function shortLabel(text: string, max = UNIT_LABEL_MAX): string {
   const oneLine = text.replace(/\s+/g, " ").trim();
-  return oneLine.length <= max ? oneLine : `${oneLine.slice(0, max - 1).trimEnd()}…`;
+  return oneLine.length <= max
+    ? oneLine
+    : `${oneLine.slice(0, max - 1).trimEnd()}…`;
 }
 
 // Groups `[key, value]` pairs into key -> values
-function groupBy(pairs: readonly (readonly [string, string])[]): Map<string, string[]> {
+function groupBy(
+  pairs: readonly (readonly [string, string])[],
+): Map<string, string[]> {
   const grouped = new Map<string, string[]>();
-  for (const [key, value] of pairs) grouped.set(key, [...(grouped.get(key) ?? []), value]);
+  for (const [key, value] of pairs)
+    grouped.set(key, [...(grouped.get(key) ?? []), value]);
   return grouped;
 }
 
@@ -30,26 +35,64 @@ function present<T>(values: readonly (T | undefined)[]): T[] {
   return values.filter((value): value is T => value !== undefined);
 }
 
-// UNIT NODES: claim text, domains and entity names for group queries
+// UNIT NODES: claim text, domains, entity names and citing pages for group queries
 function unitNodes(rows: GraphRows): GraphNode[] {
-  const contentByRevision = new Map(rows.revisions.map((revision) => [revision.id, revision.content]));
-  const titleByRevision = new Map(rows.revisions.map((revision) => [revision.id, revision.title?.trim() || null]));
-  const pathByDomain = new Map(rows.domains.map((domain) => [domain.id, domain.path]));
-  const nameByEntity = new Map(rows.entities.map((entity) => [entity.id, entity.name]));
-  const domainsByUnit = groupBy(rows.unitDomains.map((row) => [row.unit_id, row.domain_id] as const));
-  const entitiesByUnit = groupBy(rows.unitEntities.map((row) => [row.unit_id, row.entity_id] as const));
+  const contentByRevision = new Map(
+    rows.revisions.map((revision) => [revision.id, revision.content]),
+  );
+  const titleByRevision = new Map(
+    rows.revisions.map((revision) => [
+      revision.id,
+      revision.title?.trim() || null,
+    ]),
+  );
+  const pathByDomain = new Map(
+    rows.domains.map((domain) => [domain.id, domain.path]),
+  );
+  const nameByEntity = new Map(
+    rows.entities.map((entity) => [entity.id, entity.name]),
+  );
+  const titleByPage = new Map(rows.pages.map((page) => [page.id, page.title]));
+  const livePages = new Set(rows.pages.map((page) => page.id));
+  const pageBySection = new Map(
+    rows.sections
+      .filter((section) => livePages.has(section.page_id))
+      .map((section) => [section.id, section.page_id]),
+  );
+  const pagesByUnit = new Map<string, string[]>();
+  for (const input of rows.sectionInputs) {
+    const pageId = pageBySection.get(input.section_id);
+    const title = pageId ? titleByPage.get(pageId) : undefined;
+    if (!title) continue;
+    const titles = pagesByUnit.get(input.unit_id) ?? [];
+    if (!titles.includes(title)) titles.push(title);
+    pagesByUnit.set(input.unit_id, titles);
+  }
+  const domainsByUnit = groupBy(
+    rows.unitDomains.map((row) => [row.unit_id, row.domain_id] as const),
+  );
+  const entitiesByUnit = groupBy(
+    rows.unitEntities.map((row) => [row.unit_id, row.entity_id] as const),
+  );
   return rows.units.map((unit) => {
     const content = contentByRevision.get(unit.current_revision_id) ?? unit.id;
     return {
       id: unit.id,
       kind: "unit",
-      label: titleByRevision.get(unit.current_revision_id) ?? knowledgeLabel(content),
+      label:
+        titleByRevision.get(unit.current_revision_id) ??
+        knowledgeLabel(content),
       text: content,
       href: `/units/${unit.id}`,
       createdAt: unit.created_at,
       degree: 0,
-      domainPaths: present((domainsByUnit.get(unit.id) ?? []).map((id) => pathByDomain.get(id))),
-      entityNames: present((entitiesByUnit.get(unit.id) ?? []).map((id) => nameByEntity.get(id))),
+      domainPaths: present(
+        (domainsByUnit.get(unit.id) ?? []).map((id) => pathByDomain.get(id)),
+      ),
+      entityNames: present(
+        (entitiesByUnit.get(unit.id) ?? []).map((id) => nameByEntity.get(id)),
+      ),
+      pageTitles: pagesByUnit.get(unit.id) ?? [],
       unitKind: unit.kind,
       status: unit.epistemic_status,
     };
@@ -68,6 +111,7 @@ function entityNodes(rows: GraphRows): GraphNode[] {
     degree: 0,
     domainPaths: [],
     entityNames: [entity.name],
+    pageTitles: [],
     unitKind: null,
     status: null,
   }));
@@ -88,6 +132,7 @@ function domainNodes(rows: GraphRows): GraphNode[] {
       degree: 0,
       domainPaths: [domain.path],
       entityNames: [],
+      pageTitles: [],
       unitKind: null,
       status: null,
     };
@@ -96,8 +141,12 @@ function domainNodes(rows: GraphRows): GraphNode[] {
 
 // PAGE NODES: a page sits in its own domain, if it has one
 function pageNodes(rows: GraphRows): GraphNode[] {
-  const pathByDomain = new Map(rows.domains.map((domain) => [domain.id, domain.path]));
-  const nameByEntity = new Map(rows.entities.map((entity) => [entity.id, entity.name]));
+  const pathByDomain = new Map(
+    rows.domains.map((domain) => [domain.id, domain.path]),
+  );
+  const nameByEntity = new Map(
+    rows.entities.map((entity) => [entity.id, entity.name]),
+  );
   return rows.pages.map((page) => ({
     id: page.id,
     kind: "page",
@@ -106,8 +155,13 @@ function pageNodes(rows: GraphRows): GraphNode[] {
     href: `/p/${page.slug}`,
     createdAt: page.created_at,
     degree: 0,
-    domainPaths: present([page.domain_id ? pathByDomain.get(page.domain_id) : undefined]),
-    entityNames: present([page.entity_id ? nameByEntity.get(page.entity_id) : undefined]),
+    domainPaths: present([
+      page.domain_id ? pathByDomain.get(page.domain_id) : undefined,
+    ]),
+    entityNames: present([
+      page.entity_id ? nameByEntity.get(page.entity_id) : undefined,
+    ]),
+    pageTitles: [page.title],
     unitKind: null,
     status: null,
   }));
@@ -118,26 +172,70 @@ function pageNodes(rows: GraphRows): GraphNode[] {
 function allLinks(rows: GraphRows): GraphLink[] {
   // Retiring a page leaves its sections behind, so only live pages can cite
   const livePages = new Set(rows.pages.map((page) => page.id));
-  const pageBySection = new Map(rows.sections.filter((section) => livePages.has(section.page_id)).map((section) => [section.id, section.page_id]));
+  const pageBySection = new Map(
+    rows.sections
+      .filter((section) => livePages.has(section.page_id))
+      .map((section) => [section.id, section.page_id]),
+  );
   const citePairs = new Set(
-    present(rows.sectionInputs.map((input) => {
-      const pageId = pageBySection.get(input.section_id);
-      return pageId ? `${pageId}|${input.unit_id}` : undefined;
-    })),
+    present(
+      rows.sectionInputs.map((input) => {
+        const pageId = pageBySection.get(input.section_id);
+        return pageId ? `${pageId}|${input.unit_id}` : undefined;
+      }),
+    ),
   );
   return [
-    ...rows.relationships.map((link) => ({ id: link.id, source: link.from_unit_id, target: link.to_unit_id, kind: link.type })),
-    ...rows.unitEntities.map((row) => ({ id: `about:${row.unit_id}:${row.entity_id}`, source: row.unit_id, target: row.entity_id, kind: "about" as const })),
-    ...present(rows.pages.map((page) =>
-      page.entity_id ? { id: `about:${page.id}:${page.entity_id}`, source: page.id, target: page.entity_id, kind: "about" as const } : undefined,
-    )),
-    ...rows.unitDomains.map((row) => ({ id: `in:${row.unit_id}:${row.domain_id}`, source: row.unit_id, target: row.domain_id, kind: "in" as const })),
-    ...present(rows.pages.map((page) =>
-      page.domain_id ? { id: `in:${page.id}:${page.domain_id}`, source: page.id, target: page.domain_id, kind: "in" as const } : undefined,
-    )),
+    ...rows.relationships.map((link) => ({
+      id: link.id,
+      source: link.from_unit_id,
+      target: link.to_unit_id,
+      kind: link.type,
+    })),
+    ...rows.unitEntities.map((row) => ({
+      id: `about:${row.unit_id}:${row.entity_id}`,
+      source: row.unit_id,
+      target: row.entity_id,
+      kind: "about" as const,
+    })),
+    ...present(
+      rows.pages.map((page) =>
+        page.entity_id
+          ? {
+              id: `about:${page.id}:${page.entity_id}`,
+              source: page.id,
+              target: page.entity_id,
+              kind: "about" as const,
+            }
+          : undefined,
+      ),
+    ),
+    ...rows.unitDomains.map((row) => ({
+      id: `in:${row.unit_id}:${row.domain_id}`,
+      source: row.unit_id,
+      target: row.domain_id,
+      kind: "in" as const,
+    })),
+    ...present(
+      rows.pages.map((page) =>
+        page.domain_id
+          ? {
+              id: `in:${page.id}:${page.domain_id}`,
+              source: page.id,
+              target: page.domain_id,
+              kind: "in" as const,
+            }
+          : undefined,
+      ),
+    ),
     ...[...citePairs].map((pair) => {
       const [pageId = "", unitId = ""] = pair.split("|");
-      return { id: `cites:${pageId}:${unitId}`, source: pageId, target: unitId, kind: "cites" as const };
+      return {
+        id: `cites:${pageId}:${unitId}`,
+        source: pageId,
+        target: unitId,
+        kind: "cites" as const,
+      };
     }),
   ];
 }
@@ -157,18 +255,31 @@ export function buildGraph(rows: GraphRows): GraphData {
   // Origin comes from evidence, never from the domain's organization context.
   // Match the knowledge list: a unit backed by an upload remains Internal even
   // when external sources also support it. Unsourced/manual units are Internal.
-  const externalSources = new Set(rows.sources.filter((source) => source.origin === "external").map((source) => source.id));
+  const externalSources = new Set(
+    rows.sources
+      .filter((source) => source.origin === "external")
+      .map((source) => source.id),
+  );
   const externalUnits = new Set<string>();
   const internalUnits = new Set<string>();
   for (const link of rows.sourceUnits) {
     if (!link.unit_id || !link.source_id) continue;
-    (externalSources.has(link.source_id) ? externalUnits : internalUnits).add(link.unit_id);
+    (externalSources.has(link.source_id) ? externalUnits : internalUnits).add(
+      link.unit_id,
+    );
   }
   type Scope = "internal" | "external";
-  const unitScopes = new Map(rows.units.map((unit) => [unit.id,
-    externalUnits.has(unit.id) && !internalUnits.has(unit.id) ? "external" as const : "internal" as const,
-  ]));
-  const pageBySection = new Map(rows.sections.map((section) => [section.id, section.page_id]));
+  const unitScopes = new Map(
+    rows.units.map((unit) => [
+      unit.id,
+      externalUnits.has(unit.id) && !internalUnits.has(unit.id)
+        ? ("external" as const)
+        : ("internal" as const),
+    ]),
+  );
+  const pageBySection = new Map(
+    rows.sections.map((section) => [section.id, section.page_id]),
+  );
   const pageScopes = new Map<string, Set<Scope>>();
   for (const input of rows.sectionInputs) {
     const pageId = pageBySection.get(input.section_id);
@@ -178,9 +289,18 @@ export function buildGraph(rows: GraphRows): GraphData {
     scopes.add(scope);
     pageScopes.set(pageId, scopes);
   }
-  const nodes = [...unitNodes(rows), ...entityNodes(rows), ...domainNodes(rows), ...pageNodes(rows)].map((node) => {
-    const sourceScopes: Scope[] = node.kind === "unit" ? [unitScopes.get(node.id)!]
-      : node.kind === "page" ? [...(pageScopes.get(node.id) ?? new Set<Scope>(["internal"]))] : [];
+  const nodes = [
+    ...unitNodes(rows),
+    ...entityNodes(rows),
+    ...domainNodes(rows),
+    ...pageNodes(rows),
+  ].map((node) => {
+    const sourceScopes: Scope[] =
+      node.kind === "unit"
+        ? [unitScopes.get(node.id)!]
+        : node.kind === "page"
+          ? [...(pageScopes.get(node.id) ?? new Set<Scope>(["internal"]))]
+          : [];
     return {
       ...node,
       sourceScopes,
@@ -191,8 +311,16 @@ export function buildGraph(rows: GraphRows): GraphData {
     };
   });
   // A stored title already tells its claim apart; only derived labels are made specific
-  const titledRevisions = new Set(rows.revisions.filter((revision) => revision.title?.trim()).map((revision) => revision.id));
-  const titled = new Set(rows.units.filter((unit) => titledRevisions.has(unit.current_revision_id)).map((unit) => unit.id));
+  const titledRevisions = new Set(
+    rows.revisions
+      .filter((revision) => revision.title?.trim())
+      .map((revision) => revision.id),
+  );
+  const titled = new Set(
+    rows.units
+      .filter((unit) => titledRevisions.has(unit.current_revision_id))
+      .map((unit) => unit.id),
+  );
   // Topic labels are deliberately broad. When different claims share one,
   // show a short phrase from their own wording so they do not look like duplicates.
   const labelCounts = new Map<string, number>();
@@ -201,13 +329,24 @@ export function buildGraph(rows: GraphRows): GraphData {
     labelCounts.set(key, (labelCounts.get(key) ?? 0) + 1);
   }
   for (const node of nodes) {
-    if (node.kind === "unit" && !titled.has(node.id) && (labelCounts.get(node.label.toLowerCase()) ?? 0) > 1) {
+    if (
+      node.kind === "unit" &&
+      !titled.has(node.id) &&
+      (labelCounts.get(node.label.toLowerCase()) ?? 0) > 1
+    ) {
       node.label = phraseLabel(node.text);
     }
   }
   const ids = new Set(nodes.map((node) => node.id));
-  const links = allLinks(rows).filter((link) => ids.has(link.source) && ids.has(link.target));
+  const links = allLinks(rows).filter(
+    (link) => ids.has(link.source) && ids.has(link.target),
+  );
   const degrees = countDegrees(links);
-  return { nodes: nodes.map((node) => ({ ...node, degree: degrees.get(node.id) ?? 0 })), links };
+  return {
+    nodes: nodes.map((node) => ({
+      ...node,
+      degree: degrees.get(node.id) ?? 0,
+    })),
+    links,
+  };
 }
-

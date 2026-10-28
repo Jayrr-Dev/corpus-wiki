@@ -14,11 +14,11 @@ import type { GraphNode } from "./types";
 // by side, and each parent is just big enough for its children. Each
 // dot is then kept inside its own circle, so links arrange dots within
 // a domain but never stretch one domain toward another.
-// Entity mode is the same packing with one flat circle per entity name.
+// Entity and page modes use the same packing with one flat circle per name/title.
 // =====================================================================
 
-// Which circle a dot sits in. Domain uses the topic tree. Entity uses one entity name.
-export type ClusterMode = "domain" | "entity";
+// Which circle a dot sits in. Domain uses the topic tree. Entity/page use one flat name.
+export type ClusterMode = "domain" | "entity" | "page";
 
 // GROUP: one domain in the tree, with the dots filed directly in it and its child domains
 export interface ClusterGroup {
@@ -45,37 +45,69 @@ export interface ClusterCircle {
   y: number;
   r: number;
   index: number;
-  // Set for entity circles so the ring matches the dots inside it
+  // Set for entity/page circles so the ring matches the dots inside it
   color?: GraphColor;
 }
 
 // The entity a dot sits inside when several are named (same rule as the first domain path)
-export function primaryEntityName(node: Pick<GraphNode, "entityNames">): string | null {
-  return [...(node.entityNames ?? [])].sort((a, b) => a.localeCompare(b))[0] ?? null;
+export function primaryEntityName(
+  node: Pick<GraphNode, "entityNames">,
+): string | null {
+  return (
+    [...(node.entityNames ?? [])].sort((a, b) => a.localeCompare(b))[0] ?? null
+  );
 }
 
-// Segments of the circle path. Entity mode is one flat name, not a tree.
-function clusterSegments(node: Pick<GraphNode, "domainPaths" | "entityNames">, mode: ClusterMode): string[] {
+// The page a dot sits inside when several cite it
+export function primaryPageTitle(
+  node: Pick<GraphNode, "pageTitles">,
+): string | null {
+  return (
+    [...(node.pageTitles ?? [])].sort((a, b) => a.localeCompare(b))[0] ?? null
+  );
+}
+
+// Segments of the circle path. Entity/page modes are one flat name, not a tree.
+function clusterSegments(
+  node: Pick<GraphNode, "domainPaths" | "entityNames" | "pageTitles">,
+  mode: ClusterMode,
+): string[] {
   if (mode === "entity") {
     const name = primaryEntityName(node);
     return name ? [name] : [];
+  }
+  if (mode === "page") {
+    const title = primaryPageTitle(node);
+    return title ? [title] : [];
   }
   return ([...node.domainPaths].sort()[0] ?? "").split("/").filter(Boolean);
 }
 
 // True when this dot belongs in the focused circle
-export function nodeInCluster(node: Pick<GraphNode, "domainPaths" | "entityNames">, key: string, mode: ClusterMode): boolean {
+export function nodeInCluster(
+  node: Pick<GraphNode, "domainPaths" | "entityNames" | "pageTitles">,
+  key: string,
+  mode: ClusterMode,
+): boolean {
   if (mode === "entity") return primaryEntityName(node) === key;
-  return node.domainPaths.some((path) => path === key || path.startsWith(`${key}/`));
+  if (mode === "page") return primaryPageTitle(node) === key;
+  return node.domainPaths.some(
+    (path) => path === key || path.startsWith(`${key}/`),
+  );
 }
 
 // Segments of a node's primary domain path (empty when it has none)
-export function primarySegments(node: Pick<GraphNode, "domainPaths">): string[] {
+export function primarySegments(
+  node: Pick<GraphNode, "domainPaths">,
+): string[] {
   return ([...node.domainPaths].sort()[0] ?? "").split("/").filter(Boolean);
 }
 
 // TREE: the domains the visible dots sit in, top-level domains first, children sorted by name
-export function clusterTree(nodes: readonly SimNode[], mode: ClusterMode = "domain"): ClusterGroup[] {
+export function clusterTree(
+  nodes: readonly SimNode[],
+  mode: ClusterMode = "domain",
+): ClusterGroup[] {
   const roots: ClusterGroup[] = [];
   const byPath = new Map<string, ClusterGroup>();
   for (const node of nodes) {
@@ -85,7 +117,15 @@ export function clusterTree(nodes: readonly SimNode[], mode: ClusterMode = "doma
       const path = segments.slice(0, depth + 1).join("/");
       group = byPath.get(path);
       if (!group) {
-        group = { path, label: segment, depth, parent: segments.slice(0, depth).join("/"), members: [], children: [], size: 0 };
+        group = {
+          path,
+          label: segment,
+          depth,
+          parent: segments.slice(0, depth).join("/"),
+          members: [],
+          children: [],
+          size: 0,
+        };
         byPath.set(path, group);
         siblings.push(group);
       }
@@ -103,7 +143,10 @@ export function clusterTree(nodes: readonly SimNode[], mode: ClusterMode = "doma
 }
 
 // The deepest domain path each dot sits in (dots without a domain are left out)
-export function deepestPaths(nodes: readonly SimNode[], mode: ClusterMode = "domain"): Map<SimNode, string> {
+export function deepestPaths(
+  nodes: readonly SimNode[],
+  mode: ClusterMode = "domain",
+): Map<SimNode, string> {
   const paths = new Map<SimNode, string>();
   const walk = (group: ClusterGroup) => {
     for (const node of group.members) paths.set(node, group.path);
@@ -151,7 +194,10 @@ interface Packed {
 
 // Radius of a spot that holds these dots with room to move
 function spotRadius(dots: readonly SimNode[], nodeSize: number): number {
-  const area = dots.reduce((sum, node) => sum + (nodeRadius(node, nodeSize) + DOT_ROOM) ** 2, 0);
+  const area = dots.reduce(
+    (sum, node) => sum + (nodeRadius(node, nodeSize) + DOT_ROOM) ** 2,
+    0,
+  );
   return Math.max(SPOT_MIN, Math.sqrt(LOOSENESS * area));
 }
 
@@ -172,29 +218,73 @@ function packAround(items: Packed[]): number {
 // has dots of its own, one undrawn spot for them
 function packGroup(group: ClusterGroup, nodeSize: number): Packed {
   if (group.children.length === 0) {
-    return { x: 0, y: 0, r: spotRadius(group.members, nodeSize) + LEAF_PAD, group, dots: group.members, inset: LEAF_PAD, items: [] };
+    return {
+      x: 0,
+      y: 0,
+      r: spotRadius(group.members, nodeSize) + LEAF_PAD,
+      group,
+      dots: group.members,
+      inset: LEAF_PAD,
+      items: [],
+    };
   }
   const items = group.children.map((child) => packGroup(child, nodeSize));
-  if (group.members.length > 0) items.push({ x: 0, y: 0, r: spotRadius(group.members, nodeSize), dots: group.members, inset: 0, items: [] });
+  if (group.members.length > 0)
+    items.push({
+      x: 0,
+      y: 0,
+      r: spotRadius(group.members, nodeSize),
+      dots: group.members,
+      inset: 0,
+      items: [],
+    });
   return { x: 0, y: 0, r: packAround(items) + BRANCH_PAD, group, items };
 }
 
 // The last packing, reused while the same dots ask again (every frame and every layout step do)
-let lastPacking: { nodes: readonly SimNode[]; nodeSize: number; mode: ClusterMode; packing: DomainPacking } | null = null;
+let lastPacking: {
+  nodes: readonly SimNode[];
+  nodeSize: number;
+  mode: ClusterMode;
+  packing: DomainPacking;
+} | null = null;
 
 // PACK: rings and homes for these dots, centered on the world origin. Dots without a domain share
 // one undrawn spot beside the top-level domains.
-export function packDomains(nodes: readonly SimNode[], nodeSize: number, mode: ClusterMode = "domain"): DomainPacking {
-  if (lastPacking?.nodes === nodes && lastPacking.nodeSize === nodeSize && lastPacking.mode === mode) return lastPacking.packing;
+export function packDomains(
+  nodes: readonly SimNode[],
+  nodeSize: number,
+  mode: ClusterMode = "domain",
+): DomainPacking {
+  if (
+    lastPacking?.nodes === nodes &&
+    lastPacking.nodeSize === nodeSize &&
+    lastPacking.mode === mode
+  )
+    return lastPacking.packing;
   const tree = clusterTree(nodes, mode);
   const filed = deepestPaths(nodes, mode);
   const loose = nodes.filter((node) => !filed.has(node));
   const top = tree.map((group) => packGroup(group, nodeSize));
-  if (loose.length > 0) top.push({ x: 0, y: 0, r: spotRadius(loose, nodeSize), dots: loose, inset: 0, items: [] });
+  if (loose.length > 0)
+    top.push({
+      x: 0,
+      y: 0,
+      r: spotRadius(loose, nodeSize),
+      dots: loose,
+      inset: 0,
+      items: [],
+    });
   if (top.length > 0) packAround(top);
   const packing: DomainPacking = { circles: [], homes: new Map() };
-  const place = (item: Packed, originX: number, originY: number, index: number) => {
-    const x = originX + item.x, y = originY + item.y;
+  const place = (
+    item: Packed,
+    originX: number,
+    originY: number,
+    index: number,
+  ) => {
+    const x = originX + item.x,
+      y = originY + item.y;
     const { group } = item;
     if (group) {
       packing.circles.push({
@@ -207,7 +297,10 @@ export function packDomains(nodes: readonly SimNode[], nodeSize: number, mode: C
         y,
         r: item.r,
         index,
-        color: mode === "entity" ? entityColor(group.label) : undefined,
+        color:
+          mode === "entity" || mode === "page"
+            ? entityColor(group.label)
+            : undefined,
       });
     }
     if (item.dots) {
@@ -223,27 +316,49 @@ export function packDomains(nodes: readonly SimNode[], nodeSize: number, mode: C
 
 // CIRCLES for these dots, outermost first so inner rings draw on top. They depend on which dots sit
 // in which domain (and their sizes), not on where the dots are.
-export function clusterCircles(nodes: readonly SimNode[], nodeSize: number, mode: ClusterMode = "domain"): ClusterCircle[] {
+export function clusterCircles(
+  nodes: readonly SimNode[],
+  nodeSize: number,
+  mode: ClusterMode = "domain",
+): ClusterCircle[] {
   return packDomains(nodes, nodeSize, mode).circles;
 }
 
 // The innermost ring under a point (a parent contains its children, so the deepest one is the drop)
-export function circleAt(circles: readonly ClusterCircle[], point: { x: number; y: number }): ClusterCircle | null {
+export function circleAt(
+  circles: readonly ClusterCircle[],
+  point: { x: number; y: number },
+): ClusterCircle | null {
   let hit: ClusterCircle | null = null;
   for (const circle of circles) {
     if (Math.hypot(point.x - circle.x, point.y - circle.y) > circle.r) continue;
-    if (!hit || circle.depth > hit.depth || (circle.depth === hit.depth && circle.r < hit.r)) hit = circle;
+    if (
+      !hit ||
+      circle.depth > hit.depth ||
+      (circle.depth === hit.depth && circle.r < hit.r)
+    )
+      hit = circle;
   }
   return hit;
 }
 
 // The domain a dragged claim would join. The same domain, a non-claim, or a circle outside the
 // focused branch stays put. A parent of the focus still counts, so a claim can move up a level.
-export function moveTarget(node: Pick<GraphNode, "kind" | "domainPaths">, hit: Pick<ClusterCircle, "key"> | null, focusedDomain: string | null): string | null {
+export function moveTarget(
+  node: Pick<GraphNode, "kind" | "domainPaths">,
+  hit: Pick<ClusterCircle, "key"> | null,
+  focusedDomain: string | null,
+): string | null {
   if (node.kind !== "unit" || !hit) return null;
   const source = [...node.domainPaths].sort()[0] ?? "";
   if (hit.key === source) return null;
-  if (focusedDomain && hit.key !== focusedDomain && !hit.key.startsWith(`${focusedDomain}/`) && !focusedDomain.startsWith(`${hit.key}/`)) return null;
+  if (
+    focusedDomain &&
+    hit.key !== focusedDomain &&
+    !hit.key.startsWith(`${focusedDomain}/`) &&
+    !focusedDomain.startsWith(`${hit.key}/`)
+  )
+    return null;
   return hit.key;
 }
 
@@ -253,18 +368,24 @@ const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 // CONTAINMENT: run after each layout step. Puts a dot that drifted out of its home back on the home's
 // edge, and a dot far outside it (a fresh start, or a home that moved) somewhere inside it. Dragged
 // dots stay where the pointer holds them.
-export function createContainment(nodes: readonly SimNode[], nodeSize: number, mode: ClusterMode = "domain"): () => void {
+export function createContainment(
+  nodes: readonly SimNode[],
+  nodeSize: number,
+  mode: ClusterMode = "domain",
+): () => void {
   const { homes } = packDomains(nodes, nodeSize, mode);
   return () => {
     nodes.forEach((node, i) => {
       const home = homes.get(node.id);
       if (!home || node.fx != null || node.fy != null) return;
       const room = Math.max(0, home.r - nodeRadius(node, nodeSize));
-      const dx = (node.x ?? 0) - home.x, dy = (node.y ?? 0) - home.y;
+      const dx = (node.x ?? 0) - home.x,
+        dy = (node.y ?? 0) - home.y;
       const distance = Math.hypot(dx, dy);
       if (distance <= room) return;
       if (distance > home.r * 2) {
-        const angle = i * GOLDEN_ANGLE, reach = room * 0.8 * Math.sqrt((i * 0.618034) % 1 || 0.5);
+        const angle = i * GOLDEN_ANGLE,
+          reach = room * 0.8 * Math.sqrt((i * 0.618034) % 1 || 0.5);
         node.x = home.x + Math.cos(angle) * reach;
         node.y = home.y + Math.sin(angle) * reach;
       } else {
@@ -278,7 +399,10 @@ export function createContainment(nodes: readonly SimNode[], nodeSize: number, m
 }
 
 // Edge points of every ring, so a fitted camera keeps whole circles (and the name above each) in view
-export function circleExtents(circles: readonly ClusterCircle[], labelRoom: number): { x: number; y: number }[] {
+export function circleExtents(
+  circles: readonly ClusterCircle[],
+  labelRoom: number,
+): { x: number; y: number }[] {
   return circles.flatMap((circle) => [
     { x: circle.x - circle.r, y: circle.y },
     { x: circle.x + circle.r, y: circle.y },

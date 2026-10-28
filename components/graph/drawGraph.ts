@@ -100,9 +100,13 @@ function reserveLabel(
   return true;
 }
 
+function clusterModeOf(groupBy: GraphGroupBy): "domain" | "entity" | "page" {
+  return groupBy === "entity" || groupBy === "page" ? groupBy : "domain";
+}
+
 function circleOutsideFocus(circle: ClusterCircle, input: DrawInput): boolean {
   if (!input.focusedDomain || circle.key === input.focusedDomain) return false;
-  if (input.groupBy === "entity") return true;
+  if (input.groupBy === "entity" || input.groupBy === "page") return true;
   return !circle.key.startsWith(`${input.focusedDomain}/`);
 }
 
@@ -112,7 +116,7 @@ function inFocusGroup(
   groupBy: GraphGroupBy,
 ): boolean {
   if (!focus) return true;
-  return nodeInCluster(node, focus, groupBy === "entity" ? "entity" : "domain");
+  return nodeInCluster(node, focus, clusterModeOf(groupBy));
 }
 
 function circlePaint(circle: ClusterCircle, palette: CanvasPalette): string {
@@ -138,8 +142,9 @@ function circleDim(input: DrawInput, circle: ClusterCircle): number {
     input.focusId === null
       ? undefined
       : input.nodes.find((candidate) => candidate.id === input.focusId);
-  const mode = input.groupBy === "entity" ? "entity" : "domain";
-  const holdsFocus = node ? nodeInCluster(node, circle.key, mode) : false;
+  const holdsFocus = node
+    ? nodeInCluster(node, circle.key, clusterModeOf(input.groupBy))
+    : false;
   return holdsFocus ? 1 : faded(input, 1, DIMMED_CIRCLE);
 }
 // LABEL SIZE IN SCREEN PIXELS (labels stay readable at any zoom)
@@ -632,9 +637,9 @@ function prefixThatFits(
   return [line];
 }
 
-// INSIDE TITLE: the start of the title, wrapped inside its dot, as high as the circle allows
-// so the title is the first thing in the bubble. Null when even one short line does not fit.
-// The wrap width is rounded so the wrap cache is not refilled on every zoom step.
+// INSIDE TITLE: the start of the title, wrapped and centered inside its dot. Null when even
+// one short line does not fit. The wrap width is rounded so the wrap cache is not refilled
+// on every zoom step.
 function insideTitle(
   ctx: CanvasRenderingContext2D,
   node: SimNode,
@@ -652,8 +657,8 @@ function insideTitle(
   const lines = prefixThatFits(ctx, wrapped.lines, radiusPx, wrapPx);
   if (!lines) return null;
   const widthPx = lineWidth(ctx, lines);
-  // Highest top that still keeps the block inside the circle (screen pixels above the dot's middle)
-  const topPx = -Math.sqrt(Math.max(0, radiusPx ** 2 - (widthPx / 2) ** 2));
+  // Top of the first line so the block sits on the dot's middle (screen pixels)
+  const topPx = -(lines.length * LABEL_PX * LINE_HEIGHT) / 2;
   return { lines, widthPx, topPx };
 }
 
@@ -767,7 +772,7 @@ function drawLabels(input: DrawInput): void {
       : zoomOpacity * faded(input, 1, DIMMED);
     if (opacity <= 0.01 || !isOnScreen(node, input)) continue;
     ctx.globalAlpha = opacity;
-    // A dot big enough on screen holds the start of its title at the top of the bubble.
+    // A dot big enough on screen holds the start of its title centered in the bubble.
     // Otherwise the title sits beside it (above by default).
     const inside = insideTitle(ctx, node, input);
     const { lines, widthPx } =
