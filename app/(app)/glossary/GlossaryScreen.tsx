@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Loader } from "@/components/standard/loader";
 import { RowMenu } from "@/components/row-menu/RowMenu";
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip } from "@/components/standard/tooltip";
 import { readPages } from "@/lib/queries/batched";
@@ -160,11 +161,11 @@ export function GlossaryScreen() {
         <Button className="mt-3" variant="outline" onClick={() => generate(false)}>Resume generation</Button>
       </div>}
       {busy && <div role="status" className="flex items-center gap-3 text-panel text-muted-foreground"><Loader inline /><span>{state?.total_batches && state.completed_batches === state.total_batches ? reviewLabel : `Updating glossary…${state?.total_batches ? ` ${state.completed_batches} of ${state.total_batches} groups complete.` : ""}`}</span></div>}
-      {!!state?.live_entries?.length && state.status !== "ready" && <p className="text-xs text-muted-foreground">Reviewed definitions are saved as they appear. You can edit them once the glossary update finishes.</p>}
+      {!!state?.live_entries?.length && state.status !== "ready" && <p className="text-xs text-muted-foreground">Definitions save as they are reviewed. Editing unlocks when the update finishes.</p>}
       <PendingDefinitions pending={state?.pending_entries ?? []} entries={entries} busy={!!busy} />
 
       {!shown.length && !error && (busy || query.isPending || state?.status === "idle") ? <div className="space-y-8 py-10" aria-label="Dictionary loading">{[1, 2, 3].map((value) => <div key={value} className="animate-pulse space-y-3"><div className="h-6 w-44 rounded bg-muted" /><div className="h-3 w-full rounded bg-muted" /><div className="h-3 w-2/3 rounded bg-muted" /></div>)}</div> : null}
-      {!shown.length && state?.status === "ready" && !busy ? <div className="py-16 text-center"><BookOpen className="mx-auto mb-4 size-7 text-muted-foreground" /><p className="text-panel font-medium">{entries.length ? "No matching terms" : "No terms yet"}</p><p className="mt-2 text-sm text-muted-foreground">{entries.length ? "Try another spelling, meaning, or type of term." : "Add sources that explain technical terms, acronyms, or unfamiliar words."}</p>{entries.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setCategory("All terms"); setLetter(null); }}>Clear filters</Button>}</div> : null}
+      {!shown.length && state?.status === "ready" && !busy ? <div className="py-16 text-center"><BookOpen className="mx-auto mb-4 size-7 text-muted-foreground" /><p className="text-panel font-medium">{entries.length ? "No matching terms" : "No terms yet"}</p>{entries.length ? null : <p className="mt-2 text-sm text-muted-foreground">Terms appear as your sources define them.</p>}{entries.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setCategory("All terms"); setLetter(null); }}>Clear filters</Button>}</div> : null}
 
       {[...groups].sort(([a], [b]) => ALPHABET.indexOf(a) - ALPHABET.indexOf(b)).map(([initial, terms]) => <section key={initial} aria-label={`Letter ${initial}`} className="grid grid-cols-[2rem_1fr] gap-4 border-b py-8 sm:grid-cols-[3.5rem_1fr] sm:gap-6">
         <h3 className="sticky top-14 flex size-10 items-center justify-center rounded-md bg-link/10 text-xl font-semibold text-link">{initial}</h3>
@@ -249,7 +250,7 @@ function DefinitionForm({ entry, close, deleting = false }: { entry: GlossaryEnt
   });
   return <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); mutation.mutate(); }}>
     <DialogTitle>{deleting ? "Delete definition" : "Edit definition"}</DialogTitle>
-    <DialogDescription>{entry.term}. Your edit is preserved when the glossary updates. Evidence and usage notes stay attached.</DialogDescription>
+    <DialogDescription className="flex items-center gap-1.5">{entry.term}<InfoHint>Glossary updates keep your edit. Evidence and usage notes stay attached.</InfoHint></DialogDescription>
     {deleting ? <p className="text-panel">Delete this definition from the glossary?</p> : <label className="block space-y-2 text-panel"><span>Definition</span><Textarea value={definition} onChange={(event) => setDefinition(event.target.value)} required maxLength={1000} rows={5} /></label>}
     {mutation.error && <p role="alert" className="text-panel text-destructive">{mutation.error.message}</p>}
     <div className="flex justify-end gap-2">

@@ -25,8 +25,8 @@ export function DescriptionPanel({ entity, previewId, onPreview }: DescriptionPa
   const currentId = versions[0]?.description === entity.description ? versions[0].id : null;
   return (
     <div className="flex flex-col">
-      <PanelSection title="Description">
-        {entity.description ? <p className="text-panel">{entity.description}</p> : <p className="text-panel text-faint">No description yet. One is written from the claims that mention it.</p>}
+      <PanelSection title="Description" hint="Written from the claims that mention this entity.">
+        {entity.description ? <p className="text-panel">{entity.description}</p> : <p className="text-panel text-faint">No description yet.</p>}
       </PanelSection>
       <PanelSection title="History">
         {versions.length === 0 ? <p className="text-panel text-faint">No earlier versions.</p> : null}
@@ -73,7 +73,7 @@ function RestoreForm({ version, onDone }: { version: Version; onDone: () => void
   return (
     <DialogForm
       title={`Restore the version from ${historyDate.format(new Date(version.created_at))}?`}
-      description="The description goes back to this text as a new version on top of its history. Earlier versions stay in History, and the next upload that touches this entity may rewrite it."
+      description="The description goes back to this text as a new version; its history is kept. The next upload about this entity may rewrite it."
       submitLabel="Restore"
       isDestructive
       isPending={restore.isPending}
