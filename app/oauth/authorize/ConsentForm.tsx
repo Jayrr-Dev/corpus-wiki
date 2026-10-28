@@ -87,7 +87,7 @@ export function ConsentForm(props: ConsentFormProps) {
       </fieldset>
 
       {error ? <p role="alert" className="text-panel text-destructive">{error}</p> : null}
-      <p className="text-panel text-muted-foreground">You can see what it does, and revoke it, in Settings, Agents.</p>
+      <p className="text-panel text-muted-foreground">Review or revoke it any time in Settings, Agents.</p>
       <div className="flex justify-end gap-2">
         <Button type="button" variant="outline" disabled={isPending} onClick={() => answer(() => denyAuthorization(props.query))}>Deny</Button>
         <Button type="button" disabled={isPending || shownScopes.length === 0} onClick={() => answer(() => approveAuthorization(props.query, allSpaces ? null : space, shownScopes))}>
