@@ -20,6 +20,7 @@ import {
   graphForGrouping,
   inDomain,
   inDomainScope,
+  isContent,
   pageDropLabel,
   withRelated,
   type CircleOpenTarget,
@@ -203,7 +204,7 @@ export function GraphView({
   const busy = move.isPending || pageMove.isPending;
   const moveNode = useCallback(
     (node: GraphNode, destination: string | PageDrop) => {
-      if (node.kind !== "unit" || node.memberIds || busy) return;
+      if (!isContent(node) || node.memberIds || busy) return;
       setMoveError(null);
       if (typeof destination === "string") {
         const source = [...node.domainPaths].sort()[0] ?? "";
@@ -306,7 +307,7 @@ export function GraphView({
             const ids = nodes.flatMap((node) =>
               node.memberIds?.length
                 ? [...node.memberIds]
-                : node.kind === "unit"
+                : isContent(node)
                   ? [node.id]
                   : [],
             );
