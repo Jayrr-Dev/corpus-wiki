@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { RowMenu } from "@/components/row-menu/RowMenu";
 import { Button } from "@/components/ui/button";
 import { DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Input } from "@/components/ui/input";
 import { queryKeys } from "@/lib/queries";
 import { CONTACT_KINDS, CONTACT_LABELS, type ContactKind, type PersonContact, type StakeholderCard } from "@/lib/stakeholders/cards";
@@ -66,7 +67,7 @@ export function ContactsForm({ card, close }: { card: StakeholderCard; close: ()
   return (
     <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); void save(); }}>
       <DialogTitle>Edit contacts</DialogTitle>
-      <DialogDescription>{card.name}. Contacts you add here stay when the card is rewritten; contacts found in sources are listed on the card separately.</DialogDescription>
+      <DialogDescription className="flex items-center gap-1.5">{card.name}<InfoHint>Contacts you add here stay when the card is rewritten. Contacts found in sources are listed on the card separately.</InfoHint></DialogDescription>
       <ul className="space-y-2">
         {rows.map((row, index) => (
           <li key={index} className="grid grid-cols-[7.5rem_1fr_8rem_auto] items-center gap-2">

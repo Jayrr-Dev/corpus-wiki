@@ -102,7 +102,7 @@ export function StakeholdersScreen() {
   return (
     <div className="space-y-5 pb-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-panel text-muted-foreground">The companies, agencies, people and roles your sources mention, and how they relate to the work.</p>
+        <p className="text-panel text-muted-foreground">Companies, agencies, people and roles your sources mention.</p>
         <UpdateCardsButton missing={missing.data ?? 0} />
       </div>
 
@@ -140,9 +140,7 @@ export function StakeholdersScreen() {
         <div className="py-16 text-center">
           <Users className="mx-auto mb-4 size-7 text-muted-foreground" />
           <p className="text-panel font-medium">{all.length ? "No matching stakeholders" : "No stakeholder cards yet"}</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {all.length ? "Try another name, or clear the filter." : "Update cards to write them from your knowledge; new uploads keep them current."}
-          </p>
+          {all.length ? null : <p className="mt-2 text-sm text-muted-foreground">Update cards to write them from your knowledge.</p>}
           {all.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setKind(null); }}>Clear filters</Button>}
         </div>
       ) : null}
