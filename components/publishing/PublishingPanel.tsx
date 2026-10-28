@@ -86,7 +86,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
     {visibility === "private" && <section aria-labelledby="private-space-heading" className="space-y-5 border-t pt-5">
       <div>
         <h2 id="private-space-heading" className="font-medium">{editor.spaceName}</h2>
-        <p className="mt-1 text-xs text-muted-foreground">{live ? "Sharing stays active until you apply Private." : "Only you can access this space. Public links and embeds are off."}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{live ? "Sharing stays active until you apply Private." : "Only you can see this space."}</p>
       </div>
       <dl className="grid grid-cols-3 gap-4">
         <div><dt className="text-xs text-muted-foreground">Pages</dt><dd className="mt-1 font-medium tabular-nums">{editor.pages.length}</dd></div>

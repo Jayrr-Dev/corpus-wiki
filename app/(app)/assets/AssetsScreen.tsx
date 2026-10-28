@@ -7,6 +7,7 @@ import { ErrorNote } from "@/app/(app)/_components/bits";
 import { DialogForm } from "@/components/actions/DialogForm";
 import { MoreIcon } from "@/components/icons";
 import { useServerAction } from "@/components/actions/useServerAction";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Loader } from "@/components/standard/loader";
 import { startProgress } from "@/components/toast";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,7 @@ export function AssetsScreen() {
   return (
     <div className="space-y-5 pb-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-panel text-muted-foreground">Media from your sources and generated illustrations, described, tagged and available across your workspace.</p>
+        <p className="text-panel text-muted-foreground">Media from your sources, plus generated illustrations.</p>
         <DescribeButton undescribed={undescribed} />
       </div>
 
@@ -85,7 +86,7 @@ export function AssetsScreen() {
         </div>
         <div className="relative w-full max-w-sm [&_input]:pl-8">
           <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input type="search" aria-label="Search assets" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search titles, descriptions, tags, sources…" />
+          <Input type="search" aria-label="Search assets" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search assets…" />
         </div>
         {kinds.length > 1 && (
           <div className="flex flex-wrap gap-1" aria-label="Kinds of assets">
@@ -118,14 +119,19 @@ export function AssetsScreen() {
       </div>
 
       <ErrorNote error={assets.error?.message ?? sources.error?.message} />
-      {showDeleted ? <p className="text-xs text-muted-foreground">Unused assets are permanently deleted after 7 days. Assets still used anywhere in the app are kept until those uses are removed. Use an asset’s ⋯ menu to restore it or permanently delete it now.</p> : null}
+      {showDeleted ? (
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs text-muted-foreground">Unused assets are permanently deleted after 7 days.</p>
+          <InfoHint>Assets still in use are kept until those uses are removed. Restore or delete one now from its ⋯ menu.</InfoHint>
+        </div>
+      ) : null}
       {assets.isPending ? <div className="py-10"><Loader /></div> : null}
       {!assets.isPending && shown.length === 0 ? (
         <div className="py-16 text-center">
           <Images className="mx-auto mb-4 size-7 text-muted-foreground" />
           <p className="text-panel font-medium">{all.length ? "No matching assets" : "No assets yet"}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {all.length ? "Try another word, or clear the filters." : "Upload images, videos, or Word documents with pictures; their media shows up here."}
+            {all.length ? "Try another word, or clear the filters." : "Upload images, videos or Word files with pictures."}
           </p>
           {all.length > 0 && <Button variant="ghost" className="mt-4" onClick={() => { setSearch(""); setOrigin(null); setKind(null); setType(null); setTags([]); }}>Clear filters</Button>}
         </div>
@@ -190,12 +196,12 @@ function AssetCard({ asset, usageCount, usageError, sourceTitle, activeTags, onT
     </article>
     <Dialog open={confirmPurge} onOpenChange={setConfirmPurge}>
       <DialogContent>
-        <DialogForm title="Permanently delete asset?" description={`“${title}” and its stored file will be removed permanently. This cannot be undone. Assets still in use cannot be permanently deleted.`} submitLabel="Permanently delete" isDestructive isPending={purge.isPending} error={purge.error} onSubmit={async () => { const result = await purge.run(asset.id); if (result.ok) setConfirmPurge(false); }} />
+        <DialogForm title="Permanently delete asset?" description={`“${title}” and its stored file are removed for good. This cannot be undone.`} submitLabel="Permanently delete" isDestructive isPending={purge.isPending} error={purge.error} onSubmit={async () => { const result = await purge.run(asset.id); if (result.ok) setConfirmPurge(false); }} />
       </DialogContent>
     </Dialog>
     <Dialog open={confirmUnlink} onOpenChange={setConfirmUnlink}>
       <DialogContent>
-        <DialogForm title="Unlink asset?" description={`Remove “${title}” from articles and stakeholder cards, including saved illustration versions. The image stays in Deleted. You can then permanently delete it, or let cleanup remove it after 7 days from deletion. Restoring the image will not restore these links.`} submitLabel="Unlink" isDestructive isPending={unlink.isPending} error={unlink.error} onSubmit={async () => { const result = await unlink.run(asset.id); if (result.ok) setConfirmUnlink(false); }} />
+        <DialogForm title="Unlink asset?" description={`Removes “${title}” from articles and stakeholder cards, including saved illustration versions. Restoring the image does not bring these links back.`} submitLabel="Unlink" isDestructive isPending={unlink.isPending} error={unlink.error} onSubmit={async () => { const result = await unlink.run(asset.id); if (result.ok) setConfirmUnlink(false); }} />
       </DialogContent>
     </Dialog>
     </>
@@ -247,7 +253,7 @@ function RenameTagForm({ tag, tagCounts, onDone }: { tag: string; tagCounts: (re
   return (
     <DialogForm
       title={`Rename or merge "${tag}"`}
-      description={`Changes it on ${count} asset${count === 1 ? "" : "s"}. Pick a tag already in use to merge the two. The Media analyst uses the new name from now on.`}
+      description={`Changes it on ${count} asset${count === 1 ? "" : "s"} and on new media. Pick a tag in use to merge the two.`}
       submitLabel={existing ? `Merge into "${existing[0]}"` : "Rename"}
       isPending={rename.isPending}
       error={rename.error}

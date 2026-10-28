@@ -39,7 +39,7 @@ export function SourceFigures({ sourceId }: { sourceId: string }) {
   return (
     <Section title={`Figures (${figures.length})`}>
       <QueryState query={passages}>
-        <Note>Pictures read from the file. Their descriptions are passages, so claims can cite them.</Note>
+        <Note>Pictures from the file. Claims can cite their descriptions.</Note>
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {figures.map((figure) => (
             <li key={figure.path} className="flex gap-3 rounded-md border p-2">

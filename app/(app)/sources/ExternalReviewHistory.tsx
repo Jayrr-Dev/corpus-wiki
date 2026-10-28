@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/EmptyState";
+import { InfoPopover } from "@/components/standard/info-popover";
 import { SourceIcon } from "@/components/icons";
 import { QueryState } from "@/app/(app)/_components/bits";
 import { asObject, readString } from "@/app/(app)/_lib/format";
@@ -19,11 +20,18 @@ export function ExternalReviewHistory() {
     <DialogTrigger asChild><Button variant="outline" size="sm">Research decisions</Button></DialogTrigger>
     <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-3xl">
       <DialogHeader>
-        <DialogTitle>External research decisions</DialogTitle>
-        <DialogDescription>The researcher must justify a project-specific gap and each proposed source. An independent AI approver makes the final decision using project evidence, without the researcher’s instructions. Saved sources are only changed when you run a review.</DialogDescription>
+        <div className="flex items-center gap-1.5">
+          <DialogTitle>Research decisions</DialogTitle>
+          <InfoPopover label="How research is reviewed">
+            <p>The researcher must justify a project-specific gap and each source it proposes.</p>
+            <p className="mt-2">An independent AI approver decides, using project evidence and without the researcher’s instructions.</p>
+            <p className="mt-2">Saved sources change only when you run a review.</p>
+          </InfoPopover>
+        </div>
+        <DialogDescription>What the researcher asked for, and what the approver decided.</DialogDescription>
       </DialogHeader>
       <QueryState query={reviews}>
-        {!reviews.data?.length ? <EmptyState icon={SourceIcon} title="No review decisions yet" hint="New external searches and proposed sources will be reviewed here." /> : <div className="space-y-4">
+        {!reviews.data?.length ? <EmptyState icon={SourceIcon} title="No decisions yet" hint="External searches and sources are reviewed here." /> : <div className="space-y-4">
           {reviews.data.map((review) => {
             const context = asObject(review.context);
             const proposal = asObject(review.proposal);
@@ -41,7 +49,7 @@ export function ExternalReviewHistory() {
               {gap && <p className="text-panel"><span className="font-medium">Information gap: </span>{gap}</p>}
               {justification && <p className="text-panel"><span className="font-medium">Researcher’s justification: </span>{justification}</p>}
               <p className="text-panel"><span className="font-medium">Approver’s decision: </span>{review.reason}</p>
-              {review.excerpts.length > 0 && <details className="text-panel"><summary className="cursor-pointer text-muted-foreground">Review evidence ({review.excerpts.length} excerpts)</summary><div className="mt-2 space-y-2">{review.excerpts.map((text, index) => <blockquote key={index} className="border-l-2 pl-3 whitespace-pre-wrap">{text}</blockquote>)}</div></details>}
+              {review.excerpts.length > 0 && <details className="text-panel"><summary className="cursor-pointer text-muted-foreground">Evidence ({review.excerpts.length} excerpts)</summary><div className="mt-2 space-y-2">{review.excerpts.map((text, index) => <blockquote key={index} className="border-l-2 pl-3 whitespace-pre-wrap">{text}</blockquote>)}</div></details>}
             </article>;
           })}
         </div>}

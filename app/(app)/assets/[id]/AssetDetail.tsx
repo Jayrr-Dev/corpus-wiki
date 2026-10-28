@@ -8,6 +8,7 @@ import { UNIT_ACTION_TYPES } from "@/app/(app)/_components/ActionSummary";
 import { formatDate, formatLocation, readablePassage } from "@/app/(app)/_lib/format";
 import { readsState } from "@/app/(app)/_lib/reads";
 import { useServerAction } from "@/components/actions/useServerAction";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,7 @@ export function AssetDetail({ assetId }: { assetId: string }) {
   const asset = query.data;
   return (
     <QueryState query={query}>
-      {asset ? <AssetBody asset={asset} /> : <Note>No asset with this id. Its source may have been deleted.</Note>}
+      {asset ? <AssetBody asset={asset} /> : <Note>Asset not found. Its source may have been deleted.</Note>}
     </QueryState>
   );
 }
@@ -71,7 +72,17 @@ function AssetBody({ asset }: { asset: Asset }) {
         <EditedNote asset={asset} />
         <Facts items={facts} />
       </header>
-      {asset.origin === "external" ? <Note>This image is reused for identification or illustration. Its rights and attribution are listed above; it is not independent source evidence.</Note> : asset.origin === "generated" ? <Note>This generated illustration is a reusable visual, not independent source evidence. It remains in Assets if its article placement is removed or replaced.</Note> : <><AssetClaims asset={asset} /><AssetPassages asset={asset} /></>}
+      {asset.origin === "external" ? (
+        <div className="flex items-center gap-1.5">
+          <Note>Reused image, not independent source evidence.</Note>
+          <InfoHint>Used for identification or illustration. Its rights and attribution are listed above.</InfoHint>
+        </div>
+      ) : asset.origin === "generated" ? (
+        <div className="flex items-center gap-1.5">
+          <Note>Generated illustration, not independent source evidence.</Note>
+          <InfoHint>It stays in Assets if its article placement is removed or replaced.</InfoHint>
+        </div>
+      ) : <><AssetClaims asset={asset} /><AssetPassages asset={asset} /></>}
     </div>
   );
 }
@@ -85,7 +96,7 @@ function AssetClaims({ asset }: { asset: Asset }) {
   return (
     <Section title={`Claims (${live.length})`}>
       <QueryState query={readsState([actions, units])}>
-        {live.length === 0 ? <Note>No claims cite this asset yet.</Note> : (
+        {live.length === 0 ? <Note>No claims yet.</Note> : (
           <ul className="flex flex-col gap-1.5">
             {live.map((unit) => <li key={unit.id} className="text-panel"><UnitLink unit={unit} /></li>)}
           </ul>
@@ -103,7 +114,7 @@ function AssetPassages({ asset }: { asset: Asset }) {
   return (
     <Section title="Read from the asset">
       <QueryState query={passages}>
-        {list.length === 0 ? <Note>No text was read from this asset.</Note> : (
+        {list.length === 0 ? <Note>No text read from it.</Note> : (
           <ol className="flex flex-col gap-3">
             {list.map((passage) => (
               <li key={passage.id} className="flex flex-col gap-1">
@@ -126,9 +137,11 @@ function DescribeAgainButton({ asset }: { asset: Asset }) {
   const describe = useServerAction(describeAssets, { progress: { title: "Describing the asset" } });
   return (
     <div className="flex shrink-0 flex-col items-end gap-1">
-      <Button size="sm" variant="outline" disabled={describe.isPending} onClick={() => void describe.run({ ids: [asset.id] })}>
-        {describe.isPending ? "Describing…" : asset.described_at ? "Describe again" : "Describe"}
-      </Button>
+      <Tooltip content={asset.described_at ? "Rewrites the title, description, type and tags, except fields you edited." : "Writes a title, description, type and tags."}>
+        <Button size="sm" variant="outline" disabled={describe.isPending} onClick={() => void describe.run({ ids: [asset.id] })}>
+          {describe.isPending ? "Describing…" : asset.described_at ? "Describe again" : "Describe"}
+        </Button>
+      </Tooltip>
       <ErrorNote error={describe.error} />
     </div>
   );
@@ -168,7 +181,7 @@ function EditableDescription({ asset }: { asset: Asset }) {
   if (draft === null) {
     return (
       <div className="flex items-start gap-1">
-        {asset.description ? <p className="text-body">{asset.description}</p> : <Note>{asset.described_at ? "No description." : "Not described yet. Describe it to get a title, a description, a type and tags."}</Note>}
+        {asset.description ? <p className="text-body">{asset.description}</p> : <Note>{asset.described_at ? "No description." : "Not described yet."}</Note>}
         <EditButton label={asset.description ? "Edit the description" : "Write a description"} onClick={() => setDraft(asset.description ?? "")} />
       </div>
     );

@@ -44,7 +44,7 @@ export function SourcePassages({ sourceId }: { sourceId: string }) {
             <PassageItem key={passage.id} passage={passage} figure={figureByPassage.get(passage.id) ?? null} isTarget={passage.id === targetId} actions={actionsByPassage.get(passage.id) ?? []} unitById={unitById} />
           ))}
         </ol>
-        {visibleCount < list.length ? <Button variant="outline" onClick={() => setVisibleCount((count) => count + 50)}>Show 50 more passages</Button> : null}
+        {visibleCount < list.length ? <Button variant="outline" onClick={() => setVisibleCount((count) => count + 50)}>Show 50 more</Button> : null}
       </QueryState>
     </Section>
   );
@@ -114,7 +114,7 @@ function ProducedUnits({ actions, unitById }: Omit<PassageItemProps, "passage">)
     <ul className="flex flex-col gap-1.5 pl-3">
       {retired.length ? (
         <li className="order-last text-panel text-faint">
-          <Tooltip content="Claims from this passage that were later merged into another claim or retired">
+          <Tooltip content="Claims from this passage later merged into another or retired">
             <span>{`${retired.length} earlier claim${retired.length === 1 ? "" : "s"} merged or retired`}</span>
           </Tooltip>
         </li>
