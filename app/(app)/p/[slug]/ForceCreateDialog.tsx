@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FormRow } from "@/components/actions/FormRow";
+import { InfoHint } from "@/components/standard/info-hint";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { forceCreateOptions, forceCreateSection } from "@/lib/server-actions/pages";
 
@@ -81,12 +82,12 @@ export function ForceCreateForm({ sectionId, title, onClose }: { sectionId: stri
 function WebSearchChoice({ id, options, checked, disabled, onChange }: { id: string; options: Options | null; checked: boolean; disabled: boolean; onChange: (next: boolean) => void }) {
   if (!options) return <p className="text-xs text-muted-foreground">Checking knowledge settings…</p>;
   if (!options.webAllowed) return <p className="text-xs text-muted-foreground">Uses your own sources only. To search the web too, turn on external knowledge in <Link href="/settings" className="underline">Settings</Link>.</p>;
-  return <div className="flex flex-col gap-1">
-    <div className="flex items-center justify-between gap-3">
+  return <div className="flex items-center justify-between gap-3">
+    <span className="flex items-center gap-1.5">
       <label htmlFor={id} className="text-panel font-medium">Search the web</label>
-      <Switch id={id} checked={checked} onCheckedChange={onChange} disabled={disabled || !options.webReady} />
-    </div>
-    <p className="text-xs text-muted-foreground">{options.webReady ? "Pages it uses are saved as external sources. Their knowledge only adds to yours." : "Searches Wikipedia. Pages it uses are saved as external sources."}</p>
+      <InfoHint>{options.webReady ? "Pages it uses are saved as external sources. Their knowledge only adds to yours." : "Searches Wikipedia. Pages it uses are saved as external sources."}</InfoHint>
+    </span>
+    <Switch id={id} checked={checked} onCheckedChange={onChange} disabled={disabled || !options.webReady} />
   </div>;
 }
 

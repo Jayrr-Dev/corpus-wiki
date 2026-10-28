@@ -82,7 +82,7 @@ function FrontPage({ browse }: { browse: () => void }) {
       {!articles.length ? <section className="rounded-md border p-6 text-center">
         <BookOpen className="mx-auto mb-3 size-5 text-muted-foreground" />
         <h2 className="font-medium">Your front page starts here</h2>
-        <p className="mt-2 text-muted-foreground">Upload a source or create a page. Articles and media will appear here as your collection grows.</p>
+        <p className="mt-2 text-muted-foreground">Upload a source or create a page to start.</p>
         <Button asChild variant="outline" size="sm" className="mt-4"><Link href="/upload">Upload documents</Link></Button>
       </section> : <>
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
@@ -95,7 +95,7 @@ function FrontPage({ browse }: { browse: () => void }) {
         </div>
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           <div className="min-w-0 space-y-4">
-            {featured ? <Panel title="From today’s featured article" mark="text-applied"><FeaturedArticle key={featured.id} article={featured} /></Panel> : <Panel title="Your growing collection" mark="text-applied"><p className="text-muted-foreground">As your pages gain content, a different article will be featured here each day.</p><button onClick={browse} className="mt-3 text-link hover:underline">Browse your pages →</button></Panel>}
+            {featured ? <Panel title="From today’s featured article" mark="text-applied"><FeaturedArticle key={featured.id} article={featured} /></Panel> : <Panel title="Your growing collection" mark="text-applied"><p className="text-muted-foreground">An article is featured here each day once pages have content.</p><button onClick={browse} className="mt-3 text-link hover:underline">Browse your pages →</button></Panel>}
             {!!discover.length && <Panel title="Discover something" mark="text-applied" shape="diamond"><ul className="space-y-4">{discover.map((a) => <li key={a.id}><TextLink href={`/p/${a.slug}`} className="font-medium">{a.title}</TextLink><p className="mt-1 leading-6 text-muted-foreground">{plainExcerpt(a.excerpt, 210)}</p></li>)}</ul></Panel>}
           </div>
           <div className="min-w-0 space-y-4">
@@ -103,7 +103,7 @@ function FrontPage({ browse }: { browse: () => void }) {
               {data.changes.error && <p role="status" className="mb-3 text-xs text-muted-foreground">Live edit dates are unavailable; showing article build dates.</p>}
               <ul className="divide-y">{recent.map((a) => <li key={a.id} className="py-3 first:pt-0 last:pb-0"><TextLink href={`/p/${a.slug}`} className="font-medium">{a.title}</TextLink>{a.excerpt && <p className="mt-1 leading-5 text-muted-foreground">{plainExcerpt(a.excerpt, 150)}</p>}<p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground"><Clock3 className="size-3" /><DateTime iso={a.changedAt} /></p></li>)}</ul>
             </Panel>}
-            {!!rediscover.length && <Panel title="Worth another look" mark="text-link" shape="triangle"><p className="mb-3 text-xs text-muted-foreground">Rediscover an older corner of your collection.</p><ul className="space-y-3">{rediscover.map((a) => <li key={a.id}><TextLink href={`/p/${a.slug}`}>{a.title}</TextLink><p className="mt-1 text-muted-foreground">{plainExcerpt(a.excerpt, 130)}</p></li>)}</ul></Panel>}
+            {!!rediscover.length && <Panel title="Worth another look" mark="text-link" shape="triangle"><ul className="space-y-3">{rediscover.map((a) => <li key={a.id}><TextLink href={`/p/${a.slug}`}>{a.title}</TextLink><p className="mt-1 text-muted-foreground">{plainExcerpt(a.excerpt, 130)}</p></li>)}</ul></Panel>}
           </div>
         </div>
       </>}

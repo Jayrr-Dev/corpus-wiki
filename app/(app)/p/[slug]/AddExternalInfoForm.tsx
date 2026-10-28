@@ -9,7 +9,7 @@ import { addExternalInfo } from "@/lib/server-actions/sourcer";
 export function AddExternalInfoForm({ pageId, sectionId, sectionTitle, onDone }: { pageId: string; sectionId?: string; sectionTitle?: string; onDone: () => void }) {
   const [note, setNote] = useState("");
   const action = useServerAction(addExternalInfo, { progress: { title: "Adding external information", detail: "Sourcer is finding sources and creating cited knowledge…" } });
-  return <DialogForm title="Add External Info" description={`Sourcer will check the web and Wikipedia${sectionTitle ? ` for “${sectionTitle}”` : ""}, save reliable sources, and expand the article with cited knowledge. Your request preapproves search and import.`} submitLabel="Add External Info" isPending={action.isPending} error={action.error} onSubmit={async () => {
+  return <DialogForm title="Add External Info" description={`Sourcer searches the web and Wikipedia${sectionTitle ? ` for “${sectionTitle}”` : ""} and adds cited knowledge. Asking preapproves the search and import.`} submitLabel="Add External Info" isPending={action.isPending} error={action.error} onSubmit={async () => {
     const task = action.run(pageId, note, sectionId);
     onDone();
     const saved = await task;

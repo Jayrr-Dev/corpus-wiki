@@ -40,7 +40,6 @@ export function PagesTable() {
         <EmptyState
           icon={PageIcon}
           title="No pages yet"
-          hint="Create one with New page, or start by uploading documents."
           action={<UploadDocumentsLink />}
         />
       }
@@ -83,7 +82,7 @@ function HierarchyBrowser({query}: {query: ReturnType<typeof usePageRows>}) {
       <Input aria-label="Search page hierarchy" placeholder="Find a page…" value={search} onChange={(event)=>setSearch(event.target.value)} className="max-w-sm" />
       {contexts.length ? <section aria-label="Entity contexts"><h2 className="mb-2 font-semibold">Contexts</h2><HierarchyNodes nodes={contexts} depth={0} searching={!!search} /></section> : null}
       {general.length ? <section aria-label="General knowledge"><h2 className="mb-2 font-semibold">General knowledge</h2><HierarchyNodes nodes={general} depth={0} searching={!!search} /></section> : null}
-      {!roots.length ? <EmptyState icon={PageIcon} title={search ? "No matching pages" : "No pages yet"} hint="General articles can live at the root; entity-specific articles sit inside their context." /> : null}
+      {!roots.length ? <EmptyState icon={PageIcon} title={search ? "No matching pages" : "No pages yet"} /> : null}
     </div>
   </QueryState>;
 }
