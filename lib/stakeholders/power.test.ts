@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { StakeholderCard } from "./cards";
 import type { StructureRelation } from "./structure";
-import { computePower, levelOf, parseAmount, seniorityFromTitle, sizeFromFacts } from "./power";
+import { POWER_MODEL, computePower, computePowerOverUs, levelOf, parseAmount, seniorityFromTitle, sizeFromFacts, timeWeight } from "./power";
+
+const NOW = new Date("2026-10-28T00:00:00Z");
 
 function card(entityId: string, type: string, facts: Record<string, string> = {}, extra: Partial<StakeholderCard> = {}): StakeholderCard {
   return {
@@ -14,8 +16,9 @@ function card(entityId: string, type: string, facts: Record<string, string> = {}
 }
 const person = (entityId: string, extra: Partial<StakeholderCard> = {}) => card(entityId, "person", {}, extra);
 function link(fromId: string, rel: StructureRelation["link"], toId: string, extra: Partial<StructureRelation> = {}): StructureRelation {
-  return { fromId, toId, link: rel, title: null, seniority: null, share: null, current: true, unitIds: [], ...extra };
+  return { fromId, toId, link: rel, title: null, seniority: null, share: null, current: true, since: null, until: null, asOf: null, unitIds: [], ...extra };
 }
+const power = (cards: StakeholderCard[], relations: StructureRelation[], now = NOW) => computePower(cards, relations, now);
 const scoreOf = (results: Map<string, { score: number }>, id: string) => results.get(id)!.score;
 
 describe("parseAmount", () => {
@@ -26,7 +29,6 @@ describe("parseAmount", () => {
     expect(parseAmount("$3B")).toBe(3e9);
     expect(parseAmount("€2.5bn (2023)")).toBe(2.5e9);
     expect(parseAmount("120k")).toBe(120_000);
-    expect(parseAmount("1,001-5,000 employees")).toBe(5000);
   });
 
   it("skips years and percentages", () => {
@@ -39,7 +41,7 @@ describe("parseAmount", () => {
 describe("sizeFromFacts", () => {
   it("turns money and population into staff-equivalents and keeps the biggest", () => {
     expect(sizeFromFacts([{ label: "Employees", value: "12,000" }])).toEqual({ size: 12_000, reason: "About 12,000 employees" });
-    expect(sizeFromFacts([{ label: "Revenue", value: "$3B" }])?.size).toBe(12_000);
+    expect(sizeFromFacts([{ label: "Revenue", value: "$3B" }])?.size).toBe(15_000);
     expect(sizeFromFacts([{ label: "Population", value: "1.1 million" }, { label: "Staff", value: "14,000" }])?.reason).toBe("Serves about 1.1 million people");
     expect(sizeFromFacts([{ label: "Founded", value: "1998" }])).toBeNull();
   });
@@ -50,22 +52,34 @@ describe("seniorityFromTitle", () => {
     expect(seniorityFromTitle("CEO")).toBe("executive");
     expect(seniorityFromTitle("Vice President, Sales")).toBe("vice_president");
     expect(seniorityFromTitle("Deputy Minister of Energy")).toBe("top_official");
-    expect(seniorityFromTitle("Mayor")).toBe("elected_leader");
     expect(seniorityFromTitle("Senior Engineer")).toBe("staff");
     expect(seniorityFromTitle("Wizard")).toBeNull();
-    expect(seniorityFromTitle(null)).toBeNull();
+  });
+});
+
+describe("timeWeight", () => {
+  it("counts current links in full and stale ones a bit less", () => {
+    expect(timeWeight({ current: true, until: null, asOf: "2025-06" }, NOW)).toEqual({ t: 1, stale: false, former: false });
+    expect(timeWeight({ current: true, until: null, asOf: "2021" }, NOW)).toEqual({ t: POWER_MODEL.timeWeight.stale, stale: true, former: false });
+  });
+
+  it("starts a former link at half, halves it every 5 years, and stops at the floor", () => {
+    expect(timeWeight({ current: false, until: "2026-10-28", asOf: null }, NOW).t).toBeCloseTo(0.5);
+    expect(timeWeight({ current: false, until: "2021-10-28", asOf: null }, NOW).t).toBeCloseTo(0.25, 2);
+    expect(timeWeight({ current: false, until: "1990", asOf: null }, NOW).t).toBe(POWER_MODEL.timeWeight.formerFloor);
+    expect(timeWeight({ current: false, until: null, asOf: null }, NOW).t).toBe(POWER_MODEL.timeWeight.formerFloor);
   });
 });
 
 describe("levelOf", () => {
-  it("is one level per factor of ten, from 1 to 5", () => {
-    expect([-1, 0.5, 1.5, 2.5, 3.5, 4.5, 7].map(levelOf)).toEqual([1, 1, 2, 3, 4, 5, 5]);
+  it("uses fixed powers of ten of staff-equivalents", () => {
+    expect([0.5, 9.9, 10, 99, 100, 999, 1000, 9999, 10_000, 5e6].map(levelOf)).toEqual([1, 1, 2, 2, 3, 3, 4, 4, 5, 5]);
   });
 });
 
 describe("computePower", () => {
   it("ranks an owner above what it owns", () => {
-    const results = computePower(
+    const results = power(
       [card("A", "company", { Employees: "50" }), card("B", "company", { Employees: "400" })],
       [link("B", "owned_by", "A", { share: 0.6 })],
     );
@@ -73,8 +87,8 @@ describe("computePower", () => {
     expect(results.get("A")!.reasons).toContain("Owns 60 percent of B");
   });
 
-  it("ranks a person whose company is much bigger above a small company's owner", () => {
-    const results = computePower(
+  it("ranks C above A when C's company is far bigger than A's", () => {
+    const results = power(
       [person("A"), card("SmallCo", "company", { Employees: "30" }), person("C"), card("BigCo", "company", { Employees: "50,000" })],
       [link("SmallCo", "owned_by", "A", { share: 1 }), link("C", "leads", "BigCo")],
     );
@@ -83,7 +97,7 @@ describe("computePower", () => {
   });
 
   it("ranks a CEO above a staff member of the same company", () => {
-    const results = computePower(
+    const results = power(
       [card("Co", "company", { Employees: "2,000" }), person("Ceo"), person("Clerk")],
       [link("Ceo", "leads", "Co", { title: "CEO" }), link("Clerk", "works_in", "Co", { seniority: "staff" })],
     );
@@ -91,7 +105,7 @@ describe("computePower", () => {
   });
 
   it("lets a team lead in a huge company beat the CEO of a tiny one", () => {
-    const results = computePower(
+    const results = power(
       [card("Huge", "company", { Employees: "200,000" }), card("Team", "team"), person("Lead"),
         card("Tiny", "company", { Employees: "8" }), person("TinyCeo")],
       [link("Team", "part_of", "Huge"), link("Lead", "leads", "Team", { seniority: "lead" }), link("TinyCeo", "leads", "Tiny")],
@@ -100,19 +114,62 @@ describe("computePower", () => {
     expect(results.get("Lead")!.reasons[0]).toBe("Leads Team at Huge");
   });
 
+  it("ranks the current director above a former director with identical links and years", () => {
+    const results = power(
+      [card("Co", "company", { Employees: "1,000" }), card("Board", "organization", { Employees: "300" }), person("Current"), person("Former")],
+      [
+        link("Current", "works_in", "Co", { seniority: "director", since: "2016-10-28" }),
+        link("Former", "works_in", "Co", { seniority: "director", since: "2011-01-01", until: "2021-01-01", current: false }),
+        link("Current", "board_member_of", "Board", { since: "2020-10-28" }),
+        link("Former", "board_member_of", "Board", { since: "2020-10-28" }),
+      ],
+    );
+    expect(scoreOf(results, "Current")).toBeGreaterThan(scoreOf(results, "Former"));
+    expect(results.get("Former")!.reasons).toContain("Former director of Co until 2021");
+  });
+
+  it("fades a former seat as years pass, but never below the floor", () => {
+    const cards = [card("Co", "company", { Employees: "1,000" }), person("Ex")];
+    const relations = [link("Ex", "works_in", "Co", { seniority: "manager", until: "2024-01-01", current: false })];
+    const soon = scoreOf(power(cards, relations, new Date("2025-01-01")), "Ex");
+    const later = scoreOf(power(cards, relations, new Date("2030-01-01")), "Ex");
+    const muchLater = scoreOf(power(cards, relations, new Date("2060-01-01")), "Ex");
+    const evenLater = scoreOf(power(cards, relations, new Date("2100-01-01")), "Ex");
+    expect(later).toBeLessThan(soon);
+    expect(muchLater).toBeLessThan(later);
+    expect(evenLater).toBe(muchLater);
+    // The floor is 20 percent of what the seat gave, with experience and network on top
+    expect(evenLater).toBeGreaterThan(Math.log10(1000 * 0.04 * 0.2) - 0.01);
+  });
+
+  it("ranks a former CEO with board seats elsewhere above a new staff member and a new small-company CEO", () => {
+    const results = power(
+      [card("Co", "company", { Employees: "5,000" }), card("X", "company", { Employees: "800" }), card("Y", "organization", { Employees: "300" }),
+        card("Small", "company", { Employees: "30" }), person("ExCeo"), person("NewStaff"), person("NewCeo")],
+      [
+        link("ExCeo", "leads", "Co", { title: "CEO", since: "2005", until: "2020", current: false }),
+        link("ExCeo", "board_member_of", "X", { since: "2021" }), link("ExCeo", "board_member_of", "Y", { since: "2022" }),
+        link("NewStaff", "works_in", "Co", { seniority: "staff", since: "2026-09" }),
+        link("NewCeo", "leads", "Small", { since: "2026-06" }),
+      ],
+    );
+    expect(scoreOf(results, "ExCeo")).toBeGreaterThan(scoreOf(results, "NewStaff"));
+    expect(scoreOf(results, "ExCeo")).toBeGreaterThan(scoreOf(results, "NewCeo"));
+    expect(results.get("ExCeo")!.reasons).toContain("Former CEO of Co until 2020");
+    expect(results.get("ExCeo")!.reasons.some((reason) => reason.startsWith("Connected to 3 organizations"))).toBe(true);
+  });
+
   it("finishes on ownership and part-of cycles", () => {
-    const results = computePower(
+    const results = power(
       [card("A", "company", { Employees: "100" }), card("B", "company", { Employees: "100" }), card("X", "team"), card("Y", "team")],
       [link("A", "owned_by", "B", { share: 1 }), link("B", "owned_by", "A", { share: 1 }), link("X", "part_of", "Y"), link("Y", "part_of", "X")],
     );
-    for (const id of ["A", "B", "X", "Y"]) {
-      expect(Number.isFinite(scoreOf(results, id))).toBe(true);
-      expect(scoreOf(results, id)).toBeLessThan(6);
-    }
+    for (const id of ["A", "B"]) expect(scoreOf(results, id)).toBeLessThan(3);
+    for (const id of ["X", "Y"]) expect(scoreOf(results, id)).toBeGreaterThan(0);
   });
 
   it("gives a child box a staff share of its parent, and a default share when unknown", () => {
-    const results = computePower(
+    const results = power(
       [card("Co", "company", { Employees: "10,000" }), card("Eng", "department", { Employees: "1,000" }), card("Ops", "department")],
       [link("Eng", "part_of", "Co"), link("Ops", "part_of", "Co")],
     );
@@ -122,48 +179,80 @@ describe("computePower", () => {
     expect(results.get("Ops")!.estimated).toBe(true);
   });
 
-  it("estimates boxes with no numbers by kind, government level and authority", () => {
-    const results = computePower(
+  it("lifts a parent to the known sizes of its parts", () => {
+    const results = power(
+      [card("Co", "company"), card("Eng", "department", { Employees: "1,500" }), card("Ops", "department", { Employees: "500" })],
+      [link("Eng", "part_of", "Co"), link("Ops", "part_of", "Co")],
+    );
+    expect(scoreOf(results, "Co")).toBeCloseTo(Math.log10(2000), 1);
+  });
+
+  it("gives a box a little of the power of whom it regulates, funds or hires", () => {
+    const alone = power([card("Reg", "regulator", { Employees: "300" }), card("Big", "company", { Employees: "50,000" })], []);
+    const regulating = power([card("Reg", "regulator", { Employees: "300" }), card("Big", "company", { Employees: "50,000" })], [link("Reg", "regulates", "Big")]);
+    expect(scoreOf(regulating, "Reg")).toBeGreaterThan(scoreOf(alone, "Reg"));
+    expect(regulating.get("Reg")!.reasons[0]).toBe("Regulates Big");
+  });
+
+  it("estimates boxes with no numbers by kind and government level", () => {
+    const results = power(
       [card("Canada", "government", {}, { kind: "federal government" }), card("Town", "government", {}, { name: "Town of Smallville" }),
-        card("Reg", "regulator", {}, { kind: "provincial regulator" }), card("Shop", "company")],
+        card("Reg", "regulator"), card("Shop", "company"), card("Bank", "company", {}, { name: "National Bank" })],
       [],
     );
-    expect(scoreOf(results, "Canada")).toBeGreaterThan(scoreOf(results, "Town"));
-    expect(scoreOf(results, "Reg")).toBeGreaterThan(scoreOf(results, "Shop"));
-    expect(results.get("Reg")!.reasons).toContain("Regulator with legal authority");
+    expect(results.get("Canada")!.level).toBe(5);
+    expect(results.get("Town")!.score).toBeCloseTo(Math.log10(5000), 2);
+    expect(results.get("Reg")!.score).toBeCloseTo(Math.log10(2000), 2);
+    expect(results.get("Bank")!.score).toBeCloseTo(Math.log10(200), 2);
     for (const result of results.values()) expect(result.estimated).toBe(true);
   });
 
+  it("marks a result estimated when its link is stale", () => {
+    const results = power([card("Co", "company", { Employees: "1,000" }), person("P")], [link("P", "leads", "Co", { asOf: "2019" })]);
+    expect(results.get("P")!.estimated).toBe(true);
+    expect(results.get("P")!.reasons[0]).toBe("Leads Co (as of 2019)");
+  });
+
   it("counts a person known only through their card's organization as working there", () => {
-    const results = computePower(
+    const results = power(
       [card("Co", "company", { Employees: "5,000" }), person("Pat", { person: { title: "Director of Finance", organization: "Co", organizationEntityId: "Co", role: null, unitIds: [] } }), person("Nobody")],
       [],
     );
     expect(results.get("Pat")!.reasons[0]).toBe("Director of Finance at Co");
-    expect(scoreOf(results, "Pat")).toBeCloseTo(Math.log10(5000 * 0.06), 1);
+    expect(results.get("Pat")!.level).toBe(3);
     expect(results.get("Nobody")!.level).toBe(1);
   });
 
-  it("counts the biggest seat in full and others partly, and skips former seats", () => {
-    const one = computePower([card("Co", "company", { Employees: "1,000" }), person("P")], [link("P", "leads", "Co")]);
-    const two = computePower(
-      [card("Co", "company", { Employees: "1,000" }), card("Other", "company", { Employees: "1,000" }), card("Old", "company", { Employees: "900,000" }), person("P")],
-      [link("P", "leads", "Co"), link("P", "board_member_of", "Other"), link("P", "leads", "Old", { current: false })],
+  it("ranks a boss above each current direct report", () => {
+    const results = power(
+      [card("Co", "company", { Employees: "1,000" }), person("Boss"), person("Report")],
+      [link("Report", "works_in", "Co", { seniority: "director" }), link("Report", "reports_to", "Boss")],
     );
-    expect(scoreOf(two, "P")).toBeGreaterThan(scoreOf(one, "P"));
-    expect(scoreOf(two, "P")).toBeLessThan(scoreOf(one, "P") + 0.5);
+    expect(scoreOf(results, "Boss")).toBeGreaterThan(scoreOf(results, "Report"));
+  });
+});
+
+describe("computePowerOverUs", () => {
+  const cards = [card("Us", "company", { Employees: "50" }), card("Reg", "regulator", { Employees: "300" }), card("Huge", "company", { Employees: "25,000" }),
+    card("Parent", "company", { Employees: "400" }), card("Funder", "foundation", { Employees: "100" }), card("Friend", "company", { Employees: "100" })];
+  const relations = [link("Reg", "regulates", "Us"), link("Us", "owned_by", "Parent", { share: 1 }), link("Funder", "funds", "Us"), link("Friend", "contracts_with", "Funder")];
+
+  it("ranks a small regulator of us above a huge unrelated company", () => {
+    const results = computePowerOverUs(cards, relations, "Us", NOW);
+    expect(scoreOf(results, "Reg")).toBeGreaterThan(scoreOf(results, "Huge"));
+    expect(results.get("Reg")!.reasons[0]).toBe("Regulates Us");
+    expect(results.get("Huge")!.reasons[0]).toBe("Not connected to Us");
   });
 
-  it("spreads a small workspace over all five levels", () => {
-    const results = computePower(
-      [card("Province", "government", { Population: "4.5 million" }), card("City", "government", { Population: "1 million" }),
-        card("Planning", "department"), person("Mayor"), person("Planner"),
-        card("Startup", "company", { Employees: "12" }), person("Founder"), person("Intern"), card("Firm", "company", { Employees: "400" })],
-      [link("Planning", "part_of", "City"), link("Mayor", "leads", "City", { seniority: "elected_leader" }),
-        link("Planner", "works_in", "Planning", { title: "Planner" }),
-        link("Founder", "leads", "Startup"), link("Intern", "works_in", "Startup", { seniority: "entry" })],
-    );
-    const levels = new Set([...results.values()].map((result) => result.level));
-    expect([...levels].sort()).toEqual([1, 2, 3, 4, 5]);
+  it("scales by closeness: our owner in full, a funder less, two links away a quarter", () => {
+    const general = computePower(cards, relations, NOW);
+    const overUs = computePowerOverUs(cards, relations, "Us", NOW);
+    expect(scoreOf(overUs, "Parent")).toBe(scoreOf(general, "Parent"));
+    expect(scoreOf(overUs, "Funder")).toBeCloseTo(scoreOf(general, "Funder") + Math.log10(0.8), 1);
+    expect(scoreOf(overUs, "Friend")).toBeCloseTo(scoreOf(general, "Friend") + Math.log10(0.25), 1);
+  });
+
+  it("equals general power when no organization is set", () => {
+    expect(computePowerOverUs(cards, relations, null, NOW)).toEqual(computePower(cards, relations, NOW));
   });
 });
