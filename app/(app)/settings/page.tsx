@@ -1,8 +1,9 @@
-import { BrainCircuit, ChartNoAxesCombined, CircleDollarSign, Gauge, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
+import { BrainCircuit, Bot, ChartNoAxesCombined, CircleDollarSign, Gauge, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { ReadingPane } from "@/components/shell";
 import { CostTable } from "@/components/usage/CostTable";
 import { UsagePanel } from "@/components/usage/UsagePanel";
+import { AgentKeys } from "./AgentKeys";
 import { AiSpeed } from "./AiSpeed";
 import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoDecide } from "./AutoDecide";
@@ -25,6 +26,7 @@ const sections = [
   { id: "intelligence", label: "Intelligence", icon: BrainCircuit },
   { id: "features", label: "Features", icon: ToggleRight },
   { id: "security", label: "Security", icon: LockKeyhole },
+  { id: "agents", label: "Agents", icon: Bot },
   { id: "usage", label: "Usage & activity", icon: ChartNoAxesCombined },
   { id: "costs", label: "AI costs", icon: CircleDollarSign },
   { id: "speed", label: "AI Speed", icon: Gauge },
@@ -88,6 +90,7 @@ export default async function SettingsPage() {
       </SettingsCard>
     ),
     security: <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>,
+    agents: <SettingsCard id="agents" title="Agents" description="Agents that read and change this wiki through MCP, and what each may do." icon={Bot}><AgentKeys /></SettingsCard>,
     usage: <SettingsCard id="usage" title="Usage & activity" description="A closer look at your AI calls and token consumption." icon={ChartNoAxesCombined}><UsagePanel /></SettingsCard>,
     costs: <SettingsCard id="costs" title="AI costs" description="What each model costs per million tokens, and what you've spent." icon={CircleDollarSign}><CostTable activeModel={modelSettings.activeModel} /></SettingsCard>,
     speed: <SettingsCard id="speed" title="AI Speed" description="A live test of how fast each model answers: latency and tokens per second." icon={Gauge}><AiSpeed settings={modelSettings} saved={speedTests} /></SettingsCard>,

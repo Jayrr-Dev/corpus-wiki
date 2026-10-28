@@ -7,8 +7,10 @@ import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 // ROUTES THE PROXY LETS THROUGH WITHOUT A SESSION. /api/capture checks the
 // caller itself (session or API key); /api/mcp checks its agent token and /.well-known/oauth-protected-resource tells clients where to sign in; /api/processing/recover requires its own
 // worker key. /welcome is the public landing page. Scripts and schedulers have
-// no cookie to redirect; every other route, future /api routes included, stays behind sign-in
-export const PUBLIC_PATHS = ["/welcome", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics"] as const;
+// no cookie to redirect; every other route, future /api routes included, stays behind sign-in.
+// /oauth and the authorization server metadata serve MCP clients, which have no
+// cookie; /oauth/authorize sends a signed-out person to /login itself, keeping the request.
+export const PUBLIC_PATHS = ["/welcome", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics", "/oauth", "/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"] as const;
 
 export function isPublicWikiPath(pathname: string): boolean {
   return ["/explore", "/s", "/embed", "/api/public-wiki/metrics"].some(p => pathname === p || pathname.startsWith(`${p}/`));
