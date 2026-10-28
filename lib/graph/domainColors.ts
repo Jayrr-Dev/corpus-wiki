@@ -13,6 +13,13 @@ const THEMES: readonly [RegExp, GraphColor][] = [
 ];
 const DISTINCT: GraphColor[] = ["link", "applied", "graph-violet", "needs-you", "graph-teal", "graph-pink", "stale", "graph-cyan", "graph-copper", "graph-lime", "graph-rose", "graph-purple"];
 
+// Stable color for an entity circle and the knowledge units inside it.
+export function entityColor(name: string): GraphColor {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = Math.imul(hash ^ name.charCodeAt(i), 16777619);
+  return DISTINCT[(hash >>> 0) % DISTINCT.length]!;
+}
+
 export function chooseDomainColor(path: string, groups: readonly GraphGroup[]): GraphColor {
   const normalized = path.toLowerCase().replace(/\/+$/, "");
   const ancestors = groups.filter((group) => {

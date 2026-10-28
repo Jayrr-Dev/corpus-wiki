@@ -75,10 +75,15 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
       // Normalize each batch once before publication. Checkpointing these choices
       // keeps a resume's canonical identities identical to the saved units.
       const resolvedEntity = <T extends ExistingEntity>(entity: T): T => ({ ...entity, ...entityChoices.get(`${entity.type}:${entity.key}`) });
+      const resolvedEnd = <T extends { type: string; key: string }>(end: T): T => {
+        const choice = entityChoices.get(`${end.type}:${end.key}`);
+        return choice ? { ...end, type: choice.type, key: choice.key } : end;
+      };
       const batchClaims = publish ? await workflowStep(`normalize-extract:${passages.map((p) => p.id).join(":")}`, () => reuseEntities(
         answer.value.claims.map((claim) => ({ ...claim, ...(input.fileTopicsLater ? { domainPaths: [] } : {}),
           entities: claim.entities.map(resolvedEntity),
           ...(claim.applicability ? { applicability: { ...claim.applicability, entities: claim.applicability.entities.map(resolvedEntity) } } : {}),
+          ...(claim.stakeholderLinks ? { stakeholderLinks: claim.stakeholderLinks.map((label) => ({ ...label, from: resolvedEnd(label.from), to: resolvedEnd(label.to) })) } : {}),
         })), knownEntities,
         nameDuplicateJudge(this.settings, "entity", { source: input.source.title,
           existingKnowledge: input.existingUnits.slice(0, 12).map((unit) => ({ content: unit.content, context: unit.context })) },

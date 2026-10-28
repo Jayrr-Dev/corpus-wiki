@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRef, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { RadioGroup } from "radix-ui";
 import { Input } from "@/components/ui/input";
@@ -20,7 +19,7 @@ const readOrigin = () => window.location.origin;
 const emptyOrigin = () => "";
 const inputClass = "w-full rounded-lg border bg-transparent px-2.5 py-2 text-panel outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 
-export function PublishingPanel({ editor, initialMetrics }: { editor: PublicationEditor; initialMetrics: WikiMetrics }) {
+export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor: PublicationEditor; initialMetrics: WikiMetrics; onRefresh: () => void }) {
   const pub = editor.publication;
   const [visibility, setVisibility] = useState<Visibility>(pub?.visibility ?? "private");
   const [title, setTitle] = useState(pub?.title ?? editor.spaceName);
@@ -35,7 +34,6 @@ export function PublishingPanel({ editor, initialMetrics }: { editor: Publicatio
   const [message, setMessage] = useState("");
   const [embedPage, setEmbedPage] = useState("");
   const origin = useSyncExternalStore(subscribeOrigin, readOrigin, emptyOrigin);
-  const router = useRouter();
   const save = useServerAction(publishSpaceWiki, { progress: { title: "Publishing wiki", detail: "Saving the reviewed edition…" } });
   const previewAction = useServerAction(previewWikiPublication, { progress: false });
   const live = pub && pub.visibility !== "private";
@@ -51,7 +49,7 @@ export function PublishingPanel({ editor, initialMetrics }: { editor: Publicatio
     });
     if (result.ok) {
       setMessage(makePrivate || visibility === "private" ? "Space is private." : "Published.");
-      router.refresh();
+      onRefresh();
     }
   }
   async function showPreview(id: string) {
@@ -112,7 +110,7 @@ export function PublishingPanel({ editor, initialMetrics }: { editor: Publicatio
           <div className="flex items-center gap-2"><h2 id="pages-heading" className="font-medium">Pages</h2><span className="text-xs text-muted-foreground">{selected.size}/100</span>
             <InfoPopover label="What gets published"><p>Selected article text, lists, tables, and charts. Media, source files, citations, and history stay private.</p><p className="mt-2">Preview the text and check for sensitive information before publishing.</p></InfoPopover>
           </div>
-          <Tooltip content="Refresh drafts"><Button aria-label="Refresh drafts" variant="ghost" size="icon-sm" disabled={save.isPending} onClick={() => router.refresh()}><RefreshCw size={14} aria-hidden="true" /></Button></Tooltip>
+          <Tooltip content="Refresh drafts"><Button aria-label="Refresh drafts" variant="ghost" size="icon-sm" disabled={save.isPending} onClick={onRefresh}><RefreshCw size={14} aria-hidden="true" /></Button></Tooltip>
         </div>
         {editor.pages.length > 6 && <Input aria-label="Filter pages" type="search" value={filter} onChange={e => setFilter(e.target.value)} placeholder="Find a page…" />}
         {editor.pages.length ? <ul className="max-h-72 divide-y overflow-auto">
