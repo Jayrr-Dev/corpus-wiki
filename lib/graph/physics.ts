@@ -9,7 +9,7 @@ import {
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from "d3-force";
-import { packDomains } from "./clusters";
+import { packDomains, type ClusterMode } from "./clusters";
 import type { GraphForces } from "./settings";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -69,9 +69,9 @@ export function pullWeight(node: Pick<GraphNode, "degree">): number {
 }
 
 // Applies slider values to a simulation's forces (no restart; the caller decides)
-export function applyForces(simulation: GraphSimulation, forces: GraphForces, nodeSize: number): void {
-  // Domains on: every dot has a home circle in the packing
-  const homes = forces.cluster > 0 ? packDomains(simulation.nodes(), nodeSize).homes : null;
+export function applyForces(simulation: GraphSimulation, forces: GraphForces, nodeSize: number, mode: ClusterMode = "domain"): void {
+  // Groups on: every dot has a home circle in the packing
+  const homes = forces.cluster > 0 ? packDomains(simulation.nodes(), nodeSize, mode).homes : null;
   const pull = (node: SimNode) => (forces.center * CENTER_SCALE + (homes ? forces.cluster * HOME_SCALE : 0)) * pullWeight(node);
   simulation
     .force("x", forceX<SimNode>((node) => homes?.get(node.id)?.x ?? 0).strength(pull))
@@ -120,10 +120,10 @@ export function toSimGraph(data: GraphData, previous: ReadonlyMap<string, SimNod
 }
 
 // Creates a stopped simulation over these nodes and links (the caller restarts it)
-export function createSimulation(nodes: SimNode[], links: SimLink[], forces: GraphForces, nodeSize: number): GraphSimulation {
+export function createSimulation(nodes: SimNode[], links: SimLink[], forces: GraphForces, nodeSize: number, mode: ClusterMode = "domain"): GraphSimulation {
   const simulation = forceSimulation<SimNode, SimLink>(nodes)
     .force("link", forceLink<SimNode, SimLink>(links).id((node) => node.id))
     .stop();
-  applyForces(simulation, forces, nodeSize);
+  applyForces(simulation, forces, nodeSize, mode);
   return simulation;
 }

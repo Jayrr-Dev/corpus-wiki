@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { applyFilters, neighborhood, withRelated } from "@/lib/graph";
+import { applyFilters, neighborhood, withRelated, type GraphSettings } from "@/lib/graph";
 import { useGraphData } from "./useGraphData";
 import { NodePreviewCards, useNodePreviewCards } from "./NodePreviewCards";
 import { GraphCanvas } from "./GraphCanvas";
@@ -41,12 +41,17 @@ export function LocalGraph({ centerId }: { centerId: string }) {
     });
     return neighborhood(layers, centerId, depth);
   }, [query.data, settings.filters, centerId, depth]);
+  // The main graph can group by entity. This small graph stays on topic circles.
+  const localSettings = useMemo((): Pick<GraphSettings, "display" | "forces" | "groups"> => ({
+    ...settings,
+    display: { ...settings.display, groupBy: settings.display.groupBy === "off" ? "off" : "domain" },
+  }), [settings]);
 
   return (
     <section aria-label="Local graph" className="flex flex-col gap-2">
       <h2 className="text-xs font-medium tracking-wide text-faint uppercase">Local graph</h2>
       <div className="h-64 overflow-hidden rounded-md border">
-        {local ? <GraphCanvas graph={local} settings={settings} progressiveZoom={false} hoverLabelOnly onOpen={previews.open} /> : null}
+        {local ? <GraphCanvas graph={local} settings={localSettings} progressiveZoom={false} hoverLabelOnly onOpen={previews.open} /> : null}
       </div>
       <SliderRow label={`Depth ${depth}`} value={depth} min={MIN_DEPTH} max={MAX_DEPTH} step={1} onChange={setDepth} />
       <NodePreviewCards cards={previews.cards} setCards={previews.setCards} />

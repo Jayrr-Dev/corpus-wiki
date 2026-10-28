@@ -76,6 +76,7 @@ function entityNodes(rows: GraphRows): GraphNode[] {
 // PAGE NODES: a page sits in its own domain, if it has one
 function pageNodes(rows: GraphRows): GraphNode[] {
   const pathByDomain = new Map(rows.domains.map((domain) => [domain.id, domain.path]));
+  const nameByEntity = new Map(rows.entities.map((entity) => [entity.id, entity.name]));
   return rows.pages.map((page) => ({
     id: page.id,
     kind: "page",
@@ -85,7 +86,7 @@ function pageNodes(rows: GraphRows): GraphNode[] {
     createdAt: page.created_at,
     degree: 0,
     domainPaths: present([page.domain_id ? pathByDomain.get(page.domain_id) : undefined]),
-    entityNames: [],
+    entityNames: present([page.entity_id ? nameByEntity.get(page.entity_id) : undefined]),
     unitKind: null,
     status: null,
   }));

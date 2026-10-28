@@ -6,7 +6,7 @@ import { NodeContextMenu } from "./NodeContextMenu";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { Button } from "@/components/ui/button";
-import { applyFilters, createdBy, DEFAULT_GRAPH_SETTINGS, withRelated, type GraphData, type GraphSettings, type GraphNode } from "@/lib/graph";
+import { applyFilters, createdBy, DEFAULT_GRAPH_SETTINGS, graphForGrouping, withRelated, type GraphData, type GraphSettings, type GraphNode } from "@/lib/graph";
 import { moveGraphClaim } from "@/lib/server-actions/graphNodes";
 import { GraphCanvas } from "./GraphCanvas";
 import { GraphPanel } from "./panel/GraphPanel";
@@ -45,7 +45,9 @@ export function GraphView({ data, actions }: { data: GraphData; actions?: ReactN
 
   const visible = useMemo(() => {
     const grown = replay.cutoff === null ? related : createdBy(related, replay.cutoff);
-    return applyFilters(grown, settings.filters);
+    // Entity dots and their connecting lines are gone. An entity is a circle in the Entities group.
+    const filtered = applyFilters(grown, settings.filters);
+    return graphForGrouping(filtered, "entity");
   }, [related, replay.cutoff, settings.filters]);
 
   return (
