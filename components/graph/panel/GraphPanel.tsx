@@ -6,7 +6,7 @@ import { UndoIcon } from "@/components/icons";
 import { Tooltip } from "@/components/standard/tooltip";
 import type { GraphNode, GraphSettings } from "@/lib/graph";
 import type { UpdateGraphSettings } from "../useGraphSettings";
-import { DomainsSection, FiltersSection, GroupsSection, TuningSection } from "./sections";
+import { DomainsSection, FiltersSection, GroupsSection, GroupSection, TuningSection } from "./sections";
 
 interface GraphPanelProps {
   settings: GraphSettings;
@@ -51,6 +51,7 @@ export function GraphPanel({ settings, nodes, update, reset, isReplaying, onAnim
       </div>
       <FiltersSection value={settings.filters} onChange={(next) => update("filters", next)} />
       <DomainsSection value={settings.filters} nodes={nodes} onChange={(next) => update("filters", next)} />
+      <GroupSection value={settings.display} onChange={(next) => update("display", next)} />
       <GroupsSection value={settings.groups} nodes={nodes} onChange={(next) => update("groups", next)} />
       <TuningSection
         filters={settings.filters}

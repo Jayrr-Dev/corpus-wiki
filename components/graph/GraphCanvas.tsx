@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { circleAt, circleExtents, clusterCircles, type GraphData, type GraphNode, type GraphSettings, groupColorLookup, moveTarget } from "@/lib/graph";
+import { circleAt, circleExtents, clusterCircles, groupColorLookup, moveTarget, nodeInCluster, primaryEntityName, type ClusterMode, type GraphColor, type GraphData, type GraphNode, type GraphSettings } from "@/lib/graph";
+import { entityColor } from "@/lib/graph/domainColors";
 import { type Camera, centeredCamera, fitCamera, hierarchyOpacity, type Point, zoomBy } from "@/lib/graph/camera";
 import { Button } from "@/components/ui/button";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
@@ -100,18 +101,36 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   useLayoutEffect(() => { selection.current = selectedIds; redrawRef.current(); }, [selectedIds]);
   const frame = useRef<number | null>(null);
   const redrawRef = useRef<() => void>(() => {});
-  const colorOf = useMemo(() => groupColorLookup(settings.groups), [settings.groups]);
-  // The domain circles toggle also turns off the pull that gathers dots by domain
+  const groupBy = settings.display.groupBy;
+  const clusterMode: ClusterMode = groupBy === "entity" ? "entity" : "domain";
+  const colorOf = useMemo(() => {
+    const byGroup = groupColorLookup(settings.groups);
+    if (groupBy !== "entity") return byGroup;
+    return (node: GraphNode) => {
+      const name = primaryEntityName(node);
+      return name ? entityColor(name) : null;
+    };
+  }, [settings.groups, groupBy]);
+  // Circles off also turns off the pull that gathers dots into a group
   const forces = useMemo(
-    () => (settings.display.domainCircles ? settings.forces : { ...settings.forces, cluster: 0 }),
-    [settings.forces, settings.display.domainCircles],
+    () => (groupBy === "off" ? { ...settings.forces, cluster: 0 } : settings.forces),
+    [settings.forces, groupBy],
   );
-  // Circles come from the domain packing, so they only match the dots while the domain pull is on
-  const showCircles = forces.cluster > 0;
-  const latest = useRef({ display: settings.display, showCircles, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain });
-  const layout = useForceLayout(graph, forces, settings.display.nodeSize, redrawRef);
+  // Circles come from the packing, so they only match the dots while the group pull is on
+  const showCircles = groupBy !== "off" && forces.cluster > 0;
+  const latest = useRef<{
+    display: GraphSettings["display"];
+    showCircles: boolean;
+    groupBy: GraphSettings["display"]["groupBy"];
+    clusterMode: ClusterMode;
+    colorOf: (node: GraphNode) => GraphColor | null;
+    progressiveZoom: boolean;
+    hoverLabelOnly: boolean;
+    focusedDomain: string | null;
+  }>({ display: settings.display, showCircles, groupBy, clusterMode, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain });
+  const layout = useForceLayout(graph, forces, settings.display.nodeSize, redrawRef, clusterMode);
   const geometry = useRef<{
-    nodes: SimNode[]; revision: number; nodeSize: number; domainCircles: boolean;
+    nodes: SimNode[]; revision: number; nodeSize: number; groupBy: GraphSettings["display"]["groupBy"];
     width: number; height: number; circles: ReturnType<typeof clusterCircles>; overview: Camera;
   } | null>(null);
 
@@ -124,11 +143,11 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     const ctx = element?.getContext("2d");
     if (!element || !ctx || size.current.width === 0) return;
     const { nodes, links, revision } = layout.current;
-    const { display, showCircles } = latest.current;
+    const { display, showCircles, groupBy: shownGroup, clusterMode: mode } = latest.current;
     let bounds = geometry.current;
-    if (!bounds || bounds.nodes !== nodes || bounds.revision !== revision || bounds.nodeSize !== display.nodeSize || bounds.domainCircles !== showCircles || bounds.width !== size.current.width || bounds.height !== size.current.height) {
-      const circles = showCircles ? clusterCircles(nodes, display.nodeSize) : [];
-      bounds = { nodes, revision, nodeSize: display.nodeSize, domainCircles: showCircles, ...size.current,
+    if (!bounds || bounds.nodes !== nodes || bounds.revision !== revision || bounds.nodeSize !== display.nodeSize || bounds.groupBy !== shownGroup || bounds.width !== size.current.width || bounds.height !== size.current.height) {
+      const circles = showCircles ? clusterCircles(nodes, display.nodeSize, mode) : [];
+      bounds = { nodes, revision, nodeSize: display.nodeSize, groupBy: shownGroup, ...size.current,
         circles, overview: fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height) };
       geometry.current = bounds;
     }
@@ -157,6 +176,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
       links,
       circles,
       display,
+      groupBy: shownGroup,
       palette,
       colorOf: latest.current.colorOf,
       focusId: fade.id,
@@ -195,8 +215,8 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   useLayoutEffect(() => {
     // eslint-disable-next-line react-hooks/immutability -- Shared ref is the force simulation callback bridge.
     redrawRef.current = redraw;
-    latest.current = { display: settings.display, showCircles, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain };
-  }, [redraw, settings.display, showCircles, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain]);
+    latest.current = { display: settings.display, showCircles, groupBy, clusterMode, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain };
+  }, [redraw, settings.display, showCircles, groupBy, clusterMode, colorOf, progressiveZoom, hoverLabelOnly, focusedDomain]);
 
   // RESIZE: the first size centers the camera; later ones keep the view (or refit, while auto-fitting)
   const onResize = useCallback(
@@ -211,7 +231,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Read current simulation positions when invoked.
   const fitView = useCallback(() => {
     const { nodes } = layout.current;
-    const circles = showCircles ? clusterCircles(nodes, settings.display.nodeSize) : [];
+    const circles = showCircles ? clusterCircles(nodes, settings.display.nodeSize, clusterMode) : [];
     const overview = fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height);
     setFocusedDomain(null);
     onFocusDomain?.(null);
@@ -222,12 +242,12 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
       isAutoFit.current = true;
       redraw();
     });
-  }, [layout, showCircles, settings.display.nodeSize, motion, redraw, onFocusDomain]);
+  }, [layout, showCircles, clusterMode, settings.display.nodeSize, motion, redraw, onFocusDomain]);
   // eslint-disable-next-line react-hooks/preserve-manual-memoization -- Hit testing needs current mutable simulation positions.
   const focusGroup = useCallback((point: Point) => {
     if (!progressiveZoom || !showCircles) return;
     const { nodes } = layout.current;
-    const circles = clusterCircles(nodes, settings.display.nodeSize);
+    const circles = clusterCircles(nodes, settings.display.nodeSize, clusterMode);
     const overview = fitCamera([...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height);
     const picked = circles.filter((circle) => hierarchyOpacity(circle.depth, camera.current.k, overview.k) > 0.5 && Math.hypot(point.x - circle.x, point.y - circle.y) <= circle.r)
       .sort((a, b) => b.depth - a.depth || a.r - b.r)[0];
@@ -240,23 +260,27 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     if (picked.key === latest.current.focusedDomain) return;
     setFocusedDomain(picked.key);
     onFocusDomain?.(picked.key);
-    const members = nodes.filter((node) => node.domainPaths.some((path) => path === picked.key || path.startsWith(`${picked.key}/`)));
-    const childRings = circles.filter((circle) => circle.key === picked.key || circle.key.startsWith(`${picked.key}/`));
+    const members = nodes.filter((node) => nodeInCluster(node, picked.key, clusterMode));
+    const childRings = circles.filter((circle) => circle.key === picked.key || (clusterMode === "domain" && circle.key.startsWith(`${picked.key}/`)));
     const fitted = fitCamera([...members, ...circleExtents(childRings, CIRCLE_LABEL_ROOM)], size.current.width, size.current.height, 70);
     motion.animateTo(fitted);
     hoveredId.current = null;
     focusedId.current = null;
     isAutoFit.current = false;
     redraw();
-  }, [layout, progressiveZoom, showCircles, settings.display, redraw, motion, fitView, onFocusDomain]);
+  }, [layout, progressiveZoom, showCircles, clusterMode, settings.display, redraw, motion, fitView, onFocusDomain]);
   // FOCUS A DOT: start the fade toward it (null lets go)
   const focusNode = useCallback((id: string | null) => {
     focusedId.current = id;
     focusFade.current.at = performance.now();
     redraw();
   }, [redraw]);
+  // Claims file into domain circles only. Entity circles are not filing targets.
+  const canDrop = Boolean(onMoveNode) && groupBy === "domain";
   const showDrop = (node: SimNode | null, world: Point) => {
-    const hit = node && latest.current.showCircles ? circleAt(clusterCircles(layout.current.nodes, latest.current.display.nodeSize), world) : null;
+    const hit = node && latest.current.showCircles && latest.current.groupBy === "domain"
+      ? circleAt(clusterCircles(layout.current.nodes, latest.current.display.nodeSize, "domain"), world)
+      : null;
     const path = node ? moveTarget(node, hit, latest.current.focusedDomain) : null;
     if (dropHint.current === path) return;
     dropHint.current = path;
@@ -270,7 +294,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
     setDropLabel(null);
     if (path) onMoveNode?.(node, path);
   };
-  usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, onFocus: focusNode, onContextNode, onContextTitle: (point,client) => {const label=[...domainLabelBoxes.current].reverse().find(b=>point.x>=b.x-5&&point.x<=b.x+b.width+5&&point.y>=b.y-4&&point.y<=b.y+b.height+4);if(!label||!onContextDomain)return false;onContextDomain(label.path,client);return true;}, onSelect: onSelect ? (nodes,toggle) => onSelect(nodes.filter(n=>!focusedDomain||n.domainPaths.some(p=>p===focusedDomain||p.startsWith(focusedDomain+"/"))),toggle) : undefined, onSelectionBox: setSelectionBox, onBackgroundClick: focusGroup, onNodeDrag: onMoveNode ? showDrop : undefined, onNodeDrop: onMoveNode ? dropNode : undefined, motion, redraw });
+  usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize: settings.display.nodeSize, onOpen, onFocus: focusNode, onContextNode, onContextTitle: (point,client) => {const label=[...domainLabelBoxes.current].reverse().find(b=>point.x>=b.x-5&&point.x<=b.x+b.width+5&&point.y>=b.y-4&&point.y<=b.y+b.height+4);if(!label||!onContextDomain)return false;onContextDomain(label.path,client);return true;}, onSelect: onSelect ? (nodes,toggle) => onSelect(nodes.filter(n=>!focusedDomain||nodeInCluster(n,focusedDomain,clusterMode)),toggle) : undefined, onSelectionBox: setSelectionBox, onBackgroundClick: focusGroup, onNodeDrag: canDrop ? showDrop : undefined, onNodeDrop: canDrop ? dropNode : undefined, motion, redraw });
 
   // ZOOM BUTTONS: zoom around the canvas center; fit hands the camera back to auto-fit
   const zoomCenter = useCallback(
@@ -283,7 +307,7 @@ export function GraphCanvas({ graph, settings, onOpen, onContextNode, onContextD
   );
 
   // REDRAW when display settings or groups change (no layout change needed)
-  useEffect(redraw, [redraw, settings.display, showCircles, colorOf, focusedDomain]);
+  useEffect(redraw, [redraw, settings.display, showCircles, groupBy, colorOf, focusedDomain]);
   // CLEANUP: cancel a pending frame and clear the handle, so a remount (React dev's double
   // mount) can schedule frames again
   useEffect(

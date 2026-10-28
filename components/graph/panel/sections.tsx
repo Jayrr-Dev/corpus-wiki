@@ -5,7 +5,7 @@ import { DomainTreeSelect } from "@/components/actions/DomainTreeSelect";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverDescription, PopoverTrigger } from "@/components/ui/popover";
 import { Check, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
 import { colorGroupTree, type ColorTreeRow } from "@/lib/graph/colorGroupTree";
 import { GRAPH_ACCENTS, GRAPH_COLOR_FAMILIES } from "@/lib/graph/groups";
@@ -46,7 +46,6 @@ export function FiltersSection({ value, onChange }: { value: GraphFilters; onCha
     <PanelSection title="Filters">
       <Input placeholder="Search…" value={value.search} onChange={(event) => set("search", event.target.value)} aria-label="Search the graph" />
       <SwitchRow label="Knowledge units" checked={value.showUnits} onChange={(next) => set("showUnits", next)} />
-      <SwitchRow label="Entities" checked={value.showEntities} onChange={(next) => set("showEntities", next)} />
       <SwitchRow label="Pages" checked={value.showPages} onChange={(next) => set("showPages", next)} />
       <SwitchRow label="Related links" checked={value.showRelated} onChange={(next) => set("showRelated", next)} />
       {value.showRelated ? (
@@ -290,6 +289,29 @@ export function GroupsSection({ value, nodes, onChange }: { value: GraphGroup[];
 }
 
 
+// GROUP: domain circles or entity circles. One at a time.
+export function GroupSection({ value, onChange }: { value: GraphDisplay; onChange: (next: GraphDisplay) => void }) {
+  const pick = (mode: "domain" | "entity", on: boolean) => onChange({ ...value, groupBy: on ? mode : "off" });
+  return (
+    <PanelSection
+      title="Group"
+      defaultOpen
+      info={
+        <>
+          <PopoverDescription>One grouping can be on at a time.</PopoverDescription>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
+            <li>Domain draws a circle around each topic.</li>
+            <li>Entities draws a colored circle around each entity. Knowledge units sit inside it.</li>
+          </ul>
+        </>
+      }
+    >
+      <SwitchRow label="Domain" checked={value.groupBy === "domain"} onChange={(on) => pick("domain", on)} />
+      <SwitchRow label="Entities" checked={value.groupBy === "entity"} onChange={(on) => pick("entity", on)} />
+    </PanelSection>
+  );
+}
+
 const TITLE_OPTIONS = TITLE_POSITIONS.map((position) => ({ value: position, label: position[0]!.toUpperCase() + position.slice(1) }));
 
 function DisplaySliders({ keys, value, onChange }: { keys: readonly (typeof DISPLAY_SLIDERS)[number]["key"][]; value: GraphDisplay; onChange: (next: GraphDisplay) => void }) {
@@ -318,7 +340,6 @@ function ShapeControls({ value, onChange }: { value: GraphDisplay; onChange: (ne
     <>
       <DisplaySliders keys={["nodeSize", "linkThickness"]} value={value} onChange={onChange} />
       <SwitchRow label="Arrows" checked={value.arrows} onChange={(arrows) => onChange({ ...value, arrows })} />
-      <SwitchRow label="Domain circles" checked={value.domainCircles} onChange={(domainCircles) => onChange({ ...value, domainCircles })} />
     </>
   );
 }

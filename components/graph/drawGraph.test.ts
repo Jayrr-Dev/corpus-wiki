@@ -43,8 +43,8 @@ it("keeps domain text at readable screen sizes even below the canvas font limit"
   }) as unknown as CanvasRenderingContext2D;
   drawGraph({
     ctx,width:800,height:600,pixelRatio:2,camera:{x:400,y:300,k:0.000001},overviewZoom:0.000001,
-    nodes:[],links:[],circles:[{key:"root",label:"Domain",depth:0,isBranch:true,x:0,y:0,r:100,index:0}],
-    display:DEFAULT_GRAPH_SETTINGS.display,
+    nodes:[],links:[],circles:[{key:"root",label:"Domain",depth:0,parent:"",isBranch:true,x:0,y:0,r:100,index:0}],
+    display:DEFAULT_GRAPH_SETTINGS.display, groupBy:"domain",
     palette:{background:"#111",border:"#333",text:"#fff",muted:"#aaa",faint:"#666",fontFamily:"sans-serif",token:()=>"#aaf"},
     colorOf:()=>null,focusId:null,focusIds:new Set(),hoverLabelOnly:false,
   });
@@ -77,8 +77,8 @@ it("paints nested domain circles progressively fainter and names only the top tw
     ctx, width: 800, height: 800, pixelRatio: 1,
     camera: { x: 0, y: 0, k: 1 }, overviewZoom: 1,
     nodes: [], links: [],
-    circles: [0, 1, 2, 3].map((depth) => ({ key: `domain-${depth}`, label: `Domain ${depth}`, depth, isBranch: true, x: 100 + depth * 150, y: 300, r: 30, index: 0 })),
-    display: DEFAULT_GRAPH_SETTINGS.display,
+    circles: [0, 1, 2, 3].map((depth) => ({ key: `domain-${depth}`, label: `Domain ${depth}`, depth, parent: "", isBranch: true, x: 100 + depth * 150, y: 300, r: 30, index: 0 })),
+    display: DEFAULT_GRAPH_SETTINGS.display, groupBy: "domain" as const,
     palette: { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" },
     colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
   };
@@ -117,8 +117,8 @@ it("sums links between domains into one line at the overview, then shows them bu
     ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k }, overviewZoom: 1,
     nodes: [a, b, c],
     links: [{ id: "stored", source: a, target: b, kind: "supports" }, { id: "similar", source: a, target: c, kind: "similar" }, { id: "across", source: c, target: b, kind: "similar" }],
-    circles: [{ key: "Left", label: "Left", depth: 0, isBranch: false, x: 0, y: 100, r: 50, index: 0 }, { key: "Right", label: "Right", depth: 0, isBranch: false, x: 400, y: 100, r: 50, index: 1 }],
-    display: DEFAULT_GRAPH_SETTINGS.display,
+    circles: [{ key: "Left", label: "Left", depth: 0, parent: "", isBranch: false, x: 0, y: 100, r: 50, index: 0 }, { key: "Right", label: "Right", depth: 0, parent: "", isBranch: false, x: 400, y: 100, r: 50, index: 1 }],
+    display: DEFAULT_GRAPH_SETTINGS.display, groupBy: "domain",
     palette: { background: "#111", border: "#333", text: "#fff", muted: "#aaa", faint: "#666", fontFamily: "sans-serif", token: () => "#aaf" },
     colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
   });
@@ -139,7 +139,7 @@ it("puts the start of a bubble title at the top of the bubble", () => {
   const node = dot("hub", 40, 200, 200, "Instinctive Triad grouping");
   drawGraph({
     ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k: 3 }, overviewZoom: null,
-    nodes: [node], links: [], circles: [], display: DEFAULT_GRAPH_SETTINGS.display, palette,
+    nodes: [node], links: [], circles: [], display: DEFAULT_GRAPH_SETTINGS.display, groupBy: "domain", palette,
     colorOf: () => "applied", focusId: null, focusIds: new Set(), hoverLabelOnly: false,
   });
   const title = painted.find((item) => item.text.startsWith("Instinctive"));
@@ -154,7 +154,7 @@ it("keeps the first words when a title is too tall for its bubble", () => {
   drawGraph({
     ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k: 2 }, overviewZoom: null,
     nodes: [dot("note", 15, 200, 200, label)], links: [], circles: [],
-    display: DEFAULT_GRAPH_SETTINGS.display, palette,
+    display: DEFAULT_GRAPH_SETTINGS.display, groupBy: "domain", palette,
     colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
   });
   const title = painted.map((item) => item.text).join(" ");
@@ -169,7 +169,7 @@ it("gives a larger bubble its title before a smaller neighbor can take the space
   const small = dot("small", 1, 200, 200, "Small title");
   drawGraph({
     ctx, width: 800, height: 800, pixelRatio: 1, camera: { x: 0, y: 0, k: 2 }, overviewZoom: null,
-    nodes: [small, large], links: [], circles: [], display: DEFAULT_GRAPH_SETTINGS.display, palette,
+    nodes: [small, large], links: [], circles: [], display: DEFAULT_GRAPH_SETTINGS.display, groupBy: "domain", palette,
     colorOf: () => null, focusId: null, focusIds: new Set(), hoverLabelOnly: false,
   });
   const texts = painted.map((item) => item.text);

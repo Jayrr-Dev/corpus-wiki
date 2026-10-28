@@ -1,4 +1,4 @@
-import { type ClusterCircle, facingEdges, type GraphColor, type GraphDisplay, type GraphNode, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute, summaryDomains } from "@/lib/graph";
+import { type ClusterCircle, facingEdges, type GraphColor, type GraphDisplay, type GraphGroupBy, type GraphNode, nodeInCluster, routeControls, routeDomains, type RouteCircle, type RoutePoint, straightenRoute, summaryDomains } from "@/lib/graph";
 import { type Camera, hierarchyOpacity, labelOpacity, REVEAL_AT, revealOpacity } from "@/lib/graph/camera";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import type { CanvasPalette } from "./palette";
@@ -23,6 +23,7 @@ export interface DrawInput {
   // Domain and subdomain rings (empty when the circles are off)
   circles: readonly ClusterCircle[];
   display: GraphDisplay;
+  groupBy: GraphGroupBy;
   palette: CanvasPalette;
   colorOf: (node: GraphNode) => GraphColor | null;
   // The focused (clicked) dot, and how far the rest has faded for it (0 none, 1 fully dimmed)
@@ -47,8 +48,19 @@ function reserveLabel(input: DrawInput, x: number, y: number, w: number, h: numb
   return true;
 }
 
-function inDomain(node: GraphNode, domain: string | null | undefined): boolean {
-  return !domain || node.domainPaths.some((path) => path === domain || path.startsWith(`${domain}/`));
+function circleOutsideFocus(circle: ClusterCircle, input: DrawInput): boolean {
+  if (!input.focusedDomain || circle.key === input.focusedDomain) return false;
+  if (input.groupBy === "entity") return true;
+  return !circle.key.startsWith(`${input.focusedDomain}/`);
+}
+
+function inFocusGroup(node: GraphNode, focus: string | null | undefined, groupBy: GraphGroupBy): boolean {
+  if (!focus) return true;
+  return nodeInCluster(node, focus, groupBy === "entity" ? "entity" : "domain");
+}
+
+function circlePaint(circle: ClusterCircle, palette: CanvasPalette): string {
+  return palette.token(circle.color ?? CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
 }
 
 // OPACITY OF EVERYTHING OUTSIDE THE FOCUS: dots and titles, links, and domain circles not holding the focus
@@ -65,7 +77,8 @@ function faded(input: DrawInput, rest: number, focused: number): number {
 // How much a domain circle dims for the focus: circles holding the focused dot stay bright
 function circleDim(input: DrawInput, circle: ClusterCircle): number {
   const node = input.focusId === null ? undefined : input.nodes.find((candidate) => candidate.id === input.focusId);
-  const holdsFocus = node?.domainPaths.some((path) => path === circle.key || path.startsWith(`${circle.key}/`));
+  const mode = input.groupBy === "entity" ? "entity" : "domain";
+  const holdsFocus = node ? nodeInCluster(node, circle.key, mode) : false;
   return holdsFocus ? 1 : faded(input, 1, DIMMED_CIRCLE);
 }
 // LABEL SIZE IN SCREEN PIXELS (labels stay readable at any zoom)
@@ -219,7 +232,7 @@ function drawLinks(input: DrawInput): void {
   if (detail < 0.99) {
     for (const link of links) {
       const pair = ends(link);
-      if (!pair || link.kind === "similar" || isFocused(...pair) || !pair.every((node) => inDomain(node, input.focusedDomain))) continue;
+      if (!pair || link.kind === "similar" || isFocused(...pair) || !pair.every((node) => inFocusGroup(node, input.focusedDomain, input.groupBy))) continue;
       const domains = summaryDomains(...pair);
       const from = domains && centers.get(domains[0]), to = domains && centers.get(domains[1]);
       if (!domains || !from || !to) continue;
@@ -245,7 +258,7 @@ function drawLinks(input: DrawInput): void {
         ctx.beginPath();
         for (const link of links) {
           const pair = ends(link);
-          if (pair && summarised.has(link) === faded && (link.kind === "similar") === similar && isFocused(...pair) === focused && isShown(link, ...pair, focused) && pair.every((node) => inDomain(node, input.focusedDomain))) traceLink(ctx, pair[0], pair[1], input, route(...pair));
+          if (pair && summarised.has(link) === faded && (link.kind === "similar") === similar && isFocused(...pair) === focused && isShown(link, ...pair, focused) && pair.every((node) => inFocusGroup(node, input.focusedDomain, input.groupBy))) traceLink(ctx, pair[0], pair[1], input, route(...pair));
         }
         ctx.strokeStyle = palette.muted;
         ctx.globalAlpha = opacity;
@@ -262,7 +275,7 @@ function drawNodes(input: DrawInput): void {
   const { ctx, nodes, palette, colorOf, focusId, focusIds, display } = input;
   for (const node of nodes) {
     const group = colorOf(node);
-    ctx.globalAlpha = !inDomain(node, input.focusedDomain) ? 0.08 : focusId === null || focusIds.has(node.id) ? 1 : faded(input, 1, DIMMED);
+    ctx.globalAlpha = !inFocusGroup(node, input.focusedDomain, input.groupBy) ? 0.08 : focusId === null || focusIds.has(node.id) ? 1 : faded(input, 1, DIMMED);
     ctx.fillStyle = group ? palette.token(group) : baseColor(node, palette);
     ctx.beginPath();
     ctx.arc(node.x ?? 0, node.y ?? 0, nodeRadius(node, display.nodeSize), 0, Math.PI * 2);
@@ -450,7 +463,7 @@ function drawLabels(input: DrawInput): void {
   for (const node of ordered) {
     if (node.id === focusId) { focused = node; continue; }
     if (node.id === hoveredId) continue;
-    if (!inDomain(node, input.focusedDomain)) continue;
+    if (!inFocusGroup(node, input.focusedDomain, input.groupBy)) continue;
     const inFocus = focusId !== null && focusIds.has(node.id);
     const opacity = inFocus ? faded(input, zoomOpacity, 1) : zoomOpacity * faded(input, 1, DIMMED);
     if (opacity <= 0.01 || !isOnScreen(node, input)) continue;
@@ -485,8 +498,8 @@ function drawCircles(input: DrawInput): void {
   for (const circle of ordered) {
     // Depth controls the circle paint directly, independently of text/zoom.
     const visibility = Math.max(0.002, 0.18 ** circle.depth);
-    const scope = input.focusedDomain && circle.key !== input.focusedDomain && !circle.key.startsWith(`${input.focusedDomain}/`) ? 0.15 : 1;
-    const color = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
+    const scope = circleOutsideFocus(circle, input) ? 0.15 : 1;
+    const color = circlePaint(circle, palette);
     ctx.beginPath();
     ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
     if (circle.depth > 0) {
@@ -501,7 +514,7 @@ function drawCircles(input: DrawInput): void {
   }
   // Outlines draw after the cutouts, so clearing a child never erases a ring.
   for (const circle of ordered) {
-    const color = palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!);
+    const color = circlePaint(circle, palette);
     ctx.beginPath();
     ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
     ctx.setLineDash(circle.isBranch ? [] : [4 / camera.k, 4 / camera.k]);
@@ -531,10 +544,10 @@ function drawCircleLabels(input: DrawInput): void {
   ctx.strokeStyle = palette.background;
   // One name at one spot; `place` is "top" (above the ring) or "middle" (across the cluster)
   const name = (circle: ClusterCircle, place: "top" | "middle", alpha: number) => {
-    if (input.focusedDomain && circle.key !== input.focusedDomain && !circle.key.startsWith(`${input.focusedDomain}/`)) return;
+    if (circleOutsideFocus(circle, input)) return;
     if (alpha <= 0.01) return;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = mixHex(palette.token(CIRCLE_COLORS[circle.index % CIRCLE_COLORS.length]!), palette.text, CIRCLE_LABEL_CONTRAST);
+    ctx.fillStyle = mixHex(circlePaint(circle, palette), palette.text, CIRCLE_LABEL_CONTRAST);
     const fontSize = circleLabelPx(circle.depth);
     const weight = circle.depth < 2 ? "700" : circle.isBranch ? "600" : "500";
     ctx.font = `${weight} ${fontSize}px ${palette.fontFamily}`;
