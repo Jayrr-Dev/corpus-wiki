@@ -10,9 +10,9 @@ still visible, typecheck, lint and tests pass, pages checked, merged to main.
 | Lane | Task | Needs | Status |
 |---|---|---|---|
 | contract | U0 Rules in `AGENTS.md`; `InfoHint` in `components/standard/info-hint.tsx` | | merged 275ea85 |
-| admin | A1 Settings (except Agent*), workflow, roles, usage, login, signup, OAuth consent, tutorial | U0 | in progress (session ui-admin) |
-| sources | B1 Sources, assets, upload, publishing | U0 | in progress (session ui-sources) |
-| knowledge | C1 Pages and articles, domains, entities, glossary, units, exceptions, stakeholders, changes, decisions, living page | U0 | in progress (session ui-knowledge) |
+| admin | A1 Settings (except Agent*), workflow, roles, usage, login, signup, OAuth consent, tutorial | U0 | merged 401ecc8 |
+| sources | B1 Sources, assets, upload, publishing | U0 | merged bab19a1 |
+| knowledge | C1 Pages and articles, domains, entities, glossary, units, exceptions, stakeholders, changes, decisions, living page | U0 | merged 4e5a03e |
 
 Cut: the graph (its registry plan still has work queued there), marketing
 and public pages (their copy is meant to be read), `components/ui/**`
