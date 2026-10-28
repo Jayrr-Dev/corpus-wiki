@@ -1,5 +1,23 @@
 # To-do
 
+## Plan: say less on screen
+
+Goal: every app screen follows the "Say less on screen" UI rules in
+`AGENTS.md` (reference: the Agents tab in Settings). Done looks like: long
+helper text trimmed or moved into `InfoHint` / `InfoPopover`, safety text
+still visible, typecheck, lint and tests pass, pages checked, merged to main.
+
+| Lane | Task | Needs | Status |
+|---|---|---|---|
+| contract | U0 Rules in `AGENTS.md`; `InfoHint` in `components/standard/info-hint.tsx` | | merged 275ea85 |
+| admin | A1 Settings (except Agent*), workflow, roles, usage, login, signup, OAuth consent, tutorial | U0 | in progress (session ui-admin) |
+| sources | B1 Sources, assets, upload, publishing | U0 | in progress (session ui-sources) |
+| knowledge | C1 Pages and articles, domains, entities, glossary, units, exceptions, stakeholders, changes, decisions, living page | U0 | in progress (session ui-knowledge) |
+
+Cut: the graph (its registry plan still has work queued there), marketing
+and public pages (their copy is meant to be read), `components/ui/**`
+primitives.
+
 ## Plan: MCP server
 
 Goal: outside agents get full, scoped control of a Space through `/api/mcp`.
