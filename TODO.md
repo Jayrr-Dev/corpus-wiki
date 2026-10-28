@@ -20,7 +20,7 @@ call is logged; typecheck, lint and tests pass; merged to main.
 | auth | K3 OAuth server: metadata, CIMD, DCR, `/oauth/authorize` consent, `/oauth/token`, `/oauth/revoke` | K2 | merged 46284e5 |
 | auth | K4 Settings, Agents tab: connected agents (revoke, Space, scopes, last used, call log) and personal keys | K2 | merged 46284e5 |
 | mcp | T1 SDK, `app/api/mcp/route.ts`, `lib/mcp/server.ts`, Protected Resource Metadata: 401 challenge, audience, Origin check, Space pick, 403 step-up, rate check, audit | M1 | merged 1bdf7aa |
-| mcp | T2 Read tools in `lib/mcp/tools/read.ts` | T1 | in progress (session mcp-route) |
+| mcp | T2 Read tools in `lib/mcp/tools/read.ts` | T1 | merged 5ee1e69 |
 | knowledge | W1 Write tools in `lib/mcp/tools/write.ts` (notes, files, links, upload status, articles, sections, lines, organize) | M0 | merged 3301e76; uploads capped at 3 MB in 47afd6a |
 | knowledge | W2 Delete tools in `lib/mcp/tools/delete.ts` | W1 | merged 3301e76 |
 | spaces | S1 `lib/mcp/tools/spaces.ts` and `lib/mcp/tools/settings.ts` | M0 | merged 1ba63a6 |
