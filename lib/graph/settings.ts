@@ -31,6 +31,8 @@ export interface GraphDisplay {
   edgeOpacity: number;
   // Claims that share a group draw as one dot.
   coalesce: boolean;
+  // Step lists and article sections wind out in order. Off keeps the packed circles.
+  ordered: boolean;
 }
 
 export interface GraphForces {
@@ -80,6 +82,7 @@ export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
     linkThickness: 1,
     edgeOpacity: 0.7,
     coalesce: false,
+    ordered: false,
   },
   forces: { center: 0.4, repel: 11, link: 0.8, linkDistance: 80, cluster: 0.5 },
 };
@@ -102,6 +105,7 @@ export const DISPLAY_SLIDERS: readonly SliderRule<
     | "titlePosition"
     | "edgeOpacity"
     | "coalesce"
+    | "ordered"
   >
 >[] = [
   {
@@ -176,6 +180,7 @@ const settingsSchema = z.object({
     linkThickness: z.number(),
     edgeOpacity: z.number().default(DEFAULT_DISPLAY.edgeOpacity),
     coalesce: z.boolean().default(false),
+    ordered: z.boolean().default(false),
   }),
   forces: z.object({
     center: z.number(),

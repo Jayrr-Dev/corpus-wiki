@@ -7,8 +7,10 @@ import {
   circleNestedIn,
   circleOpenTarget,
   clusterCircles,
+  coalesceDrawn,
   groupColorLookup,
   moveTarget,
+  noArticleGroups,
   nodeInCluster,
   primaryEntityName,
   primaryPageTitle,
@@ -64,8 +66,6 @@ export interface GraphCanvasProps {
   // Second click on a selected article, section, or suggestion circle.
   onOpenCircle?: (target: CircleOpenTarget) => void;
   onMoveNode?: (node: GraphNode, path: string) => void;
-  // The group the camera is inside, so coalesced claims there can split.
-  onCoalesceGroup?: (key: string | null) => void;
   // Reveal text in layers as you zoom in from the whole-graph view (off for small local graphs, where titles always fit)
   progressiveZoom?: boolean;
   // While a dot is focused, show only its text (small panels, where neighbor titles pile up)
@@ -132,7 +132,6 @@ export function GraphCanvas({
   onFocusDomain,
   onOpenCircle,
   onMoveNode,
-  onCoalesceGroup,
   selectedIds = [],
   onSelect,
   progressiveZoom = true,
@@ -163,13 +162,13 @@ export function GraphCanvas({
   const dropHint = useRef<string | null>(null);
   const [dropLabel, setDropLabel] = useState<string | null>(null);
   const selection = useRef(selectedIds);
-  const onCoalesceGroupRef = useRef(onCoalesceGroup);
-  const reportedGroup = useRef<string | null>(null);
+  // Which group is zoomed open. A ref, so zooming does not rebuild the layout.
+  const coalesceHold = useRef<string | null>(null);
+  const shownNodes = useRef<SimNode[] | null>(null);
   useLayoutEffect(() => {
     selection.current = selectedIds;
-    onCoalesceGroupRef.current = onCoalesceGroup;
     redrawRef.current();
-  }, [selectedIds, onCoalesceGroup]);
+  }, [selectedIds]);
   const frame = useRef<number | null>(null);
   const redrawRef = useRef<() => void>(() => {});
   const groupBy = settings.display.groupBy;
@@ -229,12 +228,14 @@ export function GraphCanvas({
     redrawRef,
     clusterMode,
     colorOf,
+    settings.display.ordered,
   );
   const geometry = useRef<{
     nodes: SimNode[];
     revision: number;
     nodeSize: number;
     groupBy: GraphSettings["display"]["groupBy"];
+    ordered: boolean;
     width: number;
     height: number;
     circles: ReturnType<typeof clusterCircles>;
@@ -263,17 +264,19 @@ export function GraphCanvas({
       bounds.revision !== revision ||
       bounds.nodeSize !== display.nodeSize ||
       bounds.groupBy !== shownGroup ||
+      bounds.ordered !== display.ordered ||
       bounds.width !== size.current.width ||
       bounds.height !== size.current.height
     ) {
       const circles = showCircles
-        ? clusterCircles(nodes, display.nodeSize, mode, links)
+        ? clusterCircles(nodes, display.nodeSize, mode, links, display.ordered)
         : [];
       bounds = {
         nodes,
         revision,
         nodeSize: display.nodeSize,
         groupBy: shownGroup,
+        ordered: display.ordered,
         ...size.current,
         circles,
         overview: fitCamera(
@@ -294,13 +297,14 @@ export function GraphCanvas({
             height: size.current.height,
             circles,
           },
-          reportedGroup.current,
+          coalesceHold.current,
         )
       : null;
-    if (reportedGroup.current !== openedGroup) {
-      reportedGroup.current = openedGroup;
-      onCoalesceGroupRef.current?.(openedGroup);
-    }
+    if (coalesceHold.current !== openedGroup) coalesceHold.current = openedGroup;
+    const shown = display.coalesce
+      ? coalesceDrawn(nodes, links, mode, openedGroup)
+      : { nodes, links };
+    shownNodes.current = display.coalesce ? shown.nodes : null;
     const palette = readCanvasPalette(element);
     if (isAutoFit.current) camera.current = overview;
     domainLabelBoxes.current = [];
@@ -325,8 +329,8 @@ export function GraphCanvas({
       pixelRatio: window.devicePixelRatio || 1,
       camera: camera.current,
       overviewZoom: latest.current.progressiveZoom ? overview.k : null,
-      nodes,
-      links,
+      nodes: shown.nodes,
+      links: shown.links,
       circles,
       display,
       groupBy: shownGroup,
@@ -354,7 +358,7 @@ export function GraphCanvas({
     ctx.fillStyle = link;
     ctx.lineWidth = 3;
     const selected = new Set(selection.current);
-    for (const node of nodes)
+    for (const node of shown.nodes)
       if (
         selected.has(node.id) ||
         node.memberIds?.some((id) => selected.has(id))
@@ -443,6 +447,7 @@ export function GraphCanvas({
           settings.display.nodeSize,
           clusterMode,
           layout.current.links,
+          settings.display.ordered,
         )
       : [];
     const overview = fitCamera(
@@ -464,6 +469,7 @@ export function GraphCanvas({
     showCircles,
     clusterMode,
     settings.display.nodeSize,
+    settings.display.ordered,
     motion,
     redraw,
     onFocusDomain,
@@ -478,6 +484,7 @@ export function GraphCanvas({
         settings.display.nodeSize,
         clusterMode,
         layout.current.links,
+        settings.display.ordered,
       );
       const overview = fitCamera(
         [...nodes, ...circleExtents(circles, CIRCLE_LABEL_ROOM)],
@@ -505,8 +512,12 @@ export function GraphCanvas({
       }
       setFocusedDomain(picked.key);
       onFocusDomain?.(picked.key);
+      const hubs =
+        clusterMode === "page"
+          ? noArticleGroups(nodes, layout.current.links)
+          : null;
       const members = nodes.filter((node) =>
-        nodeInCluster(node, picked.key, clusterMode),
+        nodeInCluster(node, picked.key, clusterMode, hubs),
       );
       const childRings = circles.filter(
         (circle) =>
@@ -558,6 +569,7 @@ export function GraphCanvas({
               latest.current.display.nodeSize,
               "domain",
               layout.current.links,
+              latest.current.display.ordered,
             ),
             world,
           )
@@ -584,6 +596,7 @@ export function GraphCanvas({
     hoveredId,
     focusedId,
     isAutoFit,
+    shownNodes,
     nodeSize: settings.display.nodeSize,
     onOpen,
     onFocus: focusNode,
@@ -603,14 +616,20 @@ export function GraphCanvas({
       return true;
     },
     onSelect: onSelect
-      ? (nodes, toggle) =>
+      ? (nodes, toggle) => {
+          const hubs =
+            clusterMode === "page"
+              ? noArticleGroups(layout.current.nodes, layout.current.links)
+              : null;
           onSelect(
             nodes.filter(
               (n) =>
-                !focusedDomain || nodeInCluster(n, focusedDomain, clusterMode),
+                !focusedDomain ||
+                nodeInCluster(n, focusedDomain, clusterMode, hubs),
             ),
             toggle,
-          )
+          );
+        }
       : undefined,
     onSelectionBox: setSelectionBox,
     onBackgroundClick: focusGroup,

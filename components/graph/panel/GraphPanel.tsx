@@ -13,6 +13,7 @@ import {
   GroupsSection,
   NodesSection,
   TuningSection,
+  ViewSection,
 } from "./sections";
 
 interface GraphPanelProps {
@@ -84,6 +85,10 @@ export function GraphPanel({
         nodes={nodes}
         onChange={(next) => update("filters", next)}
       />
+      <ViewSection
+        value={settings.display}
+        onChange={(next) => update("display", next)}
+      />
       <NodesSection
         value={settings.filters}
         onChange={(next) => update("filters", next)}
@@ -101,10 +106,6 @@ export function GraphPanel({
       <GroupsSection
         value={settings.groups}
         nodes={nodes}
-        showNew={settings.display.showNew}
-        onShowNew={(showNew) =>
-          update("display", { ...settings.display, showNew })
-        }
         onChange={(next) => update("groups", next)}
       />
       <TuningSection

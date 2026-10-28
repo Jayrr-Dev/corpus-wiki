@@ -49,8 +49,8 @@ import { PanelSection } from "./PanelSection";
 import { SelectRow, SliderRow, SwitchRow } from "./rows";
 
 // =====================================================================
-// PANEL SECTIONS: Filters, Nodes, Group, Colors, Tuning. Each takes its
-// slice of the settings and one `onChange` for the whole slice.
+// PANEL SECTIONS: Filters, View, Nodes, Group, Colors, Tuning. Each takes
+// its slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
 
 // NODES: which dot kinds appear on the canvas (claims, domain hubs, entities, pages).
@@ -204,6 +204,59 @@ export function FiltersSection({
         groups={domainGroups}
         onChange={selectDomain}
         className="h-7 w-full max-w-none"
+      />
+    </PanelSection>
+  );
+}
+
+// VIEW: drawing choices that do not change which dots the filters keep.
+export function ViewSection({
+  value,
+  onChange,
+}: {
+  value: GraphDisplay;
+  onChange: (next: GraphDisplay) => void;
+}) {
+  return (
+    <PanelSection
+      title="View"
+      defaultOpen
+      info={
+        <>
+          <PopoverDescription>
+            How the graph is drawn, after the filters.
+          </PopoverDescription>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
+            <li>
+              Highlight Newest paints rings on the newest knowledge, articles, and
+              sections.
+            </li>
+            <li>
+              Coalescence turns claims in the same circle into one dot. Open a
+              circle to split it back apart.
+            </li>
+            <li>
+              Ordered winds a step list, or the sections of an article, into a
+              spiral in that order. Off keeps the usual packed circles.
+            </li>
+          </ul>
+        </>
+      }
+    >
+      <SwitchRow
+        label="Highlight Newest"
+        checked={value.showNew}
+        onChange={(showNew) => onChange({ ...value, showNew })}
+      />
+      <SwitchRow
+        label="Coalescence"
+        checked={value.coalesce}
+        onChange={(coalesce) => onChange({ ...value, coalesce })}
+      />
+      <SwitchRow
+        label="Ordered"
+        checked={value.ordered}
+        onChange={(ordered) => onChange({ ...value, ordered })}
       />
     </PanelSection>
   );
@@ -754,14 +807,10 @@ function AddColorGroup({
 export function GroupsSection({
   value,
   nodes,
-  showNew,
-  onShowNew,
   onChange,
 }: {
   value: GraphGroup[];
   nodes: readonly GraphNode[];
-  showNew: boolean;
-  onShowNew: (showNew: boolean) => void;
   onChange: (next: GraphGroup[]) => void;
 }) {
   const [search, setSearch] = useState("");
@@ -777,7 +826,6 @@ export function GroupsSection({
   );
   return (
     <PanelSection title="Colors" defaultOpen>
-      <SwitchRow label="Newest Toggle" checked={showNew} onChange={onShowNew} />
       <div className="flex items-center gap-1">
         {value.length > 6 || search ? (
           <Input
@@ -1073,11 +1121,6 @@ export function TuningSection({
     <PanelSection title="Tuning">
       <TuningGroup title="Show">
         <ShowControls value={filters} onChange={onFiltersChange} />
-        <SwitchRow
-          label="Coalescence"
-          checked={display.coalesce}
-          onChange={(coalesce) => onDisplayChange({ ...display, coalesce })}
-        />
       </TuningGroup>
       <TuningGroup title="Labels">
         <LabelControls value={display} onChange={onDisplayChange} />

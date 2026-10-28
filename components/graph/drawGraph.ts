@@ -7,6 +7,7 @@ import {
   type GraphDisplay,
   type GraphGroupBy,
   type GraphNode,
+  noArticleGroups,
   nodeInCluster,
   ORPHANS_LABEL,
   type RouteCircle,
@@ -74,6 +75,8 @@ export interface DrawInput {
   connectedCircleKeys?: ReadonlySet<string>;
   // Circles that hold the focused dot or one of its neighbors. Filled in while drawing.
   litCircleKeys?: ReadonlySet<string>;
+  // No article groups (Orphans, Linked, External). Set while drawing in page mode.
+  pageHubs?: ReadonlyMap<string, string> | null;
   labelBoxes?: { x: number; y: number; w: number; h: number }[];
 }
 
@@ -132,7 +135,7 @@ function circleOutsideFocus(circle: ClusterCircle, input: DrawInput): boolean {
 // A dot stays visible when it sits in the selected circle or a link joins it to that circle
 function shownWithGroup(node: GraphNode, input: DrawInput): boolean {
   return (
-    inFocusGroup(node, input.focusedDomain, input.groupBy) ||
+    inFocusGroup(node, input) ||
     (input.connectedNodeIds?.has(node.id) ?? false)
   );
 }
@@ -194,7 +197,10 @@ function linkReachesGroup(
 ): boolean {
   if (!key) return true;
   const mode = clusterModeOf(input.groupBy);
-  return nodeInCluster(source, key, mode) || nodeInCluster(target, key, mode);
+  return (
+    nodeInCluster(source, key, mode, input.pageHubs) ||
+    nodeInCluster(target, key, mode, input.pageHubs)
+  );
 }
 
 // A link stays visible inside the selected circle, or when it is the link that reaches a connected dot
@@ -204,8 +210,8 @@ function linkTouchesFocus(
   input: DrawInput,
 ): boolean {
   if (!input.focusedDomain) return true;
-  const sourceIn = inFocusGroup(source, input.focusedDomain, input.groupBy);
-  const targetIn = inFocusGroup(target, input.focusedDomain, input.groupBy);
+  const sourceIn = inFocusGroup(source, input);
+  const targetIn = inFocusGroup(target, input);
   if (sourceIn && targetIn) return true;
   const connected = input.connectedNodeIds;
   if (!connected) return false;
@@ -215,13 +221,15 @@ function linkTouchesFocus(
   );
 }
 
-function inFocusGroup(
-  node: GraphNode,
-  focus: string | null | undefined,
-  groupBy: GraphGroupBy,
-): boolean {
+function inFocusGroup(node: GraphNode, input: DrawInput): boolean {
+  const focus = input.focusedDomain;
   if (!focus) return true;
-  return nodeInCluster(node, focus, clusterModeOf(groupBy));
+  return nodeInCluster(
+    node,
+    focus,
+    clusterModeOf(input.groupBy),
+    input.pageHubs,
+  );
 }
 
 function circlePaint(circle: ClusterCircle, input: DrawInput): string {
@@ -292,7 +300,8 @@ function circlesHolding(
   for (const node of input.nodes) {
     if (!ids.has(node.id)) continue;
     for (const circle of input.circles) {
-      if (nodeInCluster(node, circle.key, mode)) keys.add(circle.key);
+      if (nodeInCluster(node, circle.key, mode, input.pageHubs))
+        keys.add(circle.key);
     }
   }
   return keys;
@@ -779,7 +788,9 @@ function drawNodes(input: DrawInput, domainHubs = false): void {
   const mode = clusterModeOf(input.groupBy);
   const focus = input.focusedDomain;
   const scoped = focus
-    ? nodes.filter((node) => nodeInCluster(node, focus, mode))
+    ? nodes.filter((node) =>
+        nodeInCluster(node, focus, mode, input.pageHubs),
+      )
     : nodes;
   const recentIds =
     domainHubs || !display.showNew ? null : recentUnitIds(scoped);
@@ -1392,7 +1403,7 @@ function groupNameLift(input: DrawInput, circle: ClusterCircle): number {
   let notes = false;
   for (const node of input.nodes) {
     if (!isOnScreen(node, input)) continue;
-    if (!nodeInCluster(node, circle.key, mode)) continue;
+    if (!nodeInCluster(node, circle.key, mode, input.pageHubs)) continue;
     notes = true;
     const radiusPx =
       nodeRadius(node, input.display.nodeSize) * input.camera.k -
@@ -1510,7 +1521,13 @@ function drawCircles(input: DrawInput): void {
   for (const circle of ordered) {
     if (circle.quiet) continue;
     // Depth controls the circle paint directly, independently of text/zoom.
-    const visibility = Math.max(0.002, 0.18 ** circle.depth);
+    // A selected Orphans circle is the thing on screen. Depth would leave its
+    // fill almost clear, so the selection would not read as lit.
+    const litOrphans =
+      circle.label === ORPHANS_LABEL && input.focusedDomain === circle.key;
+    const visibility = litOrphans
+      ? 1
+      : Math.max(0.002, 0.18 ** circle.depth);
     const focus = circleFocus(input, circle);
     const color = circlePaint(circle, input);
     ctx.beginPath();
@@ -1788,6 +1805,8 @@ function drawCircleLabels(input: DrawInput): void {
 // FRAME: clear, move into world space, then the passes from back to front
 export function drawGraph(input: DrawInput): void {
   const mode = clusterModeOf(input.groupBy);
+  const pageHubs =
+    mode === "page" ? noArticleGroups(input.nodes, input.links) : null;
   const connected = input.focusedDomain
     ? clusterConnections(
         input.nodes,
@@ -1802,6 +1821,7 @@ export function drawGraph(input: DrawInput): void {
   input = {
     ...input,
     labelBoxes: [],
+    pageHubs,
     connectedNodeIds: connected.nodeIds,
     connectedCircleKeys: connected.circleKeys,
     litCircleKeys:

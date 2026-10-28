@@ -369,6 +369,7 @@ export function applyForces(
   nodeSize: number,
   mode: ClusterMode = "domain",
   colorOf: NodeColorOf = () => null,
+  ordered = false,
 ): void {
   // Groups on: every dot has a home circle in the packing
   const homes =
@@ -380,6 +381,7 @@ export function applyForces(
           simulation
             .force<ReturnType<typeof forceLink<SimNode, SimLink>>>("link")
             ?.links() ?? [],
+          ordered,
         ).homes
       : null;
   const linkStrength = forces.link * LINK_SCALE;
@@ -515,6 +517,7 @@ export function createSimulation(
   nodeSize: number,
   mode: ClusterMode = "domain",
   colorOf: NodeColorOf = () => null,
+  ordered = false,
 ): GraphSimulation {
   const simulation = forceSimulation<SimNode, SimLink>(nodes)
     .force(
@@ -522,6 +525,6 @@ export function createSimulation(
       forceLink<SimNode, SimLink>(links).id((node) => node.id),
     )
     .stop();
-  applyForces(simulation, forces, nodeSize, mode, colorOf);
+  applyForces(simulation, forces, nodeSize, mode, colorOf, ordered);
   return simulation;
 }

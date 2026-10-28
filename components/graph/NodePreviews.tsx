@@ -2,6 +2,10 @@
 
 import { Facts, QueryState } from "@/app/(app)/_components/bits";
 import { formatDate } from "@/app/(app)/_lib/format";
+import { LineBlock } from "@/components/living-page/LineBlock";
+import { ArticleTextLink, PreviewTabProvider } from "@/components/living-page/previewTabs";
+import { UnitPreview } from "@/components/graph/UnitPreview";
+import { DynamicTabs } from "@/components/standard/dynamic-tabs";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,27 +16,39 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { CircleOpenTarget, GraphNode } from "@/lib/graph";
+import { articleNavigation } from "@/lib/living-page/articleNavigation";
+import type { ArticleLink } from "@/lib/living-page/articleEvidence";
 import {
   useArticleSuggestions,
+  useEntities,
   useEntity,
   usePage,
+  usePages,
   useSectionLines,
   useSections,
+  type ShownLine,
 } from "@/lib/queries";
+import { useArticleTopicLinks } from "@/lib/queries/articleTopicLinks";
+import { useRelatedArticles } from "@/lib/queries/relatedArticles";
 import { cn } from "@/lib/utils";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 
-function PreviewHeader({ label, kind }: { label: string; kind: string }) {
+const PREVIEW_TITLE_CLASS = "text-title font-semibold";
+
+function PreviewKind({ kind }: { kind: string }) {
   return (
     <DialogHeader>
       <DialogDescription asChild>
         <p className="text-xs font-medium tracking-wide uppercase">{kind}</p>
       </DialogDescription>
-      <DialogTitle>{label}</DialogTitle>
     </DialogHeader>
   );
+}
+
+function PreviewTitle({ children }: { children: string }) {
+  return <DialogTitle size="title">{children}</DialogTitle>;
 }
 
 function OpenPage({ node }: { node: GraphNode }) {
@@ -59,13 +75,14 @@ function PreviewSplit({
     ? "Collapse knowledge units"
     : "Expand knowledge units";
   return (
-    <div className="flex w-fit max-w-full flex-col gap-4">
-      <div className="flex items-start gap-4">
+    <div className="flex w-fit max-w-full flex-col gap-4 in-data-[maximized]:h-full in-data-[maximized]:min-h-0 in-data-[maximized]:w-full in-data-[maximized]:max-w-none in-data-[maximized]:flex-1">
+      <div className="flex items-start gap-4 in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1 in-data-[maximized]:items-stretch">
         <aside
           aria-label="Knowledge units"
           className={cn(
             "flex shrink-0 flex-col border-r",
             unitsOpen ? "w-56 pr-4" : "pr-2",
+            "in-data-[maximized]:min-h-0",
           )}
         >
           <div className="flex items-center gap-1">
@@ -91,7 +108,7 @@ function PreviewSplit({
             </button>
           </div>
           {unitsOpen ? (
-            <div className="mt-3 max-h-[min(52vh,28rem)] overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable]">
+            <div className="mt-3 max-h-[min(52vh,28rem)] overflow-y-auto overscroll-contain pr-1 [scrollbar-gutter:stable] in-data-[maximized]:max-h-none in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1">
               {sidebar}
             </div>
           ) : null}
@@ -102,6 +119,7 @@ function PreviewSplit({
             unitsOpen
               ? "w-[min(32rem,calc(100vw-18rem))]"
               : "w-fit max-w-[min(32rem,calc(100vw-6rem))]",
+            "in-data-[maximized]:max-h-none in-data-[maximized]:min-h-0 in-data-[maximized]:w-auto in-data-[maximized]:max-w-none in-data-[maximized]:flex-1",
           )}
         >
           <div
@@ -177,13 +195,13 @@ export function EntityPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader label={node.label} kind="Entity" />
+      <PreviewKind kind="Entity" />
+      {entity && !query.isPending && !query.error ? null : (
+        <DialogTitle className="sr-only">{node.label}</DialogTitle>
+      )}
       <QueryState query={query}>
         {entity ? (
           <>
-            <p className="text-body whitespace-pre-wrap">
-              {entity.description || "No description yet."}
-            </p>
             <Facts
               items={[
                 ["Type", entity.type],
@@ -194,6 +212,10 @@ export function EntityPreview({
                 ["Created", formatDate(entity.created_at)],
               ]}
             />
+            <PreviewTitle>{node.label}</PreviewTitle>
+            <p className="text-body whitespace-pre-wrap">
+              {entity.description || "No description yet."}
+            </p>
           </>
         ) : (
           <p className="text-muted-foreground">
@@ -218,13 +240,14 @@ export function DomainPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader label={node.label} kind="Domain" />
+      <PreviewKind kind="Domain" />
       <Facts
         items={[
           ["Path", node.text],
           ["Connections", node.degree],
         ]}
       />
+      <PreviewTitle>{node.label}</PreviewTitle>
     </PreviewSplit>
   );
 }
@@ -245,15 +268,53 @@ export function PagePreview({
     sectionTitle ? section.title === sectionTitle : true,
   );
   const related = unitsForPage(units, node.label, sectionTitle);
+  const title = sectionTitle ?? node.label;
+  const showTitle = Boolean(query.data && !query.isPending && !query.error);
+  const allPages = usePages();
+  const entities = useEntities();
+  const allSections = useSections();
+  const pageText = (lines.data ?? []).map((line) => line.content).join(" ");
+  const navigation = useMemo(
+    () =>
+      articleNavigation(
+        allPages.data ?? [],
+        entities.data ?? [],
+        allSections.data ?? [],
+        node.id,
+        pageText,
+      ),
+    [allPages.data, entities.data, allSections.data, node.id, pageText],
+  );
+  const navigationContext = useMemo(
+    () => JSON.stringify([allPages.data, allSections.data, entities.data]),
+    [allPages.data, allSections.data, entities.data],
+  );
+  const navigationReady =
+    !!allPages.data && !!allSections.data && !!entities.data;
+  const topicLinks = useArticleTopicLinks(
+    node.id,
+    navigationContext,
+    navigationReady,
+  );
+  const articleLinks = useMemo(
+    () => [...navigation.links, ...(topicLinks.data ?? [])],
+    [navigation.links, topicLinks.data],
+  );
+  const recommendations = useRelatedArticles(
+    node.id,
+    navigationContext,
+    navigationReady,
+  );
+  const seeAlso = recommendations.data ?? navigation.related;
   return (
     <PreviewSplit
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewHeader
-        label={sectionTitle ?? node.label}
-        kind={sectionTitle ? "Section" : "Article"}
-      />
+      <PreviewKind kind={sectionTitle ? "Section" : "Article"} />
+      {showTitle ? null : (
+        <DialogTitle className="sr-only">{title}</DialogTitle>
+      )}
       <QueryState query={query}>
         {query.data ? (
           <>
@@ -274,26 +335,23 @@ export function PagePreview({
                 ["Created", formatDate(query.data.created_at)],
               ]}
             />
+            <PreviewTitle>{title}</PreviewTitle>
             <QueryState query={sections}>
               <QueryState query={lines}>
                 {shown?.length ? (
-                  shown.map((section) => {
-                    const content =
-                      (lines.data ?? [])
-                        .filter((line) => line.sectionId === section.id)
-                        .map((line) => line.content)
-                        .join("\n\n") || section.body;
-                    return (
-                      <section key={section.id} className="flex flex-col gap-2">
-                        {sectionTitle ? null : (
-                          <h3 className="font-medium">{section.title}</h3>
-                        )}
-                        <p className="text-body whitespace-pre-wrap">
-                          {content || "No content yet."}
-                        </p>
-                      </section>
-                    );
-                  })
+                  shown.map((section) => (
+                    <section key={section.id} className="flex flex-col gap-2">
+                      {sectionTitle ? null : (
+                        <h3 className={PREVIEW_TITLE_CLASS}>{section.title}</h3>
+                      )}
+                      <SectionBody
+                        sectionId={section.id}
+                        body={section.body}
+                        lines={lines.data ?? []}
+                        links={articleLinks}
+                      />
+                    </section>
+                  ))
                 ) : (
                   <p className="text-muted-foreground">
                     {sectionTitle
@@ -303,6 +361,12 @@ export function PagePreview({
                 )}
               </QueryState>
             </QueryState>
+            <SeeAlso
+              articles={seeAlso}
+              pending={recommendations.isPending}
+              failed={!!recommendations.error}
+              onRetry={() => void recommendations.refetch()}
+            />
           </>
         ) : (
           <p className="text-muted-foreground">
@@ -314,15 +378,93 @@ export function PagePreview({
   );
 }
 
+function SectionBody({
+  sectionId,
+  body,
+  lines,
+  links,
+}: {
+  sectionId: string;
+  body: string | null;
+  lines: readonly ShownLine[];
+  links: ArticleLink[];
+}) {
+  const sectionLines = lines.filter((line) => line.sectionId === sectionId);
+  if (sectionLines.length) {
+    return (
+      <>
+        {sectionLines.map((line) => (
+          <LineBlock key={line.lineId} content={line.content} links={links} />
+        ))}
+      </>
+    );
+  }
+  if (body) return <LineBlock content={body} links={links} />;
+  return <p className="text-muted-foreground">No content yet.</p>;
+}
+
+function SeeAlso({
+  articles,
+  pending,
+  failed,
+  onRetry,
+}: {
+  articles: { id: string; slug: string; title: string }[];
+  pending: boolean;
+  failed: boolean;
+  onRetry: () => void;
+}) {
+  if (!articles.length && !pending && !failed) return null;
+  return (
+    <section className="border-t pt-4">
+      <h3 className="mb-2 font-serif text-title">See also</h3>
+      {pending && !articles.length ? (
+        <p role="status" className="text-panel text-faint">
+          Finding related articles…
+        </p>
+      ) : null}
+      {failed ? (
+        <p className="mb-2 text-panel text-faint">
+          Related articles are temporarily unavailable.{" "}
+          <button
+            type="button"
+            className="text-link hover:underline"
+            onClick={onRetry}
+          >
+            Retry
+          </button>
+        </p>
+      ) : null}
+      <ul className="list-disc space-y-1 pl-5 text-body">
+        {articles.map((other) => (
+          <li key={other.id}>
+            <ArticleTextLink
+              href={`/p/${other.slug}`}
+              label={other.title}
+              className="text-link hover:underline"
+            >
+              {other.title}
+            </ArticleTextLink>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 function UnitLinkList({ units }: { units: readonly GraphNode[] }) {
   if (!units.length) return null;
   return (
     <ul className="flex flex-col gap-1">
       {units.map((unit) => (
         <li key={unit.id}>
-          <Link href={unit.href} className="text-link hover:underline">
+          <ArticleTextLink
+            href={unit.href}
+            label={unit.label}
+            className="text-link hover:underline"
+          >
             {unit.label}
-          </Link>
+          </ArticleTextLink>
         </li>
       ))}
     </ul>
@@ -372,7 +514,7 @@ function RecommendationPreview({
         <QueryState query={query}>
           {planned.map((section) => (
             <section key={section.title} className="flex flex-col gap-2">
-              <h3 className="font-medium">{section.title}</h3>
+              <h3 className={PREVIEW_TITLE_CLASS}>{section.title}</h3>
               <UnitLinkList
                 units={section.unitIds.flatMap((id) => byId.get(id) ?? [])}
               />
@@ -394,7 +536,8 @@ function RecommendationPreview({
         </DialogFooter>
       }
     >
-      <PreviewHeader label={title} kind="Suggestion" />
+      <PreviewKind kind="Suggestion" />
+      <PreviewTitle>{title}</PreviewTitle>
       <QueryState query={query}>
         {suggestion?.rationale ? (
           <p className="text-body whitespace-pre-wrap">
@@ -403,6 +546,125 @@ function RecommendationPreview({
         ) : null}
       </QueryState>
     </PreviewSplit>
+  );
+}
+
+type PreviewTab = {
+  id: string;
+  label: string;
+  closable?: boolean;
+} & (
+  | { kind: "page"; pageId: string; sectionTitle?: string }
+  | { kind: "unit"; unitId: string }
+);
+
+function ArticlePreviewTabs({
+  page,
+  sectionTitle,
+  pages,
+  units,
+}: {
+  page: GraphNode;
+  sectionTitle?: string;
+  pages: readonly GraphNode[];
+  units: readonly GraphNode[];
+}) {
+  const first: PreviewTab = {
+    kind: "page",
+    id: sectionTitle ? `${page.id}:${sectionTitle}` : page.id,
+    label: sectionTitle ?? page.label,
+    pageId: page.id,
+    sectionTitle,
+    closable: false,
+  };
+  const [tabs, setTabs] = useState<PreviewTab[]>([first]);
+  const [active, setActive] = useState(first.id);
+  const openTarget = useCallback(
+    (href: string, label: string) => {
+      const path = href.split(/[?#]/)[0] ?? href;
+      const pageMatch = pages.find(
+        (node) => node.kind === "page" && node.href === path,
+      );
+      if (pageMatch) {
+        setTabs((current) =>
+          current.some((tab) => tab.id === pageMatch.id)
+            ? current
+            : [
+                ...current,
+                {
+                  kind: "page",
+                  id: pageMatch.id,
+                  label: pageMatch.label || label,
+                  pageId: pageMatch.id,
+                },
+              ],
+        );
+        setActive(pageMatch.id);
+        return;
+      }
+      const unitMatch = units.find(
+        (node) => node.kind === "unit" && node.href === path,
+      );
+      if (!unitMatch) {
+        window.location.assign(href);
+        return;
+      }
+      const id = `unit:${unitMatch.id}`;
+      setTabs((current) =>
+        current.some((tab) => tab.id === id)
+          ? current
+          : [
+              ...current,
+              {
+                kind: "unit",
+                id,
+                label: unitMatch.label || label,
+                unitId: unitMatch.id,
+              },
+            ],
+      );
+      setActive(id);
+    },
+    [pages, units],
+  );
+  const shown = tabs.find((tab) => tab.id === active) ?? tabs[0] ?? first;
+  const node =
+    shown.kind === "page"
+      ? (pages.find((item) => item.id === shown.pageId) ?? page)
+      : null;
+  const unit =
+    shown.kind === "unit"
+      ? units.find((item) => item.id === shown.unitId)
+      : null;
+  return (
+    <PreviewTabProvider onOpen={openTarget}>
+      <DynamicTabs
+        items={tabs.map((tab) => ({
+          id: tab.id,
+          label: tab.label,
+          closable: tab.closable,
+        }))}
+        value={active}
+        onValueChange={setActive}
+        onClose={(id) =>
+          setTabs((current) => current.filter((tab) => tab.id !== id))
+        }
+        aria-label="Open articles"
+        className="in-data-[maximized]:h-full in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1 [&_[data-slot=dynamic-tabs-bar]]:pr-20"
+      >
+        {shown.kind === "unit" && unit ? (
+          <UnitPreview key={shown.id} node={unit} />
+        ) : null}
+        {shown.kind === "page" && node ? (
+          <PagePreview
+            key={shown.id}
+            node={node}
+            units={units}
+            sectionTitle={shown.sectionTitle}
+          />
+        ) : null}
+      </DynamicTabs>
+    </PreviewTabProvider>
   );
 }
 
@@ -443,14 +705,20 @@ export function CirclePreviewDialog({
     >
       <DialogContent className="w-fit max-w-[min(52rem,calc(100%-2rem))] sm:max-w-[min(52rem,calc(100%-2rem))]">
         {target?.kind === "page" && page ? (
-          <PagePreview key={page.id} node={page} units={units} />
+          <ArticlePreviewTabs
+            key={page.id}
+            page={page}
+            pages={pages}
+            units={units}
+          />
         ) : null}
         {target?.kind === "section" && page ? (
-          <PagePreview
+          <ArticlePreviewTabs
             key={`${page.id}:${target.section}`}
-            node={page}
-            units={units}
+            page={page}
             sectionTitle={target.section}
+            pages={pages}
+            units={units}
           />
         ) : null}
         {target && target.kind !== "recommendation" && !page ? (

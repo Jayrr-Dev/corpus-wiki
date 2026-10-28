@@ -23,6 +23,7 @@ import {
   LINKED_LABEL,
   moveTarget,
   NO_ARTICLE_LABEL,
+  noArticleGroups,
   nodeInCluster,
   ORPHANS_LABEL,
   packDomains,
@@ -1402,6 +1403,12 @@ describe("domain clusters", () => {
     const { homes } = packDomains(nodes, 1, "page", links);
     expect(homes.get("orphan")).not.toBe(homes.get("web"));
     expect(homes.get("out")).not.toBe(homes.get("orphan"));
+    const hubs = noArticleGroups(nodes, links);
+    expect(nodeInCluster(orphan, orphans.key, "page", hubs)).toBe(true);
+    expect(nodeInCluster(orphan, NO_ARTICLE_LABEL, "page", hubs)).toBe(true);
+    expect(nodeInCluster(external, outside.key, "page", hubs)).toBe(true);
+    expect(nodeInCluster(external, orphans.key, "page", hubs)).toBe(false);
+    expect(nodeInCluster(orphan, orphans.key, "page")).toBe(false);
     expect(homes.get("hub")).toBe(homes.get("leaf"));
     expect(
       pageMoveTarget(
@@ -1535,6 +1542,68 @@ describe("domain clusters", () => {
     expect(home.x).toBeCloseTo(zebra.x);
     expect(home.y).toBeCloseTo(zebra.y);
     expect(distance(home, article)).toBeLessThan(article.r);
+  });
+
+  it("winds an ordered step list into a spiral", () => {
+    const nodes = ["Step 10", "Step 2", "Step 1", "Step 4", "Step 3"].flatMap(
+      (topic) => [
+        dot(`${topic}-a`, [`Co/Job/${topic}`]),
+        dot(`${topic}-b`, [`Co/Job/${topic}`]),
+      ],
+    );
+    const children = clusterCircles(nodes, 1, "domain", [], true).filter(
+      (circle) => circle.depth === 2,
+    );
+    expect(children.map((circle) => circle.label)).toEqual([
+      "Step 1",
+      "Step 2",
+      "Step 3",
+      "Step 4",
+      "Step 10",
+    ]);
+    const [first, second, third, fourth, last] = children;
+    const bend =
+      (second!.x - first!.x) * (third!.y - second!.y) -
+      (second!.y - first!.y) * (third!.x - second!.x);
+    expect(Math.abs(bend)).toBeGreaterThan(1);
+    expect(distance(first!, last!)).toBeGreaterThan(distance(first!, second!));
+    expect(distance(second!, fourth!)).toBeGreaterThan(
+      distance(second!, third!),
+    );
+    for (let i = 0; i < children.length; i++)
+      for (let j = i + 1; j < children.length; j++)
+        expect(distance(children[i]!, children[j]!)).toBeGreaterThanOrEqual(
+          children[i]!.r + children[j]!.r + 9.99,
+        );
+  });
+
+  it("leaves step lists packed until Ordered is on", () => {
+    const nodes = ["Step 1", "Step 2", "Step 3", "Step 4"].flatMap((topic) => [
+      dot(`${topic}-a`, [`Co/Job/${topic}`]),
+    ]);
+    const packed = clusterCircles(nodes, 1).filter(
+      (circle) => circle.depth === 2,
+    );
+    const wound = clusterCircles(nodes, 1, "domain", [], true).filter(
+      (circle) => circle.depth === 2,
+    );
+    expect(packed.map((circle) => circle.x)).not.toEqual(
+      wound.map((circle) => circle.x),
+    );
+  });
+
+  it("keeps ordinary topic circles packed instead of one straight line", () => {
+    const nodes = ["PPE", "Training", "Inspections", "Permits"].flatMap(
+      (topic, t) =>
+        Array.from({ length: t * 3 + 1 }, (_, i) =>
+          dot(`${topic}-${i}`, [`Co/Safety/${topic}`]),
+        ),
+    );
+    const children = clusterCircles(nodes, 1).filter(
+      (circle) => circle.depth === 2,
+    );
+    const ys = children.map((circle) => circle.y);
+    expect(Math.max(...ys) - Math.min(...ys)).toBeGreaterThan(1);
   });
 
   it("packs sibling domains side by side without overlapping", () => {
