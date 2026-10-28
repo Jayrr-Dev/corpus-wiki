@@ -29,7 +29,7 @@ Browser check when D4 lands, and again at the end (screenshots of each):
 | data | D1 `filters.ts`, `build.ts`, `related.ts`, `recentUnits.ts` ask traits, not names; no behavior change | C1 | merged 2831458 |
 | data | D2 Settings: `shown` map replaces `showUnits`/`showEntities`/`showDomains`/`showPages`; old saves migrate | D1, P1 | planned |
 | data | D3 `graphForGrouping` keeps the active grouping's hub nodes (stops hiding pages and entities) | D1, L2 | merged |
-| data | D4 Place entity nodes by their knowledge: in Domain grouping, the domain most of their units sit in; in Pages grouping, the article and section that cite most of their units. Generalize `domainsInsideEntityGroups` / `domainsInsidePageGroups` to every `isPlacedByLinks` node, using the `evidence` graph so it works with units hidden | D3 | planned |
+| data | D4 Place entity nodes by their knowledge: in Domain grouping, the domain most of their units sit in; in Pages grouping, the article and section that cite most of their units. Generalize `domainsInsideEntityGroups` / `domainsInsidePageGroups` to every `isPlacedByLinks` node, using the `evidence` graph so it works with units hidden | D3 | merged 0e1a286 |
 | canvas | V1 `drawGraph.ts`, `GraphCanvas.tsx`: color, shape and size from the registry; per-grouping colors in `groupColors.ts`; `clusterModeOf` removed | C1 | merged c9c87a6 |
 | panel | P1 Nodes and Group switches built from the registries; `components/graph/nodeTypes.tsx` holds previews per type | C1 | merged 9e3ec94 |
 | guard | G1 Lint rule against literal kind checks; every-type-by-every-grouping test; made-up type test | L2, D2, D3, D4, V1, P1 | planned |
