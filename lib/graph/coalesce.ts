@@ -33,11 +33,16 @@ function latestActivity(members: readonly GraphNode[]): string | undefined {
   return latest;
 }
 
-// A pile grows with the square root of its count, and stops at a modest hub.
-// The raw count made groups like Orphans into a moon.
+// A pile grows with the square root of its count, then stops.
+// Twice that root reads as a pile. The raw count made Orphans a moon.
+const PILE_DEGREE_CAP = 24;
+
 function pileDegree(members: readonly GraphNode[]): number {
   const busiest = Math.max(...members.map((member) => member.degree));
-  const piled = Math.min(10, 1 + Math.round(Math.sqrt(members.length)));
+  const piled = Math.min(
+    PILE_DEGREE_CAP,
+    1 + Math.round(Math.sqrt(members.length) * 2),
+  );
   return Math.max(busiest, piled);
 }
 

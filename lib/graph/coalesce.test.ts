@@ -56,7 +56,7 @@ describe("coalesceGraph", () => {
     const crowd = Array.from({ length: 100 }, (_, index) =>
       claim(String(index), "Safety"),
     );
-    expect(coalesceGraph({ nodes: crowd, links: [] }, "domain").nodes[0]?.degree).toBe(10);
+    expect(coalesceGraph({ nodes: crowd, links: [] }, "domain").nodes[0]?.degree).toBe(21);
     expect(next.nodes.map((node) => node.id).sort()).toEqual([
       "alone",
       "c",
