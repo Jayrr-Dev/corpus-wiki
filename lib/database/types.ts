@@ -37,11 +37,13 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
-      // Written only through record_agent_call
+      // Written only through record_agent_call; one of key_id and grant_id is set
       agent_calls: {
         Row: {
           id: string;
-          key_id: string;
+          person_id: string;
+          key_id: string | null;
+          grant_id: string | null;
           space_id: string | null;
           tool: string;
           scope: string;
@@ -50,6 +52,37 @@ export type Database = {
           ms: number;
           summary: string;
           created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      // OAuth clients of the MCP server; a person may select the clients they granted
+      oauth_clients: {
+        Row: {
+          client_id: string;
+          name: string;
+          redirect_uris: string[];
+          kind: "cimd" | "dcr";
+          metadata: Json;
+          fetched_at: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      // A person's consent for one OAuth client; space_id null means all Spaces
+      oauth_grants: {
+        Row: {
+          id: string;
+          person_id: string;
+          client_id: string;
+          space_id: string | null;
+          scopes: string[];
+          created_at: string;
+          revoked_at: string | null;
+          last_used_at: string | null;
         };
         Insert: never;
         Update: never;
@@ -1613,11 +1646,58 @@ export type Database = {
       };
       revoke_agent_key: { Args: { p_id: string }; Returns: undefined };
       resolve_agent_key: { Args: { p_hash: string }; Returns: Json };
+      resolve_oauth_token: { Args: { p_hash: string; p_resource: string }; Returns: Json };
+      oauth_get_client: { Args: { p_client_id: string }; Returns: Json };
+      oauth_save_client: {
+        Args: { p_client_id: string; p_name: string; p_redirect_uris: string[]; p_kind: string; p_metadata: Json };
+        Returns: Json;
+      };
+      oauth_authorize: {
+        Args: {
+          p_client_id: string;
+          p_space: string | null;
+          p_scopes: string[];
+          p_code_hash: string;
+          p_redirect_uri: string;
+          p_code_challenge: string;
+          p_resource: string;
+        };
+        Returns: string;
+      };
+      revoke_oauth_grant: { Args: { p_id: string }; Returns: undefined };
+      oauth_exchange_code: {
+        Args: {
+          p_code_hash: string;
+          p_client_id: string;
+          p_redirect_uri: string;
+          p_challenge: string;
+          p_resource: string | null;
+          p_access_hash: string;
+          p_refresh_hash: string;
+          p_access_seconds: number;
+          p_refresh_seconds: number;
+        };
+        Returns: Json;
+      };
+      oauth_refresh: {
+        Args: {
+          p_refresh_hash: string;
+          p_client_id: string;
+          p_resource: string | null;
+          p_scopes: string[] | null;
+          p_access_hash: string;
+          p_new_refresh_hash: string;
+          p_access_seconds: number;
+          p_refresh_seconds: number;
+        };
+        Returns: Json;
+      };
+      oauth_revoke_token: { Args: { p_token_hash: string; p_client_id: string | null }; Returns: undefined };
       agent_call_counts: { Args: { p_key: string }; Returns: Json };
       record_agent_call: {
         Args: {
           p_key: string;
-          p_space: string;
+          p_space: string | null;
           p_tool: string;
           p_scope: string;
           p_ok: boolean;
