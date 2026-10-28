@@ -8,11 +8,12 @@ facts; the AI only finds the facts (claim structure labels, card facts).
 Inputs: stakeholder cards (`StakeholderCard`), relations (`StructureRelation`,
 see `lib/stakeholders/structure.ts`), our organization's id (or null), and `now`.
 
-Who gets a level: every stakeholder except roles (a job like "inspector" is a
-seat, not a party) and places that are not jurisdictions. A place whose kind is
-a country, province, state, territory, city or municipality counts as a
-government; "Edmonton, Alberta" as a plain place does not. Roles and plain
-places still count as links in the graph; they just get no level.
+Who gets a level: every stakeholder except places that are not jurisdictions. A
+place whose kind is a country, province, state, territory, city or
+municipality counts as a government; "Edmonton, Alberta" as a plain place does
+not. Plain places still count as links in the graph; they just get no level.
+Roles (a job like "inspector") are seats, not parties, and are scored as seats
+(section 4b).
 
 Units: power is measured in **staff-equivalents**, roughly "how many people's
 worth of resources this controls". Levels are powers of ten of that number.
@@ -117,6 +118,25 @@ that seat. The person's total may, through other seats, network and experience.
 
 A person with no seats, network or experience gets a floor of 1.
 
+## 4b. Roles
+
+A role is a seat that people fill, so its power is what comes with the seat:
+
+`Role = P(its organization) × w(seniority) × r(decision rights)`
+
+- **Organization:** a `works_in`, `part_of` or `leads` link from the role,
+  else a key fact such as "Employer" or "Issuing body" naming a stakeholder,
+  else the one organization its functions name ("EPCOR's drawing standard").
+  None found: a small team of 20, and the result is marked estimated.
+- **Seniority:** the role's name on the ladder ("Safety Manager" is manager,
+  "Entry Supervisor" is lead, "Designer" is staff), weighted like `works_in`.
+- **Decision rights (RACI):** the strongest right any of its functions shows.
+  - accountable (approves, authorizes, decides, signs off): 3
+  - responsible (completes, prepares, designs, performs): 1
+  - consulted (reviews, advises, inspects, checks): 0.7
+  - informed (receives, is notified): 0.4
+  - not stated: 1
+
 ## 5. Levels
 
 `score` is `log10(power)`. Use the same fixed bands in every workspace:
@@ -130,9 +150,10 @@ A person with no seats, network or experience gets a floor of 1.
 | 10,000 and up | 5 |
 
 The page shows **points from 0 to 1000** instead of the level, so parties in the
-same band still differ: `points = round(clamp(log10(power) × 125, 0, 1000))`.
-Every tenfold is 125 points: 1 staff-equivalent is 0, 100 is 250, 10,000 is
-500, 1 million is 750, and 100 million or more is 1000. The level stays as a
+same band still differ: `points = round(clamp(log10(power / 0.01) × 100, 0, 1000))`.
+Every tenfold is 100 points, starting from 0.01 staff-equivalents so single
+seats still differ: 1 staff-equivalent is 200, 100 is 400, 10,000 is 600,
+1 million is 800, and 100 million or more is 1000. The level stays as a
 coarse band.
 
 Each result also carries `reasons`, one short sentence per part that counted

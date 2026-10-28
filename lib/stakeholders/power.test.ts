@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { StakeholderCard } from "./cards";
 import type { StructureRelation } from "./structure";
-import { POWER_MODEL, computePower, computePowerOverUs, levelOf, parseAmount, pointsOf, seniorityFromTitle, sizeFromFacts, timeWeight } from "./power";
+import { POWER_MODEL, computePower, computePowerOverUs, decisionRight, levelOf, parseAmount, pointsOf, seniorityFromTitle, sizeFromFacts, timeWeight } from "./power";
 
 const NOW = new Date("2026-10-28T00:00:00Z");
 
@@ -289,27 +289,62 @@ describe("computePowerOverUs", () => {
 });
 
 describe("who gets a level", () => {
-  it("leaves out roles and plain places, keeps jurisdictions", () => {
+  it("leaves out plain places, keeps jurisdictions and scores roles as seats", () => {
     const results = power([
       card("designer", "role", {}, { kind: "role" }),
       card("edmonton-alberta", "place", {}, { kind: "place" }),
       card("china", "place", { Population: "1.4 billion" }, { kind: "country" }),
       card("epcor", "company"),
     ], []);
-    expect(results.has("designer")).toBe(false);
+    expect(results.has("designer")).toBe(true);
     expect(results.has("edmonton-alberta")).toBe(false);
     expect(results.get("china")?.level).toBe(5);
     expect(results.has("epcor")).toBe(true);
-    expect(computePowerOverUs([card("designer", "role"), card("epcor", "company", {}, { isOurs: true })], [], "epcor", NOW).has("designer")).toBe(false);
+  });
+});
+
+describe("roles", () => {
+  const fns = (...texts: string[]) => texts.map((text) => ({ text, unitIds: [] }));
+  const epcor = card("EPCOR", "company", { Employees: "3,400" });
+  const tiny = card("Tiny Works", "company", { Employees: "12" });
+  const role = (name: string, facts: Record<string, string>, functions: string[]) => card(name, "role", facts, { functions: fns(...functions) });
+
+  it("reads decision rights from functions", () => {
+    expect(decisionRight(["Signs the permit to authorize entry"]).right).toBe("accountable");
+    expect(decisionRight(["Completes the drawing", "Reviews the permit"]).right).toBe("responsible");
+    expect(decisionRight(["Reviews drawings"]).right).toBe("consulted");
+    expect(decisionRight(["Receives notice from the Designer"]).right).toBe("informed");
+    expect(decisionRight([]).right).toBe("unknown");
+  });
+
+  it("ranks a seat by its organization, seniority and decision rights", () => {
+    const results = power([epcor, tiny,
+      role("Designer", { Employer: "EPCOR" }, ["Completes preliminary designs"]),
+      role("Tiny Designer", { Employer: "Tiny Works" }, ["Completes preliminary designs"]),
+      role("Safety Manager", { Employer: "EPCOR" }, ["Approves the safety plan"]),
+      role("Inspector", { Employer: "EPCOR" }, ["Reviews drawings"]),
+    ], []);
+    const points = (id: string) => results.get(id)!.points;
+    expect(points("Designer")).toBeGreaterThan(points("Tiny Designer"));
+    expect(points("Safety Manager")).toBeGreaterThan(points("Designer"));
+    expect(points("Designer")).toBeGreaterThan(points("Inspector"));
+    expect(points("EPCOR")).toBeGreaterThan(points("Safety Manager"));
+    expect(results.get("Designer")!.reasons[0]).toBe("Staff seat at EPCOR");
+  });
+
+  it("finds the organization its functions name, and estimates without one", () => {
+    const results = power([epcor, role("Drafter", {}, ["Completes drawings to EPCOR's standard"]), role("Loner", {}, ["Completes drawings"])], []);
+    expect(results.get("Drafter")!.reasons[0]).toBe("Staff seat at EPCOR");
+    expect(results.get("Loner")!.estimated).toBe(true);
   });
 });
 
 describe("points from 0 to 1000", () => {
-  it("gives 125 points per tenfold, clamped", () => {
-    expect(pointsOf(0.5)).toBe(0);
-    expect(pointsOf(100)).toBe(250);
-    expect(pointsOf(10_000)).toBe(500);
-    expect(pointsOf(300_000)).toBe(685);
+  it("gives 100 points per tenfold from 0.01, clamped", () => {
+    expect(pointsOf(0.005)).toBe(0);
+    expect(pointsOf(1)).toBe(200);
+    expect(pointsOf(10_000)).toBe(600);
+    expect(pointsOf(300_000)).toBe(748);
     expect(pointsOf(1e9)).toBe(1000);
   });
 });

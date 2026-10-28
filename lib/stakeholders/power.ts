@@ -36,7 +36,8 @@ export const POWER_MODEL = {
     experience: { peak: 0.1, perYear: 0.01, cap: 0.25 },
     maxPasses: 20, floor: 1,
   },
-  levels: { bands: [10, 100, 1_000, 10_000], pointsPerTenfold: 125, maxPoints: 1000 },
+  levels: { bands: [10, 100, 1_000, 10_000], pointsPerTenfold: 100, zeroAt: 0.01, maxPoints: 1000 },
+  roles: { rights: { accountable: 3, responsible: 1, consulted: 0.7, informed: 0.4, unknown: 1 }, noBox: 20 },
   powerOverUs: { inUs: 1, regulates: 1, funds: 0.8, client: 0.7, perLink: 0.5, unconnected: 0.01 },
 } as const;
 
@@ -170,7 +171,7 @@ const TITLE_SENIORITY: [RegExp, Seniority][] = [
   [/\b(lead|supervisor|foreman|team leader)\b/, "lead"],
   [/\b(intern|trainee|junior|apprentice|student)\b/, "entry"],
   [/\b(consultant|advisor|adviser|contractor)\b/, "advisor"],
-  [/\b(engineer|analyst|officer|inspector|clerk|specialist|coordinator|associate|assistant|technician|staff|planner)\b/, "staff"],
+  [/\b(engineer|analyst|officer|inspector|clerk|specialist|coordinator|associate|assistant|technician|technologist|designer|drafter|attendant|entrant|administrator|operator|worker|staff|planner)\b/, "staff"],
 ];
 
 export function seniorityFromTitle(title: string | null | undefined): Seniority | null {
@@ -188,10 +189,11 @@ const seniorityWord = (seniority: Seniority) => seniority.replace(/_/g, " ");
 // 5. LEVELS: fixed powers of ten of staff-equivalents
 // ---------------------------------------------------------------------
 
-// 0 to 1000: 125 points per tenfold, so 1 staff-equivalent is 0, 10,000 is 500, 100 million is 1000
+// 0 to 1000: 100 points per tenfold from 0.01 staff-equivalents (one seat's share), so 1 is 200,
+// 10,000 is 600 and 100 million is 1000
 export function pointsOf(power: number): number {
-  const { pointsPerTenfold, maxPoints } = POWER_MODEL.levels;
-  return Math.round(Math.min(maxPoints, Math.max(0, Math.log10(power) * pointsPerTenfold)));
+  const { pointsPerTenfold, zeroAt, maxPoints } = POWER_MODEL.levels;
+  return Math.round(Math.min(maxPoints, Math.max(0, Math.log10(power / zeroAt) * pointsPerTenfold)));
 }
 
 export function levelOf(power: number): PowerLevel {
@@ -528,16 +530,85 @@ function computeAll(cards: StakeholderCard[], relations: StructureRelation[], no
     const entry = people.state.get(id)!;
     results.set(id, { ...resultOf(entry.power, reasonsOf(parts), entry.estimated), power: entry.power });
   }
+  for (const card of cards.filter(isRole)) {
+    const role = rolePower(card, cards, graph, people.state);
+    results.set(card.entityId, { ...resultOf(role.power, role.reasons, role.estimated), power: role.power });
+  }
   return { graph, results };
 }
 
+// ---------------------------------------------------------------------
+// 4b. ROLES: a seat, not a party. Its organization's power, times the seat's
+// share by seniority, times its decision rights (RACI: accountable,
+// responsible, consulted, informed), read from the card's functions.
+// ---------------------------------------------------------------------
+
+const isRole = (card: Pick<StakeholderCard, "type">) => card.type.trim().toLowerCase() === "role";
+export type DecisionRight = keyof typeof POWER_MODEL.roles.rights;
+const RIGHTS: [Exclude<DecisionRight, "unknown">, RegExp][] = [
+  ["accountable", /\b(approv|authori[sz]|decid|decision|sign(s|ed)? (off|the)|issu(e|es|ing) (the )?(permit|approval|licen)|grant|certif|reject|enforc|orders? (everyone|work|a stop)|stop work)/i],
+  // Verbs only: "design" but not "Designer", "draft" but not "Drafting Technologist", "operate" but not "operator"
+  ["responsible", /\b(complet|prepar|designs?\b|designed|designing|perform|conduct|submit|carr(y|ies) out|install|build|drafts?\b|drafted|open(s)? (a|the)|manag(e|es|ed|ing)\b|coordinat(e|es|ed|ing)\b|operat(e|es|ed|ing)\b|circulat|determin|classif|tests?\b|handle|protect|maintain|provid|manufactur)/i],
+  ["consulted", /\b(review|advis|comment|recommend|assess|check|inspect|verif|examin|repl(y|ies) to)/i],
+  ["informed", /\b(receiv|notified|is informed|kept informed)/i],
+];
+
+// The strongest decision right any function states, and the function that shows it
+export function decisionRight(functions: string[]): { right: DecisionRight; evidence: string | null } {
+  for (const [right, pattern] of RIGHTS) {
+    const evidence = functions.find((text) => pattern.test(text));
+    if (evidence) return { right, evidence };
+  }
+  return { right: "unknown", evidence: null };
+}
+
+const GENERIC_FIRST_WORDS = /^(city|town|government|province|state|american|canadian|national|international|health|the|first|third|quality|safety)$/i;
+const ORG_FACT = /employer|employed|organi[sz]ation|company|issuing body|works? for|department|agency|owner/i;
+function names(text: string, card: StakeholderCard): boolean {
+  const lower = text.toLowerCase();
+  if ([card.name, ...card.aliases].some((name) => name.trim().length >= 3 && lower.includes(name.trim().toLowerCase()))) return true;
+  const first = card.name.trim().split(/\s+/)[0] ?? "";
+  return first.length >= 5 && !GENERIC_FIRST_WORDS.test(first) && new RegExp(`\\b${first.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i").test(text);
+}
+
+// THE ROLE'S ORGANIZATION: a structure link, else a key fact naming one, else the one organization its functions name
+function roleBox(card: StakeholderCard, cards: StakeholderCard[], graph: Graph): { id: string; how: string } | null {
+  const linked = graph.relations.find((edge) => edge.fromId === card.entityId && INSIDE_ROLE_LINKS.has(edge.link) && !edge.former && !graph.nodes.get(edge.toId)?.person);
+  if (linked) return { id: linked.toId, how: "linked" };
+  const boxes = cards.filter((other) => other.entityId !== card.entityId && hasPower(other) && !isRole(other) && other.type !== "person" && other.person === null);
+  for (const fact of card.keyFacts.filter((fact) => ORG_FACT.test(fact.label))) {
+    const box = boxes.find((other) => names(fact.value, other));
+    if (box) return { id: box.entityId, how: "fact" };
+  }
+  const named = boxes.filter((other) => card.functions.some((fn) => names(fn.text, other)));
+  return named.length === 1 ? { id: named[0]!.entityId, how: "functions" } : null;
+}
+const INSIDE_ROLE_LINKS: ReadonlySet<string> = new Set(["works_in", "part_of", "leads"]);
+
+function rolePower(card: StakeholderCard, cards: StakeholderCard[], graph: Graph, state: State): { power: number; reasons: string[]; estimated: boolean } {
+  const model = POWER_MODEL.roles;
+  const box = roleBox(card, cards, graph);
+  const boxPower = box ? state.get(box.id)?.power ?? model.noBox : model.noBox;
+  const seniority = seniorityFromTitle(card.name);
+  const share = seatWeight("works_in", seniority, null);
+  const { right, evidence } = decisionRight([...card.functions.map((fn) => fn.text), card.relation ?? ""].filter(Boolean));
+  const boxName = box ? graph.nodes.get(box.id)?.name ?? "its organization" : null;
+  const seat = seniority ? `${sentence(seniorityWord(seniority))} seat` : "Seat";
+  const reasons = [
+    boxName ? `${seat} at ${boxName}` : `${seat}; no organization known, estimated as a small team`,
+    right === "unknown" ? "Decision rights not stated" : `${sentence(right)}: ${evidence!.replace(/\.$/, "")}`,
+  ];
+  const estimated = !box || (box && state.get(box.id)?.estimated !== false);
+  return { power: Math.max(boxPower * share * model.rights[right], 1e-4), reasons, estimated };
+}
+const sentence = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
+
 const withoutPower = ({ score, points, level, reasons, estimated }: PowerResult): PowerResult => ({ score, points, level, reasons, estimated });
 
-// WHO GETS A LEVEL: not a role (a seat, not a party), and a place only when it is a jurisdiction
+// WHO GETS A LEVEL: everyone but a place that is not a jurisdiction (roles are scored as seats)
 const JURISDICTION_KINDS = /\b(country|nation|province|state|territory|city|town|municipality|county)\b/;
 export function hasPower(card: Pick<StakeholderCard, "type" | "kind">): boolean {
   const type = card.type.trim().toLowerCase();
-  if (type === "role") return false;
   if (type === "place") return JURISDICTION_KINDS.test((card.kind ?? "").toLowerCase());
   return true;
 }
