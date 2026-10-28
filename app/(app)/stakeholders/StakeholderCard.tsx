@@ -6,6 +6,7 @@ import { type ComponentType, useState } from "react";
 import { Tooltip } from "@/components/standard/tooltip";
 import { allContacts, CONTACT_LABELS, type ContactKind, contactHref, initialsOf, sentenceCase, type StakeholderCard as Card, cardKind } from "@/lib/stakeholders/cards";
 import { cn } from "@/lib/utils";
+import type { Power } from "./power";
 import { StakeholderMenu } from "./StakeholderMenu";
 
 // A colour per kind, picked by hashing its name, so a kind keeps its colour without a fixed list
@@ -28,7 +29,7 @@ const FUNCTIONS_SHOWN = 3;
 
 // ONE CARD: who it is and what kind, how it relates to us, a few facts and functions, contacts,
 // and how much knowledge stands behind it. The name opens the full card.
-export function StakeholderCard({ card }: { card: Card }) {
+export function StakeholderCard({ card, power }: { card: Card; power?: Power }) {
   const kind = cardKind(card);
   const contacts = allContacts(card);
   return (
@@ -41,6 +42,7 @@ export function StakeholderCard({ card }: { card: Card }) {
           </Link>
           <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
             <span className={cn("rounded px-1.5 py-0.5 font-medium", kindColor(kind))}>{sentenceCase(kind)}</span>
+            {power && <PowerBadge power={power} />}
             {card.isOurs && <span className="rounded bg-link/15 px-1.5 py-0.5 font-medium text-link">Our organization</span>}
             {card.hidden && <span className="text-faint">Hidden</span>}
           </div>
@@ -121,6 +123,22 @@ function ContactIcon({ contact }: { contact: ReturnType<typeof allContacts>[numb
       ) : (
         <span role="img" aria-label={`${CONTACT_LABELS[contact.kind]}: ${text}`} className={className}><Icon className="size-3.5" /></span>
       )}
+    </Tooltip>
+  );
+}
+
+// POWER LEVEL 1 to 5, with the reasons behind it on hover
+export function PowerBadge({ power, className }: { power: Power; className?: string }) {
+  return (
+    <Tooltip content={(
+      <span className="block space-y-1">
+        <span className="block font-medium">Power Level {power.level} of 5{power.estimated ? " (estimate)" : ""}</span>
+        {power.reasons.map((reason) => <span key={reason} className="block">{reason}</span>)}
+      </span>
+    )}>
+      <span className={cn("relative z-10 rounded border px-1.5 py-0.5 font-medium tabular-nums text-muted-foreground", className)} aria-label={`Power Level ${power.level} of 5${power.estimated ? ", estimate" : ""}`}>
+        Power {power.level}{power.estimated && <span className="text-faint">~</span>}
+      </span>
     </Tooltip>
   );
 }
