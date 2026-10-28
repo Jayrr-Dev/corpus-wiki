@@ -1,4 +1,5 @@
 import { circleNestedIn, clusterKey, type ClusterMode } from "./clusters";
+import { centersAnyGrouping } from "./nodeTypes";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
 // =====================================================================
@@ -70,7 +71,7 @@ export function coalesceGraph(
 ): GraphData {
   const buckets = new Map<string, GraphNode[]>();
   for (const node of data.nodes) {
-    if (node.kind === "domain") continue;
+    if (centersAnyGrouping(node)) continue;
     const key = clusterKey(node, mode);
     if (!key) continue;
     const bucket = buckets.get(key);

@@ -2,6 +2,7 @@ import { packEnclose, packSiblings } from "d3-hierarchy";
 import { entityColor } from "./domainColors";
 import { PAGE_SEP, type GroupingId } from "./groupings";
 import type { GraphColor } from "./groups";
+import { centersAnyGrouping, centersGrouping, isContent } from "./nodeTypes";
 import { nodeRadius, type SimNode } from "./physics";
 import type { GraphNode } from "./types";
 
@@ -157,6 +158,11 @@ type ClusterNode = Pick<
   pageSections?: GraphNode["pageSections"];
 };
 
+// Sits pinned in the middle of a circle in some grouping. Cluster callers may leave the kind out.
+function centersAny(node: { kind?: GraphNode["kind"] }): boolean {
+  return node.kind !== undefined && centersAnyGrouping({ kind: node.kind });
+}
+
 function pathSep(mode: ClusterMode): string {
   return mode === "page" ? PAGE_SEP : "/";
 }
@@ -169,7 +175,7 @@ function joinPath(segments: readonly string[], mode: ClusterMode): string {
 // no article join the catch-all.
 function pageCircleName(node: ClusterNode): string | null {
   const title = primaryPageTitle(node);
-  if (node.kind === "domain") return title;
+  if (centersAny(node)) return title;
   return title ?? NO_ARTICLE_LABEL;
 }
 
@@ -193,7 +199,7 @@ function hubNesting(
   }[],
 ): Map<string, string> {
   const loose = nodes.filter((node) => {
-    if (node.kind === "domain" || !node.id) return false;
+    if (centersAny(node) || !node.id) return false;
     if (primaryPageTitle(node)) return false;
     return !node.recommendedTitle?.split(PAGE_SEP).join(" ").trim();
   });
@@ -381,7 +387,7 @@ export function clusterTree(
   const roots: ClusterGroup[] = [];
   const byPath = new Map<string, ClusterGroup>();
   for (const node of nodes) {
-    const domainNode = mode === "domain" && node.kind === "domain";
+    const domainNode = centersGrouping(node, mode);
     let siblings = roots;
     let group: ClusterGroup | undefined;
     clusterSegments(node, mode, hubs).forEach((segment, depth, segments) => {
@@ -541,7 +547,7 @@ function domainHubRadii(
   const radii = new Map<string, number>();
   if (mode !== "domain") return radii;
   for (const node of nodes) {
-    if (node.kind !== "domain") continue;
+    if (!centersGrouping(node, mode)) continue;
     const path = [...node.domainPaths].sort()[0];
     if (!path) continue;
     radii.set(path, nodeRadius(node, nodeSize));
@@ -592,7 +598,7 @@ function fitCirclesAroundDomains(
   const gap = domainRingGap(nodeSize);
   const byKey = new Map(circles.map((circle) => [circle.key, circle]));
   for (const node of nodes) {
-    if (node.kind !== "domain") continue;
+    if (!centersGrouping(node, "domain")) continue;
     const path = [...node.domainPaths].sort()[0];
     const circle = path ? byKey.get(path) : undefined;
     if (!circle) continue;
@@ -621,7 +627,7 @@ function pinDomainNodes(
   if (mode !== "domain") return;
   const byKey = new Map(packing.circles.map((circle) => [circle.key, circle]));
   for (const node of nodes) {
-    if (node.kind !== "domain") continue;
+    if (!centersGrouping(node, mode)) continue;
     const path = [...node.domainPaths].sort()[0];
     const circle = path ? byKey.get(path) : undefined;
     if (!circle) continue;
@@ -679,7 +685,7 @@ export function packDomains(
   const tree = clusterTree(nodes, mode, hubs);
   const filed = deepestPaths(nodes, mode, hubs);
   const loose = nodes.filter(
-    (node) => node.kind !== "domain" && !filed.has(node),
+    (node) => !centersAnyGrouping(node) && !filed.has(node),
   );
   const top = tree.map((group) => packGroup(group, nodeSize, hubRadii));
   if (loose.length > 0)
@@ -795,7 +801,7 @@ export function moveTarget(
   hit: Pick<ClusterCircle, "key"> | null,
   focusedDomain: string | null,
 ): string | null {
-  if (node.kind !== "unit" || !hit) return null;
+  if (!isContent(node) || !hit) return null;
   const source = [...node.domainPaths].sort()[0] ?? "";
   if (hit.key === source) return null;
   if (
@@ -829,7 +835,7 @@ export function pageMoveTarget(
   hit: Pick<ClusterCircle, "key" | "label" | "parent" | "badge"> | null,
   focusedKey: string | null,
 ): PageDrop | null {
-  if (node.kind !== "unit" || !hit) return null;
+  if (!isContent(node) || !hit) return null;
   if (!pageFocusAllows(hit.key, focusedKey)) return null;
   if (
     clusterKey({ ...node, domainPaths: [], entityNames: [] }, "page") ===
@@ -911,7 +917,7 @@ function pushApart(
 // Domain nodes settle apart first. Notes are then moved out of those discs.
 function separateOverlaps(nodes: readonly SimNode[], nodeSize: number): void {
   const domains = nodes.filter(
-    (node) => node.kind === "domain" && node.fx == null,
+    (node) => centersGrouping(node, "domain") && node.fx == null,
   );
   for (let pass = 0; pass < SEPARATE_PASSES; pass++) {
     for (let i = 0; i < domains.length; i++) {
@@ -942,7 +948,7 @@ function separateOverlaps(nodes: readonly SimNode[], nodeSize: number): void {
     );
   };
   for (const other of nodes) {
-    if (other.kind === "domain" || other.fx != null) continue;
+    if (centersGrouping(other, "domain") || other.fx != null) continue;
     for (let pass = 0; pass < SEPARATE_PASSES; pass++) {
       let hit: SimNode | undefined;
       let overlap = 0;
@@ -974,7 +980,10 @@ export function createContainment(
   nodes: readonly SimNode[],
   nodeSize: number,
   mode: ClusterMode = "domain",
-  links: readonly { source: LinkEnd<SimNode>; target: LinkEnd<SimNode> }[] = NO_LINKS,
+  links: readonly {
+    source: LinkEnd<SimNode>;
+    target: LinkEnd<SimNode>;
+  }[] = NO_LINKS,
 ): () => void {
   const { homes, circles } = packDomains(nodes, nodeSize, mode, links);
   const byId = new Map(nodes.map((node) => [node.id, node]));
@@ -985,12 +994,12 @@ export function createContainment(
     const source = endOf(link.source);
     const target = endOf(link.target);
     if (!source || !target) continue;
-    if (source.kind === "domain" && target.kind !== "domain") {
+    if (centersAnyGrouping(source) && !centersAnyGrouping(target)) {
       const list = connected.get(source.id) ?? [];
       list.push(target);
       connected.set(source.id, list);
     }
-    if (target.kind === "domain" && source.kind !== "domain") {
+    if (centersAnyGrouping(target) && !centersAnyGrouping(source)) {
       const list = connected.get(target.id) ?? [];
       list.push(source);
       connected.set(target.id, list);
@@ -1002,7 +1011,7 @@ export function createContainment(
     // Domain grouping pins each hub at its topic center. Entity and page grouping
     // keep a hub inside the circle it was filed in, the same as any other dot.
     if (!home || node.fx != null || node.fy != null) return;
-    if (node.kind === "domain" && mode === "domain") return;
+    if (centersGrouping(node, mode)) return;
     const room = Math.max(0, home.r - nodeRadius(node, nodeSize));
     const dx = (node.x ?? 0) - home.x,
       dy = (node.y ?? 0) - home.y;
@@ -1033,7 +1042,7 @@ export function createContainment(
         let x = 0;
         let y = 0;
         for (const other of nodes) {
-          if (other.kind === "domain") continue;
+          if (centersAnyGrouping(other)) continue;
           const own = [...other.domainPaths].sort()[0] ?? "";
           if (own !== path) continue;
           weight += 1;
@@ -1066,7 +1075,7 @@ export function createContainment(
       }
       separateOverlaps(nodes, nodeSize);
       for (const node of nodes) {
-        if (node.kind !== "domain" || !homes.get(node.id)?.pin) continue;
+        if (!centersGrouping(node, mode) || !homes.get(node.id)?.pin) continue;
         if (node.fx != null || node.fy != null) continue;
         pin.set(node.id, { x: node.x ?? 0, y: node.y ?? 0 });
       }

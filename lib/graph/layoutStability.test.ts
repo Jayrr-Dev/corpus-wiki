@@ -126,6 +126,7 @@ it("lets a near link pull harder than a far one", () => {
 it("pulls dots flung far away back into their own circles in one step", () => {
   const nodes = Array.from({ length: 20 }, (_, i) => ({
     id: String(i),
+    kind: "unit",
     domainPaths: [`Root/Subject ${i % 2}`],
     degree: 4,
     x: Math.sin(i * 2.3) * 1_000_000,
