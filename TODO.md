@@ -16,7 +16,7 @@ them, the page shows levels and the map; typecheck, lint and tests pass; merged 
 |---|---|---|---|
 | contract | C1 `lib/stakeholders/structure.ts`: link types, seniority ladder, label and relation shapes | | merged |
 | contract | C2 Dates on links (`since`, `until`, `asOf`); algorithm in `docs/power-model.md` | | merged 9b34952, 53fee82 |
-| labels | L1 Extraction writes `knowledge_context.structure` labels with dates (schema, prompt, draft, context parser) | C1, C2 | running (restarted after usage limit) |
+| labels | L1 Extraction writes `knowledge_context.structure` labels with dates (schema, prompt, draft, context parser) | C1, C2 | merged 3ca4092 |
 | db | D1 `entity_relations` table, projection from claims, validation, `stakeholder_structure()` RPC with dates, db test | C1, C2 | running (restarted after usage limit) |
 | power | P1 General power score and levels (`lib/stakeholders/power.ts`), exactly as `docs/power-model.md` | C2 | running (restarted after usage limit) |
 | power | P2 Power over our work, relative to `our_entity_id` | P1 | waiting |
