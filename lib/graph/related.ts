@@ -1,3 +1,4 @@
+import { isContent } from "./nodeTypes";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
 // =====================================================================
@@ -106,7 +107,7 @@ const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
 // Every unit pair with any shared signal, scored 0..1. Candidate pairs come from an
 // inverted index (shared word, entity or domain), so unrelated pairs are never compared.
 export function scoreRelatedPairs(nodes: readonly GraphNode[]): ScoredPair[] {
-  const units = nodes.filter((node) => node.kind === "unit");
+  const units = nodes.filter((node) => isContent(node));
   const byId = new Map(units.map((unit) => [unit.id, unit]));
   const vectors = textVectors(units);
 

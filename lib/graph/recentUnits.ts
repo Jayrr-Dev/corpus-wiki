@@ -1,3 +1,5 @@
+import { type GraphNodeKind, isContent } from "./nodeTypes";
+
 // Green and yellow rings mark this share of each set, the ones touched most recently.
 export const RECENT_SHARE = 0.1;
 
@@ -10,12 +12,12 @@ export function recentLimit(total: number, share = RECENT_SHARE): number {
 // Ids of the knowledge units with the latest activity time. A tie keeps the
 // lower id so the same units stay marked between frames.
 export function recentUnitIds(
-  nodes: readonly { id: string; kind: string; activityAt?: string }[],
+  nodes: readonly { id: string; kind: GraphNodeKind; activityAt?: string }[],
   share = RECENT_SHARE,
 ): Set<string> {
   const ranked: { id: string; at: number }[] = [];
   for (const node of nodes) {
-    if (node.kind !== "unit" || !node.activityAt) continue;
+    if (!isContent(node) || !node.activityAt) continue;
     const at = Date.parse(node.activityAt);
     if (!Number.isFinite(at)) continue;
     ranked.push({ id: node.id, at });

@@ -1,5 +1,6 @@
 import { knowledgeLabel, phraseLabel } from "@/lib/knowledge/label";
 import { pageSectionKey } from "./clusters";
+import { isContent } from "./nodeTypes";
 import type { GraphRows } from "./rows";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -367,28 +368,30 @@ export function buildGraph(rows: GraphRows): GraphData {
     pageScopes.set(pageId, scopes);
   }
   const articleCreatedAt = createdArticles(rows);
-  const nodes = [
-    ...unitNodes(rows),
-    ...entityNodes(rows),
-    ...domainNodes(rows),
-    ...pageNodes(rows),
-  ].map((node) => {
-    const sourceScopes: Scope[] =
-      node.kind === "unit"
-        ? [unitScopes.get(node.id)!]
-        : node.kind === "page"
-          ? [...(pageScopes.get(node.id) ?? new Set<Scope>(["internal"]))]
-          : [];
-    return {
-      ...node,
-      articleCreatedAt,
-      sourceScopes,
-      domainScopePaths: {
-        internal: sourceScopes.includes("internal") ? node.domainPaths : [],
-        external: sourceScopes.includes("external") ? node.domainPaths : [],
-      },
-    };
-  });
+  // Each builder with the source scopes of its nodes. Entities and domains have none of their own.
+  const built: [GraphNode[], (node: GraphNode) => Scope[]][] = [
+    [unitNodes(rows), (node) => [unitScopes.get(node.id)!]],
+    [entityNodes(rows), () => []],
+    [domainNodes(rows), () => []],
+    [
+      pageNodes(rows),
+      (node) => [...(pageScopes.get(node.id) ?? new Set<Scope>(["internal"]))],
+    ],
+  ];
+  const nodes = built.flatMap(([kindNodes, scopesOf]) =>
+    kindNodes.map((node) => {
+      const sourceScopes = scopesOf(node);
+      return {
+        ...node,
+        articleCreatedAt,
+        sourceScopes,
+        domainScopePaths: {
+          internal: sourceScopes.includes("internal") ? node.domainPaths : [],
+          external: sourceScopes.includes("external") ? node.domainPaths : [],
+        },
+      };
+    }),
+  );
   // A stored title already tells its claim apart; only derived labels are made specific
   const titledRevisions = new Set(
     rows.revisions
@@ -409,7 +412,7 @@ export function buildGraph(rows: GraphRows): GraphData {
   }
   for (const node of nodes) {
     if (
-      node.kind === "unit" &&
+      isContent(node) &&
       !titled.has(node.id) &&
       (labelCounts.get(node.label.toLowerCase()) ?? 0) > 1
     ) {
