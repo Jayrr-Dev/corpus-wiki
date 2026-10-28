@@ -1,7 +1,12 @@
 "use client";
 
 import { buildGraph, type GraphData } from "@/lib/graph";
-import { fetchRecentUnitTouches, type GraphRows } from "@/lib/graph/rows";
+import {
+  fetchRecentUnitTouches,
+  fetchStakeholderIds,
+  markStakeholders,
+  type GraphRows,
+} from "@/lib/graph/rows";
 import { queryKeys } from "@/lib/queries";
 import {
   getBrowserSupabase,
@@ -27,6 +32,7 @@ async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows> {
     unitRows,
     relationships,
     entities,
+    stakeholderIds,
     unitEntities,
     domains,
     unitDomains,
@@ -65,6 +71,7 @@ async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows> {
         .order("id")
         .range(from, to),
     ),
+    fetchStakeholderIds(client),
     readAllPages((from, to) =>
       client
         .from("unit_entities")
@@ -141,7 +148,7 @@ async function fetchGraphRows(client: BrowserSupabase): Promise<GraphRows> {
     units: unitRows,
     revisions,
     relationships,
-    entities,
+    entities: markStakeholders(entities, stakeholderIds),
     unitEntities,
     domains,
     unitDomains,

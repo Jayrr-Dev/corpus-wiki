@@ -33,6 +33,7 @@ export {
   pageMoveTarget,
   primaryEntityName,
   primaryPageTitle,
+  primaryStakeholderName,
   type CircleOpenTarget,
   type ClusterCircle,
   type ClusterGroup,

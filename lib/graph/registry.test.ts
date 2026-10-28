@@ -32,16 +32,18 @@ function sample(): GraphData {
   return {
     nodes: [
       node("u1", "unit", {
-        domainPaths: ["Ops"], entityNames: ["Acme"], pageTitles: ["Guide"],
+        domainPaths: ["Ops"], entityNames: ["Acme", "Pat"], stakeholderNames: ["Pat"], pageTitles: ["Guide"],
         pageSections: [{ page: "Guide", section: "Intro", position: 0 }],
       }),
       node("Ops", "domain", { domainPaths: ["Ops"] }),
       node("Acme", "entity", { entityNames: ["Acme"] }),
+      node("Pat", "stakeholder", { entityNames: ["Pat"], stakeholderNames: ["Pat"] }),
       node("Guide", "page", { pageTitles: ["Guide"] }),
     ],
     links: [
       link("u1", "Ops", "in"),
       link("u1", "Acme", "about"),
+      link("u1", "Pat", "about"),
       link("Guide", "u1", "cites"),
     ],
   };
@@ -93,22 +95,22 @@ describe("every node type in every grouping", () => {
 describe("a node type added only to the registry", () => {
   const types = NODE_TYPES as Record<string, NodeTypeRule>;
   afterEach(() => {
-    delete types.stakeholder;
+    delete types.volunteer;
   });
 
   it("is placed by its knowledge in every grouping", () => {
-    types.stakeholder = {
+    types.volunteer = {
       ...NODE_TYPES.entity,
-      kind: "stakeholder" as GraphNodeKind,
-      label: "Stakeholder",
-      plural: "Stakeholders",
+      kind: "volunteer" as GraphNodeKind,
+      label: "Volunteer",
+      plural: "Volunteers",
       centers: undefined,
     };
     const data = sample();
-    data.nodes[0]!.entityNames = ["Acme", "Pat"];
-    data.nodes.push(node("Pat", "stakeholder", { entityNames: ["Pat"] }));
-    data.links.push(link("u1", "Pat", "about"));
+    data.nodes[0]!.entityNames = ["Acme", "Pat", "Sam"];
+    data.nodes.push(node("Sam", "volunteer", { entityNames: ["Sam"] }));
+    data.links.push(link("u1", "Sam", "about"));
     for (const grouping of GROUPING_IDS)
-      expectAllInCircles("stakeholder", grouping, data);
+      expectAllInCircles("volunteer", grouping, data);
   });
 });

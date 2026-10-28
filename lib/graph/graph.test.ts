@@ -126,7 +126,13 @@ const nodeById = (id: string) =>
   graph.nodes.find((node) => node.id === id) as GraphNode;
 const ids = (data: { nodes: GraphNode[] }) =>
   data.nodes.map((node) => node.id).sort();
-const ALL_SHOWN = { unit: true, entity: true, domain: true, page: true };
+const ALL_SHOWN = {
+  unit: true,
+  entity: true,
+  stakeholder: true,
+  domain: true,
+  page: true,
+};
 const ALL_LAYERS = {
   domainScope: "internal" as const,
   search: "",
@@ -180,6 +186,24 @@ describe("buildGraph", () => {
     expect(times?.pages.get("Alpha")).toBe(T2);
     expect(times?.sections.get(pageSectionKey("Alpha", "Facts"))).toBe(T3);
     expect(times?.sections.has(pageSectionKey("Alpha", "History"))).toBe(false);
+  });
+
+  it("builds a stakeholder node from an entity its profile marks", () => {
+    const built = buildGraph({
+      ...rows,
+      entities: rows.entities.map((entity) => ({
+        ...entity,
+        stakeholder: true,
+      })),
+    });
+    const byId = new Map(built.nodes.map((node) => [node.id, node]));
+    expect(byId.get("e1")?.kind).toBe("stakeholder");
+    expect(byId.get("u1")?.stakeholderNames).toEqual(["Project Alpha"]);
+    expect(byId.get("u1")?.entityNames).toEqual(["Project Alpha"]);
+    expect(byId.get("p1")?.stakeholderNames).toEqual(["Project Alpha"]);
+    expect(byId.get("u2")?.stakeholderNames).toEqual([]);
+    // Without the flag it stays a plain entity
+    expect(graph.nodes.find((node) => node.id === "e1")?.kind).toBe("entity");
   });
 
   it("keeps the later of a unit change and a later move or use", () => {
@@ -650,7 +674,11 @@ describe("saved settings", () => {
     };
     expect(parseSavedSettings(older).filters).toEqual({
       ...DEFAULT_GRAPH_SETTINGS.filters,
-      shown: { ...DEFAULT_GRAPH_SETTINGS.filters.shown, entity: true },
+      shown: {
+        ...DEFAULT_GRAPH_SETTINGS.filters.shown,
+        entity: true,
+        stakeholder: true,
+      },
     });
   });
 
@@ -669,6 +697,7 @@ describe("saved settings", () => {
     expect(parseSavedSettings(older).filters.shown).toEqual({
       unit: false,
       entity: true,
+      stakeholder: true,
       domain: true,
       page: true,
     });
@@ -679,9 +708,11 @@ describe("saved settings", () => {
       ...DEFAULT_GRAPH_SETTINGS,
       filters: { ...DEFAULT_GRAPH_SETTINGS.filters, shown: { entity: true } },
     };
+    // Stakeholders split off entities, so they start with the entity switch
     expect(parseSavedSettings(saved).filters.shown).toEqual({
       ...DEFAULT_GRAPH_SETTINGS.filters.shown,
       entity: true,
+      stakeholder: true,
     });
   });
 
@@ -761,7 +792,13 @@ describe("entity groups", () => {
   it("shows entity nodes in entity grouping when they are the only layer on", () => {
     const entitiesOnly = applyFilters(graph, {
       ...ALL_LAYERS,
-      shown: { unit: false, entity: true, domain: false, page: false },
+      shown: {
+        unit: false,
+        entity: true,
+        stakeholder: false,
+        domain: false,
+        page: false,
+      },
     });
     const grouped = graphForGrouping(entitiesOnly, "entity", graph);
     expect(grouped.nodes.length).toBeGreaterThan(0);
@@ -981,7 +1018,13 @@ describe("entity groups", () => {
   it("shows domain nodes and their circles when knowledge units are off", () => {
     const filtered = applyFilters(graph, {
       ...ALL_LAYERS,
-      shown: { unit: false, entity: false, domain: true, page: false },
+      shown: {
+        unit: false,
+        entity: false,
+        stakeholder: false,
+        domain: true,
+        page: false,
+      },
       showOrphans: false,
     });
     expect(filtered.nodes.map((node) => node.id).sort()).toEqual(["d1", "d2"]);

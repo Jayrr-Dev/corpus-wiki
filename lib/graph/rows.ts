@@ -33,7 +33,8 @@ export interface GraphRows {
     to_unit_id: string;
     type: RelationshipType;
   }[];
-  entities: { id: string; name: string; created_at: string }[];
+  // stakeholder: a visible stakeholder profile says so (the Stakeholders page's rule)
+  entities: { id: string; name: string; created_at: string; stakeholder?: boolean }[];
   unitEntities: { unit_id: string; entity_id: string }[];
   domains: {
     id: string;
@@ -108,6 +109,7 @@ export async function fetchGraphRows(
     revisions,
     relationships,
     entities,
+    stakeholderIds,
     unitEntities,
     domains,
     unitDomains,
@@ -152,6 +154,7 @@ export async function fetchGraphRows(
         .order("id")
         .range(from, to),
     ),
+    fetchStakeholderIds(client),
     readAllPages((from, to) =>
       client
         .from("unit_entities")
@@ -224,7 +227,7 @@ export async function fetchGraphRows(
     units,
     revisions,
     relationships,
-    entities,
+    entities: markStakeholders(entities, stakeholderIds),
     unitEntities,
     domains,
     unitDomains,
@@ -250,6 +253,33 @@ const UNIT_TOUCH_TYPES = [
 ] as const;
 
 const RECENT_TOUCH_LIMIT = 200;
+
+// Entities a visible stakeholder profile marks (the Stakeholders page's rule)
+export async function fetchStakeholderIds(
+  client: BrowserSupabase,
+): Promise<Set<string>> {
+  const profiles = await readAllPages((from, to) =>
+    client
+      .from("entity_profiles")
+      .select("entity_id")
+      .eq("is_stakeholder", true)
+      .eq("hidden", false)
+      .order("entity_id")
+      .range(from, to),
+  );
+  return new Set(profiles.map((profile) => profile.entity_id));
+}
+
+// Flags each entity row the stakeholder profiles name
+export function markStakeholders(
+  entities: GraphRows["entities"],
+  stakeholderIds: ReadonlySet<string>,
+): GraphRows["entities"] {
+  return entities.map((entity) => ({
+    ...entity,
+    stakeholder: stakeholderIds.has(entity.id),
+  }));
+}
 
 // Latest applied actions, mapped to the units they touched. A line cites
 // revisions, so those revision ids are resolved to units.

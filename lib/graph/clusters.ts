@@ -26,6 +26,7 @@ export {
   ORPHANS_LABEL,
   primaryEntityName,
   primaryPageTitle,
+  primaryStakeholderName,
   type CircleOpenTarget,
 } from "./groupings";
 

@@ -33,7 +33,7 @@ describe("space graph settings", () => {
       filters: { ...DEFAULT_GRAPH_SETTINGS.filters, shown: undefined, showUnits: true, showEntities: true, showDomains: false, showPages: true },
     };
     const settings = loadGraphSettings({ getItem: () => JSON.stringify(before) }, "key");
-    expect(settings.filters.shown).toEqual({ unit: true, entity: true, domain: false, page: true });
+    expect(settings.filters.shown).toEqual({ unit: true, entity: true, stakeholder: true, domain: false, page: true });
   });
 
   it("uses defaults when storage is blocked or malformed", () => {

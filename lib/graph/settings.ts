@@ -210,13 +210,16 @@ const LEGACY_SHOWN: Partial<
 
 type SavedFilters = z.infer<typeof settingsSchema>["filters"];
 
-// Saved switches win, then the old per-type fields, then the registry default
+// Saved switches win, then the old per-type fields, then the kind it split from, then the registry default
 function shownFrom(saved: SavedFilters): Record<GraphNodeKind, boolean> {
   const shown = defaultShown();
   for (const kind of NODE_KINDS) {
     const field = LEGACY_SHOWN[kind];
     const legacy = field ? saved[field] : undefined;
-    shown[kind] = saved.shown?.[kind] ?? legacy ?? shown[kind];
+    // A split-off kind's parent comes earlier in NODE_KINDS, so its switch is already read
+    const parent = NODE_TYPES[kind].splitFrom;
+    shown[kind] =
+      saved.shown?.[kind] ?? legacy ?? (parent ? shown[parent] : shown[kind]);
   }
   return shown;
 }

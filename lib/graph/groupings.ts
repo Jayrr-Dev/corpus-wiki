@@ -10,7 +10,7 @@ import type { GraphNode } from "./types";
 // circle rules, all read from here, so a new grouping is one entry.
 // =====================================================================
 
-export const GROUPING_IDS = ["domain", "entity", "page"] as const;
+export const GROUPING_IDS = ["domain", "entity", "stakeholder", "page"] as const;
 export type GroupingId = (typeof GROUPING_IDS)[number];
 
 // Page and section titles can contain "/". Keep their circle keys apart with a separator they cannot include.
@@ -21,6 +21,7 @@ export type PlacedNode = Pick<
   GraphNode,
   | "domainPaths"
   | "entityNames"
+  | "stakeholderNames"
   | "pageTitles"
   | "recommendedTitle"
   | "recommendedKind"
@@ -96,6 +97,16 @@ export function primaryEntityName(
 ): string | null {
   return (
     [...(node.entityNames ?? [])].sort((a, b) => a.localeCompare(b))[0] ?? null
+  );
+}
+
+// The stakeholder a dot sits inside when several are named (same rule as entities)
+export function primaryStakeholderName(
+  node: Pick<GraphNode, "stakeholderNames">,
+): string | null {
+  return (
+    [...(node.stakeholderNames ?? [])].sort((a, b) => a.localeCompare(b))[0] ??
+    null
   );
 }
 
@@ -243,6 +254,11 @@ function entitySegments(node: PlacedNode): string[] {
   return name ? [name] : [];
 }
 
+function stakeholderSegments(node: PlacedNode): string[] {
+  const name = primaryStakeholderName(node);
+  return name ? [name] : [];
+}
+
 // Article, then section. Notes with no article sit in No article, nested by suggestion or hub.
 function pageSegments(
   node: PlacedNode,
@@ -293,6 +309,20 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
     color: (group) => entityColor(group.label),
     help: [
       "Entities draws a colored circle around each entity. Knowledge units sit inside it. Domain nodes show there only when Domains is on in Nodes. Each domain sits in the entity most of its knowledge is about. A domain with none of its own sits with the domain it connects to most.",
+    ],
+  },
+  stakeholder: {
+    id: "stakeholder",
+    label: "Stakeholders",
+    hubKind: "stakeholder",
+    separator: "/",
+    nests: false,
+    segments: stakeholderSegments,
+    holds: (node, key) => primaryStakeholderName(node) === key,
+    compare: byLabel,
+    color: (group) => entityColor(group.label),
+    help: [
+      "Stakeholders draws a colored circle around each stakeholder: an entity whose profile marks it as one. Knowledge units about it sit inside, and the stakeholder node sits in the middle when Stakeholders is on in Nodes. Other entities, domains and pages sit in the stakeholder most of their knowledge is about.",
     ],
   },
   page: {

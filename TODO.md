@@ -82,8 +82,8 @@ Browser check when D4 lands, and again at the end (screenshots of each):
 | canvas | V1 `drawGraph.ts`, `GraphCanvas.tsx`: color, shape and size from the registry; per-grouping colors in `groupColors.ts`; `clusterModeOf` removed | C1 | merged c9c87a6 |
 | panel | P1 Nodes and Group switches built from the registries; `components/graph/nodeTypes.tsx` holds previews per type | C1 | merged 9e3ec94 |
 | guard | G1 Lint rule against literal kind checks; every-type-by-every-grouping test; made-up type test | L2, D2, D3, D4, D5, V1, P1 | merged |
-| stakeholder | S1 `stakeholder` node type from `entities.is_stakeholder` (rows, builder, preview) | G1 | planned |
-| stakeholder | S2 Stakeholder grouping entry | S1 | planned |
+| stakeholder | S1 `stakeholder` node type from `entities.is_stakeholder` (rows, builder, preview) | G1 | merged |
+| stakeholder | S2 Stakeholder grouping entry | S1 | merged |
 
 Critical path: C1, L1, L2, D3, D4, G1, S1, S2. D4 was added after a browser check: with only Entities shown, entities sat in no circle (Domain), vanished (Entities) or all fell into No article (Pages). After C1, the layout, data, canvas
 and panel lanes start at once.
