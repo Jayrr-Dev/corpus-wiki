@@ -39,7 +39,6 @@ import {
 } from "@/lib/graph";
 import { colorGroupTree, type ColorTreeRow } from "@/lib/graph/colorGroupTree";
 import { chooseDomainColor } from "@/lib/graph/domainColors";
-import type { GraphNodeKind } from "@/lib/graph/nodeTypes";
 import { GRAPH_ACCENTS, GRAPH_COLOR_FAMILIES } from "@/lib/graph/groups";
 import { cn } from "@/lib/utils";
 import { Check, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
@@ -58,17 +57,6 @@ import { SelectRow, SliderRow, SwitchRow } from "./rows";
 // slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
 
-// The filter field that shows or hides each node kind. Keyed by kind, so a new kind fails the type check until it has one.
-const SHOWN_FIELD: Record<
-  GraphNodeKind,
-  "showUnits" | "showEntities" | "showDomains" | "showPages"
-> = {
-  unit: "showUnits",
-  entity: "showEntities",
-  domain: "showDomains",
-  page: "showPages",
-};
-
 // NODES: which dot kinds appear on the canvas, one switch per node type.
 export function NodesSection({
   value,
@@ -83,9 +71,9 @@ export function NodesSection({
         <SwitchRow
           key={type.kind}
           label={type.plural}
-          checked={value[SHOWN_FIELD[type.kind]]}
+          checked={value.shown[type.kind]}
           onChange={(next) =>
-            onChange({ ...value, [SHOWN_FIELD[type.kind]]: next })
+            onChange({ ...value, shown: { ...value.shown, [type.kind]: next } })
           }
         />
       ))}

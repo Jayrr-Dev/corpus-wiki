@@ -1,5 +1,5 @@
 import { type GroupingId, GROUPINGS } from "./groupings";
-import { centersGrouping, isPlacedByLinks } from "./nodeTypes";
+import { centersGrouping, isHub, isPlacedByLinks } from "./nodeTypes";
 import type { GraphData, GraphLink, GraphNode, GraphNodeKind } from "./types";
 
 // =====================================================================
@@ -13,10 +13,8 @@ export interface GraphFilters {
   search: string;
   // one domain path to focus on, with every subdomain below it ("" = all domains)
   domain: string;
-  showUnits: boolean;
-  showEntities: boolean;
-  showDomains: boolean;
-  showPages: boolean;
+  // Which node types show, one switch per type in the Nodes section
+  shown: Record<GraphNodeKind, boolean>;
   showOrphans: boolean;
   // Lines that attach a note to a domain, entity, or page
   showConnectors: boolean;
@@ -203,9 +201,11 @@ function preferredName(
   return best;
 }
 
-// How a link-placed hub is known in its claims: a domain by its path, an entity by its name.
-// Paths nest, so a topic also neighbors its parent.
+// How a hub is known in its claims: a page by its title (the units it cites), a domain by
+// its path, an entity by its name. The first field with a home wins. Paths nest, so a topic
+// also neighbors its parent.
 const IDENTITIES = [
+  { field: "pageTitles", nests: false },
   { field: "domainPaths", nests: true },
   { field: "entityNames", nests: false },
 ] as const;
@@ -222,7 +222,7 @@ function keyNeighbors(
   evidenceLinks: readonly GraphLink[],
 ): Map<string, Map<string, number>> {
   const keysOf = new Map<string, readonly string[]>();
-  for (const claim of claims) keysOf.set(claim.id, claim[field]);
+  for (const claim of claims) keysOf.set(claim.id, claim[field] ?? []);
   const neighbors = new Map<string, Map<string, number>>();
   const connect = (left: string, right: string) => {
     if (!left || !right || left === right) return;
@@ -295,9 +295,9 @@ function spreadTopicGroups<T>(
   }
 }
 
-// Where one grouping puts a link-placed hub that is not its own hub
+// Where one grouping puts a hub that is not its own hub
 interface HomeRule<T> {
-  // What one claim says about where its hubs belong
+  // What one claim says about where its hubs belong. A hub with votes of its own is already in a circle.
   votes: (claim: GraphNode) => readonly string[];
   // The home for the winning vote, from the claims behind it
   home: (winner: string, claims: readonly GraphNode[]) => T;
@@ -308,8 +308,9 @@ interface HomeRule<T> {
 const byName = (candidate: string, current: string) =>
   candidate.localeCompare(current) < 0;
 
-// Each link-placed hub (a domain or an entity) that is not this grouping's own hub joins the
-// home most of its claims vote for. A hub with no votes of its own joins the one it connects to most.
+// Each hub that is not this grouping's own hub, and has nothing of its own that puts it in a
+// circle, joins the home most of its claims vote for: a domain or an entity always, a page only
+// when it has no domain or entity of its own. A key with no votes joins the one it connects to most.
 function placeLinkedHubs<T>(
   nodes: readonly GraphNode[],
   evidenceNodes: readonly GraphNode[],
@@ -318,18 +319,20 @@ function placeLinkedHubs<T>(
   rule: HomeRule<T>,
 ): GraphNode[] {
   const placed = (node: GraphNode) =>
-    isPlacedByLinks(node) && !centersGrouping(node, mode);
+    isHub(node) &&
+    !centersGrouping(node, mode) &&
+    rule.votes(node).length === 0;
   const claims = evidenceNodes.filter((node) => !isPlacedByLinks(node));
   const homes = new Map<string, T>();
   for (const { field, nests } of IDENTITIES) {
-    const keyOf = (node: GraphNode) => node[field][0] ?? "";
+    const keyOf = (node: GraphNode) => node[field]?.[0] ?? "";
     const keys = [
       ...new Set(nodes.filter(placed).map(keyOf).filter(Boolean)),
     ].sort((a, b) => a.localeCompare(b));
     if (keys.length === 0) continue;
     const claimsByKey = new Map<string, GraphNode[]>();
     for (const claim of claims) {
-      for (const key of claim[field]) {
+      for (const key of claim[field] ?? []) {
         const keyed = claimsByKey.get(key) ?? [];
         keyed.push(claim);
         claimsByKey.set(key, keyed);
@@ -468,7 +471,7 @@ function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
 // and places the other link-placed hubs (domains, entities) inside the circles.
 export function graphForGrouping(
   data: GraphData,
-  groupBy: "domain" | "entity" | "page" | "off",
+  groupBy: GroupingId | "off",
   // Claims and links from before the layer toggles, so hidden units still place hubs.
   evidence: GraphData = data,
 ): GraphData {
@@ -509,16 +512,11 @@ export function applyFilters(
   data: GraphData,
   filters: GraphFilters,
 ): GraphData {
-  const shownKinds = new Set<GraphNodeKind>();
-  if (filters.showUnits) shownKinds.add("unit");
-  if (filters.showEntities) shownKinds.add("entity");
-  if (filters.showDomains) shownKinds.add("domain");
-  if (filters.showPages) shownKinds.add("page");
   const search = filters.search.trim().toLowerCase();
 
   const byLayer = keepNodes(
     inDomain(inDomainScope(data, filters.domainScope), filters.domain),
-    (node) => shownKinds.has(node.kind),
+    (node) => filters.shown[node.kind],
   );
   const bySearch = search
     ? keepNodes(

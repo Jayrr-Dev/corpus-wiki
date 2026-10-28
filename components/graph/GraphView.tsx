@@ -21,11 +21,13 @@ import {
   inDomain,
   inDomainScope,
   isContent,
+  NODE_KINDS,
   pageDropLabel,
   withRelated,
   type CircleOpenTarget,
   type GraphData,
   type GraphNode,
+  type GraphNodeKind,
   type GraphSettings,
   type PageDrop,
 } from "@/lib/graph";
@@ -348,9 +350,9 @@ export function GraphView({
                 update("filters", {
                   ...DEFAULT_GRAPH_SETTINGS.filters,
                   domainScope: "both",
-                  showEntities: true,
-                  showDomains: true,
-                  showPages: true,
+                  shown: Object.fromEntries(
+                    NODE_KINDS.map((kind) => [kind, true]),
+                  ) as Record<GraphNodeKind, boolean>,
                 });
               }}
             >
