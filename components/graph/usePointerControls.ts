@@ -1,8 +1,16 @@
 "use client";
 
-import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
-import { type Camera, panBy, pinchStep, type Point, toWorld, zoomAt, zoomBy } from "@/lib/graph/camera";
+import {
+  type Camera,
+  panBy,
+  pinchStep,
+  type Point,
+  toWorld,
+  zoomAt,
+  zoomBy,
+} from "@/lib/graph/camera";
 import { nodeRadius, type SimNode } from "@/lib/graph/physics";
+import { type RefObject, useEffect, useLayoutEffect, useRef } from "react";
 import type { ForceLayout } from "./useForceLayout";
 
 // =====================================================================
@@ -32,7 +40,14 @@ type Gesture =
   | { mode: "idle" }
   | { mode: "select"; start: Point }
   | { mode: "pan"; last: Point; start: Point | null }
-  | { mode: "drag"; node: SimNode; start: Point; offset: Point; moved: boolean; slop: number }
+  | {
+      mode: "drag";
+      node: SimNode;
+      start: Point;
+      offset: Point;
+      moved: boolean;
+      slop: number;
+    }
   | { mode: "pinch"; mid: Point; distance: number };
 
 interface PointerOptions {
@@ -48,19 +63,28 @@ interface PointerOptions {
   nodeSize: number;
   onOpen: (node: SimNode) => void;
   onSelect?: (nodes: SimNode[], toggle: boolean) => void;
-  onSelectionBox?: (box: {x:number;y:number;width:number;height:number} | null) => void;
+  onSelectionBox?: (
+    box: { x: number; y: number; width: number; height: number } | null,
+  ) => void;
   onContextTitle?: (point: Point, client: Point) => boolean;
   onContextNode?: (node: SimNode, point: Point) => void;
   onBackgroundClick?: (world: Point) => void;
   // Dragging a dot: null clears the drop hint. A finished drag reports where the dot was let go.
   onNodeDrag?: (node: SimNode | null, world: Point) => void;
   onNodeDrop?: (node: SimNode, world: Point) => void;
-  motion: { animateTo: (next: Camera) => void; cancel: () => void; target: RefObject<Camera | null> };
+  motion: {
+    animateTo: (next: Camera) => void;
+    cancel: () => void;
+    target: RefObject<Camera | null>;
+  };
   redraw: () => void;
 }
 
 // Pointer position relative to the canvas
-function localPoint(canvas: HTMLCanvasElement, event: { clientX: number; clientY: number }): Point {
+function localPoint(
+  canvas: HTMLCanvasElement,
+  event: { clientX: number; clientY: number },
+): Point {
   const box = canvas.getBoundingClientRect();
   return { x: event.clientX - box.left, y: event.clientY - box.top };
 }
@@ -68,26 +92,90 @@ function localPoint(canvas: HTMLCanvasElement, event: { clientX: number; clientY
 // PINCH SHAPE: the midpoint and spread of the first two fingers down
 function pinchOf(points: Iterable<Point>): { mid: Point; distance: number } {
   const [a, b] = [...points] as [Point, Point];
-  return { mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, distance: Math.hypot(a.x - b.x, a.y - b.y) };
+  return {
+    mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+    distance: Math.hypot(a.x - b.x, a.y - b.y),
+  };
 }
 
 // The top-most dot under a world point (last drawn = on top), with a little slack for small dots
-function nodeAt(nodes: readonly SimNode[], world: Point, nodeSize: number, zoom: number): SimNode | null {
+function nodeAt(
+  nodes: readonly SimNode[],
+  world: Point,
+  nodeSize: number,
+  zoom: number,
+): SimNode | null {
   for (let index = nodes.length - 1; index >= 0; index -= 1) {
     const node = nodes[index]!;
     const reach = nodeRadius(node, nodeSize) + 3 / zoom;
-    if (Math.hypot((node.x ?? 0) - world.x, (node.y ?? 0) - world.y) <= reach) return node;
+    if (Math.hypot((node.x ?? 0) - world.x, (node.y ?? 0) - world.y) <= reach)
+      return node;
   }
   return null;
 }
 
 // Wires the canvas's pointer and wheel events to the camera, hover and layout
-export function usePointerControls({ canvas, layout, camera, hoveredId, focusedId, isAutoFit, nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, motion, redraw }: PointerOptions): void {
-  const latest = useRef({ nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, redraw });
+export function usePointerControls({
+  canvas,
+  layout,
+  camera,
+  hoveredId,
+  focusedId,
+  isAutoFit,
+  nodeSize,
+  onOpen,
+  onFocus,
+  onSelect,
+  onSelectionBox,
+  onContextTitle,
+  onContextNode,
+  onBackgroundClick,
+  onNodeDrag,
+  onNodeDrop,
+  motion,
+  redraw,
+}: PointerOptions): void {
+  const latest = useRef({
+    nodeSize,
+    onOpen,
+    onFocus,
+    onSelect,
+    onSelectionBox,
+    onContextTitle,
+    onContextNode,
+    onBackgroundClick,
+    onNodeDrag,
+    onNodeDrop,
+    redraw,
+  });
   // Latest props for the listeners below (synced after render, read in events)
   useLayoutEffect(() => {
-    latest.current = { nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, redraw };
-  }, [nodeSize, onOpen, onFocus, onSelect, onSelectionBox, onContextTitle, onContextNode, onBackgroundClick, onNodeDrag, onNodeDrop, redraw]);
+    latest.current = {
+      nodeSize,
+      onOpen,
+      onFocus,
+      onSelect,
+      onSelectionBox,
+      onContextTitle,
+      onContextNode,
+      onBackgroundClick,
+      onNodeDrag,
+      onNodeDrop,
+      redraw,
+    };
+  }, [
+    nodeSize,
+    onOpen,
+    onFocus,
+    onSelect,
+    onSelectionBox,
+    onContextTitle,
+    onContextNode,
+    onBackgroundClick,
+    onNodeDrag,
+    onNodeDrop,
+    redraw,
+  ]);
 
   useEffect(() => {
     const element = canvas.current;
@@ -99,23 +187,31 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
     // Touch double-taps zoom in onUp; some browsers also fire dblclick for them, which must not zoom twice
     let lastPointerType = "mouse";
     const hitTest = (point: Point) =>
-      nodeAt(layout.current.nodes, toWorld(camera.current, point), latest.current.nodeSize, camera.current.k);
+      nodeAt(
+        layout.current.nodes,
+        toWorld(camera.current, point),
+        latest.current.nodeSize,
+        camera.current.k,
+      );
 
     // LET GO OF A DOT: unpin it and cool the layout back down
     const releaseDrag = () => {
       if (gesture.mode !== "drag") return;
       gesture.node.fx = null;
       gesture.node.fy = null;
-      const simulation=layout.current.simulation;
+      const simulation = layout.current.simulation;
       simulation?.alphaTarget(0);
-      if (gesture.moved && simulation) simulation.alpha(Math.max(simulation.alpha(), 0.15));
+      if (gesture.moved && simulation)
+        simulation.alpha(Math.max(simulation.alpha(), 0.15));
       simulation?.restart();
     };
 
     // ZOOM IN AT A POINT (double-tap / double-click)
     const zoomInAt = (point: Point) => {
       isAutoFit.current = false;
-      motion.animateTo(zoomBy(motion.target.current ?? camera.current, point, DOUBLE_TAP_ZOOM));
+      motion.animateTo(
+        zoomBy(motion.target.current ?? camera.current, point, DOUBLE_TAP_ZOOM),
+      );
       latest.current.redraw();
     };
 
@@ -134,7 +230,7 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
         return;
       }
       if ((event.ctrlKey || event.metaKey) && latest.current.onSelect) {
-        gesture = {mode:"select",start:point};
+        gesture = { mode: "select", start: point };
         return;
       }
       const node = hitTest(point);
@@ -143,7 +239,14 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
         return;
       }
       const world = toWorld(camera.current, point);
-      gesture = { mode: "drag", node, start: point, offset: { x: world.x - (node.x ?? 0), y: world.y - (node.y ?? 0) }, moved: false, slop: event.pointerType === "touch" ? TAP_SLOP_PX : CLICK_SLOP_PX };
+      gesture = {
+        mode: "drag",
+        node,
+        start: point,
+        offset: { x: world.x - (node.x ?? 0), y: world.y - (node.y ?? 0) },
+        moved: false,
+        slop: event.pointerType === "touch" ? TAP_SLOP_PX : CLICK_SLOP_PX,
+      };
       // Pause settling while the person holds a node. Reheating the whole
       // graph on a small pointer movement made surrounding groups jump.
       layout.current.simulation?.stop();
@@ -158,7 +261,12 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
       const point = localPoint(element, event);
       if (pressed.has(event.pointerId)) pressed.set(event.pointerId, point);
       if (gesture.mode === "select") {
-        latest.current.onSelectionBox?.({x:Math.min(point.x,gesture.start.x),y:Math.min(point.y,gesture.start.y),width:Math.abs(point.x-gesture.start.x),height:Math.abs(point.y-gesture.start.y)});
+        latest.current.onSelectionBox?.({
+          x: Math.min(point.x, gesture.start.x),
+          y: Math.min(point.y, gesture.start.y),
+          width: Math.abs(point.x - gesture.start.x),
+          height: Math.abs(point.y - gesture.start.y),
+        });
         return;
       }
       if (gesture.mode === "pinch") {
@@ -168,16 +276,27 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
         gesture = { mode: "pinch", ...next };
       } else if (gesture.mode === "drag") {
         if (!gesture.moved) {
-          if (Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < gesture.slop) return;
+          if (
+            Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) <
+            gesture.slop
+          )
+            return;
           gesture.moved = true;
         }
         const world = toWorld(camera.current, point);
         gesture.node.x = gesture.node.fx = world.x - gesture.offset.x;
         gesture.node.y = gesture.node.fy = world.y - gesture.offset.y;
         layout.current.revision++;
-        latest.current.onNodeDrag?.(gesture.node, { x: gesture.node.x, y: gesture.node.y });
+        latest.current.onNodeDrag?.(gesture.node, {
+          x: gesture.node.x,
+          y: gesture.node.y,
+        });
       } else if (gesture.mode === "pan") {
-        camera.current = panBy(camera.current, point.x - gesture.last.x, point.y - gesture.last.y);
+        camera.current = panBy(
+          camera.current,
+          point.x - gesture.last.x,
+          point.y - gesture.last.y,
+        );
         gesture.last = point;
       } else {
         const id = hitTest(point)?.id ?? null;
@@ -192,7 +311,11 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
     const isDoubleTap = (event: PointerEvent, point: Point): boolean => {
       if (event.pointerType !== "touch") return false;
       const now = event.timeStamp;
-      const isDouble = lastTap !== null && now - lastTap.time < DOUBLE_TAP_MS && Math.hypot(point.x - lastTap.point.x, point.y - lastTap.point.y) < DOUBLE_TAP_PX;
+      const isDouble =
+        lastTap !== null &&
+        now - lastTap.time < DOUBLE_TAP_MS &&
+        Math.hypot(point.x - lastTap.point.x, point.y - lastTap.point.y) <
+          DOUBLE_TAP_PX;
       lastTap = isDouble ? null : { time: now, point };
       return isDouble;
     };
@@ -203,20 +326,38 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
       const point = localPoint(element, event);
       pressed.delete(event.pointerId);
       if (gesture.mode === "select") {
-        const start=gesture.start;
-        const toggle=Math.hypot(point.x-start.x,point.y-start.y)<CLICK_SLOP_PX;
-        const a=toWorld(camera.current,start), b=toWorld(camera.current,point);
-        const node=toggle?hitTest(point):null;
-        const nodes=toggle?(node?[node]:[]):layout.current.nodes.filter(n=>(n.x??0)>=Math.min(a.x,b.x)&&(n.x??0)<=Math.max(a.x,b.x)&&(n.y??0)>=Math.min(a.y,b.y)&&(n.y??0)<=Math.max(a.y,b.y));
-        latest.current.onSelect?.(nodes,toggle);
+        const start = gesture.start;
+        const toggle =
+          Math.hypot(point.x - start.x, point.y - start.y) < CLICK_SLOP_PX;
+        const a = toWorld(camera.current, start),
+          b = toWorld(camera.current, point);
+        const node = toggle ? hitTest(point) : null;
+        // Empty Ctrl/Cmd click clears the selection (same as clicking the canvas).
+        if (toggle && !node) latest.current.onSelect?.([], false);
+        else {
+          const nodes = toggle
+            ? node
+              ? [node]
+              : []
+            : layout.current.nodes.filter(
+                (n) =>
+                  (n.x ?? 0) >= Math.min(a.x, b.x) &&
+                  (n.x ?? 0) <= Math.max(a.x, b.x) &&
+                  (n.y ?? 0) >= Math.min(a.y, b.y) &&
+                  (n.y ?? 0) <= Math.max(a.y, b.y),
+              );
+          latest.current.onSelect?.(nodes, toggle);
+        }
         latest.current.onSelectionBox?.(null);
-        gesture={mode:"idle"};
+        gesture = { mode: "idle" };
         return;
       }
       if (gesture.mode === "pinch") {
         // the finger left behind keeps panning, so the view doesn't jump
         const [remaining] = pressed.values();
-        gesture = remaining ? { mode: "pan", last: remaining, start: null } : { mode: "idle" };
+        gesture = remaining
+          ? { mode: "pan", last: remaining, start: null }
+          : { mode: "idle" };
         return;
       }
       const slop = event.pointerType === "touch" ? TAP_SLOP_PX : CLICK_SLOP_PX;
@@ -230,10 +371,20 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
           if (onFocus && focusedId?.current !== node.id) onFocus(node.id);
           else latest.current.onOpen(node);
         } else latest.current.onNodeDrop?.(node, world);
-      } else if (gesture.mode === "pan" && gesture.start && Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < slop) {
+      } else if (
+        gesture.mode === "pan" &&
+        gesture.start &&
+        Math.hypot(point.x - gesture.start.x, point.y - gesture.start.y) < slop
+      ) {
         if (isDoubleTap(event, point)) zoomInAt(point);
-        else if (focusedId?.current != null && latest.current.onFocus) latest.current.onFocus(null);
-        else latest.current.onBackgroundClick?.(toWorld(camera.current, point));
+        else {
+          // Click empty canvas: drop any box/Ctrl selection, then unfocus or run the background action.
+          latest.current.onSelect?.([], false);
+          if (focusedId?.current != null && latest.current.onFocus)
+            latest.current.onFocus(null);
+          else
+            latest.current.onBackgroundClick?.(toWorld(camera.current, point));
+        }
       }
       gesture = { mode: "idle" };
     };
@@ -259,11 +410,21 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
       event.preventDefault();
       if (gesture.mode !== "idle") return;
       isAutoFit.current = false;
-      const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.clientHeight : 1);
+      const delta =
+        event.deltaY *
+        (event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? element.clientHeight
+            : 1);
       // Wheel/pinch streams already supply intermediate steps. Animating each
       // one queues scale ahead of the visible view and moves the cursor anchor.
       motion.cancel();
-      camera.current = zoomAt(camera.current, localPoint(element, event), Math.max(-160, Math.min(160, delta)));
+      camera.current = zoomAt(
+        camera.current,
+        localPoint(element, event),
+        Math.max(-160, Math.min(160, delta)),
+      );
       hoveredId.current = null;
       latest.current.redraw();
     };
@@ -276,11 +437,22 @@ export function usePointerControls({ canvas, layout, camera, hoveredId, focusedI
     };
 
     const onContext = (event: MouseEvent) => {
-      if (latest.current.onContextTitle?.(localPoint(element,event), {x:event.clientX,y:event.clientY})) { event.preventDefault(); return; }
+      if (
+        latest.current.onContextTitle?.(localPoint(element, event), {
+          x: event.clientX,
+          y: event.clientY,
+        })
+      ) {
+        event.preventDefault();
+        return;
+      }
       const node = hitTest(localPoint(element, event));
       if (!node || !latest.current.onContextNode) return;
       event.preventDefault();
-      latest.current.onContextNode(node, { x: event.clientX, y: event.clientY });
+      latest.current.onContextNode(node, {
+        x: event.clientX,
+        y: event.clientY,
+      });
     };
     element.addEventListener("contextmenu", onContext);
     element.addEventListener("pointerdown", onDown);
