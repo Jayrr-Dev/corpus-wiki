@@ -22,11 +22,11 @@ export function ExternalKnowledge({ enabled, ready }: { enabled: boolean; ready:
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-1.5">
           <label htmlFor="external-knowledge" className="text-panel font-medium">Allow external knowledge</label>
-          <SettingHint>When AI builds or updates an article and your own sources barely cover a section, it may search the web. Pages it uses are saved as external sources, and their knowledge only adds to yours. It never changes what your files say.</SettingHint>
+          <SettingHint>When your sources barely cover a section, AI may search the web for it. Pages it uses are saved as external sources that add to your knowledge and never change what your files say.</SettingHint>
         </div>
         <Switch id="external-knowledge" checked={enabled} disabled={save.isPending} onCheckedChange={(next) => void apply(next)} />
       </div>
-      {enabled && !ready ? <p className="text-panel text-muted-foreground">Searching Wikipedia only. Add TAVILY_API_KEY to the server&apos;s environment to search the whole web.</p> : null}
+      {enabled && !ready ? <p className="text-panel text-muted-foreground">Wikipedia only. Add TAVILY_API_KEY to search the whole web.</p> : null}
       <ErrorNote error={save.error} />
     </div>
   );

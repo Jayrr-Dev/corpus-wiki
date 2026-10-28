@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Sparkles, X } from "lucide-react";
 import { ErrorNote, Note, QueryState } from "@/app/(app)/_components/bits";
 import { useServerAction } from "@/components/actions/useServerAction";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import type { MemoryEntry } from "@/lib/ai/memory";
@@ -18,6 +19,7 @@ import { ROLE_ICONS } from "../workflow/roleIcons";
 // =====================================================================
 
 const QUERY_KEY = ["table", "ai_role_memory"];
+const shortDate = (value: string) => new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 
 export function RoleMemoryPanel({ initialMemory }: { initialMemory?: Record<string, MemoryEntry[]> }) {
   const client = useQueryClient();
@@ -33,8 +35,11 @@ export function RoleMemoryPanel({ initialMemory }: { initialMemory?: Record<stri
 
   return <section aria-labelledby="role-memory-title" className="space-y-3 pt-4">
     <div>
-      <h2 id="role-memory-title" className="text-panel font-semibold">Role memory</h2>
-      <p className="mt-1 max-w-2xl text-panel text-muted-foreground">Notes each role keeps for its future runs: workspace conventions, decisions it will need again, lookup results. They are hints, never evidence. Notes for a single run stay in the server’s memory and are not listed.</p>
+      <div className="flex items-center gap-1.5">
+        <h2 id="role-memory-title" className="text-panel font-semibold">Role memory</h2>
+        <InfoHint>Workspace conventions, decisions and lookup results, used as hints and never as evidence. Notes for a single run are not listed.</InfoHint>
+      </div>
+      <p className="mt-1 text-panel text-muted-foreground">Notes each role keeps for its future runs.</p>
     </div>
     <ErrorNote error={clear.error} />
     <QueryState query={memory}>
@@ -54,7 +59,7 @@ export function RoleMemoryPanel({ initialMemory }: { initialMemory?: Record<stri
                 <div className="min-w-0 flex-1">
                   <p className="break-all font-mono text-xs text-foreground">{entry.key}</p>
                   <p className="mt-0.5 text-panel break-words whitespace-pre-wrap text-muted-foreground">{entry.value}</p>
-                  <p className="mt-1 text-xs text-faint">{entry.source ? `${entry.source} · ` : ""}{new Date(entry.updatedAt).toLocaleString()}{entry.expiresAt ? ` · expires ${new Date(entry.expiresAt).toLocaleString()}` : ""}</p>
+                  <p className="mt-1 text-xs text-faint">{entry.source ? `${entry.source} · ` : ""}{shortDate(entry.updatedAt)}{entry.expiresAt ? ` · expires ${shortDate(entry.expiresAt)}` : ""}</p>
                 </div>
                 <Tooltip content="Forget this note">
                   <button type="button" aria-label={`Forget ${entry.key}`} disabled={clear.isPending} onClick={() => void run(role, entry.key)} className="flex size-6 shrink-0 items-center justify-center rounded text-faint opacity-100 hover:bg-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50 sm:opacity-0 sm:group-hover/note:opacity-100 sm:focus-visible:opacity-100"><X size={12} /></button>

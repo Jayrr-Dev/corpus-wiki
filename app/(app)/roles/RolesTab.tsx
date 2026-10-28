@@ -111,12 +111,12 @@ export function RolesTab({ library, modelSettings, initialMemory }: { library: S
               </div>
               {(MODEL_ROLES as readonly string[]).includes(role.id)
                 ? <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"><RoleModelControls role={role.id as ModelRole} settings={modelSettings} /></div>
-                : <p className="text-panel text-faint">Guides the Reconciler’s request, so it uses the Reconciler’s model and effort.</p>}
+                : <p className="text-panel text-faint">Uses the Reconciler’s model and effort.</p>}
             </div>
             {(AUTO_ROLES as readonly string[]).includes(role.id) ? <RoleFullAuto role={role.id as AutoRole} name={role.name} on={modelSettings.roleAuto.includes(role.id)} /> : null}
             <RoleInstructionsSection>
               {role.instructions === null
-                ? <p className="border-t px-5 py-4 text-panel leading-relaxed text-muted-foreground">The app manages this role’s instructions, so they cannot be edited here.</p>
+                ? <p className="border-t px-5 py-4 text-panel leading-relaxed text-muted-foreground">Managed by the app; not editable here.</p>
                 : <RoleInstructions key={`${role.id}:${override?.version ?? "default"}:${role.instructions}`} role={role.id} name={role.name} instructions={override?.instructions ?? role.instructions} version={override?.version ?? null} />}
             </RoleInstructionsSection>
           </div>

@@ -7,7 +7,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import type { ReasoningEffort } from "@/lib/ai/chat";
 import { chooseAiEffort } from "@/lib/server-actions/settings";
 import { usesEffort } from "@/lib/ai/effortSupport";
-import { SettingHint } from "./SettingHint";
+import { InfoPopover } from "@/components/standard/info-popover";
 
 // =====================================================================
 // DEFAULT EFFORT: how hard AI calls think before they answer. Saved on
@@ -38,7 +38,10 @@ export function AiEffort({ effort, model }: { effort: ReasoningEffort | null; mo
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5">
           <label htmlFor="ai-effort" className="text-panel font-medium">{save.isPending ? "Saving…" : "Effort"}</label>
-          <SettingHint>How much the model thinks before it answers. Low is fastest and cheapest; high reads most carefully but takes longer and costs more. An answer that runs out of room is retried one step lower. Roles and stages tuned to their own effort keep it, and models that don&apos;t reason (Nemotron 3) ignore it.</SettingHint>
+          <InfoPopover label="About effort">
+            <p>How much the model thinks before it answers. Low is fastest and cheapest; high reads most carefully but takes longer and costs more.</p>
+            <p className="mt-2">An answer that runs out of room is retried one step lower. Roles and stages tuned to their own effort keep it, and models that don&apos;t reason (Nemotron 3) ignore it.</p>
+          </InfoPopover>
         </div>
         <NativeSelect id="ai-effort" size="sm" value={supported ? (effort ?? "medium") : "off"} disabled={save.isPending || !supported} onChange={(event) => void apply(event.target.value as ReasoningEffort)}>
           {supported ? null : <NativeSelectOption value="off">Not used</NativeSelectOption>}

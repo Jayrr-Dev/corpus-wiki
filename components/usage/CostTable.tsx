@@ -4,6 +4,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { textColumn } from "@/app/(app)/_components/columns";
 import { DataTable } from "@/components/data-table";
+import { InfoPopover } from "@/components/standard/info-popover";
 import { estimateCallCost, formatUsd, MODEL_PRICES, PRICES_CHECKED_ON, priceFor, type ModelPrice } from "@/lib/ai/pricing";
 import { useAllAiCalls } from "./RoleSpend";
 
@@ -63,7 +64,18 @@ export function CostTable({ activeModel }: { activeModel: string }) {
       )}
       <DataTable query={{ data: rows, isPending: false, error: calls.error }} columns={COLUMNS} getRowId={(row) => row.model} pageSize={25} filterPlaceholder="Search models…" emptyState={null} />
       {unknownCalls > 0 && <p className="text-xs text-muted-foreground">{unknownCalls.toLocaleString("en-US")} calls have unknown cost and are excluded from the amounts shown.</p>}
-      <p className="text-xs text-faint">Provider list prices in US dollars, checked {PRICES_CHECKED_ON}. Mercury 3 uses its current OpenRouter launch price, $0.10 input and $0.35 output per million. Spent covers all-time logged usage in this space. Cache reads and writes use their own rates when recorded. Haiku 5.5 requests over 100,000 input tokens use $0.50 input and $2.50 output per million. Reasoning is included in output. Calls without usage or prices are excluded; older calls may lack cache details. Your provider invoice is the source of truth.</p>
+      <div className="flex items-center gap-1.5 text-xs text-faint">
+        <p>Provider list prices in US dollars, checked {PRICES_CHECKED_ON}.</p>
+        <InfoPopover label="About these prices">
+          <ul className="list-disc space-y-1 pl-4">
+            <li>Mercury 3 uses its current OpenRouter launch price, $0.10 input and $0.35 output per million.</li>
+            <li>Haiku 5.5 requests over 100,000 input tokens use $0.50 input and $2.50 output per million.</li>
+            <li>Cache reads and writes use their own rates when recorded. Reasoning is included in output.</li>
+            <li>Spent covers all-time logged usage in this space. Calls without usage or prices are excluded; older calls may lack cache details.</li>
+          </ul>
+          <p className="mt-2">Your provider invoice is the source of truth.</p>
+        </InfoPopover>
+      </div>
     </div>
   );
 }
