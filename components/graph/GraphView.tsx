@@ -231,6 +231,7 @@ export function GraphView({
                   ...DEFAULT_GRAPH_SETTINGS.filters,
                   domainScope: "both",
                   showEntities: true,
+                  showDomains: true,
                   showPages: true,
                 });
               }}

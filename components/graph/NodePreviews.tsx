@@ -73,6 +73,21 @@ export function EntityPreview({ node }: { node: GraphNode }) {
   );
 }
 
+export function DomainPreview({ node }: { node: GraphNode }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <PreviewHeader node={node} kind="Domain" />
+      <Facts
+        items={[
+          ["Path", node.text],
+          ["Connections", node.degree],
+        ]}
+      />
+      <OpenPage node={node} />
+    </div>
+  );
+}
+
 export function PagePreview({ node }: { node: GraphNode }) {
   const query = usePage(node.id);
   const sections = useSections({ filters: { page_id: node.id } });

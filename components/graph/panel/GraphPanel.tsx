@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { Minus, Square } from "lucide-react";
 import { UndoIcon } from "@/components/icons";
 import { Tooltip } from "@/components/standard/tooltip";
 import type { GraphNode, GraphSettings } from "@/lib/graph";
+import { Minus, Square } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import type { UpdateGraphSettings } from "../useGraphSettings";
-import { DomainsSection, FiltersSection, GroupsSection, GroupSection, TuningSection } from "./sections";
+import {
+  FiltersSection,
+  GroupSection,
+  GroupsSection,
+  TuningSection,
+} from "./sections";
 
 interface GraphPanelProps {
   settings: GraphSettings;
@@ -21,12 +26,25 @@ interface GraphPanelProps {
 
 // GRAPH PANEL: the floating settings card, top-left over the canvas (Obsidian's layout);
 // minimizing hides it and leaves a bare outlined square to reopen it
-export function GraphPanel({ settings, nodes, update, reset, isReplaying, onAnimate, actions }: GraphPanelProps) {
+export function GraphPanel({
+  settings,
+  nodes,
+  update,
+  reset,
+  isReplaying,
+  onAnimate,
+  actions,
+}: GraphPanelProps) {
   const [minimized, setMinimized] = useState(false);
   if (minimized) {
     return (
       <Tooltip content="Expand graph settings" side="right">
-        <button type="button" onClick={() => setMinimized(false)} aria-label="Expand graph settings" className="absolute top-3 left-3 text-faint hover:text-foreground">
+        <button
+          type="button"
+          onClick={() => setMinimized(false)}
+          aria-label="Expand graph settings"
+          className="absolute top-3 left-3 text-faint hover:text-foreground"
+        >
           <Square className="size-4" />
         </button>
       </Tooltip>
@@ -39,20 +57,40 @@ export function GraphPanel({ settings, nodes, update, reset, isReplaying, onAnim
     >
       <div className="flex items-center justify-end gap-1 pt-1">
         <Tooltip content="Restore default settings">
-          <button type="button" aria-label="Restore default settings" onClick={reset} className="text-faint hover:text-text">
+          <button
+            type="button"
+            aria-label="Restore default settings"
+            onClick={reset}
+            className="text-faint hover:text-text"
+          >
             <UndoIcon size={14} />
           </button>
         </Tooltip>
         <Tooltip content="Minimize">
-          <button type="button" aria-label="Minimize graph settings" onClick={() => setMinimized(true)} className="flex size-5 items-center justify-center text-faint hover:text-text">
+          <button
+            type="button"
+            aria-label="Minimize graph settings"
+            onClick={() => setMinimized(true)}
+            className="flex size-5 items-center justify-center text-faint hover:text-text"
+          >
             <Minus className="size-3.5" />
           </button>
         </Tooltip>
       </div>
-      <FiltersSection value={settings.filters} onChange={(next) => update("filters", next)} />
-      <DomainsSection value={settings.filters} nodes={nodes} onChange={(next) => update("filters", next)} />
-      <GroupSection value={settings.display} onChange={(next) => update("display", next)} />
-      <GroupsSection value={settings.groups} nodes={nodes} onChange={(next) => update("groups", next)} />
+      <FiltersSection
+        value={settings.filters}
+        nodes={nodes}
+        onChange={(next) => update("filters", next)}
+      />
+      <GroupSection
+        value={settings.display}
+        onChange={(next) => update("display", next)}
+      />
+      <GroupsSection
+        value={settings.groups}
+        nodes={nodes}
+        onChange={(next) => update("groups", next)}
+      />
       <TuningSection
         filters={settings.filters}
         display={settings.display}

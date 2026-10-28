@@ -54,6 +54,7 @@ export function LocalGraph({ centerId }: { centerId: string }) {
       showOrphans: true,
       showUnits: settings.filters.showUnits || centerKind === "unit",
       showEntities: settings.filters.showEntities || centerKind === "entity",
+      showDomains: settings.filters.showDomains || centerKind === "domain",
       showPages: settings.filters.showPages || centerKind === "page",
     });
     return neighborhood(layers, centerId, depth);

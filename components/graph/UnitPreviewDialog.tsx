@@ -24,7 +24,7 @@ import type { GraphNode } from "@/lib/graph";
 import { type UnitSummary, useRowsByIds } from "@/lib/queries/screens";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
-import { EntityPreview, PagePreview } from "./NodePreviews";
+import { DomainPreview, EntityPreview, PagePreview } from "./NodePreviews";
 
 // UNIT PREVIEW: a clicked unit's key facts (status, claim, domains, entities) without leaving the graph
 export function NodePreviewDialog({
@@ -45,6 +45,8 @@ export function NodePreviewDialog({
             <UnitPreview key={node.id} node={node} />
           ) : node.kind === "entity" ? (
             <EntityPreview key={node.id} node={node} />
+          ) : node.kind === "domain" ? (
+            <DomainPreview key={node.id} node={node} />
           ) : (
             <PagePreview key={node.id} node={node} />
           )

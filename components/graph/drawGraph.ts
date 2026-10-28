@@ -233,7 +233,7 @@ function paintText(
 // Default dot color for a node kind (grays only; groups add the accents)
 function baseColor(node: GraphNode, palette: CanvasPalette): string {
   if (node.kind === "page") return palette.text;
-  if (node.kind === "entity") return palette.faint;
+  if (node.kind === "entity" || node.kind === "domain") return palette.faint;
   return palette.muted;
 }
 

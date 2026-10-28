@@ -73,6 +73,27 @@ function entityNodes(rows: GraphRows): GraphNode[] {
   }));
 }
 
+// DOMAIN NODES: a topic hub. Units and pages link into it with "in".
+function domainNodes(rows: GraphRows): GraphNode[] {
+  return rows.domains.map((domain) => {
+    const label = domain.path.split("/").filter(Boolean).at(-1) ?? domain.path;
+    return {
+      id: domain.id,
+      kind: "domain" as const,
+      label,
+      text: domain.path,
+      href: "/domains",
+      // Domains have no created_at in the graph rows; use a stable early stamp so replay keeps them
+      createdAt: "1970-01-01T00:00:00.000Z",
+      degree: 0,
+      domainPaths: [domain.path],
+      entityNames: [],
+      unitKind: null,
+      status: null,
+    };
+  });
+}
+
 // PAGE NODES: a page sits in its own domain, if it has one
 function pageNodes(rows: GraphRows): GraphNode[] {
   const pathByDomain = new Map(rows.domains.map((domain) => [domain.id, domain.path]));
@@ -92,7 +113,8 @@ function pageNodes(rows: GraphRows): GraphNode[] {
   }));
 }
 
-// LINKS: typed relationships, "about" (unit or page -> entity), "cites" (page -> unit, once per pair)
+// LINKS: typed relationships, "about" (unit or page -> entity), "in" (unit or page -> domain),
+// "cites" (page -> unit, once per pair)
 function allLinks(rows: GraphRows): GraphLink[] {
   // Retiring a page leaves its sections behind, so only live pages can cite
   const livePages = new Set(rows.pages.map((page) => page.id));
@@ -108,6 +130,10 @@ function allLinks(rows: GraphRows): GraphLink[] {
     ...rows.unitEntities.map((row) => ({ id: `about:${row.unit_id}:${row.entity_id}`, source: row.unit_id, target: row.entity_id, kind: "about" as const })),
     ...present(rows.pages.map((page) =>
       page.entity_id ? { id: `about:${page.id}:${page.entity_id}`, source: page.id, target: page.entity_id, kind: "about" as const } : undefined,
+    )),
+    ...rows.unitDomains.map((row) => ({ id: `in:${row.unit_id}:${row.domain_id}`, source: row.unit_id, target: row.domain_id, kind: "in" as const })),
+    ...present(rows.pages.map((page) =>
+      page.domain_id ? { id: `in:${page.id}:${page.domain_id}`, source: page.id, target: page.domain_id, kind: "in" as const } : undefined,
     )),
     ...[...citePairs].map((pair) => {
       const [pageId = "", unitId = ""] = pair.split("|");
@@ -152,7 +178,7 @@ export function buildGraph(rows: GraphRows): GraphData {
     scopes.add(scope);
     pageScopes.set(pageId, scopes);
   }
-  const nodes = [...unitNodes(rows), ...entityNodes(rows), ...pageNodes(rows)].map((node) => {
+  const nodes = [...unitNodes(rows), ...entityNodes(rows), ...domainNodes(rows), ...pageNodes(rows)].map((node) => {
     const sourceScopes: Scope[] = node.kind === "unit" ? [unitScopes.get(node.id)!]
       : node.kind === "page" ? [...(pageScopes.get(node.id) ?? new Set<Scope>(["internal"]))] : [];
     return {

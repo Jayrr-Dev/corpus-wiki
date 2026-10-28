@@ -48,7 +48,7 @@ export interface GraphSettings {
 
 // DEFAULTS: domain color groups are populated when graph data arrives.
 export const DEFAULT_GRAPH_SETTINGS: GraphSettings = {
-  filters: { domainScope: "internal", search: "", domain: "", showUnits: true, showEntities: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
+  filters: { domainScope: "internal", search: "", domain: "", showUnits: true, showEntities: false, showDomains: false, showPages: false, showOrphans: true, showRelated: true, relatedness: 0.3 },
   groups: [],
   colorGroupDomains: [],
   colorThemeVersion: 1,
@@ -92,6 +92,7 @@ const settingsSchema = z.object({
     domain: z.string().default(""),
     showUnits: z.boolean().default(true),
     showEntities: z.boolean(),
+    showDomains: z.boolean().default(false),
     showPages: z.boolean(),
     showOrphans: z.boolean(),
     showRelated: z.boolean().default(DEFAULT_RELATED.showRelated),

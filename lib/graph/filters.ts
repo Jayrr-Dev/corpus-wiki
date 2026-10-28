@@ -13,6 +13,7 @@ export interface GraphFilters {
   domain: string;
   showUnits: boolean;
   showEntities: boolean;
+  showDomains: boolean;
   showPages: boolean;
   showOrphans: boolean;
   // derived "similar" links between related units, and the minimum score (0..1) they need
@@ -38,7 +39,8 @@ function linkedIds(data: GraphData): Set<string> {
 }
 
 // DOMAIN FOCUS: units and pages in `domain` or a subdomain below it. Entities have no
-// domain, so one stays when it links to something kept.
+// domain of their own, so one stays when it links to something kept. Domain hubs stay
+// when their path matches or when they link to something kept.
 export function inDomain(data: GraphData, domain: string): GraphData {
   const focus = domain.trim().replace(/\/+$/, "").toLowerCase();
   if (!focus) return data;
@@ -48,7 +50,7 @@ export function inDomain(data: GraphData, domain: string): GraphData {
   };
   const matched = new Set(data.nodes.filter((node) => node.domainPaths.some(matches)).map((node) => node.id));
   const linked = new Set(data.links.flatMap((link) => (matched.has(link.source) ? [link.target] : matched.has(link.target) ? [link.source] : [])));
-  return keepNodes(data, (node) => matched.has(node.id) || (node.kind === "entity" && linked.has(node.id)));
+  return keepNodes(data, (node) => matched.has(node.id) || ((node.kind === "entity" || node.kind === "domain") && linked.has(node.id)));
 }
 
 export function domainPathsForScope(node: GraphNode, scope: GraphFilters["domainScope"]): string[] {
@@ -59,25 +61,31 @@ export function domainPathsForScope(node: GraphNode, scope: GraphFilters["domain
   return scope === "internal" ? internal : external;
 }
 
-// Entities follow connected notes; notes without domains still follow source origin.
+// Entities and domain hubs follow connected notes; notes without domains still follow source origin.
 export function inDomainScope(data: GraphData, scope: GraphFilters["domainScope"]): GraphData {
-  const matched = new Set(data.nodes.filter((node) => node.kind !== "entity" &&
+  const matched = new Set(data.nodes.filter((node) => node.kind !== "entity" && node.kind !== "domain" &&
     (node.sourceScopes
       ? node.sourceScopes.some((origin) => scope === "both" || scope === origin)
       : (domainPathsForScope(node, scope).length > 0 ||
         ((scope === "internal" || scope === "both") && node.domainPaths.length === 0)))).map((node) => node.id));
   const linked = new Set(data.links.flatMap((link) => matched.has(link.source) ? [link.target] : matched.has(link.target) ? [link.source] : []));
-  const scoped = keepNodes(data, (node) => matched.has(node.id) || (node.kind === "entity" && linked.has(node.id)));
+  const scoped = keepNodes(data, (node) => matched.has(node.id) || ((node.kind === "entity" || node.kind === "domain") && linked.has(node.id)));
   return { ...scoped, nodes: scoped.nodes.map((node) => ({ ...node, domainPaths: domainPathsForScope(node, scope) })) };
 }
 
-// ENTITY GROUP: the circle is the entity. Drop the entity dot and the "about" line
-// so knowledge units sit inside the circle instead of connecting to it.
+// GROUP LAYERS: when circles stand in for hubs, drop that layer's dots and spokes so units sit inside.
 export function graphForGrouping(data: GraphData, groupBy: "domain" | "entity" | "off"): GraphData {
-  if (groupBy !== "entity") return data;
-  const nodes = data.nodes.filter((node) => node.kind !== "entity");
-  const ids = new Set(nodes.map((node) => node.id));
-  return { nodes, links: data.links.filter((link) => link.kind !== "about" && ids.has(link.source) && ids.has(link.target)) };
+  if (groupBy === "entity") {
+    const nodes = data.nodes.filter((node) => node.kind !== "entity");
+    const ids = new Set(nodes.map((node) => node.id));
+    return { nodes, links: data.links.filter((link) => link.kind !== "about" && ids.has(link.source) && ids.has(link.target)) };
+  }
+  if (groupBy === "domain") {
+    const nodes = data.nodes.filter((node) => node.kind !== "domain");
+    const ids = new Set(nodes.map((node) => node.id));
+    return { nodes, links: data.links.filter((link) => link.kind !== "in" && ids.has(link.source) && ids.has(link.target)) };
+  }
+  return data;
 }
 
 // APPLY: the visible graph for these filters
@@ -85,11 +93,12 @@ export function applyFilters(data: GraphData, filters: GraphFilters): GraphData 
   const shownKinds = new Set<GraphNodeKind>();
   if (filters.showUnits) shownKinds.add("unit");
   if (filters.showEntities) shownKinds.add("entity");
+  if (filters.showDomains) shownKinds.add("domain");
   if (filters.showPages) shownKinds.add("page");
   const search = filters.search.trim().toLowerCase();
 
   const byLayer = keepNodes(inDomain(inDomainScope(data, filters.domainScope), filters.domain), (node) => shownKinds.has(node.kind));
-  const bySearch = search ? keepNodes(byLayer, (node) => node.label.toLowerCase().includes(search)) : byLayer;
+  const bySearch = search ? keepNodes(byLayer, (node) => node.label.toLowerCase().includes(search) || node.text.toLowerCase().includes(search)) : byLayer;
   if (filters.showOrphans) return bySearch;
   const linked = linkedIds(bySearch);
   return keepNodes(bySearch, (node) => linked.has(node.id));
