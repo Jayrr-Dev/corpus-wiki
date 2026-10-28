@@ -123,4 +123,29 @@ describe("stakeholder structure in PostgreSQL", () => {
       unitIds: [former.target_id, stale.target_id].sort(),
     });
   });
+
+  it("backfills an unlabelled claim, keeps the links through a re-save, and lets real labels replace them", async () => {
+    await store.pg.exec("insert into entities(type,key,name) values ('company','epcor','EPCOR'),('government_body','yeg','City of Edmonton'),('company','atco','ATCO')");
+    const pair: [string, string][] = [["company", "epcor"], ["government_body", "yeg"]];
+    const old = await addClaim("EPCOR is wholly owned by the City of Edmonton", context(pair));
+    await store.pg.query("insert into entity_profiles(entity_id,is_stakeholder) select id,true from entities where key in ('epcor','yeg')");
+    const candidates = await store.db.call<{ unitId: string }[]>("structure_backfill_candidates");
+    expect(candidates.map((c) => c.unitId)).toContain(old.target_id);
+
+    const owned = label(["company", "epcor"], "owned_by", ["government_body", "yeg"], { share: 1 });
+    await expect(store.db.call("backfill_structure", { p_unit: old.target_id, p_structure: [label(["company", "epcor"], "owned_by", ["company", "atco"])] })).rejects.toThrow();
+    expect(await store.db.call<number>("backfill_structure", { p_unit: old.target_id, p_structure: [owned] })).toBe(1);
+    expect((await store.db.call<{ unitId: string }[]>("structure_backfill_candidates")).map((c) => c.unitId)).not.toContain(old.target_id);
+
+    // A re-projection of the same unlabelled claim keeps the backfilled link
+    await store.pg.query("select change_control.project_knowledge_context($1)", [old.target_id]);
+    const kept = (await store.pg.query("select link, share::float share, backfilled from entity_relations where unit_id=$1", [old.target_id])).rows;
+    expect(kept).toEqual([{ link: "owned_by", share: 1, backfilled: true }]);
+
+    // A revision that labels its own structure replaces it
+    const revised = await submit("person", "revise_claim", { content: "EPCOR is wholly owned by the City of Edmonton", context: context(pair, [{ ...owned, share: 0.9 }]) }, old.target_id);
+    expect(revised.status).toBe("applied");
+    expect((await store.pg.query("select share::float share, backfilled from entity_relations where unit_id=$1", [old.target_id])).rows).toEqual([{ share: 0.9, backfilled: false }]);
+    expect(await store.db.call<number>("backfill_structure", { p_unit: old.target_id, p_structure: [owned] })).toBe(0);
+  });
 });

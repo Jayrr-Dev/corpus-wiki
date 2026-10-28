@@ -47,7 +47,7 @@ export const structureSchema = z.object({
 // whom and who presses on whom, from the smaller or lower end to the bigger. toDraft.ts keeps it
 // as knowledge_context.structure; the answer field has its own name because "structure" above
 // is a composite's shape.
-const structureLabelSchema = z.object({
+export const structureLabelSchema = z.object({
   from: z.object({ type: entityTypeSchema, key: z.string().min(1) }),
   link: z.enum(STRUCTURE_LINK_TYPES),
   to: z.object({ type: entityTypeSchema, key: z.string().min(1) }),

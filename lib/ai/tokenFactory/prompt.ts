@@ -15,8 +15,8 @@ import { SENIORITY_LADDER, STRUCTURE_LINKS } from "@/lib/stakeholders/structure"
 // =====================================================================
 
 // The structure vocabulary as the model reads it (lib/stakeholders/structure.ts is the one list)
-const STRUCTURE_LINK_GUIDE = STRUCTURE_LINKS.map((entry) => `${entry.link} (${entry.description})`).join("; ");
-const SENIORITY_GUIDE = SENIORITY_LADDER.map((entry) => `${entry.seniority}: ${entry.label}`).join("; ");
+export const STRUCTURE_LINK_GUIDE = STRUCTURE_LINKS.map((entry) => `${entry.link} (${entry.description})`).join("; ");
+export const SENIORITY_GUIDE = SENIORITY_LADDER.map((entry) => `${entry.seniority}: ${entry.label}`).join("; ");
 
 const SYSTEM_PROMPT = `You maintain a universal knowledge store. You read ONE new file and decide how it changes what is known.
 
