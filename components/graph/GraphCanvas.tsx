@@ -8,12 +8,9 @@ import {
   circleOpenTarget,
   clusterCircles,
   coalesceDrawn,
-  groupColorLookup,
   moveTarget,
-  noArticleGroups,
+  circleSubgroups,
   nodeInCluster,
-  primaryEntityName,
-  primaryPageTitle,
   type CircleOpenTarget,
   type ClusterMode,
   type GraphColor,
@@ -29,7 +26,6 @@ import {
   type Camera,
   type Point,
 } from "@/lib/graph/camera";
-import { entityColor } from "@/lib/graph/domainColors";
 import { nodeRadius, type SimLink, type SimNode } from "@/lib/graph/physics";
 import { cn } from "@/lib/utils";
 import {
@@ -41,7 +37,8 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { drawGraph, openCoalesceGroup } from "./drawGraph";
+import { drawGraph, groupingOf, openCoalesceGroup } from "./drawGraph";
+import { GROUP_COLORS } from "./groupColors";
 import { readCanvasPalette } from "./palette";
 import { useCameraMotion } from "./useCameraMotion";
 import { useForceLayout } from "./useForceLayout";
@@ -172,28 +169,11 @@ export function GraphCanvas({
   const frame = useRef<number | null>(null);
   const redrawRef = useRef<() => void>(() => {});
   const groupBy = settings.display.groupBy;
-  const clusterMode: ClusterMode =
-    groupBy === "entity" || groupBy === "page" ? groupBy : "domain";
-  const colorOf = useMemo(() => {
-    const byGroup = groupColorLookup(settings.groups);
-    if (groupBy === "entity") {
-      return (node: GraphNode) => {
-        if (node.kind === "domain") return null;
-        const name = primaryEntityName(node);
-        return name ? entityColor(name) : null;
-      };
-    }
-    if (groupBy === "page") {
-      return (node: GraphNode) => {
-        if (node.kind === "domain") return null;
-        const title = primaryPageTitle(node);
-        if (title) return entityColor(title);
-        if (!node.recommendedTitle) return "muted";
-        return node.recommendedKind === "merge" ? "needs-you" : "link";
-      };
-    }
-    return byGroup;
-  }, [settings.groups, groupBy]);
+  const clusterMode: ClusterMode = groupingOf(groupBy);
+  const colorOf = useMemo(
+    () => GROUP_COLORS[clusterMode](settings.groups),
+    [settings.groups, clusterMode],
+  );
   // Circles off also turns off the pull that gathers dots into a group
   const forces = useMemo(
     () =>
@@ -512,10 +492,7 @@ export function GraphCanvas({
       }
       setFocusedDomain(picked.key);
       onFocusDomain?.(picked.key);
-      const hubs =
-        clusterMode === "page"
-          ? noArticleGroups(nodes, layout.current.links)
-          : null;
+      const hubs = circleSubgroups(nodes, layout.current.links, clusterMode);
       const members = nodes.filter((node) =>
         nodeInCluster(node, picked.key, clusterMode, hubs),
       );
@@ -617,10 +594,11 @@ export function GraphCanvas({
     },
     onSelect: onSelect
       ? (nodes, toggle) => {
-          const hubs =
-            clusterMode === "page"
-              ? noArticleGroups(layout.current.nodes, layout.current.links)
-              : null;
+          const hubs = circleSubgroups(
+            layout.current.nodes,
+            layout.current.links,
+            clusterMode,
+          );
           onSelect(
             nodes.filter(
               (n) =>

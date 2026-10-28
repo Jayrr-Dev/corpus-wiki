@@ -10,6 +10,7 @@ import {
   type SimulationNodeDatum,
 } from "d3-force";
 import { packDomains, type ClusterMode } from "./clusters";
+import { hasHubBody } from "./nodeTypes";
 import type { GraphForces } from "./settings";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -76,7 +77,7 @@ export function nodeRadius(
 ): number {
   // Domain hubs sit in the middle of a topic circle and grow with how many notes link in.
   // Two thirds of that size: one third smaller than the full hub.
-  if (node.kind === "domain")
+  if (hasHubBody(node))
     return (
       nodeSize * (8 + 5 * Math.sqrt(Math.max(0, node.degree))) * (2 / 3)
     );
@@ -88,7 +89,7 @@ export function nodeRadius(
 
 // Share of pull a dot feels: weak for orphans, near full for hubs (domain hubs stay neutral)
 export function pullWeight(node: Pick<GraphNode, "degree" | "kind">): number {
-  if (node.kind === "domain") return 1;
+  if (hasHubBody(node)) return 1;
   return (
     ORPHAN_PULL +
     (1 - ORPHAN_PULL) * (node.degree / (node.degree + HALF_PULL_DEGREE))
@@ -96,12 +97,12 @@ export function pullWeight(node: Pick<GraphNode, "degree" | "kind">): number {
 }
 
 function centerPullWeight(node: Pick<GraphNode, "degree" | "kind">): number {
-  if (node.kind === "domain") return ORPHAN_PULL;
+  if (hasHubBody(node)) return ORPHAN_PULL;
   return Math.pow(pullWeight(node), CENTER_PULL_POWER);
 }
 
 function repelStrength(node: Pick<GraphNode, "degree" | "kind">): number {
-  if (node.kind === "domain") return 1;
+  if (hasHubBody(node)) return 1;
   return 1 + HUB_REPEL * Math.sqrt(node.degree);
 }
 
@@ -196,7 +197,7 @@ function neighborhoodForce(
   const force: NeighborhoodForce = (alpha) => {
     if (nodes.length === 0 || alpha <= 0) return;
     for (const node of nodes) {
-      if (node.kind === "domain" || node.degree < HUB_DEGREE) continue;
+      if (hasHubBody(node) || node.degree < HUB_DEGREE) continue;
       const linked = neighbors.get(node.id);
       if (!linked || linked.size < 2) continue;
       const groups = new Map<
@@ -238,7 +239,7 @@ function neighborhoodForce(
 
     let hubCount = 0;
     for (const node of nodes) {
-      if (node.kind !== "domain" && node.degree >= HUB_DEGREE) hubCount += 1;
+      if (!hasHubBody(node) && node.degree >= HUB_DEGREE) hubCount += 1;
     }
     if (hubCount === 0) return;
 
@@ -247,14 +248,14 @@ function neighborhoodForce(
     const slot = (x: number, y: number) =>
       `${Math.floor(x / cell)}:${Math.floor(y / cell)}`;
     for (const node of nodes) {
-      if (node.kind === "domain") continue;
+      if (hasHubBody(node)) continue;
       const key = slot(node.x ?? 0, node.y ?? 0);
       const bucket = grid.get(key);
       if (bucket) bucket.push(node);
       else grid.set(key, [node]);
     }
     for (const node of nodes) {
-      if (node.kind === "domain" || node.degree < HUB_DEGREE || node.fx != null)
+      if (hasHubBody(node) || node.degree < HUB_DEGREE || node.fx != null)
         continue;
       const linked = neighbors.get(node.id);
       const reach =
@@ -267,7 +268,7 @@ function neighborhoodForce(
           const bucket = grid.get(`${ix}:${iy}`);
           if (!bucket) continue;
           for (const other of bucket) {
-            if (other === node || other.kind === "domain" || other.fx != null)
+            if (other === node || hasHubBody(other) || other.fx != null)
               continue;
             if (linked?.has(other.id) || !sameHome(node, other)) continue;
             if (pullWeight(other) > pullWeight(node)) continue;

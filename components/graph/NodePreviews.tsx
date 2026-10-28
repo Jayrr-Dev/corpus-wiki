@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/dialog";
 import { PopoverDescription } from "@/components/ui/popover";
 import {
+  GROUPINGS,
+  isContent,
+  nodeType,
   unitIdsInCirclePool,
   type CircleOpenTarget,
   type CirclePool,
@@ -155,7 +158,7 @@ function listedUnits(units: readonly GraphNode[]) {
 function unitsForEntity(units: readonly GraphNode[], name: string) {
   return listedUnits(
     units.filter(
-      (unit) => unit.kind === "unit" && unit.entityNames.includes(name),
+      (unit) => isContent(unit) && unit.entityNames.includes(name),
     ),
   );
 }
@@ -164,7 +167,7 @@ function unitsForDomain(units: readonly GraphNode[], path: string) {
   return listedUnits(
     units.filter(
       (unit) =>
-        unit.kind === "unit" &&
+        isContent(unit) &&
         unit.domainPaths.some(
           (domain) => domain === path || domain.startsWith(`${path}/`),
         ),
@@ -179,7 +182,7 @@ function unitsForPage(
 ) {
   return listedUnits(
     units.filter((unit) => {
-      if (unit.kind !== "unit") return false;
+      if (!isContent(unit)) return false;
       if (sectionTitle) {
         return unit.pageSections?.some(
           (section) =>
@@ -206,7 +209,7 @@ export function EntityPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewKind kind="Entity" />
+      <PreviewKind kind={nodeType(node).label} />
       {entity && !query.isPending && !query.error ? null : (
         <DialogTitle className="sr-only">{node.label}</DialogTitle>
       )}
@@ -251,7 +254,7 @@ export function DomainPreview({
       sidebar={<UnitLinks units={related} />}
       footer={<OpenPage node={node} />}
     >
-      <PreviewKind kind="Domain" />
+      <PreviewKind kind={nodeType(node).label} />
       <Facts
         items={[
           ["Path", node.text],
@@ -565,8 +568,8 @@ type PreviewTab = {
   label: string;
   closable?: boolean;
 } & (
-  | { kind: "page"; pageId: string; sectionTitle?: string }
-  | { kind: "unit"; unitId: string }
+  | { kind: "article"; pageId: string; sectionTitle?: string }
+  | { kind: "claim"; unitId: string }
 );
 
 function ArticlePreviewTabs({
@@ -581,7 +584,7 @@ function ArticlePreviewTabs({
   units: readonly GraphNode[];
 }) {
   const first: PreviewTab = {
-    kind: "page",
+    kind: "article",
     id: sectionTitle ? `${page.id}:${sectionTitle}` : page.id,
     label: sectionTitle ?? page.label,
     pageId: page.id,
@@ -594,7 +597,7 @@ function ArticlePreviewTabs({
     (href: string, label: string) => {
       const path = href.split(/[?#]/)[0] ?? href;
       const pageMatch = pages.find(
-        (node) => node.kind === "page" && node.href === path,
+        (node) => node.kind === GROUPINGS.page.hubKind && node.href === path,
       );
       if (pageMatch) {
         setTabs((current) =>
@@ -603,7 +606,7 @@ function ArticlePreviewTabs({
             : [
                 ...current,
                 {
-                  kind: "page",
+                  kind: "article",
                   id: pageMatch.id,
                   label: pageMatch.label || label,
                   pageId: pageMatch.id,
@@ -614,7 +617,7 @@ function ArticlePreviewTabs({
         return;
       }
       const unitMatch = units.find(
-        (node) => node.kind === "unit" && node.href === path,
+        (node) => isContent(node) && node.href === path,
       );
       if (!unitMatch) {
         window.location.assign(href);
@@ -627,7 +630,7 @@ function ArticlePreviewTabs({
           : [
               ...current,
               {
-                kind: "unit",
+                kind: "claim",
                 id,
                 label: unitMatch.label || label,
                 unitId: unitMatch.id,
@@ -640,11 +643,11 @@ function ArticlePreviewTabs({
   );
   const shown = tabs.find((tab) => tab.id === active) ?? tabs[0] ?? first;
   const node =
-    shown.kind === "page"
+    shown.kind === "article"
       ? (pages.find((item) => item.id === shown.pageId) ?? page)
       : null;
   const unit =
-    shown.kind === "unit"
+    shown.kind === "claim"
       ? units.find((item) => item.id === shown.unitId)
       : null;
   return (
@@ -663,10 +666,10 @@ function ArticlePreviewTabs({
         aria-label="Open articles"
         className="in-data-[maximized]:h-full in-data-[maximized]:min-h-0 in-data-[maximized]:flex-1 [&_[data-slot=dynamic-tabs-bar]]:pr-20"
       >
-        {shown.kind === "unit" && unit ? (
+        {shown.kind === "claim" && unit ? (
           <UnitPreview key={shown.id} node={unit} />
         ) : null}
-        {shown.kind === "page" && node ? (
+        {shown.kind === "article" && node ? (
           <PagePreview
             key={shown.id}
             node={node}
@@ -811,19 +814,19 @@ export function CirclePreviewDialog({
   onClose: () => void;
 }) {
   const page =
-    target && (target.kind === "page" || target.kind === "section")
+    target && (target.kind === "article" || target.kind === "section")
       ? pages.find(
           (node) =>
-            node.kind === "page" &&
+            node.kind === GROUPINGS.page.hubKind &&
             node.label ===
-              (target.kind === "page" ? target.title : target.page),
+              (target.kind === "article" ? target.title : target.page),
         )
       : undefined;
   const suggested =
     target?.kind === "recommendation"
       ? units.filter(
           (node) =>
-            node.kind === "unit" &&
+            isContent(node) &&
             node.recommendedTitle === target.title &&
             !node.pageTitles?.length,
         )
@@ -840,7 +843,7 @@ export function CirclePreviewDialog({
             : "w-fit max-w-[min(52rem,calc(100%-2rem))] sm:max-w-[min(52rem,calc(100%-2rem))]"
         }
       >
-        {target?.kind === "page" && page ? (
+        {target?.kind === "article" && page ? (
           <ArticlePreviewTabs
             key={page.id}
             page={page}

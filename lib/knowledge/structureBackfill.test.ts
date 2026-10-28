@@ -5,9 +5,10 @@ const claim: BackfillClaim = { unitId: "u1", content: "EPCOR is wholly owned by 
   { type: "company", key: "epcor", name: "EPCOR", stakeholder: true },
   { type: "government_body", key: "city-of-edmonton", name: "City of Edmonton", stakeholder: true },
 ] };
+const typeOf = (key: string) => (key === "epcor" ? "company" : "government_body") as "company" | "government_body";
 const link = (from: string, to: string, extra: Record<string, unknown> = {}) => ({
-  from: { type: from === "epcor" ? "company" : "government_body", key: from }, link: "owned_by" as const,
-  to: { type: to === "epcor" ? "company" : "government_body", key: to },
+  from: { type: typeOf(from), key: from }, link: "owned_by" as const,
+  to: { type: typeOf(to), key: to },
   title: null, seniority: null, share: 1, current: true, since: null, until: null, ...extra,
 });
 

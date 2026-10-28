@@ -1,10 +1,12 @@
 import {
   circleNestedIn,
+  circleSubgroups,
   clusterKey,
   NO_ARTICLE_LABEL,
-  noArticleGroups,
   type ClusterMode,
 } from "./clusters";
+import { GROUPINGS } from "./groupings";
+import { centersGrouping, hasHubBody } from "./nodeTypes";
 import type { SimLink, SimNode } from "./physics";
 import type { GraphData, GraphLink, GraphNode } from "./types";
 
@@ -17,10 +19,11 @@ import type { GraphData, GraphLink, GraphNode } from "./types";
 // circles stay combined until you zoom into that circle.
 // =====================================================================
 
-// The name at the end of a circle key. Entity names are one piece, even with a slash.
+// The name at the end of a circle key. Flat names (entities) are one piece, even with a slash.
 function leafName(key: string, mode: ClusterMode): string {
-  if (mode === "entity") return key;
-  const parts = key.split(mode === "page" ? "\u001f" : "/").filter(Boolean);
+  const { nests, separator } = GROUPINGS[mode];
+  if (!nests) return key;
+  const parts = key.split(separator).filter(Boolean);
   return parts[parts.length - 1] ?? key;
 }
 
@@ -94,11 +97,10 @@ export function coalesceGraph(
   mode: ClusterMode,
   openKey: string | null = null,
 ): GraphData {
-  const hubs =
-    mode === "page" ? noArticleGroups(data.nodes, data.links) : null;
+  const hubs = circleSubgroups(data.nodes, data.links, mode);
   const buckets = new Map<string, GraphNode[]>();
   for (const node of data.nodes) {
-    if (node.kind === "domain") continue;
+    if (hasHubBody(node) || centersGrouping(node, mode)) continue;
     const key = clusterKey(node, mode, hubs);
     if (!key) continue;
     const bucket = buckets.get(key);
@@ -135,7 +137,7 @@ export function coalesceGraph(
 }
 
 function endId(end: SimLink["source"]): string {
-  return typeof end === "object" ? end.id : end;
+  return typeof end === "object" ? end.id : String(end);
 }
 
 function centroid(members: readonly SimNode[]): { x: number; y: number } {

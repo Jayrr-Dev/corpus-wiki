@@ -1,4 +1,5 @@
 import type { Enums } from "@/lib/database/types";
+import type { GraphNodeKind } from "./nodeTypes";
 
 // =====================================================================
 // GRAPH MODEL: what the graph view draws, independent of how it is
@@ -6,8 +7,8 @@ import type { Enums } from "@/lib/database/types";
 // (like Obsidian's tags); links are typed.
 // =====================================================================
 
-// NODE KINDS
-export type GraphNodeKind = "unit" | "entity" | "page" | "domain";
+// NODE KINDS: listed, with their traits, in nodeTypes.ts
+export type { GraphNodeKind };
 
 // LINK KINDS: the seven relationship types, plus "about" (unit or page -> entity), "cites" (page -> unit),
 // "in" (unit or page -> domain), and "similar" (derived relatedness between units, never stored; see related.ts)
@@ -43,6 +44,8 @@ export interface GraphNode {
   domainScopePaths?: { internal: string[]; external: string[] };
   sourceScopes?: ("internal" | "external")[];
   entityNames: string[];
+  // The named entities that are stakeholders (the Stakeholders grouping reads these)
+  stakeholderNames?: string[];
   // Pages that cite this unit (own title on page nodes; omitted on older fixtures)
   pageTitles?: string[];
   // Title of a pending article suggestion that includes this unit

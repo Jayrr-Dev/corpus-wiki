@@ -1,3 +1,5 @@
+import { type GroupingId, GROUPINGS } from "./groupings";
+import { centersGrouping, isHub, isPlacedByLinks } from "./nodeTypes";
 import type { GraphData, GraphLink, GraphNode, GraphNodeKind } from "./types";
 
 // =====================================================================
@@ -11,10 +13,8 @@ export interface GraphFilters {
   search: string;
   // one domain path to focus on, with every subdomain below it ("" = all domains)
   domain: string;
-  showUnits: boolean;
-  showEntities: boolean;
-  showDomains: boolean;
-  showPages: boolean;
+  // Which node types show, one switch per type in the Nodes section
+  shown: Record<GraphNodeKind, boolean>;
   showOrphans: boolean;
   // Lines that attach a note to a domain, entity, or page
   showConnectors: boolean;
@@ -101,9 +101,7 @@ export function inDomain(data: GraphData, domain: string): GraphData {
   return keepNodes(
     data,
     (node) =>
-      matched.has(node.id) ||
-      ((node.kind === "entity" || node.kind === "domain") &&
-        linked.has(node.id)),
+      matched.has(node.id) || (isPlacedByLinks(node) && linked.has(node.id)),
   );
 }
 
@@ -127,8 +125,7 @@ export function inDomainScope(
     data.nodes
       .filter(
         (node) =>
-          node.kind !== "entity" &&
-          node.kind !== "domain" &&
+          !isPlacedByLinks(node) &&
           (node.sourceScopes
             ? node.sourceScopes.some(
                 (origin) => scope === "both" || scope === origin,
@@ -151,19 +148,16 @@ export function inDomainScope(
   const scoped = keepNodes(
     data,
     (node) =>
-      matched.has(node.id) ||
-      ((node.kind === "entity" || node.kind === "domain") &&
-        linked.has(node.id)),
+      matched.has(node.id) || (isPlacedByLinks(node) && linked.has(node.id)),
   );
   return {
     ...scoped,
     nodes: scoped.nodes.map((node) => ({
       ...node,
       // A domain node is the topic itself. Scope filters notes, not the topic path.
-      domainPaths:
-        node.kind === "domain"
-          ? node.domainPaths
-          : domainPathsForScope(node, scope),
+      domainPaths: centersGrouping(node, "domain")
+        ? node.domainPaths
+        : domainPathsForScope(node, scope),
     })),
   };
 }
@@ -175,13 +169,13 @@ export function mergeEntityDomainHubs(
 ): GraphData {
   const paths = new Set<string>();
   for (const node of filtered.nodes) {
-    if (node.kind !== "unit" && node.kind !== "page") continue;
+    if (isPlacedByLinks(node)) continue;
     for (const path of node.domainPaths) paths.add(path);
   }
   if (paths.size === 0) return filtered;
   const domainByPath = new Map(
     source.nodes
-      .filter((node) => node.kind === "domain" && node.domainPaths[0])
+      .filter((node) => centersGrouping(node, "domain") && node.domainPaths[0])
       .map((node) => [node.domainPaths[0]!, node]),
   );
   const byId = new Map(filtered.nodes.map((node) => [node.id, node]));
@@ -223,29 +217,28 @@ function preferredName(
   return best;
 }
 
-function topicPaths(nodes: readonly GraphNode[]): string[] {
-  return [
-    ...new Set(
-      nodes
-        .filter((node) => node.kind === "domain")
-        .map((node) => node.domainPaths[0] ?? "")
-        .filter(Boolean),
-    ),
-  ].sort((a, b) => a.localeCompare(b));
-}
+// How a hub is known in its claims: a page by its title (the units it cites), a domain by
+// its path, an entity by its name. The first field with a home wins. Paths nest, so a topic
+// also neighbors its parent.
+const IDENTITIES = [
+  { field: "pageTitles", nests: false },
+  { field: "domainPaths", nests: true },
+  { field: "entityNames", nests: false },
+] as const;
 
-// Parent topics, child topics, and links between their notes. About, in, cites,
+type IdentityField = (typeof IDENTITIES)[number]["field"];
+
+// Parent keys, child keys, and links between their claims. About, in, cites,
 // and similar lines are not bridges: the group counts already used those.
-function topicNeighbors(
-  domainPaths: readonly string[],
-  evidenceNodes: readonly GraphNode[],
+function keyNeighbors(
+  keys: readonly string[],
+  field: IdentityField,
+  nests: boolean,
+  claims: readonly GraphNode[],
   evidenceLinks: readonly GraphLink[],
 ): Map<string, Map<string, number>> {
-  const pathsOf = new Map<string, readonly string[]>();
-  for (const node of evidenceNodes) {
-    if (node.kind === "domain" || node.kind === "entity") continue;
-    pathsOf.set(node.id, node.domainPaths);
-  }
+  const keysOf = new Map<string, readonly string[]>();
+  for (const claim of claims) keysOf.set(claim.id, claim[field] ?? []);
   const neighbors = new Map<string, Map<string, number>>();
   const connect = (left: string, right: string) => {
     if (!left || !right || left === right) return;
@@ -253,11 +246,13 @@ function topicNeighbors(
     row.set(right, (row.get(right) ?? 0) + 1);
     neighbors.set(left, row);
   };
-  for (const path of domainPaths) {
-    const parent = path.split("/").slice(0, -1).join("/");
-    if (!parent) continue;
-    connect(path, parent);
-    connect(parent, path);
+  if (nests) {
+    for (const key of keys) {
+      const parent = key.split("/").slice(0, -1).join("/");
+      if (!parent) continue;
+      connect(key, parent);
+      connect(parent, key);
+    }
   }
   for (const link of evidenceLinks) {
     if (
@@ -267,13 +262,13 @@ function topicNeighbors(
       link.kind === "similar"
     )
       continue;
-    const left = pathsOf.get(link.source);
-    const right = pathsOf.get(link.target);
+    const left = keysOf.get(link.source);
+    const right = keysOf.get(link.target);
     if (!left || !right) continue;
-    for (const sourcePath of left) {
-      for (const targetPath of right) {
-        connect(sourcePath, targetPath);
-        connect(targetPath, sourcePath);
+    for (const sourceKey of left) {
+      for (const targetKey of right) {
+        connect(sourceKey, targetKey);
+        connect(targetKey, sourceKey);
       }
     }
   }
@@ -316,46 +311,99 @@ function spreadTopicGroups<T>(
   }
 }
 
-// Each domain hub joins the entity that shares the most claims in that topic.
-// A topic with no entity of its own joins the topic it connects to most.
-function domainsInsideEntityGroups(
+// Where one grouping puts a hub that is not its own hub
+interface HomeRule<T> {
+  // What one claim says about where its hubs belong. A hub with votes of its own is already in a circle.
+  votes: (claim: GraphNode) => readonly string[];
+  // The home for the winning vote, from the claims behind it
+  home: (winner: string, claims: readonly GraphNode[]) => T;
+  closer: (candidate: T, current: T) => boolean;
+  place: (node: GraphNode, home: T) => GraphNode;
+}
+
+const byName = (candidate: string, current: string) =>
+  candidate.localeCompare(current) < 0;
+
+// Each hub that is not this grouping's own hub, and has nothing of its own that puts it in a
+// circle, joins the home most of its claims vote for: a domain or an entity always, a page only
+// when it has no domain or entity of its own. A key with no votes joins the one it connects to most.
+function placeLinkedHubs<T>(
   nodes: readonly GraphNode[],
-  evidenceNodes: readonly GraphNode[] = nodes,
-  evidenceLinks: readonly GraphLink[] = [],
+  evidenceNodes: readonly GraphNode[],
+  evidenceLinks: readonly GraphLink[],
+  mode: GroupingId,
+  rule: HomeRule<T>,
 ): GraphNode[] {
-  const shared = new Map<string, Map<string, number>>();
-  for (const node of evidenceNodes) {
-    if (
-      node.kind === "domain" ||
-      node.kind === "entity" ||
-      node.entityNames.length === 0
-    )
-      continue;
-    for (const path of node.domainPaths) {
-      const counts = shared.get(path) ?? new Map<string, number>();
-      for (const name of node.entityNames)
-        counts.set(name, (counts.get(name) ?? 0) + 1);
-      shared.set(path, counts);
+  const placed = (node: GraphNode) =>
+    isHub(node) &&
+    !centersGrouping(node, mode) &&
+    rule.votes(node).length === 0;
+  const claims = evidenceNodes.filter((node) => !isPlacedByLinks(node));
+  const homes = new Map<string, T>();
+  for (const { field, nests } of IDENTITIES) {
+    const keyOf = (node: GraphNode) => node[field]?.[0] ?? "";
+    const keys = [
+      ...new Set(nodes.filter(placed).map(keyOf).filter(Boolean)),
+    ].sort((a, b) => a.localeCompare(b));
+    if (keys.length === 0) continue;
+    const claimsByKey = new Map<string, GraphNode[]>();
+    for (const claim of claims) {
+      for (const key of claim[field] ?? []) {
+        const keyed = claimsByKey.get(key) ?? [];
+        keyed.push(claim);
+        claimsByKey.set(key, keyed);
+      }
+    }
+    const assigned = new Map<string, T>();
+    for (const [key, keyed] of claimsByKey) {
+      const counts = new Map<string, number>();
+      for (const claim of keyed)
+        for (const vote of rule.votes(claim))
+          counts.set(vote, (counts.get(vote) ?? 0) + 1);
+      const winner = preferredName(counts);
+      if (winner) assigned.set(key, rule.home(winner, keyed));
+    }
+    spreadTopicGroups(
+      keys,
+      keyNeighbors(keys, field, nests, claims, evidenceLinks),
+      assigned,
+      rule.closer,
+    );
+    for (const node of nodes) {
+      if (!placed(node) || homes.has(node.id)) continue;
+      const home = assigned.get(keyOf(node));
+      if (home !== undefined) homes.set(node.id, home);
     }
   }
-  const assigned = new Map<string, string>();
-  for (const [path, counts] of shared) {
-    const name = preferredName(counts);
-    if (name) assigned.set(path, name);
-  }
-  const domainPaths = topicPaths(nodes);
-  spreadTopicGroups(
-    domainPaths,
-    topicNeighbors(domainPaths, evidenceNodes, evidenceLinks),
-    assigned,
-    (candidate, current) => candidate.localeCompare(current) < 0,
-  );
   return nodes.map((node) => {
-    if (node.kind !== "domain") return node;
-    const name = assigned.get(node.domainPaths[0] ?? "");
-    return name ? { ...node, entityNames: [name] } : node;
+    const home = homes.get(node.id);
+    return home === undefined ? node : rule.place(node, home);
   });
 }
+
+// Domain grouping: the domain most of its claims sit in
+const DOMAIN_HOME: HomeRule<string> = {
+  votes: (claim) => claim.domainPaths,
+  home: (path) => path,
+  closer: byName,
+  place: (node, path) => ({ ...node, domainPaths: [path] }),
+};
+
+// Entities grouping: the entity that shares the most of its claims
+const ENTITY_HOME: HomeRule<string> = {
+  votes: (claim) => claim.entityNames,
+  home: (name) => name,
+  closer: byName,
+  place: (node, name) => ({ ...node, entityNames: [name] }),
+};
+
+// Stakeholders grouping: the stakeholder that shares the most of its claims
+const STAKEHOLDER_HOME: HomeRule<string> = {
+  votes: (claim) => claim.stakeholderNames ?? [],
+  home: (name) => name,
+  closer: byName,
+  place: (node, name) => ({ ...node, stakeholderNames: [name] }),
+};
 
 interface PageHome {
   page: string;
@@ -386,49 +434,25 @@ function closerPage(candidate: PageHome, current: PageHome): boolean {
   return (candidate.section ?? "").localeCompare(current.section ?? "") < 0;
 }
 
-// Each domain hub joins the article, then the section, that cites the most of its notes.
-// A topic with no article of its own joins the topic it connects to most.
-function domainsInsidePageGroups(
-  nodes: readonly GraphNode[],
-  evidenceNodes: readonly GraphNode[],
-  evidenceLinks: readonly GraphLink[],
-): GraphNode[] {
-  const pages = new Map<string, Map<string, number>>();
-  const sections = new Map<
-    string,
-    Map<string, Map<string, { count: number; position: number }>>
-  >();
-  for (const node of evidenceNodes) {
-    if (node.kind === "domain" || node.kind === "entity") continue;
-    const titles = node.pageTitles ?? [];
-    if (titles.length === 0) continue;
-    for (const path of node.domainPaths) {
-      const pageCounts = pages.get(path) ?? new Map<string, number>();
-      for (const title of titles) {
-        pageCounts.set(title, (pageCounts.get(title) ?? 0) + 1);
-        const section = homeSection(node, title);
-        if (!section) continue;
-        const byPage = sections.get(path) ?? new Map();
-        const bySection = byPage.get(title) ?? new Map();
-        const previous = bySection.get(section.section);
-        bySection.set(section.section, {
-          count: (previous?.count ?? 0) + 1,
-          position: section.position,
-        });
-        byPage.set(title, bySection);
-        sections.set(path, byPage);
-      }
-      pages.set(path, pageCounts);
+// Pages grouping: the article, then the section, that cites the most of its claims
+const PAGE_HOME: HomeRule<PageHome> = {
+  votes: (claim) => claim.pageTitles ?? [],
+  home: (page, claims) => {
+    const sections = new Map<string, { count: number; position: number }>();
+    for (const claim of claims) {
+      if (!(claim.pageTitles ?? []).includes(page)) continue;
+      const section = homeSection(claim, page);
+      if (!section) continue;
+      const previous = sections.get(section.section);
+      sections.set(section.section, {
+        count: (previous?.count ?? 0) + 1,
+        position: section.position,
+      });
     }
-  }
-  const assigned = new Map<string, PageHome>();
-  for (const [path, counts] of pages) {
-    const page = preferredName(counts);
-    if (!page) continue;
     let section: string | null = null;
     let position = Number.POSITIVE_INFINITY;
     let bestCount = -1;
-    for (const [name, tally] of sections.get(path)?.get(page) ?? []) {
+    for (const [name, tally] of sections) {
       if (
         tally.count > bestCount ||
         (tally.count === bestCount && tally.position < position) ||
@@ -441,38 +465,23 @@ function domainsInsidePageGroups(
         bestCount = tally.count;
       }
     }
-    assigned.set(path, {
-      page,
-      section,
-      position: section ? position : 0,
-    });
-  }
-  const domainPaths = topicPaths(nodes);
-  spreadTopicGroups(
-    domainPaths,
-    topicNeighbors(domainPaths, evidenceNodes, evidenceLinks),
-    assigned,
-    closerPage,
-  );
-  return nodes.map((node) => {
-    if (node.kind !== "domain") return node;
-    const home = assigned.get(node.domainPaths[0] ?? "");
-    if (!home) return node;
-    return {
-      ...node,
-      pageTitles: [home.page],
-      pageSections: home.section
-        ? [{ page: home.page, section: home.section, position: home.position }]
-        : [],
-    };
-  });
-}
+    return { page, section, position: section ? position : 0 };
+  },
+  closer: closerPage,
+  place: (node, home) => ({
+    ...node,
+    pageTitles: [home.page],
+    pageSections: home.section
+      ? [{ page: home.page, section: home.section, position: home.position }]
+      : [],
+  }),
+};
 
 // Domain paths that still have a visible non-domain dot (and every ancestor path).
 function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
   const paths = new Set<string>();
   for (const node of nodes) {
-    if (node.kind === "domain") continue;
+    if (centersGrouping(node, "domain")) continue;
     const path = [...node.domainPaths].sort()[0] ?? "";
     if (!path) continue;
     const segments = path.split("/").filter(Boolean);
@@ -482,47 +491,35 @@ function domainPathsWithContent(nodes: readonly GraphNode[]): Set<string> {
   return paths;
 }
 
-// GROUP LAYERS: when circles stand in for hubs, drop that layer's dots and spokes so units sit inside.
+// Where each grouping puts the hubs it does not center. Keyed by grouping, so a new one needs a rule.
+const HOME_RULES = {
+  domain: DOMAIN_HOME,
+  entity: ENTITY_HOME,
+  stakeholder: STAKEHOLDER_HOME,
+  page: PAGE_HOME,
+} satisfies Record<GroupingId, unknown>;
+
+// GROUP LAYERS: each grouping keeps its own hub dots, pinned in the middle of their circles,
+// and places the other link-placed hubs (domains, entities) inside the circles.
 export function graphForGrouping(
   data: GraphData,
-  groupBy: "domain" | "entity" | "page" | "off",
-  // Claims and links from before the layer toggles, so hidden units still place domain hubs.
+  groupBy: GroupingId | "off",
+  // Claims and links from before the layer toggles, so hidden units still place hubs.
   evidence: GraphData = data,
 ): GraphData {
-  if (groupBy === "entity") {
-    const nodes = domainsInsideEntityGroups(
-      data.nodes,
-      evidence.nodes,
-      evidence.links,
-    ).filter((node) => node.kind !== "entity");
-    const ids = new Set(nodes.map((node) => node.id));
-    return {
-      nodes,
-      links: data.links.filter(
-        (link) =>
-          link.kind !== "about" && ids.has(link.source) && ids.has(link.target),
-      ),
-    };
-  }
-  if (groupBy === "page") {
-    const nodes = domainsInsidePageGroups(
-      data.nodes,
-      evidence.nodes,
-      evidence.links,
-    ).filter((node) => node.kind !== "page");
-    const ids = new Set(nodes.map((node) => node.id));
-    return {
-      nodes,
-      links: data.links.filter(
-        (link) =>
-          link.kind !== "cites" && ids.has(link.source) && ids.has(link.target),
-      ),
-    };
-  }
+  if (groupBy === "off") return data;
+  const rule = HOME_RULES[groupBy] as HomeRule<unknown>;
+  const placed = placeLinkedHubs(
+    data.nodes,
+    evidence.nodes,
+    evidence.links,
+    groupBy,
+    rule,
+  );
   if (groupBy === "domain") {
-    const pathsWithContent = domainPathsWithContent(data.nodes);
-    const nodes = data.nodes.filter((node) => {
-      if (node.kind !== "domain") return true;
+    const pathsWithContent = domainPathsWithContent(placed);
+    const nodes = placed.filter((node) => {
+      if (node.kind !== GROUPINGS.domain.hubKind) return true;
       const path = [...node.domainPaths].sort()[0] ?? "";
       if (!path) return false;
       // Notes define which topic circles exist. With no notes, the domain nodes are the circles.
@@ -537,7 +534,7 @@ export function graphForGrouping(
       ),
     };
   }
-  return data;
+  return { nodes: placed, links: data.links };
 }
 
 // APPLY: the visible graph for these filters
@@ -545,16 +542,11 @@ export function applyFilters(
   data: GraphData,
   filters: GraphFilters,
 ): GraphData {
-  const shownKinds = new Set<GraphNodeKind>();
-  if (filters.showUnits) shownKinds.add("unit");
-  if (filters.showEntities) shownKinds.add("entity");
-  if (filters.showDomains) shownKinds.add("domain");
-  if (filters.showPages) shownKinds.add("page");
   const search = filters.search.trim().toLowerCase();
 
   const byLayer = keepNodes(
     inDomain(inDomainScope(data, filters.domainScope), filters.domain),
-    (node) => shownKinds.has(node.kind),
+    (node) => filters.shown[node.kind],
   );
   const bySearch = search
     ? keepNodes(
@@ -570,7 +562,7 @@ export function applyFilters(
         bySearch,
         (node) =>
           linkedIds(bySearch).has(node.id) ||
-          (node.kind === "domain" && node.degree > 0),
+          (centersGrouping(node, "domain") && node.degree > 0),
       );
   return applyRelationships(
     applyConnectors(visible, filters.showConnectors),

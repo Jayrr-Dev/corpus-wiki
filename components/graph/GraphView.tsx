@@ -19,11 +19,14 @@ import {
   graphForGrouping,
   inDomain,
   inDomainScope,
+  isContent,
+  NODE_KINDS,
   pageDropLabel,
   withRelated,
   type CircleOpenTarget,
   type GraphData,
   type GraphNode,
+  type GraphNodeKind,
   type GraphSettings,
   type PageDrop,
 } from "@/lib/graph";
@@ -201,7 +204,7 @@ export function GraphView({
   const busy = move.isPending || pageMove.isPending;
   const moveNode = useCallback(
     (node: GraphNode, destination: string | PageDrop) => {
-      if (node.kind !== "unit" || node.memberIds || busy) return;
+      if (!isContent(node) || node.memberIds || busy) return;
       setMoveError(null);
       if (typeof destination === "string") {
         const source = [...node.domainPaths].sort()[0] ?? "";
@@ -259,7 +262,7 @@ export function GraphView({
   const visible = useMemo(() => {
     const grown =
       replay.cutoff === null ? related : createdBy(related, replay.cutoff);
-    // Entity dots and their connecting lines are gone. An entity is a circle in the Entities group.
+    // Each grouping keeps its own hub dots, and the layout pins them in the middle of their circles.
     const filtered = applyFilters(grown, settings.filters);
     // Layer toggles hide units, but those units still say which entity a domain belongs to.
     const evidence = inDomain(
@@ -286,7 +289,7 @@ export function GraphView({
             const ids = nodes.flatMap((node) =>
               node.memberIds?.length
                 ? [...node.memberIds]
-                : node.kind === "unit"
+                : isContent(node)
                   ? [node.id]
                   : [],
             );
@@ -326,9 +329,9 @@ export function GraphView({
                 update("filters", {
                   ...DEFAULT_GRAPH_SETTINGS.filters,
                   domainScope: "both",
-                  showEntities: true,
-                  showDomains: true,
-                  showPages: true,
+                  shown: Object.fromEntries(
+                    NODE_KINDS.map((kind) => [kind, true]),
+                  ) as Record<GraphNodeKind, boolean>,
                 });
               }}
             >

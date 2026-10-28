@@ -1,5 +1,6 @@
 import { clusterCircles, ORPHANS_LABEL } from "@/lib/graph";
 import { DEFAULT_GRAPH_SETTINGS } from "@/lib/graph/settings";
+import { hasHubBody } from "@/lib/graph/nodeTypes";
 import { expect, it } from "vitest";
 import { drawGraph, type DrawInput } from "./drawGraph";
 
@@ -997,7 +998,7 @@ it("paints a domain bubble and its ring from the connection, shifted for the can
     display: DEFAULT_GRAPH_SETTINGS.display,
     groupBy: "domain",
     palette,
-    colorOf: (node) => (node.kind === "domain" ? null : "link"),
+    colorOf: (node) => (hasHubBody(node) ? null : "link"),
     focusId: null,
     focusIds: new Set(),
     hoverLabelOnly: false,

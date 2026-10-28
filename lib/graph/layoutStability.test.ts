@@ -34,7 +34,7 @@ it("pulls a hub's colored neighbors in and pushes an unlinked dot away", () => {
     id: `hub-${node.id}`,
     source: hub.id,
     target: node.id,
-    kind: "relates",
+    kind: "related_to",
   })) as SimLink[];
   const colors = new Map<string, string>([
     ["b1", "link"],
@@ -92,8 +92,8 @@ it("lets a near link pull harder than a far one", () => {
   const farA = dot("far-a", 0, 400);
   const farB = dot("far-b", 800, 400);
   const links = [
-    { id: "near", source: nearA.id, target: nearB.id, kind: "relates" },
-    { id: "far", source: farA.id, target: farB.id, kind: "relates" },
+    { id: "near", source: nearA.id, target: nearB.id, kind: "related_to" },
+    { id: "far", source: farA.id, target: farB.id, kind: "related_to" },
   ] as SimLink[];
   const forces = {
     ...DEFAULT_GRAPH_SETTINGS.forces,
@@ -126,6 +126,7 @@ it("lets a near link pull harder than a far one", () => {
 it("pulls dots flung far away back into their own circles in one step", () => {
   const nodes = Array.from({ length: 20 }, (_, i) => ({
     id: String(i),
+    kind: "unit",
     domainPaths: [`Root/Subject ${i % 2}`],
     degree: 4,
     x: Math.sin(i * 2.3) * 1_000_000,

@@ -20,9 +20,12 @@ import {
   FORCE_SLIDERS,
   GRAPH_COLORS,
   GROUP_FIELDS,
+  GROUPING_LIST,
   groupCounts,
   groupSuggestions,
+  isContent,
   joinGroupQuery,
+  NODE_TYPE_LIST,
   splitGroupQuery,
   TITLE_POSITIONS,
   type GraphColor,
@@ -32,6 +35,7 @@ import {
   type GraphGroup,
   type GraphNode,
   type GroupField,
+  type GroupingId,
 } from "@/lib/graph";
 import { colorGroupTree, type ColorTreeRow } from "@/lib/graph/colorGroupTree";
 import { chooseDomainColor } from "@/lib/graph/domainColors";
@@ -53,7 +57,7 @@ import { SelectRow, SliderRow, SwitchRow } from "./rows";
 // its slice of the settings and one `onChange` for the whole slice.
 // =====================================================================
 
-// NODES: which dot kinds appear on the canvas (claims, domain hubs, entities, pages).
+// NODES: which dot kinds appear on the canvas, one switch per node type.
 export function NodesSection({
   value,
   onChange,
@@ -61,30 +65,18 @@ export function NodesSection({
   value: GraphFilters;
   onChange: (next: GraphFilters) => void;
 }) {
-  const set = <K extends keyof GraphFilters>(key: K, next: GraphFilters[K]) =>
-    onChange({ ...value, [key]: next });
   return (
     <PanelSection title="Nodes" defaultOpen>
-      <SwitchRow
-        label="Knowledge units"
-        checked={value.showUnits}
-        onChange={(next) => set("showUnits", next)}
-      />
-      <SwitchRow
-        label="Domains"
-        checked={value.showDomains}
-        onChange={(next) => set("showDomains", next)}
-      />
-      <SwitchRow
-        label="Entities"
-        checked={value.showEntities}
-        onChange={(next) => set("showEntities", next)}
-      />
-      <SwitchRow
-        label="Pages"
-        checked={value.showPages}
-        onChange={(next) => set("showPages", next)}
-      />
+      {NODE_TYPE_LIST.map((type) => (
+        <SwitchRow
+          key={type.kind}
+          label={type.plural}
+          checked={value.shown[type.kind]}
+          onChange={(next) =>
+            onChange({ ...value, shown: { ...value.shown, [type.kind]: next } })
+          }
+        />
+      ))}
     </PanelSection>
   );
 }
@@ -276,7 +268,7 @@ export function GroupSection({
   value: GraphDisplay;
   onChange: (next: GraphDisplay) => void;
 }) {
-  const pick = (mode: "domain" | "entity" | "page", on: boolean) =>
+  const pick = (mode: GroupingId, on: boolean) =>
     onChange({ ...value, groupBy: on ? mode : "off" });
   return (
     <PanelSection
@@ -288,72 +280,23 @@ export function GroupSection({
             One grouping can be on at a time.
           </PopoverDescription>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm">
-            <li>
-              Domain draws a circle around each topic. That circle is separate
-              from the domain node. With Domains on in Nodes, the node sits in
-              the middle of its circle and grows with its connections.
-            </li>
-            <li>
-              Entities draws a colored circle around each entity. Knowledge
-              units sit inside it. Domain nodes show there only when Domains is
-              on in Nodes. Each domain sits in the entity most of its knowledge
-              is about. A domain with none of its own sits with the domain it
-              connects to most.
-            </li>
-            <li>
-              Pages draws a circle around each article. Each section is a circle
-              inside it, and the knowledge that section uses sits there. Domain
-              nodes show there only when Domains is on in Nodes. Each domain
-              sits in the article, and the section, that uses most of its
-              knowledge. A domain with none of its own sits with the domain it
-              connects to most.
-            </li>
-            <li>
-              A unit used in more than one section sits in the earliest one.
-            </li>
-            <li>
-              Click a selected article, section, suggestion, No article, Orphans, or Linked circle again to open it.
-            </li>
-            <li>
-              Drag one knowledge unit onto an article, a section, or a
-              suggestion. An article drop uses the earliest section that can
-              take one claim. A blue suggestion adds it to that new article. An
-              orange Merge suggestion adds it to that merge. Go back to the
-              overview before dropping it on a different group.
-            </li>
-            <li>
-              Units that no article cites gather in a gray No article circle.
-              Inside it, a node with the most connections and the nodes linked
-              to it form a nested group, with a black border and that node name.
-              Linked nodes that never join a hub sit together in Linked. A node
-              with no links at all sits in Orphans. A link to anything else
-              leaves it in No article. Nodes from an external source sit in
-              External. A pending suggestion groups its units inside that
-              circle. A new article is blue. A merge is orange and marked Merge.
-              The newest 10% of knowledge units changed, used, moved, or applied
-              keep a green border. The newest 10% of articles and the newest 10%
-              of sections have a yellow ring. Inside a selected group, that
-              share is of the group.
-            </li>
+            {GROUPING_LIST.flatMap((grouping) =>
+              grouping.help.map((line, index) => (
+                <li key={`${grouping.id}-${index}`}>{line}</li>
+              )),
+            )}
           </ul>
         </>
       }
     >
-      <SwitchRow
-        label="Domain"
-        checked={value.groupBy === "domain"}
-        onChange={(on) => pick("domain", on)}
-      />
-      <SwitchRow
-        label="Entities"
-        checked={value.groupBy === "entity"}
-        onChange={(on) => pick("entity", on)}
-      />
-      <SwitchRow
-        label="Pages"
-        checked={value.groupBy === "page"}
-        onChange={(on) => pick("page", on)}
-      />
+      {GROUPING_LIST.map((grouping) => (
+        <SwitchRow
+          key={grouping.id}
+          label={grouping.label}
+          checked={value.groupBy === grouping.id}
+          onChange={(on) => pick(grouping.id, on)}
+        />
+      ))}
     </PanelSection>
   );
 }
@@ -824,7 +767,7 @@ export function GroupsSection({
   const options = useMemo(() => groupSuggestions(nodes), [nodes]);
   const counts = useMemo(() => groupCounts(value, nodes), [value, nodes]);
   const unassigned = nodes.filter(
-    (node) => node.kind === "unit" && node.domainPaths.length === 0,
+    (node) => isContent(node) && node.domainPaths.length === 0,
   ).length;
   const visible = useMemo(
     () => colorGroupTree(value, expanded, search),

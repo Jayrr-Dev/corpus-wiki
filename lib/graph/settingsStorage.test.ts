@@ -28,6 +28,14 @@ describe("space graph settings", () => {
     expect(loadGraphSettings(storage, graphSettingsStorageKey("graph:global", "old-space"))).toEqual(oldSettings);
   });
 
+  it("keeps the node switches saved before the shown map", () => {
+    const before = { ...DEFAULT_GRAPH_SETTINGS,
+      filters: { ...DEFAULT_GRAPH_SETTINGS.filters, shown: undefined, showUnits: true, showEntities: true, showDomains: false, showPages: true },
+    };
+    const settings = loadGraphSettings({ getItem: () => JSON.stringify(before) }, "key");
+    expect(settings.filters.shown).toEqual({ unit: true, entity: true, stakeholder: true, domain: false, page: true });
+  });
+
   it("uses defaults when storage is blocked or malformed", () => {
     expect(loadGraphSettings({ getItem: () => { throw new Error("blocked"); } }, "key")).toEqual(DEFAULT_GRAPH_SETTINGS);
     expect(loadGraphSettings({ getItem: () => "{" }, "key")).toEqual(DEFAULT_GRAPH_SETTINGS);

@@ -128,14 +128,18 @@ const nodeById = (id: string) =>
   graph.nodes.find((node) => node.id === id) as GraphNode;
 const ids = (data: { nodes: GraphNode[] }) =>
   data.nodes.map((node) => node.id).sort();
+const ALL_SHOWN = {
+  unit: true,
+  entity: true,
+  stakeholder: true,
+  domain: true,
+  page: true,
+};
 const ALL_LAYERS = {
   domainScope: "internal" as const,
   search: "",
   domain: "",
-  showUnits: true,
-  showEntities: true,
-  showDomains: true,
-  showPages: true,
+  shown: ALL_SHOWN,
   showOrphans: true,
   showConnectors: true,
   showRelationships: true,
@@ -187,6 +191,24 @@ describe("buildGraph", () => {
     expect(times?.sections.has(pageSectionKey("Alpha", "History"))).toBe(false);
   });
 
+  it("builds a stakeholder node from an entity its profile marks", () => {
+    const built = buildGraph({
+      ...rows,
+      entities: rows.entities.map((entity) => ({
+        ...entity,
+        stakeholder: true,
+      })),
+    });
+    const byId = new Map(built.nodes.map((node) => [node.id, node]));
+    expect(byId.get("e1")?.kind).toBe("stakeholder");
+    expect(byId.get("u1")?.stakeholderNames).toEqual(["Project Alpha"]);
+    expect(byId.get("u1")?.entityNames).toEqual(["Project Alpha"]);
+    expect(byId.get("p1")?.stakeholderNames).toEqual(["Project Alpha"]);
+    expect(byId.get("u2")?.stakeholderNames).toEqual([]);
+    // Without the flag it stays a plain entity
+    expect(graph.nodes.find((node) => node.id === "e1")?.kind).toBe("entity");
+  });
+
   it("keeps the later of a unit change and a later move or use", () => {
     const built = buildGraph({
       ...rows,
@@ -206,7 +228,7 @@ describe("buildGraph", () => {
   it("marks the newest tenth of knowledge units, articles, and sections", () => {
     const nodes = Array.from({ length: 20 }, (_, index) => ({
       id: `u${String(index).padStart(2, "0")}`,
-      kind: "unit",
+      kind: "unit" as const,
       activityAt: `2026-10-${String(index + 1).padStart(2, "0")}T00:00:00Z`,
     }));
     const marked = recentUnitIds(nodes);
@@ -340,13 +362,18 @@ describe("applyFilters", () => {
 
   it("hides knowledge units while retaining the other selected layers", () => {
     expect(
-      ids(applyFilters(graph, { ...ALL_LAYERS, showUnits: false })),
+      ids(
+        applyFilters(graph, {
+          ...ALL_LAYERS,
+          shown: { ...ALL_SHOWN, unit: false },
+        }),
+      ),
     ).toEqual(["d1", "d2", "e1", "p1"]);
     expect(
       ids(
         applyFilters(graph, {
           ...DEFAULT_GRAPH_SETTINGS.filters,
-          showUnits: false,
+          shown: { ...DEFAULT_GRAPH_SETTINGS.filters.shown, unit: false },
         }),
       ),
     ).toEqual([]);
@@ -643,15 +670,64 @@ describe("saved settings", () => {
   });
 
   it("keeps older saved settings, defaulting the fields added since", () => {
-    const { search, showPages, showOrphans } = DEFAULT_GRAPH_SETTINGS.filters;
+    const { search, showOrphans } = DEFAULT_GRAPH_SETTINGS.filters;
     const older = {
       ...DEFAULT_GRAPH_SETTINGS,
-      filters: { search, showEntities: true, showPages, showOrphans },
+      filters: { search, showEntities: true, showPages: false, showOrphans },
     };
     expect(parseSavedSettings(older).filters).toEqual({
       ...DEFAULT_GRAPH_SETTINGS.filters,
-      showEntities: true,
+      shown: {
+        ...DEFAULT_GRAPH_SETTINGS.filters.shown,
+        entity: true,
+        stakeholder: true,
+      },
     });
+  });
+
+  it("carries each old per-type switch into the shown map", () => {
+    const older = {
+      ...DEFAULT_GRAPH_SETTINGS,
+      filters: {
+        ...DEFAULT_GRAPH_SETTINGS.filters,
+        shown: undefined,
+        showUnits: false,
+        showEntities: true,
+        showDomains: true,
+        showPages: true,
+      },
+    };
+    expect(parseSavedSettings(older).filters.shown).toEqual({
+      unit: false,
+      entity: true,
+      stakeholder: true,
+      domain: true,
+      page: true,
+    });
+  });
+
+  it("defaults a node type missing from a saved shown map", () => {
+    const saved = {
+      ...DEFAULT_GRAPH_SETTINGS,
+      filters: { ...DEFAULT_GRAPH_SETTINGS.filters, shown: { entity: true } },
+    };
+    // Stakeholders split off entities, so they start with the entity switch
+    expect(parseSavedSettings(saved).filters.shown).toEqual({
+      ...DEFAULT_GRAPH_SETTINGS.filters.shown,
+      entity: true,
+      stakeholder: true,
+    });
+  });
+
+  it("falls back to domain grouping for a grouping that does not exist", () => {
+    const saved = {
+      ...DEFAULT_GRAPH_SETTINGS,
+      display: { ...DEFAULT_GRAPH_SETTINGS.display, groupBy: "planet" },
+      forces: { ...DEFAULT_GRAPH_SETTINGS.forces, repel: 5 },
+    };
+    const parsed = parseSavedSettings(saved);
+    expect(parsed.display.groupBy).toBe("domain");
+    expect(parsed.forces.repel).toBe(5);
   });
 
   it("reads the old domain circles switch as the group", () => {
@@ -697,23 +773,39 @@ describe("claims sharing a topic label", () => {
 describe("entity groups", () => {
   it("hides domain nodes in entity grouping until the Domains toggle is on", () => {
     const hidden = graphForGrouping(
-      applyFilters(graph, { ...ALL_LAYERS, showDomains: false }),
+      applyFilters(graph, {
+        ...ALL_LAYERS,
+        shown: { ...ALL_SHOWN, domain: false },
+      }),
       "entity",
     );
     expect(hidden.nodes.some((node) => node.kind === "domain")).toBe(false);
-    const shown = graphForGrouping(
-      applyFilters(graph, { ...ALL_LAYERS, showDomains: true }),
-      "entity",
-    );
+    const shown = graphForGrouping(applyFilters(graph, ALL_LAYERS), "entity");
     expect(shown.nodes.some((node) => node.kind === "domain")).toBe(true);
-    expect(shown.nodes.some((node) => node.kind === "entity")).toBe(false);
+    expect(shown.nodes.some((node) => node.kind === "entity")).toBe(true);
   });
 
-  it("drops the entity dot and the about line so units sit inside the circle", () => {
+  it("keeps the entity dot and its about lines so it sits in the middle of its circle", () => {
     const grouped = graphForGrouping(graph, "entity");
-    expect(grouped.nodes.map((node) => node.id)).not.toContain("e1");
-    expect(grouped.links.some((link) => link.kind === "about")).toBe(false);
+    expect(grouped.nodes.map((node) => node.id)).toContain("e1");
+    expect(grouped.links.some((link) => link.kind === "about")).toBe(true);
     expect(grouped.links.some((link) => link.kind === "depends_on")).toBe(true);
+  });
+
+  it("shows entity nodes in entity grouping when they are the only layer on", () => {
+    const entitiesOnly = applyFilters(graph, {
+      ...ALL_LAYERS,
+      shown: {
+        unit: false,
+        entity: true,
+        stakeholder: false,
+        domain: false,
+        page: false,
+      },
+    });
+    const grouped = graphForGrouping(entitiesOnly, "entity", graph);
+    expect(grouped.nodes.length).toBeGreaterThan(0);
+    expect(grouped.nodes.every((node) => node.kind === "entity")).toBe(true);
   });
 
   it("puts the domain hub inside the entity group that shares its claims", () => {
@@ -929,9 +1021,13 @@ describe("entity groups", () => {
   it("shows domain nodes and their circles when knowledge units are off", () => {
     const filtered = applyFilters(graph, {
       ...ALL_LAYERS,
-      showUnits: false,
-      showEntities: false,
-      showPages: false,
+      shown: {
+        unit: false,
+        entity: false,
+        stakeholder: false,
+        domain: true,
+        page: false,
+      },
       showOrphans: false,
     });
     expect(filtered.nodes.map((node) => node.id).sort()).toEqual(["d1", "d2"]);
@@ -1001,12 +1097,109 @@ describe("entity groups", () => {
     expect(hidden.links.some((link) => link.kind === "in")).toBe(true);
   });
 
-  it("drops page dots and cites links so cited units sit inside the circle", () => {
+  it("keeps page dots and their cites lines so each page sits in the middle of its circle", () => {
     expect(nodeById("u1").pageTitles).toEqual(["Alpha"]);
     const grouped = graphForGrouping(graph, "page");
-    expect(grouped.nodes.map((node) => node.id)).not.toContain("p1");
-    expect(grouped.links.some((link) => link.kind === "cites")).toBe(false);
+    expect(grouped.nodes.map((node) => node.id)).toContain("p1");
+    expect(grouped.links.some((link) => link.kind === "cites")).toBe(true);
     expect(grouped.links.some((link) => link.kind === "depends_on")).toBe(true);
+  });
+});
+
+describe("entity homes", () => {
+  const node = (
+    id: string,
+    kind: GraphNode["kind"],
+    extra: Partial<GraphNode> = {},
+  ): GraphNode => ({
+    id,
+    kind,
+    label: id,
+    text: "",
+    href: "/",
+    createdAt: T1,
+    degree: 0,
+    domainPaths: [],
+    entityNames: [],
+    pageTitles: [],
+    unitKind: null,
+    status: null,
+    ...extra,
+  });
+  const acme = node("e1", "entity", { entityNames: ["Acme"] });
+  const evidence = {
+    nodes: [
+      acme,
+      node("u1", "unit", {
+        domainPaths: ["Safety"],
+        entityNames: ["Acme"],
+        pageTitles: ["Alpha"],
+        pageSections: [{ page: "Alpha", section: "Intro", position: 0 }],
+      }),
+      node("u2", "unit", {
+        domainPaths: ["Quality"],
+        entityNames: ["Acme"],
+        pageTitles: ["Beta"],
+        pageSections: [{ page: "Beta", section: "Rules", position: 1 }],
+      }),
+      node("u3", "unit", {
+        domainPaths: ["Quality"],
+        entityNames: ["Acme"],
+        pageTitles: ["Beta"],
+        pageSections: [{ page: "Beta", section: "Rules", position: 1 }],
+      }),
+      node("u4", "unit", { domainPaths: ["Safety"], entityNames: ["Other"] }),
+    ],
+    links: [],
+  };
+  // Units hidden: only the entity is visible, the evidence still has its units
+  const entityOnly = { nodes: [acme], links: [] };
+
+  it("puts an entity in the domain most of its units sit in", () => {
+    const grouped = graphForGrouping(entityOnly, "domain", evidence);
+    expect(grouped.nodes.find((item) => item.id === "e1")?.domainPaths).toEqual(
+      ["Quality"],
+    );
+  });
+
+  it("puts an entity in the article and section that cite most of its units", () => {
+    const grouped = graphForGrouping(entityOnly, "page", evidence);
+    const placed = grouped.nodes.find((item) => item.id === "e1");
+    expect(placed?.pageTitles).toEqual(["Beta"]);
+    expect(placed?.pageSections).toEqual([
+      { page: "Beta", section: "Rules", position: 1 },
+    ]);
+  });
+
+  it("leaves the entity in place in its own grouping", () => {
+    const grouped = graphForGrouping(entityOnly, "entity", evidence);
+    expect(grouped.nodes).toEqual([acme]);
+  });
+
+  // Beta cites u2 and u3, both about Acme in Quality
+  const beta = node("p2", "page", { pageTitles: ["Beta"] });
+  const pagesOnly = { nodes: [beta], links: [] };
+  const withPage = { ...evidence, nodes: [...evidence.nodes, beta] };
+
+  it("puts a page with no entity in the entity most of its cited units are about", () => {
+    const grouped = graphForGrouping(pagesOnly, "entity", withPage);
+    expect(grouped.nodes[0]?.entityNames).toEqual(["Acme"]);
+  });
+
+  it("puts a page with no domain in the domain most of its cited units sit in", () => {
+    const grouped = graphForGrouping(pagesOnly, "domain", withPage);
+    expect(grouped.nodes[0]?.domainPaths).toEqual(["Quality"]);
+  });
+
+  it("keeps a page's own domain and entity", () => {
+    const owned = node("p2", "page", {
+      pageTitles: ["Beta"],
+      domainPaths: ["Safety"],
+      entityNames: ["Other"],
+    });
+    const data = { nodes: [owned], links: [] };
+    expect(graphForGrouping(data, "domain", withPage).nodes).toEqual([owned]);
+    expect(graphForGrouping(data, "entity", withPage).nodes).toEqual([owned]);
   });
 });
 
@@ -1255,7 +1448,7 @@ describe("domain clusters", () => {
 
   it("opens an article, section, or suggestion from a second click", () => {
     expect(circleOpenTarget({ label: "Alpha", parent: "" }, "page")).toEqual({
-      kind: "page",
+      kind: "article",
       title: "Alpha",
     });
     expect(

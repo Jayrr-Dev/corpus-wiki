@@ -1,15 +1,11 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import type { GraphNode } from "@/lib/graph";
-import { DomainPreview, EntityPreview, PagePreview } from "./NodePreviews";
-import { UnitPreview } from "./UnitPreview";
+import { NODE_SCREENS } from "./nodeTypes";
 
-// UNIT PREVIEW: a clicked unit's key facts (status, claim, domains, entities) without leaving the graph.
-// Other kinds keep a knowledge-unit list on the right. A unit dialog stays a single column.
+// NODE PREVIEW: a clicked dot's key facts without leaving the graph, drawn by its kind's entry in NODE_SCREENS.
+// Kinds that list units get a wide dialog with a knowledge-unit list on the right. A unit dialog stays a single column.
 export function NodePreviewDialog({
   node,
   units = [],
@@ -21,11 +17,12 @@ export function NodePreviewDialog({
 }) {
   const open = node !== null;
   const close = (isOpen: boolean) => (isOpen ? null : onClose());
-  if (!node || node.kind === "unit") {
+  const screen = node ? NODE_SCREENS[node.kind] : null;
+  if (!node || !screen?.listsUnits) {
     return (
       <Dialog open={open} onOpenChange={close}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
-          {node ? <UnitPreview key={node.id} node={node} /> : null}
+          {node && screen ? screen.preview(node, units) : null}
         </DialogContent>
       </Dialog>
     );
@@ -33,15 +30,7 @@ export function NodePreviewDialog({
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-5xl">
-        {node.kind === "entity" ? (
-          <EntityPreview key={node.id} node={node} units={units} />
-        ) : null}
-        {node.kind === "domain" ? (
-          <DomainPreview key={node.id} node={node} units={units} />
-        ) : null}
-        {node.kind === "page" ? (
-          <PagePreview key={node.id} node={node} units={units} />
-        ) : null}
+        {screen.preview(node, units)}
       </DialogContent>
     </Dialog>
   );

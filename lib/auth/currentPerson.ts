@@ -14,9 +14,9 @@ import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 // =====================================================================
 
 // Where a request came from: the app (a signed-in person), an API-key
-// capture (the proxy lets only /api/capture through signed out), or a
-// script / test with no request at all
-export type Via = "app" | "api" | "script";
+// capture (the proxy lets /api/capture through signed out), an agent
+// key through the MCP server (/api/mcp), or a script / test with no request at all
+export type Via = "app" | "api" | "agent" | "script";
 export type Actor = { personId: string | null; via: Via; spaceId?: string | null };
 
 // One lookup per request: keyed by the request's cookie store
