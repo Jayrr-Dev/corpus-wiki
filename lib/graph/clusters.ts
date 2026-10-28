@@ -634,6 +634,9 @@ function pinDomainNodes(
   }
 }
 
+// Shared default so calls without links hit the packing cache (a fresh [] never matches it)
+const NO_LINKS: readonly never[] = [];
+
 // The last packing, reused while the same dots ask again (every frame and every layout step do)
 let lastPacking: {
   nodes: readonly SimNode[];
@@ -662,7 +665,7 @@ export function packDomains(
   links: readonly {
     source: LinkEnd;
     target: LinkEnd;
-  }[] = [],
+  }[] = NO_LINKS,
 ): DomainPacking {
   if (
     lastPacking?.nodes === nodes &&
@@ -761,7 +764,7 @@ export function clusterCircles(
   links: readonly {
     source: LinkEnd;
     target: LinkEnd;
-  }[] = [],
+  }[] = NO_LINKS,
 ): ClusterCircle[] {
   return packDomains(nodes, nodeSize, mode, links).circles;
 }
@@ -971,7 +974,7 @@ export function createContainment(
   nodes: readonly SimNode[],
   nodeSize: number,
   mode: ClusterMode = "domain",
-  links: readonly { source: LinkEnd<SimNode>; target: LinkEnd<SimNode> }[] = [],
+  links: readonly { source: LinkEnd<SimNode>; target: LinkEnd<SimNode> }[] = NO_LINKS,
 ): () => void {
   const { homes, circles } = packDomains(nodes, nodeSize, mode, links);
   const byId = new Map(nodes.map((node) => [node.id, node]));
