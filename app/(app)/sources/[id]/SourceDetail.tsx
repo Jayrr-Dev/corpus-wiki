@@ -45,7 +45,7 @@ export function SourceDetail({ sourceId }: { sourceId: string }) {
           <SourcePassages sourceId={source.id} />
         </div>
       ) : (
-        <Note>No source with this id. It may have been deleted.</Note>
+        <Note>Source not found. It may have been deleted.</Note>
       )}
     </QueryState>
   );
@@ -77,7 +77,7 @@ function SourceUploadProgress({ sourceId, active }: { sourceId: string; active: 
     return () => clearTimeout(timer);
   }, [eventId, progress, state, queryClient]);
   return latest ? <div className="flex flex-col gap-2"><UploadWorkflowStatus eventId={latest.id} allowRetry={active} />
-    {state === "running" ? <Note>New knowledge is saved as each batch finishes. Duplicate checks, topic filing and article updates continue afterward.</Note> : null}
+    {state === "running" ? <Note>Knowledge is saved after each batch; checks, filing and article updates follow.</Note> : null}
   </div> : null;
 }
 
@@ -115,7 +115,7 @@ function SourceHeader({ source }: { source: Tables<"sources"> }) {
   if (source.byte_size !== null) facts.push(["Size", <span key="size" className="font-mono">{formatBytes(source.byte_size)}</span>]);
   if (usage) {
     facts.push(
-      ["Knowledge units", <Tooltip key="units" content="How many of this file's knowledge units are cited by a live article section."><span className="font-mono">{usage.usedUnits} of {usage.units}</span></Tooltip>],
+      ["Knowledge units", <Tooltip key="units" content="Units cited by a live article section, of all units from this file."><span className="font-mono">{usage.usedUnits} of {usage.units}</span></Tooltip>],
       ["Articles", <span key="articles" className="font-mono">{usage.articles}</span>],
       ["Article sections", <span key="sections" className="font-mono">{usage.sections}</span>],
       ["Article lines", <span key="lines" className="font-mono">{usage.lines}</span>],
@@ -141,9 +141,9 @@ function SourceArticles({ sourceId }: { sourceId: string }) {
   const articles = useSourceArticles(sourceId);
   const list = articles.data ?? [];
   return (
-    <Section title={`Articles from this file (${list.length})`}>
+    <Section title={`Articles (${list.length})`}>
       <QueryState query={articles}>
-        {list.length === 0 ? <Note>No article is built on this file&apos;s knowledge yet.</Note> : null}
+        {list.length === 0 ? <Note>No articles yet.</Note> : null}
         <ul className="flex flex-col gap-1.5">
           {list.map((page) => (
             <li key={page.id}>
@@ -163,9 +163,9 @@ function SourceKnowledge({ sourceId }: { sourceId: string }) {
   const units = useUnitSummaries(unitIds.data ?? []);
   const list = (units.data ?? []).filter((unit) => !unit.retired_at);
   return (
-    <Section title={`Knowledge from this file (${list.length})`}>
+    <Section title={`Knowledge (${list.length})`}>
       <QueryState query={readsState([unitIds, units])}>
-        {list.length === 0 ? <Note>No current knowledge cites this file.</Note> : null}
+        {list.length === 0 ? <Note>No current knowledge.</Note> : null}
         <ul className="flex flex-col gap-1.5">
           {list.slice(0, visibleCount).map((unit) => (
             <li key={unit.id}>
@@ -173,7 +173,7 @@ function SourceKnowledge({ sourceId }: { sourceId: string }) {
             </li>
           ))}
         </ul>
-        {visibleCount < list.length ? <Button variant="outline" onClick={() => setVisibleCount((count) => count + 50)}>Show 50 more knowledge units</Button> : null}
+        {visibleCount < list.length ? <Button variant="outline" onClick={() => setVisibleCount((count) => count + 50)}>Show 50 more</Button> : null}
       </QueryState>
     </Section>
   );
@@ -185,9 +185,9 @@ function SourceReachLists({ sourceId }: { sourceId: string }) {
   const { definitions = [], entities = [], domains = [] } = reach.data ?? {};
   return (
     <>
-      <Section title={`Definitions from this file (${definitions.length})`}>
+      <Section title={`Definitions (${definitions.length})`}>
         <QueryState query={reach}>
-          {definitions.length === 0 ? <Note>No glossary definition cites this file.</Note> : null}
+          {definitions.length === 0 ? <Note>No definitions.</Note> : null}
           <ul className="flex flex-col gap-1.5">
             {definitions.map((entry) => (
               <li key={entry.term}>
@@ -197,9 +197,9 @@ function SourceReachLists({ sourceId }: { sourceId: string }) {
           </ul>
         </QueryState>
       </Section>
-      <Section title={`Entities from this file (${entities.length})`}>
+      <Section title={`Entities (${entities.length})`}>
         <QueryState query={reach}>
-          {entities.length === 0 ? <Note>No entity is linked to this file&apos;s knowledge.</Note> : null}
+          {entities.length === 0 ? <Note>No entities.</Note> : null}
           <ul className="flex flex-col gap-1.5">
             {entities.map((entity) => (
               <li key={entity.id} className="flex items-baseline gap-2">
@@ -210,9 +210,9 @@ function SourceReachLists({ sourceId }: { sourceId: string }) {
           </ul>
         </QueryState>
       </Section>
-      <Section title={`Domains from this file (${domains.length})`}>
+      <Section title={`Domains (${domains.length})`}>
         <QueryState query={reach}>
-          {domains.length === 0 ? <Note>No domain holds this file&apos;s knowledge.</Note> : null}
+          {domains.length === 0 ? <Note>No domains.</Note> : null}
           <ul className="flex flex-col gap-1.5">
             {domains.map((domain) => (
               <li key={domain.id}>

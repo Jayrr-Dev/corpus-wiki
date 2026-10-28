@@ -35,9 +35,9 @@ type Uploads = Map<string, Tables<"shift_events">>;
 function sourceColumns(usage: Map<string, SourceUsage> | undefined, uploads: Uploads, origin: Source["origin"], { processing, unfinished }: ReturnType<typeof useSourceRuns>) {
   return [
     textColumn<Source>("state", "State", (source) => processing.has(source.id) ? "processing" : unfinished.has(source.id) ? "unfinished" : sourceState(source), (source) => processing.has(source.id) ? (
-      <Tooltip content="This source is still being processed. Open it to follow the progress."><span tabIndex={0} className="inline-flex cursor-help"><StatusDot tone="muted" busy label="processing" /></span></Tooltip>
+      <Tooltip content="Still processing. Open it to follow along."><span tabIndex={0} className="inline-flex cursor-help"><StatusDot tone="muted" busy label="processing" /></span></Tooltip>
     ) : unfinished.has(source.id) ? (
-      <Tooltip content="Processing stopped before it finished. Open the source to resume it."><span tabIndex={0} className="inline-flex cursor-help"><StatusDot tone="needs-you" label="unfinished" /></span></Tooltip>
+      <Tooltip content="Processing stopped early. Open it to resume."><span tabIndex={0} className="inline-flex cursor-help"><StatusDot tone="needs-you" label="unfinished" /></span></Tooltip>
     ) : (
       <SourceState source={source} />
     )),
@@ -101,7 +101,7 @@ export function SourcesTable() {
         ))}
       </div>
       {origin === "external" && <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-panel text-muted-foreground">New sources require independent approval against your project context.</p>
+        <p className="text-panel text-muted-foreground">New sources need independent approval for your project.</p>
         <ExternalReviewHistory />
       </div>}
       {origin === "external" && <ReviewSavedSources />}

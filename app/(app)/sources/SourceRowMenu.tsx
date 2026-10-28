@@ -66,7 +66,7 @@ function ApplyKnowledgeForm({ source, onDone }: FormProps) {
   const apply = useServerAction(applySourceKnowledge, { progress: { title: `Applying knowledge from “${source.title}”`, detail: "Reviewing article updates and writing approved changes…" } });
   return <DialogForm
     title="Apply knowledge"
-    description="Use this source's saved knowledge to propose and review article updates. Approved changes are written to the articles."
+    description="Propose article updates from this source's knowledge. Approved ones are written to the articles."
     submitLabel="Apply knowledge"
     isPending={apply.isPending}
     error={apply.error}
@@ -100,7 +100,7 @@ function RerunForm({ source, onDone }: FormProps) {
   return (
     <DialogForm
       title={`Re-run “${source.title}”?`}
-      description="The AI reads the stored file again with the model chosen in Settings. What it finds goes through the usual checks."
+      description="The AI reads the stored file again, with the model set in Settings."
       submitLabel="Re-run"
       isPending={start.isPending || process.isPending}
       error={start.error ?? process.error}
@@ -134,7 +134,7 @@ function ReplaceForm({ source, onDone }: FormProps) {
   return (
     <DialogForm
       title={`Replace “${source.title}”`}
-      description="The new file is read like any upload. The old one is archived and kept as the previous version; knowledge only it still supports shows as stale."
+      description="The old file is archived. Knowledge only it supports turns stale."
       submitLabel="Upload and replace"
       isPending={replace.isPending || process.isPending}
       isDisabled={!file || !sourceDate}
@@ -148,7 +148,7 @@ function ReplaceForm({ source, onDone }: FormProps) {
           if (picked) setSourceDate(toDateInputValue(picked.lastModified));
         }} />
       </FormRow>
-      <FormRow htmlFor={dateId} label="The new file's date">
+      <FormRow htmlFor={dateId} label="Date">
         <Input id={dateId} type="date" value={sourceDate} onChange={(event) => setSourceDate(event.target.value)} className="w-40" />
       </FormRow>
     </DialogForm>
@@ -163,7 +163,7 @@ function ArchiveForm({ source, onDone }: FormProps) {
   return (
     <DialogForm
       title={`Archive “${source.title}”?`}
-      description="The file is kept but no longer counts as current evidence. Knowledge that cites it is marked stale. Restore it any time."
+      description="The file is kept, but knowledge that cites it turns stale. Restore undoes this."
       submitLabel="Archive"
       isPending={archive.isPending}
       isDisabled={!reason.trim()}
@@ -172,8 +172,8 @@ function ArchiveForm({ source, onDone }: FormProps) {
         if ((await archive.run(source.id, reason)).ok) onDone();
       }}
     >
-      <FormRow htmlFor={reasonId} label="Archive justification">
-        <Input id={reasonId} required value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Why is this source being archived?" />
+      <FormRow htmlFor={reasonId} label="Reason">
+        <Input id={reasonId} required value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Why archive it?" />
       </FormRow>
       <ImpactNote sourceId={source.id} describe={(impact) => `${count(impact.linkedUnits, "unit")} will be marked stale.`} />
     </DialogForm>
@@ -186,7 +186,7 @@ function RestoreForm({ source, onDone }: FormProps) {
   return (
     <DialogForm
       title={`Restore “${source.title}”?`}
-      description="The file counts as current evidence again, so knowledge that cites it is no longer stale."
+      description="Knowledge that cites it is no longer stale."
       submitLabel="Restore"
       isPending={restore.isPending}
       error={restore.error}
@@ -204,7 +204,7 @@ function DeleteForm({ source, onDone }: FormProps) {
   return (
     <DialogForm
       title={`Delete “${source.title}”?`}
-      description="The file and its passages are deleted for good. Knowledge that cites it is kept but marked lost, because its source is missing."
+      description="The file and its passages are deleted for good. Knowledge that cites it is kept but marked lost."
       submitLabel="Delete"
       isDestructive
       isPending={remove.isPending}
@@ -225,7 +225,7 @@ function PurgeForm({ source, onDone }: FormProps) {
   return (
     <DialogForm
       title={`Purge “${source.title}” and its knowledge?`}
-      description="The file and its passages are deleted for good. Knowledge only this file supports is retired, knowledge other files also support drops this citation, and articles are rebuilt. The knowledge changes can be undone from Changes; the file cannot."
+      description="The file is deleted for good. Knowledge only it supports is retired; the rest drops this citation. Undo the knowledge from Changes; the file cannot come back."
       submitLabel="Purge"
       isDestructive
       isPending={purge.isPending}
@@ -264,8 +264,8 @@ function ImpactNote({ sourceId, describe }: { sourceId: string; describe: (impac
       return result;
     },
   });
-  if (impact.error) return <Note>Could not count the knowledge that cites this file.</Note>;
-  if (!impact.data) return <Note>Counting the knowledge that cites this file…</Note>;
+  if (impact.error) return <Note>Could not count the knowledge that cites it.</Note>;
+  if (!impact.data) return <Note>Counting linked knowledge…</Note>;
   return <p className="text-panel">{describe(impact.data)}</p>;
 }
 

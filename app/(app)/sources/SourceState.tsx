@@ -10,5 +10,5 @@ export function SourceState({ source }: { source: Tables<"sources"> }) {
   const state = sourceState(source);
   const badge = <StatusDot tone={SOURCE_STATE_TONE[state]} label={state} />;
   if (state === "active") return badge;
-  return <Tooltip content={source.archive_reason?.trim() || "This source was archived before justifications were recorded."} className="max-w-md whitespace-pre-wrap"><span tabIndex={0} className="inline-flex cursor-help">{badge}</span></Tooltip>;
+  return <Tooltip content={source.archive_reason?.trim() || "Archived before reasons were recorded."} className="max-w-md whitespace-pre-wrap"><span tabIndex={0} className="inline-flex cursor-help">{badge}</span></Tooltip>;
 }
