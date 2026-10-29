@@ -115,6 +115,11 @@ export function docBlockText(block: DocBlock): string {
   }
 }
 
+// A line's words as a reader sees them: a doc block's text, any other line as it is (Composer prompts)
+export function lineText(content: string): string {
+  return isDocBlockContent(content) ? docBlockText(parseDocBlock(content)) : content;
+}
+
 // <placeholder> names in a code block, in order, once each
 export function placeholdersIn(code: string): string[] {
   return [...new Set([...code.matchAll(/<([A-Za-z][\w.-]*)>/g)].map((match) => match[1]!))];

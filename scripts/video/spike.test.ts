@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const SPIKE = resolve("scripts/video/spike.ts");
-const CREDENTIALS = ["ELEVENLABS_API_KEY", "NEBIUS_PROJECT_ID", "NEBIUS_IAM_TOKEN", "VIDEO_RENDER_IMAGE", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SECRET_KEY"];
+const CREDENTIALS = ["ELEVENLABS_API_KEY", "NEBIUS_RENDER_PROJECT_ID", "NEBIUS_PROJECT_ID", "NEBIUS_SERVICE_ACCOUNT_ID", "NEBIUS_PUBLIC_KEY_ID", "NEBIUS_PRIVATE_KEY_PATH", "NEBIUS_PRIVATE_KEY", "NEBIUS_IAM_TOKEN", "VIDEO_RENDER_IMAGE", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SECRET_KEY"];
 
 // Runs the spike in an empty folder (no .env.local) with only the given credentials set
 function runSpike(set: Record<string, string>) {
@@ -19,13 +19,17 @@ describe("video spike", () => {
     const result = runSpike({});
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Video spike not run: credentials are missing. Nothing was called and nothing was spent.");
-    for (const name of CREDENTIALS) expect(result.stderr).toContain(name);
+    for (const name of CREDENTIALS.filter((name) => name !== "NEBIUS_IAM_TOKEN")) expect(result.stderr).toContain(name);
+    expect(result.stderr).not.toContain("NEBIUS_IAM_TOKEN");
   });
 
   it("names only what is still missing", () => {
-    const result = runSpike({ ELEVENLABS_API_KEY: "set", NEBIUS_PROJECT_ID: "set", NEBIUS_IAM_TOKEN: "set" });
+    const result = runSpike({ ELEVENLABS_API_KEY: "set", NEBIUS_PROJECT_ID: "set", NEBIUS_SERVICE_ACCOUNT_ID: "set", NEBIUS_PUBLIC_KEY_ID: "set", NEBIUS_PRIVATE_KEY: "set" });
     expect(result.status).toBe(1);
     expect(result.stderr).not.toContain("ELEVENLABS_API_KEY");
+    // one of each "A or B" pair is enough
+    expect(result.stderr).not.toContain("NEBIUS_PROJECT_ID");
+    expect(result.stderr).not.toContain("NEBIUS_PRIVATE_KEY");
     expect(result.stderr).toContain("VIDEO_RENDER_IMAGE");
     expect(result.stderr).toContain("SUPABASE_SECRET_KEY");
   });

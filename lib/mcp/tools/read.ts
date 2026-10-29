@@ -160,7 +160,7 @@ const listArticles = defineTool({
   annotations: READ,
   run: async ({ query: text, limit: count, offset: skip }) => {
     const client = await getServerSupabase();
-    let request = client.from("pages").select("id,title,slug,entity_id,domain_id,article_type", { count: "exact" }).is("retired_at", null);
+    let request = client.from("pages").select("id,title,slug,entity_id,domain_id,article_type", { count: "exact" }).is("retired_at", null).eq("kind", "article");
     if (text) request = request.ilike("title", likePattern(text));
     const { data, error, count: total } = await request.order("title").order("id").range(skip, skip + count - 1);
     if (error) throw new Error(error.message);
@@ -299,7 +299,7 @@ const getEntity = defineTool({
     );
     if (entity.merged_into_id) throw new Error(`This entity was merged into ${entity.merged_into_id}. Open that one instead.`);
     const [pages, unitLinks] = await Promise.all([
-      client.from("pages").select("id,title,slug").or(`entity_id.eq.${entityId},context_entity_id.eq.${entityId}`).is("retired_at", null).order("title"),
+      client.from("pages").select("id,title,slug").or(`entity_id.eq.${entityId},context_entity_id.eq.${entityId}`).is("retired_at", null).eq("kind", "article").order("title"),
       client.from("unit_entities").select("unit_id,role").eq("entity_id", entityId).limit(200),
     ]);
     const claims = (await claimTitles(client, [...new Set(must(unitLinks).map((row) => row.unit_id))])).slice(0, 50);

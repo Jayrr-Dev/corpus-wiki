@@ -114,8 +114,19 @@ describe("docs section style", () => {
       .mockResolvedValueOnce({ value: withSteps, model: "mock", tokensIn: null, tokensOut: null });
     const revision = await new DocsSectionWriter(model).reviseSection({ pageTitle: "P", sectionTitle: "Create", units, lines: [], uncoveredUnitIds: ["console"], style: { kind: "doc", intro: false } });
     expect(model).toHaveBeenCalledTimes(2);
-    expect(model.mock.calls[1]![0].user).toContain("no steps block");
+    expect(model.mock.calls[1]![0].user).toContain("no usable steps block");
     expect(revision.add.map((line) => parseDocBlock(line.text).type)).toEqual(["steps"]);
+  });
+
+  it("asks again when the only steps cite unknown claims (normalization would drop them)", async () => {
+    const miscited: DocsAnswer = { revise: [], retire: [], add: [
+      block({ type: "steps", steps: [{ text: "Click Create cluster.", cites: ["not-a-claim"], substeps: [] }] }),
+      block({ type: "callout", tone: "tip", text: "Clusters take a minute.", cites: ["console"] }),
+    ] };
+    const model = vi.fn<DocsModel>().mockResolvedValue({ value: miscited, model: "mock", tokensIn: null, tokensOut: null });
+    const revision = await new DocsSectionWriter(model).reviseSection({ pageTitle: "P", sectionTitle: "Create", units, lines: [], uncoveredUnitIds: ["console"], style: { kind: "doc", intro: false } });
+    expect(model).toHaveBeenCalledTimes(2);
+    expect(parseDocBlock(revision.add[0]!.text)).toMatchObject({ type: "steps" });
   });
 
   it("falls back to one cited step per claim when the retry still has no steps", async () => {

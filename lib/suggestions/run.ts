@@ -1303,7 +1303,8 @@ async function livePageTitled(client: AdminSupabase, title: string) {
     .from("pages")
     .select("id,title")
     .ilike("title", `%${key.replace(/[%_\\]/g, "\\$&")}%`)
-    .is("retired_at", null);
+    .is("retired_at", null)
+    .eq("kind", "article");
   if (error) throw new Error(error.message);
   return (
     (data ?? []).find((page) => page.title.trim().toLowerCase() === key)?.id ??

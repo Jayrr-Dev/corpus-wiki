@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RenderManifest } from "./compose";
-import { checkOverdue, finishRender, type PipelineDeps, runPipeline, startVideo } from "./pipeline";
+import { checkOverdue, finishRender, type PipelineDeps, pollRender, runPipeline, startVideo } from "./pipeline";
 import { RENDER_CALLBACK_GRACE_MS, RENDER_JOB_TIMEOUT_MS, VOICING_TIMEOUT_MS } from "./status";
 import { FakeJobs, FakeVoice, MemoryFiles, MemoryStore, scene, SPACE_ID, VIDEO_ID, videoRow } from "./testing";
 import { verifyCallbackToken } from "./token";
@@ -116,6 +116,52 @@ describe("render callback", () => {
     const { store, deps } = setup({ status: "failed", error: "timed out" });
     expect((await finishRender(deps, VIDEO_ID, { ok: true })).result).toBe("ignored");
     expect(store.rows.get(VIDEO_ID)).toMatchObject({ status: "failed", error: "timed out" });
+  });
+});
+
+describe("scene graphics", () => {
+  it("draws each scene after voicing, stores it and ships it with the composition", async () => {
+    const { files, deps } = setup();
+    const draw = async () => ({ bytes: new Uint8Array([137, 80, 78, 71]), mime: "image/png", extension: "png" });
+    const withGraphics = { ...deps, graphics: () => ({ draw }) };
+    await startVideo(withGraphics, VIDEO_ID, "make");
+    const video = await runPipeline(withGraphics, VIDEO_ID);
+    expect(video!.script.scenes.map((item) => item.graphicPath)).toEqual(["a", "b", "c"].map((id) => `${SPACE_ID}/${VIDEO_ID}/graphics/${id}.png`));
+    expect(files.saved.get(`${SPACE_ID}/${VIDEO_ID}/graphics/a.png`)!.contentType).toBe("image/png");
+    const manifest = JSON.parse(String(files.saved.get(`${SPACE_ID}/${VIDEO_ID}/composition/manifest.json`)!.bytes)) as RenderManifest;
+    expect(manifest.files.map((file) => file.path)).toEqual(["index.html", "audio/a.mp3", "graphics/a.png", "audio/b.mp3", "graphics/b.png", "audio/c.mp3", "graphics/c.png"]);
+    expect(String(files.saved.get(`${SPACE_ID}/${VIDEO_ID}/composition/index.html`)!.bytes)).toContain('src="graphics/a.png"');
+  });
+});
+
+describe("render poll (no callback URL)", () => {
+  it("starts the job with no callback in the manifest when the app has no public URL", async () => {
+    const { files, deps } = setup();
+    const local = { ...deps, callbackBaseUrl: "", callbackSecret: "" };
+    await startVideo(local, VIDEO_ID, "make");
+    expect(await runPipeline(local, VIDEO_ID)).toMatchObject({ status: "rendering", renderJobId: "job-1" });
+    const manifest = JSON.parse(String(files.saved.get(`${SPACE_ID}/${VIDEO_ID}/composition/manifest.json`)!.bytes)) as RenderManifest;
+    expect(manifest.callback).toBeNull();
+  });
+
+  it("rendering → ready once Nebius says the job succeeded", async () => {
+    const { jobs, deps } = setup({ status: "rendering", renderJobId: "job-1" });
+    jobs.status = { id: "job-1", state: "succeeded", logTail: null };
+    expect(await pollRender(deps, (await deps.store.get(VIDEO_ID))!)).toMatchObject({ status: "ready", videoPath: `${SPACE_ID}/${VIDEO_ID}/video.mp4` });
+  });
+
+  it("rendering → failed with the job's details when it failed", async () => {
+    const { jobs, deps } = setup({ status: "rendering", renderJobId: "job-1" });
+    jobs.status = { id: "job-1", state: "failed", logTail: "Container exited with non-zero exit code." };
+    expect(await pollRender(deps, (await deps.store.get(VIDEO_ID))!)).toMatchObject({ status: "failed", error: "The render failed.\nContainer exited with non-zero exit code." });
+  });
+
+  it("leaves the video rendering while the job runs or Nebius cannot be reached", async () => {
+    const { jobs, deps } = setup({ status: "rendering", renderJobId: "job-1" });
+    jobs.status = { id: "job-1", state: "running", logTail: null };
+    expect(await pollRender(deps, (await deps.store.get(VIDEO_ID))!)).toMatchObject({ status: "rendering" });
+    jobs.status = new Error("network down");
+    expect(await pollRender(deps, (await deps.store.get(VIDEO_ID))!)).toMatchObject({ status: "rendering" });
   });
 });
 

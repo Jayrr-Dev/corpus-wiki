@@ -1,16 +1,27 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { defaultFeatureFlags, FEATURE_FLAG_KEYS, FEATURE_FLAGS, type FeatureFlagKey, isFeatureFlagKey, resolveFeatureFlags } from "./registry";
+import { defaultFeatureFlags, enabledModuleFlags, FEATURE_FLAG_KEYS, FEATURE_FLAGS, FEATURE_ONLY_KEYS, type FeatureFlagKey, isFeatureFlagKey, MODULE_FLAG_KEYS, resolveFeatureFlags } from "./registry";
+
+const MODULES = ["pages", "graph", "glossary", "stakeholders", "ask", "study", "video", "docs", "upload", "sources", "assets", "knowledge", "changes", "decisions", "exceptions", "domains", "entities", "workflow", "agent_roles", "error_log", "nav_mode_switch"] as const;
+const FEATURES = ["billing", "legal_pages", "audio_ingest", "chat_import", "gmail_import"] as const;
+// every sidebar module starts on except the knowledge modules
+const defaults = () => ({ ...Object.fromEntries(FEATURES.map((key) => [key, false])), ...Object.fromEntries(MODULES.map((key) => [key, !["study", "video", "docs"].includes(key)])) });
 
 describe("feature flag registry", () => {
-  it("registers billing, legal pages, audio ingest, chat import, Gmail import, Study, Video and Docs", () => {
-    expect(FEATURE_FLAG_KEYS).toEqual(["billing", "legal_pages", "audio_ingest", "chat_import", "gmail_import", "study", "video", "docs"]);
+  it("registers the features, then every sidebar module in sidebar order", () => {
+    expect(FEATURE_FLAG_KEYS).toEqual([...FEATURES, ...MODULES]);
+    expect(FEATURE_ONLY_KEYS).toEqual(FEATURES);
+    expect(MODULE_FLAG_KEYS).toEqual(MODULES);
   });
 
-  it("starts every flag off", () => {
-    for (const key of FEATURE_FLAG_KEYS) expect(FEATURE_FLAGS[key].defaultEnabled).toBe(false);
-    expect(Object.values(defaultFeatureFlags())).toEqual(FEATURE_FLAG_KEYS.map(() => false));
+  it("starts every feature off, Study, Video and Docs too, and the other sidebar modules on", () => {
+    for (const key of FEATURE_ONLY_KEYS) expect(FEATURE_FLAGS[key].defaultEnabled).toBe(false);
+    expect(defaultFeatureFlags()).toEqual(defaults());
+  });
+
+  it("lists the sidebar modules that are on, in sidebar order", () => {
+    expect(enabledModuleFlags(resolveFeatureFlags({ pages: false, docs: true, billing: true }))).toEqual(MODULES.filter((key) => !["pages", "study", "video"].includes(key)));
   });
 
   it("gives every flag a label and a one-line description", () => {
@@ -37,14 +48,14 @@ describe("feature flag registry", () => {
   });
 
   it("resolves saved values over the defaults, dropping unknown keys and anything but true", () => {
-    expect(resolveFeatureFlags({ billing: true, gmail_import: "yes", chat_import: false, nope: true })).toEqual({
-      billing: true, legal_pages: false, audio_ingest: false, chat_import: false, gmail_import: false, study: false, video: false, docs: false,
+    expect(resolveFeatureFlags({ billing: true, gmail_import: "yes", chat_import: false, graph: false, ask: "no", nope: true })).toEqual({
+      ...defaults(), billing: true, graph: false, ask: false,
     });
     for (const saved of [null, undefined, "x", 3, [], [true]]) expect(resolveFeatureFlags(saved)).toEqual(defaultFeatureFlags());
   });
 
   it("types the keys so an unknown one fails typecheck", () => {
-    expectTypeOf<FeatureFlagKey>().toEqualTypeOf<"billing" | "legal_pages" | "audio_ingest" | "chat_import" | "gmail_import" | "study" | "video" | "docs">();
+    expectTypeOf<FeatureFlagKey>().toEqualTypeOf<(typeof FEATURES)[number] | (typeof MODULES)[number]>();
     // @ts-expect-error: not a registered flag
     const unknown: FeatureFlagKey = "dark_launch";
     expect(isFeatureFlagKey(unknown)).toBe(false);

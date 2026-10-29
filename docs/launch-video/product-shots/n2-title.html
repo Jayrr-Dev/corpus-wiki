@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- Nemotron section, 0:02.4–0:08.5: "Every AI step runs on open NVIDIA Nemotron models, served by Nebius Token Factory."
+     A title card in the app's dark theme. Plain text only (no third-party logos). Model ids are from lib/ai/config.ts. -->
+<html class="dark"><head><meta charset="utf-8"><title>N2 Title</title>
+<link rel="stylesheet" href="assets/app.css">
+<script src="engine.js"></script>
+<style>
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  #cursor { display: none !important; }
+  .wrap { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .kicker { font-size: 28px; color: #a3a3a3; letter-spacing: .02em; }
+  .big { font-size: 96px; font-weight: 700; letter-spacing: -.02em; margin-top: 10px; }
+  .big .nv { color: #76b900; }
+  .by { font-size: 40px; color: #dcdcdc; margin-top: 14px; }
+  .by b { color: #d9f8ff; font-weight: 600; }
+  .models { display: grid; grid-template-columns: repeat(4, 360px); gap: 18px; margin-top: 64px; }
+  .m { border: 1px solid #363636; background: #262626; border-radius: 12px; padding: 18px 20px; }
+  .m .role { font-size: 15px; color: #a3a3a3; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+  .m .name { font-size: 26px; font-weight: 600; margin-top: 6px; }
+  .m .id { font-family: var(--font-mono, "JetBrains Mono", monospace); font-size: 13px; color: #8a8a8a; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .m .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; }
+</style></head>
+<body>
+<div class="wrap">
+  <div class="kicker" id="k">Every AI step runs on</div>
+  <div class="big" id="b">open <span class="nv">NVIDIA Nemotron</span></div>
+  <div class="by" id="y">served by <b>Nebius Token Factory</b></div>
+  <div class="models" id="ms">
+    <div class="m"><div class="role"><span class="dot" style="background:#8278cb"></span>Big calls</div><div class="name">Nemotron 3 Ultra</div><div class="id">nvidia/Nemotron-3-Ultra-550b-a55b</div></div>
+    <div class="m"><div class="role"><span class="dot" style="background:#36ab78"></span>Everyday work</div><div class="name">Nemotron 3 Super</div><div class="id">nvidia/nemotron-3-super-120b-a12b</div></div>
+    <div class="m"><div class="role"><span class="dot" style="background:#72b7e5"></span>Bulk linking</div><div class="name">Nemotron 3 Nano</div><div class="id">nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B</div></div>
+    <div class="m"><div class="role"><span class="dot" style="background:#d9a032"></span>Vision</div><div class="name">Nemotron 3.5 Super VL</div><div class="id">nvidia/Nemotron-3.5-Super-VL</div></div>
+  </div>
+</div>
+<script>
+window.SCENE = { duration: 6.1, frame(t) {
+  camera(t, 6.1, 1.0, 1.025);
+  [["#k", 0.05], ["#b", 0.35], ["#y", 2.6]].forEach(([s, a]) => { const p = easeOut(seg(t, a, a + 0.55)); $(s).style.opacity = p; $(s).style.transform = `translateY(${(1 - p) * 16}px)`; });
+  $$(".m").forEach((m, i) => { const p = easeOut(seg(t, 3.4 + i * 0.22, 3.9 + i * 0.22)); m.style.opacity = p; m.style.transform = `translateY(${(1 - p) * 18}px)`; });
+}};
+</script>
+</body></html>

@@ -1,5 +1,6 @@
 import { composeVideo, placeScenes, type RenderManifest, totalDurationMs } from "./compose";
-import { type RenderJobClient, RENDER_JOB_DEFAULTS, timeoutMessage } from "./render";
+import { drawScenes, type GraphicClient, wantsGraphic } from "./graphics";
+import { isJobFinished, type RenderJobClient, RENDER_JOB_DEFAULTS, timeoutMessage } from "./render";
 import { isOverdue, RENDER_CALLBACK_GRACE_MS, RENDER_JOB_TIMEOUT_MS, transition, type VideoEvent } from "./status";
 import { FRAME } from "./templates";
 import { signCallbackToken } from "./token";
@@ -8,7 +9,8 @@ import { sceneAudioPath, type VoiceClient, voiceScenes } from "./voice";
 
 // =====================================================================
 // MAKE VIDEO: voice every scene, compose, start the render job, then wait
-// for its callback (or the timeout check). Every outside service comes in
+// for its callback, the status poll reading the job (pollRender), or the
+// timeout check. Every outside service comes in
 // through PipelineDeps: the video rows (update_video), Storage, ElevenLabs
 // and Nebius. lib/video/server.ts wires the real ones; tests wire fakes.
 // =====================================================================
@@ -30,6 +32,8 @@ export type PipelineDeps = {
   store: VideoStore;
   files: VideoFiles;
   voice: () => VoiceClient;
+  // draws each scene's graphic; absent when no image model is configured (scenes then show text alone)
+  graphics?: () => GraphicClient;
   jobs: () => RenderJobClient;
   renderImage: string;
   callbackBaseUrl: string;
@@ -50,6 +54,7 @@ export async function applyEvent(store: VideoStore, video: Pick<VideoRow, "id" |
 export const videoBase = (spaceId: string, videoId: string) => `${spaceId}/${videoId}`;
 export const videoFilePath = (spaceId: string, videoId: string) => `${videoBase(spaceId, videoId)}/video.mp4`;
 export const posterFilePath = (spaceId: string, videoId: string) => `${videoBase(spaceId, videoId)}/poster.jpg`;
+export const sceneGraphicPath = (spaceId: string, videoId: string, sceneId: string, extension: string) => `${videoBase(spaceId, videoId)}/graphics/${sceneId}.${extension}`;
 
 // Signed download links in the manifest outlive the job
 const LINK_SECONDS = Math.ceil((RENDER_JOB_TIMEOUT_MS + RENDER_CALLBACK_GRACE_MS) / 1000) + 3600;
@@ -90,11 +95,36 @@ export async function runPipeline(deps: PipelineDeps, id: string): Promise<Video
     if (!voiced) throw new MovedOnError();
     video = voiced;
 
+    // GRAPHICS: one illustration per scene; a failed one leaves that scene as text
+    if (deps.graphics) {
+      const drawn = await drawScenes({
+        scenes: video.script.scenes,
+        videoTitle: video.title,
+        client: deps.graphics(),
+        save: async (scene, graphic) => {
+          const path = sceneGraphicPath(deps.spaceId, id, scene.id, graphic.extension);
+          await deps.files.upload(path, graphic.bytes, graphic.mime);
+          return path;
+        },
+        onScene: async (next) => {
+          const saved = await deps.store.update(id, ["voicing"], { script: { scenes: next } });
+          if (!saved) throw new MovedOnError();
+          video = saved;
+        },
+      });
+      video = { ...video, script: { scenes: drawn } };
+    }
+
     const base = videoBase(deps.spaceId, id);
     const images: Record<string, string> = {};
     const files: RenderManifest["files"] = [];
-    for (const scene of scenes) {
+    for (const scene of video.script.scenes) {
       files.push({ path: `audio/${scene.id}.mp3`, url: await deps.files.signedDownloadUrl(scene.audioPath!, LINK_SECONDS) });
+      if (scene.graphicPath && wantsGraphic(scene)) {
+        const name = `graphics/${scene.graphicPath.split("/").pop()}`;
+        images[scene.id] = name;
+        files.push({ path: name, url: await deps.files.signedDownloadUrl(scene.graphicPath, LINK_SECONDS) });
+      }
       if (scene.visual === "image" && scene.assetId && deps.assetFile && !images[scene.assetId]) {
         const asset = await deps.assetFile(scene.assetId);
         if (asset) {
@@ -103,21 +133,24 @@ export async function runPipeline(deps: PipelineDeps, id: string): Promise<Video
         }
       }
     }
-    const html = composeVideo(scenes, { title: video.title, images });
+    const html = composeVideo(video.script.scenes, { title: video.title, images });
     await deps.files.upload(`${base}/composition/index.html`, html, "text/html");
     files.unshift({ path: "index.html", url: await deps.files.signedDownloadUrl(`${base}/composition/index.html`, LINK_SECONDS) });
 
-    const token = signCallbackToken({ videoId: id, spaceId: deps.spaceId, exp: now(deps) + LINK_SECONDS * 1000 }, deps.callbackSecret);
+    // The callback is optional: without a public app URL the status poll reads the job from Nebius (pollRender)
+    const callback = deps.callbackBaseUrl && deps.callbackSecret
+      ? { url: `${deps.callbackBaseUrl.replace(/\/+$/, "")}/api/video/${id}/rendered`, token: signCallbackToken({ videoId: id, spaceId: deps.spaceId, exp: now(deps) + LINK_SECONDS * 1000 }, deps.callbackSecret) }
+      : null;
     const manifest: RenderManifest = {
       videoId: id,
-      durationMs: totalDurationMs(scenes),
+      durationMs: totalDurationMs(video.script.scenes),
       fps: FRAME.fps,
       width: FRAME.width,
       height: FRAME.height,
       files,
-      audio: placeScenes(scenes).map((item) => ({ path: item.audioFile, startMs: item.startMs })),
+      audio: placeScenes(video.script.scenes).map((item) => ({ path: item.audioFile, startMs: item.startMs })),
       output: { videoUploadUrl: await deps.files.signedUploadUrl(videoFilePath(deps.spaceId, id)), posterUploadUrl: await deps.files.signedUploadUrl(posterFilePath(deps.spaceId, id)) },
-      callback: { url: `${deps.callbackBaseUrl.replace(/\/+$/, "")}/api/video/${id}/rendered`, token },
+      callback,
     };
     await deps.files.upload(`${base}/composition/manifest.json`, JSON.stringify(manifest), "application/json");
     const manifestUrl = await deps.files.signedDownloadUrl(`${base}/composition/manifest.json`, LINK_SECONDS);
@@ -152,6 +185,17 @@ export async function finishRender(deps: Pick<PipelineDeps, "spaceId" | "store">
   const error = [body.error?.trim() || "The render failed.", body.logTail?.trim()].filter(Boolean).join("\n");
   const failed = await applyEvent(deps.store, video, { type: "fail", error });
   return { result: failed ? "failed" : "ignored", video: failed };
+}
+
+// RENDER POLL (rendering → ready or failed) without a callback: the job's own state says how it ended.
+// render.mjs exits 0 only after both uploads, so a succeeded job means the MP4 and poster are in place.
+// A job Nebius cannot be asked about right now leaves the video rendering for the next poll.
+export async function pollRender(deps: Pick<PipelineDeps, "spaceId" | "store" | "jobs">, video: VideoRow): Promise<VideoRow> {
+  if (video.status !== "rendering" || !video.renderJobId) return video;
+  const job = await deps.jobs().getJob(video.renderJobId).catch(() => null);
+  if (!job || !isJobFinished(job.state)) return video;
+  const body: RenderedBody = job.state === "succeeded" ? { ok: true } : { ok: false, error: job.state === "cancelled" ? "The render was stopped before it finished." : "The render failed.", logTail: job.logTail };
+  return (await finishRender(deps, video.id, body)).video ?? (await deps.store.get(video.id)) ?? video;
 }
 
 // TIMEOUT CHECK: a video stuck in voicing, or rendering with no callback past the job timeout, becomes

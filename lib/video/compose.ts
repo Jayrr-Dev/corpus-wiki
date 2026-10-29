@@ -17,12 +17,13 @@ export const GSAP_URL = "https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.
 
 export type PlacedScene = { scene: Scene; startMs: number; durationMs: number; audioFile: string; imageFile: string | null };
 
-// Start and length of each scene on the timeline; every scene must be voiced first
+// Start and length of each scene on the timeline; every scene must be voiced first. `images` maps an
+// Assets id, or a scene id for its drawn graphic, to the file in the composition.
 export function placeScenes(scenes: readonly Scene[], images: Record<string, string> = {}): PlacedScene[] {
   let at = 0;
   return scenes.map((scene, index) => {
     if (!scene.audioPath || !scene.durationMs) throw new Error(`Scene ${index + 1} is not voiced yet.`);
-    const placed = { scene, startMs: at, durationMs: scene.durationMs, audioFile: `audio/${scene.id}.mp3`, imageFile: scene.assetId ? (images[scene.assetId] ?? null) : null };
+    const placed = { scene, startMs: at, durationMs: scene.durationMs, audioFile: `audio/${scene.id}.mp3`, imageFile: (scene.assetId ? images[scene.assetId] : undefined) ?? images[scene.id] ?? null };
     at += scene.durationMs;
     return placed;
   });

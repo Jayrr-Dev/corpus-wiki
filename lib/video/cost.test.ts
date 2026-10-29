@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_RATES, estimateCost, formatUsd, ratesFromEnv } from "./cost";
 import { scene } from "./testing";
 
-const rates = { voiceUsdPer1kChars: 0.3, renderUsdPerHour: 0.6, renderMinutesPerVideoMinute: 2, coldStartMinutes: 2 };
+const rates = { voiceUsdPer1kChars: 0.3, renderUsdPerHour: 0.6, renderMinutesPerVideoMinute: 2, coldStartMinutes: 2, imageUsd: 0 };
 
 describe("cost estimate", () => {
   it("prices narration characters and the render job's minutes", () => {
@@ -23,7 +23,19 @@ describe("cost estimate", () => {
   });
 
   it("reads rates from the environment, ignoring bad values", () => {
-    expect(ratesFromEnv({ ELEVENLABS_USD_PER_1K_CHARS: "0.18", NEBIUS_RENDER_USD_PER_HOUR: "nope" })).toEqual({ ...DEFAULT_RATES, voiceUsdPer1kChars: 0.18 });
+    // no image model configured: graphics cost nothing
+    expect(ratesFromEnv({ ELEVENLABS_USD_PER_1K_CHARS: "0.18", NEBIUS_RENDER_USD_PER_HOUR: "nope" })).toEqual({ ...DEFAULT_RATES, voiceUsdPer1kChars: 0.18, imageUsd: 0 });
+  });
+
+  it("prices each scene graphic still to draw when an image model is set up", () => {
+    const withImages = ratesFromEnv({ OPENROUTER_API_KEY: "k", VIDEO_IMAGE_USD: "0.05" });
+    expect(withImages.imageUsd).toBe(0.05);
+    const script = { scenes: [
+      { id: "a", narration: "x", title: "T", bullets: [], visual: "title" as const, sources: [] },
+      { id: "b", narration: "x", title: "T", bullets: [], visual: "list" as const, sources: [], graphicPath: "drawn.png" },
+      { id: "c", narration: "x", title: "T", bullets: [], visual: "diagram" as const, sources: [] },
+    ] };
+    expect(estimateCost(script, "short", withImages).imageUsd).toBeCloseTo(0.05);
   });
 
   it("reads as a rough amount", () => {

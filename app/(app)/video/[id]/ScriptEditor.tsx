@@ -18,15 +18,18 @@ import { SCENE_VISUAL_LABELS, SCENE_VISUALS, type SceneVisual, type VideoRow } f
 import { makeVideo, rewriteScript, saveScript } from "../actions";
 import type { AssetChoice } from "./VideoDetail";
 
-type Draft = { id: string; narration: string; title: string; bullets: string; visual: SceneVisual; assetId: string | null };
+type Draft = { id: string; narration: string; title: string; bullets: string; visual: SceneVisual; assetId: string | null; graphic: string };
 
 const toDrafts = (video: VideoRow): Draft[] =>
-  video.script.scenes.map((scene) => ({ id: scene.id, narration: scene.narration, title: scene.title, bullets: scene.bullets.join("\n"), visual: scene.visual, assetId: scene.assetId ?? null }));
+  video.script.scenes.map((scene) => ({ id: scene.id, narration: scene.narration, title: scene.title, bullets: scene.bullets.join("\n"), visual: scene.visual, assetId: scene.assetId ?? null, graphic: scene.graphic ?? "" }));
 
 const toEdit = (title: string, drafts: Draft[]): ScriptEdit => ({
   title,
-  scenes: drafts.map((draft) => ({ id: draft.id, narration: draft.narration, title: draft.title, bullets: draft.bullets.split("\n").map((line) => line.trim()).filter(Boolean).slice(0, 5), visual: draft.visual, assetId: draft.visual === "image" ? draft.assetId : null })),
+  scenes: drafts.map((draft) => ({ id: draft.id, narration: draft.narration, title: draft.title, bullets: draft.bullets.split("\n").map((line) => line.trim()).filter(Boolean).slice(0, 5), visual: draft.visual, assetId: draft.visual === "image" ? draft.assetId : null, graphic: draft.graphic.trim() || null })),
 });
+
+// A diagram draws its own boxes and an Image scene shows its Assets picture, so neither gets a graphic
+const showsGraphic = (draft: Draft) => draft.visual !== "diagram" && !(draft.visual === "image" && draft.assetId);
 
 // SCRIPT: each scene's narration, on-screen text and visual, editable and in order. Nothing costs
 // money until Make video; the cost estimate stays beside it.
@@ -123,6 +126,12 @@ export function ScriptEditor({ video, rates, assets }: { video: VideoRow; rates:
               <span className="flex items-center gap-1.5">On-screen points <InfoHint>One per line, up to five.</InfoHint></span>
               <Textarea value={draft.bullets} rows={3} disabled={busy} onChange={(event) => update(draft.id, { bullets: event.target.value })} />
             </label>
+            {showsGraphic(draft) ? (
+              <label className="flex flex-col gap-1.5 text-sm font-medium">
+                <span className="flex items-center gap-1.5">Graphic <InfoHint>What this scene&apos;s illustration shows. It is drawn at Make video; leave it empty to draw from the title.</InfoHint></span>
+                <Input value={draft.graphic} maxLength={240} disabled={busy} onChange={(event) => update(draft.id, { graphic: event.target.value })} />
+              </label>
+            ) : null}
             {draft.narration !== video.script.scenes.find((scene) => scene.id === draft.id)?.narration && video.script.scenes.find((scene) => scene.id === draft.id)?.audioPath ? (
               <p className="text-panel text-muted-foreground">This scene is voiced again.</p>
             ) : null}
