@@ -30,7 +30,7 @@ import { DocBlockView } from "./DocBlockView";
 // with Rebuild page. Refreshes itself while pages are being written.
 // =====================================================================
 
-export function DocsReader({ set, pageId, topics }: { set: DocSetView; pageId: string | null; topics: TopicNavItem[] }) {
+export function DocsReader({ set, pageId, article = false, topics }: { set: DocSetView; pageId: string | null; article?: boolean; topics: TopicNavItem[] }) {
   const router = useRouter();
   const [publishing, setPublishing] = useState(false);
   const [rebuilding, setRebuilding] = useState<string | null>(null);
@@ -88,6 +88,7 @@ export function DocsReader({ set, pageId, topics }: { set: DocSetView; pageId: s
         </nav>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" disabled={writing || rebuilding !== null} onClick={() => rebuild("all")}>{writing ? "Writing…" : "Rebuild"}</Button>
+          <Button size="sm" variant="outline" asChild><Link href={article ? `/docs/${set.id}` : `/docs/${set.id}?view=article`}>{article ? "Pages" : "One article"}</Link></Button>
           <Button size="sm" variant="outline" asChild><a href={`/api/docs/${set.id}/export`} download>Export</a></Button>
           <Button size="sm" variant="outline" onClick={() => setPublishing(true)}>Publish</Button>
         </div>
@@ -95,6 +96,12 @@ export function DocsReader({ set, pageId, topics }: { set: DocSetView; pageId: s
       {set.status === "failed" && set.error ? <p role="alert" className="px-6 pt-4 text-panel text-destructive">{set.error}</p> : null}
       {error ? <p role="alert" className="px-6 pt-4 text-panel text-destructive">{error}</p> : null}
 
+      {article ? (
+        <article className="mx-auto grid w-full max-w-3xl gap-10 px-6 py-6">
+          <h1 className="text-3xl font-semibold tracking-tight">{set.title}</h1>
+          {set.pages.map((item) => <ArticlePage key={item.id} page={item} claims={claims} />)}
+        </article>
+      ) : (
       <div className="grid gap-8 px-6 py-6 md:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
         <PageNav set={set} pageId={page?.id ?? null} needsRebuild={needsRebuild} rebuildLabel={rebuildLabel} />
 
@@ -138,6 +145,7 @@ export function DocsReader({ set, pageId, topics }: { set: DocSetView; pageId: s
           ) : null}
         </aside>
       </div>
+      )}
       <PublishingDialog open={publishing} onOpenChange={setPublishing} />
     </div>
   );
@@ -196,6 +204,17 @@ function PageNav({ set, pageId, needsRebuild, rebuildLabel }: {
         );
       }) : <p className="px-3 text-panel text-muted-foreground">No pages match.</p>}
     </nav>
+  );
+}
+
+// ONE ARTICLE: one page of the set, with its title as a heading, in set order
+function ArticlePage({ page, claims }: { page: DocPageRow; claims: ReadonlyMap<string, DocClaimRow> }) {
+  const sections = useMemo(() => readerSections(page), [page]);
+  return (
+    <section className="grid gap-3">
+      <h2 className="text-2xl font-semibold tracking-tight">{page.title}</h2>
+      <DocPageSections page={page} sections={sections} claims={claims} />
+    </section>
   );
 }
 
