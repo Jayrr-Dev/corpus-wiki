@@ -24,6 +24,25 @@ it("refreshes saved data while connection is unavailable and stops polling when 
   fallback.dispose();
 });
 
+it("slows its refreshes while disconnected and returns to full speed after reconnecting", () => {
+  const refresh = vi.fn();
+  const fallback = subscriptionFallback(refresh);
+  // The gap doubles after each refresh: 5s, 10s, 20s, 40s, then a minute at most
+  for (const [gap, count] of [[5000, 1], [10_000, 2], [20_000, 3], [40_000, 4], [60_000, 5], [60_000, 6]] as const) {
+    vi.advanceTimersByTime(gap - 1);
+    expect(refresh).toHaveBeenCalledTimes(count - 1);
+    vi.advanceTimersByTime(1);
+    expect(refresh).toHaveBeenCalledTimes(count);
+  }
+  fallback.status("CLOSED");
+  fallback.status("SUBSCRIBED");
+  expect(refresh).toHaveBeenCalledTimes(7); // Catch-up refresh on reconnect
+  fallback.status("CLOSED");
+  vi.advanceTimersByTime(5000);
+  expect(refresh).toHaveBeenCalledTimes(8); // A new disconnect starts at the 5s pace again
+  fallback.dispose();
+});
+
 it("avoids background-tab polling and never restarts a disposed subscription", () => {
   let visible = false;
   const refresh = vi.fn();
