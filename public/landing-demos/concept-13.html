@@ -331,12 +331,15 @@ const timeAt = (y, x) => SCAN0 + (y / H) * (SCAN1 - SCAN0) + (x / 520) * 0.25; /
 function measure() {
   const keep = content.style.transform; content.style.transform = "none";
   const c = content.getBoundingClientRect(), box = (r) => ({ x: (r.left - c.left) / S, y: (r.top - c.top) / S, w: r.width / S, h: r.height / S });
+  // not laid out yet (hidden or zero-size frame): wait for the next resize
+  const RECTS = UNITS.map((u) => u.els.flatMap((el) => (el.tagName === "SPAN" ? [...el.getClientRects()] : [el.getBoundingClientRect()]).map(box)).filter((r) => r.w > 1));
+  if (RECTS.some((r) => !r.length)) { content.style.transform = keep; return; }
   VH = view.clientHeight; VW = view.clientWidth; H = content.offsetHeight; ZS = (VH - 16) / H;
   [viewX, viewY] = offset(view, stage);
   hls.textContent = "";
-  UNITS.forEach((u) => {
+  UNITS.forEach((u, ui) => {
     const T = TYPES[u.type], fig = u.type === "figure";
-    const rects = u.els.flatMap((el) => (el.tagName === "SPAN" ? [...el.getClientRects()] : [el.getBoundingClientRect()]).map(box)).filter((r) => r.w > 1);
+    const rects = RECTS[ui];
     u.marks = rects.map((r) => {
       const m = document.createElement("div"), pad = fig ? 1 : 1;
       m.className = fig ? "outline" : "hl"; if (!fig) m.style.background = T.mark;
