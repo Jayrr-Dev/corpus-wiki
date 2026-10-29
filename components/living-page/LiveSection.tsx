@@ -18,6 +18,8 @@ import type { ActionResult } from "@/lib/server-actions/result";
 import { ArticleFigure } from "./ArticleFigure";
 import { EDIT_REFRESHES } from "./LinePanel";
 import { LineBlock } from "./LineBlock";
+import { DocLine } from "./DocLine";
+import { isDocBlockContent } from "@/lib/docs/blocks";
 import { sectionUpdatedAt } from "./SectionPanel";
 import { TextEditor } from "./TextEditor";
 
@@ -98,6 +100,9 @@ export function LiveSection({ section, lines, selectedLineId, onSelect, isSectio
     );
     const lineClass = cn("group/paragraph text-body leading-7", line.lineId === selectedLineId && "rounded-sm bg-hover", line.isStale && "text-faint");
     // A list, table or chart is drawn from its parts (an older version previews as its text)
+    if (!linePreview && isDocBlockContent(line.content)) {
+      return <div key={line.lineId} id={`line-${line.lineId}`} className={lineClass}><DocLine content={line.content} links={links} trailing={trailing} /></div>;
+    }
     if (!linePreview && isBlock(line.content)) {
       return <div key={line.lineId} id={`line-${line.lineId}`} className={lineClass}><LineBlock content={line.content} links={links} trailing={trailing} /></div>;
     }

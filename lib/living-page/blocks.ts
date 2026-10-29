@@ -1,3 +1,5 @@
+import { isDocBlockContent, lineText } from "@/lib/docs/blocks";
+
 // =====================================================================
 // LINE BLOCKS: a line's text may lay its claims out as more than prose.
 // The text stays plain and readable (search, diffs and history keep
@@ -97,6 +99,7 @@ export function isBlock(content: string): boolean {
 
 // The line as one run of words (for short previews such as the section panel)
 export function blockSummary(content: string): string {
+  if (isDocBlockContent(content)) return lineText(content).replace(/\s*\n\s*/g, " ");
   return parseBlocks(content).map((part) => {
     switch (part.kind) {
       case "text": case "callout": return part.text;
