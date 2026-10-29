@@ -56,8 +56,8 @@ h1 { max-width: 680px; font-size: 36px; line-height: 40px; font-weight: 600; let
 .w.on { opacity: 1; }
 .caret { display: inline-block; width: 2px; height: 18px; margin-left: 2px; vertical-align: -3px; background: var(--glow); animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
-.badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 9999px; background: rgba(110,154,108,.15); color: var(--green-pale); opacity: 0; transition: opacity .4s var(--ease); }
-.badge.on { opacity: 1; } .badge.ask-tone { background: rgba(234,67,53,.15); color: var(--conflict-pale); }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 9999px; background: rgba(110,154,108,.15); color: var(--ink); opacity: 0; transition: opacity .4s var(--ease); }
+.badge.on { opacity: 1; } .badge.ask-tone { background: rgba(234,67,53,.15); color: var(--ink); }
 
 /* FLOATING PIECES */
 .chip { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); font-size: 14px; line-height: 20px; white-space: nowrap; box-shadow: 0 24px 48px rgb(0 0 0 / calc(.5 * var(--shadow))); transition: opacity .5s var(--ease), transform .6s var(--ease), border-color .3s var(--ease); }
