@@ -51,7 +51,7 @@ function StartButton() {
 // The public repository; the code is Apache 2.0 (see LICENSE)
 const GITHUB_URL = "https://github.com/Jayrr-Dev/corpus-wiki";
 
-// RISK REVERSAL: under both Start buttons. True with or without billing: signup
+// RISK REVERSAL: under the hero's Built with line and the closing Start button. True with or without billing: signup
 // asks for no card, and the code is free and open source on GitHub.
 function FreeLine({ className = "" }: { className?: string }) {
   return (
@@ -156,9 +156,8 @@ export default async function WelcomePage() {
               <p className="mt-10 max-w-[680px] text-lg text-landing-ink/70 text-pretty sm:text-xl">
                 Add your files. Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.
               </p>
-              <div className="mt-8 flex flex-col items-center gap-3">
+              <div className="mt-8">
                 <StartButton />
-                <FreeLine />
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
@@ -176,6 +175,7 @@ export default async function WelcomePage() {
                   <span className="rounded-md bg-landing-nebius px-2 py-0.5 text-xs font-semibold tracking-wider text-black uppercase">Token Factory</span>
                 </span>
               </p>
+              <FreeLine className="mt-4 text-center" />
             </Reveal>
           </div>
         </section>
