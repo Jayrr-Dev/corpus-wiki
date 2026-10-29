@@ -10,7 +10,7 @@ import { formatUsd } from "@/lib/ai/pricing";
 import { roleName } from "@/lib/ai/roles";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { fetchAllAiCalls } from "./allAiCalls";
-import { formatDaySpan, type DayRange } from "./spendHeatmap";
+import { formatDaySpan, type DayRange } from "./heatmapCells";
 import { SpendHeatmap } from "./SpendHeatmap";
 import { callsInRange, totalsByDay, totalsByRole, type RoleTotal } from "./summarizeUsage";
 

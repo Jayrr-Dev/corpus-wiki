@@ -1,4 +1,6 @@
 // SERVER ACTION RESULT: what every write action returns to the screen
+import { unstable_rethrow } from "next/navigation";
+
 export type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
 export const ACTION_FAILED = "Server action failed:";
@@ -8,6 +10,8 @@ export async function toActionResult<T extends object>(run: () => Promise<T>): P
   try {
     return { ok: true, ...(await run()) };
   } catch (error) {
+    // Next signals (dynamic rendering, redirect, notFound) must reach the framework
+    unstable_rethrow(error);
     // the error log files lines starting with ACTION_FAILED under "action" (lib/errors/errorLog.ts)
     console.error(ACTION_FAILED, error);
     return { ok: false, error: error instanceof Error ? error.message : String(error) };

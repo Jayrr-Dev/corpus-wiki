@@ -5,7 +5,7 @@ import { useArticleSuggestions, useSuggestionRuns } from "@/lib/queries";
 import { useRealtimeInvalidation } from "@/lib/realtime/useRealtimeInvalidation";
 import { useEffect } from "react";
 import { startProgress, type ProgressHandle } from "./ProgressToast";
-import { nextSuggestionToast, suggestionWriting, type RunSnapshot, type SuggestionSnapshot } from "./suggestionProgress";
+import { nextSuggestionToast, suggestionWriting, type RunSnapshot, type SuggestionSnapshot } from "./suggestionToast";
 
 type Session = {
   progress: ProgressHandle | null;

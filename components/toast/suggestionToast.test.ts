@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { nextSuggestionToast, type SuggestionSnapshot } from "./suggestionProgress";
+import { nextSuggestionToast, type SuggestionSnapshot } from "./suggestionToast";
 
 function item(patch: Partial<SuggestionSnapshot> & Pick<SuggestionSnapshot, "id" | "kind" | "status">): SuggestionSnapshot {
   return { title: patch.id, note: null, writing: false, ...patch };

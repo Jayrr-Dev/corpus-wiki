@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useServerAction } from "@/components/actions/useServerAction";
 import { RoleSpendPanel, useAllAiCalls, useRoleSpend } from "@/components/usage/RoleSpend";
-import type { DayRange } from "@/components/usage/spendHeatmap";
+import type { DayRange } from "@/components/usage/heatmapCells";
 import { callsInRange } from "@/components/usage/summarizeUsage";
 import type { RoleTotal } from "@/components/usage/summarizeUsage";
 import { saveRoleInstructions } from "@/lib/server-actions/skills";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDaySpan, heatLevel, heatmapWeeks, monthLabels, nextDayRange } from "./spendHeatmap";
+import { formatDaySpan, heatLevel, heatmapWeeks, monthLabels, nextDayRange } from "./heatmapCells";
 
 const day = (date: string, costUsd: number, calls = 1) => ({ day: date, costUsd, calls });
 

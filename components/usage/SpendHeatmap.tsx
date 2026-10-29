@@ -5,7 +5,7 @@ import { formatCount } from "@/app/(app)/_lib/format";
 import { Tooltip } from "@/components/standard/tooltip";
 import { formatUsd } from "@/lib/ai/pricing";
 import { cn } from "@/lib/utils";
-import { dayInRange, heatLevel, heatmapWeeks, maxDayCost, monthLabels, nextDayRange, type DayRange, type HeatCell } from "./spendHeatmap";
+import { dayInRange, heatLevel, heatmapWeeks, maxDayCost, monthLabels, nextDayRange, type DayRange, type HeatCell } from "./heatmapCells";
 import type { UsageTotal } from "./summarizeUsage";
 
 // One square per day. Darker green means more spend. Click picks the days whose prices show.

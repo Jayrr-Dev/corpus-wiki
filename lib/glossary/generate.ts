@@ -129,7 +129,7 @@ async function generateOnce(client: AdminSupabase, settings: TokenFactorySetting
     const loadGlossaryColumn = async (column: "batches" | "entries" | "identity_registry" | "definition_overrides" | "review_cache") => {
       const row = await readGlossary(() => storage.from("glossary_state").select(column).eq("id", true).single());
       if (!row) throw new Error("The glossary state is unavailable. Resume generation to retry.");
-      return row[column];
+      return (row as Record<typeof column, Json>)[column];
     };
     const state = {
       batches: await loadGlossaryColumn("batches"),
