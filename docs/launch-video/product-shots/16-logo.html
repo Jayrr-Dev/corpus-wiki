@@ -1,0 +1,23 @@
+<!doctype html>
+<html class="dark"><head><meta charset="utf-8"><title>16 Logo</title>
+<link rel="stylesheet" href="assets/app.css">
+<script src="engine.js"></script>
+<style>
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; }
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+  #logo { width: 720px; }
+  #tag { font-size: 34px; color: #a3a3a3; font-family: var(--font-sans, Inter, sans-serif); }
+  #cursor { display: none !important; }
+</style></head>
+<body>
+<div class="center"><img id="logo" src="assets/logo-white.svg" alt=""><div id="tag">Your automated knowledge base.</div></div>
+<script>
+window.SCENE = { duration: 2.2, frame(t) {
+  camera(t, 2.2, 1.0, 1.03);
+  const a = easeOut(seg(t, 0.05, 0.7));
+  $("#logo").style.opacity = a; $("#logo").style.transform = `translateY(${(1 - a) * 18}px)`;
+  const b = easeOut(seg(t, 0.45, 1.05));
+  $("#tag").style.opacity = b; $("#tag").style.transform = `translateY(${(1 - b) * 12}px)`;
+}};
+</script>
+</body></html>

@@ -1,0 +1,19 @@
+# Raw and frozen snapshots of the real app hold real workspace data and the signed-in email.
+snapshots/
+frozen/
+# Built scene pages embed a frozen snapshot (the scrub only runs in the browser), so they are local only too.
+17-upload.html
+18-page.html
+19-graph.html
+19b-glossary.html
+19c-stakeholders.html
+21-ask.html
+22a-rewrite.html
+22b-exception.html
+22c-settled.html
+n3-models.html
+n7a-costs.html
+n7b-picker.html
+# Stills, logs, browser profiles and segments stay local; the rendered scene clips and the preview are kept
+out/*
+!out/*.mp4

@@ -1,0 +1,62 @@
+{
+  "01-hook-bg": {
+    "job": "gen-vid-1793264638-4CLftC4kajLjUO3TpXGj",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "04b-empty-desk": {
+    "job": "gen-vid-1793264638-GPnKUpXmjv2IK8NL4Jlx",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "23-stays": {
+    "job": "gen-vid-1793264639-Us7K2OVuTGkohe47Hnrl",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "14-fatigue": {
+    "job": "gen-vid-1793264638-mqCFBrIZIrWCiO64MScZ",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "14b-network": {
+    "job": "gen-vid-1793264638-tsiT97RCQNaDkdZcn5g4",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "29-endcard-bg": {
+    "job": "gen-vid-1793264638-8p9MMUE6UefN0DseQBsl",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "12-typing": {
+    "job": "gen-vid-1793264638-SWfn7TnJPI9DSTYhsueo",
+    "model": "google/veo-3.1-lite",
+    "seconds": 6,
+    "cost": 0.3
+  },
+  "03-leaving": {
+    "job": "gen-vid-1793264638-tgGDK51oBaxdlWQ5e3NG",
+    "model": "google/veo-3.1-lite",
+    "seconds": 6,
+    "cost": 0.3
+  },
+  "09-asking": {
+    "job": "gen-vid-1793264638-n03YtswzlAn0qjpo99LS",
+    "model": "google/veo-3.1-lite",
+    "seconds": 8,
+    "cost": 0.4
+  },
+  "05-whiteboard": {
+    "job": "gen-vid-1793264638-JIG7Cb365BcxJQBX4m1D",
+    "model": "google/veo-3.1-lite",
+    "seconds": 8,
+    "cost": 0.4
+  }
+}
