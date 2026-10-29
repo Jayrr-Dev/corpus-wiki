@@ -1,4 +1,5 @@
 import type { DraftAction, SectionQuery } from "@/lib/ai/types";
+import { docBlockText, isDocBlockContent, parseDocBlock } from "@/lib/docs/blocks";
 import { unsupportedProseNumbers, withSupportedCharts } from "./blocks";
 import type { SectionRevision, SectionState } from "./types";
 
@@ -75,6 +76,13 @@ function supportedText(state: SectionState, onDropped?: (line: DroppedLine) => v
   const contentOf = new Map(state.units.map((unit) => [unit.unitId, unit.content]));
   return (text, unitIds) => {
     const claims = unitIds.flatMap((id) => contentOf.get(id) ?? []);
+    // A doc block is JSON: check its words, not its ids (lib/docs/blocks.ts)
+    if (isDocBlockContent(text)) {
+      const numbers = unsupportedProseNumbers(docBlockText(parseDocBlock(text)), [...claims, state.pageTitle, state.title]);
+      if (numbers.length === 0) return text;
+      onDropped?.({ text, numbers });
+      return "";
+    }
     const charted = withSupportedCharts(text, claims);
     const numbers = unsupportedProseNumbers(charted, [...claims, state.pageTitle, state.title]);
     if (numbers.length === 0) return preserveText && charted === text.trim() ? text : charted;
