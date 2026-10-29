@@ -137,7 +137,9 @@ referencing new table as filed for each statement execute function change_contro
 create trigger mark_unfiled_claims after delete on public.unit_domains
 referencing old table as filed for each statement execute function change_control.claim_topics_removed();
 
--- SECTION STATUS: every existing path to 'stale' leaves a mark; a finished or retired build clears it
+-- SECTION STATUS: a new section (created 'stale') and every existing path to 'stale' leave
+-- a mark; a finished or retired section clears it. A build in progress keeps it, so a
+-- build that dies half way is still found.
 create function change_control.section_status_changed()
 returns trigger
 language plpgsql
@@ -145,11 +147,14 @@ as $$
 begin
   if new.status = 'stale' and new.retired_at is null then
     perform change_control.mark_stale(new.space_id, 'section', new.id::text);
-  else
+  elsif new.status = 'current' or new.retired_at is not null then
     delete from public.stale_marks where space_id = new.space_id and kind = 'section' and item_key = new.id::text;
   end if;
   return null;
 end $$;
+create trigger mark_new_section after insert on public.sections
+for each row when (new.status = 'stale' and new.retired_at is null)
+execute function change_control.section_status_changed();
 create trigger mark_stale_section after update of status, retired_at on public.sections
 for each row when (new.status is distinct from old.status or new.retired_at is distinct from old.retired_at)
 execute function change_control.section_status_changed();
