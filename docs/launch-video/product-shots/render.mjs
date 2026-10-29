@@ -1,5 +1,6 @@
 // Renders a scene HTML to a 1920x1080 MP4, frame by frame, with headless Chrome and ffmpeg.
 // Usage: node render.mjs 17-upload.html [fps=30] [--still=2.5]
+//        node render.mjs http://localhost:3000/stage/upload [fps] [--name=p-upload] [--still=2.5]
 // Needs Node 22+ (built-in WebSocket), Chrome or Edge, and ffmpeg on PATH. No npm packages.
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -8,6 +9,8 @@ import { pathToFileURL } from "node:url";
 
 const [file, fpsArg] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const still = process.argv.find((a) => a.startsWith("--still="))?.split("=")[1];
+const nameArg = process.argv.find((a) => a.startsWith("--name="))?.split("=")[1];
+const isUrl = /^https?:\/\//.test(file ?? "");
 const fps = Number(fpsArg || 30);
 if (!file) { console.error("usage: node render.mjs <scene.html> [fps] [--still=t]"); process.exit(1); }
 
@@ -32,14 +35,16 @@ const evaluate = async (expr) => (await send("Runtime.evaluate", { expression: e
 
 await send("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
 await send("Page.enable");
-await send("Page.navigate", { url: pathToFileURL(resolve(file)).href + "?render" });
-for (let i = 0; i < 100 && !(await evaluate("window.__ready === true")); i++) await sleep(100);
+// A web page (the app's /stage route) or a local scene file; both follow the SCENE contract under ?render
+const url = isUrl ? file + (file.includes("?") ? "&" : "?") + "render" : pathToFileURL(resolve(file)).href + "?render";
+await send("Page.navigate", { url });
+for (let i = 0; i < 300 && !(await evaluate("window.__ready === true")); i++) await sleep(100);
 await evaluate("document.fonts.ready.then(() => true)");
 await sleep(300);
 
 const duration = await evaluate("SCENE.duration");
 mkdirSync("out", { recursive: true });
-const name = basename(file, ".html");
+const name = nameArg || (isUrl ? "p-" + new URL(file).pathname.split("/").filter(Boolean).pop() : basename(file, ".html"));
 const shot = async () => Buffer.from((await send("Page.captureScreenshot", { format: "png" })).result.data, "base64");
 
 if (still !== undefined) {
