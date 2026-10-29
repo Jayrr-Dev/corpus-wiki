@@ -223,7 +223,7 @@ function Shader({
 }: ShaderProps) {
   const reduced = useReducedMotion()
   const { Component, presets } = shaders[kind]
-  const chosen = presets.find((entry) => entry.name === preset) ?? presets[0]
+  const chosen = presets.find((entry) => entry.name === preset) ?? presets[0]!
   const props = layerProps(layer, "shader")
 
   return (

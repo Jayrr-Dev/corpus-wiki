@@ -156,7 +156,7 @@ function ToneField({
       left: [0, 0, 1, 0],
       right: [1, 0, 0, 0],
     }
-    const [x1, y1, x2, y2] = vectors[tone]
+    const [x1, y1, x2, y2] = vectors[tone] ?? vectors.top!
     gradient = (
       <linearGradient id={id} x1={x1} y1={y1} x2={x2} y2={y2}>
         <stop offset="0" stopColor={gray(dense)} />
