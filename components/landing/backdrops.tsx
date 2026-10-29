@@ -6,6 +6,7 @@ import { Mask } from "@/components/standard/mask";
 import { Noise } from "@/components/standard/noise";
 import { Screentone } from "@/components/standard/screentone";
 import { Shader } from "@/components/standard/shader";
+import { NodeGraph } from "./node-graph";
 
 // =====================================================================
 // LANDING BACKDROPS: Standards UI layers behind the hero, the tagline and
@@ -28,7 +29,7 @@ function useShaderTheme(): "dark" | "light" | null {
   return resolvedTheme === "dark" ? "dark" : "light";
 }
 
-// HERO: a slow gold, ember and green mesh with dots and grain, all fading into
+// HERO: a slow gold, ember and green mesh, a turning knowledge graph, dots and grain, all fading into
 // the page together so nothing stops in a hard line at the section's edge
 export function HeroBackdrop() {
   const theme = useShaderTheme();
@@ -43,6 +44,7 @@ export function HeroBackdrop() {
           opacity={theme === "light" ? 0.25 : 0.45}
         />
       )}
+      <NodeGraph opacity={theme === "light" ? 0.4 : 0.55} />
       <Screentone kind="dots" tone="bottom" density={[0.4, 0]} size={7} color="var(--color-landing-gold)" opacity={0.18} />
       <Noise kind="grain" blend="overlay" opacity={0.12} />
     </Mask>
