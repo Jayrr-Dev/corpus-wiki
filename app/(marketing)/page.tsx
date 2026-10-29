@@ -154,7 +154,7 @@ export default async function WelcomePage() {
                 <span className="palette-underline">maintaining machine</span>
               </h1>
               <p className="mt-10 max-w-[680px] text-lg text-landing-ink/70 text-pretty sm:text-xl">
-                Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.
+                Add your files. Corpus sorts them out, writes simple pages for your team and keeps them up to date.
               </p>
               <div className="mt-8">
                 <StartButton />
