@@ -103,11 +103,11 @@ You mime to the voiceover so your lips match the cloned voice exactly.
 
 | # | Final time | Line | Clip | Framing |
 |---|---|---|---|---|
-| 1 | 0:00.0–0:02.4 | "Every company has a Dave." | `1-every-company-has-a-dave` (1.9 s) | Desk, medium shot, knowing half-smile |
-| 2 | 1:47.2–1:49.9 | "So how does it actually work?" | `2-so-how-does-it-work` (2.4 s) | Optional (B-roll covers it now). Desk, leaning in |
-| 3 | 2:30.4–2:32.8 | "Dave's knowledge? *(chuckle)* Still here." | `3-daves-knowledge-still-here` (2.3 s) | Leaning back, satisfied |
-| 4 | 2:37.6–2:42.7 | "If your team keeps losing knowledge or you're tired of linking notes by hand, try it." | `4-if-your-team` (5.1 s) | A relaxed spot (sofa or break area), talking with your hands |
-| 5 | 2:42.7–2:46.0 | "Drop in a folder and watch it build your brain. Link's below." | `5-drop-in-a-folder-links-below` (4.2 s) | Same spot, closer; point down on "Link's below" |
+| 1 | 0:00.0–0:01.9 | "Every company has a Brent." | `1-every-company-has-a-brent` (1.7 s) | Desk, medium shot, knowing half-smile |
+| 29 | 1:46.7–1:49.2 | "So how does it actually work?" | `29-so-how-does-it-work` (2.4 s) | Optional (B-roll covers it now). Desk, leaning in |
+| 37 | 2:33.8–2:36.5 | "Brent's knowledge? Still here." | `37-brents-knowledge-still-here` (2.2 s) | Leaning back, satisfied |
+| 39 | 2:41.3–2:46.9 | "If your team keeps losing knowledge, or you're tired of linking notes by hand, try it." | `39-if-your-team` (5.5 s) | A relaxed spot (sofa or break area), talking with your hands |
+| 40 | 2:46.9–2:49.8 | "Drop in a folder, and watch it build your brain." | `40-drop-in-a-folder` (2.7 s) | Same spot, closer; point down as the end card starts on "Link's below" |
 
 ### Silent cutaways (no lip-sync; the voiceover plays over them)
 
