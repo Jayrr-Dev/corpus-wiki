@@ -52,7 +52,7 @@ Details, code locations and configuration: [How it uses NVIDIA Nemotron on Nebiu
 
 ## Why
 
-Maintaining, updating and organizing knowledge is **hard**. Docs go stale the day they are written, two files disagree and nobody notices, and nobody can say where a sentence came from.
+Maintaining knowledge is **hard**. Docs go stale the day they are written, two files disagree and nobody notices, and nobody can say where a sentence came from.
 
 **So Corpus Wiki does it for you.** Every line knows its source, changes when its source changes, and goes through a human check when it matters.
 

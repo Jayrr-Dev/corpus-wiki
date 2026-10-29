@@ -131,14 +131,8 @@ export default async function WelcomePage() {
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
-                {billing ? (
-                  <span className="text-sm text-white/50">No card needed</span>
-                ) : (
-                  <>
-                    <span className="text-sm text-white/50">Free to start</span>
-                    <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
-                  </>
-                )}
+                {/* true with or without billing: signup asks for no card and the Free plan costs nothing */}
+                <span className="text-sm text-white/50">Free plan · No card needed</span>
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
@@ -318,10 +312,7 @@ export default async function WelcomePage() {
             <div className="mt-8">
               <StartButton />
             </div>
-            <p className="mt-4 text-sm text-white/50">Connected claims. Traceable sources. Current knowledge.</p>
-            <div className="mt-3">
-              <PlaceholderTag>Add risk reversal: free plan, no card, cancel anytime</PlaceholderTag>
-            </div>
+            <p className="mt-4 text-sm text-white/50">Free plan · No card needed</p>
           </Reveal>
         </section>
       </main>
