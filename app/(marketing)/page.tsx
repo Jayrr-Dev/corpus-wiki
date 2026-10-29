@@ -1,14 +1,18 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import {
   ArrowCounterClockwise, ArrowRight, ArrowsClockwise, BookOpenText, Brain, ClipboardText,
   LinkSimple, Plus, ShieldCheck, Stack,
 } from "@phosphor-icons/react/dist/ssr";
-import { BrandMark } from "@/components/brand/BrandMark";
 import { DemoEmbed } from "@/components/landing/demo-embed";
+import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { PlaceholderTag } from "@/components/landing/product-mocks";
 import { Reveal } from "@/components/landing/reveal";
 import { TaglineReveal } from "@/components/landing/tagline-reveal";
+import { isFeatureEnabled } from "@/lib/flags/server";
+import { contactEmail } from "@/lib/legal/contact";
+import { DATA_STORAGE_ANSWER } from "@/lib/legal/content";
 
 // =====================================================================
 // LANDING PAGE (/): one offer, one audience, one action.
@@ -55,7 +59,11 @@ const USE_CASES = [
   { icon: Brain, title: "Memory for AI agents", body: "One sourced memory your AI tools read and write over MCP." },
 ];
 
-const FAQ: { q: string; a: string; placeholder?: boolean }[] = [
+type Faq = { q: string; a: string; placeholder?: boolean };
+
+const DATA_STORAGE_QUESTION = "Where is my data stored?";
+
+const FAQ: Faq[] = [
   { q: "What files can I upload?", a: "PDF, Word and Markdown files. Each one is kept as evidence, so you can always open the original." },
   { q: "What is a claim?", a: "One fact, rule or decision taken from a document, small enough to stand on its own. Every claim keeps a link to the page it came from." },
   { q: "What happens when I upload a newer version?", a: "Corpus Wiki compares it with what it already knows and drafts changes to the claims it affects. Safe changes apply in one step. Others wait for a person. Only the lines that changed are rewritten." },
@@ -63,14 +71,21 @@ const FAQ: { q: string; a: string; placeholder?: boolean }[] = [
   { q: "What if two documents disagree?", a: "The conflict stays visible. Both claims stay linked to their sources until someone decides which one holds." },
   { q: "Can I share the wiki outside my team?", a: "Yes. You can publish a read only version of a space and share the link or embed it on your site." },
   { q: "How much does it cost?", a: "Pricing and plan limits still need to be written.", placeholder: true },
-  { q: "Where is my data stored?", a: "Storage location, encryption and retention details still need to be written.", placeholder: true },
+  { q: DATA_STORAGE_QUESTION, a: "Storage location, encryption and retention details still need to be written.", placeholder: true },
 ];
 
-const FAQ_SCHEMA = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQ.filter(f => !f.placeholder).map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
-};
+// With the legal pages on, the storage answer is written from the privacy policy's facts
+function faqFor(legalPages: boolean): Faq[] {
+  return legalPages ? FAQ.map(f => (f.q === DATA_STORAGE_QUESTION ? { q: f.q, a: DATA_STORAGE_ANSWER } : f)) : FAQ;
+}
+
+function faqSchema(faq: Faq[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.filter(f => !f.placeholder).map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
+}
 
 function SectionHeading({ eyebrow, title, body }: { eyebrow?: string; title: string; body?: string }) {
   return (
@@ -82,7 +97,11 @@ function SectionHeading({ eyebrow, title, body }: { eyebrow?: string; title: str
   );
 }
 
-export default function WelcomePage() {
+export default async function WelcomePage() {
+  // Rendered per request, so turning legal_pages on or off shows without a rebuild
+  await connection();
+  const legalPages = await isFeatureEnabled("legal_pages");
+  const faq = faqFor(legalPages);
   return (
     <>
       <LandingNav />
@@ -242,7 +261,7 @@ export default function WelcomePage() {
             <SectionHeading title="Questions" />
           </Reveal>
           <Reveal className="mx-auto mt-12 flex max-w-3xl flex-col gap-2">
-            {FAQ.map(f => (
+            {faq.map(f => (
               <details key={f.q} className="group rounded-2xl border border-white/10 bg-white/[0.03]">
                 <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-6 text-left font-semibold transition-colors duration-300 hover:bg-white/[0.03] [&::-webkit-details-marker]:hidden ${FOCUS}`}>
                   <span className="text-balance">{f.q}</span>
@@ -255,7 +274,7 @@ export default function WelcomePage() {
               </details>
             ))}
           </Reveal>
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faq)) }} />
         </section>
 
         {/* FINAL ACTION: identical to the hero, with the risk reversal */}
@@ -273,25 +292,7 @@ export default function WelcomePage() {
         </section>
       </main>
 
-      <footer className="px-4 py-12 sm:px-6">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <span className="flex items-center gap-2 text-white">
-            <BrandMark className="size-6 text-landing-green-light" />
-            <span className="font-brand text-xl">Corpus Wiki</span>
-          </span>
-          <ul className="flex flex-wrap items-center gap-6 text-sm text-white/60">
-            <li><a href="#product" className={`rounded-md transition-colors duration-300 hover:text-white ${FOCUS}`}>Product</a></li>
-            <li><a href="#how" className={`rounded-md transition-colors duration-300 hover:text-white ${FOCUS}`}>How it works</a></li>
-            <li><a href="#faq" className={`rounded-md transition-colors duration-300 hover:text-white ${FOCUS}`}>Questions</a></li>
-            {/* No pages yet: shown disabled rather than linking nowhere */}
-            {["Privacy", "Terms", "Contact"].map(label => (
-              <li key={label}>
-                <span aria-disabled className="cursor-not-allowed text-white/30">{label} (placeholder)</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </footer>
+      <LandingFooter legalPages={legalPages} hasContact={contactEmail() !== null} />
     </>
   );
 }
