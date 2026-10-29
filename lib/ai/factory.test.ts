@@ -10,4 +10,9 @@ describe("getReconciliationClient", () => {
     const client = getReconciliationClient({ NODE_ENV: "test", NEBIUS_API_KEY: "test-key", AI_MODEL: "m" });
     expect(client.name).toBe("token-factory");
   });
+
+  it("uses the split client only when RECONCILE_CLIENT=split", () => {
+    expect(getReconciliationClient({ NODE_ENV: "test", NEBIUS_API_KEY: "test-key", AI_MODEL: "m", RECONCILE_CLIENT: "split" }).name).toBe("token-factory-split");
+    expect(getReconciliationClient({ NODE_ENV: "test", NEBIUS_API_KEY: "test-key", AI_MODEL: "m", RECONCILE_CLIENT: "other" }).name).toBe("token-factory");
+  });
 });
