@@ -3,18 +3,23 @@
 import { usePathname, useRouter } from "next/navigation";
 import type { Tables } from "@/lib/database/types";
 import { UpdateArticleForm } from "@/app/(app)/p/[slug]/UpdateArticleDialog";
+import { useIsAdminMode } from "@/components/shell/useNavMode";
 import { DialogMenu, type DialogMenuItem } from "./DialogMenu";
 import { DeleteForm, RenameForm } from "./PageRowActions";
 
 type Page = Tables<"pages">;
 
 // PAGE MENU: "…" with Rename and Remove. The sidebar also offers Update, and Update All when the page has children.
+// Rename, Remove, Update and Update All change data, so they show in Admin mode only. Other extra items always show.
 export function PageMenu({ page, className, showUpdate = false, hasChildren = false, extraItems = [] }: { page: Page; className?: string; showUpdate?: boolean; hasChildren?: boolean; extraItems?: DialogMenuItem[] }) {
+  const isAdmin = useIsAdminMode();
   const leaveIfOpen = useLeaveRemovedPage(page.slug);
-  const items: DialogMenuItem[] = [
+  const before: DialogMenuItem[] = [
     ...extraItems,
-    ...(showUpdate ? updateItems(page, hasChildren) : []),
-    { label: "Rename", separatorBefore: showUpdate || extraItems.length > 0, render: (close: () => void) => <RenameForm page={page} onDone={close} /> },
+    ...(isAdmin && showUpdate ? updateItems(page, hasChildren) : []),
+  ];
+  const adminItems: DialogMenuItem[] = isAdmin ? [
+    { label: "Rename", separatorBefore: before.length > 0, render: (close: () => void) => <RenameForm page={page} onDone={close} /> },
     {
       label: "Remove",
       isDestructive: true,
@@ -28,7 +33,9 @@ export function PageMenu({ page, className, showUpdate = false, hasChildren = fa
         />
       ),
     },
-  ];
+  ] : [];
+  const items: DialogMenuItem[] = [...before, ...adminItems];
+  if (!items.length) return null;
   return <DialogMenu label={`Actions for ${page.title}`} items={items} className={className} />;
 }
 

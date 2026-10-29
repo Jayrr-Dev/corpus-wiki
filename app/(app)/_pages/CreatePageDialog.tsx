@@ -10,12 +10,15 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { reportTutorialAction } from "@/components/tutorial";
 import { Input } from "@/components/ui/input";
+import { useIsAdminMode } from "@/components/shell/useNavMode";
 import { useEntities } from "@/lib/queries";
 import { createPage } from "@/lib/server-actions/pages";
 
-// CREATE PAGE: title plus an optional entity; opens the new page when it is made
+// CREATE PAGE: title plus an optional entity; opens the new page when it is made (admin only; hidden otherwise)
 export function CreatePageDialog() {
+  const isAdmin = useIsAdminMode();
   const [isOpen, setIsOpen] = useState(false);
+  if (!isAdmin) return null;
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>

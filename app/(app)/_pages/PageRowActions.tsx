@@ -1,14 +1,17 @@
 "use client";
 
 import { RowMenu } from "@/components/row-menu/RowMenu";
+import { useIsAdminMode } from "@/components/shell/useNavMode";
 import type { Tables } from "@/lib/database/types";
 import { deletePage, renamePage } from "@/lib/server-actions/pages";
 import { ConfirmForm, TitleForm } from "./PageForms";
 
 type Page = Tables<"pages">;
 
-// ROW ACTIONS: "…" with Rename and Remove for one page
+// ROW ACTIONS: "…" with Rename and Remove for one page (admin only; hidden otherwise)
 export function PageRowActions({ page }: { page: Page }) {
+  const isAdmin = useIsAdminMode();
+  if (!isAdmin) return null;
   return (
     <RowMenu
       label={page.title}
