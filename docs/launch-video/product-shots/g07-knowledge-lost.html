@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Shot 7, 0:29.9 (about 4.6 s): "Someone leaves, and years of context are just gone."
-     A team grid of avatar circles. Dave's fades out, and small doc and idea icons drift away from it and vanish.
+     A team grid of avatar circles. Brent's fades out, and small doc and idea icons drift away from it and vanish.
      A counter in the corner reads "Knowledge lost: 6 years". Synthetic names only (Brightline Co.). -->
 <html class="dark"><head><meta charset="utf-8"><title>G07 Knowledge Lost</title>
 <link rel="stylesheet" href="assets/app.css">
@@ -27,7 +27,7 @@
 <div id="bits"></div>
 <script>
 const TEAM = [["Ana", "#72b7e5"], ["Marco", "#36ab78"], ["Priya", "#d9a032"], ["Leo", "#b09de0"], ["Sofia", "#e88070"], ["Ken", "#80c6a1"],
-              ["Ruth", "#c66fa5"], ["Omar", "#91a64b"], ["Dave", "#8fae8d"], ["Mia", "#6574d8"], ["Jonas", "#e9a477"], ["Lena", "#52c4c4"]];
+              ["Ruth", "#c66fa5"], ["Omar", "#91a64b"], ["Brent", "#8fae8d"], ["Mia", "#6574d8"], ["Jonas", "#e9a477"], ["Lena", "#52c4c4"]];
 const DAVE = 8;
 const DOC = `<svg viewBox="0 0 24 24" fill="none" stroke="#dcdcdc" stroke-width="1.6" stroke-linejoin="round"><path d="M6 2.5h8l4.5 4.5v14.5h-12.5z" fill="#2f2f2f"/><path d="M14 2.5v4.5h4.5"/><path d="M9 12h6M9 15h6M9 18h4" stroke-linecap="round"/></svg>`;
 const IDEA = `<svg viewBox="0 0 24 24" fill="none" stroke="#d9a032" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="#3a3120"/><path d="M10 19h4M10.6 21.5h2.8"/></svg>`;
@@ -53,13 +53,13 @@ window.SCENE = { duration: 4.6,
     camera(t, 4.6, 1.0, 1.035, "50%", "52%");
     $$(".p").forEach((p, i) => { const a = easeOut(seg(t, 0.05 + i * 0.03, 0.55 + i * 0.03)); p.style.opacity = a; p.style.transform = `translateY(${(1 - a) * 14}px)`; });
     $(".lbl").style.opacity = easeOut(seg(t, 0, 0.5));
-    // Dave fades and shrinks a little
+    // Brent fades and shrinks a little
     const gone = easeInOut(seg(t, 1.0, 2.6));
     const dave = $$(".p")[DAVE];
     dave.style.opacity = Math.min(dave.style.opacity, 1 - gone * 0.94);
     dave.querySelector(".av").style.filter = `grayscale(${gone}) blur(${gone * 2}px)`;
     dave.querySelector(".av").style.transform = `scale(${1 - gone * 0.12})`;
-    // The icons drift out from Dave and vanish
+    // The icons drift out from Brent and vanish
     for (const b of bits) {
       const p = seg(t, b.start, b.start + b.life);
       const d = easeOut(p) * b.dist;

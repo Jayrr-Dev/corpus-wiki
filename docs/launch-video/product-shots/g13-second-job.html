@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- Shot 13, 0:56.5 (about 2.7 s): "It turns into a second job."
-     A clock spins fast beside a caption stack: "tag it", "link it", "file it", "forget it". -->
+     A clock spins fast beside a caption stack: "tag it", "link it", "file it", "forget it".
+     Phoenix Project nod: a faint "Unplanned work" kanban card in the bottom-right corner. -->
 <html class="dark"><head><meta charset="utf-8"><title>G13 Second Job</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
@@ -11,8 +12,14 @@
   .stack { position: absolute; left: 1070px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 18px; }
   .w { font-size: 104px; font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
   .w.last { color: #e05252; }
+  /* Phoenix Project nod: a small kanban card in the background */
+  .card { position: absolute; left: 1580px; top: 850px; width: 250px; border: 1px solid #363636; background: #242424; border-radius: 8px; padding: 14px 16px; opacity: .5; transform: rotate(-2deg); }
+  .card .t { font-size: 16px; font-weight: 600; color: #a3a3a3; display: flex; align-items: center; gap: 8px; }
+  .card .t::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #d8853a; }
+  .card i { display: block; height: 6px; border-radius: 3px; background: #333; margin-top: 10px; }
 </style></head>
 <body>
+<div class="card" id="card"><div class="t">Unplanned work</div><i style="width:86%"></i><i style="width:58%"></i></div>
 <svg class="clock" id="clock" viewBox="-150 -150 300 300">
   <circle r="138" fill="#262626" stroke="#363636" stroke-width="3"/>
   <circle r="124" fill="none" stroke="#2f2f2f" stroke-width="1.5"/>

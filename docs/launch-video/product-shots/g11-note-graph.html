@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Shot 11, 0:45.5 (about 5.6 s): "Obsidian, Notion, all of them. And honestly? The graphs are gorgeous."
      A stand-in for a screen recording: a generic note app's graph view, grey nodes and links slowly drifting and rotating.
-     Generic on purpose: no third-party UI or logo. Note titles are synthetic (Brightline Co., billing sync). -->
+     Generic on purpose: no third-party UI or logo. Note titles are synthetic (Brightline Co., billing sync), with two small Phoenix Project nods among them. -->
 <html class="dark"><head><meta charset="utf-8"><title>G11 Note Graph</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
@@ -27,7 +27,7 @@
 <canvas id="cv" width="1600" height="1026"></canvas>
 <div class="ctl"><div>Forces</div><div>Center <i><b style="left:30px"></b></i></div><div>Links <i><b style="left:58px"></b></i></div><div>Repel <i><b style="left:44px"></b></i></div></div>
 <script>
-const NOTES = ["Billing sync", "Brightline Co.", "Onboarding", "Pricing tiers", "Weekly sync", "Ideas", "Refund rules", "Deploy steps", "Dave 1:1 notes", "Q3 roadmap", "Invoice errors", "On-call", "Reading list", "Data retention"];
+const NOTES = ["Billing sync", "Brightline Co.", "Onboarding", "Pricing tiers", "Weekly sync", "Ideas", "The Three Ways", "Deploy steps", "Brent 1:1 notes", "Parts Unlimited", "Q3 roadmap", "Invoice errors", "On-call", "Refund rules", "Data retention"];
 function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; }
 const gauss = (r) => { let s = 0; for (let i = 0; i < 4; i++) s += r(); return (s - 2) / 1.15; };
 

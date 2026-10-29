@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- Shot 29, 2:45.9 (about 3.6 s): "Link's below."
      End card: the logo, "Your automated knowledge base." and the link, with a graph slowly rotating behind.
-     The real URL is not decided yet: change LINK at the top of the script. -->
+     The link is the LINK constant at the top of the script. -->
 <html class="dark"><head><meta charset="utf-8"><title>G29 End Card</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
@@ -25,7 +25,7 @@
   <div id="link"><svg viewBox="0 0 24 24" fill="none" stroke="#8fae8d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/></svg><span id="url"></span></div>
 </div>
 <script>
-const LINK = "corpus.example.com";
+const LINK = "github.com/Jayrr-Dev/second-brain-engine";
 const COLORS = ["#8fae8d", "#72b7e5", "#d9a032", "#8278cb", "#36ab78", "#e88070", "#52c4c4", "#b09de0", "#c66fa5", "#91a64b"];
 function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; }
 const gauss = (r) => { let s = 0; for (let i = 0; i < 4; i++) s += r(); return (s - 2) / 1.15; };
