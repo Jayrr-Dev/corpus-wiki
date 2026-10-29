@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, Plus } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, GithubLogo, Plus } from "@phosphor-icons/react/dist/ssr";
 import { CtaBackdrop, HeroBackdrop, TaglineBackdrop } from "@/components/landing/backdrops";
 import {
   AgentsVisual, BookVisual, ClientVisual, DocsVisual, LifeVisual, MergeVisual, ReviewVisual, SourceVisual, UndoVisual,
@@ -45,6 +45,29 @@ function StartButton() {
       Start free
       <ArrowRight className={`size-4 transition-transform duration-300 group-hover:translate-x-0.5 ${EASE}`} />
     </Link>
+  );
+}
+
+// The public repository; the code is Apache 2.0 (see LICENSE)
+const GITHUB_URL = "https://github.com/Jayrr-Dev/corpus-wiki";
+
+// RISK REVERSAL: under both Start buttons. True with or without billing: signup
+// asks for no card, and the code is free and open source on GitHub.
+function FreeLine({ className = "" }: { className?: string }) {
+  return (
+    <p className={`text-sm text-landing-ink/50 ${className}`}>
+      Free and{" "}
+      <a
+        href={GITHUB_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`inline-flex items-center gap-1 rounded-sm text-landing-ink/80 underline decoration-landing-ink/30 underline-offset-4 transition-colors duration-300 hover:text-landing-ink hover:decoration-landing-ink ${EASE} ${FOCUS}`}
+      >
+        <GithubLogo aria-hidden className="size-4" />
+        open source
+      </a>
+      {" "}· No card needed
+    </p>
   );
 }
 
@@ -135,8 +158,7 @@ export default async function WelcomePage() {
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
-                {/* true with or without billing: signup asks for no card and the Free plan costs nothing */}
-                <span className="text-sm text-landing-ink/50">Free plan · No card needed</span>
+                <FreeLine />
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
@@ -318,7 +340,7 @@ export default async function WelcomePage() {
             <div className="mt-8">
               <StartButton />
             </div>
-            <p className="mt-4 text-sm text-landing-ink/50">Free plan · No card needed</p>
+            <FreeLine className="mt-4" />
           </Reveal>
         </section>
       </main>
