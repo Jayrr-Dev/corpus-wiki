@@ -3,10 +3,11 @@ import type { KnowledgeContext } from "@/lib/knowledge/context";
 import type { DbRpc } from "@/lib/db/rpc";
 import { retrieve } from "./retrieve";
 
-const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn(), similarGlossary: vi.fn(), similarPassages: vi.fn(async (): Promise<unknown[]> => []), savedVectors: vi.fn(), scopeIds: vi.fn(), searchText: vi.fn(), linked: vi.fn() }));
+const mocks = vi.hoisted(() => ({ getServerSupabase: vi.fn(), similarUnits: vi.fn(), similarGlossary: vi.fn(), similarPassages: vi.fn(async (): Promise<unknown[]> => []), savedVectors: vi.fn(), scopeIds: vi.fn(), searchText: vi.fn(), linked: vi.fn(), getReranker: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ getServerSupabase: mocks.getServerSupabase }));
 vi.mock("@/lib/knowledge/embeddingStore", () => ({ similarUnits: mocks.similarUnits, savedVectors: mocks.savedVectors, similarPassages: mocks.similarPassages }));
 vi.mock("@/lib/glossary/embeddingStore", () => ({ similarGlossary: mocks.similarGlossary }));
+vi.mock("@/lib/ai/rerank", () => ({ getReranker: mocks.getReranker }));
 
 const entity = { id: "e-utilitek", type: "company", key: "utilitek", name: "Utilitek" };
 const scoped = (key: string): KnowledgeContext => ({
@@ -79,10 +80,14 @@ const db: DbRpc = { async call<T>(name: string): Promise<T> {
   throw new Error(`Unexpected database RPC ${name}`);
 } };
 const embedder = { model: "test", embed: vi.fn(async () => [[1, 0]]) };
+// Search is hybrid exactly when a reranker is configured; this one keeps the fused order
+const keepOrder = { model: "rerank-test", rerank: async (_query: string, documents: string[]) => documents.map((_, index) => index) };
+const useMode = (mode: string) => mocks.getReranker.mockReturnValue(mode === "hybrid" ? keepOrder : null);
 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllEnvs();
+  mocks.getReranker.mockReturnValue(null);
   mocks.searchText.mockResolvedValue([]);
   mocks.linked.mockResolvedValue([]);
   embedder.embed.mockResolvedValue([[1, 0]]);
@@ -94,7 +99,7 @@ beforeEach(() => {
 
 describe("retrieve scoped knowledge", () => {
   it.each(["legacy", "hybrid"])("filters other-company and missing contexts, labels general knowledge, and blocks mixed or stale articles (%s)", async (mode) => {
-    vi.stubEnv("CHAT_SEARCH", mode);
+    useMode(mode);
     // Hybrid's global arms also bring the other company's claim; the context recheck still drops it
     mocks.searchText.mockResolvedValue([{ unit_id: "other", revision_id: "r-other", rank: 1 }]);
     mocks.linked.mockResolvedValue([{ unit_id: "unknown", via_unit_id: "other", type: "supports" }]);
@@ -159,7 +164,7 @@ describe("retrieve scoped knowledge", () => {
   });
 
   it.each([[true, "legacy"], [false, "legacy"], [true, "hybrid"], [false, "hybrid"]])("searches within the entity before global limits (semantic search: %s, %s)", async (semantic, mode) => {
-    vi.stubEnv("CHAT_SEARCH", mode);
+    useMode(mode);
     const others = Array.from({ length: 40 }, (_, index) => revision(`other-${index}`, scoped("other")));
     const own = revision("utilitek", scoped("utilitek"));
     const queries = mockClient([...others, own]);

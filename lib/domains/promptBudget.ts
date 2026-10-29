@@ -6,9 +6,11 @@ import type { ChatMessage } from "@/lib/ai/chat";
 export const PROMPT_TOKEN_LIMIT = 100_000;
 const CHARS_PER_TOKEN = 2.4;
 
-// TOPIC_PROMPT_BUDGET=on sends each batch only its own neighbors and splits
-// batches that would still cross the limit. Off keeps the original prompts.
-export const topicPromptBudgetOn = (env: Record<string, string | undefined> = process.env) => env.TOPIC_PROMPT_BUDGET === "on";
+// On by default (docs/progress-2026-10-29.md): each batch gets only its own
+// neighbors, and batches that would still cross the limit are split.
+// TOPIC_PROMPT_BUDGET=off keeps the original prompts while production is
+// watched for placement regressions (#43); remove it once that week passes.
+export const topicPromptBudgetOn = (env: Record<string, string | undefined> = process.env) => env.TOPIC_PROMPT_BUDGET !== "off";
 
 export function estimatePromptTokens(messages: ChatMessage[]): number {
   return Math.ceil(messages.reduce((sum, m) => sum + (typeof m.content === "string" ? m.content : JSON.stringify(m.content)).length, 0) / CHARS_PER_TOKEN);

@@ -4,8 +4,8 @@ import { fetchWithRetry } from "@/lib/processing/requests";
 // =====================================================================
 // RERANK: re-sorts chat search candidates (the fused top claims) by how
 // well each one answers the question, using Voyage AI's reranker
-// (https://docs.voyageai.com/reference/reranker-api). Off unless
-// CHAT_RERANKER=voyage and VOYAGE_API_KEY are both set. The model is
+// (https://docs.voyageai.com/reference/reranker-api). On whenever
+// VOYAGE_API_KEY is set; without it chat search stays legacy. The model is
 // VOYAGE_RERANK_MODEL, else rerank-2.5. It sits on the chat path, so it
 // retries at most once and gives up after REQUEST_TIMEOUT_MS; callers keep
 // their own order when it throws.
@@ -20,9 +20,9 @@ export type Reranker = { model: string; rerank(query: string, documents: string[
 
 type RerankResponse = { data?: { index?: unknown; relevance_score?: unknown }[]; detail?: unknown };
 
-// The reranker from server env; null unless switched on with a key (callers then keep the fused order)
+// The reranker from server env; null without a key
 export function getReranker(env: NodeJS.ProcessEnv = process.env): Reranker | null {
-  if (env.CHAT_RERANKER !== "voyage" || !env.VOYAGE_API_KEY) return null;
+  if (!env.VOYAGE_API_KEY) return null;
   const apiKey = env.VOYAGE_API_KEY;
   const model = env.VOYAGE_RERANK_MODEL || DEFAULT_RERANK_MODEL;
   return {
