@@ -37,12 +37,12 @@ Lanes run in parallel on their own branches and are merged into `launch-video` o
 
 | Lane | Task | Needs | Status |
 |---|---|---|---|
-| graphics | Shots 7, 8, 13 as scene pages (`g07-knowledge-lost`, `g08-stale-docs`, `g13-second-job`), rendered to `out/` | | in progress |
-| graphics | Shot 11 stand-in graph (`g11-note-graph`) and shot 29 end card overlay (`g29-endcard`) | graphics: 7, 8, 13 | waiting |
-| captions | `tools/captions.py` writes `out/captions.ass` from both transcripts, in final-cut time | cut.py | in progress |
-| final | `tools/timeline.py` holds TIMELINE and the splice; `preview.py` imports it | cut.py | in progress |
-| final | `tools/final.py`: no placeholder labels or timecode, captions burned in, optional music ducked under the VO, −14 LUFS, writes `out/final.mp4` | final: timeline, captions | waiting |
-| integration | Wire the `g*` clips into `timeline.py` | graphics, final: timeline | waiting |
+| graphics | Shots 7, 8, 13 as scene pages (`g07-knowledge-lost`, `g08-stale-docs`, `g13-second-job`), rendered to `out/` | | merged |
+| graphics | Shot 11 stand-in graph (`g11-note-graph`) and shot 29 end card (`g29-endcard`, GitHub link), Brent and Phoenix nods | graphics: 7, 8, 13 | merged |
+| captions | `tools/captions.py` writes `out/captions.ass` from both transcripts, in final-cut time | cut.py | merged |
+| final | `tools/timeline.py` holds TIMELINE and the splice; `preview.py` imports it | cut.py | merged |
+| final | `tools/final.py`: no placeholder labels or timecode, captions burned in, optional music ducked under the VO, −14 LUFS, writes `out/final.mp4` | final: timeline, captions | merged |
+| integration | Wire the `g*` clips into `timeline.py` | graphics, final: timeline | done |
 | you | Copy `product-shots/out/*.mp4` from the other machine | | waiting on you |
 | you | Office shoot; shots 25–26 quotes or cut; music track | | waiting on you |
 | you | Record the four new VO lines below in ElevenLabs | | waiting on you |

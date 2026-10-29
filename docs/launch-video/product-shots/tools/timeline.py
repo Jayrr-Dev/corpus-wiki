@@ -7,19 +7,19 @@ from cut import VO, NEM_VO, INSERT_AT, PAD_IN, PAD_OUT, SHIFT, nem_to_final
 # Main-take (v2) times: (start, end, clip or None, shot label, what goes here).
 # Put a clip's path in the third column to swap in a shot; 'path@seconds' starts partway in.
 TIMELINE = [
-    (0.0, 2.4, "../broll/01-hook-bg.mp4", "Shots 1–2 · Hook", "Chat bubble, then you: “Every company has a Dave.” (avatar)"),
+    (0.0, 2.4, "../broll/01-hook-bg.mp4", "Shots 1–2 · Hook", "Chat bubble, then you: “Every company has a Brent.” (avatar)"),
     (2.4, 7.3, "../broll/03-leaving.mp4", "Shot 3 · Someone leaving", "Gemini clip: person walks out with a box"),
     (7.3, 14.1, "../broll/05-whiteboard.mp4", "Shots 4–5 · Desk + whiteboard", "Gemini: you at the desk · messy whiteboard"),
     (14.1, 17.0, None, "Shot 6 · Leaning in", "Gemini: you leaning toward camera"),
     (17.0, 20.9, "../broll/04b-empty-desk.mp4", "Shot 4b · Empty desk", "Gemini: empty desk on a Monday"),
     (20.9, 29.9, "../broll/09-asking.mp4", "Shot 9 · Engineer story", "Gemini: coworkers asking each other"),
-    (29.9, 34.4, None, "Shot 7 · Knowledge lost", "HyperFrames: avatar fades, icons drift away"),
-    (34.4, 38.1, None, "Shot 8 · Stale docs", "HyperFrames: “Last updated 2 years ago” banner"),
+    (29.9, 34.4, "out/g07-knowledge-lost.mp4", "Shot 7 · Knowledge lost", "HyperFrames: avatar fades, icons drift away"),
+    (34.4, 38.1, "out/g08-stale-docs.mp4", "Shot 8 · Stale docs", "HyperFrames: “Last updated 2 years ago” banner"),
     (38.1, 42.9, "../broll/05-whiteboard.mp4@3", "Shot 9 · Asking around", "Gemini: coworker shrugs and points"),
     (42.9, 45.5, None, "Shot 10 · Evening at home", "Gemini: you on the couch with a laptop"),
-    (45.5, 51.0, None, "Shot 11 · Note-app graph", "Screen recording: Obsidian-style graph"),
+    (45.5, 51.0, "out/g11-note-graph.mp4", "Shot 11 · Note-app graph", "Screen recording: Obsidian-style graph"),
     (51.0, 56.5, "../broll/12-typing.mp4", "Shot 12 · Linking by hand", "Your hands typing [[ … ]]"),
-    (56.5, 59.1, None, "Shot 13 · A second job", "HyperFrames: tag it → link it → file it → forget it"),
+    (56.5, 59.1, "out/g13-second-job.mp4", "Shot 13 · A second job", "HyperFrames: tag it → link it → file it → forget it"),
     (59.1, 62.0, "../broll/14-fatigue.mp4", "Shot 14 · Wistful", "Gemini: chin on hand"),
     (62.0, 63.6, "../broll/14b-network.mp4", "Shot 14b · The pause", "Gemini: slow smile to camera"),
     (63.6, 65.0, None, "Shot 15 · “So I built it.”", "Gemini: you hold up the laptop"),
@@ -39,7 +39,7 @@ TIMELINE = [
     (113.4, 118.2, None, "Shots 25–26 · Proof", "Real quotes and real numbers only"),
     (118.2, 123.3, None, "Shot 27 · Floor, talking", "Avatar: “If your team keeps losing knowledge…”"),
     (123.3, 126.5, None, "Shot 28 · “Drop in a folder…”", "Avatar: warm smile, points down"),
-    (126.5, 130.0, "../broll/29-endcard-bg.mp4", "Shot 29 · End card", "Logo + link"),
+    (126.5, 130.0, "out/g29-endcard.mp4", "Shot 29 · End card", "Logo + link"),
 ]
 
 # The Nemotron / Token Factory section (its own VO take) goes in after "This one keeps up on its own."
