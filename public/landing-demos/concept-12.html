@@ -3,27 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="theme.js"></script>
 <title>Hero concept 12</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
   :root {
+    --ink: #fff; --h1-from: #fff; --shadow: rgba(0,0,0,.45); --shadow-sm: rgba(0,0,0,.4); --line-hi: #3a3a3a; --edge: #3c3c3c;
     --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131;
     --fade: #9b9b9b; --gold: #d9a441; --gold-pale: #f4d9a0; --glow: #f2c063; --ember: #8a5a1c;
     --green: #496748; --green-hover: #557a54; --green-light: #6e9a6c; --green-pale: #cfe3cd; --conflict: #e0705a;
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
+  html.light {
+    --base: #faf7ef; --surface: #f1ece0; --raised: #e9e3d4; --hi: #e2dbca; --line: #ddd5c3; --line-hi: #d3cab6;
+    --ink: #131209; --fade: #666666; --gold: #9a6b1c; --gold-pale: #7a531a; --green-light: #496748; --green-pale: #2f4a2e;
+    --h1-from: #000; --shadow: rgba(60,45,20,.12); --shadow-sm: rgba(60,45,20,.1); --edge: #cbc2ae;
+  }
   * { box-sizing: border-box; margin: 0; }
-  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { background: var(--base); color: var(--ink); font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
   .wrap { width: 100%; max-width: 1240px; margin: 0 auto; }
   .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
   .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
   .logo svg { width: 20px; height: 20px; color: var(--green-light); }
   .intro { text-align: center; }
-  h1 { max-width: 680px; margin: 0 auto; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(to right, #fff, var(--fade)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 4px; }
-  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  h1 { max-width: 680px; margin: 0 auto; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(to right, var(--h1-from), var(--fade)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: color-mix(in srgb, var(--ink) 65%, transparent); text-wrap: pretty; }
   .cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; background: var(--green); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 8px 12px; border-radius: 12px; transition: background-color .3s var(--ease), transform .3s var(--ease); }
   .cta:hover { background: var(--green-hover); } .cta:active { transform: scale(.98); }
   .cta:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
@@ -39,13 +46,13 @@
   .chip.in, .entry.in { opacity: 1; transform: none; }
   .chip i, .entry i { font-size: 20px; color: var(--gold); flex: none; }
   .chip small, .entry small { display: block; font-size: 12px; line-height: 16px; color: var(--fade); }
-  .chip.read { border-color: rgba(110,154,108,.6); }
+  .chip.read { border-color: color-mix(in srgb, var(--green-light) 60%, transparent); }
   /* CATEGORY COLOURS: sources by file type, changes by kind of stakeholder */
   .chip .ph-envelope-simple { color: #fbbc04; } .chip .ph-file-pdf { color: #ea4335; } .chip .ph-tree-structure { color: #673ab7; }
   .entry .ph-user-plus { color: #34a853; } .entry .ph-buildings { color: #fbbc04; } .entry .ph-arrows-left-right { color: #4285f4; }
 
   /* MAP */
-  .map { border-radius: 24px; background: var(--surface); border: 1px solid #3a3a3a; box-shadow: 0 48px 96px rgba(0,0,0,.45); padding: 16px; }
+  .map { border-radius: 24px; background: var(--surface); border: 1px solid var(--line-hi); box-shadow: 0 48px 96px var(--shadow); padding: 16px; }
   .map-head { display: flex; justify-content: space-between; align-items: center; padding: 0 8px 8px; font-size: 12px; line-height: 16px; color: var(--fade); }
   .legend { display: flex; gap: 16px; } .legend span { display: inline-flex; align-items: center; gap: 4px; }
   .legend b { width: 8px; height: 8px; border-radius: 9999px; }
@@ -59,23 +66,23 @@
   .node.hot .halo { opacity: 1; }
 
   /* CARD */
-  .card { border-radius: 24px; background: var(--surface); border: 1px solid #3a3a3a; box-shadow: 0 48px 96px rgba(0,0,0,.45); padding: 24px; transition: opacity .3s var(--ease), transform .3s var(--ease); }
+  .card { border-radius: 24px; background: var(--surface); border: 1px solid var(--line-hi); box-shadow: 0 48px 96px var(--shadow); padding: 24px; transition: opacity .3s var(--ease), transform .3s var(--ease); }
   .card.swap { opacity: 0; transform: translateY(6px); }
   .card .kind { display: flex; justify-content: space-between; align-items: center; font-size: 12px; line-height: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: .08em; }
-  .badge { text-transform: none; letter-spacing: 0; padding: 4px 8px; border-radius: 9999px; background: rgba(110,154,108,.15); color: var(--green-pale); opacity: 0; transition: opacity .4s var(--ease); }
+  .badge { text-transform: none; letter-spacing: 0; padding: 4px 8px; border-radius: 9999px; background: color-mix(in srgb, var(--green-light) 15%, transparent); color: var(--green-pale); opacity: 0; transition: opacity .4s var(--ease); }
   .badge.on { opacity: 1; }
   .who { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
   .av { width: 48px; height: 48px; border-radius: 9999px; overflow: hidden; flex: none; }
   .av img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .who h3 { font-size: 20px; line-height: 28px; font-weight: 600; }
   .who p { font-size: 14px; line-height: 20px; color: var(--fade); }
-  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: rgba(255,255,255,.85); }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: color-mix(in srgb, var(--ink) 85%, transparent); }
   .row > span:first-child { color: var(--fade); }
   .power { display: flex; gap: 4px; } .power b { width: 16px; height: 8px; border-radius: 2px; background: var(--hi); transition: background-color .4s var(--ease); } .power b.on { background: var(--gold); }
   .was { color: var(--fade); font-size: 12px; } .was s { color: var(--conflict); }
   .facts { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
-  .facts p { font-size: 14px; line-height: 20px; color: rgba(255,255,255,.85); margin-top: 8px; }
-  .ref { display: inline-block; padding: 0 6px; margin-left: 4px; border-radius: 6px; font-size: 12px; line-height: 16px; background: rgba(217,164,65,.14); color: var(--gold-pale); }
+  .facts p { font-size: 14px; line-height: 20px; color: color-mix(in srgb, var(--ink) 85%, transparent); margin-top: 8px; }
+  .ref { display: inline-block; padding: 0 6px; margin-left: 4px; border-radius: 6px; font-size: 12px; line-height: 16px; background: color-mix(in srgb, var(--gold) 14%, transparent); color: var(--gold-pale); }
   .fresh { color: var(--gold-pale); }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
@@ -89,8 +96,7 @@ if (location.search.includes("embed")) {
 }
 </script>
 <style>
-html.embed { color-scheme: dark; }
-html.embed, html.embed body { background: #131209; }
+html.embed, html.embed body { background: var(--base); }
 html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
 html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
 html.embed .wrap { grid-template-columns: 1fr !important; }
@@ -124,26 +130,26 @@ html.embed .week + .demo { margin-top: 24px; }
         <svg viewBox="0 0 600 420" id="map">
           <g font-family="Geist, system-ui" font-size="12">
             <!-- edges -->
-            <line class="edge" x1="470" y1="100" x2="300" y2="210" stroke="#3c3c3c" stroke-width="2"/>
-            <line class="edge" x1="300" y1="210" x2="170" y2="330" stroke="#3c3c3c" stroke-width="2"/>
-            <line class="edge" id="eOldBoss" x1="170" y1="330" x2="70" y2="230" stroke="#3c3c3c" stroke-width="2"/>
-            <line class="edge" x1="300" y1="210" x2="330" y2="350" stroke="#3c3c3c" stroke-width="2"/>
-            <line class="edge hidden" id="eSponsor" x1="130" y1="90" x2="300" y2="210" stroke="#d9a441" stroke-width="2"/>
-            <line class="edge hidden" id="eSupplier" x1="480" y1="300" x2="300" y2="210" stroke="#d9a441" stroke-width="2"/>
-            <line class="edge hidden" id="eNewBoss" x1="170" y1="330" x2="130" y2="90" stroke="#d9a441" stroke-width="2"/>
-            <text class="elabel" x="372" y="146" text-anchor="end" fill="#9b9b9b">approves permits</text>
-            <text class="elabel hidden" id="lSponsor" x="222" y="138" text-anchor="middle" fill="#f4d9a0">sponsors</text>
-            <text class="elabel hidden" id="lSupplier" x="392" y="276" text-anchor="middle" fill="#f4d9a0">supplies cable</text>
-            <text class="elabel" id="lOldBoss" x="104" y="296" text-anchor="end" fill="#9b9b9b">reports to</text>
-            <text class="elabel hidden" id="lNewBoss" x="158" y="210" text-anchor="start" fill="#f4d9a0">reports to</text>
+            <line class="edge" x1="470" y1="100" x2="300" y2="210" style="stroke:var(--edge)" stroke-width="2"/>
+            <line class="edge" x1="300" y1="210" x2="170" y2="330" style="stroke:var(--edge)" stroke-width="2"/>
+            <line class="edge" id="eOldBoss" x1="170" y1="330" x2="70" y2="230" style="stroke:var(--edge)" stroke-width="2"/>
+            <line class="edge" x1="300" y1="210" x2="330" y2="350" style="stroke:var(--edge)" stroke-width="2"/>
+            <line class="edge hidden" id="eSponsor" x1="130" y1="90" x2="300" y2="210" style="stroke:var(--gold)" stroke-width="2"/>
+            <line class="edge hidden" id="eSupplier" x1="480" y1="300" x2="300" y2="210" style="stroke:var(--gold)" stroke-width="2"/>
+            <line class="edge hidden" id="eNewBoss" x1="170" y1="330" x2="130" y2="90" style="stroke:var(--gold)" stroke-width="2"/>
+            <text class="elabel" x="372" y="146" text-anchor="end" style="fill:var(--fade)">approves permits</text>
+            <text class="elabel hidden" id="lSponsor" x="222" y="138" text-anchor="middle" style="fill:var(--gold-pale)">sponsors</text>
+            <text class="elabel hidden" id="lSupplier" x="392" y="276" text-anchor="middle" style="fill:var(--gold-pale)">supplies cable</text>
+            <text class="elabel" id="lOldBoss" x="104" y="296" text-anchor="end" style="fill:var(--fade)">reports to</text>
+            <text class="elabel hidden" id="lNewBoss" x="158" y="210" text-anchor="start" style="fill:var(--gold-pale)">reports to</text>
             <!-- nodes -->
-            <g class="node" id="nCity"><circle class="halo" cx="470" cy="100" r="40" fill="rgba(66,133,244,.14)"/><circle class="ring" cx="470" cy="100" r="28" fill="#272727" stroke="#4285f4" stroke-width="2"/><image href="stakeholders/city.webp" x="444" y="74" width="52" height="52" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="470" y="146" text-anchor="middle" fill="#fff">City of San Francisco</text></g>
-            <g class="node" id="nAlpha"><circle class="halo" cx="300" cy="210" r="44" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="300" cy="210" r="32" fill="#496748" stroke="#6e9a6c" stroke-width="2"/><svg x="284" y="197" width="32" height="32" viewBox="5 11 90 82" color="#fff"><use href="#mark"/></svg><text x="300" y="260" text-anchor="middle" fill="#fff" font-weight="500">Project Alpha</text></g>
-            <g class="node" id="nTom"><circle class="halo" cx="70" cy="230" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="70" cy="230" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/tom.webp" x="50" y="210" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="70" y="270" text-anchor="middle" fill="#fff">Tom Hale</text></g>
-            <g class="node" id="nMarco"><circle class="halo" cx="170" cy="330" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="170" cy="330" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/marco.webp" x="150" y="310" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="170" y="370" text-anchor="middle" fill="#fff">Marco Ruiz</text></g>
-            <g class="node" id="nDana"><circle class="halo" cx="330" cy="350" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="330" cy="350" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/dana.webp" x="310" y="330" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="330" y="390" text-anchor="middle" fill="#fff">Dana Lee</text></g>
-            <g class="node hidden" id="nPriya"><circle class="halo" cx="130" cy="90" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="130" cy="90" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/priya.webp" x="110" y="70" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="130" y="130" text-anchor="middle" fill="#fff">Priya Nair</text></g>
-            <g class="node hidden" id="nNorth"><circle class="halo" cx="480" cy="300" r="38" fill="rgba(251,188,4,.14)"/><circle class="ring" cx="480" cy="300" r="26" fill="#272727" stroke="#fbbc04" stroke-width="2"/><image href="stakeholders/northwind.webp" x="456" y="276" width="48" height="48" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="480" y="344" text-anchor="middle" fill="#fff">Northwind Cables</text></g>
+            <g class="node" id="nCity"><circle class="halo" cx="470" cy="100" r="40" fill="rgba(66,133,244,.14)"/><circle class="ring" cx="470" cy="100" r="28" style="fill:var(--hi)" stroke="#4285f4" stroke-width="2"/><image href="stakeholders/city.webp" x="444" y="74" width="52" height="52" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="470" y="146" text-anchor="middle" style="fill:var(--ink)">City of San Francisco</text></g>
+            <g class="node" id="nAlpha"><circle class="halo" cx="300" cy="210" r="44" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="300" cy="210" r="32" fill="#496748" stroke="#6e9a6c" stroke-width="2"/><svg x="284" y="197" width="32" height="32" viewBox="5 11 90 82" color="#fff"><use href="#mark"/></svg><text x="300" y="260" text-anchor="middle" style="fill:var(--ink)" font-weight="500">Project Alpha</text></g>
+            <g class="node" id="nTom"><circle class="halo" cx="70" cy="230" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="70" cy="230" r="22" style="fill:var(--hi)" stroke="#34a853" stroke-width="2"/><image href="stakeholders/tom.webp" x="50" y="210" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="70" y="270" text-anchor="middle" style="fill:var(--ink)">Tom Hale</text></g>
+            <g class="node" id="nMarco"><circle class="halo" cx="170" cy="330" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="170" cy="330" r="22" style="fill:var(--hi)" stroke="#34a853" stroke-width="2"/><image href="stakeholders/marco.webp" x="150" y="310" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="170" y="370" text-anchor="middle" style="fill:var(--ink)">Marco Ruiz</text></g>
+            <g class="node" id="nDana"><circle class="halo" cx="330" cy="350" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="330" cy="350" r="22" style="fill:var(--hi)" stroke="#34a853" stroke-width="2"/><image href="stakeholders/dana.webp" x="310" y="330" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="330" y="390" text-anchor="middle" style="fill:var(--ink)">Dana Lee</text></g>
+            <g class="node hidden" id="nPriya"><circle class="halo" cx="130" cy="90" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="130" cy="90" r="22" style="fill:var(--hi)" stroke="#34a853" stroke-width="2"/><image href="stakeholders/priya.webp" x="110" y="70" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="130" y="130" text-anchor="middle" style="fill:var(--ink)">Priya Nair</text></g>
+            <g class="node hidden" id="nNorth"><circle class="halo" cx="480" cy="300" r="38" fill="rgba(251,188,4,.14)"/><circle class="ring" cx="480" cy="300" r="26" style="fill:var(--hi)" stroke="#fbbc04" stroke-width="2"/><image href="stakeholders/northwind.webp" x="456" y="276" width="48" height="48" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="480" y="344" text-anchor="middle" style="fill:var(--ink)">Northwind Cables</text></g>
           </g>
         </svg>
       </div>

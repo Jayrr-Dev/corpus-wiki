@@ -3,27 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="theme.js"></script>
 <title>Hero concept 13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <style>
   :root {
+    --ink: #fff; --h1-from: #fff; --shadow: rgba(0,0,0,.45); --shadow-sm: rgba(0,0,0,.4); --viewer: #2a2824; --row-line: #222; --ok: #8fd19e;
     --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131; --line-hi: #3c3c3c;
     --fade: #9b9b9b; --gold: #d9a441; --ember: #8a5a1c; --green-light: #6e9a6c;
-    --paper: #efe6d2; --ink: #2b2618; --ink-soft: #6f6550; --rule: #d3c6a8;
+    --paper: #efe6d2; --paper-ink: #2b2618; --ink-soft: #6f6550; --rule: #d3c6a8;
     --c-blue: #4285f4; --c-red: #ea4335; --c-yellow: #fbbc04; --c-green: #34a853; --c-purple: #673ab7; /* category colours */
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
+  html.light {
+    --base: #faf7ef; --surface: #f1ece0; --raised: #e9e3d4; --hi: #e2dbca; --line: #ddd5c3; --line-hi: #d3cab6;
+    --ink: #131209; --fade: #666666; --gold: #9a6b1c; --gold-pale: #7a531a; --green-light: #496748; --green-pale: #2f4a2e;
+    --h1-from: #000; --shadow: rgba(60,45,20,.12); --shadow-sm: rgba(60,45,20,.1); --viewer: #d6cebb; --row-line: #e6dfcf; --ok: #3f7d47;
+  }
   * { box-sizing: border-box; margin: 0; }
-  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { background: var(--base); color: var(--ink); font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
   section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: center; }
   .wrap { width: 100%; max-width: 1152px; margin: 0 auto; }
   .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
   .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
   .logo svg { width: 20px; height: 20px; color: var(--green-light); }
-  h1 { max-width: 900px; margin: 0 auto; font-size: 36px; line-height: 1; font-weight: 700; letter-spacing: -0.4px; text-transform: uppercase; text-wrap: balance; color: #fff; padding-bottom: 4px; }
-  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  h1 { max-width: 900px; margin: 0 auto; font-size: 36px; line-height: 1; font-weight: 700; letter-spacing: -0.4px; text-transform: uppercase; text-wrap: balance; color: var(--ink); padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: color-mix(in srgb, var(--ink) 65%, transparent); text-wrap: pretty; }
   @media (min-width: 768px) { h1 { font-size: 60px; } .sub { font-size: 20px; } }
 
   /* STAGE: drawn at 1152 x 520 (or 592 wide, stacked, on narrow columns), scaled to fit */
@@ -33,13 +40,13 @@
   .scene { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
 
   /* THE PDF: paper in a dark viewer frame; it zooms out to both pages once read */
-  .paper { position: absolute; left: 16px; top: 16px; width: 560px; height: 488px; border-radius: 14px; background: var(--raised); border: 1px solid var(--line-hi); box-shadow: 0 24px 48px rgba(0,0,0,.45); overflow: hidden; }
+  .paper { position: absolute; left: 16px; top: 16px; width: 560px; height: 488px; border-radius: 14px; background: var(--raised); border: 1px solid var(--line-hi); box-shadow: 0 24px 48px var(--shadow); overflow: hidden; }
   .bar { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--line); font-size: 12px; line-height: 16px; color: var(--fade); }
   .bar .pdf { font-size: 10px; line-height: 16px; font-weight: 600; letter-spacing: .06em; color: #fff; background: var(--c-red); border-radius: 4px; padding: 0 6px; }
-  .bar .name { color: #fff; font-weight: 500; }
+  .bar .name { color: var(--ink); font-weight: 500; }
   .bar .pages { margin-left: auto; }
-  .view { position: absolute; left: 8px; right: 8px; top: 44px; bottom: 8px; border-radius: 6px; overflow: hidden; background: #2a2824; }
-  .content { position: relative; padding: 18px 26px 24px; background: var(--paper); font-family: Georgia, "Times New Roman", serif; color: var(--ink); transform-origin: 50% 0; box-shadow: 0 10px 30px rgba(0,0,0,.4); will-change: transform; }
+  .view { position: absolute; left: 8px; right: 8px; top: 44px; bottom: 8px; border-radius: 6px; overflow: hidden; background: var(--viewer); }
+  .content { position: relative; padding: 18px 26px 24px; background: var(--paper); font-family: Georgia, "Times New Roman", serif; color: var(--paper-ink); transform-origin: 50% 0; box-shadow: 0 10px 30px var(--shadow-sm); will-change: transform; }
   .content > *:not(.hls) { position: relative; z-index: 1; }
   .run { display: flex; justify-content: space-between; font-family: Geist, system-ui, sans-serif; font-size: 9px; line-height: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
   .content h2 { margin-top: 14px; font-size: 17px; line-height: 22px; font-weight: 700; }
@@ -69,21 +76,21 @@
   .head { display: flex; align-items: center; justify-content: space-between; height: 32px; margin-bottom: 8px; }
   .title { font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 9999px; background: var(--raised); border: 1px solid var(--line); }
   .count { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 16px; color: var(--fade); font-variant-numeric: tabular-nums; padding: 7px 12px; border-radius: 9999px; background: var(--surface); border: 1px solid var(--line); }
-  .count b { color: #fff; font-weight: 600; }
+  .count b { color: var(--ink); font-weight: 600; }
   .count i { color: var(--gold); font-size: 14px; }
   .tally { display: flex; gap: 6px; height: 24px; }
   .tc { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; line-height: 16px; color: var(--fade); border-radius: 9999px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .tc b { color: #fff; font-weight: 600; }
+  .tc b { color: var(--ink); font-weight: 600; }
   .dot { flex: none; width: 8px; height: 8px; border-radius: 9999px; }
   .note { position: relative; height: 16px; margin: 6px 0; font-size: 11.5px; line-height: 16px; color: var(--fade); }
   .note span { position: absolute; left: 4px; top: 0; display: flex; align-items: center; gap: 6px; white-space: nowrap; will-change: opacity; }
-  .note .done { color: #8fd19e; opacity: 0; }
+  .note .done { color: var(--ok); opacity: 0; }
   .note i { font-size: 14px; }
   .win { position: relative; height: 396px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
   .rows { will-change: transform; }
-  .row { position: relative; display: grid; grid-template-columns: 44px 1fr 8px 52px; gap: 10px; align-items: center; height: 20px; padding: 0 12px; border-bottom: 1px solid #222; opacity: 0; will-change: transform, opacity; }
+  .row { position: relative; display: grid; grid-template-columns: 44px 1fr 8px 52px; gap: 10px; align-items: center; height: 20px; padding: 0 12px; border-bottom: 1px solid var(--row-line); opacity: 0; will-change: transform, opacity; }
   .row .id { font-size: 11px; line-height: 14px; color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .row .claim { font-size: 12px; line-height: 16px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .claim { font-size: 12px; line-height: 16px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row .src { font-size: 11px; line-height: 14px; color: var(--fade); white-space: nowrap; text-align: right; }
   .row .flash { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
   .stage.narrow .tally { height: 30px; } .stage.narrow .tc { font-size: 13px; }
@@ -95,7 +102,7 @@
 
   /* FLYING CHIPS: a phrase lifted off the page on its way to its row */
   .flies { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
-  .fly { position: absolute; left: 0; top: 0; transform-origin: 0 50%; opacity: 0; will-change: transform, opacity; font-family: Georgia, "Times New Roman", serif; font-size: 11px; line-height: 16px; color: var(--ink); white-space: nowrap; padding: 0 4px; margin-left: -4px; border-radius: 3px; box-shadow: 0 8px 18px rgba(0,0,0,.45); }
+  .fly { position: absolute; left: 0; top: 0; transform-origin: 0 50%; opacity: 0; will-change: transform, opacity; font-family: Georgia, "Times New Roman", serif; font-size: 11px; line-height: 16px; color: var(--paper-ink); white-space: nowrap; padding: 0 4px; margin-left: -4px; border-radius: 3px; box-shadow: 0 8px 18px var(--shadow); }
 </style>
 <script>
 // EMBED MODE (?embed): the landing page supplies the headline, so hide this page's own
@@ -107,8 +114,7 @@ if (location.search.includes("embed")) {
 }
 </script>
 <style>
-html.embed { color-scheme: dark; }
-html.embed, html.embed body { background: #131209; }
+html.embed, html.embed body { background: var(--base); }
 html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
 html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
 html.embed .wrap { grid-template-columns: 1fr !important; }
