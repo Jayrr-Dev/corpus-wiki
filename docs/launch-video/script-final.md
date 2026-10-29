@@ -4,6 +4,70 @@ The whole voiceover in order, as it plays in the final cut. Paste into ElevenLab
 
 Lines marked NEW need recording (see "New VO lines" in [HANDOFF.md](HANDOFF.md)); everything else is already recorded. Lines marked ON CAMERA are the ones you lip-sync to at the office.
 
+## Paste-ready full take (with Brent)
+
+The whole script as one block, for re-recording everything in one take. It follows the ElevenLabs prompting guide's conventions: tags from its examples (`[light chuckle]`, `[sighs]`, `[exhales]`), CAPS for emphasis, ellipses for a trailing pause, em dashes for a sharp break. Eleven v4 plays tags more subtly than older models, so the punctuation carries much of the delivery. If you re-record it all, send the new file and its word timings, and the cut gets re-timed from them.
+
+```text
+[relaxed, a knowing half-smile] Every company has a Brent.
+
+And when Brent leaves... [lower, matter-of-fact] everything he knew walks out the door with him.
+
+[casual, like talking to a friend] I've worked at a bunch of private companies. And the hardest thing for all of them wasn't sales, or hiring... [leaning in, sincere] it was writing down what people KNOW.
+
+[remembering, slightly amused] At one place, our most senior engineer left on a Friday. By Monday — nobody knew how half the system worked. [light chuckle] We spent WEEKS piecing it back together from old emails and chat messages.
+
+[quieter, a little deflated] Someone leaves, and years of context are just... gone.
+
+[wry] And the docs that DO exist? Stale. Nobody trusts them. [sighs] So people just ask each other. Over... and over.
+
+[warmer, storytelling] So I tried fixing it for myself first. Obsidian, Notion, all of them. And honestly? The graphs are GORGEOUS.
+
+[tired, half-laughing] But making them is SO tedious. Every note, you're linking things by hand. [light chuckle] It turns into a second job.
+
+[softer, wistful] I always wished it would just... do that for me.
+
+[exhales] ...
+
+[brightening, quietly proud] So I built it. [confident] It's called Corpus Wiki.
+
+[energetic, quicker] You just feed it. PDFs, Word docs, notes, screenshots... even videos. Or connect your Gmail.
+
+[clear, confident] It pulls out the facts, and writes the wiki for you. Every line... linked to where it came from.
+
+[building excitement] And it connects everything. The graph, the glossary, who's who... AUTOMATICALLY.
+
+[playful, grinning] No brackets. Ever.
+
+[curious] Ask it anything... like, "why did we switch payment providers?" And it answers from what your team actually wrote. With sources.
+
+[matter-of-fact] Drop in a newer file, and it only rewrites the lines that changed. And if two files disagree... it asks you first.
+
+[thoughtful] A normal wiki only knows what someone remembered to write down. This one keeps up on its own.
+
+[shifting gear, clear] So how does it actually work?
+
+[steady, explaining] Every AI step runs on open NVIDIA Nemotron models... served by Nebius Token Factory.
+
+Nemotron Super does the everyday work. It reads each upload, writes the lines, and fact-checks them. Nemotron Ultra makes the big calls, like planning articles and building the topic tree. Nano handles the bulk linking. And the vision model reads your screenshots, diagrams and video frames.
+
+[a little proud] Token Factory gives us one API for all of them, with structured output, so every change comes back valid. Each step gets the cheapest model that does its job well... and I can switch any of them in settings.
+
+And when it makes a video... every render runs as a serverless job on Nebius cloud.
+
+[slower, warm and sincere] And when someone leaves... what they knew stays.
+
+[light, satisfied] Brent's knowledge? [light chuckle] Still here.
+
+[easygoing, honest] I've been testing it with a few teams, and people are pretty surprised how much it remembers.
+
+[relaxed, direct] If your team keeps losing knowledge, or you're tired of linking notes by hand... try it.
+
+[warm, inviting] Drop in a folder, and watch it build your brain.
+
+[casual sign-off] Link's below.
+```
+
 ## Act 1: Hook
 
 ```text
