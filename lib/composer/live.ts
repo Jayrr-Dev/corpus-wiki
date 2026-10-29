@@ -12,6 +12,7 @@ import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { reviewedComposition, type ComposerAttempt } from "./review";
 import { validateSvg } from "./svg";
 import type { ComposerRun, ShownIllustration } from "./types";
+import { isDocBlockContent, lineText } from "@/lib/docs/blocks";
 
 type ComposerOptions = { automatic?: boolean; model?: string; feedback?: string; targetParagraphIds?: string[]; onAttempt?: (attempt: ComposerAttempt) => Promise<void> };
 export async function composeLivePage(db: DbRpc, pageId: string, options: ComposerOptions = {}) {
@@ -60,7 +61,10 @@ async function composeClaimedPage(db: DbRpc, claim: ComposerClaim, options: Comp
     if (priorSvgs.length) for (const id of await db.call<string[]>("composer_assets_for_svgs", { p_svgs: priorSvgs })) excluded.add(id);
   }
   const availableAssets = (await db.call<import("./compose").ComposerAsset[]>("composer_asset_library")).filter((a) => !excluded.has(a.id));
-  const article = { webImageSearchAvailable: true, imageGenerationAvailable: Boolean(process.env.OPENROUTER_API_KEY), availableAssets, title: snapshot.title, sourceUrl: `/p/${snapshot.slug}`, paragraphs: snapshot.paragraphs, newFigureBudget: target ? 1 : 3 - retained.length, manualPlacementIds: target, replacingFigures: target ? existing?.composition.figures.filter((f) => target.includes(f.after)) : undefined, existingFigures: [...snapshot.paragraphs.filter((p) => p.hasMedia).map((p) => ({ after: p.id, learningGoal: p.text })), ...retained.map((f) => ({ after: f.after, learningGoal: f.learningGoal }))] };
+  // A Docs page's lines are doc blocks (JSON): the model reads their words, the snapshot keeps them as stored
+  const howTo = snapshot.paragraphs.some((p) => isDocBlockContent(p.text));
+  const paragraphs = howTo ? snapshot.paragraphs.map((p) => ({ ...p, text: lineText(p.text) })) : snapshot.paragraphs;
+  const article = { howTo, webImageSearchAvailable: true, imageGenerationAvailable: Boolean(process.env.OPENROUTER_API_KEY), availableAssets, title: snapshot.title, sourceUrl: `/p/${snapshot.slug}`, paragraphs, newFigureBudget: target ? 1 : 3 - retained.length, manualPlacementIds: target, replacingFigures: target ? existing?.composition.figures.filter((f) => target.includes(f.after)) : undefined, existingFigures: [...paragraphs.filter((p) => p.hasMedia).map((p) => ({ after: p.id, learningGoal: p.text })), ...retained.map((f) => ({ after: f.after, learningGoal: f.learningGoal }))] };
   // A new reviewed batch replaces this role's prior batch; source figures remain untouched.
   const previous = target ? existing ? { ...existing.composition, figures: existing.composition.figures.filter((f) => target.includes(f.after)) } : undefined : options.feedback ? existing?.composition : undefined;
   const generator = composerImageGenerator(pageId, undefined, undefined, guard);

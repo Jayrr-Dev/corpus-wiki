@@ -1,5 +1,5 @@
 import { beforeEach, it, expect, vi } from "vitest";
-import { selectCandidateSections, isHighCandidate, type CandidateAssessment } from "./candidates";
+import { HOW_TO_GUIDANCE, selectCandidateSections, isHighCandidate, type CandidateAssessment } from "./candidates";
 import { chatJson } from "@/lib/ai/chat";
 vi.mock("@/lib/ai/chat", () => ({ chatJson: vi.fn() }));
 const high: CandidateAssessment = { section: "Clearance", visuallyExplainable: true, useful: true, supported: true, distinct: true, priority: 5, evidence: ["P1"], learningGoal: "Where the gap is measured", reason: "Spatial gap" };
@@ -28,4 +28,13 @@ it("fills multiple distinct high candidates when the article has room", async ()
 it("rejects invented sections and evidence from an unrelated section", async () => {
   vi.mocked(chatJson).mockResolvedValueOnce({ value: { sections: [{ ...high, section: "Invented" }] }, model: "test", tokensIn: 1, tokensOut: 1 });
   await expect(selectCandidateSections({ apiKey: "test" }, article)).rejects.toThrow("invalid section");
+});
+it("tells the selector a Docs page is a how-to, and only then", async () => {
+  const answer = { value: { sections: [high, { ...high, section: "Process", evidence: ["P3"] }] }, model: "test", tokensIn: 1, tokensOut: 1 };
+  vi.mocked(chatJson).mockResolvedValueOnce(answer).mockResolvedValueOnce(answer);
+  await selectCandidateSections({ apiKey: "test" }, { ...article, howTo: true });
+  await selectCandidateSections({ apiKey: "test" }, article);
+  const system = (call: number) => String(vi.mocked(chatJson).mock.calls[call]![1].messages[0]!.content);
+  expect(system(0).startsWith(HOW_TO_GUIDANCE)).toBe(true);
+  expect(system(1)).not.toContain(HOW_TO_GUIDANCE);
 });

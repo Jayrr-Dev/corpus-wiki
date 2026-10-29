@@ -3,11 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useServerAction } from "@/components/actions/useServerAction";
+import { ComposerFigure } from "@/components/living-page/ComposerFigure";
 import { PublishingDialog } from "@/components/publishing/PublishingDialog";
+import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
-import { claimsByUnit, pageHeadings, pageTree, readerSections, subtaskAnchor } from "@/lib/docs/reader";
-import { type DocSetView, isPageStale, isPageUnwritten, isPageWriting } from "@/lib/docs/types";
+import { claimsByUnit, pageHeadings, pageTree, type ReaderSection, readerSections, subtaskAnchor } from "@/lib/docs/reader";
+import { type DocClaimRow, type DocPageRow, type DocSetView, isPageStale, isPageUnwritten, isPageWriting } from "@/lib/docs/types";
+import { useSectionLines } from "@/lib/queries";
+import { useComposerFigures } from "@/lib/queries/composer";
+import { illustrateArticle } from "@/lib/server-actions/composer";
 import { cn } from "@/lib/utils";
 import { DocBlockView } from "./DocBlockView";
 
@@ -96,7 +102,10 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
         <article className="min-w-0">
           {page ? (
             <div className="grid gap-4">
-              <h2 className="text-2xl font-semibold">{page.title}</h2>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h2 className="text-2xl font-semibold">{page.title}</h2>
+                {isPageWriting(page, setWriting) || needsRebuild(page) ? null : <IllustratePage pageId={page.id} title={page.title} />}
+              </div>
               {needsRebuild(page) ? (
                 <div className="flex flex-wrap items-center gap-3 text-panel">
                   <span className="text-destructive">{rebuildLabel(page)}</span>
@@ -104,14 +113,7 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
                 </div>
               ) : null}
               {isPageWriting(page, setWriting) ? <p className="text-panel text-muted-foreground">Writing this page…</p> : null}
-              {sections.map((section) => (
-                <section key={section.id} aria-labelledby={section.intro ? undefined : section.anchor} className="grid gap-3">
-                  {section.intro || section.title.trim().toLowerCase() === page.title.trim().toLowerCase()
-                    ? null
-                    : <h2 id={section.anchor} className="scroll-mt-20 pt-4 text-xl font-semibold">{section.title}</h2>}
-                  {section.blocks.map(({ key, block }) => <DocBlockView key={key} block={block} claims={claims} anchor={block.type === "heading" ? subtaskAnchor(key) : undefined} />)}
-                </section>
-              ))}
+              <DocPageSections key={page.id} page={page} sections={sections} claims={claims} />
             </div>
           ) : (
             <p className="text-panel text-muted-foreground">No pages yet.</p>
@@ -134,6 +136,48 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
         </aside>
       </div>
       <PublishingDialog open={publishing} onOpenChange={setPublishing} />
+    </div>
+  );
+}
+
+// THE PAGE'S SECTIONS with Composer's figures: each figure sits at the top of the section its line is
+// in, beside the steps on wider screens. Only figures whose cited lines are unchanged are shown.
+function DocPageSections({ page, sections, claims }: { page: DocPageRow; sections: ReaderSection[]; claims: ReadonlyMap<string, DocClaimRow> }) {
+  const lines = useSectionLines(page.id).data ?? [];
+  const figures = useComposerFigures(page.id, lines).data ?? [];
+  const sectionOf = new Map(sections.flatMap((section) => section.blocks.map(({ key }) => [key, section.id] as const)));
+  const figuresIn = (sectionId: string) => figures.filter((figure) => (figure.sectionId ?? sectionOf.get(figure.after)) === sectionId);
+  return sections.map((section) => (
+    <section key={section.id} aria-labelledby={section.intro ? undefined : section.anchor} className="grid gap-3">
+      {section.intro || section.title.trim().toLowerCase() === page.title.trim().toLowerCase()
+        ? null
+        : <h2 id={section.anchor} className="scroll-mt-20 pt-4 text-xl font-semibold">{section.title}</h2>}
+      <div className="flow-root space-y-3">
+        {figuresIn(section.id).map((figure) => <ComposerFigure key={figure.id} figure={figure} />)}
+        {section.blocks.map(({ key, block }) => <DocBlockView key={key} block={block} claims={claims} anchor={block.type === "heading" ? subtaskAnchor(key) : undefined} />)}
+      </div>
+    </section>
+  ));
+}
+
+// ILLUSTRATE: asks Composer for figures on this page now (it also runs on its own after a page is written)
+function IllustratePage({ pageId, title }: { pageId: string; title: string }) {
+  const [message, setMessage] = useState<string | null>(null);
+  const compose = useServerAction(illustrateArticle, { refreshTables: ["lines", "assets"], progress: { title: `Illustrating “${title}”`, detail: "Composer is choosing, drawing and reviewing figures…" } });
+  const illustrate = () => {
+    setMessage(null);
+    void compose.run(pageId).then((result) => {
+      if (result.ok) setMessage(result.figures ? `Added ${result.figures} figure${result.figures === 1 ? "" : "s"}.` : result.message ?? "No figures needed.");
+    });
+  };
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <div className="flex items-center gap-1.5">
+        <Button size="sm" variant="outline" disabled={compose.isPending} onClick={illustrate}>{compose.isPending ? "Illustrating…" : "Illustrate"}</Button>
+        <InfoHint>Composer adds up to three figures where a picture makes the steps clearer.</InfoHint>
+      </div>
+      {compose.error ? <p role="alert" className="max-w-xs text-right text-panel text-destructive">{compose.error}</p> : null}
+      {message ? <p className="max-w-xs text-right text-panel text-muted-foreground">{message}</p> : null}
     </div>
   );
 }

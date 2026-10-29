@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type DocBlock, docBlockCites, docBlockText, hasTabs, isDocBlockContent, normalizeDocBlocks, parseDocBlock, placeholdersIn, serializeDocBlock } from "./blocks";
+import { type DocBlock, docBlockCites, docBlockText, hasTabs, isDocBlockContent, lineText, normalizeDocBlocks, parseDocBlock, placeholdersIn, serializeDocBlock } from "./blocks";
 
 const steps: DocBlock = {
   type: "steps",
@@ -108,4 +108,9 @@ describe("normalizeDocBlocks", () => {
       { type: "steps", steps: [{ text: "Pick a size.", cites: ["a"] }] },
     ]);
   });
+});
+
+it("gives Composer a doc line's words and leaves article lines alone", () => {
+  expect(lineText(serializeDocBlock({ type: "steps", steps: [{ text: "Ventilate the space.", cites: ["u1"] }, { text: "Test the air.", cites: ["u2"] }] }))).toBe("Ventilate the space.\nTest the air.");
+  expect(lineText("A plain article sentence.")).toBe("A plain article sentence.");
 });

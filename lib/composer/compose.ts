@@ -4,7 +4,9 @@ import { chatJson, type ChatTool, type TokenFactorySettings } from "@/lib/ai/cha
 import { COMPOSER_INSTRUCTIONS } from "@/lib/ai/composerPolicy";
 
 export type ComposerAsset = { id: string; title: string; description: string | null; type: string | null; tags: string[]; origin: string; attribution: string | null; license: string | null };
-export type ComposerArticle = { replacingFigures?: { svg: string; assetId?: string }[]; webImageSearchAvailable?: boolean; imageGenerationAvailable?: boolean; availableAssets?: ComposerAsset[]; title: string; sourceUrl: string; paragraphs: { id: string; text: string; section?: string }[]; existingFigures: { after: string; learningGoal: string }[]; selectedSections?: string[]; newFigureBudget?: number; manualPlacementIds?: string[] };
+export type ComposerArticle = { replacingFigures?: { svg: string; assetId?: string }[]; webImageSearchAvailable?: boolean; imageGenerationAvailable?: boolean; availableAssets?: ComposerAsset[]; title: string; sourceUrl: string; paragraphs: { id: string; text: string; section?: string }[]; existingFigures: { after: string; learningGoal: string }[]; selectedSections?: string[]; newFigureBudget?: number; manualPlacementIds?: string[];
+  // a Docs page (step-by-step how-to) rather than a wiki article
+  howTo?: boolean };
 export const compositionSchema = z.object({
   figures: z.array(z.object({
     after: z.string(), evidence: z.array(z.string()).min(1), learningGoal: z.string().min(1),
