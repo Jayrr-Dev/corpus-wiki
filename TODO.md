@@ -1,5 +1,49 @@
 # To-do
 
+## Plan: performance and architecture (issue #55)
+
+Goal: cost and time per upload depend on the size of the upload, not the size
+of the store. Done looks like: #42, #45, #46, #47, #49, #50 and #48 landed with
+before/after numbers, #33, #34 and #36 closed by them, and #55's progress list
+ticked. Rules are in #55 section 2 (one issue per PR, no live migrations, env
+changes or paid AI calls without the owner's OK, measure before and after).
+
+Changes from #55: #46 runs alongside #45 instead of after it (different
+folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
+#36 are not separate tasks; they close with #45, #46 and #47.
+
+| Lane | Task | Needs | Status |
+|---|---|---|---|
+| owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | waiting on owner |
+| owner | Run `evals/retrieval` on PR #52 vs main (#38) | | waiting on owner |
+| owner | Turn on #43 env vars in production | | waiting on owner |
+| owner | Fix duplicate migration version `20261122000000` (hnsw drop vs custom claim picks), then apply the HNSW drop (#40) | | waiting on owner |
+| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | owner OK for paid calls | waiting on owner |
+| reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | in progress |
+| reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | in progress |
+| reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
+| reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure | waiting |
+| recompute | #46 dependency index and stale marks, glossary first (closes #34) | | in progress |
+| recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | waiting |
+| recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
+| embeddings | #39 propose vector versioning on the issue | owner OK to post | waiting on owner |
+| embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
+| jobs | #47 small idempotent jobs (with #46 closes #36) | #45, #46, #49 | waiting |
+| organize | #50 one organize step | #46, #47 | waiting |
+| db | #48 full: squash migrations into a baseline | #45, #46, #47, #50 | waiting |
+
+Owned paths:
+- reviewer: `lib/composer/**`, reviewer entries in `lib/ai/roles.ts` and `lib/ai/rolePolicies.ts`.
+- reconcile: `lib/ai/tokenFactory/**`, `lib/ai/fake/FakeReconciliationClient.ts`, the reconcile and embeddings stage code in `lib/ingest/pipeline.ts`, its own migrations.
+- recompute: `lib/glossary/**`, `lib/change-control/**`, a new `lib/staleness/**`, the later stage code in `lib/ingest/pipeline.ts` and `lib/ingest/workflow.ts`, its own migrations.
+- embeddings: `lib/knowledge/embeddingStore.ts` (after reconcile lands, since #45 moves embedding earlier).
+
+Shared files: in `lib/ingest/pipeline.ts`, `lib/ai/roles.ts` and
+`lib/ai/rolePolicies.ts`, each lane edits only its own stages or entries.
+`lib/database/types.ts` is regenerated at integration, never hand-merged.
+Migrations use a version after the newest on main and must not reuse one.
+Each lane updates only its own rows here.
+
 ## Plan: rebuild the landing page
 
 Goal: rebuild `/welcome` from `docs/landing-page-plan.md` (teams first),
