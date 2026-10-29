@@ -30,9 +30,11 @@ export function CleanDocsDialog({ open, onOpenChange, sets }: { open: boolean; o
     <Dialog open={open} onOpenChange={(next) => { if (!clean.isPending) onOpenChange(next); }}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-1.5">
-            Clean docs
-            <InfoHint>Docs made from the same source are duplicates. The newest finished set stays.</InfoHint>
+          <DialogTitle>
+            <span className="flex items-center gap-1.5">
+              Clean docs
+              <InfoHint>Docs made from the same source are duplicates. The newest finished set stays.</InfoHint>
+            </span>
           </DialogTitle>
           <DialogDescription>
             {ids.length ? `${ids.length} duplicate ${ids.length === 1 ? "set" : "sets"} will be hidden with their pages. Nothing is deleted.` : "No duplicate docs."}
