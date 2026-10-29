@@ -1862,7 +1862,8 @@ export type Database = {
         | "review_page"
         | "glossary_update"
         | "update_page"
-        | "retype_entity";
+        | "retype_entity"
+        | "approve_reviewer_budget";
       actor_kind: "ai" | "person";
       change_set_status:
         | "draft"
@@ -1897,7 +1898,8 @@ export type Database = {
         | "domain_tree_review"
         | "root_domain_approval"
         | "update_request"
-        | "page_structure_review";
+        | "page_structure_review"
+        | "reviewer_budget";
       exception_status: "open" | "accepted" | "rejected";
       relationship_type:
         | "supports"
@@ -1978,6 +1980,7 @@ export const Constants = {
         "glossary_update",
         "update_page",
         "retype_entity",
+        "approve_reviewer_budget",
       ],
       actor_kind: ["ai", "person"],
       change_set_status: [
@@ -2017,6 +2020,7 @@ export const Constants = {
         "root_domain_approval",
         "update_request",
         "page_structure_review",
+        "reviewer_budget",
       ],
       exception_status: ["open", "accepted", "rejected"],
       relationship_type: [
