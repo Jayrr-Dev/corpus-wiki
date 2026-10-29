@@ -26,7 +26,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | recompute | #46 dependency index and stale marks, glossary first (closes #34) | | merged (PR #58); migration applied (2026-10-29) |
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | in progress (branched from PR #58) |
 | measure | Fix `test/db/pgRpc.ts` to send typed arguments and return SETOF rows, so `evals/evals.test.ts` passes | | waiting |
-| recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
+| recompute | #49 one change set per pipeline stage | recompute: #46 | in review (PR #65): fixtures 26 to 2 and 50 to 2 change sets per upload; migration not applied |
 | embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
 | embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
 | jobs | #47 small idempotent jobs (with #46 closes #36) | #45, #46, #49 | waiting |
