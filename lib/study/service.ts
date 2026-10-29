@@ -6,10 +6,10 @@ import { TUTOR_INSTRUCTIONS } from "@/lib/ai/rolePolicies";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import type { DbRpc } from "@/lib/db/rpc";
 import { type CoverageChoice, coverageShare, isCustomChoice, loadScopeClaims, MAX_CUSTOM_CLAIMS, pickCoverage, type Scope, type ScopeClaim } from "@/lib/knowledge/scope";
-import { type GeneratedItem, generateStudyItems } from "./generate";
+import { type GeneratedItem, generateStudyItems, shuffle } from "./generate";
 import { gradeShortAnswer, MAX_ANSWER_LENGTH } from "./grade";
 import { type ClaimProgress, nextProgress, type StudyResult } from "./levels";
-import { type AnswerOutcome, STUDY_KINDS, type StudyItemWithClaim, type StudyKind, type StudySetsData } from "./types";
+import { type AnswerOutcome, CHOICE_COUNT, STUDY_KINDS, type StudyItemWithClaim, type StudyKind, type StudySetsData } from "./types";
 
 // =====================================================================
 // STUDY SERVICE: what the /api/study routes and the study pages do.
@@ -191,4 +191,52 @@ export async function rebuildStaleItems(deps: StudyDeps, userId: string, setId: 
 
 export async function removeItem(db: DbRpc, itemId: string): Promise<void> {
   await db.call("remove_study_item", { p_item_id: itemId });
+}
+
+// ---------------------------------------------------------------------
+// EDIT (admin mode): rename a set, delete a set, edit a question's text, add a question by hand
+// ---------------------------------------------------------------------
+
+export const setTitleSchema = z.object({ title: z.string().trim().min(1).max(200) });
+export const questionTextSchema = z.object({ prompt: z.string().trim().min(1).max(2000) });
+export const newQuestionSchema = z.object({
+  // a claim already in the set
+  unitId: uuid,
+  kind: z.enum(STUDY_KINDS),
+  prompt: z.string().trim().min(1).max(2000),
+  answer: z.string().trim().min(1).max(2000),
+  // multiple choice only: the three wrong options (the answer is added to them)
+  wrongChoices: z.array(z.string().trim().min(1).max(300)).max(CHOICE_COUNT - 1).default([]),
+});
+export type NewQuestionInput = z.infer<typeof newQuestionSchema>;
+
+export async function renameSet(db: DbRpc, setId: string, title: string): Promise<void> {
+  await db.call("rename_study_set", { p_set_id: setId, p_title: title });
+}
+
+// DELETE A SET: its questions and their answers go too; the person's levels on the claims stay
+export async function deleteSet(db: DbRpc, setId: string): Promise<void> {
+  await db.call("delete_study_set", { p_set_id: setId });
+}
+
+export async function editQuestionText(db: DbRpc, itemId: string, prompt: string): Promise<void> {
+  await db.call("update_study_item_prompt", { p_item_id: itemId, p_prompt: prompt });
+}
+
+// ADD A QUESTION BY HAND: on a claim already in the set, written from the claim's current revision
+export async function addQuestionByHand(db: DbRpc, userId: string, setId: string, input: NewQuestionInput): Promise<void> {
+  const data = await db.call<StudySetsData>("read_study_sets", { p_user_id: userId, p_set_id: setId });
+  if (!data.sets.length) throw new Error("This set was removed.");
+  const claim = data.claims.find((row) => row.unitId === input.unitId);
+  if (!claim || claim.retired) throw new Error("Pick a claim that is in this set.");
+  const [current] = await db.call<ScopeClaim[]>("read_study_claims", { p_unit_ids: [input.unitId] });
+  if (!current) throw new Error("This claim was retired.");
+  let choices: string[] | null = null;
+  if (input.kind === "multiple_choice") {
+    if (input.wrongChoices.length !== CHOICE_COUNT - 1) throw new Error("Multiple choice needs three wrong options.");
+    const key = (value: string) => value.trim().toLowerCase();
+    if (new Set([input.answer, ...input.wrongChoices].map(key)).size !== CHOICE_COUNT) throw new Error("Each option must be different from the others.");
+    choices = shuffle([input.answer, ...input.wrongChoices]);
+  }
+  await db.call("add_study_items", { p_set_id: setId, p_items: [{ unitId: input.unitId, revisionId: current.revisionId, kind: input.kind, prompt: input.prompt, answer: input.answer, choices, explanation: "" }] });
 }

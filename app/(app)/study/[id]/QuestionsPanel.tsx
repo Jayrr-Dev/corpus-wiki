@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ErrorNote, TextLink } from "@/app/(app)/_components/bits";
+import { useIsAdminMode } from "@/components/shell/useNavMode";
 import { RowMenu } from "@/components/row-menu/RowMenu";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/co
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { STUDY_KIND_LABELS, type StudyClaim, type StudyItemRow } from "@/lib/study/types";
 import { regenerate, removeQuestion } from "../studyApi";
+import { EditQuestion, NewQuestionButton } from "./QuestionForms";
 
 // REMOVE: says what goes before it goes
 function RemoveQuestion({ item, onDone }: { item: StudyItemRow; onDone: () => void }) {
@@ -44,11 +46,13 @@ function RemoveQuestion({ item, onDone }: { item: StudyItemRow; onDone: () => vo
 }
 
 // QUESTIONS: every item with its type, claim and stale flag; Regenerate and Remove in the row menu
-export function QuestionsPanel({ items, claims }: { items: StudyItemRow[]; claims: StudyClaim[] }) {
+export function QuestionsPanel({ setId, items, claims }: { setId: string; items: StudyItemRow[]; claims: StudyClaim[] }) {
   const router = useRouter();
+  const isAdmin = useIsAdminMode();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const claimOf = new Map(claims.map((claim) => [claim.unitId, claim]));
+  const addRow = isAdmin ? <div className="flex justify-end"><NewQuestionButton setId={setId} claims={claims} /></div> : null;
 
   const rewrite = async (item: StudyItemRow) => {
     setBusy(item.id);
@@ -61,9 +65,10 @@ export function QuestionsPanel({ items, claims }: { items: StudyItemRow[]; claim
     } finally { setBusy(null); }
   };
 
-  if (!items.length) return <p className="text-panel text-muted-foreground">No questions yet.</p>;
+  if (!items.length) return <div className="grid gap-3">{addRow}<p className="text-panel text-muted-foreground">No questions yet.</p></div>;
   return (
     <div className="grid gap-3">
+      {addRow}
       <ErrorNote error={error} />
       <Table>
         <TableHeader>
@@ -96,6 +101,7 @@ export function QuestionsPanel({ items, claims }: { items: StudyItemRow[]; claim
                 </TableCell>
                 <TableCell>
                   <RowMenu label={item.prompt} items={[
+                    ...(isAdmin ? [{ label: "Edit", body: (close: () => void) => <EditQuestion item={item} onDone={close} /> }] : []),
                     { label: "Regenerate", isDisabled: busy !== null, run: () => void rewrite(item) },
                     { label: "Remove", isDestructive: true, body: (close) => <RemoveQuestion item={item} onDone={close} /> },
                   ]} />

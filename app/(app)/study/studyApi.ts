@@ -51,3 +51,10 @@ export const answer = (input: Answer) => post<AnswerOutcome>("/api/study/answer"
 export const regenerate = (itemId: string) => post<{ ok: true }>(`/api/study/items/${itemId}/regenerate`);
 export const removeQuestion = (itemId: string) => post<{ ok: true }>(`/api/study/items/${itemId}`, undefined, "DELETE");
 export const rebuildStale = (setId: string) => post<{ rebuilt: number; retired: number }>(`/api/study/sets/${setId}/rebuild`);
+
+// ADMIN MODE: rename or delete a set, edit a question's text, add a question by hand
+export const renameSet = (setId: string, title: string) => post<{ ok: true }>(`/api/study/sets/${setId}`, { title }, "PATCH");
+export const deleteSet = (setId: string) => post<{ ok: true }>(`/api/study/sets/${setId}`, undefined, "DELETE");
+export const editQuestion = (itemId: string, prompt: string) => post<{ ok: true }>(`/api/study/items/${itemId}`, { prompt }, "PATCH");
+export type NewQuestion = { unitId: string; kind: StudyKind; prompt: string; answer: string; wrongChoices: string[] };
+export const addQuestion = (setId: string, input: NewQuestion) => post<{ ok: true }>(`/api/study/sets/${setId}/items`, input);
