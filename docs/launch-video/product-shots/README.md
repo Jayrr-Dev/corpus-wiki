@@ -29,7 +29,11 @@ python -I tools/build.py 18-page page-line article   # scene + snapshot (+ share
 node render.mjs 18-page.html 30                      # -> out/18-page.mp4 (1920x1080)
 node render.mjs 18-page.html --still=2.5             # one frame -> out/18-page-2.5.png
 python -I tools/preview.py                           # voiceover + scenes + placeholders -> out/preview.mp4
+python -I tools/final.py                             # export -> out/final.mp4 (fails while shots are missing)
+python -I tools/final.py --allow-missing             # draft export, dark frames for missing shots
 ```
+
+The shot list for both is `TIMELINE` in `tools/timeline.py`. `final.py` burns in `out/captions.ass` when it exists (`tools/captions.py`), mixes `../audio/music.mp3` under the voice when it exists, and normalises to −14 LUFS.
 
 Open a built scene page in a browser to watch it loop.
 
