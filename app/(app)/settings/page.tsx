@@ -9,7 +9,9 @@ import { AiSpeed } from "./AiSpeed";
 import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoDecide } from "./AutoDecide";
 import { AutoUpdateStale } from "./AutoUpdateStale";
+import { getFeatureFlags } from "@/lib/flags/server";
 import { ExternalKnowledge } from "./ExternalKnowledge";
+import { FeatureFlags } from "./FeatureFlags";
 import { loadGlossaryAutoDecide, loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMonetization, loadMyProfile, loadSpeedTests } from "./loadModelSettings";
 import { ModelPicker } from "./ModelPicker";
 import { Monetization } from "./Monetization";
@@ -53,7 +55,7 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
 }
 
 export default async function SettingsPage() {
-  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide, monetization] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide(), loadMonetization()]);
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide, monetization, featureFlags] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide(), loadMonetization(), getFeatureFlags()]);
   const panels: Record<string, ReactNode> = {
     preferences: (
       <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
@@ -96,6 +98,7 @@ export default async function SettingsPage() {
         <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
         <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} /></div>
+        <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} /></div>
       </SettingsCard>
     ),
     security: <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>,

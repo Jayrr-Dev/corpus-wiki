@@ -17,6 +17,18 @@ export type Database = {
   };
   public: {
     Tables: {
+      // App-wide feature flags (lib/flags/registry.ts); read and written only
+      // through get_feature_flags / set_feature_flag
+      feature_flags: {
+        Row: {
+          key: string;
+          enabled: boolean;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       // Written only through create_agent_key / revoke_agent_key; the signed-in
       // owner may select every column but key_hash
       agent_keys: {
@@ -1645,6 +1657,8 @@ export type Database = {
         Returns: Json;
       };
       revoke_agent_key: { Args: { p_id: string }; Returns: undefined };
+      get_feature_flags: { Args: Record<string, never>; Returns: Json };
+      set_feature_flag: { Args: { p_key: string; p_enabled: boolean }; Returns: Json };
       resolve_agent_key: { Args: { p_hash: string }; Returns: Json };
       resolve_oauth_token: { Args: { p_hash: string; p_resource: string }; Returns: Json };
       oauth_get_client: { Args: { p_client_id: string }; Returns: Json };
