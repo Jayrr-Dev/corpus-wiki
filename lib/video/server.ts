@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { chatJson, tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readModelChoice } from "@/lib/ai/models";
+import { generateOpenRouterImage } from "@/lib/ai/openrouterImages";
 import { FIXED_ROLES } from "@/lib/ai/roles";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { currentActor } from "@/lib/auth/currentPerson";
@@ -91,6 +92,8 @@ export async function pipelineDeps(spaceId?: string | null): Promise<PipelineDep
     store: videoStore(),
     files: videoFiles(),
     voice: () => elevenLabsClient(process.env.ELEVENLABS_API_KEY ?? ""),
+    // the OpenRouter image model Composer uses (OPENROUTER_IMAGE_MODEL); without a key scenes show text alone
+    ...(process.env.OPENROUTER_API_KEY ? { graphics: () => ({ draw: (prompt: string) => generateOpenRouterImage(prompt) }) } : {}),
     jobs: () => nebiusJobClient({ projectId: renderProjectId(), token: nebiusToken }),
     renderImage: process.env.VIDEO_RENDER_IMAGE ?? "",
     callbackBaseUrl: process.env.VIDEO_CALLBACK_BASE_URL ?? "",

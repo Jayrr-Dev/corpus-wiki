@@ -10,6 +10,9 @@ import type { Scene, SceneVisual } from "./types";
 //   quote    the first bullet as a pull quote under the heading (or the heading alone)
 //   diagram  bullets as connected boxes, left to right
 //   image    an image from Assets beside the heading and bullets
+// A scene with a picture (its Assets image or its drawn graphic) shows the
+// text on the left and the picture on the right, whatever its visual; a
+// diagram keeps its boxes.
 // =====================================================================
 
 export const FRAME = { width: 1920, height: 1080, fps: 30 } as const;
@@ -38,7 +41,9 @@ body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: var(--in
 .scene .arrow::after { content: ""; position: absolute; right: -4px; top: -10px; border: 12px solid transparent; border-left: 16px solid var(--accent); }
 .scene.with-image { flex-direction: row; align-items: center; gap: 80px; }
 .scene.with-image .text { flex: 1; display: flex; flex-direction: column; gap: 40px; }
-.scene.with-image img { width: 760px; height: 760px; object-fit: cover; border-radius: 32px; }
+.scene.with-image img { width: 760px; height: 760px; object-fit: cover; border-radius: 32px; flex: none; }
+.scene.with-image h1 { font-size: 76px; }
+.scene.with-image blockquote { font-size: 56px; }
 .caption { position: absolute; left: 160px; right: 160px; bottom: 64px; text-align: center; font-size: 40px; line-height: 1.3; color: #fff; }
 .caption span { background: rgba(28, 27, 25, 0.82); padding: 8px 20px; border-radius: 12px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 `;
@@ -68,7 +73,22 @@ const TEMPLATES: Record<SceneVisual, Render> = {
   },
 };
 
-// The HTML for one scene's visual; `image` is the asset's file name in the composition, if any
+// A scene's text beside its picture, keeping the visual's own heading style
+function withPicture(scene: Scene, image: string): string {
+  const picture = `<img data-animate src="${escapeHtml(image)}" alt="" />`;
+  if (scene.visual === "title") {
+    const sub = bulletsOf(scene, 3).join(" · ");
+    return `<div class="scene with-image"><div class="text"><h1 data-animate>${escapeHtml(scene.title)}</h1>${sub ? `<p class="sub" data-animate>${escapeHtml(sub)}</p>` : ""}</div>${picture}</div>`;
+  }
+  if (scene.visual === "quote") {
+    const [quote] = bulletsOf(scene, 1);
+    return `<div class="scene with-image"><div class="text"><blockquote data-animate>${escapeHtml(quote ?? scene.title)}</blockquote>${quote ? `<p class="cite" data-animate>${escapeHtml(scene.title)}</p>` : ""}</div>${picture}</div>`;
+  }
+  return TEMPLATES.image(scene, image);
+}
+
+// The HTML for one scene's visual; `image` is its picture's file name in the composition, if any
 export function renderSceneTemplate(scene: Scene, image: string | null = null): string {
+  if (image && scene.visual !== "diagram") return withPicture(scene, image);
   return (TEMPLATES[scene.visual] ?? TEMPLATES.list)(scene, image);
 }

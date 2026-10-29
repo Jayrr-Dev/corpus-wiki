@@ -42,6 +42,10 @@ export type Scene = {
   visual: SceneVisual;
   // an image from Assets, for the image visual
   assetId?: string | null;
+  // what the scene's generated graphic shows (written by the Narrator, editable); drawn at Make video
+  graphic?: string | null;
+  // the drawn graphic in the videos bucket; kept on Try again, cleared when `graphic` changes
+  graphicPath?: string | null;
   sources: SceneSource[];
   // set by voicing
   audioPath?: string | null;

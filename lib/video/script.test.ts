@@ -21,7 +21,7 @@ describe("writing the script", () => {
   it("turns the draft into scenes citing claims with their revisions", () => {
     next = 0;
     const script = scriptFromDraft({ title: "T", scenes: [{ narration: " Hello. ", title: "Hi", bullets: ["a", " "], visual: "title", claims: [1, 1, 0] }] }, claims, ids);
-    expect(script.scenes).toEqual([{ id: "s0", narration: "Hello.", title: "Hi", bullets: ["a"], visual: "title", assetId: null, sources: [
+    expect(script.scenes).toEqual([{ id: "s0", narration: "Hello.", title: "Hi", bullets: ["a"], visual: "title", assetId: null, graphic: null, sources: [
       { unitId: "u1", revisionId: "r1", title: null },
       { unitId: "u0", revisionId: "r0", title: "Zero" },
     ] }]);

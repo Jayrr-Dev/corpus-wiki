@@ -1,4 +1,5 @@
 import { composeVideo, placeScenes, type RenderManifest, totalDurationMs } from "./compose";
+import { drawScenes, type GraphicClient, wantsGraphic } from "./graphics";
 import { isJobFinished, type RenderJobClient, RENDER_JOB_DEFAULTS, timeoutMessage } from "./render";
 import { isOverdue, RENDER_CALLBACK_GRACE_MS, RENDER_JOB_TIMEOUT_MS, transition, type VideoEvent } from "./status";
 import { FRAME } from "./templates";
@@ -31,6 +32,8 @@ export type PipelineDeps = {
   store: VideoStore;
   files: VideoFiles;
   voice: () => VoiceClient;
+  // draws each scene's graphic; absent when no image model is configured (scenes then show text alone)
+  graphics?: () => GraphicClient;
   jobs: () => RenderJobClient;
   renderImage: string;
   callbackBaseUrl: string;
@@ -51,6 +54,7 @@ export async function applyEvent(store: VideoStore, video: Pick<VideoRow, "id" |
 export const videoBase = (spaceId: string, videoId: string) => `${spaceId}/${videoId}`;
 export const videoFilePath = (spaceId: string, videoId: string) => `${videoBase(spaceId, videoId)}/video.mp4`;
 export const posterFilePath = (spaceId: string, videoId: string) => `${videoBase(spaceId, videoId)}/poster.jpg`;
+export const sceneGraphicPath = (spaceId: string, videoId: string, sceneId: string, extension: string) => `${videoBase(spaceId, videoId)}/graphics/${sceneId}.${extension}`;
 
 // Signed download links in the manifest outlive the job
 const LINK_SECONDS = Math.ceil((RENDER_JOB_TIMEOUT_MS + RENDER_CALLBACK_GRACE_MS) / 1000) + 3600;
@@ -91,11 +95,36 @@ export async function runPipeline(deps: PipelineDeps, id: string): Promise<Video
     if (!voiced) throw new MovedOnError();
     video = voiced;
 
+    // GRAPHICS: one illustration per scene; a failed one leaves that scene as text
+    if (deps.graphics) {
+      const drawn = await drawScenes({
+        scenes: video.script.scenes,
+        videoTitle: video.title,
+        client: deps.graphics(),
+        save: async (scene, graphic) => {
+          const path = sceneGraphicPath(deps.spaceId, id, scene.id, graphic.extension);
+          await deps.files.upload(path, graphic.bytes, graphic.mime);
+          return path;
+        },
+        onScene: async (next) => {
+          const saved = await deps.store.update(id, ["voicing"], { script: { scenes: next } });
+          if (!saved) throw new MovedOnError();
+          video = saved;
+        },
+      });
+      video = { ...video, script: { scenes: drawn } };
+    }
+
     const base = videoBase(deps.spaceId, id);
     const images: Record<string, string> = {};
     const files: RenderManifest["files"] = [];
-    for (const scene of scenes) {
+    for (const scene of video.script.scenes) {
       files.push({ path: `audio/${scene.id}.mp3`, url: await deps.files.signedDownloadUrl(scene.audioPath!, LINK_SECONDS) });
+      if (scene.graphicPath && wantsGraphic(scene)) {
+        const name = `graphics/${scene.graphicPath.split("/").pop()}`;
+        images[scene.id] = name;
+        files.push({ path: name, url: await deps.files.signedDownloadUrl(scene.graphicPath, LINK_SECONDS) });
+      }
       if (scene.visual === "image" && scene.assetId && deps.assetFile && !images[scene.assetId]) {
         const asset = await deps.assetFile(scene.assetId);
         if (asset) {
@@ -104,7 +133,7 @@ export async function runPipeline(deps: PipelineDeps, id: string): Promise<Video
         }
       }
     }
-    const html = composeVideo(scenes, { title: video.title, images });
+    const html = composeVideo(video.script.scenes, { title: video.title, images });
     await deps.files.upload(`${base}/composition/index.html`, html, "text/html");
     files.unshift({ path: "index.html", url: await deps.files.signedDownloadUrl(`${base}/composition/index.html`, LINK_SECONDS) });
 
@@ -114,12 +143,12 @@ export async function runPipeline(deps: PipelineDeps, id: string): Promise<Video
       : null;
     const manifest: RenderManifest = {
       videoId: id,
-      durationMs: totalDurationMs(scenes),
+      durationMs: totalDurationMs(video.script.scenes),
       fps: FRAME.fps,
       width: FRAME.width,
       height: FRAME.height,
       files,
-      audio: placeScenes(scenes).map((item) => ({ path: item.audioFile, startMs: item.startMs })),
+      audio: placeScenes(video.script.scenes).map((item) => ({ path: item.audioFile, startMs: item.startMs })),
       output: { videoUploadUrl: await deps.files.signedUploadUrl(videoFilePath(deps.spaceId, id)), posterUploadUrl: await deps.files.signedUploadUrl(posterFilePath(deps.spaceId, id)) },
       callback,
     };

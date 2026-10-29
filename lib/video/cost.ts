@@ -1,3 +1,4 @@
+import { wantsGraphic } from "./graphics";
 import { LENGTH_PLAN, type VideoLength, type VideoScript } from "./types";
 
 // =====================================================================
@@ -5,6 +6,7 @@ import { LENGTH_PLAN, type VideoLength, type VideoScript } from "./types";
 //   Voice   ElevenLabs bills per character of narration
 //   Render  Nebius bills the CPU job's VM only while it runs: cold start
 //           plus render time per minute of video
+//   Images  OpenRouter bills each scene graphic drawn (none without an image model)
 // The rates are starting points until the spikes (S1, S2) record real
 // ones; the server can override each with an environment variable.
 // =====================================================================
@@ -14,6 +16,7 @@ export type CostRates = {
   renderUsdPerHour: number;
   renderMinutesPerVideoMinute: number;
   coldStartMinutes: number;
+  imageUsd: number;
 };
 
 export const DEFAULT_RATES: CostRates = {
@@ -21,6 +24,7 @@ export const DEFAULT_RATES: CostRates = {
   renderUsdPerHour: 0.2,
   renderMinutesPerVideoMinute: 2,
   coldStartMinutes: 2,
+  imageUsd: 0.02,
 };
 
 const positive = (value: string | undefined, fallback: number) => {
@@ -34,15 +38,17 @@ export function ratesFromEnv(env: Record<string, string | undefined>): CostRates
     renderUsdPerHour: positive(env.NEBIUS_RENDER_USD_PER_HOUR, DEFAULT_RATES.renderUsdPerHour),
     renderMinutesPerVideoMinute: positive(env.NEBIUS_RENDER_MINUTES_PER_VIDEO_MINUTE, DEFAULT_RATES.renderMinutesPerVideoMinute),
     coldStartMinutes: positive(env.NEBIUS_RENDER_COLD_START_MINUTES, DEFAULT_RATES.coldStartMinutes),
+    // 0 without an image model, so the estimate leaves graphics out
+    imageUsd: env.OPENROUTER_API_KEY ? positive(env.VIDEO_IMAGE_USD, DEFAULT_RATES.imageUsd) : 0,
   };
 }
 
-export type CostEstimate = { characters: number; videoMinutes: number; voiceUsd: number; renderUsd: number; totalUsd: number; renderMs: number };
+export type CostEstimate = { characters: number; videoMinutes: number; voiceUsd: number; renderUsd: number; imageUsd: number; totalUsd: number; renderMs: number };
 
 // Narration speed used to guess a scene's length before it is voiced
 export const CHARS_PER_SECOND = 15;
 
-// Voice and render cost for a script; scenes already voiced cost nothing again
+// Voice, render and image cost for a script; scenes already voiced or drawn cost nothing again
 export function estimateCost(script: VideoScript, length: VideoLength, rates: CostRates = DEFAULT_RATES): CostEstimate {
   const unvoiced = script.scenes.filter((scene) => !scene.audioPath);
   const characters = unvoiced.reduce((sum, scene) => sum + scene.narration.length, 0);
@@ -51,7 +57,8 @@ export function estimateCost(script: VideoScript, length: VideoLength, rates: Co
   const renderMinutes = rates.coldStartMinutes + videoMinutes * rates.renderMinutesPerVideoMinute;
   const voiceUsd = (characters / 1000) * rates.voiceUsdPer1kChars;
   const renderUsd = (renderMinutes / 60) * rates.renderUsdPerHour;
-  return { characters, videoMinutes, voiceUsd, renderUsd, totalUsd: voiceUsd + renderUsd, renderMs: renderMinutes * 60_000 };
+  const imageUsd = script.scenes.filter((scene) => wantsGraphic(scene) && !scene.graphicPath).length * rates.imageUsd;
+  return { characters, videoMinutes, voiceUsd, renderUsd, imageUsd, totalUsd: voiceUsd + renderUsd + imageUsd, renderMs: renderMinutes * 60_000 };
 }
 
 // "About $0.42"; under a cent reads "Under $0.01"
