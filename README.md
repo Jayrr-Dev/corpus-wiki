@@ -16,7 +16,7 @@ Add your files. Corpus Wiki sorts them out, writes simple pages for your team an
 [![Nebius Token Factory](https://img.shields.io/badge/Nebius-Token%20Factory-D9F8FF)](https://tokenfactory.nebius.com)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-[Features](#features) · [How it works](#how-it-works) · [Use cases](#use-cases) · [NVIDIA + Nebius](#built-on-nvidia-nemotron-and-nebius-token-factory) · [Run it locally](#run-it-locally) · [Architecture](#architecture)
+[Features](#features) · [How it works](#how-it-works) · [Use cases](#use-cases) · [NVIDIA + Nebius](#built-on-nvidia-nemotron-and-nebius-token-factory) · [MCP](#use-it-from-any-ai-agent-over-mcp) · [Run it locally](#run-it-locally) · [Architecture](#architecture)
 
 <br>
 
@@ -48,7 +48,26 @@ Every AI step in Corpus Wiki runs on **open NVIDIA Nemotron models** served by *
 - 🧠 **Reasoning effort control.** `reasoning_effort` can be set per role on `/settings`, trading speed for depth where it matters.
 - 📊 **Measured, not guessed.** A built-in speed test times every Token Factory model (latency and tokens per second), and a cost report prices each call by role and model at Token Factory's published rates.
 
+**Also on Nebius AI Cloud: video rendering.** Each narrated video renders as a **Nebius Serverless AI job** on a CPU VM (`cpu-d3`, 8 vCPUs). The job runs our render image from Nebius Container Registry (headless Chromium, HyperFrames, ffmpeg), uploads the MP4 and poster, then calls the app back. The VM is billed only while the job runs, so the web app stays small and serverless. See [Video rendering on Nebius Serverless AI](#video-rendering-on-nebius-serverless-ai).
+
 Details, code locations and configuration: [How it uses NVIDIA Nemotron on Nebius Token Factory](#how-it-uses-nvidia-nemotron-on-nebius-token-factory).
+
+## Use it from any AI agent over MCP
+
+Corpus Wiki is an **MCP server**. MCP (Model Context Protocol) is the open standard that lets AI tools such as Claude, Cursor and ChatGPT call outside apps. Point any MCP client at `/api/mcp` and your agent can search the wiki, read sourced claims, add notes and files, and rewrite pages.
+
+- 🔌 **Over 50 tools in five scopes.** `read` (search knowledge, open articles, claims, sources, entities), `write` (add notes, files and links, create and rewrite articles, answer exceptions, undo a ChangeSet), `delete`, `spaces` and `settings`. A new key starts with `read` only.
+- 🔐 **Standard sign-in.** The app is its own OAuth 2.1 server and follows the MCP authorization spec: discovery under `/.well-known/`, dynamic client registration, PKCE, and a 403 step-up when a call needs a scope the token lacks. Personal keys made in Settings work too.
+- 🛡️ **Same rules as people.** Agent changes pass through Change control like any upload. Every call is scope-checked, rate-limited and logged, and the server tells agents that tool output is data, never instructions.
+- ☁️ **Stateless.** Streamable HTTP with a fresh server per request, so it runs on Vercel functions with nothing to keep alive.
+
+Connect from Claude Code:
+
+```bash
+claude mcp add --transport http corpus-wiki https://<your-deployment>/api/mcp
+```
+
+Code: `app/api/mcp/route.ts` (the endpoint), `lib/mcp/server.ts` and `lib/mcp/tools/` (the tools), `app/oauth/` and `app/.well-known/` (sign-in), `lib/agents/scopes.ts` (scopes). Design: `docs/mcp-server-plan.md`.
 
 ## Why
 
@@ -123,7 +142,7 @@ While you work with your coding agent, every feature, endpoint and decision is d
 
 - **Upload** (`/upload`): PDF, Word, Markdown, text and notes, with cancel and retry
 - **Capture API** (`POST /api/capture`): a note or file from a script, shortcut or agent in one request
-- **MCP server** (`/api/mcp`): outside agents read and edit a Space with scoped OAuth tokens or personal keys *(in progress)*
+- **MCP server** (`/api/mcp`): outside agents read and edit a Space with scoped OAuth tokens or personal keys ([details](#use-it-from-any-ai-agent-over-mcp))
 - **Web search for thin sections**: Composer may fill gaps from the web, or stick to your files
 - **Entity research**: logos, descriptions and Wikidata sizes for the entities your files mention
 
@@ -292,6 +311,29 @@ Set these in `.env.local` (local) or in Vercel's environment settings (deployed)
 ```bash
 NEBIUS_API_KEY=   # from Nebius Token Factory
 AI_MODEL=nvidia/nemotron-3-super-120b-a12b   # optional; this is the default
+```
+
+### Video rendering on Nebius Serverless AI
+
+Token Factory runs the models; **Nebius AI Cloud** also does the heavy compute. Rendering a narrated video needs a browser, ffmpeg and minutes of CPU, which do not fit in a web request. So the app hands each render to a Nebius Serverless AI job:
+
+1. The app writes a render manifest (script, scenes, narration audio) and starts one job with `nebius ai job create` on a CPU platform (`cpu-d3`, preset `8vcpu-32gb`).
+2. The job pulls our render image from **Nebius Container Registry** (`scripts/video/render/Dockerfile`: Node, headless Chromium, HyperFrames, ffmpeg), renders the frames, muxes the audio and uploads the MP4 and poster.
+3. It calls `POST /api/video/[id]/rendered` with a signed token. If no callback comes, `/api/video/[id]/status` reads the job state and log tail from Nebius and marks the video failed.
+
+In our test, 8 vCPUs rendered 5.5 seconds of video in 11 seconds. The VM is billed only while the job runs, and the script editor shows the render cost before you start (`lib/video/cost.ts`).
+
+| What | Where |
+| --- | --- |
+| Nebius job client (start a job, read its state and logs) | `lib/video/render.ts` |
+| Wiring and environment | `lib/video/server.ts` |
+| Render image | `scripts/video/render/Dockerfile` |
+| Callback and status routes | `app/api/video/[id]/rendered/route.ts`, `app/api/video/[id]/status/route.ts` |
+
+```bash
+NEBIUS_PROJECT_ID=          # or NEBIUS_RENDER_PROJECT_ID: a region with CPU quota
+NEBIUS_IAM_TOKEN=           # for the nebius CLI and the image pull
+VIDEO_RENDER_IMAGE=         # the render image in Nebius Container Registry
 ```
 
 ### How Token Factory helped
