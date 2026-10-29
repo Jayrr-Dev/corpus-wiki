@@ -16,7 +16,7 @@ Add your files. Corpus Wiki sorts them out, writes simple pages for your team an
 [![Nebius Token Factory](https://img.shields.io/badge/Nebius-Token%20Factory-D9F8FF)](https://tokenfactory.nebius.com)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-[Features](#features) · [How it works](#how-it-works) · [Use cases](#use-cases) · [Nemotron](#how-it-uses-nvidia-nemotron-on-nebius-token-factory) · [Run it locally](#run-it-locally) · [Architecture](#architecture)
+[Features](#features) · [How it works](#how-it-works) · [Use cases](#use-cases) · [NVIDIA + Nebius](#built-on-nvidia-nemotron-and-nebius-token-factory) · [Run it locally](#run-it-locally) · [Architecture](#architecture)
 
 <br>
 
@@ -26,6 +26,29 @@ Add your files. Corpus Wiki sorts them out, writes simple pages for your team an
 
 > [!NOTE]
 > **Hackathon:** Corpus Wiki is a submission to the [Nebius Global AI Hackathon](https://nebiusglobalaihackathon.devpost.com/). It is a working prototype: upload a PDF, Word or Markdown file, NVIDIA Nemotron drafts what it changes, Change control applies it or asks a person, and only the wiki lines that changed are rewritten.
+
+## Built on NVIDIA Nemotron and Nebius Token Factory
+
+Every AI step in Corpus Wiki runs on **open NVIDIA Nemotron models** served by **[Nebius Token Factory](https://tokenfactory.nebius.com)**. One `NEBIUS_API_KEY` powers reading, writing, checking, seeing and searching.
+
+| NVIDIA model | What it does in Corpus Wiki |
+| --- | --- |
+| **Nemotron 3 Ultra** `nvidia/Nemotron-3-Ultra-550b-a55b` | The rare judgment calls: planning articles, approving new ones, deciding the topic tree, curating page structure |
+| **Nemotron 3 Super** `nvidia/nemotron-3-super-120b-a12b` | The everyday work: reconciling each upload into a ChangeSet, writing wiki lines, fact-checking them, defining glossary terms, finding entities, research |
+| **Nemotron 3 Nano** `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Bulk linking of knowledge, where volume matters more than depth |
+| **Nemotron 3.5 Super VL** `nvidia/Nemotron-3.5-Super-VL` | Vision: reads images, diagrams and video frames from uploads, and helps Composer pick and draw illustrations |
+
+**Also on Token Factory:** `Qwen/Qwen3-Embedding-8B` embeddings find claims that say the same thing in different words, and `DeepSeek-V4.1-Flash` handles the high-volume yes/no duplicate checks.
+
+**How Token Factory accelerated the build**
+
+- ⚡ **One API, every model.** Token Factory is OpenAI-compatible, so chat, vision and embeddings share one small client. Moving a role from Super to Ultra or Nano is a setting, not a code change.
+- 🧱 **Structured output on the server.** `response_format: json_schema` makes Nemotron return valid ChangeSets, so the pipeline never parses free text.
+- 🎛️ **Right-sized models per role.** Ultra, Super and Nano sit side by side, so each of the 17 AI roles gets the cheapest model that does its job well. Settings shows a per-role picker fed live from Token Factory's model list.
+- 🧠 **Reasoning effort control.** `reasoning_effort` can be set per role on `/settings`, trading speed for depth where it matters.
+- 📊 **Measured, not guessed.** A built-in speed test times every Token Factory model (latency and tokens per second), and a cost report prices each call by role and model at Token Factory's published rates.
+
+Details, code locations and configuration: [How it uses NVIDIA Nemotron on Nebius Token Factory](#how-it-uses-nvidia-nemotron-on-nebius-token-factory).
 
 ## Why
 
@@ -210,12 +233,17 @@ curl -X POST http://localhost:3000/api/capture \
 
 ## How it uses NVIDIA Nemotron on Nebius Token Factory
 
-The AI steps run on **NVIDIA Nemotron (`nvidia/nemotron-3-super-120b-a12b`)** served by **Nebius Token Factory**, called at runtime through Token Factory's OpenAI-compatible API (`https://api.tokenfactory.nebius.com/v1/`).
+The AI steps run on **NVIDIA Nemotron** models served by **Nebius Token Factory**, called at runtime through Token Factory's OpenAI-compatible API (`https://api.tokenfactory.nebius.com/v1/`). The default model is `nvidia/nemotron-3-super-120b-a12b`; each AI role has its own default (`ROLE_DEFAULT_MODELS` in `lib/ai/config.ts`), and any role can be switched on `/settings`.
 
 ### What Nemotron does
 
-1. **Reconciliation.** For each uploaded file, the server sends Nemotron one request with the file's passages (each with its id and the file's source date) and the current knowledge: units, domain paths and entities, so the model can match new claims to existing ones without a vector index. Nemotron returns a **draft ChangeSet**: typed actions, each citing the passages that support it and tagging how the claim was said (stated, decided, proposed or asked).
-2. **Writing wiki lines.** After a commit, Nemotron rewrites only the lines whose claims changed and writes lines for claims no line states yet, citing claims by short refs (C1, L1) so it cannot invent ids.
+1. **Reconciliation (Nemotron 3 Super).** For each uploaded file, the server sends Nemotron one request with the file's passages (each with its id and the file's source date) and the current knowledge: units, domain paths and entities, so the model can match new claims to existing ones. Nemotron returns a **draft ChangeSet**: typed actions, each citing the passages that support it and tagging how the claim was said (stated, decided, proposed or asked).
+2. **Writing wiki lines (Nemotron 3 Super).** After a commit, Nemotron rewrites only the lines whose claims changed and writes lines for claims no line states yet, citing claims by short refs (C1, L1) so it cannot invent ids. The Reviewer then fact-checks each line against the claims it cites.
+3. **Judgment calls (Nemotron 3 Ultra).** Planning and approving articles, deciding and tidying the topic tree, and curating page structure (merges, moves, splits). Unsure changes become exceptions for a person.
+4. **Bulk linking (Nemotron 3 Nano).** Linking related knowledge across the graph, the highest-volume reasoning step.
+5. **Seeing (Nemotron 3.5 Super VL).** Describing images, diagrams and figures in uploads; for video, ffmpeg takes frames and Whisper the transcript, and the vision model describes the frames with the transcript beside them. Composer uses it to judge and add illustrations.
+
+Supporting models on Token Factory: `Qwen/Qwen3-Embedding-8B` for embeddings (stored in pgvector to find near-duplicate claims) and `DeepSeek-V4.1-Flash` for yes/no duplicate checks. Cerebras, Claude and OpenRouter can be added as optional extra providers, but every default runs on Token Factory.
 
 ### What Nemotron does not do
 
@@ -225,7 +253,9 @@ The model never writes knowledge. Its draft goes to `commit_change_set`, a Postg
 
 | What | Where |
 | --- | --- |
-| Provider settings (base URL, default model, prompt version) | `lib/ai/config.ts` |
+| Provider settings (base URL, default model, per-role Nemotron defaults, prompt version) | `lib/ai/config.ts` |
+| Vision model for images and video frames | `lib/ingest/describeMedia.ts`, `lib/ingest/describeVideoServer.ts` |
+| Embeddings | `lib/ai/embeddings.ts` |
 | Chat call with a JSON schema, and settings from env | `lib/ai/chat.ts` |
 | Reconciliation prompt, answer schema and mapping to typed actions | `lib/ai/tokenFactory/` |
 | Picks the real client when `NEBIUS_API_KEY` is set, the fake one otherwise | `lib/ai/factory.ts` |
@@ -246,7 +276,11 @@ AI_MODEL=nvidia/nemotron-3-super-120b-a12b   # optional; this is the default
 
 - **OpenAI-compatible API:** the client is a plain chat-completions call, so the provider sits behind one small interface and the rest of the app never knows which model is used.
 - **Structured output:** `response_format: {"type": "json_schema"}` with the answer's JSON schema constrains the output on the server; the app still validates it with zod before anything is committed.
-- **Several Nemotron sizes behind one key:** switching model size is a change to `AI_MODEL`.
+- **Several Nemotron sizes behind one key:** Ultra, Super, Nano and Super VL share one key, so each role runs on the size it needs; switching is a change to `AI_MODEL` or a pick on `/settings`.
+- **Live model catalog:** the model picker reads Token Factory's `/models` endpoint, so new Nemotron releases show up without a code change.
+- **Embeddings from the same provider:** `/v1/embeddings` with Qwen3-Embedding-8B, cut to 1024 dimensions for pgvector, uses the same key and client (`lib/ai/embeddings.ts`).
+- **Reasoning effort:** `reasoning_effort` is passed per role (`lib/ai/chat.ts`), trading speed for depth where it matters.
+- **Speed and cost in view:** Settings > AI speed times every offered model (first-token latency, tokens per second), and `scripts/cost/report.ts` prices every logged call at Token Factory's rates (`lib/ai/pricing.ts`).
 
 ## Run it locally
 
