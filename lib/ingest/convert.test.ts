@@ -212,6 +212,29 @@ describe("one pipeline, one converter per format", () => {
     await expect(CONVERTERS.video(new Uint8Array([1]), { fileName: "x.mp4", mimeType: "video/mp4" })).rejects.toThrow(/NEBIUS_API_KEY/);
   });
 
+  it("adds an image's exact words from OCR after its description", async () => {
+    const pages = await CONVERTERS.image(fixture("acme-revenue-chart.png"), {
+      fileName: "chart.png",
+      mimeType: "image/png",
+      describeImage: async () => "Bar chart of Acme revenue.",
+      readText: async (file) => { expect(file.pages).toBeUndefined(); return ["# Acme revenue\n\nQ4: 5.0M USD"]; },
+    });
+    expect(splitIntoPassages(pages).map((p) => p.text)).toEqual(["Bar chart of Acme revenue.", "# Acme revenue", "Q4: 5.0M USD"]);
+  });
+
+  it("keeps an image's description when OCR fails or finds no words", async () => {
+    const describeImage = async () => "A photo of a beach.";
+    for (const readText of [async () => { throw new Error("OCR down"); }, async () => [""]]) {
+      const pages = await CONVERTERS.image(fixture("acme-revenue-chart.png"), { fileName: "beach.png", mimeType: "image/png", describeImage, readText });
+      expect(pages).toEqual([{ page: null, text: "A photo of a beach." }]);
+    }
+  });
+
+  it("reads an image with OCR alone when no vision model is set up", async () => {
+    const pages = await CONVERTERS.image(fixture("acme-revenue-chart.png"), { fileName: "x.png", mimeType: "image/png", readText: async () => ["EXIT"] });
+    expect(pages).toEqual([{ page: null, text: "EXIT" }]);
+  });
+
   it("refuses an image when no model can describe it", async () => {
     await expect(CONVERTERS.image(fixture("acme-revenue-chart.png"), { fileName: "x.png", mimeType: "image/png" })).rejects.toThrow(/NEBIUS_API_KEY/);
   });

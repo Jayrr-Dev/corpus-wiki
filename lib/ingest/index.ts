@@ -50,7 +50,7 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
     return startChatImport(bytes, sourceDate);
   }
   const hash = sha256(bytes);
-  const { db, imageDescriber, videoReader } = await getServerDeps();
+  const { db, imageDescriber, videoReader, textReader } = await getServerDeps();
   // A file seen before is skipped before an image or video costs a model call to read
   const known = await findSourceByHash(hash);
   if (known) return { kind: "skipped", sourceId: known };
@@ -59,7 +59,7 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
     if (existing) return { kind: "skipped", sourceId: existing };
   }
   const mimeType = storedMimeType(format, fileName, input.browserType);
-  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, readAudio: format.id === "audio" ? audioReaderFrom() : null, storeFigure: storeSourceFile });
+  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, readAudio: format.id === "audio" ? audioReaderFrom() : null, readText: textReader, storeFigure: storeSourceFile });
   const passages = splitIntoPassages(pages);
   if (passages.length === 0) throw new Error(NOTHING_READ[format.id] ?? "No text was found in this file (is it a scan?).");
   const storagePath = await storeSourceFile(`${hash}${extensionOf(fileName, format)}`, bytes, mimeType);

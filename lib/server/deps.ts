@@ -19,6 +19,8 @@ import { embedderFromEnv } from "@/lib/ai/embeddings";
 import { embedMissingPassages, embedMissingUnits } from "@/lib/knowledge/embeddingStore";
 import type { ImageDescriber } from "@/lib/ingest/describeMedia";
 import { imageDescriberFrom } from "@/lib/ingest/describeMediaServer";
+import type { TextReader } from "@/lib/ingest/ocr";
+import { textReaderFrom } from "@/lib/ingest/ocrServer";
 import type { VideoReader } from "@/lib/ingest/describeVideo";
 import { videoReaderFrom } from "@/lib/ingest/describeVideoServer";
 import { describeEventEntities } from "@/lib/knowledge/entityDescriptions";
@@ -39,7 +41,7 @@ import { serverUsageGate } from "@/lib/billing/server";
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
 // Every AI call is logged to public.ai_calls (token usage on /settings).
 // Server actions take them from here; tests build their own (pg + fakes).
-export type ServerDeps = { refreshAppliedOverviews?: (eventId: string, pageIds: string[]) => Promise<import("@/lib/living-page/refreshOrganizationOverviews").OverviewOutcome[]>; db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<import("@/lib/living-page/articleOrchestrator").OrchestratorResult>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; articleVerifier?: (eventId: string) => Promise<void>; pageMaintainer?: (eventId: string | null, options?: { curate?: boolean; dispatches?: import("@/lib/curator/plan").Dispatch[] }) => Promise<unknown>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null };
+export type ServerDeps = { refreshAppliedOverviews?: (eventId: string, pageIds: string[]) => Promise<import("@/lib/living-page/refreshOrganizationOverviews").OverviewOutcome[]>; db: DbRpc; reconciler: ReconciliationClient; writer: SectionWriter; glossaryGenerator?: () => Promise<void>; pagePlanner?: PagePlanner; articleOrchestrator?: (eventId: string, scope?: string, unitIds?: string[]) => Promise<import("@/lib/living-page/articleOrchestrator").OrchestratorResult>; knowledgeExpander?: (eventId: string) => Promise<void>; hierarchyOrganizer?: (eventId: string) => Promise<void>; deduper?: (eventId: string) => Promise<void>; topicPlacer?: (eventId: string) => Promise<void>; entityDescriber?: (eventId: string) => Promise<void>; entityTidier?: (eventId: string) => Promise<void>; profileWriter?: (eventId: string) => Promise<void>; duplicateGuard?: PipelineDeps["duplicateGuard"]; claimEmbedder?: () => Promise<void>; articleVerifier?: (eventId: string) => Promise<void>; pageMaintainer?: (eventId: string | null, options?: { curate?: boolean; dispatches?: import("@/lib/curator/plan").Dispatch[] }) => Promise<unknown>; imageDescriber: ImageDescriber | null; videoReader: VideoReader | null; textReader?: TextReader | null };
 
 export async function getServerDeps(): Promise<ServerDeps> {
   const { startComposerWorker } = await import("@/lib/composer/worker");
@@ -86,6 +88,7 @@ export async function getServerDeps(): Promise<ServerDeps> {
     articleOrchestrator: settings ? (eventId, scope, unitIds) => orchestrateEventArticles({ settings, client: admin, db, embedder }, eventId, scope, unitIds) : undefined,
     pageMaintainer: settings ? (eventId, options) => maintainPageTree({ settings, client: admin, db, writer, embedder }, eventId, options) : undefined,
     reconciler: getReconciliationClient(process.env, chosenModel, skills, logCall),
+    textReader: textReaderFrom(process.env, logCall),
     videoReader: videoReaderFrom(settings),
     writer,
   };
