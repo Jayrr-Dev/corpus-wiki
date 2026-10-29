@@ -21,8 +21,8 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | owner OK for paid calls | waiting on owner |
 | reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | in progress |
 | reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | PR open |
-| reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
-| reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure | waiting |
+| reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | PR open |
+| reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure, owner-run live evals | waiting (offline comparison in the #45 PR) |
 | recompute | #46 dependency index and stale marks, glossary first (closes #34) | | in progress |
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | waiting |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
