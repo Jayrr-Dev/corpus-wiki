@@ -8,7 +8,8 @@ import { setMonetizationEnabled } from "@/lib/server-actions/settings";
 import { SettingHint } from "./SettingHint";
 
 // MONETIZATION: usage-based plans with session and weekly limits (docs/monetization-plan.md)
-export function Monetization({ enabled }: { enabled: boolean }) {
+// `billing` is the billing feature flag: without it nothing is metered, so the switch has no effect yet
+export function Monetization({ enabled, billing = false }: { enabled: boolean; billing?: boolean }) {
   const router = useRouter();
   const save = useServerAction(setMonetizationEnabled);
 
@@ -26,7 +27,7 @@ export function Monetization({ enabled }: { enabled: boolean }) {
         </div>
         <Switch id="monetization" checked={enabled} disabled={save.isPending} onCheckedChange={(next) => void apply(next)} />
       </div>
-      {enabled ? <p className="text-panel text-muted-foreground">Limits are not enforced yet; billing is still being built.</p> : null}
+      {enabled ? <p className="text-panel text-muted-foreground">{billing ? "Limits are enforced." : "Not enforced until the Billing feature is on."}</p> : null}
       <ErrorNote error={save.error} />
     </div>
   );

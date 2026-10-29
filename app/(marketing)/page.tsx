@@ -9,13 +9,19 @@ import { LandingNav } from "@/components/landing/landing-nav";
 import { PlaceholderTag } from "@/components/landing/product-mocks";
 import { Reveal } from "@/components/landing/reveal";
 import { TaglineReveal } from "@/components/landing/tagline-reveal";
+import { pricingFaqAnswer } from "@/lib/billing/plans";
+import { isFeatureEnabled } from "@/lib/flags/server";
 
 // =====================================================================
 // LANDING PAGE (/): one offer, one audience, one action.
 // Built to the landing-page-design skill: Geist only, Tailwind scale sizes,
 // spacing from the 2 to 96px set, flat backgrounds, Phosphor icons.
 // Anything marked with <PlaceholderTag> needs real content before launch.
+// The price answer and "No card needed" show only with the billing flag on;
+// the page is rebuilt every minute so a flag change shows within a minute.
 // =====================================================================
+
+export const revalidate = 60;
 
 const EASE = "ease-landing";
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-gold focus-visible:ring-offset-2 focus-visible:ring-offset-landing-base";
@@ -66,11 +72,21 @@ const FAQ: { q: string; a: string; placeholder?: boolean }[] = [
   { q: "Where is my data stored?", a: "Storage location, encryption and retention details still need to be written.", placeholder: true },
 ];
 
-const FAQ_SCHEMA = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQ.filter(f => !f.placeholder).map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
-};
+const COST_QUESTION = "How much does it cost?";
+
+// The FAQ with the price answer written from the plan list while billing is on
+function faqFor(billing: boolean): typeof FAQ {
+  if (!billing) return FAQ;
+  return FAQ.map(f => (f.q === COST_QUESTION ? { q: f.q, a: pricingFaqAnswer() } : f));
+}
+
+function faqSchema(faq: typeof FAQ) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faq.filter(f => !f.placeholder).map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
+}
 
 function SectionHeading({ eyebrow, title, body }: { eyebrow?: string; title: string; body?: string }) {
   return (
@@ -82,7 +98,9 @@ function SectionHeading({ eyebrow, title, body }: { eyebrow?: string; title: str
   );
 }
 
-export default function WelcomePage() {
+export default async function WelcomePage() {
+  const billing = await isFeatureEnabled("billing");
+  const faq = faqFor(billing);
   return (
     <>
       <LandingNav />
@@ -100,8 +118,14 @@ export default function WelcomePage() {
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
-                <span className="text-sm text-white/50">Free to start</span>
-                <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
+                {billing ? (
+                  <span className="text-sm text-white/50">No card needed</span>
+                ) : (
+                  <>
+                    <span className="text-sm text-white/50">Free to start</span>
+                    <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
+                  </>
+                )}
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
@@ -242,7 +266,7 @@ export default function WelcomePage() {
             <SectionHeading title="Questions" />
           </Reveal>
           <Reveal className="mx-auto mt-12 flex max-w-3xl flex-col gap-2">
-            {FAQ.map(f => (
+            {faq.map(f => (
               <details key={f.q} className="group rounded-2xl border border-white/10 bg-white/[0.03]">
                 <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-6 text-left font-semibold transition-colors duration-300 hover:bg-white/[0.03] [&::-webkit-details-marker]:hidden ${FOCUS}`}>
                   <span className="text-balance">{f.q}</span>
@@ -255,7 +279,7 @@ export default function WelcomePage() {
               </details>
             ))}
           </Reveal>
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faq)) }} />
         </section>
 
         {/* FINAL ACTION: identical to the hero, with the risk reversal */}
@@ -283,6 +307,7 @@ export default function WelcomePage() {
             <li><a href="#product" className={`rounded-md transition-colors duration-300 hover:text-white ${FOCUS}`}>Product</a></li>
             <li><a href="#how" className={`rounded-md transition-colors duration-300 hover:text-white ${FOCUS}`}>How it works</a></li>
             <li><a href="#faq" className={`rounded-md transition-colors duration-300 hover:text-white ${FOCUS}`}>Questions</a></li>
+            {billing && <li><Link href="/pricing" className={`rounded-md transition-colors duration-300 hover:text-white ${FOCUS}`}>Pricing</Link></li>}
             {/* No pages yet: shown disabled rather than linking nowhere */}
             {["Privacy", "Terms", "Contact"].map(label => (
               <li key={label}>

@@ -1,8 +1,12 @@
 # Monetization plan: usage-based plans with weekly limits
 
-Status: planning. The only code shipped so far is the **Monetization** switch on
-/settings → Features (`workspace_settings.monetization_enabled`, default **off**).
-While it is off nothing below is enforced and nobody is charged.
+Status: v1 in code behind the **billing** feature flag (Settings > Features,
+default **off**): plans, subscriptions, usage windows, the gate in
+`lib/ai/chat.ts`, Stripe Checkout, the customer portal and the webhook
+(`lib/billing`, `app/api/billing/webhook`). With the flag on, usage is counted;
+the **Monetization** switch (`workspace_settings.monetization_enabled`, default
+**off**) decides whether limits are enforced. While it is off nothing is
+blocked, the gate only logs, and nobody is charged.
 
 ## 1. What we are copying, and why
 
@@ -41,15 +45,26 @@ have room. When either runs out, interactive work stops with a clear message,
 background work pauses until the reset, and the user can wait, upgrade, or
 spend pay-as-you-go **extra usage**.
 
-## 3. Plans (starting numbers, tune with real data)
+## 3. Plans (v1 price list, tune with real data)
 
-| Plan | Price / month | Weekly credits | 5-hour credits | Notes |
+1 credit = $0.001 of `estimateCallCost`. The same numbers live in
+`lib/billing/plans.ts` (the /pricing page and the landing FAQ read them) and
+are seeded into `public.plans` by `20261120010000_billing.sql`.
+
+| Plan | Price | Weekly credits | 5-hour session credits | Notes |
 |---|---|---|---|---|
-| Free | $0 | 500 | 150 | Small models only, one space, no background agents |
-| Pro | $20 | 5,000 | 1,500 | All models, curator and auto-refresh on |
-| Max 5x | $100 | 25,000 | 7,500 | Separate weekly cap for the top model |
-| Max 20x | $200 | 100,000 | 30,000 | Priority queue |
-| Team (later) | per seat | pooled | per seat | Admin can set per-member caps |
+| Free | $0 | 300 | 100 | 1 space, small models only, no background agents |
+| Plus | $9 / month or $90 / year | 2,500 | 800 | |
+| Pro | $24 / month or $240 / year | 7,500 | 2,500 | All models, MCP, publishing and embeds, connectors |
+| Max | $79 / month | 25,000 | 8,000 | Priority queue |
+| Team | $15 / seat / month, 3 seat minimum | 5,000 per seat, pooled | (pool) | |
+
+**Market check, 2026-10-29.** Mem: Plus $9, Pro $29. Notion Business with AI:
+about $20-24 per seat. NotebookLM Plus: $4.99. Reflect: $10. Obsidian Sync:
+$4-8. Slite: $8-10 per seat. Tettra: $4-8 per seat. Guru: $25 per seat with a
+10 seat minimum. Plus sits with Mem Plus and Reflect; Pro undercuts Mem Pro
+and Notion with AI; Team sits between the wiki tools (Slite, Tettra) and Guru,
+with a lower seat minimum. Yearly Plus and Pro cost ten months.
 
 Rule of thumb for pricing: weekly credits × 4.3 weeks × $ per credit should be
 at most ~60 % of the plan price for the *average* user. Heavy users hitting the
@@ -59,18 +74,18 @@ cap are expected and fine.
 
 ### Must have (v1)
 1. **Feature switch** (done): workspace-level, default off. Off means log only.
-2. **User attribution on `ai_calls`**: add `billed_user_id`. Interactive calls bill
+2. **User attribution on `ai_calls`** (done; every call bills the space owner for now): add `billed_user_id`. Interactive calls bill
    the signed-in user; background calls (curator, auto-refresh stale lines,
    suggestions) bill the space owner (`spaces.owner_id`).
-3. **Credits per call**: store `credits` on each `ai_calls` row, computed from
+3. **Credits per call** (done): store `credits` on each `ai_calls` row, computed from
    `estimateCallCost` at write time so later price edits do not rewrite history.
-4. **Usage windows table** `usage_windows(user_id, kind 'session'|'weekly', starts_at,
+4. **Usage windows table** (done) `usage_windows(user_id, kind 'session'|'weekly', starts_at,
    ends_at, credits_used)`. Session window opens on the first call after the last
    one closed and lasts 5 hours. Weekly window is anchored to the plan start and
    resets at the same weekday and time each week.
-5. **Plan and limits** `plans` (id, name, weekly_credits, session_credits,
+5. **Plan and limits** (done) `plans` (id, name, weekly_credits, session_credits,
    model_caps jsonb) and `subscriptions(user_id, plan_id, status, period_end)`.
-6. **Gate before each call** in `lib/ai/chat.ts` (next to `logSafely`): one RPC
+6. **Gate before each call** (done for `chatJson`; fails open if the database cannot answer) in `lib/ai/chat.ts` (next to `logSafely`): one RPC
    `check_and_reserve_usage(user, estimated_credits)` that returns ok / session
    limit / weekly limit plus the reset time. Reconcile with the real cost after
    the call. Must be atomic so two parallel jobs cannot both pass the last credit.
@@ -82,7 +97,7 @@ cap are expected and fine.
    used, and "resets Tuesday 9:00" in the user's time zone.
 10. **Warnings** at 75 % and 90 % of either window (toast + banner), and a clear
     limit-reached screen with the reset time and the upgrade / extra usage buttons.
-11. **Stripe subscriptions** for Pro / Max with Checkout and the customer portal.
+11. **Stripe subscriptions** (done: `lib/billing/actions.ts`, `/api/billing/webhook`) for the paid plans with Checkout and the customer portal.
     Webhooks keep `subscriptions` in sync.
 
 ### Should have (v2)
