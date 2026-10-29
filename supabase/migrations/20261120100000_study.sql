@@ -53,6 +53,8 @@ create table public.study_items (
   choices jsonb check (choices is null or jsonb_typeof(choices) = 'array'),
   explanation text not null default '',
   stale boolean not null default false,
+  -- order within the set, as written: a batch shares one created_at, so this keeps practice and the list stable
+  position integer not null default 0,
   created_at timestamptz not null default now(),
   check ((kind = 'multiple_choice') = (choices is not null)),
   foreign key (space_id, set_id) references public.study_sets (space_id, id) on delete cascade,
@@ -131,10 +133,11 @@ language sql
 set search_path = ''
 as $$
   with added as (
-    insert into public.study_items (set_id, unit_id, revision_id, kind, prompt, answer, choices, explanation)
+    insert into public.study_items (set_id, unit_id, revision_id, kind, prompt, answer, choices, explanation, position)
     select p_set_id, (x ->> 'unitId')::uuid, (x ->> 'revisionId')::uuid, x ->> 'kind', x ->> 'prompt', x ->> 'answer',
-      case when jsonb_typeof(x -> 'choices') = 'array' then x -> 'choices' end, coalesce(x ->> 'explanation', '')
-    from jsonb_array_elements(p_items) x
+      case when jsonb_typeof(x -> 'choices') = 'array' then x -> 'choices' end, coalesce(x ->> 'explanation', ''),
+      (select coalesce(max(i.position), 0) from public.study_items i where i.set_id = p_set_id) + e.n::integer
+    from jsonb_array_elements(p_items) with ordinality e(x, n)
     returning 1
   )
   select count(*)::integer from added;
@@ -261,7 +264,7 @@ as $$
       'types', to_jsonb(s.types), 'createdAt', s.created_at) order by s.created_at desc) from sets s), '[]'::jsonb),
     'items', coalesce((select jsonb_agg(jsonb_build_object(
       'id', i.id, 'setId', i.set_id, 'unitId', i.unit_id, 'revisionId', i.revision_id, 'kind', i.kind, 'prompt', i.prompt,
-      'answer', i.answer, 'choices', i.choices, 'explanation', i.explanation, 'stale', i.stale) order by i.created_at, i.id) from items i), '[]'::jsonb),
+      'answer', i.answer, 'choices', i.choices, 'explanation', i.explanation, 'stale', i.stale) order by i.set_id, i.position, i.id) from items i), '[]'::jsonb),
     'claims', coalesce((select jsonb_agg(jsonb_build_object('unitId', c.unit_id, 'title', c.title, 'content', c.content, 'retired', c.retired)) from claims c), '[]'::jsonb),
     'progress', coalesce((select jsonb_agg(jsonb_build_object('unitId', p.unit_id, 'level', p.level, 'ease', p.ease, 'dueAt', p.due_at, 'lastSeenAt', p.last_seen_at))
       from public.study_progress p where p.user_id = p_user_id and p.unit_id in (select unit_id from claims)), '[]'::jsonb)
