@@ -2,21 +2,21 @@
 <!-- Shot 7, 0:29.9 (about 4.6 s): "Someone leaves, and years of context are just gone."
      A team grid of avatar circles. Brent's fades out, and small doc and idea icons drift away from it and vanish.
      A counter in the corner reads "Knowledge lost: 6 years". Synthetic names only (Brightline Co.). -->
-<html class="dark"><head><meta charset="utf-8"><title>G07 Knowledge Lost</title>
+<html class="light"><head><meta charset="utf-8"><title>G07 Knowledge Lost</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
 <style>
-  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #faf9f6; color: #172522; font-family: var(--font-sans, Inter, sans-serif); }
   #cursor { display: none !important; }
   .team { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; grid-template-columns: repeat(6, 170px); gap: 54px 46px; }
   .p { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .av { width: 132px; height: 132px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 600; color: #1e1e1e; box-shadow: 0 0 0 1px #363636; }
-  .nm { font-size: 22px; color: #a3a3a3; }
-  .lbl { position: absolute; left: 50%; top: 92px; transform: translateX(-50%); font-size: 24px; color: #6b6b6b; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
-  .counter { position: absolute; right: 80px; top: 70px; border: 1px solid #363636; background: #262626; border-radius: 12px; padding: 18px 26px; text-align: right; }
-  .counter .k { font-size: 18px; color: #a3a3a3; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-  .counter .v { font-size: 56px; font-weight: 700; margin-top: 4px; color: #dcdcdc; font-variant-numeric: tabular-nums; }
-  .counter .v span { color: #e05252; }
+  .av { width: 132px; height: 132px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 600; color: #172522; box-shadow: 0 0 0 1px #dfddd7; }
+  .nm { font-size: 22px; color: #5c5c5c; }
+  .lbl { position: absolute; left: 50%; top: 92px; transform: translateX(-50%); font-size: 24px; color: #8a8a8a; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+  .counter { position: absolute; right: 80px; top: 70px; border: 1px solid #dfddd7; background: #ffffff; border-radius: 12px; padding: 18px 26px; text-align: right; }
+  .counter .k { font-size: 18px; color: #5c5c5c; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .counter .v { font-size: 56px; font-weight: 700; margin-top: 4px; color: #172522; font-variant-numeric: tabular-nums; }
+  .counter .v span { color: #bb3f3f; }
   .bit { position: absolute; left: 0; top: 0; width: 40px; height: 40px; margin: -20px 0 0 -20px; will-change: transform, opacity; }
   .bit svg { width: 100%; height: 100%; }
 </style></head>
@@ -29,9 +29,9 @@
 const TEAM = [["Ana", "#72b7e5"], ["Marco", "#36ab78"], ["Priya", "#d9a032"], ["Leo", "#b09de0"], ["Sofia", "#e88070"], ["Ken", "#80c6a1"],
               ["Ruth", "#c66fa5"], ["Omar", "#91a64b"], ["Brent", "#8fae8d"], ["Mia", "#6574d8"], ["Jonas", "#e9a477"], ["Lena", "#52c4c4"]];
 const DAVE = 8;
-const DOC = `<svg viewBox="0 0 24 24" fill="none" stroke="#dcdcdc" stroke-width="1.6" stroke-linejoin="round"><path d="M6 2.5h8l4.5 4.5v14.5h-12.5z" fill="#2f2f2f"/><path d="M14 2.5v4.5h4.5"/><path d="M9 12h6M9 15h6M9 18h4" stroke-linecap="round"/></svg>`;
-const IDEA = `<svg viewBox="0 0 24 24" fill="none" stroke="#d9a032" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="#3a3120"/><path d="M10 19h4M10.6 21.5h2.8"/></svg>`;
-const NOTE = `<svg viewBox="0 0 24 24" fill="none" stroke="#72b7e5" stroke-width="1.6" stroke-linejoin="round"><path d="M4 5h16v11h-9l-4 4v-4h-3z" fill="#1f2c36"/><path d="M8 9h8M8 12h5" stroke-linecap="round"/></svg>`;
+const DOC = `<svg viewBox="0 0 24 24" fill="none" stroke="#172522" stroke-width="1.6" stroke-linejoin="round"><path d="M6 2.5h8l4.5 4.5v14.5h-12.5z" fill="#e9e7e2"/><path d="M14 2.5v4.5h4.5"/><path d="M9 12h6M9 15h6M9 18h4" stroke-linecap="round"/></svg>`;
+const IDEA = `<svg viewBox="0 0 24 24" fill="none" stroke="#b9821c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="#fbefd2"/><path d="M10 19h4M10.6 21.5h2.8"/></svg>`;
+const NOTE = `<svg viewBox="0 0 24 24" fill="none" stroke="#3f8fc4" stroke-width="1.6" stroke-linejoin="round"><path d="M4 5h16v11h-9l-4 4v-4h-3z" fill="#e3eff8"/><path d="M8 9h8M8 12h5" stroke-linecap="round"/></svg>`;
 // Seeded random, so every frame is the same on every render
 function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; }
 let bits = [], origin = { x: 0, y: 0 };

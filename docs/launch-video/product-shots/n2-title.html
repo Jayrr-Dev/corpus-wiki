@@ -1,23 +1,23 @@
 <!doctype html>
 <!-- Nemotron section, 0:02.4–0:08.5: "Every AI step runs on open NVIDIA Nemotron models, served by Nebius Token Factory."
-     A title card in the app's dark theme. Plain text only (no third-party logos). Model ids are from lib/ai/config.ts. -->
-<html class="dark"><head><meta charset="utf-8"><title>N2 Title</title>
+     A title card in the app's light theme. Plain text only (no third-party logos). Model ids are from lib/ai/config.ts. -->
+<html class="light"><head><meta charset="utf-8"><title>N2 Title</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
 <style>
-  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #faf9f6; color: #172522; font-family: var(--font-sans, Inter, sans-serif); }
   #cursor { display: none !important; }
   .wrap { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  .kicker { font-size: 28px; color: #a3a3a3; letter-spacing: .02em; }
+  .kicker { font-size: 28px; color: #5c5c5c; letter-spacing: .02em; }
   .big { font-size: 96px; font-weight: 700; letter-spacing: -.02em; margin-top: 10px; }
-  .big .nv { color: #76b900; }
-  .by { font-size: 40px; color: #dcdcdc; margin-top: 14px; }
-  .by b { color: #d9f8ff; font-weight: 600; }
+  .big .nv { color: #5a8f00; }
+  .by { font-size: 40px; color: #172522; margin-top: 14px; }
+  .by b { color: #172522; font-weight: 600; }
   .models { display: grid; grid-template-columns: repeat(4, 360px); gap: 18px; margin-top: 64px; }
-  .m { border: 1px solid #363636; background: #262626; border-radius: 12px; padding: 18px 20px; }
-  .m .role { font-size: 15px; color: #a3a3a3; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+  .m { border: 1px solid #dfddd7; background: #ffffff; border-radius: 12px; padding: 18px 20px; }
+  .m .role { font-size: 15px; color: #5c5c5c; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
   .m .name { font-size: 26px; font-weight: 600; margin-top: 6px; }
-  .m .id { font-family: var(--font-mono, "JetBrains Mono", monospace); font-size: 13px; color: #8a8a8a; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .m .id { font-family: var(--font-mono, "JetBrains Mono", monospace); font-size: 13px; color: #6b6b6b; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .m .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; }
 </style></head>
 <body>

@@ -2,27 +2,27 @@
 <!-- Shot 29, 2:45.9 (about 3.6 s): "Link's below."
      End card: the logo, "Your self-maintaining knowledge space." and the link, with a graph slowly rotating behind.
      The link is the LINK constant at the top of the script. -->
-<html class="dark"><head><meta charset="utf-8"><title>G29 End Card</title>
+<html class="light"><head><meta charset="utf-8"><title>G29 End Card</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
 <style>
-  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #faf9f6; color: #172522; font-family: var(--font-sans, Inter, sans-serif); }
   #cursor { display: none !important; }
   canvas { position: absolute; inset: 0; }
-  .veil { position: absolute; inset: 0; background: radial-gradient(ellipse 760px 380px at 50% 50%, rgba(30,30,30,.92) 0%, rgba(30,30,30,.6) 55%, rgba(30,30,30,0) 100%); }
+  .veil { position: absolute; inset: 0; background: radial-gradient(ellipse 760px 380px at 50% 50%, rgba(250,249,246,.92) 0%, rgba(250,249,246,.6) 55%, rgba(250,249,246,0) 100%); }
   .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
   #logo { width: 720px; }
-  #tag { font-size: 34px; color: #a3a3a3; }
-  #link { margin-top: 26px; font-size: 32px; font-weight: 600; color: #8fae8d; border: 1px solid #496748; background: rgba(38,38,38,.85); border-radius: 999px; padding: 14px 34px; display: flex; align-items: center; gap: 14px; }
+  #tag { font-size: 34px; color: #5c5c5c; }
+  #link { margin-top: 26px; font-size: 32px; font-weight: 600; color: #496748; border: 1px solid #496748; background: rgba(255,255,255,.9); border-radius: 999px; padding: 14px 34px; display: flex; align-items: center; gap: 14px; }
   #link svg { width: 26px; height: 26px; }
 </style></head>
 <body>
 <canvas id="cv" width="1920" height="1080"></canvas>
 <div class="veil"></div>
 <div class="center">
-  <img id="logo" src="assets/logo-white.svg" alt="">
+  <img id="logo" src="assets/logo.svg" alt="">
   <div id="tag">Your self-maintaining knowledge space.</div>
-  <div id="link"><svg viewBox="0 0 24 24" fill="none" stroke="#8fae8d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/></svg><span id="url"></span></div>
+  <div id="link"><svg viewBox="0 0 24 24" fill="none" stroke="#496748" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/></svg><span id="url"></span></div>
 </div>
 <script>
 const LINK = "github.com/Jayrr-Dev/corpus-wiki";
@@ -75,7 +75,7 @@ window.SCENE = { duration: 3.6,
     const P = G.nodes.map((n) => project(n, t, 0.6 + t * 0.09, -0.25));
     ctx.lineWidth = 1.2;
     for (const [a, b] of G.links) {
-      ctx.strokeStyle = G.nodes[a].c === G.nodes[b].c ? COLORS[G.nodes[a].c % COLORS.length] + "40" : "rgba(150,150,150,.16)";
+      ctx.strokeStyle = G.nodes[a].c === G.nodes[b].c ? COLORS[G.nodes[a].c % COLORS.length] + "70" : "rgba(80,80,80,.18)";
       ctx.beginPath(); ctx.moveTo(P[a].x, P[a].y); ctx.lineTo(P[b].x, P[b].y); ctx.stroke();
     }
     const order = P.map((p, i) => i).sort((i, j) => P[j].z - P[i].z);

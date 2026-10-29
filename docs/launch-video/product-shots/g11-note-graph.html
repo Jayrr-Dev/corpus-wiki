@@ -2,24 +2,24 @@
 <!-- Shot 11, 0:45.5 (about 5.6 s): "Obsidian, Notion, all of them. And honestly? The graphs are gorgeous."
      A stand-in for a screen recording: a generic note app's graph view, grey nodes and links slowly drifting and rotating.
      Generic on purpose: no third-party UI or logo. Note titles are synthetic (Brightline Co., billing sync), with two small Phoenix Project nods among them. -->
-<html class="dark"><head><meta charset="utf-8"><title>G11 Note Graph</title>
+<html class="light"><head><meta charset="utf-8"><title>G11 Note Graph</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
 <style>
-  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #faf9f6; color: #172522; font-family: var(--font-sans, Inter, sans-serif); }
   #cursor { display: none !important; }
-  .side { position: absolute; left: 0; top: 0; bottom: 0; width: 320px; background: #262626; border-right: 1px solid #363636; padding: 30px 22px; font-size: 18px; color: #8a8a8a; }
-  .side .h { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: #6b6b6b; font-weight: 600; margin: 8px 12px 10px; }
+  .side { position: absolute; left: 0; top: 0; bottom: 0; width: 320px; background: #f3f2ee; border-right: 1px solid #dfddd7; padding: 30px 22px; font-size: 18px; color: #6b6b6b; }
+  .side .h { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: #8a8a8a; font-weight: 600; margin: 8px 12px 10px; }
   .side .n { padding: 8px 12px; border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .side .n::before { content: ""; display: inline-block; width: 12px; height: 15px; border: 1.5px solid #5a5a5a; border-radius: 2px; margin-right: 12px; vertical-align: -2px; }
-  .tabs { position: absolute; left: 320px; right: 0; top: 0; height: 54px; background: #232323; border-bottom: 1px solid #363636; display: flex; align-items: flex-end; padding: 0 16px; gap: 4px; }
-  .tab { font-size: 17px; color: #6b6b6b; padding: 13px 22px; border-radius: 8px 8px 0 0; }
-  .tab.on { background: #1e1e1e; color: #dcdcdc; border: 1px solid #363636; border-bottom-color: #1e1e1e; margin-bottom: -1px; }
+  .side .n::before { content: ""; display: inline-block; width: 12px; height: 15px; border: 1.5px solid #b5b1a8; border-radius: 2px; margin-right: 12px; vertical-align: -2px; }
+  .tabs { position: absolute; left: 320px; right: 0; top: 0; height: 54px; background: #ffffff; border-bottom: 1px solid #dfddd7; display: flex; align-items: flex-end; padding: 0 16px; gap: 4px; }
+  .tab { font-size: 17px; color: #8a8a8a; padding: 13px 22px; border-radius: 8px 8px 0 0; }
+  .tab.on { background: #faf9f6; color: #172522; border: 1px solid #dfddd7; border-bottom-color: #faf9f6; margin-bottom: -1px; }
   canvas { position: absolute; left: 320px; top: 54px; }
-  .ctl { position: absolute; right: 28px; top: 78px; border: 1px solid #363636; background: #262626; border-radius: 10px; padding: 14px 18px; font-size: 15px; color: #8a8a8a; width: 220px; }
+  .ctl { position: absolute; right: 28px; top: 78px; border: 1px solid #dfddd7; background: #f3f2ee; border-radius: 10px; padding: 14px 18px; font-size: 15px; color: #6b6b6b; width: 220px; }
   .ctl div { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
-  .ctl i { display: inline-block; width: 90px; height: 4px; border-radius: 2px; background: #3a3a3a; position: relative; }
-  .ctl i b { position: absolute; top: -5px; width: 14px; height: 14px; border-radius: 50%; background: #8a8a8a; }
+  .ctl i { display: inline-block; width: 90px; height: 4px; border-radius: 2px; background: #d6d3cc; position: relative; }
+  .ctl i b { position: absolute; top: -5px; width: 14px; height: 14px; border-radius: 50%; background: #6b6b6b; }
 </style></head>
 <body>
 <div class="side" id="side"></div>
@@ -81,7 +81,7 @@ window.SCENE = { duration: 5.6,
     ctx.lineWidth = 1.2;
     for (const [a, b] of G.links) {
       const d = clamp(1 - ((P[a].z + P[b].z) / 2 + 400) / 1100, 0.25, 1);
-      ctx.strokeStyle = `rgba(150,150,150,${0.3 * d})`;
+      ctx.strokeStyle = `rgba(80,80,80,${0.26 * d})`;
       ctx.beginPath(); ctx.moveTo(P[a].x, P[a].y); ctx.lineTo(P[b].x, P[b].y); ctx.stroke();
     }
     const order = P.map((p, i) => i).sort((i, j) => P[j].z - P[i].z);
@@ -90,10 +90,10 @@ window.SCENE = { duration: 5.6,
       const n = G.nodes[i], p = P[i];
       const d = clamp(1 - (p.z + 400) / 1100, 0.3, 1);
       const r = (n.hub ? 9 : 3.2 + Math.min(n.deg, 6) * 0.55) * p.s * 1.6;
-      const g = Math.round(110 + 80 * d);
+      const g = Math.round(165 - 75 * d);
       ctx.fillStyle = `rgb(${g},${g},${g})`;
       ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
-      if (n.hub) { ctx.fillStyle = `rgba(170,170,170,${0.85 * d})`; ctx.fillText(n.label, p.x, p.y + r + 20); }
+      if (n.hub) { ctx.fillStyle = `rgba(70,70,70,${0.9 * d})`; ctx.fillText(n.label, p.x, p.y + r + 20); }
     }
     ctx.globalAlpha = 1;
   }

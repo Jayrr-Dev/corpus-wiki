@@ -1,16 +1,16 @@
 <!doctype html>
-<html class="dark"><head><meta charset="utf-8"><title>16 Logo</title>
+<html class="light"><head><meta charset="utf-8"><title>16 Logo</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
 <style>
-  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #faf9f6; }
   .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
   #logo { width: 720px; }
-  #tag { font-size: 34px; color: #a3a3a3; font-family: var(--font-sans, Inter, sans-serif); }
+  #tag { font-size: 34px; color: #5c5c5c; font-family: var(--font-sans, Inter, sans-serif); }
   #cursor { display: none !important; }
 </style></head>
 <body>
-<div class="center"><img id="logo" src="assets/logo-white.svg" alt=""><div id="tag">Your self-maintaining knowledge space.</div></div>
+<div class="center"><img id="logo" src="assets/logo.svg" alt=""><div id="tag">Your self-maintaining knowledge space.</div></div>
 <script>
 window.SCENE = { duration: 2.2, frame(t) {
   camera(t, 2.2, 1.0, 1.03);
