@@ -204,8 +204,25 @@
   --color-landing-green-hover: #557a54;
   --color-landing-green-light: #6e9a6c;
   --color-landing-green-pale: #cfe3cd;
+  /* the demos' category red and green, for a problem and its answer */
+  --color-landing-red: #ea4335;
+  --color-landing-go: #34a853;
+  /* Nebius Token Factory lime, for its badge only */
+  --color-landing-nebius: #e0ff4f;
   /* weighted, decelerating motion curve for every landing transition */
   --ease-landing: cubic-bezier(0.22, 1, 0.36, 1);
+  /* headlines: tight letter spacing, and 32px section headlines on phones */
+  --tracking-headline: -0.4px;
+  --text-headline: 2rem;
+  --text-headline--line-height: 1;
+}
+
+/* the five category colours the demos use, as an underline under a word */
+@utility palette-underline {
+  padding-bottom: 14px;
+  background: linear-gradient(to right, #4285f4 0 20%, #ea4335 20% 40%, #fbbc04 40% 60%, #34a853 60% 80%, #673ab7 80%) 0 100% / 100% 6px no-repeat;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* =====================================================================

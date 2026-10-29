@@ -10,7 +10,25 @@
 <link rel="stylesheet" href="live-demo.css">
 <style>
   /* FACTS: the knowledge units each source turns into, floating between the sources and the page */
-  .kus { left: 8px; top: 340px; width: 260px; transform: translateZ(150px); display: flex; flex-direction: column; gap: 8px; }
+  /* Facts and the change log sit below the page, never over its text */
+  /* WIKI PAGE: dressed like the app's article view (dark theme) */
+  .main { background: #1e1e1e; border-color: #363636; }
+  .main .crumb { font-size: 13px; color: #a3a3a3; }
+  .wl { color: #b3cefa; text-decoration: none; cursor: pointer; }
+  .wl:hover { text-decoration: underline; }
+  .main h2 { margin-top: 12px; padding-bottom: 16px; border-bottom: 1px solid #363636; font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif; font-size: 32px; line-height: 1.2; font-weight: 400; }
+  .main h3 { margin-top: 24px; padding-bottom: 6px; border-bottom: 1px solid #363636; font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif; font-size: 22px; line-height: 1.3; font-weight: 400; }
+  .main p.para { font-size: 15px; line-height: 1.75; color: #dcdcdc; }
+  .main p.para b { font-weight: 600; color: #fff; }
+  .main .ref { display: inline; min-width: 0; height: auto; padding: 0 1px; margin-left: 1px; border-radius: 3px; background: none; color: #b3cefa; font-size: 11px; line-height: 0; vertical-align: super; }
+  .main .ref::before { content: "["; } .main .ref::after { content: "]"; }
+  .main .ref.fresh { background: rgba(251,188,4,.3); color: #fff; transform: none; }
+  .main .see { margin-top: 20px; padding-top: 12px; border-top: 1px solid #363636; font-size: 13px; line-height: 20px; color: #a3a3a3; }
+  .stage { height: 800px; }
+  @media (max-width: 700px) { .stage { height: 500px; } }
+  .log { top: 500px; bottom: auto; right: 8px; }
+  .ask { top: 488px; right: 8px; }
+  .kus { left: 8px; top: 500px; width: 260px; transform: translateZ(150px); display: flex; flex-direction: column; gap: 8px; }
   .kus .title { align-self: flex-start; font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 9999px; background: var(--raised); border: 1px solid var(--line); opacity: 0; transition: opacity .4s var(--ease); }
   .kus.has .title { opacity: 1; }
   .ku { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; padding: 12px; border-radius: 12px; background: var(--hi); border: 1px solid #3c3c3c; box-shadow: 0 24px 48px rgba(0,0,0,.5); opacity: 0; transform: translateY(8px) scale(.96); transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
@@ -20,9 +38,9 @@
   .ku .was { grid-column: 2 / 4; font-size: 12px; line-height: 16px; color: var(--fade); }
   .ku .was s { color: var(--conflict); }
   .st { font-size: 12px; line-height: 16px; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; transition: background-color .3s var(--ease), color .3s var(--ease); }
-  .st.rev { background: rgba(242,192,99,.16); color: var(--gold-pale); }
-  .st.new { background: rgba(110,154,108,.2); color: var(--green-pale); }
-  .st.dis { background: rgba(224,112,90,.18); color: #f2b3a6; }
+  .st.rev { background: rgba(66,133,244,.2); color: #a8c7fa; }
+  .st.new { background: rgba(52,168,83,.2); color: #8fd19e; }
+  .st.dis { background: rgba(234,67,53,.2); color: #f6aea9; }
 </style>
 <script>
 // EMBED MODE (?embed): the landing page supplies the headline, so hide this page's own
@@ -40,7 +58,8 @@ html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:fir
 html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
 html.embed .wrap { grid-template-columns: 1fr !important; }
 html.embed .wrap > h1, html.embed .wrap > .sub, html.embed .wrap > .cta { display: none !important; }
-html.embed .stage { transform: scale(.88); transform-origin: right top; }
+html.embed .stage { transform: scale(.88); transform-origin: center top; }
+@media (max-width: 1099px) { html.embed .stage { transform: scale(.84); } }
 html.embed .demo, html.embed .fit, html.embed .week { margin-top: 0; }
 html.embed .week + .demo { margin-top: 24px; }
 </style>
@@ -53,19 +72,20 @@ html.embed .week + .demo { margin-top: 24px; }
   <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
   <div class="wrap">
     <div>
-      <h1>Pages that<br>rewrite themselves.</h1>
+      <h1>We turn knowledge into<br>pages that rewrite themselves.</h1>
       <p class="sub">A new file arrives. Only the sentences it changes are rewritten, each with its source.</p>
       <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
     </div>
     <div class="stage" aria-hidden="true">
       <div class="scene" id="scene">
         <article class="card main">
-          <div class="crumb"><span>Projects / Project Alpha</span><span class="badge" id="badge"><i class="ph ph-check-circle"></i><span></span></span></div>
+          <div class="crumb"><span><a class="wl">Knowledge</a> / <a class="wl">Projects</a> / Project Alpha</span><span class="badge" id="badge"><i class="ph ph-check-circle"></i><span></span></span></div>
           <h2>Project Alpha</h2>
           <h3>Timeline</h3>
-          <p class="para">Project Alpha is the fibre upgrade for the east district, led by Marco Ruiz.<span class="ref">1</span> <span class="sent" id="s1"></span><span class="ref" id="r1">2</span></p>
+          <p class="para"><b>Project Alpha</b> is the fibre upgrade for the <a class="wl">east district</a>, led by <a class="wl">Marco Ruiz</a>.<span class="ref">1</span> <span class="sent" id="s1"></span><span class="ref" id="r1">2</span></p>
           <h3>Budget and suppliers</h3>
-          <p class="para"><span class="sent" id="s2"></span><span class="ref" id="r2">3</span> It covers cabling, permits and two field crews.<span class="ref">1</span> <span class="sent" id="s3"></span><span class="ref" id="r3" style="opacity:0">6</span></p>
+          <p class="para"><span class="sent" id="s2"></span><span class="ref" id="r2">3</span> It covers cabling, <a class="wl">street excavation permits</a> and two <a class="wl">field crews</a>.<span class="ref">1</span> <span class="sent" id="s3"></span><span class="ref" id="r3" style="opacity:0">6</span></p>
+          <p class="see">See also: <a class="wl">Northwind Cables</a> · <a class="wl">Priya Nair</a> · <a class="wl">East district fibre</a></p>
         </article>
         <div class="float srcs" id="srcs"></div>
         <div class="float kus" id="kus"><span class="title">Facts</span></div>
@@ -85,10 +105,10 @@ html.embed .week + .demo { margin-top: 24px; }
 import { $, toggle, loop, write, rewrite, addChip, addEntry, badge, tilt, reduce } from "./live-demo.js";
 const START = {
   s1: "The launch is planned for 12 February, after the kickoff review.",
-  s2: "The budget is 52,750, set in plan v3.",
+  s2: 'The budget is 52,750, set in <a class="wl">plan v3</a>.',
 };
 function reset() {
-  $("s1").textContent = START.s1; $("s2").textContent = START.s2; $("s3").textContent = "";
+  $("s1").textContent = START.s1; $("s2").innerHTML = START.s2; $("s3").textContent = "";
   $("r1").textContent = "2"; $("r2").textContent = "3"; $("r3").style.opacity = 0;
   document.querySelectorAll(".sent, .ref").forEach((e) => e.classList.remove("hot", "warn", "fresh"));
   $("srcs").innerHTML = ""; $("log").querySelectorAll(".entry").forEach((e) => e.remove());
@@ -103,13 +123,18 @@ function addKu(id, claim, status, cls, was) {
   return el;
 }
 const setStatus = (ku, text, cls) => { const s = ku.querySelector(".st"); s.className = `st ${cls}`; s.textContent = text; };
+// LOG: only the newest change stays; the one before it fades out
+const logEntry = (...args) => {
+  $("log").querySelectorAll(".entry").forEach((e) => { toggle(e, "in", false); setTimeout(() => e.remove(), 500); });
+  addEntry($("log"), ...args);
+};
 const fresh = (ref, n) => { ref.textContent = n; ref.style.opacity = 1; toggle(ref, "fresh"); setTimeout(() => toggle(ref, "fresh", false), 1800); };
 
 if (reduce) {
   reset();
   $("s1").textContent = "The launch moved to 3 March, after the supplier asked for more time."; $("r1").textContent = "4";
-  $("s2").textContent = "The budget is 55,000, confirmed in Priya's email."; $("r2").textContent = "5";
-  $("s3").textContent = "Cabling comes from Northwind Cables under a two year contract."; $("r3").style.opacity = 1;
+  $("s2").innerHTML = 'The budget is 55,000, confirmed in <a class="wl">Priya Nair</a>\'s email.'; $("r2").textContent = "5";
+  $("s3").innerHTML = 'Cabling comes from <a class="wl">Northwind Cables</a> under a two year contract.'; $("r3").style.opacity = 1;
   addKu("K-118", "Launch date: 3 March", "Revised", "rev", "12 February"); addKu("K-231", "Supplier: Northwind Cables", "New", "new");
   addKu("K-142", "Budget: 55,000", "Confirmed", "new", "52,750");
 } else {
@@ -122,17 +147,17 @@ if (reduce) {
     at(7600, () => addKu("K-231", "Supplier: Northwind Cables", "New", "new"));
     at(12900, () => { k3 = addKu("K-142", "Budget: 55,000", "Disputed", "dis", "52,750"); });
     at(16800, () => setStatus(k3, "Confirmed", "new"));
-    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), "The launch moved to 3 March, after the supplier asked for more time.", () => { fresh($("r1"), "4"); toggle(a, "read"); badge("Updated just now"); addEntry($("log"), "ph-arrows-clockwise", "var(--gold)", "Launch date changed", "from standup.mp4"); }); });
+    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), "The launch moved to 3 March, after the supplier asked for more time.", () => { fresh($("r1"), "4"); toggle(a, "read"); badge("Updated just now"); logEntry("ph-arrows-clockwise", "var(--c-blue)", "Launch date changed", "from standup.mp4"); }); });
     at(6400, () => toggle($("s1"), "hot", false));
     // 2. A SENTENCE IS ADDED: the contract names the supplier
     at(7000, () => { b = addChip($("srcs"), "ph-file-pdf", "contract.pdf", "Section 2.1"); });
-    at(8200, () => { toggle($("s3"), "hot"); write($("s3"), "Cabling comes from Northwind Cables under a two year contract.", 45, () => { fresh($("r3"), "6"); toggle(b, "read"); badge("1 sentence added"); addEntry($("log"), "ph-plus-circle", "var(--green-light)", "New claim added", "from contract.pdf"); }); });
+    at(8200, () => { toggle($("s3"), "hot"); write($("s3"), 'Cabling comes from <a class="wl">Northwind Cables</a> under a two year contract.', 45, () => { fresh($("r3"), "6"); toggle(b, "read"); badge("1 sentence added"); logEntry("ph-plus-circle", "var(--c-green)", "New claim added", "from contract.pdf"); }); });
     at(11600, () => toggle($("s3"), "hot", false));
     // 3. TWO SOURCES DISAGREE: a person decides, then the page follows
     at(12300, () => { c = addChip($("srcs"), "ph-envelope-simple", "Email from Priya", "28 Oct"); });
     at(13500, () => { toggle($("s2"), "warn"); badge("1 question for you", true); toggle($("ask"), "in"); });
     at(16300, () => toggle($("optB"), "pick"));
-    at(17000, () => { toggle($("ask"), "in", false); toggle($("s2"), "warn", false); toggle($("s2"), "hot"); rewrite($("s2"), "The budget is 55,000, confirmed in Priya's email.", () => { fresh($("r2"), "5"); toggle(c, "read"); badge("Updated just now"); addEntry($("log"), "ph-user-check", "var(--green-pale)", "Budget confirmed by you", "email over plan v3"); }); });
+    at(17000, () => { toggle($("ask"), "in", false); toggle($("s2"), "warn", false); toggle($("s2"), "hot"); rewrite($("s2"), 'The budget is 55,000, confirmed in <a class="wl">Priya Nair</a>\'s email.', () => { fresh($("r2"), "5"); toggle(c, "read"); badge("Updated just now"); logEntry("ph-user-check", "var(--c-yellow)", "Budget confirmed by you", "email over plan v3"); }); });
     at(21000, () => toggle($("s2"), "hot", false));
   });
 }

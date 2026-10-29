@@ -3,7 +3,8 @@
 :root {
   --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131;
   --fade: #9b9b9b; --gold: #d9a441; --gold-pale: #f4d9a0; --glow: #f2c063; --ember: #8a5a1c;
-  --green: #496748; --green-hover: #557a54; --green-light: #6e9a6c; --green-pale: #cfe3cd; --conflict: #e0705a;
+  --green: #496748; --green-hover: #557a54; --green-light: #6e9a6c; --green-pale: #cfe3cd; --conflict: #ea4335;
+  --c-blue: #4285f4; --c-red: #ea4335; --c-yellow: #fbbc04; --c-green: #34a853; --c-purple: #673ab7; /* category colours */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 * { box-sizing: border-box; margin: 0; }
@@ -41,7 +42,7 @@ h1 { max-width: 680px; font-size: 36px; line-height: 40px; font-weight: 600; let
 .ref.fresh { background: var(--gold); color: #131209; transform: scale(1.1); }
 .sent { border-radius: 4px; transition: background-color .4s var(--ease), color .4s var(--ease); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 1px 0; }
 .sent.hot { background: rgba(242,192,99,.16); color: #fff; }
-.sent.warn { background: rgba(224,112,90,.16); }
+.sent.warn { background: rgba(234,67,53,.16); }
 .sent.strike { color: var(--conflict); text-decoration: line-through; }
 .sent.out { opacity: 0; transition: opacity .3s var(--ease); }
 .w { opacity: 0; transition: opacity .25s var(--ease); }
@@ -49,13 +50,16 @@ h1 { max-width: 680px; font-size: 36px; line-height: 40px; font-weight: 600; let
 .caret { display: inline-block; width: 2px; height: 18px; margin-left: 2px; vertical-align: -3px; background: var(--glow); animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 9999px; background: rgba(110,154,108,.15); color: var(--green-pale); opacity: 0; transition: opacity .4s var(--ease); }
-.badge.on { opacity: 1; } .badge.ask-tone { background: rgba(224,112,90,.15); color: #f2b3a6; }
+.badge.on { opacity: 1; } .badge.ask-tone { background: rgba(234,67,53,.15); color: #f2b3a6; }
 
 /* FLOATING PIECES */
 .chip { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: var(--raised); border: 1px solid var(--line); font-size: 14px; line-height: 20px; white-space: nowrap; box-shadow: 0 24px 48px rgba(0,0,0,.5); transition: opacity .5s var(--ease), transform .6s var(--ease), border-color .3s var(--ease); }
 .chip i { font-size: 20px; color: var(--gold); }
 .chip small { display: block; font-size: 12px; line-height: 16px; color: var(--fade); }
-.chip.read { border-color: rgba(110,154,108,.6); } .chip.read i { color: var(--green-light); }
+.chip.read { border-color: rgba(110,154,108,.6); }
+/* CATEGORY COLOURS: each kind of source keeps one colour across the demos */
+.chip .ph-file-text { color: var(--c-blue); } .chip .ph-envelope-simple { color: var(--c-yellow); } .chip .ph-file-pdf { color: var(--c-red); }
+.chip .ph-note { color: var(--c-green); } .chip .ph-video { color: var(--c-purple); }
 .srcs { left: -40px; top: 72px; transform: translateZ(120px); display: flex; flex-direction: column; gap: 8px; }
 .srcs .chip { opacity: 0; transform: translateX(-32px); }
 .srcs .chip.in { opacity: 1; transform: none; }
@@ -68,7 +72,7 @@ h1 { max-width: 680px; font-size: 36px; line-height: 40px; font-weight: 600; let
 .entry .undo { margin-left: auto; font-size: 12px; line-height: 16px; color: var(--fade); }
 .ask { right: -16px; top: 200px; width: 300px; transform: translateZ(170px) translateY(12px); opacity: 0; transition: opacity .5s var(--ease), transform .6s var(--ease); }
 .ask.in { opacity: 1; transform: translateZ(170px); }
-.ask .box { border-radius: 16px; background: var(--raised); border: 1px solid rgba(224,112,90,.55); padding: 16px; box-shadow: 0 32px 64px rgba(0,0,0,.6); }
+.ask .box { border-radius: 16px; background: var(--raised); border: 1px solid rgba(234,67,53,.55); padding: 16px; box-shadow: 0 32px 64px rgba(0,0,0,.6); }
 .ask p { font-size: 14px; line-height: 20px; color: rgba(255,255,255,.88); }
 .ask .opts { display: flex; gap: 8px; margin-top: 12px; }
 .opt { flex: 1; font: inherit; font-size: 14px; line-height: 20px; padding: 8px 12px; border-radius: 8px; background: var(--hi); border: 1px solid var(--line); color: #fff; text-align: left; transition: background-color .3s var(--ease), border-color .3s var(--ease), transform .2s var(--ease); }

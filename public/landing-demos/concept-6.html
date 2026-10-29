@@ -21,7 +21,9 @@
   .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
   .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
   .logo svg { width: 20px; height: 20px; color: var(--green-light); }
-  h1 { max-width: 680px; margin: 0 auto; font-size: 36px; line-height: 40px; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; background: linear-gradient(to right, #fff, var(--fade)); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 4px; }
+  h1 + .sub { margin-top: 40px; }
+  h1 .mark { padding-bottom: 14px; background: linear-gradient(to right, #4285f4 0 20%, #ea4335 20% 40%, #fbbc04 40% 60%, #34a853 60% 80%, #673ab7 80%) 0 100% / 100% 6px no-repeat; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  h1 { max-width: 900px; margin: 0 auto; font-size: 36px; line-height: 1; font-weight: 700; letter-spacing: -0.4px; text-transform: uppercase; text-wrap: balance; color: #fff; padding-bottom: 4px; }
   .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
   .cta { display: inline-flex; align-items: center; gap: 8px; margin-top: 32px; background: var(--green); color: #fff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 8px 12px; border-radius: 12px; transition: background-color .3s var(--ease), transform .3s var(--ease); }
   .cta:hover { background: var(--green-hover); } .cta:active { transform: scale(.98); }
@@ -35,8 +37,10 @@
   .belt.left { left: 0; width: 400px; } .belt.right { left: 752px; width: 400px; }
   .wheel { position: absolute; top: 324px; width: 32px; height: 32px; border-radius: 9999px; background: var(--line); }
   .item { position: absolute; left: 0; top: 0; will-change: transform, opacity; }
-  .out { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; border-radius: 12px; background: var(--hi); border: 1px solid #3c3c3c; font-size: 14px; line-height: 20px; white-space: nowrap; will-change: transform, opacity; }
-  .out i { font-size: 20px; }
+  .out { position: absolute; left: 0; top: 0; width: 130px; padding: 8px 8px 10px; border-radius: 14px; background: var(--raised); border: 1px solid #3c3c3c; box-shadow: 0 12px 24px rgba(0,0,0,.4); transform-origin: 50% 100%; will-change: transform, opacity; }
+  .out svg { display: block; width: 112px; height: 72px; border-radius: 8px; background: var(--surface); }
+  .out span { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; line-height: 16px; font-weight: 500; white-space: nowrap; }
+  .out i { font-size: 14px; }
 
   /* MACHINE: a green housing with a glass window onto the growing graph */
   .machine { position: absolute; left: 376px; top: 20px; width: 400px; height: 296px; border-radius: 24px; background: var(--green); border: 2px solid var(--green-light); padding: 12px; }
@@ -46,7 +50,8 @@
   .status { display: flex; align-items: center; justify-content: space-between; height: 32px; margin-top: 8px; padding: 0 8px; font-size: 12px; line-height: 16px; color: var(--green-pale); }
   .status .left { display: flex; align-items: center; gap: 8px; }
   .status svg { width: 16px; height: 16px; color: #fff; }
-  .lamp { width: 8px; height: 8px; border-radius: 9999px; background: var(--glow); box-shadow: 0 0 12px var(--glow); transition: opacity .3s var(--ease); }
+  .lamp { width: 8px; height: 8px; border-radius: 9999px; background: #34a853; box-shadow: 0 0 12px #34a853; transition: opacity .3s var(--ease), background-color .3s var(--ease), box-shadow .3s var(--ease); }
+  .lamp.idle { background: #131209; box-shadow: none; } .lamp.busy { background: #fbbc04; box-shadow: 0 0 12px #fbbc04; } /* black waiting, yellow processing, green once outputs start */
   .mouth { position: absolute; top: 236px; width: 8px; height: 64px; border-radius: 4px; background: #2c3f2b; }
   .mouth.l { left: 368px; } .mouth.r { left: 776px; }
   @media (prefers-reduced-motion: reduce) { .lamp { box-shadow: none; } }
@@ -78,8 +83,8 @@ html.embed .week + .demo { margin-top: 24px; }
   <span class="tag">Concept 6 · The glass machine</span>
   <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
   <div class="wrap">
-    <h1>Feed it everything.<br>Watch it organize.</h1>
-    <p class="sub">Corpus Wiki grows a map of what you know, then writes the pages, guides and lists your team needs.</p>
+    <h1>Your automated<br><span class="mark">knowledge base</span></h1>
+    <p class="sub">Add your files. Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.</p>
     <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
     <div class="fit" aria-hidden="true">
       <div class="stage">
@@ -99,10 +104,10 @@ html.embed .week + .demo { margin-top: 24px; }
 </section>
 
 <template id="t-doc"><svg width="76" height="88" viewBox="0 0 76 88"><path d="M4 86 L14 6 L62 0 L74 26 L58 86 Z" fill="#efe6d2"/><path d="M22 28 L56 24 M22 40 L52 37 M24 52 L46 50" stroke="#c9bc9f" stroke-width="4" stroke-linecap="round"/></svg></template>
-<template id="t-photo"><svg width="84" height="68" viewBox="0 0 84 68"><g transform="rotate(-6 42 34)"><rect x="4" y="6" width="76" height="56" rx="6" fill="#2a3b2a"/><circle cx="24" cy="24" r="7" fill="#cfe3cd"/><path d="M8 58 L36 34 L52 48 L68 32 L78 58 Z" fill="#6e9a6c"/></g></svg></template>
-<template id="t-video"><svg width="88" height="60" viewBox="0 0 88 60"><g transform="rotate(5 44 30)"><rect x="4" y="6" width="80" height="50" rx="6" fill="#3a2a14"/><path d="M38 20 L56 31 L38 42 Z" fill="#f2c063"/></g></svg></template>
-<template id="t-link"><svg width="72" height="56" viewBox="0 0 72 56"><rect x="2" y="6" width="68" height="46" rx="8" fill="#272727" stroke="#3c3c3c"/><path d="M24 34 L34 24 M30 20 L34 16 a7 7 0 0 1 10 10 L40 30 M42 36 L38 40 a7 7 0 0 1 -10 -10 L32 26" stroke="#f4d9a0" stroke-width="3" fill="none" stroke-linecap="round"/></svg></template>
-<template id="t-note"><svg width="64" height="64" viewBox="0 0 64 64"><g transform="rotate(8 32 32)"><rect x="6" y="6" width="52" height="52" rx="4" fill="#f4d9a0"/><path d="M16 22 H46 M16 32 H42 M16 42 H34" stroke="#c9a35a" stroke-width="3.5" stroke-linecap="round"/></g></svg></template>
+<template id="t-photo"><svg width="84" height="68" viewBox="0 0 84 68"><g transform="rotate(-6 42 34)"><rect x="4" y="6" width="76" height="56" rx="6" fill="#2a3b2a"/><circle cx="24" cy="24" r="7" fill="#fbbc04"/><path d="M8 58 L36 34 L52 48 L68 32 L78 58 Z" fill="#34a853"/></g></svg></template>
+<template id="t-video"><svg width="88" height="60" viewBox="0 0 88 60"><g transform="rotate(5 44 30)"><rect x="4" y="8" width="80" height="46" rx="14" fill="#ea4335"/><path d="M36 20 L56 31 L36 42 Z" fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></g></svg></template>
+<template id="t-link"><svg width="72" height="56" viewBox="0 0 72 56"><rect x="2" y="6" width="68" height="46" rx="8" fill="#272727" stroke="#3c3c3c"/><path d="M24 34 L34 24 M30 20 L34 16 a7 7 0 0 1 10 10 L40 30 M42 36 L38 40 a7 7 0 0 1 -10 -10 L32 26" stroke="#4285f4" stroke-width="3" fill="none" stroke-linecap="round"/></svg></template>
+<template id="t-note"><svg width="64" height="64" viewBox="0 0 64 64"><g transform="rotate(8 32 32)"><rect x="6" y="6" width="52" height="52" rx="4" fill="#fbbc04"/><path d="M16 22 H46 M16 32 H42 M16 42 H34" stroke="#a87a00" stroke-width="3.5" stroke-linecap="round"/></g></svg></template>
 
 <script>
 // =====================================================================
@@ -112,19 +117,21 @@ html.embed .week + .demo { margin-top: 24px; }
 // =====================================================================
 const LOOP = 28, FEED_END = 10.5, ORG_START = 10.5, ORG_END = 14, LABEL_START = 13.5, OUT_START = 15.5, FADE_START = 26.6;
 const W = 376, H = 232; // glass size in stage pixels (machine 400 minus padding)
+const P = { blue: "#4285f4", red: "#ea4335", yellow: "#fbbc04", green: "#34a853", purple: "#673ab7" }; // category colours
 const GROUPS = [
-  { name: "Projects", color: "#f2c063", cx: 72, cy: 82 },
-  { name: "People", color: "#cfe3cd", cx: 190, cy: 74 },
-  { name: "Policies", color: "#6e9a6c", cx: 306, cy: 84 },
-  { name: "Clients", color: "#e8d3a6", cx: 126, cy: 180 },
-  { name: "Terms", color: "#d9a441", cx: 256, cy: 180 },
+  { name: "Projects", color: P.blue, cx: 72, cy: 82 },
+  { name: "People", color: P.red, cx: 190, cy: 74 },
+  { name: "Policies", color: P.yellow, cx: 306, cy: 84 },
+  { name: "Clients", color: P.green, cx: 126, cy: 180 },
+  { name: "Terms", color: P.purple, cx: 256, cy: 180 },
 ];
 const INPUTS = ["t-doc", "t-photo", "t-video", "t-note", "t-doc", "t-link", "t-video", "t-doc"];
-const ADDS = [1, 2, 3, 5, 7, 9, 11, 12]; // points each file adds: one at first, then many
+const FACTS = 500; // points born while the files feed in
+const FIRST = [1, 2, 3]; // the first files add a handful each: one point, then a few; the rest ramp up to FACTS
 const OUTPUTS = [
-  ["ph-article", "Wiki pages", "#f2c063"], ["ph-newspaper", "Articles", "#e8d3a6"], ["ph-graduation-cap", "Tutorials", "#6e9a6c"],
-  ["ph-book-open-text", "Glossary", "#cfe3cd"], ["ph-address-book", "Client list", "#d9a441"], ["ph-exam", "Quizzes", "#f4d9a0"],
-  ["ph-users-three", "Stakeholders", "#cfe3cd"], ["ph-image-square", "Visuals", "#f2c063"], ["ph-robot", "Agent context", "#6e9a6c"],
+  ["ph-article", "Wiki pages", P.blue], ["ph-newspaper", "Articles", P.red], ["ph-graduation-cap", "Tutorials", P.yellow], ["ph-monitor-play", "Tutorial videos", P.green],
+  ["ph-book-open-text", "Glossary", P.purple], ["ph-address-book", "Client list", P.blue], ["ph-exam", "Quizzes", P.red],
+  ["ph-users-three", "Stakeholders", P.yellow], ["ph-image-square", "Visuals", P.green], ["ph-robot", "Agent context", P.purple],
 ];
 const ARRIVE = 2.6, SPACING = 1.15; // seconds on the belt, seconds between files
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -135,23 +142,40 @@ const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 // SEEDED RANDOM: the same graph every loop, so it reads as one story
 let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const nodes = [], edges = [];
-INPUTS.forEach((_, f) => {
-  for (let k = 0; k < ADDS[f]; k++) {
-    const g = nodes.length === 0 ? 0 : Math.floor(rnd() * GROUPS.length), a = rnd() * Math.PI * 2, r = 10 + rnd() * 30;
-    const n = { born: f * SPACING + ARRIVE + k * 0.08, g, sx: 24 + rnd() * (W - 48), sy: 24 + rnd() * (H - 48), tx: GROUPS[g].cx + Math.cos(a) * r, ty: GROUPS[g].cy + Math.sin(a) * r * 0.8, size: 2.5 + rnd() * 2.5 };
-    if (nodes.length) {
-      const same = nodes.filter((m) => m.g === g), pick = same.length && rnd() < 0.8 ? same[Math.floor(rnd() * same.length)] : nodes[Math.floor(rnd() * nodes.length)];
-      edges.push([pick, n]);
-    }
-    nodes.push(n);
+// after the first files, birth times invert an ease-in-out-cubic curve, so the count accelerates then settles
+const births = FIRST.flatMap((count, f) => Array.from({ length: count }, (_, k) => f * SPACING + ARRIVE + k * 0.08));
+const RAMP = FACTS - births.length, RAMP_START = FIRST.length * SPACING + ARRIVE, RAMP_SPAN = (INPUTS.length - 1 - FIRST.length) * SPACING + 0.4;
+for (let i = 1; i <= RAMP; i++) { const c = i / RAMP; births.push(RAMP_START + RAMP_SPAN * (c < 0.5 ? Math.cbrt(c / 4) : 1 - Math.cbrt(2 * (1 - c)) / 2)); }
+for (let i = 0; i < FACTS; i++) {
+  const g = i === 0 ? 0 : Math.floor(rnd() * GROUPS.length), a = rnd() * Math.PI * 2, r = 4 + Math.sqrt(rnd()) * 34;
+  const n = { born: births[i], g, sx: 16 + rnd() * (W - 32), sy: 16 + rnd() * (H - 32), tx: GROUPS[g].cx + Math.cos(a) * r, ty: GROUPS[g].cy + Math.sin(a) * r * 0.8, size: 1.1 + rnd() * 1.6 };
+  if (nodes.length) {
+    const same = nodes.filter((m) => m.g === g), pick = same.length && rnd() < 0.8 ? same[Math.floor(rnd() * same.length)] : nodes[Math.floor(rnd() * nodes.length)];
+    edges.push([pick, n]);
   }
-});
+  nodes.push(n);
+}
 nodes[0].size = 6;
 
 // DOM: one element per file and per output, moved with transforms only
 const itemsEl = document.getElementById("items"), outsEl = document.getElementById("outs");
 const items = INPUTS.map((id) => { const d = document.createElement("div"); d.className = "item"; d.append(document.getElementById(id).content.cloneNode(true)); itemsEl.append(d); return d; });
-const outs = OUTPUTS.map(([icon, label, color]) => { const d = document.createElement("div"); d.className = "out"; d.innerHTML = `<i class="ph-duotone ${icon}" style="color:${color}"></i>${label}`; outsEl.append(d); return d; });
+// each output is drawn as the thing it is, like the files on the left belt
+const PAPER = "#efe6d2", INK = "#c9bc9f", RULE = "#3c3c3c";
+const lines = (x, ys, w, color = INK) => ys.map((y, i) => `<path d="M${x} ${y} H${x + w[i % w.length]}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`).join("");
+const PICTURES = {
+  "Wiki pages": (c) => `<rect x="30" y="10" width="56" height="58" rx="4" fill="${RULE}"/><rect x="36" y="6" width="56" height="58" rx="4" fill="${PAPER}"/><rect x="43" y="13" width="26" height="6" rx="3" fill="${c}"/>${lines(43, [27, 35, 43, 51], [42, 36, 42, 28])}`,
+  "Articles": (c) => `<rect x="28" y="6" width="56" height="60" rx="4" fill="${PAPER}"/><rect x="34" y="12" width="44" height="20" rx="2" fill="#2a3b2a"/><path d="M34 32 L46 22 L54 28 L64 18 L78 32 Z" fill="${c}"/>${lines(34, [40, 47, 54], [18, 18, 14])}${lines(60, [40, 47, 54], [18, 18, 12])}`,
+  "Tutorials": (c) => [16, 36, 56].map((y, i) => `<circle cx="28" cy="${y}" r="7" fill="${i < 2 ? c : "none"}" stroke="${i < 2 ? c : "#5a5a5a"}" stroke-width="2"/>${i < 2 ? `<path d="M24.5 ${y} l2.5 2.5 l4.5 -5" stroke="#181818" stroke-width="2" fill="none" stroke-linecap="round"/>` : ""}${lines(42, [y], [i === 2 ? 34 : 50], i < 2 ? "#6a6a6a" : RULE)}`).join(""),
+  "Tutorial videos": (c) => `<rect x="12" y="6" width="88" height="54" rx="5" fill="#3a2a14"/><path d="M12 46 L36 30 L50 40 L68 26 L100 46 V55 a5 5 0 0 1 -5 5 H17 a5 5 0 0 1 -5 -5 Z" fill="#2a3b2a"/><circle cx="56" cy="31" r="12" fill="rgba(0,0,0,.45)"/><path d="M52 25 L62 31 L52 37 Z" fill="${c}"/><rect x="12" y="65" width="88" height="3" rx="1.5" fill="${RULE}"/><rect x="12" y="65" width="34" height="3" rx="1.5" fill="${c}"/><circle cx="46" cy="66.5" r="3" fill="#fff4d6"/>`,
+  "Glossary": (c) => `<path d="M56 12 C46 6 30 6 16 10 V64 C30 60 46 60 56 66 Z" fill="${PAPER}"/><path d="M56 12 C66 6 82 6 96 10 V64 C82 60 66 60 56 66 Z" fill="#e3d8bf"/><rect x="23" y="18" width="16" height="5" rx="2.5" fill="${c}"/>${lines(23, [29, 35], [24, 20])}<rect x="23" y="43" width="12" height="5" rx="2.5" fill="${c}"/>${lines(23, [54], [22])}<rect x="63" y="18" width="18" height="5" rx="2.5" fill="${c}"/>${lines(63, [29, 35], [24, 18])}<rect x="63" y="43" width="14" height="5" rx="2.5" fill="${c}"/>${lines(63, [54], [22])}`,
+  "Client list": (c) => [16, 36, 56].map((y, i) => `<circle cx="26" cy="${y}" r="7" fill="${c}" opacity="${1 - i * 0.25}"/>${lines(40, [y - 3], [[44, 36, 40][i]], "#6a6a6a")}${lines(40, [y + 4], [[26, 30, 22][i]], RULE)}`).join(""),
+  "Quizzes": (c) => `<rect x="24" y="6" width="64" height="60" rx="4" fill="${PAPER}"/>${lines(32, [16], [44], "#8d8169")}${[30, 42, 54].map((y, i) => `<circle cx="36" cy="${y}" r="4.5" fill="${i === 1 ? c : "none"}" stroke="${i === 1 ? c : INK}" stroke-width="2"/>${lines(46, [y], [[30, 34, 24][i]])}`).join("")}`,
+  "Stakeholders": (c) => `<path d="M56 30 L28 50 M56 30 L84 50 M28 50 L84 50" stroke="#4a4a4a" stroke-width="2"/>${[[56, 26, 10, c], [28, 50, 8, P.blue], [84, 50, 8, P.red]].map(([x, y, r, f]) => `<circle cx="${x}" cy="${y}" r="${r + 3}" fill="#181818"/><circle cx="${x}" cy="${y - r * 0.25}" r="${r * 0.45}" fill="${f}"/><path d="M${x - r * 0.75} ${y + r * 0.8} a${r * 0.75} ${r * 0.6} 0 0 1 ${r * 1.5} 0 Z" fill="${f}"/>`).join("")}`,
+  "Visuals": (c) => `<path d="M20 62 H92" stroke="#4a4a4a" stroke-width="2"/>${[[24, 30, P.blue], [40, 18, P.red], [56, 40, P.yellow], [72, 26, c]].map(([x, h, f]) => `<rect x="${x}" y="${58 - h}" width="12" height="${h}" rx="2" fill="${f}"/>`).join("")}<path d="M24 34 L46 20 L62 26 L84 10" stroke="#fff4d6" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+  "Agent context": (c) => `<rect x="12" y="6" width="88" height="60" rx="5" fill="#141414" stroke="${RULE}"/><circle cx="20" cy="13" r="2" fill="#5a5a5a"/><circle cx="27" cy="13" r="2" fill="#5a5a5a"/><circle cx="34" cy="13" r="2" fill="#5a5a5a"/><path d="M20 26 l5 4 -5 4" stroke="${c}" stroke-width="2" fill="none" stroke-linecap="round"/>${lines(30, [30], [40], "#cfe3cd")}${lines(20, [43, 51], [62, 48], "#5a5a5a")}<rect x="20" y="56" width="5" height="6" fill="${c}"/>`,
+};
+const outs = OUTPUTS.map(([icon, label, color]) => { const d = document.createElement("div"); d.className = "out"; d.innerHTML = `<svg viewBox="0 0 112 72">${PICTURES[label](color)}</svg><span><i class="ph-duotone ${icon}" style="color:${color}"></i>${label}</span>`; outsEl.append(d); return d; });
 
 const canvas = document.getElementById("graph"), ctx = canvas.getContext("2d");
 const phaseEl = document.getElementById("phase"), countEl = document.getElementById("count"), lamp = document.getElementById("lamp");
@@ -167,7 +191,7 @@ function draw(t) {
   GROUPS.forEach((g) => { ctx.globalAlpha = 0.1 * org * fade; ctx.fillStyle = g.color; ctx.beginPath(); ctx.arc(g.cx, g.cy, 42, 0, 7); ctx.fill(); });
   // edges
   ctx.lineWidth = 1;
-  edges.forEach(([a, b]) => { const v = Math.min(grow(a), grow(b)); if (!v) return; const [ax, ay] = pos(a), [bx, by] = pos(b); ctx.globalAlpha = 0.35 * v * fade * (a.g === b.g ? 1 : 1 - org * 0.7); ctx.strokeStyle = a.g === b.g ? GROUPS[a.g].color : "#9b9b9b"; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); });
+  edges.forEach(([a, b]) => { const v = Math.min(grow(a), grow(b)); if (!v) return; const [ax, ay] = pos(a), [bx, by] = pos(b); ctx.globalAlpha = 0.16 * v * fade * (a.g === b.g ? 1 : 1 - org * 0.7); ctx.strokeStyle = a.g === b.g ? GROUPS[a.g].color : "#9b9b9b"; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); });
   // nodes: grey while scattered, group colour as they sort
   let alive = 0;
   nodes.forEach((n) => {
@@ -176,7 +200,7 @@ function draw(t) {
     ctx.globalAlpha = fade; ctx.fillStyle = `rgb(${mix(155, c[0], k)},${mix(155, c[1], k)},${mix(155, c[2], k)})`;
     ctx.beginPath(); ctx.arc(x, y, n.size * v, 0, 7); ctx.fill();
     const fresh = clamp(1 - (t - n.born) / 0.9); // a new point flashes as it lands
-    if (fresh > 0) { ctx.globalAlpha = fresh * 0.6 * fade; ctx.strokeStyle = "#fff4d6"; ctx.beginPath(); ctx.arc(x, y, n.size + 10 * (1 - fresh), 0, 7); ctx.stroke(); }
+    if (fresh > 0) { ctx.globalAlpha = fresh * 0.4 * fade; ctx.strokeStyle = "#fff4d6"; ctx.beginPath(); ctx.arc(x, y, n.size + 6 * (1 - fresh), 0, 7); ctx.stroke(); }
   });
   // labels
   ctx.font = "500 12px Geist, system-ui"; ctx.textAlign = "center";
@@ -207,12 +231,15 @@ function frame(now) {
     const s = (t - OUT_START - i * 0.95) / 3.0;
     if (s < 0 || s > 1) { el.style.opacity = 0; return; }
     el.style.opacity = clamp(s * 10) * clamp((1 - s) * 8);
-    el.style.transform = `translate(${mix(700, 1200, s)}px, ${244 - (1 - ease(s * 4)) * 16}px)`;
+    const pop = ease(s * 4);
+    el.style.transform = `translate(${mix(700, 1200, s)}px, ${184 - (1 - pop) * 16}px) scale(${mix(0.7, 1, pop)}) rotate(${(i % 2 ? 2 : -2) * pop}deg)`;
   });
   const alive = draw(t);
   countEl.textContent = `${alive} ${alive === 1 ? "fact" : "facts"}`;
-  phaseEl.textContent = t < 2.4 ? "Waiting for files" : t < FEED_END ? "Reading files" : t < LABEL_START ? "Organizing" : t < OUT_START ? "Naming groups" : t < FADE_START ? "Writing outputs" : "Ready for more";
-  lamp.style.opacity = (Math.sin(now / 160) > 0 && t > 2.4 && t < FADE_START) ? 1 : 0.35;
+  phaseEl.textContent = t < 2.4 ? "Waiting for files" : t < RAMP_START ? "Reading files" : t < FEED_END ? "Converting to knowledge units" : t < LABEL_START ? "Organizing" : t < OUT_START ? "Naming groups" : t < FADE_START ? "Writing outputs" : "Ready for more";
+  const busy = t > 2.4 && t < OUT_START;
+  lamp.classList.toggle("idle", t <= 2.4); lamp.classList.toggle("busy", busy);
+  lamp.style.opacity = !busy || Math.sin(now / 160) > 0 ? 1 : 0.35;
   requestAnimationFrame(frame);
 }
 
@@ -224,7 +251,7 @@ addEventListener("resize", resize); resize();
 if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
   // STILL: the organised, labelled graph with every output lined up
   draw(OUT_START + 1); countEl.textContent = `${nodes.length} facts`; phaseEl.textContent = "Ready";
-  outs.forEach((el, i) => { el.style.transform = `translate(${800 + (i % 2) * 176}px, ${40 + Math.floor(i / 2) * 64}px)`; });
+  outs.forEach((el, i) => { el.style.transform = `translate(${790 + (i % 3) * 120}px, ${Math.floor(i / 3) * 96 - 24}px) scale(0.78)`; });
 } else {
   document.fonts.ready.then(() => requestAnimationFrame(frame));
 }

@@ -39,8 +39,8 @@
   /* AGENT WINDOW */
   .tabs { display: flex; gap: 4px; padding: 12px; border-bottom: 1px solid var(--line); }
   .tab { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 20px; color: var(--fade); transition: background-color .3s var(--ease), color .3s var(--ease); }
-  .tab .av { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--hi); color: var(--fade); }
-  .tab.on { background: var(--hi); color: #fff; } .tab.on .av { background: var(--gold); color: #131209; }
+  .tab .av { width: 20px; height: 20px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: color-mix(in srgb, var(--c) 22%, transparent); color: var(--c); }
+  .tab.on { background: var(--hi); color: #fff; } .tab.on .av { background: var(--c); color: #fff; }
   .chat { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 16px; overflow: hidden; }
   .msg { max-width: 88%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 20px; opacity: 0; transform: translateY(8px); transition: opacity .4s var(--ease), transform .4s var(--ease); text-wrap: pretty; }
   .msg.in { opacity: 1; transform: none; }
@@ -147,7 +147,7 @@ html.embed .week + .demo { margin-top: 24px; }
 // days later a different agent, in a fresh session, already knows it.
 // The agents rotate each loop. One loop of 27 seconds.
 // =====================================================================
-const AGENTS = [["Claude", "C"], ["Cursor", "Cu"], ["ChatGPT", "G"], ["Gemini", "Ge"]];
+const AGENTS = [["Claude", "C", "#ea4335"], ["Cursor", "Cu", "#673ab7"], ["ChatGPT", "G", "#34a853"], ["Gemini", "Ge", "#4285f4"]]; // each agent keeps one category colour
 const LOOP = 27000, reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = (id) => document.getElementById(id);
 const nextFrame = (fn) => requestAnimationFrame(() => requestAnimationFrame(fn));
@@ -155,7 +155,7 @@ let round = 0, timers = [];
 const at = (ms, fn) => timers.push(setTimeout(fn, ms));
 
 function tabs(active) {
-  $("tabs").innerHTML = AGENTS.map(([n, a], i) => `<span class="tab${i === active ? " on" : ""}"><span class="av">${a}</span>${n}</span>`).join("");
+  $("tabs").innerHTML = AGENTS.map(([n, a, c], i) => `<span class="tab${i === active ? " on" : ""}"><span class="av" style="--c:${c}">${a}</span>${n}</span>`).join("");
 }
 function add(cls, html) {
   const el = document.createElement("div"); el.className = cls; el.innerHTML = html; $("chat").append(el);

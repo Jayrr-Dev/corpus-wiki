@@ -39,7 +39,10 @@
   .chip.in, .entry.in { opacity: 1; transform: none; }
   .chip i, .entry i { font-size: 20px; color: var(--gold); flex: none; }
   .chip small, .entry small { display: block; font-size: 12px; line-height: 16px; color: var(--fade); }
-  .chip.read { border-color: rgba(110,154,108,.6); } .chip.read i { color: var(--green-light); }
+  .chip.read { border-color: rgba(110,154,108,.6); }
+  /* CATEGORY COLOURS: sources by file type, changes by kind of stakeholder */
+  .chip .ph-envelope-simple { color: #fbbc04; } .chip .ph-file-pdf { color: #ea4335; } .chip .ph-tree-structure { color: #673ab7; }
+  .entry .ph-user-plus { color: #34a853; } .entry .ph-buildings { color: #fbbc04; } .entry .ph-arrows-left-right { color: #4285f4; }
 
   /* MAP */
   .map { border-radius: 24px; background: var(--surface); border: 1px solid #3a3a3a; box-shadow: 0 48px 96px rgba(0,0,0,.45); padding: 16px; }
@@ -62,7 +65,8 @@
   .badge { text-transform: none; letter-spacing: 0; padding: 4px 8px; border-radius: 9999px; background: rgba(110,154,108,.15); color: var(--green-pale); opacity: 0; transition: opacity .4s var(--ease); }
   .badge.on { opacity: 1; }
   .who { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
-  .av { width: 48px; height: 48px; border-radius: 9999px; display: grid; place-items: center; font-size: 16px; font-weight: 600; flex: none; }
+  .av { width: 48px; height: 48px; border-radius: 9999px; overflow: hidden; flex: none; }
+  .av img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .who h3 { font-size: 20px; line-height: 28px; font-weight: 600; }
   .who p { font-size: 14px; line-height: 20px; color: var(--fade); }
   .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: rgba(255,255,255,.85); }
@@ -96,7 +100,7 @@ html.embed .week + .demo { margin-top: 24px; }
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+<svg width="0" height="0" style="position:absolute"><clipPath id="round" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
 
 <section class="hero">
   <span class="tag">Concept 12 · The living stakeholder map</span>
@@ -116,7 +120,7 @@ html.embed .week + .demo { margin-top: 24px; }
         <div id="log" class="side"></div>
       </div>
       <div class="map">
-        <div class="map-head"><span>Project Alpha · stakeholders</span><span class="legend"><span><b style="background:#f4d9a0"></b>Government</span><span><b style="background:#d9a441"></b>Organization</span><span><b style="background:#6e9a6c"></b>Person</span></span></div>
+        <div class="map-head"><span>Project Alpha · stakeholders</span><span class="legend"><span><b style="background:#4285f4"></b>Government</span><span><b style="background:#fbbc04"></b>Organization</span><span><b style="background:#34a853"></b>Person</span></span></div>
         <svg viewBox="0 0 600 420" id="map">
           <g font-family="Geist, system-ui" font-size="12">
             <!-- edges -->
@@ -133,13 +137,13 @@ html.embed .week + .demo { margin-top: 24px; }
             <text class="elabel" id="lOldBoss" x="104" y="296" text-anchor="end" fill="#9b9b9b">reports to</text>
             <text class="elabel hidden" id="lNewBoss" x="158" y="210" text-anchor="start" fill="#f4d9a0">reports to</text>
             <!-- nodes -->
-            <g class="node" id="nCity"><circle class="halo" cx="470" cy="100" r="40" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="470" cy="100" r="28" fill="#272727" stroke="#f4d9a0" stroke-width="2"/><text x="470" y="105" text-anchor="middle" fill="#fff" font-weight="600">SF</text><text x="470" y="146" text-anchor="middle" fill="#fff">City of San Francisco</text></g>
+            <g class="node" id="nCity"><circle class="halo" cx="470" cy="100" r="40" fill="rgba(66,133,244,.14)"/><circle class="ring" cx="470" cy="100" r="28" fill="#272727" stroke="#4285f4" stroke-width="2"/><image href="stakeholders/city.webp" x="444" y="74" width="52" height="52" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="470" y="146" text-anchor="middle" fill="#fff">City of San Francisco</text></g>
             <g class="node" id="nAlpha"><circle class="halo" cx="300" cy="210" r="44" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="300" cy="210" r="32" fill="#496748" stroke="#6e9a6c" stroke-width="2"/><svg x="284" y="197" width="32" height="32" viewBox="5 11 90 82" color="#fff"><use href="#mark"/></svg><text x="300" y="260" text-anchor="middle" fill="#fff" font-weight="500">Project Alpha</text></g>
-            <g class="node" id="nTom"><circle class="halo" cx="70" cy="230" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="70" cy="230" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="70" y="235" text-anchor="middle" fill="#cfe3cd" font-weight="600">TH</text><text x="70" y="270" text-anchor="middle" fill="#fff">Tom Hale</text></g>
-            <g class="node" id="nMarco"><circle class="halo" cx="170" cy="330" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="170" cy="330" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="170" y="335" text-anchor="middle" fill="#cfe3cd" font-weight="600">MR</text><text x="170" y="370" text-anchor="middle" fill="#fff">Marco Ruiz</text></g>
-            <g class="node" id="nDana"><circle class="halo" cx="330" cy="350" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="330" cy="350" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="330" y="355" text-anchor="middle" fill="#cfe3cd" font-weight="600">DL</text><text x="330" y="390" text-anchor="middle" fill="#fff">Dana Lee</text></g>
-            <g class="node hidden" id="nPriya"><circle class="halo" cx="130" cy="90" r="34" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="130" cy="90" r="22" fill="#272727" stroke="#6e9a6c" stroke-width="2"/><text x="130" y="95" text-anchor="middle" fill="#cfe3cd" font-weight="600">PN</text><text x="130" y="130" text-anchor="middle" fill="#fff">Priya Nair</text></g>
-            <g class="node hidden" id="nNorth"><circle class="halo" cx="480" cy="300" r="38" fill="rgba(242,192,99,.12)"/><circle class="ring" cx="480" cy="300" r="26" fill="#272727" stroke="#d9a441" stroke-width="2"/><text x="480" y="305" text-anchor="middle" fill="#fff" font-weight="600">NC</text><text x="480" y="344" text-anchor="middle" fill="#fff">Northwind Cables</text></g>
+            <g class="node" id="nTom"><circle class="halo" cx="70" cy="230" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="70" cy="230" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/tom.webp" x="50" y="210" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="70" y="270" text-anchor="middle" fill="#fff">Tom Hale</text></g>
+            <g class="node" id="nMarco"><circle class="halo" cx="170" cy="330" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="170" cy="330" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/marco.webp" x="150" y="310" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="170" y="370" text-anchor="middle" fill="#fff">Marco Ruiz</text></g>
+            <g class="node" id="nDana"><circle class="halo" cx="330" cy="350" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="330" cy="350" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/dana.webp" x="310" y="330" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="330" y="390" text-anchor="middle" fill="#fff">Dana Lee</text></g>
+            <g class="node hidden" id="nPriya"><circle class="halo" cx="130" cy="90" r="34" fill="rgba(52,168,83,.14)"/><circle class="ring" cx="130" cy="90" r="22" fill="#272727" stroke="#34a853" stroke-width="2"/><image href="stakeholders/priya.webp" x="110" y="70" width="40" height="40" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="130" y="130" text-anchor="middle" fill="#fff">Priya Nair</text></g>
+            <g class="node hidden" id="nNorth"><circle class="halo" cx="480" cy="300" r="38" fill="rgba(251,188,4,.14)"/><circle class="ring" cx="480" cy="300" r="26" fill="#272727" stroke="#fbbc04" stroke-width="2"/><image href="stakeholders/northwind.webp" x="456" y="276" width="48" height="48" clip-path="url(#round)" preserveAspectRatio="xMidYMid slice"/><text x="480" y="344" text-anchor="middle" fill="#fff">Northwind Cables</text></g>
           </g>
         </svg>
       </div>
@@ -160,17 +164,17 @@ const $ = (id) => document.getElementById(id);
 const nextFrame = (fn) => requestAnimationFrame(() => requestAnimationFrame(fn));
 let timers = []; const at = (ms, fn) => timers.push(setTimeout(fn, ms));
 const CARDS = {
-  marco: { kind: "Person", av: ["MR", "#3a4d39", "#cfe3cd"], name: "Marco Ruiz", role: "Project owner, Alpha", power: 3, rows: [["Reports to", "Tom Hale"], ["Contact", "Email, phone"]], facts: [["Owns delivery of Project Alpha", "K-096"], ["Leads two field crews", "K-120"]] },
-  priya: { kind: "Person", av: ["PN", "#3a4d39", "#cfe3cd"], name: "Priya Nair", role: "Director, Infrastructure", power: 4, rows: [["Role on Alpha", `<span class="fresh">Sponsor</span>`], ["Approves", "Budget over 50,000"]], facts: [["Sponsors Project Alpha", "K-322"], ["Signs off budget changes", "K-142"]] },
-  north: { kind: "Organization", av: ["NC", "#3a2a14", "#f2c063"], name: "Northwind Cables", role: "Supplier, fibre cabling", power: 2, rows: [["Contract", "Until March 2028"], ["Delivers", "Weekly batches"]], facts: [["Supplies cabling for Alpha", "K-231"], ["Two year contract", "K-232"]] },
-  marco2: { kind: "Person", av: ["MR", "#3a4d39", "#cfe3cd"], name: "Marco Ruiz", role: "Project owner, Alpha", power: 3, rows: [["Reports to", `<span class="fresh">Priya Nair</span> <span class="was">was <s>Tom Hale</s></span>`], ["Contact", "Email, phone"]], facts: [["Owns delivery of Project Alpha", "K-096"], ["Now reports to Priya Nair", "K-340"]] },
+  marco: { kind: "Person", av: "stakeholders/marco.webp", name: "Marco Ruiz", role: "Project owner, Alpha", power: 3, rows: [["Reports to", "Tom Hale"], ["Contact", "Email, phone"]], facts: [["Owns delivery of Project Alpha", "K-096"], ["Leads two field crews", "K-120"]] },
+  priya: { kind: "Person", av: "stakeholders/priya.webp", name: "Priya Nair", role: "Director, Infrastructure", power: 4, rows: [["Role on Alpha", `<span class="fresh">Sponsor</span>`], ["Approves", "Budget over 50,000"]], facts: [["Sponsors Project Alpha", "K-322"], ["Signs off budget changes", "K-142"]] },
+  north: { kind: "Organization", av: "stakeholders/northwind.webp", name: "Northwind Cables", role: "Supplier, fibre cabling", power: 2, rows: [["Contract", "Until March 2028"], ["Delivers", "Weekly batches"]], facts: [["Supplies cabling for Alpha", "K-231"], ["Two year contract", "K-232"]] },
+  marco2: { kind: "Person", av: "stakeholders/marco.webp", name: "Marco Ruiz", role: "Project owner, Alpha", power: 3, rows: [["Reports to", `<span class="fresh">Priya Nair</span> <span class="was">was <s>Tom Hale</s></span>`], ["Contact", "Email, phone"]], facts: [["Owns delivery of Project Alpha", "K-096"], ["Now reports to Priya Nair", "K-340"]] },
 };
 function render(c, badge) {
   const card = $("card");
   card.classList.add("swap");
   setTimeout(() => {
     card.innerHTML = `<div class="kind"><span>${c.kind}</span><span class="badge${badge ? " on" : ""}">${badge || ""}</span></div>
-      <div class="who"><span class="av" style="background:${c.av[1]};color:${c.av[2]}">${c.av[0]}</span><div><h3>${c.name}</h3><p>${c.role}</p></div></div>
+      <div class="who"><span class="av"><img src="${c.av}" alt=""></span><div><h3>${c.name}</h3><p>${c.role}</p></div></div>
       <div class="row"><span>Power</span><span class="power">${[1, 2, 3, 4, 5].map((n) => `<b class="${n <= c.power ? "on" : ""}"></b>`).join("")}</span></div>
       ${c.rows.map(([k, v]) => `<div class="row"><span>${k}</span><span>${v}</span></div>`).join("")}
       <div class="facts"><span class="col-title">Key facts</span>${c.facts.map(([f, k]) => `<p>${f}<span class="ref">${k}</span></p>`).join("")}</div>`;

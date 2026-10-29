@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 13</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root {
+    --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131; --line-hi: #3c3c3c;
+    --fade: #9b9b9b; --gold: #d9a441; --ember: #8a5a1c; --green-light: #6e9a6c;
+    --paper: #efe6d2; --ink: #2b2618; --ink-soft: #6f6550; --rule: #d3c6a8;
+    --c-blue: #4285f4; --c-red: #ea4335; --c-yellow: #fbbc04; --c-green: #34a853; --c-purple: #673ab7; /* category colours */
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: center; }
+  .wrap { width: 100%; max-width: 1152px; margin: 0 auto; }
+  .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
+  .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .logo svg { width: 20px; height: 20px; color: var(--green-light); }
+  h1 { max-width: 900px; margin: 0 auto; font-size: 36px; line-height: 1; font-weight: 700; letter-spacing: -0.4px; text-transform: uppercase; text-wrap: balance; color: #fff; padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  @media (min-width: 768px) { h1 { font-size: 60px; } .sub { font-size: 20px; } }
+
+  /* STAGE: drawn at 1152 x 520 (or 592 wide, stacked, on narrow columns), scaled to fit */
+  .fit { margin-top: 64px; position: relative; }
+  .stage { position: absolute; left: 0; top: 0; width: 1152px; height: 520px; transform-origin: top left; text-align: left; }
+  .stage.narrow { width: 592px; }
+  .scene { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+
+  /* THE PDF: paper in a dark viewer frame; it zooms out to both pages once read */
+  .paper { position: absolute; left: 16px; top: 16px; width: 560px; height: 488px; border-radius: 14px; background: var(--raised); border: 1px solid var(--line-hi); box-shadow: 0 24px 48px rgba(0,0,0,.45); overflow: hidden; }
+  .bar { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-bottom: 1px solid var(--line); font-size: 12px; line-height: 16px; color: var(--fade); }
+  .bar .pdf { font-size: 10px; line-height: 16px; font-weight: 600; letter-spacing: .06em; color: #fff; background: var(--c-red); border-radius: 4px; padding: 0 6px; }
+  .bar .name { color: #fff; font-weight: 500; }
+  .bar .pages { margin-left: auto; }
+  .view { position: absolute; left: 8px; right: 8px; top: 44px; bottom: 8px; border-radius: 6px; overflow: hidden; background: #2a2824; }
+  .content { position: relative; padding: 18px 26px 24px; background: var(--paper); font-family: Georgia, "Times New Roman", serif; color: var(--ink); transform-origin: 50% 0; box-shadow: 0 10px 30px rgba(0,0,0,.4); will-change: transform; }
+  .content > *:not(.hls) { position: relative; z-index: 1; }
+  .run { display: flex; justify-content: space-between; font-family: Geist, system-ui, sans-serif; font-size: 9px; line-height: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+  .content h2 { margin-top: 14px; font-size: 17px; line-height: 22px; font-weight: 700; }
+  .content h4 { margin-top: 12px; font-size: 12px; line-height: 16px; font-weight: 700; }
+  .content p { margin-top: 6px; font-size: 11px; line-height: 16px; text-align: justify; hyphens: auto; }
+  .w { will-change: opacity; } /* filler words: they dim once read */
+  .fig { margin-top: 10px; padding: 8px; }
+  .fig svg { display: block; width: 100%; height: auto; font-family: Georgia, serif; }
+  .cap { margin-top: 4px; font-size: 10px; line-height: 14px; font-style: italic; color: var(--ink-soft); text-align: center; }
+  .folio { margin-top: 14px; text-align: center; font-size: 10px; line-height: 14px; color: var(--ink-soft); }
+  .break { margin: 14px -26px 0; height: 14px; background: #d9cfb8; box-shadow: inset 0 3px 4px rgba(0,0,0,.12), inset 0 -3px 4px rgba(0,0,0,.12); }
+  table { margin-top: 8px; width: 100%; border-collapse: collapse; font-size: 10.5px; line-height: 14px; }
+  th, td { text-align: left; padding: 3px 8px; border-bottom: 1px solid var(--rule); }
+  th { font-weight: 700; border-bottom: 1.5px solid var(--ink-soft); }
+  /* highlighter marks and figure outlines, drawn under the ink */
+  .hls { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .hl { position: absolute; border-radius: 2px; transform-origin: 0 50%; transform: scaleX(0); }
+  .outline { position: absolute; border: 1.5px dashed var(--c-purple); border-radius: 4px; background: rgba(103,58,183,.1); opacity: 0; }
+  /* the reading beam */
+  .beam { position: absolute; left: 0; right: 0; top: 0; height: 0; z-index: 2; opacity: 0; will-change: transform, opacity; pointer-events: none; }
+  .beam::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 56px; background: linear-gradient(to bottom, rgba(251,188,4,0), rgba(251,188,4,.16)); }
+  .beam::after { content: ""; position: absolute; left: 0; right: 0; top: -1.5px; height: 3px; border-radius: 3px; background: #ffd75e; box-shadow: 0 0 10px 2px rgba(251,188,4,.75), 0 0 28px 6px rgba(251,188,4,.3); }
+
+  /* KNOWLEDGE UNITS: a growing index, one compact row per fact */
+  .col { position: absolute; left: 616px; top: 16px; width: 520px; }
+  .stage.narrow .col { left: 16px; top: 520px; width: 560px; }
+  .head { display: flex; align-items: center; justify-content: space-between; height: 32px; margin-bottom: 8px; }
+  .title { font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 9999px; background: var(--raised); border: 1px solid var(--line); }
+  .count { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 16px; color: var(--fade); font-variant-numeric: tabular-nums; padding: 7px 12px; border-radius: 9999px; background: var(--surface); border: 1px solid var(--line); }
+  .count b { color: #fff; font-weight: 600; }
+  .count i { color: var(--gold); font-size: 14px; }
+  .tally { display: flex; gap: 6px; height: 24px; }
+  .tc { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; line-height: 16px; color: var(--fade); border-radius: 9999px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .tc b { color: #fff; font-weight: 600; }
+  .dot { flex: none; width: 8px; height: 8px; border-radius: 9999px; }
+  .note { position: relative; height: 16px; margin: 6px 0; font-size: 11.5px; line-height: 16px; color: var(--fade); }
+  .note span { position: absolute; left: 4px; top: 0; display: flex; align-items: center; gap: 6px; white-space: nowrap; will-change: opacity; }
+  .note .done { color: #8fd19e; opacity: 0; }
+  .note i { font-size: 14px; }
+  .win { position: relative; height: 396px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; }
+  .rows { will-change: transform; }
+  .row { position: relative; display: grid; grid-template-columns: 44px 1fr 8px 52px; gap: 10px; align-items: center; height: 20px; padding: 0 12px; border-bottom: 1px solid #222; opacity: 0; will-change: transform, opacity; }
+  .row .id { font-size: 11px; line-height: 14px; color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .row .claim { font-size: 12px; line-height: 16px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .src { font-size: 11px; line-height: 14px; color: var(--fade); white-space: nowrap; text-align: right; }
+  .row .flash { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+  .stage.narrow .tally { height: 30px; } .stage.narrow .tc { font-size: 13px; }
+  .stage.narrow .note { height: 20px; font-size: 13.5px; line-height: 20px; } .stage.narrow .note i { font-size: 16px; }
+  .stage.narrow .win { height: 340px; }
+  .stage.narrow .row { height: 26px; grid-template-columns: 52px 1fr 10px 60px; }
+  .stage.narrow .row .id { font-size: 12.5px; } .stage.narrow .row .claim { font-size: 14px; } .stage.narrow .row .src { font-size: 12.5px; }
+  .stage.narrow .dot { width: 10px; height: 10px; }
+
+  /* FLYING CHIPS: a phrase lifted off the page on its way to its row */
+  .flies { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+  .fly { position: absolute; left: 0; top: 0; transform-origin: 0 50%; opacity: 0; will-change: transform, opacity; font-family: Georgia, "Times New Roman", serif; font-size: 11px; line-height: 16px; color: var(--ink); white-space: nowrap; padding: 0 4px; margin-left: -4px; border-radius: 3px; box-shadow: 0 8px 18px rgba(0,0,0,.45); }
+</style>
+<script>
+// EMBED MODE (?embed): the landing page supplies the headline, so hide this page's own
+// heading, tag and logo, drop the full-screen height, and report the height to the parent.
+if (location.search.includes("embed")) {
+  document.documentElement.classList.add("embed");
+  const send = () => parent.postMessage({ landingDemo: location.pathname, height: document.documentElement.scrollHeight }, location.origin);
+  addEventListener("load", () => { send(); new ResizeObserver(send).observe(document.body); });
+}
+</script>
+<style>
+html.embed { color-scheme: dark; }
+html.embed, html.embed body { background: #131209; }
+html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
+html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
+html.embed .wrap { grid-template-columns: 1fr !important; }
+html.embed .wrap > h1, html.embed .wrap > .sub, html.embed .wrap > .cta { display: none !important; }
+html.embed .demo, html.embed .fit, html.embed .week { margin-top: 0; }
+html.embed .week + .demo { margin-top: 24px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero">
+  <span class="tag">Concept 13 · From PDF to knowledge units</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <h1>Long files in.<br>Short facts out.</h1>
+    <p class="sub">Every claim is pulled out, written plainly and tied to its page.</p>
+    <div class="fit" aria-hidden="true">
+      <div class="stage" id="stage">
+        <div class="scene" id="scene">
+          <div class="paper">
+            <div class="bar"><span class="pdf">PDF</span><span class="name">field-ops-handbook.pdf</span><span class="pages">Pages 4–5 of 37</span></div>
+            <div class="view" id="view">
+              <div class="content" id="content">
+                <div class="hls" id="hls"></div>
+                <div class="run"><span>Field Operations Handbook · Rev. 7</span><span>Section 4</span></div>
+                <h2>Section 4: Street Works</h2>
+                <h4>4.1 Permits and approvals</h4>
+                <p>In accordance with the provisions previously outlined, and subject always to <span data-u="municipal">the approval of the relevant municipal authority</span>, it should be noted that, <span data-u="permit">prior to the commencement of any intrusive works, crews are required to obtain a street excavation permit</span>, application for which is to be made <span data-u="office">to the City Highways Office</span> and must, in every instance and without exception, <span data-u="tmp">include a traffic management plan</span>; <span data-u="days">the processing of such applications, depending on the volume received, typically takes approximately ten business days</span>.</p>
+                <p>It is further noted, for the avoidance of doubt, that <span data-u="dana">all applications shall be reviewed and countersigned by Dana Okafor, Site Lead</span>, or, <span data-u="luis">in her absence, by Luis Ferreira, Deputy</span>, or <span data-u="luis">by such other person as may be formally designated</span>.</p>
+                <p>Save that <span data-u="emerg">emergency repairs may begin at once</span>, provided always that <span data-u="hours">a permit is filed within 2 hours of the works beginning</span>, it is to be understood that <span data-u="valid">permits, once issued, remain valid for 30 calendar days and not thereafter</span>.</p>
+                <p>The general arrangement of a typical excavation is, for ease of reference, illustrated in Figure 2 below.</p>
+                <div class="fig" id="fig">
+                  <svg viewBox="0 0 488 196" width="488" height="196">
+                    <rect x="0" y="78" width="488" height="118" fill="#d8c9a6"/>
+                    <path d="M10 120 l12 -8 M40 150 l12 -8 M70 182 l12 -8 M120 136 l12 -8 M146 172 l12 -8 M330 150 l12 -8 M370 130 l12 -8 M420 160 l12 -8 M452 190 l12 -8 M20 186 l12 -8 M400 186 l12 -8" stroke="#b9a77f" stroke-width="1"/>
+                    <rect x="0" y="70" width="488" height="8" fill="#4a4436"/>
+                    <path d="M180 70 V176 H300 V70 Z" fill="#efe6d2" stroke="#2b2618" stroke-width="1.5"/>
+                    <rect x="181" y="140" width="118" height="35" fill="#e2d6bb"/>
+                    <path d="M182 132 H298" stroke="#ea4335" stroke-width="2" stroke-dasharray="6 3"/>
+                    <circle cx="240" cy="156" r="12" fill="#efe6d2" stroke="#2b2618" stroke-width="1.5"/>
+                    <circle cx="240" cy="156" r="6" fill="none" stroke="#2b2618" stroke-width="1"/>
+                    <text x="240" y="90" font-size="9" fill="#6f6550" text-anchor="middle">backfill:</text>
+                    <text x="240" y="101" font-size="9" fill="#2b2618" text-anchor="middle">compacted sand</text>
+                    <!-- plate, barrier, cones on the surface -->
+                    <rect x="14" y="64" width="72" height="6" fill="#7c7c7c" stroke="#2b2618" stroke-width=".8"/>
+                    <text x="14" y="58" font-size="9" fill="#2b2618">20 mm steel plate</text>
+                    <rect x="127" y="44" width="3" height="26" fill="#2b2618"/><rect x="163" y="44" width="3" height="26" fill="#2b2618"/>
+                    <rect x="122" y="46" width="48" height="8" fill="#ea4335"/><path d="M130 46 l-6 8 M142 46 l-6 8 M154 46 l-6 8 M166 46 l-6 8" stroke="#efe6d2" stroke-width="3"/>
+                    <text x="104" y="36" font-size="9" fill="#2b2618">barrier 0.5 m from edge</text>
+                    <path d="M338 70 L346 40 L354 70 Z" fill="#ea7a2f"/><path d="M342.5 52 h7 M340.5 61 h11" stroke="#efe6d2" stroke-width="2.5"/><rect x="334" y="68" width="24" height="3" fill="#2b2618"/>
+                    <path d="M408 70 L416 40 L424 70 Z" fill="#ea7a2f"/><path d="M412.5 52 h7 M410.5 61 h11" stroke="#efe6d2" stroke-width="2.5"/><rect x="404" y="68" width="24" height="3" fill="#2b2618"/>
+                    <g stroke="#2b2618" stroke-width="1.2" fill="none">
+                      <path d="M346 22 H416 M346 18 V26 M416 18 V26"/>
+                      <path d="M434 40 V70 M430 40 H438 M430 70 H438"/>
+                      <path d="M316 70 V144 M312 70 H320 M312 144 H320"/>
+                      <path d="M180 186 H300 M180 182 V190 M300 182 V190"/>
+                      <path d="M174 157 H227 M42 86 V76" stroke-width=".8"/>
+                    </g>
+                    <path d="M316 72 l-3 6 h6 Z M316 142 l-3 -6 h6 Z" fill="#2b2618"/>
+                    <text x="381" y="15" font-size="10" font-weight="700" fill="#2b2618" text-anchor="middle">max. 5 m</text>
+                    <text x="440" y="52" font-size="10" font-weight="700" fill="#2b2618">750 mm</text>
+                    <text x="440" y="63" font-size="9" fill="#6f6550">cones</text>
+                    <text x="324" y="104" font-size="11" font-weight="700" fill="#2b2618">min. 60 cm</text>
+                    <text x="324" y="116" font-size="9" fill="#6f6550">to top of service</text>
+                    <text x="308" y="190" font-size="10" font-weight="700" fill="#2b2618">width 45 cm</text>
+                    <text x="172" y="130" font-size="9" fill="#2b2618" text-anchor="end">warning tape</text>
+                    <text x="172" y="141" font-size="9" fill="#6f6550" text-anchor="end">30 cm above service</text>
+                    <text x="172" y="160" font-size="9" fill="#2b2618" text-anchor="end">100 mm duct</text>
+                    <text x="10" y="96" font-size="9" fill="#2b2618">surface course</text>
+                    <text x="10" y="107" font-size="9" fill="#6f6550">reinstated to match</text>
+                    <!-- every labelled part of the figure carries a fact -->
+                    <rect data-u="spacing" data-label="max. 5 m between cones" x="336" y="4" width="90" height="25" fill="none"/>
+                    <rect data-u="barrierfig" data-label="barrier 0.5 m from edge" x="100" y="26" width="112" height="46" fill="none"/>
+                    <rect data-u="coneh" data-label="750 mm cones" x="428" y="38" width="58" height="32" fill="none"/>
+                    <rect data-u="plate" data-label="20 mm steel plate" x="10" y="48" width="84" height="25" fill="none"/>
+                    <rect data-u="depth" data-label="min. 60 cm to top of service" x="310" y="66" width="104" height="54" fill="none"/>
+                    <rect data-u="backfill" data-label="backfill: compacted sand" x="198" y="81" width="84" height="24" fill="none"/>
+                    <rect data-u="surface" data-label="surface course reinstated" x="6" y="86" width="100" height="25" fill="none"/>
+                    <rect data-u="tape" data-label="warning tape 30 cm above service" x="84" y="120" width="218" height="25" fill="none"/>
+                    <rect data-u="duct" data-label="100 mm duct" x="112" y="148" width="142" height="20" fill="none"/>
+                    <rect data-u="width" data-label="width 45 cm" x="176" y="179" width="190" height="15" fill="none"/>
+                  </svg>
+                  <div class="cap">Figure 2. Typical trench cross-section (not to scale)</div>
+                </div>
+                <h4>4.2 Signage and protection</h4>
+                <p>With regard to the protection of the public, it is expected that <span data-u="barrier">barriers at least 1 metre high shall be erected around any open excavation</span> and that <span data-u="lamps">warning lamps are lit from dusk to dawn</span>, save where <span data-u="plated">the trench is fully plated over</span>, and further that <span data-u="signs">signs carry the permit number since 1 June 2025</span>.</p>
+                <div class="folio">— 4 —</div>
+                <div class="break"></div>
+                <div class="run" style="margin-top:16px"><span>Field Operations Handbook · Rev. 7</span><span>Section 4 · continued</span></div>
+                <h4>4.3 Notice to affected parties</h4>
+                <p>Where <span data-u="notify">works are likely to affect access to adjacent properties</span>, it is to be understood that, having regard to the nature of the works, the parties listed in Table 1 shall <span data-u="notify">be notified in advance by the means indicated</span>, with <span data-u="gwen">copies to Gwen Adeyemi, Community Liaison</span>.</p>
+                <table>
+                  <tr data-u="header"><th>Party</th><th>Minimum notice</th><th>Method</th></tr>
+                  <tr data-u="res"><td>Residents</td><td>48 hours</td><td>Letter drop</td></tr>
+                  <tr data-u="bus"><td>Businesses</td><td>5 working days</td><td>Letter and email</td></tr>
+                  <tr data-u="ems"><td>Emergency services</td><td>24 hours</td><td>Telephone</td></tr>
+                </table>
+                <div class="cap">Table 1. Minimum notification periods</div>
+                <h4>4.4 Commencement</h4>
+                <p>Readers are reminded that <span data-u="supersede">the arrangements described in this section supersede those set out in Revision 6</span> and will be <span data-u="eff">effective from 1 March 2026</span>, and shall be <span data-u="review">reviewed no later than 1 March 2027</span>, <span data-u="confirm">after which date the section should not be relied upon without confirmation</span>.</p>
+                <p>Any queries regarding <span data-u="queries">the interpretation of this section, or its application to unlisted cases, should first be directed to the appropriate supervisor</span>, who will, where necessary, <span data-u="queries">refer the matter onward</span>.</p>
+                <div class="folio">— 5 —</div>
+              </div>
+              <div class="beam" id="beam"></div>
+            </div>
+          </div>
+          <div class="col" id="col">
+            <div class="head"><span class="title">Knowledge units</span><span class="count"><span><b id="words">0</b> words</span><i class="ph ph-arrow-right"></i><span><b id="units">0</b> <span id="unitsLabel">knowledge units</span></span></span></div>
+            <div class="tally" id="tally"></div>
+            <div class="note"><span class="reading" id="noteA"><i class="ph ph-scan"></i>Reading pages 4–5</span><span class="done" id="noteB"><i class="ph ph-check-circle"></i>Every fact on pages 4–5 extracted · 0 skipped</span></div>
+            <div class="win" id="win"><div class="rows" id="rows"></div></div>
+          </div>
+          <div class="flies" id="flies"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// =====================================================================
+// FROM PDF TO KNOWLEDGE UNITS: a reading beam sweeps two wordy handbook
+// pages. Every clause that carries a fact, and every labelled part of the
+// figure and table, is marked in its type colour and flies into a growing
+// index; the filler around it dims once read. Then the viewer zooms out to
+// both pages so the whole marked-up document is visible. Every frame is a
+// pure function of time. One loop is 13.4 s: a 6.5 s scan, a zoom-out, the
+// hold, then a fade.
+// =====================================================================
+const LOOP = 13.4, SCAN0 = 0.5, SCAN1 = 7.0, Z0 = 7.5, Z1 = 8.6, FADE0 = 12.4, FADE1 = 13.1, WORDS = 2140;
+const HL = 0.25, LIFT = 0.12, FLIGHT = 0.6, LAND = LIFT + FLIGHT - 0.08; // seconds after the beam reaches a fact
+const TYPES = { // category colours, one per type, always the same
+  rule:   { label: "Rules",   c: "#4285f4", mark: "rgba(66,133,244,.32)" },
+  number: { label: "Numbers", c: "#fbbc04", mark: "rgba(251,188,4,.5)" },
+  person: { label: "People",  c: "#34a853", mark: "rgba(52,168,83,.34)" },
+  date:   { label: "Dates",   c: "#ea4335", mark: "rgba(234,67,53,.3)" },
+  figure: { label: "Figures", c: "#673ab7", mark: "rgba(103,58,183,.24)" },
+};
+const FACTS = { // what each marked span becomes; ids are given in reading order once laid out
+  municipal:  ["Works need municipal authority approval", "rule", "p.4"],
+  permit:     ["Permit needed before any intrusive works", "rule", "p.4"],
+  office:     ["Apply to the City Highways Office", "rule", "p.4"],
+  tmp:        ["Every application needs a traffic plan", "rule", "p.4"],
+  days:       ["Permits take about 10 business days", "number", "p.4"],
+  dana:       ["Dana Okafor, Site Lead, signs permits", "person", "p.4"],
+  luis:       ["Luis Ferreira or a designee signs if she is away", "person", "p.4"],
+  emerg:      ["Emergency repairs can start at once", "rule", "p.4"],
+  hours:      ["Emergency permit filed within 2 hours", "number", "p.4"],
+  valid:      ["Permits are valid for 30 days", "number", "p.4"],
+  spacing:    ["Cones no more than 5 m apart", "figure", "Fig. 2"],
+  barrierfig: ["Barriers stand 0.5 m back from the edge", "figure", "Fig. 2"],
+  coneh:      ["Cones are 750 mm tall", "figure", "Fig. 2"],
+  plate:      ["Road plates are 20 mm steel", "figure", "Fig. 2"],
+  depth:      ["Service at least 60 cm deep", "figure", "Fig. 2"],
+  backfill:   ["Backfill with compacted sand", "figure", "Fig. 2"],
+  surface:    ["Surface course is reinstated to match", "figure", "Fig. 2"],
+  tape:       ["Warning tape 30 cm above the service", "figure", "Fig. 2"],
+  duct:       ["Service runs in a 100 mm duct", "figure", "Fig. 2"],
+  width:      ["Trench width 45 cm", "figure", "Fig. 2"],
+  barrier:    ["Barriers at least 1 m high around trenches", "number", "p.4"],
+  lamps:      ["Warning lamps lit dusk to dawn", "rule", "p.4"],
+  plated:     ["No barriers needed once fully plated", "rule", "p.4"],
+  signs:      ["Signs show permit no. since 1 Jun 2025", "date", "p.4"],
+  notify:     ["Notify affected parties in advance", "rule", "p.5"],
+  gwen:       ["Gwen Adeyemi, Community Liaison, gets copies", "person", "p.5"],
+  header:     ["Minimum notice periods by party", "number", "Table 1"],
+  res:        ["Residents: 48 hours, by letter drop", "number", "Table 1"],
+  bus:        ["Businesses: 5 working days, letter and email", "number", "Table 1"],
+  ems:        ["Emergency services: 24 hours, by phone", "number", "Table 1"],
+  supersede:  ["Replaces Revision 6", "rule", "p.5"],
+  eff:        ["These rules apply from 1 March 2026", "date", "p.5"],
+  review:     ["Section reviewed by 1 March 2027", "date", "p.5"],
+  confirm:    ["Confirm before relying on it after 1 Mar 2027", "rule", "p.5"],
+  queries:    ["Questions go to your supervisor, who escalates", "rule", "p.5"],
+};
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const mix = (a, b, t) => a + (b - a) * t;
+const $ = (id) => document.getElementById(id);
+const stage = $("stage"), scene = $("scene"), view = $("view"), content = $("content"), hls = $("hls"), beam = $("beam");
+const flies = $("flies"), rowsEl = $("rows"), win = $("win"), col = $("col"), fit = document.querySelector(".fit");
+const wordsEl = $("words"), unitsEl = $("units"), unitsLabel = $("unitsLabel"), noteA = $("noteA"), noteB = $("noteB");
+
+// FILLER: wrap every loose word in the paragraphs so it can dim once the beam has read it
+content.querySelectorAll("p").forEach((p) => [...p.childNodes].forEach((n) => {
+  if (n.nodeType !== 3) return;
+  const frag = document.createDocumentFragment();
+  n.textContent.split(/(\s+)/).forEach((part) => {
+    if (!part) return;
+    if (/^\s+$/.test(part)) frag.append(part);
+    else { const s = document.createElement("span"); s.className = "w"; s.textContent = part; frag.append(s); }
+  });
+  n.replaceWith(frag);
+}));
+
+// UNITS: one per fact (a fact may span two marked phrases), each with a flying chip and a row
+const byKey = new Map();
+content.querySelectorAll("[data-u]").forEach((el) => { const k = el.dataset.u; if (!byKey.has(k)) byKey.set(k, []); byKey.get(k).push(el); });
+const short = (s) => (s.length > 40 ? `${s.slice(0, 38).trimEnd()}…` : s);
+const UNITS = [...byKey].map(([key, els]) => {
+  const [claim, type, src] = FACTS[key], T = TYPES[type], el = els[0], u = { els, claim, type, src, marks: [] };
+  u.fly = document.createElement("div"); u.fly.className = "fly";
+  u.fly.style.background = `linear-gradient(${T.mark}, ${T.mark}), var(--paper)`;
+  u.fly.textContent = short(el.dataset.label || (el.tagName === "TR" ? [...el.cells].map((c) => c.textContent).join(" · ") : el.textContent));
+  flies.append(u.fly);
+  return u;
+});
+const TALLY = Object.entries(TYPES).map(([key, T]) => {
+  const el = document.createElement("span"); el.className = "tc";
+  el.innerHTML = `<span class="dot" style="background:${T.c}"></span>${T.label} <b>0</b>`;
+  $("tally").append(el);
+  return { key, b: el.querySelector("b"), last: -1 };
+});
+
+// MEASURE: everything in unscaled stage pixels, with the page at rest
+let S = 1, H = 0, VH = 0, VW = 0, viewX = 0, viewY = 0, ROWH = 20, WINH = 396, LINES = [], built = false, ZS = 0.35;
+const offset = (el, root) => { let x = 0, y = 0; while (el && el !== root) { x += el.offsetLeft; y += el.offsetTop; el = el.offsetParent; } return [x, y]; };
+const timeAt = (y, x) => SCAN0 + (y / H) * (SCAN1 - SCAN0) + (x / 520) * 0.25; // when the beam reaches a spot; a line fires left to right
+function measure() {
+  const keep = content.style.transform; content.style.transform = "none";
+  const c = content.getBoundingClientRect(), box = (r) => ({ x: (r.left - c.left) / S, y: (r.top - c.top) / S, w: r.width / S, h: r.height / S });
+  VH = view.clientHeight; VW = view.clientWidth; H = content.offsetHeight; ZS = (VH - 16) / H;
+  [viewX, viewY] = offset(view, stage);
+  hls.textContent = "";
+  UNITS.forEach((u) => {
+    const T = TYPES[u.type], fig = u.type === "figure";
+    const rects = u.els.flatMap((el) => (el.tagName === "SPAN" ? [...el.getClientRects()] : [el.getBoundingClientRect()]).map(box)).filter((r) => r.w > 1);
+    u.marks = rects.map((r) => {
+      const m = document.createElement("div"), pad = fig ? 1 : 1;
+      m.className = fig ? "outline" : "hl"; if (!fig) m.style.background = T.mark;
+      Object.assign(m.style, { left: `${r.x - pad}px`, top: `${r.y - pad}px`, width: `${r.w + 2 * pad}px`, height: `${r.h + 2 * pad}px` });
+      hls.append(m);
+      return { el: m, at: timeAt(r.y + r.h * 0.6, r.x) };
+    });
+    u.at = Math.max(...u.marks.map((m) => m.at)); // the chip lifts once the whole fact is marked
+    u.x = rects[0].x; u.y = rects[0].y + (rects[0].h - 16) / 2; u.ky = rects[0].y;
+  });
+  if (!built) { // ids follow reading order: by line, then left to right
+    built = true;
+    UNITS.sort((a, b) => Math.round(a.ky / 8) - Math.round(b.ky / 8) || a.x - b.x);
+    UNITS.forEach((u, i) => {
+      u.id = `K-${301 + i}`; const T = TYPES[u.type];
+      u.row = document.createElement("div"); u.row.className = "row";
+      u.row.innerHTML = `<span class="id">${u.id}</span><span class="claim">${u.claim}</span><span class="dot" style="background:${T.c}"></span><span class="src">${u.src}</span><span class="flash" style="background:${T.mark}"></span>`;
+      rowsEl.append(u.row); u.flash = u.row.lastElementChild; u.target = u.row.querySelector(".claim");
+    });
+  }
+  UNITS.forEach((u, i) => { u.idx = i; }); ORDER = UNITS.slice().sort((a, b) => a.at - b.at);
+  ROWH = UNITS[0].row.offsetHeight; WINH = win.clientHeight;
+  const [winX, winY] = offset(win, stage);
+  UNITS.forEach((u) => { const [tx, ty] = offset(u.target, rowsEl); u.tx = winX + 1 + tx; u.ty = winY + 1 + ty + (u.target.offsetHeight - 16) / 2; });
+  // group the filler words into lines so a whole line dims as the beam leaves it
+  const byLine = new Map();
+  content.querySelectorAll(".w").forEach((w) => { const r = box(w.getBoundingClientRect()), k = Math.round(r.y); if (!byLine.has(k)) byLine.set(k, { y: r.y + r.h, els: [], last: -1 }); byLine.get(k).els.push(w); });
+  LINES = [...byLine.values()];
+  content.style.transform = keep;
+}
+const beamY = (t) => clamp((t - SCAN0) / (SCAN1 - SCAN0)) * H; // beam position in the page
+const scrollAt = (t) => clamp(beamY(t) - VH * 0.55, 0, Math.max(0, H - VH)); // the page scrolls once the beam reaches the middle
+const SLIDE = LIFT + FLIGHT * 0.5; // the index makes room while a chip is still in the air
+let ORDER = []; // units in the order they fire; each knows its row number
+const landed = (t) => ORDER.reduce((n, u) => mix(n, Math.max(n, u.idx + 1), ease((t - u.at - SLIDE) / 0.4)), 0); // the lowest row reached so far
+const listAt = (t) => clamp(landed(t) * ROWH - WINH + 2, 0, Math.max(0, UNITS.length * ROWH - WINH + 2)); // the index scrolls to keep the newest row in view
+
+let lastWords = -1, lastUnits = -1;
+function render(t, still) {
+  scene.style.opacity = still ? 1 : t < 0.4 ? ease(t / 0.4) : t > FADE0 ? 1 - ease((t - FADE0) / (FADE1 - FADE0)) : 1;
+  const sp = clamp((t - SCAN0) / (SCAN1 - SCAN0)), scroll = scrollAt(t), by = still ? Infinity : beamY(t);
+  const z = still ? 1 : ease((t - Z0) / (Z1 - Z0)); // zoom out to both pages once everything is read
+  content.style.transform = `translateY(${mix(-scroll, 8, z)}px) scale(${mix(1, ZS, z)})`;
+  beam.style.transform = `translateY(${beamY(t) - scroll}px)`;
+  beam.style.opacity = still ? 0 : clamp((t - SCAN0) / 0.25) * clamp((SCAN1 + 0.25 - t) / 0.25);
+  rowsEl.style.transform = `translateY(${-listAt(still ? 99 : t)}px)`;
+  const done = still ? 1 : ease((t - Z0) / 0.6);
+  noteA.style.opacity = 1 - done; noteB.style.opacity = done;
+  // filler: read, then let go (a little less dim once the whole page is in view)
+  LINES.forEach((L) => { const v = Math.round((1 - 0.6 * ease((by - L.y) / 28) * (1 - 0.3 * z)) * 100) / 100; if (v !== L.last) { L.last = v; L.els.forEach((e) => { e.style.opacity = v; }); } });
+  const counts = {}; let n = 0;
+  UNITS.forEach((u) => {
+    const local = still ? 99 : t - u.at;
+    // 1. mark it on the page, line by line as the beam reaches each part
+    u.marks.forEach((m) => { const k = ease(((still ? 99 : t) - m.at) / HL); if (u.type === "figure") m.el.style.opacity = k; else m.el.style.transform = `scaleX(${k})`; });
+    // 2. lift it off and fly it to its row
+    const p = (local - LIFT) / FLIGHT;
+    if (still || p < 0 || p > 1) u.fly.style.opacity = 0;
+    else {
+      const e = ease(p), s0 = scrollAt(u.at + LIFT), ty = u.ty - listAt(u.at + LIFT + FLIGHT * 0.9);
+      const x = mix(viewX + u.x, u.tx, e), y = mix(viewY + u.y - s0, ty, e) - Math.sin(Math.PI * e) * 28;
+      u.fly.style.opacity = clamp(p * 8) * (p < 0.8 ? 1 : 1 - (p - 0.8) / 0.2);
+      u.fly.style.transform = `translate(${x}px, ${y}px) scale(${1 + Math.sin(Math.PI * e) * 0.06}) rotate(${Math.sin(Math.PI * e) * -2.5}deg)`;
+    }
+    // 3. its row appears where it landed
+    const c = ease((local - LAND) / 0.4);
+    u.row.style.opacity = c;
+    u.row.style.transform = `translateX(${(1 - c) * 12}px)`;
+    u.flash.style.opacity = still || local < LAND ? 0 : clamp(1 - (local - LAND) / 1.2);
+    if (c > 0.5) { n++; counts[u.type] = (counts[u.type] || 0) + 1; }
+  });
+  TALLY.forEach((T) => { const v = counts[T.key] || 0; if (v !== T.last) { T.last = v; T.b.textContent = v; } });
+  const words = still ? WORDS : Math.round(sp * WORDS);
+  if (words !== lastWords) { wordsEl.textContent = words.toLocaleString("en-US"); lastWords = words; }
+  if (n !== lastUnits) { unitsEl.textContent = n; unitsLabel.textContent = n === 1 ? "knowledge unit" : "knowledge units"; lastUnits = n; }
+}
+
+// FIT: scale the stage to the column; stack it on narrow columns so text stays legible
+let still = false;
+function resize() {
+  const narrow = fit.clientWidth < 720;
+  stage.classList.toggle("narrow", narrow);
+  const w = narrow ? 592 : 1152, h = narrow ? 520 + col.offsetHeight + 16 : 520;
+  stage.style.height = `${h}px`;
+  S = Math.min(1, fit.clientWidth / w);
+  stage.style.transform = `scale(${S})`; fit.style.height = `${h * S}px`;
+  if (built || document.fonts.status === "loaded") measure();
+  if (still) render(LOOP, true);
+}
+addEventListener("resize", resize); resize();
+
+document.fonts.ready.then(() => {
+  resize();
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // STILL: both pages in view, every fact marked, the filler dimmed, the whole index counted
+    still = true; render(LOOP, true);
+  } else {
+    const t0 = performance.now();
+    const frame = (now) => { render(((now - t0) / 1000) % LOOP, false); requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
+  }
+});
+</script>
+</body>
+</html>

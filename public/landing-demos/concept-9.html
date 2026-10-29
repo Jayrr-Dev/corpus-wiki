@@ -64,11 +64,11 @@ html.embed .week + .demo { margin-top: 24px; }
 <svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
 
 <section class="hero centered">
-  <span class="tag">Concept 9 · The living dictionary</span>
+  <span class="tag">Concept 9 · The living glossary</span>
   <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
   <div class="wrap">
     <div class="intro">
-      <h1>Your team's dictionary,<br>written by your files.</h1>
+      <h1>Your team's glossary,<br>written by your files.</h1>
       <p class="sub">Every term your documents use, defined in plain words, with real examples from your sources.</p>
       <a class="cta" href="#">Start free <i class="ph ph-arrow-right"></i></a>
     </div>
@@ -128,17 +128,17 @@ if (reduce) {
     let a, b, c;
     // 1. A MEANING SHARPENS: the bylaw adds the notice period
     at(700, () => { a = addChip($("srcs"), "ph-file-pdf", "Bylaw 20145.pdf", "Section 4"); });
-    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), S1_NEW, () => { fresh($("r1"), "3"); toggle(a, "read"); badge("Meaning updated"); addEntry($("log"), "ph-arrows-clockwise", "var(--gold)", "Meaning 1 updated", "from Bylaw 20145"); }); });
+    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), S1_NEW, () => { fresh($("r1"), "3"); toggle(a, "read"); badge("Meaning updated"); addEntry($("log"), "ph-arrows-clockwise", "var(--c-blue)", "Meaning 1 updated", "from Bylaw 20145"); }); });
     at(7000, () => toggle($("s1"), "hot", false));
     // 2. A NEW MEANING: the memo uses the word for the paper itself
     at(7600, () => { b = addChip($("srcs"), "ph-file-text", "Safety memo", "28 Oct"); });
     at(8800, () => { show("sense2"); bump("senseCount", "2"); $("plural").textContent = "s"; });
-    at(9300, () => { toggle($("s2"), "hot"); write($("s2"), S2, 50, () => { fresh($("r2"), "4"); $("ex2").style.transition = "opacity .5s"; $("ex2").style.opacity = 1; toggle(b, "read"); badge("Meaning added"); addEntry($("log"), "ph-plus-circle", "var(--green-light)", "Meaning 2 added", "from safety memo"); }); });
+    at(9300, () => { toggle($("s2"), "hot"); write($("s2"), S2, 50, () => { fresh($("r2"), "4"); $("ex2").style.transition = "opacity .5s"; $("ex2").style.opacity = 1; toggle(b, "read"); badge("Meaning added"); addEntry($("log"), "ph-plus-circle", "var(--c-green)", "Meaning 2 added", "from safety memo"); }); });
     at(12600, () => toggle($("s2"), "hot", false));
     // 3. SAME WORD, TWO ENTRIES: the email shows "line permit" is this term
     at(13400, () => { c = addChip($("srcs"), "ph-envelope-simple", "Email from Dana", "Permits team"); });
     at(14600, () => toggle($("wPermit"), "merge"));
-    at(15300, () => { toggle($("wPermit"), "gone"); show("aPermit"); toggle($("aPermit"), "fresh"); toggle(c, "read"); badge("Entries merged"); addEntry($("log"), "ph-git-merge", "var(--green-pale)", "Entries merged", "street dig permit into this word"); });
+    at(15300, () => { toggle($("wPermit"), "gone"); show("aPermit"); toggle($("aPermit"), "fresh"); toggle(c, "read"); badge("Entries merged"); addEntry($("log"), "ph-git-merge", "var(--c-purple)", "Entries merged", "street dig permit into this word"); });
     at(17500, () => toggle($("aPermit"), "fresh", false));
   });
 }

@@ -90,7 +90,7 @@
   .pg { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.8); transition: opacity .5s var(--ease), transform .5s var(--ease), background-color .3s var(--ease); }
   .pg.hidden { opacity: 0; transform: translateX(-8px); } .pg.gone { display: none; }
   .pg.cur { background: var(--hi); color: #fff; }
-  .pg .dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--gold); transition: opacity .6s var(--ease); }
+  .pg .dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--c); transition: opacity .6s var(--ease); }
   .pg.seen .dot { opacity: 0; }
   .page { padding: 24px 32px; overflow: hidden; }
   .page .crumb { font-size: 12px; line-height: 16px; color: var(--fade); }
@@ -167,6 +167,7 @@ html.embed .week + .demo { margin-top: 24px; }
 // built and why, and the coverage meter reaches 100% by Friday. 34 second loop.
 // =====================================================================
 const GROUPS = ["Getting started", "Features", "API", "Decisions", "Reference"];
+const COLORS = ["#4285f4", "#ea4335", "#fbbc04", "#34a853", "#673ab7"]; // one category colour per section
 const DAYS = [
   { day: "Mon", ask: "Set up the crew scheduler with a jobs table and seed data.", work: ["Write", "12 files", "schema, seed and config created"], reply: "Done. The project runs locally with 40 sample jobs.",
     pages: [[0, "Overview"], [0, "Local setup"]], show: { crumb: "Getting started", title: "Local setup", body: "Run npm install, then npm run seed to load 40 sample jobs. The app starts on port 3000 and reads its settings from .env.", src: ["commit 7c21e0", "package.json"] } },
@@ -187,7 +188,7 @@ let timers = []; const at = (ms, fn) => timers.push(setTimeout(fn, ms));
 
 $("week").innerHTML = DAYS.map((d, i) => `<span class="day" id="d${i}">${d.day}</span>`).join("");
 const pageEls = [];
-$("tree").innerHTML = GROUPS.map((g, gi) => `<div class="grp" id="g${gi}"><span>${g}</span></div>`).join("");
+$("tree").innerHTML = GROUPS.map((g, gi) => `<div class="grp" id="g${gi}" style="--c:${COLORS[gi]}"><span>${g}</span></div>`).join("");
 DAYS.forEach((d) => d.pages.forEach(([g, name]) => { const el = document.createElement("div"); el.className = "pg hidden gone"; el.innerHTML = `<span class="dot"></span>${name}`; $(`g${g}`).append(el); pageEls.push(el); }));
 
 function step(cls, html) {

@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hero concept 14</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root {
+    --base: #131209; --surface: #181818; --raised: #1f1f1f; --hi: #272727; --line: #313131; --line-hi: #3c3c3c;
+    --fade: #9b9b9b; --gold: #d9a441; --ember: #8a5a1c;
+    --green: #496748; --green-light: #6e9a6c; --green-pale: #cfe3cd;
+    --paper: #efe6d2; --ink: #2b2618; --ink-soft: #6f6550;
+    --c-blue: #4285f4; --c-red: #ea4335; --c-yellow: #fbbc04; --c-green: #34a853; --c-purple: #673ab7; /* category colours */
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--base); color: #fff; font-family: Geist, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  section.hero { position: relative; min-height: 100svh; padding: 96px 16px 64px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; text-align: center; }
+  .wrap { width: 100%; max-width: 1152px; margin: 0 auto; }
+  .tag { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); font-size: 12px; line-height: 16px; color: var(--gold); border: 1px solid var(--ember); border-radius: 9999px; padding: 4px 12px; white-space: nowrap; }
+  .logo { position: absolute; top: 24px; left: 24px; display: flex; align-items: center; gap: 8px; font-size: 14px; letter-spacing: .08em; text-transform: uppercase; }
+  .logo svg { width: 20px; height: 20px; color: var(--green-light); }
+  h1 { max-width: 900px; margin: 0 auto; font-size: 36px; line-height: 1; font-weight: 700; letter-spacing: -0.4px; text-transform: uppercase; text-wrap: balance; color: #fff; padding-bottom: 4px; }
+  .sub { max-width: 680px; margin: 16px auto 0; font-size: 18px; line-height: 28px; color: rgba(255,255,255,.65); text-wrap: pretty; }
+  @media (min-width: 768px) { h1 { font-size: 60px; } .sub { font-size: 20px; } }
+
+  /* STAGE: drawn at 1152 x 520 (or 592 wide, stacked, on narrow columns), scaled to fit */
+  .fit { margin-top: 64px; position: relative; }
+  .stage { position: absolute; left: 0; top: 0; width: 1152px; height: 520px; transform-origin: top left; text-align: left; }
+  .stage.narrow { width: 592px; }
+  .scene { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+  .head { display: flex; align-items: center; justify-content: space-between; height: 32px; margin-bottom: 8px; }
+  .title { font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 9999px; background: var(--raised); border: 1px solid var(--line); }
+  .count { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 16px; color: var(--fade); font-variant-numeric: tabular-nums; padding: 7px 12px; border-radius: 9999px; background: var(--surface); border: 1px solid var(--line); white-space: nowrap; }
+  .count b { color: #fff; font-weight: 600; }
+  .count i { color: var(--gold); font-size: 14px; }
+
+  /* KNOWLEDGE UNITS: the facts every format is built from */
+  .col { position: absolute; }
+  .kus { display: flex; flex-direction: column; gap: 6px; }
+  .ku { position: relative; display: grid; grid-template-columns: 40px 1fr 8px; gap: 8px; align-items: center; height: 50px; padding: 0 10px; border-radius: 10px; background: var(--raised); border: 1px solid var(--line); }
+  .ku .id { font-size: 11px; line-height: 14px; color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .ku .claim { font-size: 12.5px; line-height: 16px; color: #fff; }
+  .dot { width: 8px; height: 8px; border-radius: 9999px; }
+  .ku .glow { position: absolute; inset: -1px; border-radius: 10px; border: 1.5px solid var(--gold); background: rgba(217,164,65,.08); opacity: 0; will-change: opacity; }
+  .stage.narrow .ku { height: 30px; grid-template-columns: 52px 1fr 10px; }
+  .stage.narrow .ku .id { font-size: 12.5px; }
+  .stage.narrow .ku .claim { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stage.narrow .dot { width: 10px; height: 10px; }
+
+  /* THE TRANSFORMER: a small glass machine in the house green */
+  .machine { position: absolute; display: flex; flex-direction: column; gap: 8px; border-radius: 20px; background: var(--green); border: 2px solid var(--green-light); padding: 10px; }
+  .glass { position: relative; flex: 1; border-radius: 12px; background: #0e0d07; border: 1px solid #2c3f2b; overflow: hidden; }
+  .glass > * { position: absolute; left: 50%; top: 50%; }
+  .ring { width: 92px; height: 92px; margin: -46px 0 0 -46px; will-change: transform; }
+  .gi { font-size: 44px; line-height: 1; margin: -22px 0 0 -22px; opacity: 0; will-change: opacity; }
+  .gmark { width: 36px; height: 36px; margin: -18px 0 0 -18px; color: var(--green-light); will-change: opacity; }
+  .status { display: flex; align-items: center; gap: 6px; height: 20px; padding: 0 4px; font-size: 11px; line-height: 16px; color: var(--green-pale); white-space: nowrap; overflow: hidden; }
+  .lamp { flex: none; width: 8px; height: 8px; border-radius: 9999px; background: #34a853; box-shadow: 0 0 12px #34a853; }
+  .lamp.idle { background: #131209; box-shadow: none; } .lamp.busy { background: #fbbc04; box-shadow: 0 0 12px #fbbc04; }
+  .stage.narrow .machine { flex-direction: row; align-items: center; gap: 14px; }
+  .stage.narrow .glass { flex: none; width: 140px; height: 48px; }
+  .stage.narrow .ring { transform-origin: 50% 50%; width: 60px; height: 60px; margin: -30px 0 0 -30px; }
+  .stage.narrow .gi { font-size: 30px; margin: -15px 0 0 -15px; }
+  .stage.narrow .gmark { width: 26px; height: 26px; margin: -13px 0 0 -13px; }
+  .stage.narrow .status { flex: 1; font-size: 15px; height: 24px; } .stage.narrow .lamp { width: 10px; height: 10px; }
+
+  /* OUTPUTS: each format drawn as the thing it is */
+  .ohead { position: absolute; }
+  .out { position: absolute; left: 0; top: 0; width: 163px; height: 220px; padding: 8px; border-radius: 14px; background: var(--raised); border: 1px solid var(--line-hi); box-shadow: 0 12px 24px rgba(0,0,0,.4); transform-origin: 0 0; opacity: 0; will-change: transform, opacity; }
+  .out .flash { position: absolute; inset: -1px; border-radius: 14px; border: 1.5px solid; opacity: 0; pointer-events: none; will-change: opacity; }
+  .art { position: relative; height: 134px; border-radius: 8px; overflow: hidden; background: var(--surface); }
+  .art svg { display: block; }
+  .art > svg { width: 100%; height: auto; }
+  .lab { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 12px; line-height: 16px; font-weight: 500; white-space: nowrap; }
+  .lab i { font-size: 15px; }
+  .ids { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .ids span { font-size: 10px; line-height: 16px; font-weight: 600; color: var(--gold); padding: 0 6px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--line); opacity: 0; font-variant-numeric: tabular-nums; }
+  /* 1. wiki page */
+  .a-wiki { padding: 8px 9px; background: #1e1e1e; }
+  .a-wiki .cr { font-size: 7px; line-height: 10px; color: #a3a3a3; }
+  .a-wiki b.t { display: block; margin-top: 4px; padding-bottom: 4px; border-bottom: 1px solid #363636; font: 400 13px/16px ui-serif, Georgia, "Times New Roman", serif; color: #fff; }
+  .a-wiki p { margin-top: 5px; font-size: 7.5px; line-height: 11px; color: #dcdcdc; }
+  .wl { color: #b3cefa; } .a-wiki sup { font-size: 5.5px; color: #b3cefa; }
+  /* 3. quiz */
+  .a-quiz { padding: 8px 9px; background: #1e1e1e; }
+  .a-quiz .n { font-size: 7px; line-height: 10px; color: var(--fade); }
+  .a-quiz .q { margin-top: 3px; font-size: 9.5px; line-height: 12px; font-weight: 600; }
+  .opt { display: flex; align-items: center; gap: 6px; height: 21px; margin-top: 5px; padding: 0 6px; border-radius: 6px; border: 1px solid var(--line); font-size: 8.5px; color: #dcdcdc; }
+  .opt .r { width: 9px; height: 9px; border-radius: 9999px; border: 1px solid #5a5a5a; }
+  .opt.ok { border-color: rgba(52,168,83,.7); background: rgba(52,168,83,.18); color: #fff; }
+  .opt.ok i { margin-left: auto; color: #34a853; font-size: 12px; }
+  /* 4. slides */
+  .a-slides { padding: 8px; background: #141414; }
+  .slide { position: relative; height: 74px; border-radius: 4px; background: #f5f1e8; color: var(--ink); padding: 7px 8px 0 12px; }
+  .slide::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 4px 0 0 4px; background: var(--c-green); }
+  .slide b { display: block; font-size: 9.5px; line-height: 12px; }
+  .slide li { font-size: 7.5px; line-height: 11px; margin-left: 9px; }
+  .slide ul { margin-top: 4px; padding: 0; }
+  .thumbs { display: flex; gap: 5px; margin-top: 7px; }
+  .thumbs span { flex: 1; height: 18px; border-radius: 2px; background: #2f2f2f; }
+  .thumbs span.on { background: #f5f1e8; outline: 1.5px solid var(--c-green); outline-offset: 1px; }
+  .a-slides .n { margin-top: 6px; font-size: 7px; line-height: 10px; color: var(--fade); }
+  /* 5. podcast */
+  .a-pod { padding: 9px; background: #1e1e1e; }
+  .pod-top { display: flex; gap: 8px; align-items: center; }
+  .cover { width: 34px; height: 34px; border-radius: 6px; background: linear-gradient(135deg, #673ab7, #3b2170); display: grid; place-items: center; font-size: 18px; }
+  .pod-top small { display: block; font-size: 7px; line-height: 10px; color: var(--fade); }
+  .pod-top b { display: block; font-size: 10px; line-height: 13px; }
+  .times { display: flex; align-items: center; justify-content: space-between; font-size: 7px; line-height: 10px; color: var(--fade); }
+  .pbtn { width: 18px; height: 18px; border-radius: 9999px; background: #8f6ad8; display: grid; place-items: center; color: #fff; font-size: 9px; }
+  /* 6. glossary */
+  .a-gloss { padding: 9px 10px; background: var(--paper); color: var(--ink); }
+  .a-gloss .letter { position: absolute; right: 8px; top: 7px; font: 700 14px/1 Georgia, serif; color: #c9bc9f; }
+  .a-gloss b.term { display: block; font: 700 11px/14px Georgia, "Times New Roman", serif; padding-right: 14px; }
+  .a-gloss i.pos { font: italic 7px/10px Georgia, serif; color: var(--ink-soft); }
+  .a-gloss p { margin-top: 4px; font: 8px/11.5px Georgia, "Times New Roman", serif; }
+  .a-gloss .see { margin-top: 5px; font-size: 7px; line-height: 10px; color: #2f5fb3; }
+  /* 8. agent context */
+  .a-agent { background: #141414; }
+  .a-agent .bar { display: flex; gap: 4px; padding: 6px 8px; border-bottom: 1px solid #262626; }
+  .a-agent .bar span { width: 5px; height: 5px; border-radius: 9999px; background: #5a5a5a; }
+  .a-agent pre { margin: 0; padding: 6px 8px; font: 7px/10px ui-monospace, Menlo, Consolas, monospace; color: #cfcfcf; white-space: pre; }
+  .a-agent .k { color: var(--gold); } .a-agent .s { color: #8fd19e; } .a-agent .p { color: #a8c7fa; }
+
+  /* chips flying from the units into the machine */
+  .flies { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+  .chip { position: absolute; left: 0; top: 0; font-size: 10px; line-height: 16px; font-weight: 600; color: var(--gold); padding: 0 6px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--ember); box-shadow: 0 6px 14px rgba(0,0,0,.45); opacity: 0; will-change: transform, opacity; font-variant-numeric: tabular-nums; }
+</style>
+<script>
+// EMBED MODE (?embed): the landing page supplies the headline, so hide this page's own
+// heading, tag and logo, drop the full-screen height, and report the height to the parent.
+if (location.search.includes("embed")) {
+  document.documentElement.classList.add("embed");
+  const send = () => parent.postMessage({ landingDemo: location.pathname, height: document.documentElement.scrollHeight }, location.origin);
+  addEventListener("load", () => { send(); new ResizeObserver(send).observe(document.body); });
+}
+</script>
+<style>
+html.embed { color-scheme: dark; }
+html.embed, html.embed body { background: #131209; }
+html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
+html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
+html.embed .wrap { grid-template-columns: 1fr !important; }
+html.embed .wrap > h1, html.embed .wrap > .sub, html.embed .wrap > .cta { display: none !important; }
+html.embed .demo, html.embed .fit, html.embed .week { margin-top: 0; }
+html.embed .week + .demo { margin-top: 24px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="mark" viewBox="5 11 90 82"><path fill="currentColor" d="M12 18C30 18 42 26 50 38C58 26 70 18 88 18V35C76 35 65 41 56 47V62C65 55 76 52 88 52V64C71 64 59 72 50 86C41 72 29 64 12 64V52C24 52 35 55 44 62V47C35 41 24 35 12 35Z"/></symbol></svg>
+
+<section class="hero">
+  <span class="tag">Concept 14 · Multi-modal</span>
+  <div class="logo"><svg><use href="#mark"/></svg>Corpus Wiki</div>
+  <div class="wrap">
+    <h1>Transform knowledge into<br>any type of resource.</h1>
+    <p class="sub">One set of sourced facts becomes pages, videos, quizzes, slides and more.</p>
+    <div class="fit" aria-hidden="true">
+      <div class="stage" id="stage">
+        <div class="scene" id="scene">
+          <div class="col" id="col">
+            <div class="head"><span class="title">Knowledge units</span><span class="count"><b>8</b> facts</span></div>
+            <div class="kus" id="kus"></div>
+          </div>
+          <div class="machine" id="machine">
+            <div class="glass" id="glass">
+              <svg class="ring" id="ring" viewBox="0 0 92 92"><circle cx="46" cy="46" r="42" fill="none" stroke="#2c3f2b" stroke-width="2"/><circle cx="46" cy="46" r="42" fill="none" stroke="#6e9a6c" stroke-width="2" stroke-dasharray="18 12" stroke-linecap="round"/><circle cx="46" cy="4" r="3" fill="#d9a441"/></svg>
+              <svg class="gmark" id="gmark"><use href="#mark"/></svg>
+            </div>
+            <div class="status"><span class="lamp idle" id="lamp"></span><span id="phase">Reading units</span></div>
+          </div>
+          <div class="ohead" id="ohead"><div class="head"><span class="title">Formats</span><span class="count"><span><b>8</b> units</span><i class="ph ph-arrow-right"></i><span><b id="nfmt">0</b> <span id="fmtLabel">formats</span></span></span></div></div>
+          <div id="outs"></div>
+          <div class="flies" id="flies"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// =====================================================================
+// MULTI-MODAL: the same eight knowledge units flow into the machine, and
+// each pass writes a different format from them: a wiki page, a video, a
+// quiz, slides, a podcast, a glossary entry, a diagram and agent context.
+// Every format names the units it used. Every frame is a pure function of
+// time. One loop is 14 s: eight formats, a hold, then a fade.
+// =====================================================================
+const LOOP = 14, STEP = 1.1, FIRST = 0.8, FADE0 = 12.8, FADE1 = 13.5;
+const C = { blue: "#4285f4", red: "#ea4335", yellow: "#fbbc04", green: "#34a853", purple: "#673ab7" }; // category colours
+const UNITS = [
+  ["K-302", "Permit needed before any intrusive works", C.blue],
+  ["K-303", "Apply to the City Highways Office", C.blue],
+  ["K-305", "Permits take about 10 business days", C.yellow],
+  ["K-306", "Dana Okafor, Site Lead, signs permits", C.green],
+  ["K-311", "Cones no more than 5 m apart", C.purple],
+  ["K-315", "Service at least 60 cm deep", C.purple],
+  ["K-328", "Residents: 48 hours notice, by letter", C.yellow],
+  ["K-332", "These rules apply from 1 March 2026", C.red],
+];
+const OUTPUTS = [
+  { name: "Wiki page", icon: "ph-article", c: C.blue, ids: ["K-302", "K-303", "K-305", "K-306"], art: `<div class="art a-wiki"><div class="cr"><span class="wl">Knowledge</span> / <span class="wl">Street works</span></div><b class="t">Street Works Permits</b><p>A <span class="wl">street excavation permit</span> is needed before any intrusive works.<sup>1</sup> Apply to the <span class="wl">City Highways Office</span>; approval takes about 10 business days.<sup>2</sup> Permits are signed by <span class="wl">Dana Okafor</span>, Site Lead.<sup>3</sup></p></div>` },
+  { name: "Video", icon: "ph-monitor-play", c: C.red, ids: ["K-302", "K-303", "K-305"], art: `<div class="art"><svg width="147" height="134" viewBox="0 0 147 134"><rect width="147" height="83" fill="#2e281c"/><rect y="52" width="147" height="31" fill="#4d3f2a"/><rect y="49" width="147" height="4" fill="#1d1a12"/><rect x="62" y="49" width="28" height="22" fill="#15130d"/><path d="M24 49 L29 33 L34 49 Z M114 49 L119 33 L124 49 Z" fill="#ea7a2f"/><rect x="0" y="0" width="147" height="83" fill="rgba(0,0,0,.25)"/><rect x="55" y="28" width="38" height="27" rx="8" fill="#ea4335"/><path d="M69 35 L81 41.5 L69 48 Z" fill="#fff"/><rect y="88" width="147" height="3" rx="1.5" fill="#3c3c3c"/><rect y="88" width="54" height="3" rx="1.5" fill="#ea4335"/><rect x="38" y="88" width="1.5" height="3" fill="#181818"/><rect x="82" y="88" width="1.5" height="3" fill="#181818"/><rect x="116" y="88" width="1.5" height="3" fill="#181818"/><circle cx="54" cy="89.5" r="3.2" fill="#fff"/><text x="0" y="105" font-family="Geist, system-ui, sans-serif" font-size="8" font-weight="500" fill="#fff">How to apply for a street permit</text><text x="0" y="117" font-family="Geist, system-ui, sans-serif" font-size="7.5" fill="#9b9b9b">3 chapters · 2:14</text></svg></div>` },
+  { name: "Quiz", icon: "ph-exam", c: C.yellow, ids: ["K-305"], art: `<div class="art a-quiz"><div class="n">Question 1 of 6</div><div class="q">How long does a permit take?</div><div class="opt"><span class="r"></span>2 hours</div><div class="opt ok"><span class="r" style="border-color:#34a853;background:#34a853"></span>10 business days<i class="ph-fill ph-check-circle"></i></div><div class="opt"><span class="r"></span>30 days</div></div>` },
+  { name: "Slides", icon: "ph-presentation", c: C.green, ids: ["K-311", "K-315", "K-328"], art: `<div class="art a-slides"><div class="slide"><b>Trench safety</b><ul><li>Service at least 60 cm deep</li><li>Cones max. 5 m apart</li><li>Residents get 48 h notice</li></ul></div><div class="thumbs"><span></span><span class="on"></span><span></span><span></span></div><div class="n">Slide 2 of 8</div></div>` },
+  { name: "Podcast", icon: "ph-microphone", c: C.purple, ids: ["K-328", "K-332"], art: null },
+  { name: "Glossary", icon: "ph-book-open-text", c: C.blue, ids: ["K-302", "K-303", "K-305"], art: `<div class="art a-gloss"><span class="letter">S</span><b class="term">Street excavation permit</b><i class="pos">noun</i><p>Written approval from the City Highways Office, needed before any intrusive street works. Takes about 10 business days.</p><div class="see">See also: Traffic plan · Site Lead</div></div>` },
+  { name: "Diagram", icon: "ph-image-square", c: C.red, ids: ["K-311", "K-315"], art: `<div class="art"><svg width="147" height="134" viewBox="0 0 147 134" font-family="Georgia, serif"><rect width="147" height="134" fill="#efe6d2"/><text x="8" y="13" font-size="7" font-style="italic" fill="#6f6550">Trench cross-section</text><rect y="64" width="147" height="70" fill="#d8c9a6"/><rect y="60" width="147" height="5" fill="#4a4436"/><path d="M50 60 V122 H96 V60 Z" fill="#efe6d2" stroke="#2b2618" stroke-width="1.2"/><path d="M52 98 H94" stroke="#ea4335" stroke-width="1.5" stroke-dasharray="4 2"/><circle cx="73" cy="110" r="7" fill="#efe6d2" stroke="#2b2618" stroke-width="1.2"/><g stroke="#2b2618" stroke-width="1" fill="none"><path d="M106 60 V103 M102 60 H110 M102 103 H110"/><path d="M22 30 H124 M22 26 V34 M124 26 V34"/></g><text x="112" y="84" font-size="9" font-weight="700" fill="#2b2618">60 cm</text><text x="73" y="25" font-size="8" font-weight="700" fill="#2b2618" text-anchor="middle">max. 5 m</text><path d="M16 60 L22 40 L28 60 Z M118 60 L124 40 L130 60 Z" fill="#ea7a2f"/></svg></div>` },
+  { name: "Agent context", icon: "ph-robot", c: C.yellow, ids: ["K-305", "K-306", "K-328", "K-332"], art: `<div class="art a-agent"><div class="bar"><span></span><span></span><span></span></div><pre><span class="p">&gt;</span> load street-works
+{
+ <span class="k">"K-305"</span>: <span class="s">"permit: 10 days"</span>,
+ <span class="k">"K-306"</span>: <span class="s">"signer: D. Okafor"</span>,
+ <span class="k">"K-328"</span>: <span class="s">"residents: 48h"</span>,
+ <span class="k">"K-332"</span>: <span class="s">"from 2026-03-01"</span>
+}
+<span class="s">✓ 4 facts, all sourced</span></pre></div>` },
+];
+// the podcast waveform: seeded bars, the first part already played
+{
+  let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const bars = Array.from({ length: 33 }, (_, i) => { const h = 6 + Math.round(rnd() * 26 * (0.5 + 0.5 * Math.sin(i / 3))); return `<rect x="${i * 4}" y="${20 - h / 2}" width="2.4" height="${h}" rx="1.2" fill="${i < 13 ? "#9a7be0" : "#4a4a4a"}"/>`; }).join("");
+  OUTPUTS[4].art = `<div class="art a-pod"><div class="pod-top"><span class="cover"><i class="ph-fill ph-microphone"></i></span><span><small>Episode 4</small><b>Notice periods</b></span></div><svg width="129" height="40" viewBox="0 0 131 40" style="margin-top:10px">${bars}<rect x="52" y="0" width="1.5" height="40" fill="#fff"/></svg><div class="times" style="margin-top:8px"><span>4:12</span><span class="pbtn"><i class="ph-fill ph-pause"></i></span><span>12:40</span></div></div>`;
+}
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
+const mix = (a, b, t) => a + (b - a) * t;
+const $ = (id) => document.getElementById(id);
+const stage = $("stage"), scene = $("scene"), col = $("col"), machine = $("machine"), glass = $("glass"), ohead = $("ohead"), fit = document.querySelector(".fit");
+const ring = $("ring"), gmark = $("gmark"), lamp = $("lamp"), phase = $("phase"), nfmt = $("nfmt"), fmtLabel = $("fmtLabel");
+
+// BUILD: unit rows, glass icons, output cards and the id chips that fly in
+const rows = UNITS.map(([id, claim, c]) => {
+  const el = document.createElement("div"); el.className = "ku";
+  el.innerHTML = `<span class="id">${id}</span><span class="claim">${claim}</span><span class="dot" style="background:${c}"></span><span class="glow"></span>`;
+  $("kus").append(el);
+  return { id, el, glow: el.lastElementChild };
+});
+const rowById = Object.fromEntries(rows.map((r) => [r.id, r]));
+OUTPUTS.forEach((o, i) => {
+  o.t = FIRST + i * STEP;
+  o.gi = document.createElement("i"); o.gi.className = `gi ph-duotone ${o.icon}`; o.gi.style.color = o.c; glass.append(o.gi);
+  o.el = document.createElement("div"); o.el.className = "out";
+  o.el.innerHTML = `${o.art}<div class="lab"><i class="ph-duotone ${o.icon}" style="color:${o.c}"></i>${o.name}</div><div class="ids">${o.ids.map((id) => `<span>${id}</span>`).join("")}</div><span class="flash" style="border-color:${o.c};box-shadow:0 0 24px ${o.c}55"></span>`;
+  $("outs").append(o.el);
+  o.flash = o.el.querySelector(".flash"); o.idEls = [...o.el.querySelectorAll(".ids span")];
+  o.chips = o.ids.map((id, j) => { const c = document.createElement("span"); c.className = "chip"; c.textContent = id; $("flies").append(c); return { el: c, row: rowById[id], j }; });
+});
+
+// LAYOUT: side by side on wide columns, stacked on narrow ones; positions in unscaled stage pixels
+const offset = (el, root) => { let x = 0, y = 0; while (el && el !== root) { x += el.offsetLeft; y += el.offsetTop; el = el.offsetParent; } return [x, y]; };
+const place = (el, x, y, w, h) => Object.assign(el.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: h ? `${h}px` : "auto" });
+let W = 1152, Hs = 520, S = 1, mx = 0, my = 0, inX = 0, inY = 0, narrow = false;
+function layout() {
+  narrow = fit.clientWidth < 720;
+  stage.classList.toggle("narrow", narrow);
+  if (!narrow) {
+    W = 1152; Hs = 520;
+    place(col, 16, 16, 260); place(machine, 296, 140, 140, 240); place(ohead, 460, 16, 676);
+    OUTPUTS.forEach((o, i) => { o.k = 1; o.sx = 460 + (i % 4) * 171; o.sy = 56 + Math.floor(i / 4) * 228; });
+  } else {
+    W = 592;
+    place(col, 16, 16, 560);
+    const mY = 16 + col.offsetHeight + 16; place(machine, 16, mY, 560, 72);
+    const oY = mY + 72 + 16; place(ohead, 16, oY, 560);
+    const cw = (560 - 20) / 3, k = cw / 163;
+    OUTPUTS.forEach((o, i) => { o.k = k; o.sx = 16 + (i % 3) * (cw + 10); o.sy = oY + 40 + Math.floor(i / 3) * (220 * k + 10); });
+    Hs = OUTPUTS[OUTPUTS.length - 1].sy + 220 * OUTPUTS[0].k + 16;
+  }
+  stage.style.width = `${W}px`; stage.style.height = `${Hs}px`;
+  S = Math.min(1, fit.clientWidth / W);
+  stage.style.transform = `scale(${S})`; fit.style.height = `${Hs * S}px`;
+  const [gx, gy] = offset(glass, stage); mx = gx + glass.offsetWidth / 2; my = gy + glass.offsetHeight / 2; // where cards are born
+  const [ax, ay] = offset(machine, stage);
+  if (narrow) { inX = ax + 80; inY = ay + 4; } else { inX = ax + 4; inY = ay + 120; } // where chips go in
+  rows.forEach((r) => { const [x, y] = offset(r.el, stage); r.x = x + r.el.offsetWidth - (narrow ? 70 : 56); r.y = y + r.el.offsetHeight / 2 - 9; });
+}
+
+const NAMES = OUTPUTS.map((o) => o.name);
+function render(t, still) {
+  scene.style.opacity = still ? 1 : t < 0.4 ? ease(t / 0.4) : t > FADE0 ? 1 - ease((t - FADE0) / (FADE1 - FADE0)) : 1;
+  const T = still ? 99 : t;
+  // the units each format draws on light up as it is made
+  const glow = {};
+  OUTPUTS.forEach((o) => { const x = T - o.t, v = x < 0 ? 0 : x < 0.15 ? x / 0.15 : 1 - clamp((x - 0.15) / 0.75); o.ids.forEach((id) => { glow[id] = Math.max(glow[id] || 0, v); }); });
+  rows.forEach((r) => { r.glow.style.opacity = glow[r.id] || 0; });
+  // id chips fly from their units into the machine
+  OUTPUTS.forEach((o) => o.chips.forEach((c) => {
+    const p = (T - o.t - c.j * 0.08) / 0.55;
+    if (p < 0 || p > 1) { c.el.style.opacity = 0; return; }
+    const e = ease(p), x = mix(c.row.x, inX - 20, e), y = mix(c.row.y, inY + (narrow ? 0 : (c.j - 1.5) * 10), e) - Math.sin(Math.PI * e) * 18;
+    c.el.style.opacity = clamp(p * 6) * (p < 0.75 ? 1 : 1 - (p - 0.75) / 0.25);
+    c.el.style.transform = `translate(${x}px, ${y}px) scale(${mix(1, 0.7, e)})`;
+  }));
+  // the machine shows what it is writing
+  let busy = -1, iconMax = 0;
+  OUTPUTS.forEach((o, i) => { const v = ease((T - o.t - 0.3) / 0.2) * (1 - ease((T - o.t - 1.15) / 0.2)); o.gi.style.opacity = v; iconMax = Math.max(iconMax, v); if (T >= o.t + 0.3 && T < o.t + 1.35) busy = i; });
+  gmark.style.opacity = 1 - iconMax;
+  ring.style.transform = `rotate(${(T * 90) % 360}deg)`;
+  const done = T >= OUTPUTS[OUTPUTS.length - 1].t + 1.35;
+  phase.textContent = done ? `${OUTPUTS.length} formats ready` : busy >= 0 ? `Writing: ${NAMES[busy]}` : "Reading units";
+  lamp.classList.toggle("idle", !done && busy < 0); lamp.classList.toggle("busy", busy >= 0);
+  lamp.style.opacity = busy >= 0 && Math.sin(T * 20) < 0 ? 0.35 : 1;
+  // each format comes out of the machine and takes its place, then shows its sources
+  let made = 0;
+  OUTPUTS.forEach((o) => {
+    const p = (T - o.t - 0.75) / 0.65, e = ease(p);
+    if (p <= 0) { o.el.style.opacity = 0; o.flash.style.opacity = 0; o.idEls.forEach((s) => { s.style.opacity = 0; }); return; }
+    const s = mix(0.3, 1, e) * o.k, cx = mix(mx, o.sx + 163 * o.k / 2, e), cy = mix(my, o.sy + 220 * o.k / 2, e) - Math.sin(Math.PI * e) * 24;
+    o.el.style.opacity = clamp(p * 4);
+    o.el.style.transform = `translate(${cx - 163 * s / 2}px, ${cy - 220 * s / 2}px) scale(${s})`;
+    const f = T - o.t - 1.4; o.flash.style.opacity = still || f < 0 ? 0 : clamp(1 - f / 1.4);
+    o.idEls.forEach((el, k) => { el.style.opacity = ease((T - o.t - 1.25 - k * 0.08) / 0.25); });
+    if (e > 0.6) made++;
+  });
+  nfmt.textContent = made; fmtLabel.textContent = made === 1 ? "format" : "formats";
+}
+
+let still = false;
+function resize() { layout(); if (still) render(LOOP, true); }
+addEventListener("resize", resize); resize();
+
+document.fonts.ready.then(() => {
+  resize();
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // STILL: every format made, each with the units it used
+    still = true; render(LOOP, true);
+  } else {
+    const t0 = performance.now();
+    const frame = (now) => { render(((now - t0) / 1000) % LOOP, false); requestAnimationFrame(frame); };
+    requestAnimationFrame(frame);
+  }
+});
+</script>
+</body>
+</html>

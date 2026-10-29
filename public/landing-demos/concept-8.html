@@ -123,19 +123,19 @@ if (reduce) {
     let a, b, c;
     // 1. A DEFINITION SHARPENS: the bylaw adds the notice period
     at(700, () => { a = addChip($("srcs"), "ph-file-pdf", "Bylaw 20145.pdf", "Section 4"); });
-    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), NEW, () => { const r = $("r1"); r.textContent = "4"; toggle(r, "fresh"); setTimeout(() => toggle(r, "fresh", false), 1800); bump("claims", "4"); bump("ver", "3"); toggle(a, "read"); badge("Definition updated"); addEntry($("log"), "ph-arrows-clockwise", "var(--gold)", "Definition updated", "from Bylaw 20145"); }); });
+    at(1900, () => { toggle($("s1"), "hot"); rewrite($("s1"), NEW, () => { const r = $("r1"); r.textContent = "4"; toggle(r, "fresh"); setTimeout(() => toggle(r, "fresh", false), 1800); bump("claims", "4"); bump("ver", "3"); toggle(a, "read"); badge("Definition updated"); addEntry($("log"), "ph-arrows-clockwise", "var(--c-blue)", "Definition updated", "from Bylaw 20145"); }); });
     at(6800, () => toggle($("s1"), "hot", false));
     // 2. A DUPLICATE MERGES: "line permit" turns out to mean the same thing
     at(7600, () => { b = addChip($("srcs"), "ph-envelope-simple", "Email from Dana", "Permits team"); });
     at(8800, () => { toggle($("tLine"), "merge"); });
     at(9500, () => toggle($("tLine"), "gone"));
-    at(9500, () => { toggle($("aLine"), "hidden", false); toggle($("aLine"), "fresh"); toggle(b, "read"); badge("Duplicate merged"); addEntry($("log"), "ph-git-merge", "var(--green-light)", "Duplicate merged", "Line permit into this term"); });
+    at(9500, () => { toggle($("aLine"), "hidden", false); toggle($("aLine"), "fresh"); toggle(b, "read"); badge("Duplicate merged"); addEntry($("log"), "ph-git-merge", "var(--c-purple)", "Duplicate merged", "Line permit into this term"); });
     at(11500, () => toggle($("aLine"), "fresh", false));
     // 3. A NEW TERM: the site notes use a word the glossary didn't have
     at(12300, () => { c = addChip($("srcs"), "ph-note", "Site notes", "28 Oct"); });
     at(13400, () => toggle($("tRoad"), "gone", false));
     at(13500, () => { toggle($("tRoad"), "hidden", false); toggle($("newdef"), "in"); });
-    at(14100, () => write($("nd"), ROAD, 55, () => { toggle(c, "read"); badge("1 term added"); addEntry($("log"), "ph-plus-circle", "var(--green-pale)", "New term defined", "from site notes"); }));
+    at(14100, () => write($("nd"), ROAD, 55, () => { toggle(c, "read"); badge("1 term added"); addEntry($("log"), "ph-plus-circle", "var(--c-green)", "New term defined", "from site notes"); }));
   });
 }
 </script>
