@@ -18,7 +18,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | owner | Run `evals/retrieval` on PR #52 vs main (#38) | | waiting on owner |
 | owner | Turn on #43 env vars in production | | waiting on owner |
 | owner | Fix duplicate migration version `20261122000000` (hnsw drop vs custom claim picks), then apply the HNSW drop (#40) | | waiting on owner |
-| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | owner OK for paid calls | waiting on owner |
+| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | owner OK for paid calls | in review (`docs/baseline-2026-10-29.md`); #52 regresses legacy; `evals.test.ts` and `live.test.ts` not run (need Linux Postgres) |
 | reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | in progress |
 | reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | in progress |
 | reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
