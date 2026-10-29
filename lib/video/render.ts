@@ -8,8 +8,8 @@ import { RENDER_JOB_TIMEOUT_MS } from "./status";
 // POST /api/video/[id]/rendered with a signed token. The VM is billed
 // only while the job runs.
 // Everything here talks to the RenderJobClient interface; tests pass a
-// fake. The Nebius client drives the `nebius` CLI (`nebius ai job ...`)
-// through an injected runner, so it never runs in tests either.
+// fake. The Nebius client calls the Nebius REST API through an injected
+// fetch and token source, so it never reaches the network in tests either.
 // =====================================================================
 
 // What the spike ran (2026-10-29, eu-west1): cpu-d3 is the CPU platform in the regions with CPU quota,
@@ -37,38 +37,31 @@ export interface RenderJobClient {
 
 export class RenderJobError extends Error {}
 
-// Nebius job states, read loosely: the spike (S2) records the exact names
+// Nebius job states (JobStatus.State): PROVISIONING, STARTING, IMAGE_PULLING, RUNNING, CANCELLING,
+// DELETING, COMPLETED, FAILED, CANCELLED, ERROR; read loosely
 export function jobState(raw: unknown): RenderJobState {
   const value = String(raw ?? "").toLowerCase();
   if (/succe|complet|finished|done/.test(value)) return "succeeded";
   if (/fail|error/.test(value)) return "failed";
   if (/cancel|abort|terminat|delet/.test(value)) return "cancelled";
-  if (/run|start/.test(value)) return "running";
-  if (/pend|queue|provision|creat|schedul/.test(value)) return "pending";
+  if (/run/.test(value)) return "running";
+  if (/pend|queue|provision|creat|schedul|start|pull/.test(value)) return "pending";
   return "unknown";
 }
 
 export const isJobFinished = (state: RenderJobState) => state === "succeeded" || state === "failed" || state === "cancelled";
 
-// Runs one CLI command and returns its stdout; throws with stderr when it fails
-export type CommandRunner = (command: string, args: string[], env: Record<string, string>) => Promise<string>;
+// The REST gateway in front of the Nebius gRPC API (proto3 JSON: camelCase, int64 as strings, durations as "3600s")
+export const NEBIUS_API_URL = "https://api.nebius.cloud";
 
 export type NebiusJobConfig = {
-  // the project the jobs run in (NEBIUS_PROJECT_ID)
+  // the project the jobs run in (NEBIUS_RENDER_PROJECT_ID, else NEBIUS_PROJECT_ID)
   projectId: string;
-  // an IAM token for the CLI (NEBIUS_IAM_TOKEN); without it the CLI uses its own profile.
+  // an IAM access token (lib/video/nebius.ts mints them from the service account key).
   // It also lets the job pull the private render image (registry user "iam").
-  iamToken?: string | null;
-  cli?: string;
-  run: CommandRunner;
-};
-
-const parseJson = (text: string): Record<string, unknown> => {
-  try {
-    return JSON.parse(text) as Record<string, unknown>;
-  } catch {
-    throw new RenderJobError(`Nebius answered with something other than JSON: ${text.slice(0, 200)}`);
-  }
+  token: () => Promise<string>;
+  fetch?: typeof fetch;
+  apiUrl?: string;
 };
 
 const pick = (value: unknown, ...path: string[]): unknown => path.reduce<unknown>((at, key) => (at && typeof at === "object" ? (at as Record<string, unknown>)[key] : undefined), value);
@@ -76,40 +69,67 @@ const pick = (value: unknown, ...path: string[]): unknown => path.reduce<unknown
 // Last lines of a log, short enough for the Failed screen
 export const logTail = (log: string | null | undefined, lines = 20) => (log ? log.trim().split(/\r?\n/).slice(-lines).join("\n") : null);
 
-// THE NEBIUS CLIENT: `nebius ai job create` to start, `ai job get` and `ai job logs` to check
+const GIB = 1024 ** 3;
+
+// The CreateJobRequest body for a spec (POST /ai/v1/jobs)
+export function jobRequest(projectId: string, spec: RenderJobSpec, registryPassword: string) {
+  return {
+    metadata: { parentId: projectId, name: spec.name },
+    spec: {
+      image: spec.image,
+      platform: spec.platform ?? RENDER_JOB_DEFAULTS.platform,
+      preset: spec.preset ?? RENDER_JOB_DEFAULTS.preset,
+      disk: { type: "NETWORK_SSD", sizeBytes: String((spec.diskGiB ?? RENDER_JOB_DEFAULTS.diskGiB) * GIB) },
+      shmSizeBytes: String(RENDER_JOB_DEFAULTS.shmGiB * GIB),
+      timeout: `${(spec.timeoutMinutes ?? RENDER_JOB_DEFAULTS.timeoutMinutes) * 60}s`,
+      // a preemptible VM can be stopped mid-render
+      preemptible: false,
+      pricingModel: { onDemand: {} },
+      registryCredentials: { username: "iam", password: registryPassword },
+      environmentVariables: Object.entries(spec.env).map(([name, value]) => ({ name, value })),
+    },
+  };
+}
+
+// THE NEBIUS CLIENT: the Serverless AI JobService over REST (POST /ai/v1/jobs, GET /ai/v1/jobs/{id})
 export function nebiusJobClient(config: NebiusJobConfig): RenderJobClient {
-  if (!config.projectId) throw new RenderJobError("Add NEBIUS_PROJECT_ID to the server environment to render videos.");
-  const cli = config.cli ?? "nebius";
-  const env: Record<string, string> = config.iamToken ? { NEBIUS_IAM_TOKEN: config.iamToken } : {};
+  if (!config.projectId) throw new RenderJobError("Add NEBIUS_RENDER_PROJECT_ID (or NEBIUS_PROJECT_ID) to the server environment to render videos.");
+  const doFetch = config.fetch ?? fetch;
+  const base = (config.apiUrl ?? NEBIUS_API_URL).replace(/\/$/, "");
+  const call = async (method: "GET" | "POST", path: string, token: string, body?: unknown): Promise<Record<string, unknown>> => {
+    const response = await doFetch(`${base}${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    const text = await response.text();
+    let json: Record<string, unknown> | null = null;
+    try {
+      json = JSON.parse(text) as Record<string, unknown>;
+    } catch {
+      // read below
+    }
+    if (!response.ok) throw new RenderJobError(`Nebius ${method} ${path.split("?")[0]} failed (${response.status}): ${String(pick(json, "message") ?? text).slice(0, 300)}`);
+    if (!json) throw new RenderJobError(`Nebius answered with something other than JSON: ${text.slice(0, 200)}`);
+    return json;
+  };
   return {
     async createJob(spec) {
-      const args = [
-        "ai", "job", "create",
-        "--parent-id", config.projectId,
-        "--name", spec.name,
-        "--image", spec.image,
-        "--platform", spec.platform ?? RENDER_JOB_DEFAULTS.platform,
-        "--preset", spec.preset ?? RENDER_JOB_DEFAULTS.preset,
-        "--disk-size", `${spec.diskGiB ?? RENDER_JOB_DEFAULTS.diskGiB}Gi`,
-        "--shm-size", `${RENDER_JOB_DEFAULTS.shmGiB}Gi`,
-        "--timeout", `${spec.timeoutMinutes ?? RENDER_JOB_DEFAULTS.timeoutMinutes}m`,
-        // a preemptible VM can be stopped mid-render
-        "--on-demand",
-        ...(config.iamToken ? ["--registry-username", "iam", "--registry-password", config.iamToken] : []),
-        ...Object.entries(spec.env).flatMap(([key, value]) => ["--env", `${key}=${value}`]),
-        "--format", "json",
-      ];
-      const created = parseJson(await config.run(cli, args, env));
-      const id = pick(created, "metadata", "id") ?? pick(created, "resource_id") ?? pick(created, "id");
+      const token = await config.token();
+      // the answer is the create Operation; the job's id is its resourceId
+      const operation = await call("POST", "/ai/v1/jobs", token, jobRequest(config.projectId, spec, token));
+      const failed = pick(operation, "status", "code");
+      if (typeof failed === "number" && failed !== 0) throw new RenderJobError(`Nebius did not start the job: ${String(pick(operation, "status", "message") ?? `code ${failed}`)}`);
+      const id = pick(operation, "resourceId") ?? pick(operation, "metadata", "id");
       if (typeof id !== "string" || !id) throw new RenderJobError("Nebius started the job but returned no id.");
       return { id };
     },
     async getJob(id) {
-      const job = parseJson(await config.run(cli, ["ai", "job", "get", "--id", id, "--format", "json"], env));
-      const state = jobState(pick(job, "status", "state") ?? pick(job, "status", "phase") ?? pick(job, "state"));
-      let log: string | null = null;
-      if (state === "failed" || state === "cancelled") log = await config.run(cli, ["ai", "job", "logs", id], env).catch(() => null);
-      return { id, state, logTail: logTail(log) };
+      const job = await call("GET", `/ai/v1/jobs/${encodeURIComponent(id)}`, await config.token());
+      const state = jobState(pick(job, "status", "state"));
+      // REST has no log stream; a failed job's state details say why it ended
+      const details = state === "failed" || state === "cancelled" ? [pick(job, "status", "stateDetails", "code"), pick(job, "status", "stateDetails", "message")].filter((part) => typeof part === "string" && part).join(": ") : "";
+      return { id, state, logTail: logTail(details) };
     },
   };
 }

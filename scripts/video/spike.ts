@@ -9,27 +9,32 @@
 //
 //   node --env-file-if-exists=.env.local scripts/video/spike.ts
 //
-// Needs: ELEVENLABS_API_KEY, NEBIUS_PROJECT_ID, NEBIUS_IAM_TOKEN,
+// Needs: ELEVENLABS_API_KEY, NEBIUS_RENDER_PROJECT_ID (or NEBIUS_PROJECT_ID),
+// the service account key (NEBIUS_SERVICE_ACCOUNT_ID, NEBIUS_PUBLIC_KEY_ID,
+// NEBIUS_PRIVATE_KEY_PATH or NEBIUS_PRIVATE_KEY; lib/video/nebius.ts),
 // VIDEO_RENDER_IMAGE (pushed from scripts/video/render), plus
 // NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY for Storage.
+// It calls the Nebius REST API directly; no `nebius` CLI needed.
 // Optional: ELEVENLABS_VOICE_ID, ELEVENLABS_USD_PER_1K_CHARS,
 // NEBIUS_RENDER_USD_PER_HOUR.
 // =====================================================================
 
-import { execFile } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 export const SPIKE_CREDENTIALS = [
   ["ELEVENLABS_API_KEY", "ElevenLabs key (S1 voice)"],
-  ["NEBIUS_PROJECT_ID", "Nebius project the render job runs in (S2)"],
-  ["NEBIUS_IAM_TOKEN", "Nebius IAM token for the `nebius` CLI (S2)"],
+  ["NEBIUS_RENDER_PROJECT_ID or NEBIUS_PROJECT_ID", "Nebius project the render job runs in (S2)"],
+  ["NEBIUS_SERVICE_ACCOUNT_ID", "Nebius service account that starts the job (S2)"],
+  ["NEBIUS_PUBLIC_KEY_ID", "ID of that service account's authorized key (S2)"],
+  ["NEBIUS_PRIVATE_KEY_PATH or NEBIUS_PRIVATE_KEY", "the authorized key's private PEM, as a file or inline (S2)"],
   ["VIDEO_RENDER_IMAGE", "render image pushed to Nebius Container Registry (S2)"],
   ["NEXT_PUBLIC_SUPABASE_URL", "Supabase project URL (Storage)"],
   ["SUPABASE_SECRET_KEY", "Supabase secret key (Storage)"],
 ] as const;
 
-const missing = SPIKE_CREDENTIALS.filter(([name]) => !process.env[name]?.trim());
+// "A or B" is set when either is
+const missing = SPIKE_CREDENTIALS.filter(([name]) => !name.split(" or ").some((one) => process.env[one]?.trim()));
 if (missing.length) {
   console.error([
     "Video spike not run: credentials are missing. Nothing was called and nothing was spent.",
@@ -45,17 +50,13 @@ const SCENES = [
   { narration: "If you can hear this, the voice, the render and the upload all worked.", title: "It worked", bullets: ["Voice from ElevenLabs", "Render on Nebius"], visual: "quote" },
 ] as const;
 
-const runner = (command: string, args: string[], env: Record<string, string>) =>
-  new Promise<string>((done, fail) => {
-    execFile(command, args, { env: { ...process.env, ...env }, timeout: 120_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true }, (error, stdout, stderr) => (error ? fail(new Error((stderr || error.message).trim())) : done(stdout)));
-  });
-
 const { createServer } = await import("vite");
 const runtime = await createServer({ configFile: false, appType: "custom", logLevel: "error", server: { middlewareMode: true, watch: null }, resolve: { alias: { "@": process.cwd(), "server-only": resolve("test/server-only.ts") } } });
 try {
   const voice = await runtime.ssrLoadModule("/lib/video/voice.ts") as typeof import("../../lib/video/voice");
   const compose = await runtime.ssrLoadModule("/lib/video/compose.ts") as typeof import("../../lib/video/compose");
   const render = await runtime.ssrLoadModule("/lib/video/render.ts") as typeof import("../../lib/video/render");
+  const nebius = await runtime.ssrLoadModule("/lib/video/nebius.ts") as typeof import("../../lib/video/nebius");
   const cost = await runtime.ssrLoadModule("/lib/video/cost.ts") as typeof import("../../lib/video/cost");
   const { createClient } = await import("@supabase/supabase-js");
 
@@ -110,7 +111,8 @@ try {
     callback: null,
   };
   await put(`${runId}/composition/manifest.json`, JSON.stringify(manifest), "application/json");
-  const jobs = render.nebiusJobClient({ projectId: env.NEBIUS_PROJECT_ID!, iamToken: env.NEBIUS_IAM_TOKEN, run: runner });
+  const token = nebius.nebiusTokenSource(nebius.serviceAccountKeyFromEnv(env));
+  const jobs = render.nebiusJobClient({ projectId: env.NEBIUS_RENDER_PROJECT_ID || env.NEBIUS_PROJECT_ID!, token });
   const submitted = Date.now();
   const job = await jobs.createJob({ name: `video-spike-${Date.now().toString(36)}`, image: env.VIDEO_RENDER_IMAGE!, env: { MANIFEST_URL: await signed(`${runId}/composition/manifest.json`) }, ...render.RENDER_JOB_DEFAULTS });
   console.log(`S2: job ${job.id} started; waiting (up to ${render.RENDER_JOB_DEFAULTS.timeoutMinutes + 5} min)…`);
