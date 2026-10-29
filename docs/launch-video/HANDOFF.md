@@ -48,6 +48,30 @@ Lanes run in parallel on their own branches and are merged into `launch-video` o
 | you | Record the four new VO lines below in ElevenLabs | | waiting on you |
 | integration | Splice the new lines into the VO, rebuild lip-sync clips 1 and 3, re-render the scenes that name Brent | you: new lines, out/ and snapshots copied | waiting |
 
+### Plan v2 (2026-10-29): product scenes from the app's own components
+
+The four-line splice above is replaced by one full take, `audio/vo-full-v3.mp3`, timed in [scene-flow.md](scene-flow.md). The snapshot product shots are replaced by a dev-only stage route in the app that renders the real components with synthetic Parts Unlimited data (*The Phoenix Project*).
+
+Contracts, fixed before any scene lane starts:
+- Route `/stage/[scene]` (`app/(stage)/stage/[scene]/page.tsx`), 404 outside development, reachable without signing in only in development.
+- A scene is `({ t }) => JSX`, a pure function of time in seconds, registered in `app/(stage)/stage/scenes/index.ts` with its duration.
+- Kit in `components/video-stage/`: providers with a seeded QueryClient (`staleTime: Infinity`, no retries), `StageShell` (AppShell with the fake space and account), `Cursor`, `Ripple`, `Camera`, and the timing helpers.
+- Data in `lib/video-stage/phoenix/`: `core.ts` (space, account, people, sources) owned by the foundation lane; each scene lane adds its own file.
+- Render contract: the page sets `window.SCENE = { duration, frame(t) }` and `window.__ready`; `?render` stops the preview loop; CSS transitions are off on the stage. `render.mjs` accepts an http URL.
+- Stage code lands on `main` (the running dev server shows it); rendered clips land on `launch-video` in `product-shots/out/`.
+
+| Lane | Task | Needs | Status |
+|---|---|---|---|
+| foundation | Stage route, providers, kit, Phoenix core data, one sample scene | | in progress |
+| integration | `render.mjs` renders an http URL | | in progress |
+| timeline | Single-take timing: cut.py, timeline rows from scene-flow.md, captions from the v3 transcript, lip-sync count-in clips | | in progress |
+| scenes-page | Wiki page, rewrite, settled (18, 22a, 22c) | foundation | waiting |
+| scenes-intake | Upload with Gmail, Ask (17, 21) | foundation | waiting |
+| scenes-connect | Graph, glossary, stakeholders (19, 19b, 19c) | foundation | waiting |
+| scenes-control | Exception, AI handoffs, AI costs, model picker (22b, n3, n7a, n7b) | foundation | waiting |
+| scenes-video | Video module rendering on Nebius (n8, new) | foundation | waiting |
+| integration | Render every scene, wire into the timeline, rebuild the preview | all scene lanes, timeline | waiting |
+
 ### New VO lines (2026-10-29)
 
 "Dave" is now "Brent", a quiet nod to *The Phoenix Project*. The product scenes (`scenes/*.js`) and the captions already say Brent. Record each line as its own file, in the "Samuel" voice on Eleven v4 with the same settings as `vo-main-v2.mp3`:
