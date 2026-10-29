@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowRight, Plus } from "@phosphor-icons/react/dist/ssr";
+import { CtaBackdrop, HeroBackdrop, TaglineBackdrop } from "@/components/landing/backdrops";
 import {
   AgentsVisual, BookVisual, ClientVisual, DocsVisual, LifeVisual, MergeVisual, ReviewVisual, SourceVisual, UndoVisual,
 } from "@/components/landing/card-visuals";
@@ -20,6 +21,8 @@ import { DATA_STORAGE_ANSWER } from "@/lib/legal/content";
 // LANDING PAGE (/): one offer, one audience, one action.
 // Built to the landing-page-design skill: Geist only, Tailwind scale sizes,
 // spacing from the 2 to 96px set, flat backgrounds, Phosphor icons.
+// Exception: Standards UI shader and screentone layers behind the hero, the
+// tagline and the closing action (components/landing/backdrops.tsx).
 // Anything marked with <PlaceholderTag> needs real content before launch.
 // The price answer and "No card needed" show only with the billing flag on.
 // =====================================================================
@@ -120,6 +123,7 @@ export default async function WelcomePage() {
       <main id="main">
         {/* HERO: the glass machine under the outcome headline and the one action */}
         <section className="relative isolate flex min-h-svh flex-col justify-center overflow-hidden px-4 pt-28 pb-12 sm:px-6">
+          <HeroBackdrop />
           <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 text-center">
             <Reveal className="flex flex-col items-center">
               <h1 className={`max-w-[900px] uppercase ${H1}`}>
@@ -173,9 +177,10 @@ export default async function WelcomePage() {
         </section>
 
         {/* TAGLINE REVEAL: the core promise, word by word */}
-        <section aria-label="What Corpus Wiki promises" className="px-4 py-24 sm:px-6">
+        <section aria-label="What Corpus Wiki promises" className="relative isolate px-4 py-24 sm:px-6">
+          <TaglineBackdrop />
           <TaglineReveal
-            lines={["Maintaining, updating and organizing knowledge is HARD.", { text: "So, we do it for you.", className: "text-landing-go" }]}
+            lines={["Maintaining knowledge is HARD.", { text: "So, we do it for you.", className: "text-landing-go" }]}
             marks={{ HARD: "text-landing-red" }}
           />
         </section>
@@ -306,7 +311,8 @@ export default async function WelcomePage() {
         </section>
 
         {/* FINAL ACTION: identical to the hero, with the risk reversal */}
-        <section className="px-4 py-24 sm:px-6">
+        <section className="relative isolate overflow-hidden px-4 py-32 sm:px-6">
+          <CtaBackdrop />
           <Reveal className="mx-auto flex max-w-[680px] flex-col items-center text-center">
             <h2 className={H2}>Give your business a living source of truth.</h2>
             <div className="mt-8">
