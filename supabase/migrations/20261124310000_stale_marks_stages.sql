@@ -73,8 +73,10 @@ begin
   return null;
 end $$;
 
--- ENTITY LINKS: a claim joining or leaving an entity changes what describes it.
--- Statement triggers: one insert per projection, however many links it writes.
+-- ENTITY LINKS: a claim joining an entity changes what describes it. Leaving needs no
+-- trigger: links only change with a new revision or retirement, which marks the old
+-- entities above, or with an entity merge, which marks the entity below.
+-- A statement trigger: one insert per projection, however many links it writes.
 create function change_control.entity_links_changed()
 returns trigger
 language plpgsql
@@ -88,8 +90,6 @@ begin
 end $$;
 create trigger mark_linked_entities after insert on public.unit_entities
 referencing new table as changed_links for each statement execute function change_control.entity_links_changed();
-create trigger mark_unlinked_entities after delete on public.unit_entities
-referencing old table as changed_links for each statement execute function change_control.entity_links_changed();
 
 -- ENTITY IDENTITY: created, renamed, retyped, merged or retired
 create function change_control.entity_changed()
