@@ -58,7 +58,8 @@ export async function commitPersonEdit(db: DbRpc, summary: string, actions: Draf
   return { ...(await commitChangeSet(db, changeSetId)), eventId };
 }
 
-// Undoes an applied ChangeSet; returns the revert event id
+// Undoes an applied ChangeSet; returns the revert event id. An upload's folded stage
+// (#49, supabase/migrations/20261124490000_stage_change_sets.sql) undoes as one, newest action first.
 export async function revertChangeSet(db: DbRpc, changeSetId: string): Promise<{ eventId: string }> {
   return db.call<{ eventId: string }>("revert_upload_knowledge", { p_change_set_id: changeSetId });
 }

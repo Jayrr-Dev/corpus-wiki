@@ -769,6 +769,7 @@ export type Database = {
           model_version: string | null;
           prompt_version: string | null;
           proposed_by: Database["public"]["Enums"]["actor_kind"];
+          stage: string | null;
           status: Database["public"]["Enums"]["change_set_status"];
           summary: string;
           tokens_in: number | null;
@@ -784,6 +785,7 @@ export type Database = {
           model_version?: string | null;
           prompt_version?: string | null;
           proposed_by: Database["public"]["Enums"]["actor_kind"];
+          stage?: string | null;
           status?: Database["public"]["Enums"]["change_set_status"];
           summary: string;
           tokens_in?: number | null;
@@ -799,6 +801,7 @@ export type Database = {
           model_version?: string | null;
           prompt_version?: string | null;
           proposed_by?: Database["public"]["Enums"]["actor_kind"];
+          stage?: string | null;
           status?: Database["public"]["Enums"]["change_set_status"];
           summary?: string;
           tokens_in?: number | null;

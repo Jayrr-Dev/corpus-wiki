@@ -11,6 +11,7 @@ import type { ChangeContext } from "@/lib/queries/changeContexts";
 type ActionType = Enums<"action_type">;
 
 export type ChangeType =
+  | "upload_stage"
   | "glossary"
   | "source_lifecycle"
   | "source_review"
@@ -32,6 +33,7 @@ export type ChangeType =
   | "other";
 
 export const CHANGE_TYPE_LABEL: Record<ChangeType, string> = {
+  upload_stage: "Upload stage",
   glossary: "Glossary",
   source_lifecycle: "Archive Decision",
   source_review: "Approver decision",
@@ -108,9 +110,10 @@ function shortSummary(type: ChangeType, context: ChangeContext, stored: string):
   return withoutSection === stored ? null : withoutSection;
 }
 
-// DESCRIBE ONE CHANGE SET from its context
-export function describeChange(context: ChangeContext, stored: string): ChangeDescription {
-  const type = classifyChange(context.action_types);
+// DESCRIBE ONE CHANGE SET from its context. A folded upload stage (#49) is one
+// entry for many writes, so it keeps its own type and the summary the fold wrote.
+export function describeChange(context: ChangeContext, stored: string, stage: string | null = null): ChangeDescription {
+  const type = stage ? "upload_stage" : classifyChange(context.action_types);
   const sections = context.section_titles;
   const section = sections.length === 1 ? sections[0]! : sections.length > 1 ? plural(sections.length, "section") : null;
 
@@ -127,7 +130,7 @@ export function describeChange(context: ChangeContext, stored: string): ChangeDe
   if (!domain && article) domain = article;
   if (article) domainPath = domainPath && domainPath !== article ? `${domainPath} › ${article}` : article;
 
-  return { type, domain, domainPath, section, summary: shortSummary(type, context, stored) };
+  return { type, domain, domainPath, section, summary: stage ? null : shortSummary(type, context, stored) };
 }
 
 // A change set with no actions (or none the reader may see)
