@@ -27,7 +27,7 @@ function fixture(sections: SectionRef[]) {
       progress.push((args.p_progress as { done: number }).done);
       return;
     }
-    if (name === "list_affected_sections") return sections;
+    if (name === "list_stale_sections" || name === "list_affected_sections") return sections;
     if (name === "read_upload_workflows") return [{ event_id: "event", steps: [...saved.keys()].map(key => ({ key, state: "succeeded" })) }];
     if (name === "claim_section_build") {
       builds.push(args.p_section_id as string);
@@ -166,7 +166,7 @@ it("stops new sections on failure, drains active builds, and resumes only unfini
   f.builds.length = 0;
   await f.run();
   expect([...f.builds].sort()).toEqual(["a1", "a2", "b2", "c2", "d1"]);
-  expect(f.call.mock.calls.filter(([name]) => name === "list_affected_sections")).toHaveLength(1);
+  expect(f.call.mock.calls.filter(([name]) => name === "list_stale_sections")).toHaveLength(1);
   expect(f.reviewSections).toHaveBeenCalledOnce();
   expect(f.progress.at(-1)).toBe(sections.length);
 });
