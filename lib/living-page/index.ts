@@ -14,6 +14,7 @@ import type { SectionProgress } from "./buildProgress";
 import { cancellableBuildDb, SectionBuildCancelled } from "./cancelBuild";
 import { IncompleteSectionEvidence } from "./draftEvidence";
 import { needsRewrite, releaseIrrelevantClaims, revisionToActions, uncoveredUnitIds } from "./plan";
+import { type BudgetEnv, checkReviewerBudget } from "./reviewerBudget";
 import type { FinishedSectionBuild, PageContextSection, SectionRef, SectionReviseInput, SectionRevision, SectionState } from "./types";
 import { FakeSectionWriter } from "./writers/fake";
 import { TokenFactorySectionWriter } from "./writers/tokenFactory";
@@ -26,6 +27,7 @@ export { MIN_CLAIMS_FOR_PAGE, pageProposalActions, proposePages, type PageCandid
 export type * from "./types";
 export { FakeSectionWriter } from "./writers/fake";
 export { TokenFactorySectionWriter } from "./writers/tokenFactory";
+export { ReviewerBudgetDeclined } from "./reviewerBudget";
 
 // =====================================================================
 // LIVING PAGE: keeps page sections true after each commit. Lines are
@@ -58,11 +60,9 @@ export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenMod
 // REBUILDS
 // =====================================================================
 
-// Different pages can build together; siblings stay in order because each reads
-// the rest of its page. Stop scheduling on failure and drain active builds before
-// returning, so the upload never releases its lease while a worker still writes.
-export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string, checkpointScope = eventId, addedUnitIds?: readonly string[]): Promise<void> {
-  const sections = await workflowStep(`affected-sections:${checkpointScope}${addedUnitIds ? ":scoped-v2" : ""}`, async () => {
+// The sections an event rebuilds, saved once as an upload checkpoint (the reviewer budget reads the same one)
+export function affectedSections(db: DbRpc, eventId: string, checkpointScope = eventId, addedUnitIds?: readonly string[]): Promise<SectionRef[]> {
+  return workflowStep(`affected-sections:${checkpointScope}${addedUnitIds ? ":scoped-v2" : ""}`, async () => {
     const candidates = await db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId });
     if (!addedUnitIds) return candidates;
     const added = new Set(addedUnitIds);
@@ -74,6 +74,31 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
     }
     return affected;
   });
+}
+
+// The upload's section builds that already succeeded, by step key
+export async function finishedUploadSteps(db: DbRpc, eventId: string): Promise<Set<string>> {
+  const workflows = await db.call<Pick<UploadWorkflow, "event_id" | "steps">[]>("read_upload_workflows", { p_event_ids: [eventId] });
+  return new Set((workflows.find(workflow => workflow.event_id === eventId)?.steps ?? []).flatMap(step => step.state === "succeeded" ? [step.key] : []));
+}
+
+// Before an upload writes its pages: true when the build is over the Reviewer budget
+// and waits for a person (./reviewerBudget.ts). Builds that already succeeded do not count.
+export async function holdForReviewerBudget(db: DbRpc, eventId: string, env: BudgetEnv = process.env): Promise<boolean> {
+  const execution = uploadExecution.getStore();
+  if (!execution) return false;
+  const sections = await affectedSections(db, eventId);
+  if (!sections.length) return false;
+  const finished = await finishedUploadSteps(db, eventId);
+  const pending = sections.filter(section => !finished.has(`rebuild-section:${eventId}:${section.sectionId}`)).length;
+  return checkReviewerBudget(db, { eventId, token: execution.token }, pending, env);
+}
+
+// Different pages can build together; siblings stay in order because each reads
+// the rest of its page. Stop scheduling on failure and drain active builds before
+// returning, so the upload never releases its lease while a worker still writes.
+export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventId: string, checkpointScope = eventId, addedUnitIds?: readonly string[]): Promise<void> {
+  const sections = await affectedSections(db, eventId, checkpointScope, addedUnitIds);
   const progressStep = "pages";
   const review = async () => {
     if (!sections.length) return;
@@ -83,12 +108,9 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
       else await writer.reviewSections?.(ids, checkpointScope);
     });
   };
-  const finished = new Set<string>();
+  let finished = new Set<string>();
   if (sections.length && uploadExecution.getStore()) {
-    const workflows = await db.call<Pick<UploadWorkflow, "event_id" | "steps">[]>("read_upload_workflows", { p_event_ids: [eventId] });
-    for (const step of workflows.find(workflow => workflow.event_id === eventId)?.steps ?? []) {
-      if (step.state === "succeeded") finished.add(step.key);
-    }
+    finished = await finishedUploadSteps(db, eventId);
     if (sections.every(section => finished.has(`rebuild-section:${checkpointScope}:${section.sectionId}`))) {
       // These same durable keys would skip every build individually. One read
       // avoids hundreds of lease/progress round trips when only review remains.
