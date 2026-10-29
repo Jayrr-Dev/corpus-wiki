@@ -10,10 +10,10 @@ const LEGAL = [
   { href: "/contact", label: "Contact" },
 ];
 
-// LANDING FOOTER: the brand and the page links. Privacy, Terms and Contact
+// LANDING FOOTER: the brand and the page links (Pricing only while the billing flag is on). Privacy, Terms and Contact
 // link to real pages only while the legal_pages flag is on (and Contact only
 // when an address is set); otherwise they show disabled, as before the pages existed.
-export function LandingFooter({ legalPages, hasContact, onHome = true }: { legalPages: boolean; hasContact: boolean; onHome?: boolean }) {
+export function LandingFooter({ legalPages, hasContact, pricing = false, onHome = true }: { legalPages: boolean; hasContact: boolean; pricing?: boolean; onHome?: boolean }) {
   // On the landing page the section links are plain anchors; elsewhere they lead back to it
   const base = onHome ? "" : "/";
   return (
@@ -27,6 +27,7 @@ export function LandingFooter({ legalPages, hasContact, onHome = true }: { legal
           <li><a href={`${base}#product`} className={LINK}>Product</a></li>
           <li><a href={`${base}#how`} className={LINK}>How it works</a></li>
           <li><a href={`${base}#faq`} className={LINK}>Questions</a></li>
+          {pricing && <li><Link href="/pricing" className={LINK}>Pricing</Link></li>}
           {LEGAL.map(({ href, label }) =>
             legalPages && (href !== "/contact" || hasContact) ? (
               <li key={label}><Link href={href} className={LINK}>{label}</Link></li>

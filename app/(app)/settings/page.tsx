@@ -97,7 +97,7 @@ export default async function SettingsPage() {
         <AutoDecide enabled={glossaryAutoDecide} />
         <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
-        <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} /></div>
+        <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} billing={featureFlags.billing} /></div>
         <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} /></div>
       </SettingsCard>
     ),

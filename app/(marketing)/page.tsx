@@ -10,6 +10,7 @@ import { LandingNav } from "@/components/landing/landing-nav";
 import { PlaceholderTag } from "@/components/landing/product-mocks";
 import { Reveal } from "@/components/landing/reveal";
 import { TaglineReveal } from "@/components/landing/tagline-reveal";
+import { pricingFaqAnswer } from "@/lib/billing/plans";
 import { isFeatureEnabled } from "@/lib/flags/server";
 import { contactEmail } from "@/lib/legal/contact";
 import { DATA_STORAGE_ANSWER } from "@/lib/legal/content";
@@ -19,6 +20,7 @@ import { DATA_STORAGE_ANSWER } from "@/lib/legal/content";
 // Built to the landing-page-design skill: Geist only, Tailwind scale sizes,
 // spacing from the 2 to 96px set, flat backgrounds, Phosphor icons.
 // Anything marked with <PlaceholderTag> needs real content before launch.
+// The price answer and "No card needed" show only with the billing flag on.
 // =====================================================================
 
 const EASE = "ease-landing";
@@ -74,9 +76,15 @@ const FAQ: Faq[] = [
   { q: DATA_STORAGE_QUESTION, a: "Storage location, encryption and retention details still need to be written.", placeholder: true },
 ];
 
-// With the legal pages on, the storage answer is written from the privacy policy's facts
-function faqFor(legalPages: boolean): Faq[] {
-  return legalPages ? FAQ.map(f => (f.q === DATA_STORAGE_QUESTION ? { q: f.q, a: DATA_STORAGE_ANSWER } : f)) : FAQ;
+const COST_QUESTION = "How much does it cost?";
+
+// The FAQ with the storage answer while the legal pages are on, and the price answer while billing is on
+function faqFor(legalPages: boolean, billing: boolean): Faq[] {
+  return FAQ.map(f => {
+    if (legalPages && f.q === DATA_STORAGE_QUESTION) return { q: f.q, a: DATA_STORAGE_ANSWER };
+    if (billing && f.q === COST_QUESTION) return { q: f.q, a: pricingFaqAnswer() };
+    return f;
+  });
 }
 
 function faqSchema(faq: Faq[]) {
@@ -98,10 +106,10 @@ function SectionHeading({ eyebrow, title, body }: { eyebrow?: string; title: str
 }
 
 export default async function WelcomePage() {
-  // Rendered per request, so turning legal_pages on or off shows without a rebuild
+  // Rendered per request, so turning legal_pages or billing on or off shows without a rebuild
   await connection();
-  const legalPages = await isFeatureEnabled("legal_pages");
-  const faq = faqFor(legalPages);
+  const [legalPages, billing] = await Promise.all([isFeatureEnabled("legal_pages"), isFeatureEnabled("billing")]);
+  const faq = faqFor(legalPages, billing);
   return (
     <>
       <LandingNav />
@@ -119,8 +127,14 @@ export default async function WelcomePage() {
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
-                <span className="text-sm text-white/50">Free to start</span>
-                <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
+                {billing ? (
+                  <span className="text-sm text-white/50">No card needed</span>
+                ) : (
+                  <>
+                    <span className="text-sm text-white/50">Free to start</span>
+                    <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
+                  </>
+                )}
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
@@ -292,7 +306,7 @@ export default async function WelcomePage() {
         </section>
       </main>
 
-      <LandingFooter legalPages={legalPages} hasContact={contactEmail() !== null} />
+      <LandingFooter legalPages={legalPages} hasContact={contactEmail() !== null} pricing={billing} />
     </>
   );
 }
