@@ -26,8 +26,8 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | recompute | #46 dependency index and stale marks, glossary first (closes #34) | | in progress |
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | waiting |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
-| embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
-| embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
+| embeddings | #39 propose vector versioning on the issue | | posted, waiting on owner answers (https://github.com/Jayrr-Dev/corpus-wiki/issues/39#issuecomment-6509471249) |
+| embeddings | #39 contextual claim embeddings (text_version column, subject + scoped prefix, re-embed script) | owner approves versioning, reconcile: #45 | waiting |
 | jobs | #47 small idempotent jobs (with #46 closes #36) | #45, #46, #49 | waiting |
 | organize | #50 one organize step | #46, #47 | waiting |
 | db | #48 full: squash migrations into a baseline | #45, #46, #47, #50 | waiting |
