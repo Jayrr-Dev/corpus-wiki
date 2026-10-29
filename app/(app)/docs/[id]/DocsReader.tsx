@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronRight, Filter } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -9,22 +10,27 @@ import { PublishingDialog } from "@/components/publishing/PublishingDialog";
 import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { claimsByUnit, pageHeadings, pageTree, type ReaderSection, readerSections, subtaskAnchor } from "@/lib/docs/reader";
+import { type TopicNavItem, topicNavKeyFor } from "@/lib/docs/topicNav";
 import { type DocClaimRow, type DocPageRow, type DocSetView, isPageStale, isPageUnwritten, isPageWriting } from "@/lib/docs/types";
 import { useSectionLines } from "@/lib/queries";
 import { useComposerFigures } from "@/lib/queries/composer";
 import { illustrateArticle } from "@/lib/server-actions/composer";
 import { cn } from "@/lib/utils";
+import { DocsTopicNav } from "../DocsTopicNav";
 import { DocBlockView } from "./DocBlockView";
 
 // =====================================================================
-// DOCS READER: page tree on the left, the page in the center, "On this
-// page" on the right; Rebuild, Export and Publish in the top bar. A page
+// DOCS READER, laid out like MDN: breadcrumbs with Rebuild, Export and
+// Publish in the top bar; a filterable page tree with folding groups on
+// the left, the page in the center, "In this article" on the right with
+// the heading you are reading marked. A page
 // whose sources changed shows a dot in the tree and "Sources changed"
 // with Rebuild page. Refreshes itself while pages are being written.
 // =====================================================================
 
-export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | null }) {
+export function DocsReader({ set, pageId, topics }: { set: DocSetView; pageId: string | null; topics: TopicNavItem[] }) {
   const router = useRouter();
   const [publishing, setPublishing] = useState(false);
   const [rebuilding, setRebuilding] = useState<string | null>(null);
@@ -32,7 +38,9 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
   const page = set.pages.find((item) => item.id === pageId) ?? null;
   const claims = useMemo(() => claimsByUnit(set), [set]);
   const sections = useMemo(() => (page ? readerSections(page) : []), [page]);
-  const headings = pageHeadings(sections);
+  // a section named like the page has no heading of its own (see DocPageSections), so it is not listed
+  const headings = pageHeadings(sections).filter((heading) => !(heading.level === 2 && page && heading.text.trim().toLowerCase() === page.title.trim().toLowerCase()));
+  const activeHeading = useActiveHeading(headings.map((heading) => heading.anchor).join(" "));
   const setWriting = set.status === "writing";
   const writing = setWriting || set.pages.some((item) => isPageWriting(item, false));
   // a page whose first build failed once the set finished; it needs a rebuild like a stale one
@@ -60,50 +68,41 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 py-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <Link href="/docs" className="text-panel text-muted-foreground hover:underline">Docs</Link>
-          <h1 className="truncate text-title font-semibold">{set.title}</h1>
-        </div>
+    <div className="mx-auto flex w-full max-w-7xl flex-col">
+      {topics.length ? <div className="border-b px-4 py-1.5"><DocsTopicNav items={topics} activeKey={topicNavKeyFor(topics, set.id)} /></div> : null}
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b px-6 py-2">
+        <nav aria-label="Breadcrumb" className="min-w-0">
+          <ol className="flex flex-wrap items-center gap-1 text-panel">
+            <li><Link href="/docs" className="text-muted-foreground hover:text-foreground hover:underline">Docs</Link></li>
+            <li aria-hidden><ChevronRight className="size-3.5 text-muted-foreground" /></li>
+            <li className="min-w-0">
+              {page ? <Link href={`/docs/${set.id}`} className="text-muted-foreground hover:text-foreground hover:underline">{set.title}</Link> : <span aria-current="page">{set.title}</span>}
+            </li>
+            {page ? (
+              <>
+                <li aria-hidden><ChevronRight className="size-3.5 text-muted-foreground" /></li>
+                <li className="min-w-0" aria-current="page">{page.title}</li>
+              </>
+            ) : null}
+          </ol>
+        </nav>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" disabled={writing || rebuilding !== null} onClick={() => rebuild("all")}>{writing ? "Writing…" : "Rebuild"}</Button>
           <Button size="sm" variant="outline" asChild><a href={`/api/docs/${set.id}/export`} download>Export</a></Button>
           <Button size="sm" variant="outline" onClick={() => setPublishing(true)}>Publish</Button>
         </div>
       </header>
-      {set.status === "failed" && set.error ? <p role="alert" className="text-panel text-destructive">{set.error}</p> : null}
-      {error ? <p role="alert" className="text-panel text-destructive">{error}</p> : null}
+      {set.status === "failed" && set.error ? <p role="alert" className="px-6 pt-4 text-panel text-destructive">{set.error}</p> : null}
+      {error ? <p role="alert" className="px-6 pt-4 text-panel text-destructive">{error}</p> : null}
 
-      <div className="grid gap-8 md:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_12rem]">
-        <nav aria-label="Pages" className="min-w-0 md:sticky md:top-4 md:self-start">
-          {pageTree(set.pages).map((group) => (
-            <div key={group.label ?? "pages"} className="mb-4">
-              {group.label ? <p className="mb-1 text-xs font-medium text-muted-foreground uppercase">{group.label}</p> : null}
-              <ul className="grid gap-0.5">
-                {group.pages.map((item) => (
-                  <li key={item.id}>
-                    <Link href={`/docs/${set.id}?page=${item.id}`} aria-current={item.id === page?.id ? "page" : undefined}
-                      className={cn("flex items-center justify-between gap-2 rounded-md px-2 py-1 text-panel hover:bg-muted", item.id === page?.id && "bg-muted font-medium")}>
-                      <span className="min-w-0 break-words">{item.title}</span>
-                      {needsRebuild(item) ? (
-                        <Tooltip content={rebuildLabel(item)}>
-                          <span aria-label={rebuildLabel(item)} className="size-2 shrink-0 rounded-full bg-destructive" />
-                        </Tooltip>
-                      ) : null}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </nav>
+      <div className="grid gap-8 px-6 py-6 md:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
+        <PageNav set={set} pageId={page?.id ?? null} needsRebuild={needsRebuild} rebuildLabel={rebuildLabel} />
 
         <article className="min-w-0">
           {page ? (
             <div className="grid gap-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <h2 className="text-2xl font-semibold">{page.title}</h2>
+                <h1 className="text-3xl font-semibold tracking-tight">{page.title}</h1>
                 {isPageWriting(page, setWriting) || needsRebuild(page) ? null : <IllustratePage pageId={page.id} title={page.title} />}
               </div>
               {needsRebuild(page) ? (
@@ -120,14 +119,18 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
           )}
         </article>
 
-        <aside aria-label="On this page" className="hidden xl:sticky xl:top-4 xl:block xl:self-start">
+        <aside aria-label="In this article" className="hidden xl:sticky xl:top-4 xl:block xl:max-h-[calc(100vh-2rem)] xl:self-start xl:overflow-y-auto">
           {headings.length ? (
             <>
-              <p className="mb-2 text-xs font-medium text-muted-foreground uppercase">On this page</p>
-              <ul className="grid gap-1 text-panel">
+              <p className="mb-3 text-base font-semibold">In this article</p>
+              <ul className="grid text-panel">
                 {headings.map((heading) => (
-                  <li key={heading.anchor} className={heading.level === 3 ? "pl-3" : undefined}>
-                    <a href={`#${heading.anchor}`} className="text-muted-foreground hover:text-foreground">{heading.text}</a>
+                  <li key={heading.anchor}>
+                    <a href={`#${heading.anchor}`} aria-current={heading.anchor === activeHeading ? "location" : undefined}
+                      className={cn("block border-l-2 py-1 pr-2 text-muted-foreground hover:text-foreground", heading.level === 3 ? "pl-6" : "pl-3",
+                        heading.anchor === activeHeading ? "border-primary bg-muted font-medium text-foreground" : "border-border")}>
+                      {heading.text}
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -138,6 +141,86 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
       <PublishingDialog open={publishing} onOpenChange={setPublishing} />
     </div>
   );
+}
+
+// PAGE LIST: the set's title on top, a filter box, then pages under task groups that fold open and shut.
+// Filtering opens every group and hides pages whose title does not match.
+function PageNav({ set, pageId, needsRebuild, rebuildLabel }: {
+  set: DocSetView; pageId: string | null;
+  needsRebuild: (item: DocPageRow) => boolean; rebuildLabel: (item: DocPageRow) => string;
+}) {
+  const [filter, setFilter] = useState("");
+  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set());
+  const query = filter.trim().toLowerCase();
+  const groups = pageTree(set.pages)
+    .map((group) => ({ ...group, pages: query ? group.pages.filter((item) => item.title.toLowerCase().includes(query)) : group.pages }))
+    .filter((group) => group.pages.length);
+  const toggle = (label: string) => setClosed((current) => {
+    const next = new Set(current);
+    if (!next.delete(label)) next.add(label);
+    return next;
+  });
+
+  const pageLink = (item: DocPageRow) => (
+    <Link href={`/docs/${set.id}?page=${item.id}`} aria-current={item.id === pageId ? "page" : undefined}
+      className={cn("flex items-center justify-between gap-2 border-l-2 py-1 pr-2 pl-3 text-panel hover:bg-muted",
+        item.id === pageId ? "border-primary bg-muted font-medium" : "border-transparent")}>
+      <span className="min-w-0 break-words">{item.title}</span>
+      {needsRebuild(item) ? (
+        <Tooltip content={rebuildLabel(item)}>
+          <span aria-label={rebuildLabel(item)} className="size-2 shrink-0 rounded-full bg-destructive" />
+        </Tooltip>
+      ) : null}
+    </Link>
+  );
+
+  return (
+    <nav aria-label="Pages" className="grid min-w-0 content-start gap-3 md:sticky md:top-4 md:max-h-[calc(100vh-2rem)] md:self-start md:overflow-y-auto md:pr-2">
+      <div className="relative [&_input]:pl-8">
+        <Filter aria-hidden="true" className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input type="search" value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Filter" aria-label="Filter pages" />
+      </div>
+      <Link href={`/docs/${set.id}`} className="border-l-2 border-transparent px-3 py-1 font-semibold hover:underline">{set.title}</Link>
+      {groups.length ? groups.map((group) => {
+        if (!group.label) return <ul key="pages" className="grid">{group.pages.map((item) => <li key={item.id}>{pageLink(item)}</li>)}</ul>;
+        const open = Boolean(query) || !closed.has(group.label);
+        return (
+          <div key={group.label}>
+            <button type="button" aria-expanded={open} onClick={() => toggle(group.label!)}
+              className="flex w-full items-center gap-1.5 rounded-md px-1 py-1 text-left text-panel font-semibold hover:bg-muted">
+              <ChevronRight aria-hidden className={cn("size-3.5 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")} />
+              {group.label}
+            </button>
+            {open ? <ul className="mt-0.5 ml-2.5 grid">{group.pages.map((item) => <li key={item.id}>{pageLink(item)}</li>)}</ul> : null}
+          </div>
+        );
+      }) : <p className="px-3 text-panel text-muted-foreground">No pages match.</p>}
+    </nav>
+  );
+}
+
+// The heading the reader is on: the last one whose top has scrolled past the top of the screen.
+// Listens in the capture phase so it hears scrolls inside the app's scroll pane as well as the window.
+function useActiveHeading(anchorKey: string): string | null {
+  const [active, setActive] = useState<string | null>(null);
+  const anchors = anchorKey ? anchorKey.split(" ") : [];
+  useEffect(() => {
+    const list = anchorKey ? anchorKey.split(" ") : [];
+    if (!list.length) return;
+    const update = () => {
+      let current: string | null = list[0] ?? null;
+      for (const anchor of list) {
+        const top = document.getElementById(anchor)?.getBoundingClientRect().top;
+        if (top !== undefined && top <= 96) current = anchor;
+      }
+      setActive(current);
+    };
+    const frame = requestAnimationFrame(update);
+    window.addEventListener("scroll", update, { capture: true, passive: true });
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", update, { capture: true }); };
+  }, [anchorKey]);
+  // before the first scroll, or after the page changes, the first heading is current
+  return active && anchors.includes(active) ? active : (anchors[0] ?? null);
 }
 
 // THE PAGE'S SECTIONS with Composer's figures: each figure sits at the top of the section its line is
@@ -151,7 +234,7 @@ function DocPageSections({ page, sections, claims }: { page: DocPageRow; section
     <section key={section.id} aria-labelledby={section.intro ? undefined : section.anchor} className="grid gap-3">
       {section.intro || section.title.trim().toLowerCase() === page.title.trim().toLowerCase()
         ? null
-        : <h2 id={section.anchor} className="scroll-mt-20 pt-4 text-xl font-semibold">{section.title}</h2>}
+        : <h2 id={section.anchor} className="scroll-mt-20 pt-6 text-2xl font-semibold tracking-tight">{section.title}</h2>}
       <div className="flow-root space-y-3">
         {figuresIn(section.id).map((figure) => <ComposerFigure key={figure.id} figure={figure} />)}
         {section.blocks.map(({ key, block }) => <DocBlockView key={key} block={block} claims={claims} anchor={block.type === "heading" ? subtaskAnchor(key) : undefined} />)}

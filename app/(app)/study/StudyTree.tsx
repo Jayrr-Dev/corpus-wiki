@@ -3,7 +3,7 @@
 import { ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Screentone } from "@/components/standard/screentone";
+import { outlineMark, TopicCover } from "@/components/knowledge/TopicCover";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -17,12 +17,6 @@ import { LevelBar } from "./LevelBar";
 
 // The search box shows once the list is long enough to need it
 const SEARCH_FROM = 7;
-
-// Each topic card gets its own texture, picked from its name, so cards tell apart at a glance
-const COVER_TONES = ["clouds", "folds", "marble", "streaks"] as const;
-const COVER_KINDS = ["dots", "lines", "diamonds", "rings"] as const;
-const hash = (text: string) => [...text].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);
-const initials = (name: string) => name.split(/\s+/).filter((word) => /^\p{L}/u.test(word)).slice(0, 2).map((word) => word[0]!.toLocaleUpperCase()).join("") || name.slice(0, 1);
 
 // RING: a small progress circle for the share practiced
 function Ring({ percent, className }: { percent: number; className?: string }) {
@@ -76,14 +70,6 @@ function SetRows({ node, label }: { node: StudyTreeNode; label?: string }) {
   return <div className="grid">{node.sets.map((set) => <SetRow key={set.id} set={set} label={setLabel(set, label ?? node.name)} />)}</div>;
 }
 
-// OUTLINE MARK: 1, 2… then a, b… then i, ii… by nesting level
-const ROMAN = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"];
-function outlineMark(index: number, level: number): string {
-  if (level % 3 === 0) return String(index + 1);
-  if (level % 3 === 1) return index < 26 ? String.fromCharCode(97 + index) : String(index + 1);
-  return ROMAN[index] ?? String(index + 1);
-}
-
 // TOPIC LIST: deeper topics as a numbered outline (1, a, i), each with its sets
 function TopicList({ nodes, level = 0 }: { nodes: StudyTreeNode[]; level?: number }) {
   if (!nodes.length) return null;
@@ -103,22 +89,11 @@ function TopicList({ nodes, level = 0 }: { nodes: StudyTreeNode[]; level?: numbe
   );
 }
 
-// COVER: a textured tile with the topic's initials, where a picture can go later
-function Cover({ name }: { name: string }) {
-  const seed = hash(name);
-  return (
-    <div aria-hidden className="relative isolate flex w-20 shrink-0 items-center justify-center overflow-hidden border-r bg-link/8 sm:w-24">
-      <Screentone kind={COVER_KINDS[seed % COVER_KINDS.length]} tone={COVER_TONES[(seed >> 3) % COVER_TONES.length]} density={[0.55, 0.08]} size={7} seed={seed % 97} color="var(--color-link)" opacity={0.35} />
-      <span className="text-2xl font-semibold tracking-tight text-link">{initials(name)}</span>
-    </div>
-  );
-}
-
 // TOPIC CARD: a topic with its cover, its own sets and the topics under it
 function TopicCard({ node }: { node: StudyTreeNode }) {
   return (
     <article className="flex min-w-0 overflow-hidden rounded-xl border bg-background shadow-xs">
-      <Cover name={node.name} />
+      <TopicCover name={node.name} />
       <div className="grid min-w-0 flex-1 content-start gap-2 p-3 sm:p-4">
         <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <h4 className="min-w-0 truncate font-semibold">{node.name}</h4>

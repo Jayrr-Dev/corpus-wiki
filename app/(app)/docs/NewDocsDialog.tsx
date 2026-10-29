@@ -33,9 +33,9 @@ function IconButton({ label, onClick, disabled, children }: { label: string; onC
 }
 
 // NEW DOCS: pick a source and coverage, let the Docs writer propose the pages, edit them, then write
-export function NewDocsDialog({ open, onOpenChange, options }: { open: boolean; onOpenChange: (open: boolean) => void; options: ScopeOptions }) {
+export function NewDocsDialog({ open, onOpenChange, options, initialScope = null }: { open: boolean; onOpenChange: (open: boolean) => void; options: ScopeOptions; initialScope?: Scope | null }) {
   const router = useRouter();
-  const [scope, setScope] = useState<Scope | null>(null);
+  const [scope, setScope] = useState<Scope | null>(initialScope);
   const [coverage, setCoverage] = useState<Coverage>(100);
   const [outline, setOutline] = useState<DocOutline | null>(null);
   const [edits, setEdits] = useState<OutlineEdit>([]);
