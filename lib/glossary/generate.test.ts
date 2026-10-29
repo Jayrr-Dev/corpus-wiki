@@ -67,20 +67,30 @@ function fixture(count = 140) {
   const reads: Record<string, number> = {};
   const hooks: { beforeSave?: (values: GlossaryUpdate) => Promise<void | { code: string; message: string }> } = {};
   let lease = 0;
-  let version = 0;
+  const versions = new Map<string, number>();
+  const revision = (id: string) => `${id}:${versions.get(id) ?? 0}`;
   let activeSaves = 0;
   let peakSaves = 0;
   let cancelled = false;
   let abort = new AbortController();
+  // Stale marks as the database keeps them: every claim starts unread
+  let markVersion = 0;
+  const marks = new Map(ids.map((id) => [`glossary_claim:${id}`, ++markVersion]));
+  const mark = (id: string) => marks.set(`glossary_claim:${id}`, ++markVersion);
   const db: DbRpc = { async call<T>() {
     if (cancelled) throw new Error("Cancelled");
     return undefined as T;
   } };
   const client = {
     rpc: vi.fn(async (name: string, args: Record<string, unknown>) => {
+      if (name === "read_stale_marks") {
+        return { data: [...marks].map(([key, markedAt]) => ({ kind: key.split(":")[0], key: key.split(":")[1], version: markedAt })), error: null };
+      }
       if (name === "glossary_claim_snapshot") {
         reads.snapshots = (reads.snapshots ?? 0) + 1;
-        return { data: ids.map((id) => ({ id, revisionId: `${id}:${id === ids[0] ? version : 0}`, text: `Claim ${id}:${id === ids[0] ? version : 0}`, context: null,
+        const wanted = args.p_unit_ids as string[] | null;
+        reads.claims = (reads.claims ?? 0) + (wanted ?? ids).length;
+        return { data: ids.filter((id) => !wanted || wanted.includes(id)).map((id) => ({ id, revisionId: revision(id), text: `Claim ${revision(id)}`, context: null,
           sourceEvidence: [{ sourceId: "source", sourceTitle: "Handbook", text: `Evidence for ${id}` }],
         })), error: null };
       }
@@ -92,6 +102,10 @@ function fixture(count = 140) {
         };
         writes.push(structuredClone(values));
         Object.assign(state, structuredClone(values));
+        // Publication clears the marks it read, unless they were set again since
+        for (const read of (args.p_marks ?? []) as { kind: string; key: string; version: number }[]) {
+          if ((marks.get(`${read.kind}:${read.key}`) ?? Infinity) <= read.version) marks.delete(`${read.kind}:${read.key}`);
+        }
         return { data: null, error: null };
       }
       if (name !== "claim_glossary_generation") throw new Error(`Unexpected RPC: ${name}`);
@@ -128,7 +142,7 @@ function fixture(count = 140) {
         then(resolve: (result: { data: unknown[]; error: null }) => unknown) {
           reads[table] = (reads[table] ?? 0) + 1;
           let data: unknown[];
-          if (table === "units") data = ids.slice(range[0], range[1] + 1).map((id) => ({ id, current_revision_id: `${id}:${id === ids[0] ? version : 0}` }));
+          if (table === "units") data = ids.slice(range[0], range[1] + 1).map((id) => ({ id, current_revision_id: revision(id) }));
           else if (table === "revisions") data = selected.map((id) => ({ id, unit_id: id.split(":")[0], content: `Claim ${id}`, passage_ids: [id.split(":")[0]], knowledge_context: null }));
           else if (table === "passages") data = selected.map((id) => ({ id, source_id: "source", text: `Evidence for ${id}` }));
           else if (table === "sources") data = [{ id: "source", title: "Handbook" }];
@@ -143,7 +157,8 @@ function fixture(count = 140) {
     run: (force = false) => uploadExecution.run({ eventId: "event", token: "upload", db, signal: abort.signal }, () => generateGlossary(client, settings, force)),
     cancel: () => { cancelled = true; abort.abort(new Error("Cancelled")); },
     resume: () => { cancelled = false; abort = new AbortController(); },
-    changeKnowledge: () => { version++; },
+    changeKnowledge: (index = 0) => { versions.set(ids[index]!, (versions.get(ids[index]!) ?? 0) + 1); mark(ids[index]!); },
+    marks,
     takeover: () => { state.lease_token = "replacement"; state.status = "generating"; },
   };
 }
@@ -556,4 +571,54 @@ it("checkpoints review progress without resending unchanged batches or obsolete 
   expect(JSON.stringify(f.writes)).not.toContain("publication:obsolete");
   expect(f.state.review_cache?.reusable).toEqual({ decision: "saved" });
   expect(f.state.review_cache?.review_progress).toEqual({ phase: "comparing", completed: 30, total: 30 });
+});
+
+// STALE MARKS (#46, #34): a run reads only the marked claims and rebuilds only their meanings
+it("rebuilds only the meaning citing a revised claim, reading and sending that claim alone", async () => {
+  const f = fixture(140);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  await f.run();
+  expect(chat).toHaveBeenCalledTimes(5);
+  const before = f.state.entries;
+  chat.mockClear();
+  f.reads.claims = 0;
+  f.changeKnowledge();
+  await f.run();
+  // One call with one claim, and only that claim read (once before the run, once before publishing)
+  expect(chat).toHaveBeenCalledOnce();
+  expect(chat.mock.calls.map(([, request]) => JSON.parse(request.messages[1].content).knowledge.length)).toEqual([1]);
+  expect(f.reads.claims).toBe(2);
+  const cites = (entry: GlossaryEntry) => entry.citations.map((cite) => cite.revisionId);
+  expect(f.state.entries.flatMap(cites)).toContain("u000:1");
+  expect(f.state.entries.flatMap(cites)).not.toContain("u000:0");
+  // Every other meaning is published exactly as before
+  const others = (entries: GlossaryEntry[]) => entries.filter((entry) => !entry.citations.some((cite) => cite.unitId === "u000"));
+  expect(others(f.state.entries)).toEqual(others(before));
+  expect(f.marks.size).toBe(0);
+});
+
+it("does not restart when an unrelated claim changes during the run, and leaves that claim marked", async () => {
+  const f = fixture(84);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  await f.run();
+  chat.mockClear();
+  review.mockClear();
+  f.changeKnowledge();
+  review.mockImplementationOnce(async (entries: GlossaryEntry[]) => { f.changeKnowledge(50); return entries; });
+  await f.run();
+  expect(chat).toHaveBeenCalledOnce();
+  expect(review).toHaveBeenCalledOnce();
+  expect(f.writes.filter((write) => write.entries)).toHaveLength(2);
+  expect([...f.marks.keys()]).toEqual(["glossary_claim:u050"]);
+});
+
+it("makes no AI call and no claim read when nothing is marked", async () => {
+  const f = fixture(28);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  await f.run();
+  chat.mockClear();
+  f.reads.snapshots = 0;
+  await f.run();
+  expect(chat).not.toHaveBeenCalled();
+  expect(f.reads.snapshots).toBe(0);
 });
