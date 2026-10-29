@@ -22,8 +22,14 @@ export async function portablePostgres({ before }: { before?: string } = {}) {
     const named = types.rows.filter((arg) => Object.hasOwn(args, arg.name));
     const parameters = named.map((arg) => `${arg.name} => a.${arg.name}`).join(",");
     const from = named.length ? ` from jsonb_to_record($1) as a(${named.map((arg) => `${arg.name} ${arg.type}`).join(",")})` : "";
+    const signature = await pg.query<{ returns_set: boolean; returns_table: boolean }>(`select p.proretset returns_set, coalesce('t'=any(p.proargmodes::text[]),false) returns_table
+      from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname=$1`, [fn]);
+    // A RETURNS TABLE function comes back as rows of named columns, as PostgREST returns it
+    if (signature.rows[0]?.returns_table) {
+      const rows = await pg.query<Record<string, unknown>>(`select t.* from ${from ? `${from.slice(" from ".length)}, ` : ""}public.${fn}(${parameters}) t`, named.length ? [JSON.stringify(args)] : []);
+      return rows.rows as T;
+    }
     const result = await pg.query<{ result: T }>(`select public.${fn}(${parameters}) as result${from}`, named.length ? [JSON.stringify(args)] : []);
-    const signature = await pg.query<{ returns_set: boolean }>(`select p.proretset returns_set from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.proname=$1`, [fn]);
     // PostgREST returns SETOF functions as arrays, including empty results.
     return (signature.rows[0]?.returns_set ? result.rows.map((row) => row.result) : result.rows[0]?.result) as T;
   } };

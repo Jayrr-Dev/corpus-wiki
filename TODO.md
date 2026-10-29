@@ -21,9 +21,9 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | done, PR #57 merged (`docs/baseline-2026-10-29.md`); `evals.test.ts` and `live.test.ts` not run (need Linux Postgres) |
 | reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | merged (PR #60); owner applies `20261124042000_reviewer_budget.sql`; paid fact-check replay not run |
 | reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | merged (PR #56); owner applies `20261124100000_reconciliation_input_plain.sql` |
-| reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
-| reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure | waiting |
-| recompute | #46 dependency index and stale marks, glossary first (closes #34) | | ready for review: PR #58 |
+| reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | merged (PR #59), off unless `RECONCILE_CLIENT=split`; owner applies `20261124110000_split_reconciliation.sql` |
+| reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure, owner-run live evals | waiting (offline comparison in PR #59) |
+| recompute | #46 dependency index and stale marks, glossary first (closes #34) | | merged (PR #58); owner applies `20261124300000_stale_marks.sql` before deploy |
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | in progress (branched from PR #58) |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
 | embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
