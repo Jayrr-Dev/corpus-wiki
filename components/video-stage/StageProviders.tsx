@@ -55,16 +55,27 @@ function closeTutorialForStage() {
   } catch { /* storage may be disabled; the tutorial then opens from memory */ }
 }
 
-// FORCE DARK: the root layout's next-themes provider owns <html>'s class and a nested
-// ThemeProvider is a no-op, so the stage pins the dark class itself while it is mounted
-function useForceDark() {
+// THE STAGE THEME: the launch video films the app in light mode. The root layout's next-themes
+// provider owns <html>'s class and a nested ThemeProvider is a no-op, so the stage pins the
+// class itself while it is mounted. `?theme=dark` films the dark theme instead.
+export type StageTheme = "light" | "dark";
+export const STAGE_THEME: StageTheme = "light";
+
+function stageTheme(): StageTheme {
+  if (typeof window === "undefined") return STAGE_THEME;
+  const asked = new URLSearchParams(window.location.search).get("theme");
+  return asked === "dark" || asked === "light" ? asked : STAGE_THEME;
+}
+
+function useForceTheme() {
   useLayoutEffect(() => {
     const html = document.documentElement;
+    const theme = stageTheme(), other = theme === "dark" ? "light" : "dark";
     const before = { className: html.className, colorScheme: html.style.colorScheme };
     const apply = () => {
-      if (html.classList.contains("light")) html.classList.remove("light");
-      if (!html.classList.contains("dark")) html.classList.add("dark");
-      if (html.style.colorScheme !== "dark") html.style.colorScheme = "dark";
+      if (html.classList.contains(other)) html.classList.remove(other);
+      if (!html.classList.contains(theme)) html.classList.add(theme);
+      if (html.style.colorScheme !== theme) html.style.colorScheme = theme;
     };
     apply();
     const observer = new MutationObserver(apply);
@@ -93,7 +104,7 @@ export function StageProviders({ seed, space = PHOENIX_SPACE, flags, children }:
     return client;
   });
   const [featureFlags] = useState<FeatureFlags>(() => ({ ...defaultFeatureFlags(), ...flags }));
-  useForceDark();
+  useForceTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
