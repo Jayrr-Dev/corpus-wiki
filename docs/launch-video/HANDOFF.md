@@ -31,6 +31,21 @@ This is everything needed to finish the Corpus Wiki demo video from another mach
 4. **Shots 25–26 (2:32.8):** real user quotes and real numbers only. Cut them if there are none, which also cuts "I've been testing it with a few teams…".
 5. **Final edit:** swap each placeholder for its clip (see "Rebuilding the preview"), add music and sound effects, add 2–3-word captions in the lower third (use the transcript JSONs), mix to about −14 LUFS and export.
 
+### Plan (2026-10-29)
+
+Lanes run in parallel on their own branches and are merged into `launch-video` one task at a time. Each lane edits only its own rows. Final-cut timing comes from `product-shots/tools/cut.py` and nowhere else.
+
+| Lane | Task | Needs | Status |
+|---|---|---|---|
+| graphics | Shots 7, 8, 13 as scene pages (`g07-knowledge-lost`, `g08-stale-docs`, `g13-second-job`), rendered to `out/` | | in progress |
+| graphics | Shot 11 stand-in graph (`g11-note-graph`) and shot 29 end card overlay (`g29-endcard`) | graphics: 7, 8, 13 | waiting |
+| captions | `tools/captions.py` writes `out/captions.ass` from both transcripts, in final-cut time | cut.py | in progress |
+| final | `tools/timeline.py` holds TIMELINE and the splice; `preview.py` imports it | cut.py | in progress |
+| final | `tools/final.py`: no placeholder labels or timecode, captions burned in, optional music ducked under the VO, −14 LUFS, writes `out/final.mp4` | final: timeline, captions | waiting |
+| integration | Wire the `g*` clips into `timeline.py` | graphics, final: timeline | waiting |
+| you | Copy `product-shots/out/*.mp4` from the other machine | | waiting on you |
+| you | Office shoot; shots 25–26 quotes or cut; end card URL; music track | | waiting on you |
+
 ## Lip-sync shoot (office)
 
 You mime to the voiceover so your lips match the cloned voice exactly.
