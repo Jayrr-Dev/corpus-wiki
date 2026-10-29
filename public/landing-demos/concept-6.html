@@ -65,8 +65,13 @@
   .status svg { width: 16px; height: 16px; color: #fff; }
   .lamp { width: 8px; height: 8px; border-radius: 9999px; background: #34a853; box-shadow: 0 0 12px #34a853; transition: opacity .3s var(--ease), background-color .3s var(--ease), box-shadow .3s var(--ease); }
   .lamp.idle { background: #131209; box-shadow: none; } .lamp.busy { background: #fbbc04; box-shadow: 0 0 12px #fbbc04; } /* black waiting, yellow processing, green once outputs start */
-  .mouth { position: absolute; top: 236px; width: 8px; height: 64px; border-radius: 4px; background: #2c3f2b; }
-  .mouth.l { left: 368px; } .mouth.r { left: 776px; }
+  /* SLOTS: tall enough for the biggest file and output card, square where they meet the machine,
+     and drawn over the belts so files vanish into the left slot and outputs come out of the right one */
+  .mouth { position: absolute; top: 180px; width: 8px; height: 120px; background: #2c3f2b; z-index: 2; }
+  .mouth.l { left: 368px; border-radius: 4px 0 0 4px; } .mouth.r { left: 776px; border-radius: 0 4px 4px 0; }
+  #items, #outs { position: absolute; left: 0; top: 0; width: 1152px; height: 400px; z-index: 1; overflow: hidden; } /* the stage edge is faded anyway; no scrollbar */
+  #items { clip-path: inset(-40px 780px -40px -40px); } /* only left of the left slot's middle */
+  #outs { clip-path: inset(-40px -40px -40px 780px); } /* only right of the right slot's middle */
   @media (prefers-reduced-motion: reduce) { .lamp { box-shadow: none; } }
 </style>
 <script>
@@ -236,22 +241,21 @@ function draw(t) {
 
 function frame(now) {
   const t = (now / 1000) % LOOP;
-  // files on the left belt: ride in, shrink into the machine
+  // files on the left belt: ride in and slide through the left slot (the #items clip hides them past it)
   items.forEach((el, i) => {
     const s = (t - i * SPACING) / ARRIVE;
-    if (s < 0 || s > 1.15) { el.style.opacity = 0; return; }
-    const x = mix(-90, 330, ease(Math.min(s, 1) * 0.98)), w = el.firstElementChild.width.baseVal.value, h = el.firstElementChild.height.baseVal.value;
-    const gone = clamp((s - 0.92) / 0.2);
-    el.style.opacity = clamp(s * 6) * (1 - gone);
-    el.style.transform = `translate(${x + gone * 50}px, ${300 - h}px) scale(${1 - gone * 0.5})`;
+    if (s < 0 || s > 1) { el.style.opacity = 0; return; }
+    const h = el.firstElementChild.height.baseVal.value;
+    el.style.opacity = clamp(s * 6);
+    el.style.transform = `translate(${mix(-90, 372, ease(s))}px, ${300 - h}px)`;
   });
-  // outputs on the right belt: pop out of the machine one by one, ride off
+  // outputs on the right belt: slide out of the right slot one by one, then ride off
   outs.forEach((el, i) => {
     const s = (t - OUT_START - i * 0.95) / 3.0;
     if (s < 0 || s > 1) { el.style.opacity = 0; return; }
-    el.style.opacity = clamp(s * 10) * clamp((1 - s) * 8);
-    const pop = ease(s * 4);
-    el.style.transform = `translate(${mix(700, 1200, s)}px, ${184 - (1 - pop) * 16}px) scale(${mix(0.7, 1, pop)}) rotate(${(i % 2 ? 2 : -2) * pop}deg)`;
+    const x = mix(650, 1200, s), out = clamp((x - 780) / 130); // 0 inside the slot, 1 once fully out
+    el.style.opacity = clamp((1 - s) * 8);
+    el.style.transform = `translate(${x}px, ${300 - (el.h ??= el.offsetHeight)}px) rotate(${(i % 2 ? 2 : -2) * out}deg)`;
   });
   const alive = draw(t);
   countEl.textContent = `${alive} ${alive === 1 ? "fact" : "facts"}`;
