@@ -7,6 +7,7 @@ import { describeAssets, syncAssets } from "@/lib/assets/describe";
 import type { DbRpc } from "@/lib/db/rpc";
 
 import { getServerDeps } from "@/lib/server/deps";
+import { importChatExport } from "./chatImport";
 import { CONVERTERS } from "./convert";
 import { getFeatureFlagsOrDefaults } from "@/lib/flags/server";
 import { audioReaderFrom } from "./describeVideoServer";
@@ -44,6 +45,10 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
   const { bytes, fileName, sourceDate } = input;
   const format = await requireFormat(fileName, input.browserType);
   if (!DATE_ONLY.test(sourceDate)) throw new Error("Give the file's date as YYYY-MM-DD.");
+  if (format.id === "chat") {
+    if (input.replacement) throw new Error("A chat export can't replace a source; upload it on its own.");
+    return startChatImport(bytes, sourceDate);
+  }
   const hash = sha256(bytes);
   const { db, imageDescriber, videoReader } = await getServerDeps();
   // A file seen before is skipped before an image or video costs a model call to read
@@ -63,6 +68,25 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
   // Media the file brought in (the file itself, or pictures inside it) goes on the Assets page
   if (mediaKindOf(mimeType) || pages.some((page) => page.figure)) after(() => describeNewAssets(db));
   return started;
+}
+
+// CHAT IMPORT STEP 1 (chat_import flag): every conversation is recorded as its own source. The
+// first new one is returned for the screen to process; the rest run after the response, in turn.
+async function startChatImport(bytes: Uint8Array, sourceDate: string): Promise<StartUploadResult> {
+  const { db } = await getServerDeps();
+  const items = await importChatExport({ db, storeFile: storeSourceFile, findSourceByHash }, { bytes, fallbackDate: sourceDate });
+  const started = items.flatMap((item) => (item.kind === "started" ? [{ sourceId: item.sourceId, eventId: item.eventId }] : []));
+  const [first, ...rest] = started;
+  if (!first) return { kind: "skipped", sourceId: items[0]!.sourceId };
+  if (rest.length) after(() => processInTurn(rest.map((item) => item.eventId)));
+  return { kind: "started", ...first, ...(rest.length ? { alsoStarted: rest } : {}) };
+}
+
+// Both jobs for each event, one at a time; a failure is saved on its workflow and the next one still runs
+async function processInTurn(eventIds: string[]): Promise<void> {
+  for (const eventId of eventIds) {
+    await processUploadEvent(eventId, "articles").catch((error) => console.error("chat import processing failed", error));
+  }
 }
 
 // ASSETS AFTER AN UPLOAD: found and described once the response is sent; a failure never fails the upload

@@ -1,7 +1,7 @@
 import type { ImageDescriber } from "./describeMedia";
 import { type AudioReader, audioPages, type VideoReader, videoPages } from "./describeVideo";
 import { readDocx } from "./docx";
-import type { UploadFormatId } from "./formats";
+import type { FileFormatId } from "./formats";
 import { bookSectionPaths, type PdfOutlineSource } from "./pdfSections";
 import type { ExtractedPage } from "./passages";
 
@@ -71,8 +71,9 @@ export function extractPlainText(text: string): ExtractedPage[] {
   return [{ page: null, text }];
 }
 
-// THE REGISTRY: a new format is one entry here plus one in formats.ts
-export const CONVERTERS: Record<UploadFormatId, Converter> = {
+// THE REGISTRY: a new format is one entry here plus one in formats.ts (a chat export has none:
+// it becomes many sources, see chatImport.ts)
+export const CONVERTERS: Record<FileFormatId, Converter> = {
   pdf: convertPdf,
   docx: convertDocx,
   markdown: convertText,

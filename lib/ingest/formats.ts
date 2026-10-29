@@ -10,7 +10,11 @@
 
 import type { FeatureFlagKey, FeatureFlags } from "@/lib/flags/registry";
 
-export type UploadFormatId = "pdf" | "docx" | "markdown" | "text" | "image" | "video" | "audio";
+export type UploadFormatId = "pdf" | "docx" | "markdown" | "text" | "image" | "video" | "audio" | "chat";
+
+// FORMATS THAT BECOME ONE SOURCE: each has a converter in lib/ingest/convert.ts.
+// A chat export becomes one source per conversation instead (lib/ingest/chatImport.ts).
+export type FileFormatId = Exclude<UploadFormatId, "chat">;
 
 // The flags the format lists read (any subset of the app's flags; a missing one is off)
 export type FormatFlags = Partial<FeatureFlags>;
@@ -20,6 +24,16 @@ export type UploadFormat = {
   label: string;
   mimeTypes: readonly string[];
   extensions: readonly string[]; // lowercase, with the dot
+};
+
+// CHAT EXPORT: a ChatGPT data export, its conversations.json or the export .zip holding it.
+// The name only suggests it; the server checks the content (lib/ingest/chatExport.ts) and
+// turns each conversation into its own source.
+export const CHAT_EXPORT_FORMAT: UploadFormat = {
+  id: "chat",
+  label: "ChatGPT export",
+  mimeTypes: ["application/json", "application/zip", "application/x-zip-compressed"],
+  extensions: [".json", ".zip"],
 };
 
 // FORMATS WITH A CONVERTER, flagged ones included (see FORMAT_FLAGS)
@@ -57,18 +71,11 @@ export const ALL_UPLOAD_FORMATS: readonly UploadFormat[] = [
     mimeTypes: ["audio/mpeg", "audio/mp3", "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/aac", "audio/wav", "audio/x-wav", "audio/wave", "audio/ogg", "audio/webm"],
     extensions: [".mp3", ".m4a", ".wav", ".ogg", ".oga", ".weba", ".webm"],
   },
+  CHAT_EXPORT_FORMAT,
 ];
 
 // FORMATS BEHIND A FEATURE FLAG: while the flag is off the format is in no list, so it is refused everywhere
-export const FORMAT_FLAGS: Partial<Record<UploadFormatId, FeatureFlagKey>> = { audio: "audio_ingest" };
-
-// The formats these flags allow (no flags: only the unflagged ones)
-export function uploadFormatsFor(flags: FormatFlags = {}): readonly UploadFormat[] {
-  return ALL_UPLOAD_FORMATS.filter((format) => {
-    const flag = FORMAT_FLAGS[format.id];
-    return !flag || flags[flag] === true;
-  });
-}
+export const FORMAT_FLAGS: Partial<Record<UploadFormatId, FeatureFlagKey>> = { audio: "audio_ingest", chat: "chat_import" };
 
 // FORMATS WITH A CONVERTER AND NO FLAG
 export const UPLOAD_FORMATS: readonly UploadFormat[] = uploadFormatsFor();
