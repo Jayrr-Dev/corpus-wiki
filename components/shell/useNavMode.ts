@@ -29,3 +29,8 @@ export function setNavMode(mode: NavMode) {
 export function useNavMode(): NavMode {
   return useSyncExternalStore(subscribe, read, () => "admin");
 }
+
+// Admin controls (add, edit, delete) show only in Admin mode
+export function useIsAdminMode(): boolean {
+  return useNavMode() === "admin";
+}
