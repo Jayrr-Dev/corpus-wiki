@@ -1,0 +1,79 @@
+<!doctype html>
+<!-- Shot 7, 0:29.9 (about 4.6 s): "Someone leaves, and years of context are just gone."
+     A team grid of avatar circles. Brent's fades out, and small doc and idea icons drift away from it and vanish.
+     A counter in the corner reads "Knowledge lost: 6 years". Synthetic names only (Brightline Co.). -->
+<html class="dark"><head><meta charset="utf-8"><title>G07 Knowledge Lost</title>
+<link rel="stylesheet" href="assets/app.css">
+<script src="engine.js"></script>
+<style>
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  #cursor { display: none !important; }
+  .team { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; grid-template-columns: repeat(6, 170px); gap: 54px 46px; }
+  .p { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .av { width: 132px; height: 132px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 600; color: #1e1e1e; box-shadow: 0 0 0 1px #363636; }
+  .nm { font-size: 22px; color: #a3a3a3; }
+  .lbl { position: absolute; left: 50%; top: 92px; transform: translateX(-50%); font-size: 24px; color: #6b6b6b; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+  .counter { position: absolute; right: 80px; top: 70px; border: 1px solid #363636; background: #262626; border-radius: 12px; padding: 18px 26px; text-align: right; }
+  .counter .k { font-size: 18px; color: #a3a3a3; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .counter .v { font-size: 56px; font-weight: 700; margin-top: 4px; color: #dcdcdc; font-variant-numeric: tabular-nums; }
+  .counter .v span { color: #e05252; }
+  .bit { position: absolute; left: 0; top: 0; width: 40px; height: 40px; margin: -20px 0 0 -20px; will-change: transform, opacity; }
+  .bit svg { width: 100%; height: 100%; }
+</style></head>
+<body>
+<div class="lbl">Brightline Co. team</div>
+<div class="team" id="team"></div>
+<div class="counter" id="ctr"><div class="k">Knowledge lost</div><div class="v"><span id="yrs">0</span> years</div></div>
+<div id="bits"></div>
+<script>
+const TEAM = [["Ana", "#72b7e5"], ["Marco", "#36ab78"], ["Priya", "#d9a032"], ["Leo", "#b09de0"], ["Sofia", "#e88070"], ["Ken", "#80c6a1"],
+              ["Ruth", "#c66fa5"], ["Omar", "#91a64b"], ["Brent", "#8fae8d"], ["Mia", "#6574d8"], ["Jonas", "#e9a477"], ["Lena", "#52c4c4"]];
+const DAVE = 8;
+const DOC = `<svg viewBox="0 0 24 24" fill="none" stroke="#dcdcdc" stroke-width="1.6" stroke-linejoin="round"><path d="M6 2.5h8l4.5 4.5v14.5h-12.5z" fill="#2f2f2f"/><path d="M14 2.5v4.5h4.5"/><path d="M9 12h6M9 15h6M9 18h4" stroke-linecap="round"/></svg>`;
+const IDEA = `<svg viewBox="0 0 24 24" fill="none" stroke="#d9a032" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z" fill="#3a3120"/><path d="M10 19h4M10.6 21.5h2.8"/></svg>`;
+const NOTE = `<svg viewBox="0 0 24 24" fill="none" stroke="#72b7e5" stroke-width="1.6" stroke-linejoin="round"><path d="M4 5h16v11h-9l-4 4v-4h-3z" fill="#1f2c36"/><path d="M8 9h8M8 12h5" stroke-linecap="round"/></svg>`;
+// Seeded random, so every frame is the same on every render
+function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; }
+let bits = [], origin = { x: 0, y: 0 };
+
+window.SCENE = { duration: 4.6,
+  setup() {
+    $("#team").innerHTML = TEAM.map(([n, c]) => `<div class="p"><div class="av" style="background:${c}">${n[0]}</div><div class="nm">${n}</div></div>`).join("");
+    const r = $$(".av")[DAVE].getBoundingClientRect();
+    origin = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    const rand = rng(7), icons = [DOC, IDEA, DOC, NOTE];
+    for (let i = 0; i < 46; i++) {
+      const el = document.createElement("div"); el.className = "bit"; el.innerHTML = icons[i % 4];
+      $("#bits").appendChild(el);
+      const ang = rand() * Math.PI * 2;
+      bits.push({ el, ang, dist: 220 + rand() * 400, start: 0.9 + rand() * 1.6, life: 1.4 + rand() * 0.9, spin: (rand() - 0.5) * 140, size: 0.7 + rand() * 0.6, wob: rand() * 6 });
+    }
+  },
+  frame(t) {
+    camera(t, 4.6, 1.0, 1.035, "50%", "52%");
+    $$(".p").forEach((p, i) => { const a = easeOut(seg(t, 0.05 + i * 0.03, 0.55 + i * 0.03)); p.style.opacity = a; p.style.transform = `translateY(${(1 - a) * 14}px)`; });
+    $(".lbl").style.opacity = easeOut(seg(t, 0, 0.5));
+    // Brent fades and shrinks a little
+    const gone = easeInOut(seg(t, 1.0, 2.6));
+    const dave = $$(".p")[DAVE];
+    dave.style.opacity = Math.min(dave.style.opacity, 1 - gone * 0.94);
+    dave.querySelector(".av").style.filter = `grayscale(${gone}) blur(${gone * 2}px)`;
+    dave.querySelector(".av").style.transform = `scale(${1 - gone * 0.12})`;
+    // The icons drift out from Brent and vanish
+    for (const b of bits) {
+      const p = seg(t, b.start, b.start + b.life);
+      const d = easeOut(p) * b.dist;
+      const x = origin.x + Math.cos(b.ang) * d + Math.sin(t * 2 + b.wob) * 8;
+      const y = origin.y + Math.sin(b.ang) * d - p * 60;
+      const o = p <= 0 || p >= 1 ? 0 : Math.min(1, p * 6) * (1 - easeInOut(seg(p, 0.45, 1)));
+      b.el.style.opacity = o;
+      b.el.style.transform = `translate(${x}px, ${y}px) rotate(${b.spin * p}deg) scale(${b.size * (1 - p * 0.45)})`;
+    }
+    // Counter: appears, then counts up to 6 years
+    const c = easeOut(seg(t, 0.6, 1.1));
+    $("#ctr").style.opacity = c; $("#ctr").style.transform = `translateY(${(1 - c) * -12}px)`;
+    $("#yrs").textContent = Math.round(6 * easeInOut(seg(t, 1.2, 3.4)));
+  }
+};
+</script>
+</body></html>
