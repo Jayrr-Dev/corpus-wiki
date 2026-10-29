@@ -10,6 +10,8 @@ import { isTimeZone, TIME_ZONE_COOKIE } from "@/app/(app)/_lib/format";
 import { readMySpaces } from "@/lib/spaces/server";
 import { AccountDataProvider } from "@/components/shell/AccountDataProvider";
 import { SpaceProvider } from "@/components/shell/SpaceProvider";
+import { FeatureFlagsProvider } from "@/lib/flags/client";
+import { getFeatureFlagsOrDefaults } from "@/lib/flags/server";
 
 // SIGNED-IN AREA: every page here sits inside the shell (the proxy guards sign-in)
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -19,23 +21,25 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   // dates and times show in the zone picked in Settings
   const zone = cookieStore.get(TIME_ZONE_COOKIE)?.value;
   const timeZone = zone && isTimeZone(zone) ? zone : null;
-  const { spaces, activeSpace, account } = await readMySpaces();
+  const [{ spaces, activeSpace, account }, featureFlags] = await Promise.all([readMySpaces(), getFeatureFlagsOrDefaults()]);
   if (!activeSpace.owner_id) throw new Error("This space has no account owner.");
   return (
     <AccountDataProvider key={activeSpace.id} accountId={account.id}>
       <SpaceProvider space={activeSpace}>
-        <TimeZoneProvider timeZone={timeZone}>
-          <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email}>
-            <RoutedErrorBoundary where="Open questions">
-              <ExceptionNotifications />
-            </RoutedErrorBoundary>
-            <RoutedErrorBoundary where="Suggestion progress">
-              <SuggestionProgress />
-            </RoutedErrorBoundary>
-            <BrowserErrorReporter />
-            {children}
-          </AppShell>
-        </TimeZoneProvider>
+        <FeatureFlagsProvider flags={featureFlags}>
+          <TimeZoneProvider timeZone={timeZone}>
+            <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email}>
+              <RoutedErrorBoundary where="Open questions">
+                <ExceptionNotifications />
+              </RoutedErrorBoundary>
+              <RoutedErrorBoundary where="Suggestion progress">
+                <SuggestionProgress />
+              </RoutedErrorBoundary>
+              <BrowserErrorReporter />
+              {children}
+            </AppShell>
+          </TimeZoneProvider>
+        </FeatureFlagsProvider>
       </SpaceProvider>
     </AccountDataProvider>
   );
