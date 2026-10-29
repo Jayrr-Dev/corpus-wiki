@@ -80,7 +80,7 @@ export function StudySetView({ set, data, intro }: { set: StudySetRow; data: Stu
       <Tabs active={tab} onSelect={setTab} panels={{
         practice: <Practice items={items} claims={data.claims} progress={data.progress} />,
         progress: <ProgressPanel set={set} data={data} />,
-        questions: <QuestionsPanel items={items} claims={data.claims} />,
+        questions: <QuestionsPanel setId={set.id} items={items} claims={data.claims} />,
       }} />
     </div>
   );

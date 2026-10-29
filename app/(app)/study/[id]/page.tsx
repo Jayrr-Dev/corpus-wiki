@@ -10,6 +10,7 @@ import type { StudySetRow } from "@/lib/study/types";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { sourceVideo } from "@/lib/video/intro";
 import { signedVideoUrl, videoStore } from "@/lib/video/server";
+import { SetAdminMenu } from "./SetAdminMenu";
 import { type IntroVideo, StudySetView } from "./StudySetView";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +37,7 @@ export default async function StudySetPage({ params }: { params: Promise<{ id: s
   const set = data.sets[0];
   if (!set) notFound();
   return (
-    <ReadingPane title={set.title}>
+    <ReadingPane title={set.title} actions={<SetAdminMenu set={set} questions={data.items.length} />}>
       <StudySetView set={set} data={data} intro={await introVideo(set, db)} />
     </ReadingPane>
   );
