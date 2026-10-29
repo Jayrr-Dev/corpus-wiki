@@ -30,6 +30,7 @@ export const ROLE_DEFAULT_MODELS: Record<string, string> = {
   plan_articles: NEMOTRON_ULTRA, article_reviewer: NEMOTRON_ULTRA, domain_decider: NEMOTRON_ULTRA, domain_steward: NEMOTRON_ULTRA, curator: NEMOTRON_ULTRA,
   reconciler: NEMOTRON_SUPER, write_articles: NEMOTRON_SUPER, reviewer: NEMOTRON_SUPER, define_concepts: NEMOTRON_SUPER, identify_entities: NEMOTRON_SUPER,
   dictionary_editor: NEMOTRON_SUPER, researcher: NEMOTRON_SUPER, sourcer: NEMOTRON_SUPER,
+  tutor: NEMOTRON_SUPER, narrator: NEMOTRON_SUPER, docs_writer: NEMOTRON_SUPER,
   link_knowledge: NEMOTRON_NANO,
   media_analyst: NEMOTRON_VISION, composer: NEMOTRON_VISION,
   deduplicator: DEEPSEEK_FLASH,

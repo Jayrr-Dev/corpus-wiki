@@ -10,7 +10,7 @@ function fakeDb(result: unknown) {
 
 it("reads every flag, off when the database has no row", async () => {
   const { db, call } = fakeDb({ audio_ingest: true, retired_flag: true });
-  expect(await readFeatureFlags(db)).toEqual({ billing: false, legal_pages: false, audio_ingest: true, chat_import: false, gmail_import: false });
+  expect(await readFeatureFlags(db)).toEqual({ billing: false, legal_pages: false, audio_ingest: true, chat_import: false, gmail_import: false, study: false, video: false, docs: false });
   expect(call).toHaveBeenCalledWith("get_feature_flags");
 });
 

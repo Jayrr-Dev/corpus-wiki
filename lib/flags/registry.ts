@@ -41,6 +41,22 @@ export const FEATURE_FLAGS = {
     description: "Bring in emails from a connected Gmail account.",
     defaultEnabled: false,
   },
+  // Knowledge modules (docs/knowledge-modules-plan.md); turning one off hides it, its data stays
+  study: {
+    label: "Study",
+    description: "Practice questions and flashcards from your knowledge.",
+    defaultEnabled: false,
+  },
+  video: {
+    label: "Video",
+    description: "Narrated videos from a topic or article.",
+    defaultEnabled: false,
+  },
+  docs: {
+    label: "Docs",
+    description: "Step-by-step technical docs from your knowledge.",
+    defaultEnabled: false,
+  },
 } as const satisfies Record<string, FeatureFlagDefinition>;
 
 export type FeatureFlagKey = keyof typeof FEATURE_FLAGS;

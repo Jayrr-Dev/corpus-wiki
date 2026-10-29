@@ -3,7 +3,7 @@ import { AI_STAGES, type AiStage } from "./skills/types";
 import type { DataType } from "./modelInputs";
 import { COMPOSER_INSTRUCTIONS } from "./composerPolicy";
 import { SOURCER_INSTRUCTIONS } from "./sourcerPolicy";
-import { ARTICLE_REVIEWER_INSTRUCTIONS, CURATOR_INSTRUCTIONS, REVIEWER_INSTRUCTIONS, RESEARCH_SEARCH_INSTRUCTIONS, RESEARCH_SOURCE_INSTRUCTIONS } from "./rolePolicies";
+import { ARTICLE_REVIEWER_INSTRUCTIONS, CURATOR_INSTRUCTIONS, DOCS_WRITER_INSTRUCTIONS, NARRATOR_INSTRUCTIONS, REVIEWER_INSTRUCTIONS, RESEARCH_SEARCH_INSTRUCTIONS, RESEARCH_SOURCE_INSTRUCTIONS, TUTOR_INSTRUCTIONS } from "./rolePolicies";
 
 export const STAGE_ROLES: Record<AiStage, string> = {
   extract_knowledge: "Extractor", identify_entities: "Entity analyst", link_knowledge: "Linker",
@@ -18,11 +18,15 @@ export const FIXED_ROLES = [
   { id: "reviewer", name: "Reviewer", description: "Polishes the wording inside each page after knowledge updates, checks related evidence in the vector store, and raises only unresolved decisions as Exceptions; edits are reversible in Changes. Independently reviews proposed section outlines for evidence coverage, coherent grouping and reading order. Also fact-checks each line the Writer writes against the claims it cites, before it is saved. Also gives the final approval on outside research: whether a search is needed and which source excerpts to admit. The instructions below govern research approval; page polishing follows the app's built-in editorial policy.", instructions: REVIEWER_INSTRUCTIONS },
   { id: "article_reviewer", name: "Article reviewer", description: "Independently approves or rejects each proposed new article against the charter and the existing articles: approve, update an existing article instead, make it a section, or reject.", instructions: ARTICLE_REVIEWER_INSTRUCTIONS },
   { id: "curator", name: "Curator", description: "The wiki's librarian. Keeps the page structure clean and organized: merges pages that repeat each other, files pages under the right parent, creates placeholder pages to build the hierarchy, fixes unclear titles and sets each page's type and scope. Hands pages that need content work to the Reviewer, Planner or Researcher. Never edits page text itself. Moves, new pages and merges that bring claims over wait in Exceptions.", instructions: CURATOR_INSTRUCTIONS },
+  // KNOWLEDGE MODULES (docs/knowledge-modules-plan.md): each works only while its module is on in Settings → Features
+  { id: "tutor", name: "Tutor", description: "Writes Study questions from a scope's claims and grades short answers against the claim, with a one-line reason.", instructions: TUTOR_INSTRUCTIONS },
+  { id: "narrator", name: "Narrator", description: "Writes Video scripts: scenes with narration, on-screen text and a visual, each citing its claims.", instructions: NARRATOR_INSTRUCTIONS },
+  { id: "docs_writer", name: "Writer: docs", description: "Writes Docs pages: tasks, numbered steps, code and callouts, each step citing the claim it came from.", instructions: DOCS_WRITER_INSTRUCTIONS },
 ] as const;
 // ROLES THAT CAN RUN ON THEIR OWN MODEL (/settings), in workflow order. Each owns AI calls through
 // roleForPurpose. The Extractor and Organizer only guide the Reconciler's request, so they use its model.
 // Keep in step with set_ai_role_model in the database.
-export const MODEL_ROLES = ["media_analyst", "reconciler", "deduplicator", "identify_entities", "link_knowledge", "dictionary_editor", "define_concepts", "plan_articles", "article_reviewer", "write_articles", "composer", "reviewer", "researcher", "sourcer", "domain_steward", "domain_decider", "curator"] as const;
+export const MODEL_ROLES = ["media_analyst", "reconciler", "deduplicator", "identify_entities", "link_knowledge", "dictionary_editor", "define_concepts", "plan_articles", "article_reviewer", "write_articles", "composer", "reviewer", "researcher", "sourcer", "domain_steward", "domain_decider", "curator", "tutor", "narrator", "docs_writer"] as const;
 export type ModelRole = (typeof MODEL_ROLES)[number];
 // ROLES THAT CAN HOLD CHANGES IN EXCEPTIONS, so they can run in full auto (Agent Roles): what they hold is
 // accepted at once. Keep in step with set_ai_role_auto in the database.
@@ -61,5 +65,9 @@ export function roleForPurpose(purpose: string): string | null {
   // EVERY DUPLICATE CHECK: claims, glossary, entities and domain/topic names (lib/ai/nameDuplicateJudge.ts)
   if (["dedupe", "duplicate_judge", "glossary_duplicate_review", "entity_duplicate_review", "domain_duplicate_review"].includes(purpose)) return "deduplicator";
   if (["describe_image", "describe_video", "describe_assets"].includes(purpose)) return "media_analyst";
+  // KNOWLEDGE MODULES: Study questions and grading, Video scripts, Docs pages
+  if (["study_questions", "study_grade"].includes(purpose)) return "tutor";
+  if (purpose === "video_script") return "narrator";
+  if (["docs_outline", "docs_page"].includes(purpose)) return "docs_writer";
   return AI_STAGES.some((stage) => stage.id === purpose) ? purpose : null;
 }

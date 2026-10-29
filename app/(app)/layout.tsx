@@ -12,6 +12,7 @@ import { AccountDataProvider } from "@/components/shell/AccountDataProvider";
 import { SpaceProvider } from "@/components/shell/SpaceProvider";
 import { FeatureFlagsProvider } from "@/lib/flags/client";
 import { getFeatureFlagsOrDefaults } from "@/lib/flags/server";
+import { enabledModules } from "@/lib/modules";
 
 // SIGNED-IN AREA: every page here sits inside the shell (the proxy guards sign-in)
 export default async function AppLayout({ children }: { children: ReactNode }) {
@@ -28,7 +29,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <SpaceProvider space={activeSpace}>
         <FeatureFlagsProvider flags={featureFlags}>
           <TimeZoneProvider timeZone={timeZone}>
-            <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email}>
+            <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email} modules={enabledModules(featureFlags)}>
               <RoutedErrorBoundary where="Open questions">
                 <ExceptionNotifications />
               </RoutedErrorBoundary>

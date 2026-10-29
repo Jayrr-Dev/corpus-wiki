@@ -29,34 +29,24 @@ One server function, `lib/knowledge/scope.ts → loadScopeClaims(scope)`, return
 
 ## 0. Module switches (build first)
 
-Follows the Monetization switch pattern (`supabase/migrations/20261119025000_monetization_switch.sql`).
-
-**Database**
-- `workspace_settings.modules jsonb not null default '{}'`, for example `{"study": true}`.
-- `get_workspace_settings()` returns `modules`.
-- `set_module_enabled(p_module text, p_enabled boolean)` rejects names outside `study`, `video`, `docs`. Owned by `space_runtime`, executable by `service_role, space_runtime`, like `set_monetization_enabled`.
+The three modules are app-wide feature flags in the shared flag system (`lib/flags`, `public.feature_flags`), so they sit in the same Settings → Features list as every other unfinished feature. (A first build used its own `workspace_settings.modules` switch; it was folded into the flags when both landed on main.)
 
 **Code**
-- `lib/modules.ts`: `type ModuleKey = "study" | "video" | "docs"`, `isModuleEnabled(settings, key)`, `setModuleEnabled(key, on)`.
+- `lib/flags/registry.ts` registers `study`, `video` and `docs`, all off by default.
+- `lib/modules.ts`: `type ModuleKey = "study" | "video" | "docs"`, `enabledModules(flags)`, `readEnabledModules()`, `requireModule(key)` (404 page) and `moduleOffResponse(key)` (404 API response). Both guards fail closed when the flags cannot be read.
 - `NavItem` gets `module?: ModuleKey`. `AppSidebar` and `MobileTopBar` hide items whose module is off.
-- Each module's `page.tsx` and API routes call `notFound()` / return 404 when the module is off. Turning a module off hides it and keeps its data.
-- MCP tools for a module are listed only while it is on.
+- Turning a module off hides it and keeps its data.
+- MCP tools for a module are listed only while it is on (not built yet).
 
-**UI: Settings → Features → Modules**
+**Database:** `supabase/migrations/20261121000000_knowledge_module_roles.sql` registers the Tutor, Narrator and Docs writer roles. They default to Nemotron Super (`lib/ai/config.ts`) until someone picks a model.
 
-```
-Modules  (i)
-  Study   [switch]  (i)
-  Video   [switch]  (i)
-  Docs    [switch]  (i)
-```
+**UI: Settings → Features** lists the flags with their label and a one-line hint:
 
-| Element | Copy |
+| Flag | Hint |
 | --- | --- |
-| Heading hint (InfoHint) | Turning a module off hides it. Its data stays. |
-| Study hint | Practice questions and flashcards from your knowledge. |
-| Video hint | Narrated videos from a topic or article. |
-| Docs hint | Step-by-step technical docs from your knowledge. |
+| Study | Practice questions and flashcards from your knowledge. |
+| Video | Narrated videos from a topic or article. |
+| Docs | Step-by-step technical docs from your knowledge. |
 
 **Nav:** a new group after "read and ask": Study (`GraduationCap`), Video (`Clapperboard`), Docs (`FileCode`). Shown in User mode too.
 

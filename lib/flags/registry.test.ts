@@ -4,8 +4,8 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { defaultFeatureFlags, FEATURE_FLAG_KEYS, FEATURE_FLAGS, type FeatureFlagKey, isFeatureFlagKey, resolveFeatureFlags } from "./registry";
 
 describe("feature flag registry", () => {
-  it("registers billing, legal pages, audio ingest, chat import and Gmail import", () => {
-    expect(FEATURE_FLAG_KEYS).toEqual(["billing", "legal_pages", "audio_ingest", "chat_import", "gmail_import"]);
+  it("registers billing, legal pages, audio ingest, chat import, Gmail import, Study, Video and Docs", () => {
+    expect(FEATURE_FLAG_KEYS).toEqual(["billing", "legal_pages", "audio_ingest", "chat_import", "gmail_import", "study", "video", "docs"]);
   });
 
   it("starts every flag off", () => {
@@ -38,13 +38,13 @@ describe("feature flag registry", () => {
 
   it("resolves saved values over the defaults, dropping unknown keys and anything but true", () => {
     expect(resolveFeatureFlags({ billing: true, gmail_import: "yes", chat_import: false, nope: true })).toEqual({
-      billing: true, legal_pages: false, audio_ingest: false, chat_import: false, gmail_import: false,
+      billing: true, legal_pages: false, audio_ingest: false, chat_import: false, gmail_import: false, study: false, video: false, docs: false,
     });
     for (const saved of [null, undefined, "x", 3, [], [true]]) expect(resolveFeatureFlags(saved)).toEqual(defaultFeatureFlags());
   });
 
   it("types the keys so an unknown one fails typecheck", () => {
-    expectTypeOf<FeatureFlagKey>().toEqualTypeOf<"billing" | "legal_pages" | "audio_ingest" | "chat_import" | "gmail_import">();
+    expectTypeOf<FeatureFlagKey>().toEqualTypeOf<"billing" | "legal_pages" | "audio_ingest" | "chat_import" | "gmail_import" | "study" | "video" | "docs">();
     // @ts-expect-error: not a registered flag
     const unknown: FeatureFlagKey = "dark_launch";
     expect(isFeatureFlagKey(unknown)).toBe(false);
