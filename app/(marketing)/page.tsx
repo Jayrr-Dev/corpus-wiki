@@ -37,10 +37,11 @@ const H2 = "text-headline font-bold leading-none tracking-headline text-balance 
 
 // HERO SUBTITLE NOUN: a solid icon before each thing the sentence names. The
 // pair never wraps apart, and the icon is decoration (the word says it).
-function Thing({ icon: IconOf, children }: { icon: Icon; children: React.ReactNode }) {
+// Each icon takes the next palette-underline colour, in the underline's order.
+function Thing({ icon: IconOf, color, children }: { icon: Icon; color: string; children: React.ReactNode }) {
   return (
     <span className="whitespace-nowrap">
-      <IconOf weight="fill" aria-hidden className="mr-1 inline-block size-[1.1em] -translate-y-[0.1em] align-middle text-landing-ink" />
+      <IconOf weight="fill" aria-hidden className={`mr-1 inline-block size-[1.1em] -translate-y-[0.1em] align-middle ${color}`} />
       {children}
     </span>
   );
@@ -166,8 +167,9 @@ export default async function WelcomePage() {
                 <span className="palette-underline">maintaining machine</span>
               </h1>
               <p className="mt-10 max-w-[680px] text-lg text-landing-ink/70 text-pretty sm:text-xl">
-                Add your <Thing icon={Files}>files</Thing>. Corpus sorts them out, writes simple <Thing icon={Article}>pages</Thing> for
-                your <Thing icon={UsersThree}>team</Thing> and keeps them <Thing icon={CalendarCheck}>up to date</Thing>.
+                Add your <Thing icon={Files} color="text-landing-blue">files</Thing>. Corpus sorts them out, writes simple{" "}
+                <Thing icon={Article} color="text-landing-red">pages</Thing> for your <Thing icon={UsersThree} color="text-landing-yellow">team</Thing> and
+                keeps them <Thing icon={CalendarCheck} color="text-landing-go">up to date</Thing>.
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
