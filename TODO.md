@@ -20,7 +20,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | owner | Apply the HNSW drop, now `20261123100000_drop_hnsw_vector_indexes.sql` (#40) | | done, applied with study_edit (2026-10-29) |
 | measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | done, PR #57 merged (`docs/baseline-2026-10-29.md`); `evals.test.ts` and `live.test.ts` not run (need Linux Postgres) |
 | reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | in progress |
-| reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | in progress |
+| reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | PR open |
 | reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
 | reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure | waiting |
 | recompute | #46 dependency index and stale marks, glossary first (closes #34) | | in progress |
