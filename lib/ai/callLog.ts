@@ -1,5 +1,6 @@
 import { roleForPurpose } from "./roles";
 import { processingMetric } from "@/lib/processing/metrics";
+import { creditsForCall } from "@/lib/billing/credits";
 
 // =====================================================================
 // AI CALL LOG: what one call to the AI provider cost and how it went.
@@ -22,6 +23,8 @@ export type AiCallRecord = {
   status: AiCallStatus;
   error: string | null;
   usageDetails?: CompletionUsage | null;
+  // Credits the call cost (1 credit = $0.001 of estimateCallCost), fixed at write time; null when unpriced
+  credits?: number | null;
 };
 
 export type AiCallLogger = (call: AiCallRecord) => Promise<void>;
@@ -53,7 +56,10 @@ export async function logSafely(logger: AiCallLogger | undefined, call: AiCallRe
   processingMetric(`ai.${call.purpose}`, call.durationMs, { failed: call.status !== "ok", tokensIn: call.promptTokens, tokensOut: call.completionTokens });
   if (!logger) return;
   try {
-    await logger({ ...call, role: call.role ?? roleForPurpose(call.purpose) });
+    const credits = call.credits !== undefined
+      ? call.credits
+      : creditsForCall({ model: call.model, prompt_tokens: call.promptTokens, completion_tokens: call.completionTokens, usage_details: call.usageDetails });
+    await logger({ ...call, credits, role: call.role ?? roleForPurpose(call.purpose) });
   } catch (error) {
     console.error("Could not log the AI call:", error);
   }

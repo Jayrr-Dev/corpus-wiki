@@ -33,6 +33,8 @@ import { memoryNotes, openRoleMemory } from "./memory";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
 import { roleForPurpose } from "./roles";
 import type { RoleInstruction, StageSkills } from "./skills/types";
+import type { UsageGate } from "@/lib/billing/gate";
+import { promptCharacters } from "@/lib/billing/credits";
 
 // =====================================================================
 // TOKEN FACTORY CHAT CALL: one OpenAI-compatible chat completion that must
@@ -59,6 +61,8 @@ export type TokenFactorySettings = {
   memoryDb?: DbRpc;
   effort?: ReasoningEffort;
   roleEfforts?: Record<string, ReasoningEffort>;
+  // Meters credits before each call (lib/billing/gate.ts); it only blocks while the monetization switch is on
+  usageGate?: UsageGate;
 };
 
 // WHERE ONE MODEL'S CALLS GO: the provider key, the model id and (for Cerebras) the endpoint
@@ -468,19 +472,29 @@ async function chatJsonOnce<S extends z.ZodType>(
 ): Promise<ChatJsonResult<z.infer<S>>> {
   const model = settings.model || DEFAULT_AI_MODEL;
   const maxTokens = request.maxTokens ?? ANSWER_TOKEN_BUDGET;
+  // THE USAGE GATE: reserves this attempt's credits first; throws UsageLimitError only when enforcing
+  const reservation = settings.usageGate
+    ? await settings.usageGate.reserve({ purpose: request.name, model, maxTokens, promptChars: promptCharacters(request.messages) })
+    : null;
   const startedAt = Date.now();
   let body: CompletionResponse | undefined;
-  const log = (status: AiCallStatus, error: string | null) =>
-    logSafely(settings.logCall, {
+  const log = async (status: AiCallStatus, error: string | null) => {
+    const tokens = usageTokens(body?.usage);
+    const credits = reservation
+      ? await reservation.settle({ model: body?.model ?? model, prompt_tokens: tokens.promptTokens, completion_tokens: tokens.completionTokens, usage_details: tokens.usageDetails })
+      : undefined;
+    await logSafely(settings.logCall, {
       purpose: request.name,
       subject: request.subject ?? null,
       model: body?.model ?? model,
       reasoningEffort: effort,
-      ...usageTokens(body?.usage),
+      ...tokens,
+      ...(credits !== undefined ? { credits } : {}),
       durationMs: Date.now() - startedAt,
       status,
       error,
     });
+  };
   try {
     body = await requestCompletion(settings, request, model, maxTokens, effort);
     const value = parseContent(body, request.schema, maxTokens);

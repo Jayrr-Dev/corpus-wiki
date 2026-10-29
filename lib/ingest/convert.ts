@@ -1,7 +1,7 @@
 import type { ImageDescriber } from "./describeMedia";
-import { type VideoReader, videoPages } from "./describeVideo";
+import { type AudioReader, audioPages, type VideoReader, videoPages } from "./describeVideo";
 import { readDocx } from "./docx";
-import type { UploadFormatId } from "./formats";
+import type { FileFormatId } from "./formats";
 import { bookSectionPaths, type PdfOutlineSource } from "./pdfSections";
 import type { ExtractedPage } from "./passages";
 
@@ -11,10 +11,10 @@ import type { ExtractedPage } from "./passages";
 // =====================================================================
 
 // What some converters need besides the bytes: the file's name and type, and for
-// images and videos the models that read them, and for pictures inside a document a place to
-// store them (the server passes them; tests pass fakes)
+// images, videos and recordings the models that read them, and for pictures inside a document a
+// place to store them (the server passes them; tests pass fakes)
 export type ConvertContext = {
-  fileName: string; mimeType: string; describeImage?: ImageDescriber | null; readVideo?: VideoReader | null;
+  fileName: string; mimeType: string; describeImage?: ImageDescriber | null; readVideo?: VideoReader | null; readAudio?: AudioReader | null;
   storeFigure?: ((path: string, bytes: Uint8Array, mimeType: string) => Promise<string>) | null;
 };
 
@@ -59,17 +59,26 @@ async function convertVideo(bytes: Uint8Array, context?: ConvertContext): Promis
   return videoPages(await context.readVideo({ bytes, mimeType: context.mimeType, fileName: context.fileName }));
 }
 
+// AUDIO: the transcript speech-to-text writes, each paragraph at the time it starts
+// ({ time: "mm:ss" } on its passages); a silent recording gives no pages
+async function convertAudio(bytes: Uint8Array, context?: ConvertContext): Promise<ExtractedPage[]> {
+  if (!context?.readAudio) throw new Error("Recordings are read by a speech-to-text model, and none is set up.");
+  return audioPages(await context.readAudio({ bytes, mimeType: context.mimeType, fileName: context.fileName }));
+}
+
 // Text already in memory (the eval fixtures) as one page
 export function extractPlainText(text: string): ExtractedPage[] {
   return [{ page: null, text }];
 }
 
-// THE REGISTRY: a new format is one entry here plus one in formats.ts
-export const CONVERTERS: Record<UploadFormatId, Converter> = {
+// THE REGISTRY: a new format is one entry here plus one in formats.ts (a chat export has none:
+// it becomes many sources, see chatImport.ts)
+export const CONVERTERS: Record<FileFormatId, Converter> = {
   pdf: convertPdf,
   docx: convertDocx,
   markdown: convertText,
   text: convertText,
   image: convertImage,
   video: convertVideo,
+  audio: convertAudio,
 };

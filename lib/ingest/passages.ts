@@ -14,14 +14,15 @@ const SENTENCE_END = /(?<=[.!?])\s+/;
 // ONE PAGE OF EXTRACTED TEXT (page is null for formats without pages; time is where a
 // video's transcript piece starts, "mm:ss"; figure is the stored picture an embedded
 // image's description was written from, its path in the 'sources' bucket; sectionPath
-// is the book part and chapter a PDF page belongs to)
-export type ExtractedPage = { page: number | null; text: string; time?: string; figure?: string; sectionPath?: readonly string[] };
+// is the book part and chapter a PDF page belongs to; speaker makes the page one message of a
+// conversation: it stays one passage, cut only when too long, each piece labelled with it)
+export type ExtractedPage = { page: number | null; text: string; time?: string; figure?: string; sectionPath?: readonly string[]; speaker?: string };
 
 // WHAT ingest_source STORES PER PASSAGE
 export type PassageDraft = {
   position: number;
   text: string;
-  location: { page?: number; heading?: string; sectionPath?: string[]; time?: string; figure?: string };
+  location: { page?: number; heading?: string; sectionPath?: string[]; time?: string; figure?: string; sender?: string; sentAt?: string };
   hash: string;
   speakerLabel: string | null;
 };
@@ -30,7 +31,11 @@ export type PassageDraft = {
 export function splitIntoPassages(pages: readonly ExtractedPage[]): PassageDraft[] {
   const drafts: Omit<PassageDraft, "position">[] = [];
   let heading: string | undefined;
-  for (const { page, text, time, figure, sectionPath } of pages) {
+  for (const { page, text, time, figure, sectionPath, speaker } of pages) {
+    if (speaker) {
+      drafts.push(...chatMessagePassages(speaker, text, page));
+      continue;
+    }
     for (const paragraph of text.split(PARAGRAPH_BREAK)) {
       const clean = paragraph.replace(/\s*\n\s*/g, " ").trim();
       if (!clean) continue;
@@ -67,4 +72,34 @@ function packSentences(paragraph: string): string[] {
 function passageOf(text: string, location: PassageDraft["location"]): Omit<PassageDraft, "position"> {
   const speaker = /^([A-Z][\w .'-]{0,40}):\s/.exec(text)?.[1] ?? null;
   return { text, location, hash: sha256(text), speakerLabel: speaker };
+}
+
+// ONE MESSAGE OF A CONVERSATION: its paragraphs read as one passage starting "Speaker: ", so a
+// message never splits mid-thought; a long one is cut at sentence ends, every piece labelled
+function chatMessagePassages(speaker: string, text: string, page: number | null): Omit<PassageDraft, "position">[] {
+  const clean = text.replace(/\s*\n\s*/g, " ").trim();
+  if (!clean) return [];
+  const location = page !== null ? { page } : {};
+  return packSentences(clean).map((piece) => {
+    const labelled = `${speaker}: ${piece}`;
+    return { text: labelled, location, hash: sha256(labelled), speakerLabel: speaker };
+  });
+}
+
+// ONE MESSAGE OF AN EMAIL THREAD (lib/connectors/gmail): who sent it, when, and its text
+export type MessageDraft = { sender: string; senderName: string; sentAt: string; text: string };
+
+// EMAIL THREADS: one passage per message, located by its sender and sent date, the
+// sender named as its speaker. Paragraph breaks are kept; lines inside a paragraph join.
+export function messagePassages(subject: string, messages: readonly MessageDraft[]): PassageDraft[] {
+  return messages
+    .map((message) => ({ message, text: message.text.split(PARAGRAPH_BREAK).map((paragraph) => paragraph.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean).join("\n\n") }))
+    .filter(({ text }) => text)
+    .map(({ message, text }, position) => ({
+      position,
+      text,
+      location: { heading: subject, sender: message.sender, sentAt: message.sentAt },
+      hash: sha256(`${message.sender}\n${message.sentAt}\n${text}`),
+      speakerLabel: message.senderName || null,
+    }));
 }

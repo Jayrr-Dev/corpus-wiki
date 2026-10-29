@@ -4,22 +4,23 @@ import { type ChangeEvent, type DragEvent, type ReactNode, useRef, useState } fr
 import { ErrorNote } from "@/app/(app)/_components/bits";
 import { UploadIcon } from "@/components/icons";
 import { Button } from "@/components/ui/button";
-import { formatOf, UPLOAD_ACCEPT, UPLOAD_FORMAT_NAMES } from "@/lib/ingest/formats";
+import { useFeatureFlags } from "@/lib/flags/client";
+import { type FormatFlags, formatOf, uploadAcceptFor, uploadFormatNamesFor } from "@/lib/ingest/formats";
 import { cn } from "@/lib/utils";
 
 type UploadDropzoneProps = { onFiles: (files: File[]) => void; children?: ReactNode };
 
-// Splits picked files into ones a converter can read and the names of the rest
-function splitByFormat(files: File[]): { accepted: File[]; rejected: string[] } {
-  const accepted = files.filter((file) => formatOf(file.name, file.type));
-  const rejected = files.filter((file) => !formatOf(file.name, file.type)).map((file) => file.name);
+// Splits picked files into ones a converter can read (with the flags on now) and the names of the rest
+function splitByFormat(files: File[], flags: FormatFlags): { accepted: File[]; rejected: string[] } {
+  const accepted = files.filter((file) => formatOf(file.name, file.type, flags));
+  const rejected = files.filter((file) => !formatOf(file.name, file.type, flags)).map((file) => file.name);
   return { accepted, rejected };
 }
 
 // Message for files no converter can read
-function rejectionMessage(names: string[]): string | null {
+function rejectionMessage(names: string[], formatNames: string): string | null {
   if (names.length === 0) return null;
-  return `This file type can't be read yet. Upload ${UPLOAD_FORMAT_NAMES}. (${names.join(", ")})`;
+  return `This file type can't be read yet. Upload ${formatNames}. (${names.join(", ")})`;
 }
 
 // UPLOAD DROPZONE: drop files or pick them from the computer; unreadable types are refused with a message.
@@ -28,8 +29,10 @@ export function UploadDropzone({ onFiles, children }: UploadDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isOver, setIsOver] = useState(false);
   const [rejected, setRejected] = useState<string[]>([]);
+  const flags = useFeatureFlags();
+  const formatNames = uploadFormatNamesFor(flags);
   const take = (files: File[]) => {
-    const split = splitByFormat(files);
+    const split = splitByFormat(files, flags);
     setRejected(split.rejected);
     if (split.accepted.length > 0) onFiles(split.accepted);
   };
@@ -62,7 +65,7 @@ export function UploadDropzone({ onFiles, children }: UploadDropzoneProps) {
         </span>
         <div className="flex flex-col gap-1">
           <p className="font-medium">{isOver ? "Release to add these files" : "Drop files here to upload"}</p>
-          <p className="text-xs text-muted-foreground">{UPLOAD_FORMAT_NAMES}</p>
+          <p className="text-xs text-muted-foreground">{formatNames}</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
@@ -70,9 +73,9 @@ export function UploadDropzone({ onFiles, children }: UploadDropzoneProps) {
           </Button>
           {children}
         </div>
-        <input ref={inputRef} type="file" accept={UPLOAD_ACCEPT} multiple hidden onChange={onPick} />
+        <input ref={inputRef} type="file" accept={uploadAcceptFor(flags)} multiple hidden onChange={onPick} />
       </div>
-      <ErrorNote error={rejectionMessage(rejected)} />
+      <ErrorNote error={rejectionMessage(rejected, formatNames)} />
     </div>
   );
 }

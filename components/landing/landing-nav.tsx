@@ -16,8 +16,10 @@ const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:rin
 
 // LANDING NAV: a compact bar floating off the top edge over a blur. On small
 // screens the toggle opens a full height panel whose links arrive one by one.
-export function LandingNav() {
+// Off the landing page (`onHome` false) the section links lead back to it.
+export function LandingNav({ onHome = true }: { onHome?: boolean }) {
   const [open, setOpen] = useState(false);
+  const links = onHome ? LINKS : LINKS.map(link => ({ ...link, href: `/${link.href}` }));
 
   // While the panel is open the page behind it stays put and Escape closes it
   useEffect(() => {
@@ -35,12 +37,12 @@ export function LandingNav() {
     <>
       <nav aria-label="Main" className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
         <div className="flex w-full max-w-3xl items-center justify-between gap-6 rounded-2xl border border-white/10 bg-landing-base/60 px-4 py-2 backdrop-blur-xl">
-          <Link href="/" aria-current="page" className={cn("flex items-center gap-2 rounded-lg py-1 text-white", FOCUS)}>
+          <Link href="/" aria-current={onHome ? "page" : undefined} className={cn("flex items-center gap-2 rounded-lg py-1 text-white", FOCUS)}>
             <BrandMark className="size-6 text-landing-green-light" />
             <span className="font-brand text-xl">Corpus Wiki</span>
           </Link>
           <div className="hidden items-center gap-6 md:flex">
-            {LINKS.map(link => (
+            {links.map(link => (
               <a key={link.href} href={link.href} className={cn("rounded-md text-sm text-white/70 transition-colors duration-300 hover:text-white", EASE, FOCUS)}>
                 {link.label}
               </a>
@@ -77,7 +79,7 @@ export function LandingNav() {
         )}
       >
         <ul className="flex flex-col gap-2">
-          {[...LINKS, { href: "/login", label: "Sign in" }].map((link, i) => (
+          {[...links, { href: "/login", label: "Sign in" }].map((link, i) => (
             <li
               key={link.href}
               // 60ms per link, capped so the whole entrance stays under 400ms

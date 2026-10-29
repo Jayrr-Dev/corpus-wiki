@@ -7,10 +7,13 @@ import { describeAssets, syncAssets } from "@/lib/assets/describe";
 import type { DbRpc } from "@/lib/db/rpc";
 
 import { getServerDeps } from "@/lib/server/deps";
+import { importChatExport } from "./chatImport";
 import { CONVERTERS } from "./convert";
-import { DIRECT_UPLOAD_FORMATS, formatOf, mediaKindOf, MAX_DIRECT_UPLOAD_BYTES, storedMimeType, type UploadFormat, UPLOAD_FORMAT_NAMES } from "./formats";
+import { getFeatureFlagsOrDefaults } from "@/lib/flags/server";
+import { audioReaderFrom } from "./describeVideoServer";
+import { DIRECT_UPLOAD_FORMATS, formatOf, mediaKindOf, MAX_DIRECT_UPLOAD_BYTES, storedMimeType, type UploadFormat, uploadFormatNamesFor } from "./formats";
 import { sha256 } from "./hash";
-import { splitIntoPassages } from "./passages";
+import { type MessageDraft, messagePassages, splitIntoPassages } from "./passages";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { reconcileExternalUpload, reconcileUpload, recordUpload } from "./pipeline";
 import { externalApproval, openRerunEvent } from "./rerun";
@@ -40,8 +43,12 @@ export async function startUploadFromFile(input: { file: File; sourceDate: strin
 // STEP 1 FOR ANY BYTES: a form's file, or a file the browser put in Storage itself
 async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string; browserType: string; sourceDate: string; replacement?: boolean }): Promise<StartUploadResult> {
   const { bytes, fileName, sourceDate } = input;
-  const format = requireFormat(fileName, input.browserType);
+  const format = await requireFormat(fileName, input.browserType);
   if (!DATE_ONLY.test(sourceDate)) throw new Error("Give the file's date as YYYY-MM-DD.");
+  if (format.id === "chat") {
+    if (input.replacement) throw new Error("A chat export can't replace a source; upload it on its own.");
+    return startChatImport(bytes, sourceDate);
+  }
   const hash = sha256(bytes);
   const { db, imageDescriber, videoReader } = await getServerDeps();
   // A file seen before is skipped before an image or video costs a model call to read
@@ -52,7 +59,7 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
     if (existing) return { kind: "skipped", sourceId: existing };
   }
   const mimeType = storedMimeType(format, fileName, input.browserType);
-  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, storeFigure: storeSourceFile });
+  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, readAudio: format.id === "audio" ? audioReaderFrom() : null, storeFigure: storeSourceFile });
   const passages = splitIntoPassages(pages);
   if (passages.length === 0) throw new Error(NOTHING_READ[format.id] ?? "No text was found in this file (is it a scan?).");
   const storagePath = await storeSourceFile(`${hash}${extensionOf(fileName, format)}`, bytes, mimeType);
@@ -61,6 +68,49 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
   // Media the file brought in (the file itself, or pictures inside it) goes on the Assets page
   if (mediaKindOf(mimeType) || pages.some((page) => page.figure)) after(() => describeNewAssets(db));
   return started;
+}
+
+// CHAT IMPORT STEP 1 (chat_import flag): every conversation is recorded as its own source. The
+// first new one is returned for the screen to process; the rest run after the response, in turn.
+async function startChatImport(bytes: Uint8Array, sourceDate: string): Promise<StartUploadResult> {
+  const { db } = await getServerDeps();
+  const items = await importChatExport({ db, storeFile: storeSourceFile, findSourceByHash }, { bytes, fallbackDate: sourceDate });
+  const started = items.flatMap((item) => (item.kind === "started" ? [{ sourceId: item.sourceId, eventId: item.eventId }] : []));
+  const [first, ...rest] = started;
+  if (!first) return { kind: "skipped", sourceId: items[0]!.sourceId };
+  if (rest.length) after(() => processInTurn(rest.map((item) => item.eventId)));
+  return { kind: "started", ...first, ...(rest.length ? { alsoStarted: rest } : {}) };
+}
+
+// Both jobs for each event, one at a time; a failure is saved on its workflow and the next one still runs
+async function processInTurn(eventIds: string[]): Promise<void> {
+  for (const eventId of eventIds) {
+    await processUploadEvent(eventId, "articles").catch((error) => console.error("chat import processing failed", error));
+  }
+}
+
+// STEP 1 FOR AN EMAIL ATTACHMENT (Gmail import): a file in a supported format runs the same
+// step 1 as an upload; null when its format cannot be read
+export async function startUploadFromAttachment(input: { bytes: Uint8Array; fileName: string; mimeType: string; sourceDate: string }): Promise<StartUploadResult | null> {
+  if (!formatOf(input.fileName, input.mimeType)) return null;
+  return startUploadFromBytes({ bytes: input.bytes, fileName: input.fileName, browserType: input.mimeType, sourceDate: input.sourceDate });
+}
+
+// STEP 1 FOR AN EMAIL THREAD (Gmail import): the thread is stored as a Markdown file, titled by
+// its subject and dated by its first message; each message is one passage with its sender and
+// date. The same thread text stored before is skipped, like any file.
+export async function startEmailThreadSource(input: { subject: string; sentAt: string; markdown: string; messages: readonly MessageDraft[] }): Promise<StartUploadResult | null> {
+  const passages = messagePassages(input.subject, input.messages);
+  if (passages.length === 0) return null;
+  const sentAt = new Date(input.sentAt);
+  if (Number.isNaN(sentAt.getTime())) throw new Error("The email has no readable sent date.");
+  const bytes = new TextEncoder().encode(input.markdown);
+  const hash = sha256(bytes);
+  const known = await findSourceByHash(hash);
+  if (known) return { kind: "skipped", sourceId: known };
+  const storagePath = await storeSourceFile(`${hash}.md`, bytes, "text/markdown");
+  const { db } = await getServerDeps();
+  return recordUpload(db, { title: input.subject, mimeType: "text/markdown", sourceDate: sentAt.toISOString(), hash, storagePath, passages, byteSize: bytes.byteLength, pageCount: null });
 }
 
 // ASSETS AFTER AN UPLOAD: found and described once the response is sent; a failure never fails the upload
@@ -78,12 +128,13 @@ async function describeNewAssets(db: DbRpc): Promise<void> {
 const NOTHING_READ: Partial<Record<UploadFormat["id"], string>> = {
   image: "The model wrote no description for this image.",
   video: "Nothing could be read from this video: no speech was heard and no description was written.",
+  audio: "No speech was heard in this recording.",
 };
 
 // DIRECT UPLOAD STEP 0: a signed URL the browser puts a large file (a video) at, in Storage,
 // so it never travels in a Server Action body; startUploadFromStorage reads it there next
 export async function startDirectUpload(input: { fileName: string; browserType: string; byteSize: number }): Promise<{ path: string; token: string }> {
-  const format = requireFormat(input.fileName, input.browserType);
+  const format = await requireFormat(input.fileName, input.browserType);
   if (!DIRECT_UPLOAD_FORMATS.includes(format.id)) throw new Error(`${format.label} files are sent with the form, not uploaded directly.`);
   if (input.byteSize > MAX_DIRECT_UPLOAD_BYTES) {
     throw new Error(`This file is ${Math.ceil(input.byteSize / 1024 / 1024)} MB; files up to ${MAX_DIRECT_UPLOAD_BYTES / 1024 / 1024} MB can be uploaded. Save a shorter or smaller copy and upload that.`);
@@ -170,10 +221,12 @@ export async function processExternalEvent(eventId: string, scope: { article: st
   return reconcileExternalUpload(await getServerDeps(), eventId, { ...scope, referenceDomainPaths, fallbackDomainPath });
 }
 
-// The file's format, or a clear message naming the formats that work
-function requireFormat(fileName: string, browserType: string): UploadFormat {
-  const format = formatOf(fileName, browserType);
-  if (!format) throw new Error(`This file type can't be read yet. Upload ${UPLOAD_FORMAT_NAMES}.`);
+// The file's format, or a clear message naming the formats that work. A format behind a flag
+// that is off (audio without audio_ingest) is refused like an unknown type.
+async function requireFormat(fileName: string, browserType: string): Promise<UploadFormat> {
+  const flags = await getFeatureFlagsOrDefaults();
+  const format = formatOf(fileName, browserType, flags);
+  if (!format) throw new Error(`This file type can't be read yet. Upload ${uploadFormatNamesFor(flags)}.`);
   return format;
 }
 

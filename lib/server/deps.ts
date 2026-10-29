@@ -33,6 +33,7 @@ import { getAdminSupabase } from "@/lib/supabase/admin";
 import { broadcastSectionProgress } from "./sectionBroadcast";
 import { reviewRebuiltSections, verifyEventArticleReviews } from "@/lib/living-page/runPageReview";
 import { requireContextStorage } from "./contextReadiness";
+import { serverUsageGate } from "@/lib/billing/server";
 
 // SERVER DEPENDENCIES: the database port and the two AI clients, built from env
 // plus the model picked on /settings (read on every call, so a new pick applies at once).
@@ -49,7 +50,11 @@ export async function getServerDeps(): Promise<ServerDeps> {
   const [chosenModel, skills] = await Promise.all([readModelChoice(db), loadStageSkills(db)]);
   const logCall: AiCallLogger = (call) => db.call("log_ai_call", { p_call: call });
   const settings = tokenFactoryFromEnv(process.env, chosenModel, logCall);
-  if (settings) settings.skills = skills;
+  if (settings) {
+    settings.skills = skills;
+    // Meters credits behind the billing flag; blocks only while the monetization switch is on
+    settings.usageGate = serverUsageGate(db);
+  }
   const writer = getSectionWriter(process.env, chosenModel, skills, logCall);
   // Section builds tell open pages what they are doing and stream their draft
   writer.progress = broadcastSectionProgress(admin);

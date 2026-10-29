@@ -1,4 +1,4 @@
-import { BrainCircuit, Bot, ChartNoAxesCombined, CircleDollarSign, Gauge, LockKeyhole, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
+import { BrainCircuit, Bot, ChartNoAxesCombined, CircleDollarSign, Gauge, LockKeyhole, Mail, SlidersHorizontal, ToggleRight, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { ReadingPane } from "@/components/shell";
 import { InfoPopover } from "@/components/standard/info-popover";
@@ -9,7 +9,11 @@ import { AiSpeed } from "./AiSpeed";
 import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoDecide } from "./AutoDecide";
 import { AutoUpdateStale } from "./AutoUpdateStale";
+import { getFeatureFlags } from "@/lib/flags/server";
+import { loadGmailCard } from "@/lib/connectors/gmail/server";
 import { ExternalKnowledge } from "./ExternalKnowledge";
+import { FeatureFlags } from "./FeatureFlags";
+import { type GmailOutcome, GmailImport } from "./GmailImport";
 import { loadGlossaryAutoDecide, loadArticleCharter, loadAutoUpdateStale, loadExternalKnowledge, loadModelSettings, loadMonetization, loadMyProfile, loadSpeedTests } from "./loadModelSettings";
 import { ModelPicker } from "./ModelPicker";
 import { Monetization } from "./Monetization";
@@ -28,6 +32,8 @@ const sections = [
   { id: "features", label: "Features", icon: ToggleRight },
   { id: "security", label: "Security", icon: LockKeyhole },
   { id: "agents", label: "Agents", icon: Bot },
+  // Shown only while the gmail_import flag is on
+  { id: "gmail", label: "Gmail", icon: Mail },
   { id: "usage", label: "Usage & activity", icon: ChartNoAxesCombined },
   { id: "costs", label: "AI costs", icon: CircleDollarSign },
   { id: "speed", label: "AI Speed", icon: Gauge },
@@ -52,8 +58,12 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
   );
 }
 
-export default async function SettingsPage() {
-  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide, monetization] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide(), loadMonetization()]);
+const GMAIL_OUTCOMES: readonly string[] = ["connected", "denied", "failed", "setup"];
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ gmail?: string }> }) {
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide, monetization, featureFlags, gmail] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide(), loadMonetization(), getFeatureFlags(), loadGmailCard()]);
+  const gmailParam = (await searchParams).gmail;
+  const gmailOutcome = (gmailParam && GMAIL_OUTCOMES.includes(gmailParam) ? gmailParam : null) as GmailOutcome;
   const panels: Record<string, ReactNode> = {
     preferences: (
       <SettingsCard id="preferences" title="Workspace preferences" description="Keep your knowledge fresh, on your terms." icon={SlidersHorizontal}>
@@ -95,11 +105,13 @@ export default async function SettingsPage() {
         <AutoDecide enabled={glossaryAutoDecide} />
         <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
-        <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} /></div>
+        <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} billing={featureFlags.billing} /></div>
+        <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} /></div>
       </SettingsCard>
     ),
     security: <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>,
     agents: <SettingsCard id="agents" title="Agents" description="Outside AI agents that can use this wiki, and what each may do." icon={Bot}><AgentKeys /></SettingsCard>,
+    gmail: gmail ? <SettingsCard id="gmail" title="Gmail" description="Import email threads from Gmail as sources." icon={Mail}><GmailImport status={gmail.status} missingEnv={gmail.missingEnv} outcome={gmailOutcome} /></SettingsCard> : null,
     usage: <SettingsCard id="usage" title="Usage & activity" description="A closer look at your AI calls and token consumption." icon={ChartNoAxesCombined}><UsagePanel /></SettingsCard>,
     costs: <SettingsCard id="costs" title="AI costs" description="What each model costs per million tokens, and what you've spent." icon={CircleDollarSign}><CostTable activeModel={modelSettings.activeModel} /></SettingsCard>,
     speed: <SettingsCard id="speed" title="AI Speed" description="A live test of how fast each model answers: latency and tokens per second." icon={Gauge}><AiSpeed settings={modelSettings} saved={speedTests} /></SettingsCard>,
@@ -107,7 +119,7 @@ export default async function SettingsPage() {
   return (
     <ReadingPane title="Settings">
       <div className="mt-2">
-        <SettingsTabs tabs={sections.map(({ id, label, icon: Icon }) => ({ id, label, icon: <Icon size={16} aria-hidden="true" />, panel: panels[id] }))} />
+        <SettingsTabs tabs={sections.filter(({ id }) => panels[id]).map(({ id, label, icon: Icon }) => ({ id, label, icon: <Icon size={16} aria-hidden="true" />, panel: panels[id] }))} />
       </div>
     </ReadingPane>
   );

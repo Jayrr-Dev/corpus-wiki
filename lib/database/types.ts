@@ -17,6 +17,96 @@ export type Database = {
   };
   public: {
     Tables: {
+      // Gmail import (supabase/migrations/20261120020000_gmail_import.sql): read and
+      // written only through the gmail_* functions; token_cipher is encrypted by the server
+      gmail_connections: {
+        Row: {
+          person_id: string;
+          account_email: string;
+          token_cipher: string;
+          label_ids: string[];
+          connected_at: string;
+          updated_at: string;
+          last_import_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      gmail_imported_threads: {
+        Row: {
+          space_id: string;
+          account_email: string;
+          thread_id: string;
+          source_id: string | null;
+          imported_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      // Billing (lib/billing): read and written only through the billing RPCs
+      plans: {
+        Row: {
+          id: string;
+          name: string;
+          monthly_usd: number;
+          yearly_usd: number | null;
+          per_seat: boolean;
+          seat_minimum: number;
+          weekly_credits: number;
+          session_credits: number | null;
+          features: Json;
+          model_caps: Json;
+          sort_order: number;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: {
+          user_id: string;
+          plan_id: string;
+          status: string;
+          seats: number;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
+          period_start: string | null;
+          period_end: string | null;
+          cancel_at_period_end: boolean;
+          stripe_event_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      usage_windows: {
+        Row: {
+          user_id: string;
+          kind: string;
+          starts_at: string;
+          ends_at: string;
+          credits_used: number;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      // App-wide feature flags (lib/flags/registry.ts); read and written only
+      // through get_feature_flags / set_feature_flag
+      feature_flags: {
+        Row: {
+          key: string;
+          enabled: boolean;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       // Written only through create_agent_key / revoke_agent_key; the signed-in
       // owner may select every column but key_hash
       agent_keys: {
@@ -523,6 +613,8 @@ export type Database = {
       };
       ai_calls: {
         Row: {
+          billed_user_id?: string | null;
+          credits?: number | null;
           usage_details?: Json | null;
           role?: string | null;
           completion_tokens: number | null;
@@ -539,6 +631,8 @@ export type Database = {
           subject: string | null;
         };
         Insert: {
+          billed_user_id?: string | null;
+          credits?: number | null;
           usage_details?: Json | null;
           role?: string | null;
           completion_tokens?: number | null;
@@ -555,6 +649,8 @@ export type Database = {
           subject?: string | null;
         };
         Update: {
+          billed_user_id?: string | null;
+          credits?: number | null;
           usage_details?: Json | null;
           role?: string | null;
           completion_tokens?: number | null;
@@ -1645,6 +1741,22 @@ export type Database = {
         Returns: Json;
       };
       revoke_agent_key: { Args: { p_id: string }; Returns: undefined };
+      get_feature_flags: { Args: Record<string, never>; Returns: Json };
+      check_and_reserve_usage: { Args: { p_user: string | null; p_credits: number; p_enforce?: boolean }; Returns: Json };
+      settle_usage: { Args: { p_user: string; p_session_starts: string | null; p_weekly_starts: string | null; p_delta: number }; Returns: undefined };
+      get_billing_account: { Args: { p_user: string }; Returns: Json };
+      link_stripe_customer: { Args: { p_user: string; p_customer: string }; Returns: undefined };
+      sync_subscription: { Args: { p_subscription: Json }; Returns: undefined };
+      // space_billed_user and current_plan_for are SQL-internal helpers of the billing RPCs
+      gmail_get_connection: { Args: { p_person_id: string }; Returns: Json };
+      gmail_save_connection: { Args: { p_person_id: string; p_account_email: string; p_token_cipher: string }; Returns: undefined };
+      gmail_save_tokens: { Args: { p_person_id: string; p_token_cipher: string }; Returns: boolean };
+      gmail_set_labels: { Args: { p_person_id: string; p_label_ids: string[] }; Returns: boolean };
+      gmail_delete_connection: { Args: { p_person_id: string }; Returns: boolean };
+      gmail_mark_imported: { Args: { p_person_id: string }; Returns: undefined };
+      gmail_imported_thread_ids: { Args: { p_account_email: string; p_thread_ids: string[] }; Returns: Json };
+      gmail_record_thread: { Args: { p_account_email: string; p_thread_id: string; p_source_id: string | null }; Returns: boolean };
+      set_feature_flag: { Args: { p_key: string; p_enabled: boolean }; Returns: Json };
       resolve_agent_key: { Args: { p_hash: string }; Returns: Json };
       resolve_oauth_token: { Args: { p_hash: string; p_resource: string }; Returns: Json };
       oauth_get_client: { Args: { p_client_id: string }; Returns: Json };
