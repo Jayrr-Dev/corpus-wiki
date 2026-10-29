@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, Article, CalendarCheck, Files, GithubLogo, Plus, UsersThree, type Icon } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Article, CalendarCheck, Files, GithubLogo, Plus, UsersThree } from "@phosphor-icons/react/dist/ssr";
+import type { Icon } from "@phosphor-icons/react";
 import { CtaBackdrop, HeroBackdrop, TaglineBackdrop } from "@/components/landing/backdrops";
 import {
   AgentsVisual, BookVisual, ClientVisual, DocsVisual, LifeVisual, MergeVisual, ReviewVisual, SourceVisual, UndoVisual,
