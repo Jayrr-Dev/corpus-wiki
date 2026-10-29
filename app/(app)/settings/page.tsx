@@ -88,6 +88,13 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <p className="mt-1 text-panel text-muted-foreground">{process.env.OPENROUTER_API_KEY ? "Connected." : "Add OPENROUTER_API_KEY to the server environment to connect."}</p>
         </div>
         <div className="mt-6 border-t pt-6">
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-medium">ElevenLabs</h3>
+            <SettingHint>Voices the narration of Video scenes.</SettingHint>
+          </div>
+          <p className="mt-1 text-panel text-muted-foreground">{process.env.ELEVENLABS_API_KEY ? "Connected." : "Add ELEVENLABS_API_KEY to the server environment to connect."}</p>
+        </div>
+        <div className="mt-6 border-t pt-6">
           <div className="mb-5 flex items-center gap-1.5"><h3 className="font-medium">Model by role</h3><InfoPopover label="About model by role">
             <p>Run a role on its own model: a fast one to write, a smart one to decide and review, a cheap one for routine work. Roles left on Active model follow the pick above.</p>
             <p className="mt-2">The Extractor and Organizer guide the Reconciler’s request, so they use its model. Unnamed steps (topic placement, entity clean-up, stakeholder cards, chat) use the active model. Each role is offered only the models that read the data it sends.</p>

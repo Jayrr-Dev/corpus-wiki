@@ -24,9 +24,12 @@ export function isPublicWikiPath(pathname: string): boolean {
   return ["/explore", "/s", "/embed", "/api/public-wiki/metrics"].some(p => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+// The render job's callback (/api/video/<id>/rendered) has no cookie; it checks its own signed token
+const VIDEO_RENDER_CALLBACK = /^\/api\/video\/[^/]+\/rendered$/;
+
 // True when the path is a public route (or below one)
 export function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`)) || VIDEO_RENDER_CALLBACK.test(pathname);
 }
 
 // Refreshes the auth session cookie and returns the response plus whether a user is signed in.
