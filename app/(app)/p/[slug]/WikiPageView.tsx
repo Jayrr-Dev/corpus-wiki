@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { pageAncestors } from "@/lib/living-page/pageHierarchy";
 import { articleNavigation } from "@/lib/living-page/articleNavigation";
 import { illustrationSections } from "@/lib/living-page/illustrationSections";
@@ -16,6 +17,7 @@ import { ReadingPane, RightPanelSlot } from "@/components/shell";
 import { useServerAction } from "@/components/actions/useServerAction";
 import type { Tables } from "@/lib/database/types";
 import { useEntities, usePages, useSectionLines, useSections, type ShownLine } from "@/lib/queries";
+import { useTableList } from "@/lib/queries/useTable";
 import { useArticleEvidence } from "@/lib/queries/articleEvidence";
 import { useComposerFigures } from "@/lib/queries/composer";
 import { illustrateArticle, removeArticleIllustrations, restoreArticleIllustrations } from "@/lib/server-actions/composer";
@@ -30,9 +32,13 @@ import { ReviewPageButton } from "./ReviewPageButton";
 import { AddExternalInfoForm } from "./AddExternalInfoForm";
 
 export function WikiPageView({ slug }: { slug: string }) {
-  const { data: pages = [], isPending, error } = usePages({ filters: { slug } });
+  // any kind of page: a Docs page found here opens in the Docs reader instead
+  const { data: pages = [], isPending, error } = useTableList("pages", { filters: { slug, retired_at: null } });
   const page = pages[0];
-  if (isPending) return <Loader className="h-full" />;
+  const router = useRouter();
+  const docHref = page?.kind === "doc" && page.doc_set_id ? `/docs/${page.doc_set_id}?page=${page.id}` : null;
+  useEffect(() => { if (docHref) router.replace(docHref); }, [docHref, router]);
+  if (isPending || docHref) return <Loader className="h-full" />;
   if (error || !page) return <ReadingPane title="Page" width="prose"><EmptyState icon={PageIcon} title={error ? error.message : "No page with this address"} /></ReadingPane>;
   return <WikiPageBody key={page.id} page={page} />;
 }

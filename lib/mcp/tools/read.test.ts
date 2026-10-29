@@ -121,9 +121,11 @@ beforeEach(() => {
   search.unitIds = ["u2", "u1", "u9"];
   db.tables = {
     pages: [
-      { id: "p1", title: "Billing", slug: "billing", entity_id: "e1", context_entity_id: null, domain_id: "d2", article_type: "process", retired_at: null },
-      { id: "p2", title: "Accounts", slug: "accounts", entity_id: null, context_entity_id: null, domain_id: null, article_type: null, retired_at: null },
-      { id: "p3", title: "Old billing", slug: "old-billing", entity_id: null, context_entity_id: null, domain_id: null, article_type: null, retired_at: "2026-01-01" },
+      { id: "p1", kind: "article", title: "Billing", slug: "billing", entity_id: "e1", context_entity_id: null, domain_id: "d2", article_type: "process", retired_at: null },
+      { id: "p2", kind: "article", title: "Accounts", slug: "accounts", entity_id: null, context_entity_id: null, domain_id: null, article_type: null, retired_at: null },
+      { id: "p3", kind: "article", title: "Old billing", slug: "old-billing", entity_id: null, context_entity_id: null, domain_id: null, article_type: null, retired_at: "2026-01-01" },
+      // a Docs page (read in /docs, never listed with the articles)
+      { id: "p4", kind: "doc", title: "Billing steps", slug: "billing-steps", entity_id: "e1", context_entity_id: null, domain_id: null, article_type: null, retired_at: null },
     ],
     sections: [
       { id: "s2", page_id: "p1", title: "Refunds", position: 2, status: "ready", retired_at: null },

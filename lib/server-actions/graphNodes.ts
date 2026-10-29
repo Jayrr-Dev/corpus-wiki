@@ -383,6 +383,7 @@ async function destinationSection(
     .from("pages")
     .select("id,title")
     .is("retired_at", null)
+    .eq("kind", "article")
     .filter("space_id", "eq", spaceId);
   if (pages.error) throw new Error(pages.error.message);
   const wanted = target.page.trim().toLowerCase();

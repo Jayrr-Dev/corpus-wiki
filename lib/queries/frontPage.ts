@@ -18,7 +18,7 @@ export function useFrontPage() {
   const pages = useQuery({
     queryKey: [...queryKeys.table("pages"), "front-page"],
     queryFn: async () => {
-      const { data, error, count } = await getBrowserSupabase().from("pages").select("*", { count: "exact" }).is("retired_at", null).order("created_at", { ascending: false }).order("id").limit(300);
+      const { data, error, count } = await getBrowserSupabase().from("pages").select("*", { count: "exact" }).is("retired_at", null).eq("kind", "article").order("created_at", { ascending: false }).order("id").limit(300);
       if (error) throw error;
       return { rows: data, count: count ?? data.length };
     },

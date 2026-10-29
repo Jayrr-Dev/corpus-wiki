@@ -67,9 +67,10 @@ export const useExceptions = (o: ListOptions<"exceptions"> = {}) => {
 };
 export const useException = (id?: string) => useTableRow("exceptions", id);
 
-// LIVING PAGE (removed pages and sections are retired, so lists show only shown ones)
+// LIVING PAGE (removed pages and sections are retired, so lists show only shown ones). Wiki lists
+// show articles only: a Docs page (kind "doc") is read in the Docs module (/docs/[id])
 export const usePages = (o: ListOptions<"pages"> = {}) =>
-  useTableList("pages", { orderBy: "title", ...o, filters: { retired_at: null, ...o.filters } });
+  useTableList("pages", { orderBy: "title", ...o, filters: { retired_at: null, kind: "article", ...o.filters } });
 export const usePage = (id?: string) => useTableRow("pages", id);
 export const useSections = (o: ListOptions<"sections"> = {}) =>
   useTableList("sections", { orderBy: "position", ...o, filters: { retired_at: null, ...o.filters } });

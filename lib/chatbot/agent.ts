@@ -13,7 +13,7 @@ export async function executeAgentTool(tool: AgentTool, deps: { db: DbRpc; embed
     case "search": return retrieve(tool.query, deps.db, deps.embedder, deps.entityId);
     case "catalog": {
       const [pages, entities] = await Promise.all([
-        client.from("pages").select("id,title,slug,entity_id,context_entity_id").is("retired_at", null).order("title").limit(200),
+        client.from("pages").select("id,title,slug,entity_id,context_entity_id").is("retired_at", null).eq("kind", "article").order("title").limit(200),
         client.from("entities").select("id,name,type").is("merged_into_id", null).order("name").limit(200),
       ]);
       if (pages.error) throw pages.error;

@@ -1205,6 +1205,9 @@ export type Database = {
           domain_id: string | null;
           entity_id: string | null;
           id: string;
+          // "article" for wiki pages, "doc" for a Docs page (doc_set_id names its doc set)
+          kind?: "article" | "doc";
+          doc_set_id?: string | null;
           retired_at: string | null;
           slug: string;
           title: string;

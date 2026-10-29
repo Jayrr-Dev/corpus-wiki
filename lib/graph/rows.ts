@@ -183,6 +183,7 @@ export async function fetchGraphRows(
         .from("pages")
         .select("id, title, slug, created_at, entity_id, domain_id")
         .is("retired_at", null)
+        .eq("kind", "article")
         .order("id")
         .range(from, to),
     ),
