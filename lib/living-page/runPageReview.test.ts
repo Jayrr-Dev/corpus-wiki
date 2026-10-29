@@ -31,7 +31,7 @@ describe("review workflow", () => {
     const { db, call } = database();
     chat.mockResolvedValueOnce({ value: { summary: "Changed weekly to daily.", findings: [], edits: [{ type: "revise_line", targetId: line, patches: [{ old_str: "weekly", new_str: "daily" }], reason: "Improve wording" }] }, model: "test", tokensIn: 10, tokensOut: 2 });
     chat.mockResolvedValueOnce({ value: { lines: [{ ref: "L1", supported: false, problem: "The evidence says weekly, not daily.", missingCitations: [], unstatedCitations: [] }] }, tokensIn: 3, tokensOut: 1 });
-    chat.mockResolvedValueOnce({ value: { lineHasFault: true, reason: "Only weekly is supported." }, tokensIn: 4, tokensOut: 1 });
+    chat.mockResolvedValueOnce({ value: { opinions: [{ ref: "L1", lineHasFault: true, reason: "Only weekly is supported." }] }, tokensIn: 4, tokensOut: 1 });
     const result = await runPageReview(db, { apiKey: "test" }, page);
     expect(result.coverageComplete).toBe(true);
     expect(chat).toHaveBeenCalledTimes(3);

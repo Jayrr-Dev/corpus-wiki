@@ -42,7 +42,7 @@ describe("Reviewer edit check", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const requests = fakeModel({
       line_fact_check: [{ lines: [verdict("L1", false, { problem: "attracted considerable attention" }), verdict("L2", true)] }],
-      line_fact_confirm: [{ reason: "No claim says this.", lineHasFault: true }],
+      line_fact_confirm: [{ opinions: [{ ref: "L1", reason: "No claim says this.", lineHasFault: true }] }],
     });
     const invented = edit("l1", "Time Cube was a web page Gene Ray set up in 1997. It attracted considerable attention.");
     const fine = edit("l3", "The site was one long page that used undefined jargon.");
@@ -62,7 +62,7 @@ describe("Reviewer edit check", () => {
         verdict("L1", false, { problem: "one long continuous page: C1 does not say this", missingCitations: ["C2"], unstatedCitations: ["C1"] }),
         verdict("L2", true, { unstatedCitations: ["C2"] }),
       ] }],
-      line_fact_confirm: [{ reason: "C2 states it.", lineHasFault: false }],
+      line_fact_confirm: [{ opinions: [{ ref: "L1", reason: "C2 states it.", lineHasFault: false }] }],
     });
     const moved = edit("l2", "The site was one long continuous page.");
     const trimmed = edit("l3", "It used much self-invented jargon.");
@@ -88,7 +88,7 @@ describe("Reviewer edit check", () => {
   it("keeps a merge: one paragraph takes over the other's claims and the other is removed", async () => {
     fakeModel({
       line_fact_check: [{ lines: [verdict("L1", false, { problem: "undefined jargon: C1 does not say this", missingCitations: ["C3"], unstatedCitations: [] })] }],
-      line_fact_confirm: [{ reason: "C3 states it.", lineHasFault: false }],
+      line_fact_confirm: [{ opinions: [{ ref: "L1", reason: "C3 states it.", lineHasFault: false }] }],
     });
     const merged = edit("l2", "Time Cube was a web page Gene Ray set up in 1997. It used undefined jargon.");
     const removed = { type: "retire_line", targetId: "l3", text: "Merged into the paragraph above", reason: "r" };

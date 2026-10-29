@@ -37,8 +37,10 @@ const GOOD = { text: "Hearing protection is required at ExampleCo for employees 
 const INVENTED = { text: "ExampleCo runs a Hearing Conservation Program with annual hearing tests.", claims: ["C2"] };
 const FIXED = { text: "ExampleCo plans to introduce a Hearing Conservation Program.", claims: ["C2"] };
 const writerAnswer = (...add: unknown[]) => ({ revise: [], retire: [], add });
-const UPHELD = { lineHasFault: true, reason: "The claim says the program is only planned." };
-const REJECTED = { lineHasFault: false, reason: "The claim states this." };
+// One line_fact_confirm answer: a second opinion per objection, by line ref
+const opinions = (...items: [string, boolean][]) => ({ opinions: items.map(([ref, lineHasFault]) => ({ ref, lineHasFault, reason: lineHasFault ? "The claim says the program is only planned." : "The claim states this." })) });
+const UPHELD = opinions(["A2", true]);
+const REJECTED = opinions(["A1", false]);
 const verdicts = (...lines: [string, boolean, string?, string[]?][]) => ({ lines: lines.map(([ref, supported, problem, missingCitations]) => ({ ref, supported, problem: problem ?? "", missingCitations: missingCitations ?? [], unstatedCitations: [] })) });
 
 describe("line fact-check", () => {
@@ -105,7 +107,7 @@ describe("line fact-check", () => {
     });
     const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
     expect(requests.map((request) => request.name)).toEqual(["section_lines", "line_fact_check", "line_fact_confirm", "section_lines", "line_fact_check"]);
-    expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content)).toMatchObject({ line: INVENTED.text, objection: expect.stringContaining("annual hearing tests") });
+    expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content).objections).toEqual([expect.objectContaining({ ref: "A2", line: INVENTED.text, objection: expect.stringContaining("annual hearing tests") })]);
     const repair = requests[3]!.body.messages.at(-1)!.content;
     expect(repair).toContain("annual hearing tests");
     expect(repair).toContain("Keep every other line exactly as it was");
@@ -132,7 +134,7 @@ describe("line fact-check", () => {
       { lineId: "l2", lineRevisionId: "lr2", position: 1, content: "Old plan text.", author: "ai", unitIds: ["plan"], needsRewrite: true },
     ] };
     const answer = { revise: [{ line: "L1", patches: [{ old_str: "Old noise text.", new_str: GOOD.text }], claims: GOOD.claims }, { line: "L2", patches: [{ old_str: "Old plan text.", new_str: INVENTED.text }], claims: INVENTED.claims }], retire: [], add: [] };
-    fakeModel({ section_lines: [answer, answer], line_fact_check: [verdicts(["L1", true], ["L2", false, "x"]), verdicts(["L1", true], ["L2", false, "x"])], line_fact_confirm: [UPHELD, UPHELD] });
+    fakeModel({ section_lines: [answer, answer], line_fact_check: [verdicts(["L1", true], ["L2", false, "x"]), verdicts(["L1", true], ["L2", false, "x"])], line_fact_confirm: [opinions(["L2", true]), opinions(["L2", true])] });
     await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(input)).rejects.toThrow("no patches were saved");
     vi.restoreAllMocks();
   });
@@ -174,7 +176,7 @@ describe("line fact-check", () => {
     const requests = fakeModel({ section_lines: [writerAnswer(both)], line_fact_check: [verdicts(["A1", false, "plans to introduce a program: C1 does not say this", ["C2", "C9"]])], line_fact_confirm: [REJECTED] });
     const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
     expect(JSON.parse(requests[1]!.body.messages.at(-1)!.content).sectionClaims.map((claim: { ref: string }) => claim.ref)).toEqual(["C1", "C2"]);
-    expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content).claims.map((claim: { ref: string }) => claim.ref)).toEqual(["C1", "C2"]);
+    expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content).objections[0].claims.map((claim: { ref: string }) => claim.ref)).toEqual(["C1", "C2"]);
     expect(requests.map((request) => request.name)).toEqual(["section_lines", "line_fact_check", "line_fact_confirm"]);
     expect(revision.add).toEqual([{ text: both.text, unitIds: ["noise", "plan"] }]);
   });
@@ -199,6 +201,31 @@ describe("line fact-check", () => {
     expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content).lines.map((line: { ref: string }) => line.ref)).toEqual(["A2"]);
     expect(revision).toMatchObject({ tokensIn: 30, tokensOut: 15 });
     warn.mockRestore();
+  });
+  it("checks every omitted line together in one focused call", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const requests = fakeModel({ section_lines: [writerAnswer(GOOD, FIXED)], line_fact_check: [verdicts(), verdicts(["A1", true], ["A2", true])] });
+    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
+    expect(revision.add).toHaveLength(2);
+    expect(requests.map(request => request.name)).toEqual(["section_lines", "line_fact_check", "line_fact_check"]);
+    expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content).lines.map((line: { ref: string }) => line.ref)).toEqual(["A1", "A2"]);
+    warn.mockRestore();
+  });
+  it("keeps an objection standing when the second opinion leaves it out", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const requests = fakeModel({
+      section_lines: [writerAnswer(INVENTED, GOOD), writerAnswer(FIXED, GOOD)],
+      line_fact_check: [verdicts(["A1", false, "invented tests"], ["A2", false, "misread"]), verdicts(["A1", true], ["A2", true])],
+      line_fact_confirm: [opinions(["A2", false])],
+    });
+    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
+    expect(requests.map(request => request.name)).toEqual(["section_lines", "line_fact_check", "line_fact_confirm", "section_lines", "line_fact_check"]);
+    expect(JSON.parse(requests[2]!.body.messages.at(-1)!.content).objections.map((item: { ref: string }) => item.ref)).toEqual(["A1", "A2"]);
+    // Only A1 went back for a fix; A2's objection was overruled
+    expect(requests[3]!.body.messages.at(-1)!.content).toContain("invented tests");
+    expect(requests[3]!.body.messages.at(-1)!.content).not.toContain("misread");
+    expect(revision.add.map(line => line.text)).toEqual([FIXED.text, GOOD.text]);
+    vi.restoreAllMocks();
   });
   it("does not return a draft when the focused verdict remains absent", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
