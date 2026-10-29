@@ -4,7 +4,7 @@ node_modules/
 # BUILD OUTPUT
 .next/
 .next.recovery-*/
-out/
+/out/
 *.tsbuildinfo
 next-env.d.ts
 
