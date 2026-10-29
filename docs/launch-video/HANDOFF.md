@@ -104,9 +104,7 @@ You mime to the voiceover so your lips match the cloned voice exactly.
 | # | Final time | Line | Clip | Framing |
 |---|---|---|---|---|
 | 1 | 0:00.0–0:01.9 | "Every company has a Brent." | `1-every-company-has-a-brent` (1.7 s) | Desk, medium shot, knowing half-smile |
-| 29 | 1:46.7–1:49.2 | "So how does it actually work?" | `29-so-how-does-it-work` (2.4 s) | Optional (B-roll covers it now). Desk, leaning in |
-| 37 | 2:33.8–2:36.5 | "Brent's knowledge? Still here." | `37-brents-knowledge-still-here` (2.2 s) | Leaning back, satisfied |
-| 39 | 2:41.3–2:46.9 | "If your team keeps losing knowledge, or you're tired of linking notes by hand, try it." | `39-if-your-team` (5.5 s) | A relaxed spot (sofa or break area), talking with your hands |
+| 39 | 2:41.3–2:46.9 | "If your team keeps losing knowledge, or you're tired of linking notes by hand, try it." | `39-if-your-team` (5.5 s) | Same desk as shot 1, talking with your hands |
 | 40 | 2:46.9–2:49.8 | "Drop in a folder, and watch it build your brain." | `40-drop-in-a-folder` (2.7 s) | Same spot, closer; point down as the end card starts on "Link's below" |
 
 ### Silent cutaways (no lip-sync; the voiceover plays over them)

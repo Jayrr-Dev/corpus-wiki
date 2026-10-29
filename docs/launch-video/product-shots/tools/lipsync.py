@@ -16,8 +16,6 @@ PAD = 0.15  # silence kept around the line, cut short where a neighbouring word 
 # (shot, slug, take window from scene-flow.md); a word belongs to the line if its middle is in the window
 LINES = [
     (1, "every-company-has-a-brent", 0.0, 1.9),
-    (29, "so-how-does-it-work", 106.7, 109.2),
-    (37, "brents-knowledge-still-here", 153.8, 156.5),
     (39, "if-your-team", 161.3, 166.9),
     (40, "drop-in-a-folder", 166.9, 169.8),
 ]
