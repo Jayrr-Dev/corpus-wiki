@@ -82,11 +82,15 @@ const EVIDENCE_FIDELITY = `EVIDENCE CHECK BEFORE RETURNING EACH CLAIM:
 // earlierComposites: composites read from earlier batches of the same file, by global "G" ref
 export type EarlierComposite = { ref: string; content: string; structure: Structure; lastPosition: number };
 
+// RECONCILIATION MESSAGES
+// The payload is ordered from most to least stable (JSON keeps insertion order):
+// the store (same for every batch of a file), then the file, then what grows or
+// changes per batch. Prompt caching reuses only an identical beginning, so the
+// repeated store must come before the passages to be cacheable.
 export function buildReconciliationMessages(input: ReconciliationInput, skills?: StageSkills, earlierComposites: EarlierComposite[] = []): ChatMessage[] {
   const refOf = new Map(input.existingUnits.map((u, i) => [u.unitId, unitRef(i)]));
   const payload = {
-    file: { title: input.source.title, date: input.source.sourceDate.slice(0, 10) },
-    passages: input.passages.map((p, i) => ({ ref: passageRef(i), text: p.text, speaker: p.speakerLabel ?? undefined })),
+    // SAME FOR EVERY BATCH OF THE FILE
     existingUnits: input.existingUnits.map((u, i) => ({
       ref: unitRef(i),
       content: u.content,
@@ -95,11 +99,14 @@ export function buildReconciliationMessages(input: ReconciliationInput, skills?:
       context: u.context,
       ...(u.structure ? { structure: u.structure, members: (u.memberUnitIds ?? []).flatMap((id) => refOf.get(id) ?? []) } : {}),
     })),
-    earlierComposites: earlierComposites.length ? earlierComposites : undefined,
-    externalScope: input.externalScope,
     existingDomainPaths: input.fileTopicsLater ? undefined : input.domainPaths,
     domainTabs: input.fileTopicsLater ? undefined : input.domainTabs,
     existingEntities: input.entities,
+    externalScope: input.externalScope,
+    file: { title: input.source.title, date: input.source.sourceDate.slice(0, 10) },
+    // CHANGES PER BATCH (last, so the part above stays a reusable prefix)
+    earlierComposites: earlierComposites.length ? earlierComposites : undefined,
+    passages: input.passages.map((p, i) => ({ ref: passageRef(i), text: p.text, speaker: p.speakerLabel ?? undefined })),
   };
   return [
     { role: "system", content: `${SYSTEM_PROMPT}

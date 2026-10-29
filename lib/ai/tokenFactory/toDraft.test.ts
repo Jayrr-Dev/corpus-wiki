@@ -30,6 +30,19 @@ const claim = (overrides: Partial<AnswerClaim>): AnswerClaim => ({
   passages: ["P1"], entities: [], domainPaths: [], reason: "", ...overrides,
 });
 
+// PROMPT ORDER: the store is a shared prefix across batches of one file (prompt caching)
+describe("buildReconciliationMessages order", () => {
+  it("puts the store first and the batch's passages last, so batches share a prefix", () => {
+    const first = buildReconciliationMessages({ ...INPUT, passages: [INPUT.passages[0]!] })[1]!.content;
+    const second = buildReconciliationMessages({ ...INPUT, passages: [INPUT.passages[1]!] })[1]!.content;
+    expect(Object.keys(JSON.parse(first))).toEqual(["existingUnits", "existingDomainPaths", "existingEntities", "file", "passages"]);
+    // Everything before the passages is byte-identical between the two batches
+    const prefix = (content: string) => content.slice(0, content.indexOf("\"passages\""));
+    expect(prefix(first)).toBe(prefix(second));
+    expect(prefix(first).length).toBeGreaterThan(0);
+  });
+});
+
 describe("answerToActions", () => {
   it("gives reconciliation existing structured context", () => {
     const context = { entities: [{ type: "project", key: "alpha", role: "subject" as const }], applicability: { status: "scoped" as const, entities: [{ type: "project", key: "alpha" }], conditions: null } };
