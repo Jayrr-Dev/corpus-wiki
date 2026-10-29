@@ -26,8 +26,8 @@ const DEPTH_INDENT = ["pl-1.5", "pl-4.5", "pl-7.5", "pl-10.5", "pl-13.5"] as con
 
 // TREE CONTEXT: which list the current route shows beside the page (pages, or one of two filter sets)
 type TreeKind = "pages" | "knowledge" | "changes";
-const TREE_TITLE: Record<TreeKind, string> = { pages: "Pages", knowledge: "Filter knowledge", changes: "Filter changes" };
-const TREE_LABEL: Record<TreeKind, string> = { pages: "Pages", knowledge: "Knowledge filters", changes: "Change filters" };
+const TREE_TITLE: Record<TreeKind, string> = { pages: "Wiki", knowledge: "Filter knowledge", changes: "Filter changes" };
+const TREE_LABEL: Record<TreeKind, string> = { pages: "Wiki", knowledge: "Knowledge filters", changes: "Change filters" };
 
 export function useTreeKind(): TreeKind | null {
   const pathname = usePathname();
@@ -75,7 +75,7 @@ export function MobileSidebarTree() {
 // TREE BODY: the pages list, or the filters for the current table page
 function TreeBody({ kind, onMinimize }: { kind: TreeKind; onMinimize?: () => void }) {
   if (kind === "pages") {
-    return <div className="p-2"><SidebarGroup title="Pages" onMinimize={onMinimize} actions={<CuratePagesButton />}><PagesList /></SidebarGroup></div>;
+    return <div className="p-2"><SidebarGroup title="Wiki" onMinimize={onMinimize} actions={<CuratePagesButton />}><PagesList /></SidebarGroup></div>;
   }
   const title = TREE_TITLE[kind];
   return (

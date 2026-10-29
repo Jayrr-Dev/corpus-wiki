@@ -4,7 +4,7 @@ import { z } from "zod";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readModelChoice } from "@/lib/ai/models";
 import { type DbRpc, supabaseRpc } from "@/lib/db/rpc";
-import { type Coverage, isCompleteScope, isCoverage, loadScopeClaims, loadScopeOptions, pickCoverage, type Scope, SCOPE_KIND_LABELS, SCOPE_KINDS } from "@/lib/knowledge/scope";
+import { type Coverage, isCompleteScope, isCoverage, loadScopeClaims, loadScopeOptions, pickCoverage, type Scope, SCOPE_KIND_LABELS, SCOPE_KINDS, scopeTitle } from "@/lib/knowledge/scope";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/auth/requireUser";
 import { moduleOffResponse } from "@/lib/modules";
@@ -37,9 +37,8 @@ export const createRequestSchema = outlineRequestSchema.extend({ outline: docOut
 
 // The scope's name, for the default set title
 async function scopeLabel(scope: Scope): Promise<string> {
-  if (scope.kind === "glossary") return SCOPE_KIND_LABELS.glossary;
-  const options = await loadScopeOptions();
-  return options[scope.kind].find((option) => option.id === scope.id)?.label ?? SCOPE_KIND_LABELS[scope.kind];
+  if (scope.kind === "glossary" && !scope.id) return SCOPE_KIND_LABELS.glossary;
+  return scopeTitle(scope, await loadScopeOptions(), SCOPE_KIND_LABELS[scope.kind]);
 }
 
 // The claims a doc set is written from: the scope's, most central first, cut to the coverage

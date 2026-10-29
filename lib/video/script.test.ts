@@ -10,31 +10,48 @@ const claims: ScriptClaim[] = [
 let next = 0;
 const ids = () => `s${next++}`;
 
+const draftScene = (narration: string, claims: number[]) => ({ narration, title: narration, bullets: [], visual: "list" as const, claims });
+const opening = draftScene("Intro.", [0]);
+const closing = draftScene("Outro.", [1]);
+
 describe("writing the script", () => {
   it("asks for the length's scenes and numbers the claims", () => {
     const prompt = scriptPrompt({ scopeLabel: "Water", claims, length: "short" });
-    expect(prompt).toContain("about 60 seconds: 4 scenes");
+    expect(prompt).toContain("about 60 seconds: an intro, 4 scenes and an outro");
     expect(prompt).toContain("[0] Zero: Claim zero.");
     expect(prompt).toContain("[1] Claim one.");
   });
 
   it("turns the draft into scenes citing claims with their revisions", () => {
     next = 0;
-    const script = scriptFromDraft({ title: "T", scenes: [{ narration: " Hello. ", title: "Hi", bullets: ["a", " "], visual: "title", claims: [1, 1, 0] }] }, claims, ids);
-    expect(script.scenes).toEqual([{ id: "s0", narration: "Hello.", title: "Hi", bullets: ["a"], visual: "title", assetId: null, graphic: null, sources: [
+    const script = scriptFromDraft({ title: "T", intro: opening, scenes: [{ narration: " Hello. ", title: "Hi", bullets: ["a", " "], visual: "title", claims: [1, 1, 0] }], outro: closing }, claims, ids);
+    expect(script.scenes[1]).toEqual({ id: "s1", narration: "Hello.", title: "Hi", bullets: ["a"], visual: "title", assetId: null, graphic: null, sources: [
       { unitId: "u1", revisionId: "r1", title: null },
       { unitId: "u0", revisionId: "r0", title: "Zero" },
-    ] }]);
+    ] });
+  });
+
+  it("always opens with the intro and closes with the outro", () => {
+    const script = scriptFromDraft({ title: "T", intro: draftScene("Intro.", [9]), scenes: [draftScene("Body.", [0])], outro: closing }, claims, ids);
+    expect(script.scenes.map((item) => item.narration)).toEqual(["Intro.", "Body.", "Outro."]);
+    expect(script.scenes[0]!.sources).toEqual([]);
+  });
+
+  it("refuses a draft without an intro or outro", () => {
+    expect(draftSchema.safeParse({ title: "T", scenes: [{ ...draftScene("a", [0]), graphic: "" }], outro: { ...closing, graphic: "" } }).success).toBe(false);
+    expect(draftSchema.safeParse({ title: "T", intro: { ...opening, graphic: "" }, scenes: [{ ...draftScene("a", [0]), graphic: "" }] }).success).toBe(false);
   });
 
   it("drops claim numbers that do not exist, and scenes left with none", () => {
-    const script = scriptFromDraft({ title: "T", scenes: [{ narration: "a", title: "a", bullets: [], visual: "list", claims: [7] }, { narration: "b", title: "b", bullets: [], visual: "list", claims: [0, 9] }] }, claims, ids);
-    expect(script.scenes.map((item) => item.narration)).toEqual(["b"]);
-    expect(() => scriptFromDraft({ title: "T", scenes: [{ narration: "a", title: "a", bullets: [], visual: "list", claims: [5] }] }, claims, ids)).toThrow("no scenes");
+    const script = scriptFromDraft({ title: "T", intro: opening, scenes: [draftScene("a", [7]), draftScene("b", [0, 9])], outro: closing }, claims, ids);
+    expect(script.scenes.map((item) => item.narration)).toEqual(["Intro.", "b", "Outro."]);
+    expect(() => scriptFromDraft({ title: "T", intro: opening, scenes: [draftScene("a", [5])], outro: closing }, claims, ids)).toThrow("no scenes");
   });
 
   it("requires every drafted scene to cite a claim", () => {
-    expect(draftSchema.safeParse({ title: "T", scenes: [{ narration: "a", title: "a", bullets: [], visual: "list", claims: [] }] }).success).toBe(false);
+    const ok = { title: "T", intro: { ...opening, graphic: "" }, scenes: [{ ...draftScene("a", [0]), graphic: "" }], outro: { ...closing, graphic: "" } };
+    expect(draftSchema.safeParse(ok).success).toBe(true);
+    expect(draftSchema.safeParse({ ...ok, scenes: [{ ...draftScene("a", []), graphic: "" }] }).success).toBe(false);
   });
 });
 

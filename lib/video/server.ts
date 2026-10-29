@@ -8,7 +8,8 @@ import { FIXED_ROLES } from "@/lib/ai/roles";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { currentActor } from "@/lib/auth/currentPerson";
 import { type DbRpc, supabaseRpc } from "@/lib/db/rpc";
-import { loadScopeClaims, loadScopeOptions, pickCoverage, type Scope } from "@/lib/knowledge/scope";
+import { loadScopeClaims, loadScopeOptions, pickCoverage, type Scope, scopeTitle } from "@/lib/knowledge/scope";
+import { type CoverageChoice, isCustomChoice } from "@/lib/knowledge/scopeTypes";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { ratesFromEnv } from "./cost";
 import type { PipelineDeps, VideoFiles, VideoStore } from "./pipeline";
@@ -137,13 +138,16 @@ export async function narratorWriter(db: DbRpc = adminDb()): Promise<ScriptWrite
 
 // The label of a scope, for the prompt and the default title
 export async function scopeLabel(scope: Scope): Promise<string> {
-  if (scope.kind === "glossary") return "Glossary";
-  const options = await loadScopeOptions();
-  return options[scope.kind].find((option) => option.id === scope.id)?.label ?? "This topic";
+  if (scope.kind === "glossary" && !scope.id) return "Glossary";
+  return scopeTitle(scope, await loadScopeOptions(), "This topic");
 }
 
+// The columns a video row keeps for a coverage choice: a custom pick stores 100 and its claim ids
+export const coverageColumns = (choice: CoverageChoice): { coverage: number; claimIds?: string[] } =>
+  (isCustomChoice(choice) ? { coverage: 100, claimIds: choice.custom } : { coverage: choice });
+
 // WRITE SCRIPT: the scope's most central claims, as many as the length covers, into scenes
-export async function writeScript(input: { scope: Scope; coverage: 25 | 50 | 100; length: VideoLength; writer: ScriptWriter }): Promise<{ title: string; script: VideoScript }> {
+export async function writeScript(input: { scope: Scope; coverage: CoverageChoice; length: VideoLength; writer: ScriptWriter }): Promise<{ title: string; script: VideoScript }> {
   const claims = pickCoverage(await loadScopeClaims(input.scope), input.coverage).slice(0, LENGTH_PLAN[input.length].maxClaims);
   if (!claims.length) throw new Error("This source has no claims yet.");
   const label = await scopeLabel(input.scope);

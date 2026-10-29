@@ -1,31 +1,24 @@
 "use client";
 
 import { useTheme } from "next-themes";
+import { Tooltip } from "@/components/standard/tooltip";
 import { MoonIcon, SunIcon } from "@/components/icons";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
-// THEME SWITCH: shadcn's mode toggle as a sidebar row; light, dark, or follow the system
+// THEME SWITCH: a small icon button that flips between light and dark, beside Sign out
 // Both icons render and CSS picks one, so the server markup matches before the theme is known
 export function ThemeSwitch() {
-  const { setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   return (
-    <SidebarMenuItem>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <SidebarMenuButton tooltip="Theme">
-            <SunIcon className="dark:hidden" />
-            <MoonIcon className="hidden dark:block" />
-            <span>Theme</span>
-          </SidebarMenuButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" align="end">
-          <DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </SidebarMenuItem>
+    <Tooltip content="Switch theme">
+      <button
+        type="button"
+        aria-label="Switch theme"
+        onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+        className="grid size-8 shrink-0 place-items-center rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden [&>svg]:size-4"
+      >
+        <SunIcon className="dark:hidden" />
+        <MoonIcon className="hidden dark:block" />
+      </button>
+    </Tooltip>
   );
 }

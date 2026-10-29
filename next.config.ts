@@ -4,7 +4,9 @@ import type { NextConfig } from "next";
 // would refuse most PDFs and Word files (a video skips it: the browser puts it in Storage).
 // ffmpeg-static and Whisper (transformers.js) load native files by path, so they stay unbundled.
 const nextConfig: NextConfig = {
-  experimental: { serverActions: { bodySizeLimit: "20mb" } },
+  // staleTimes.dynamic: the browser keeps a visited page for 30 seconds, so going back to it is instant
+  // (the default 0 refetches every dynamic page on each click). router.refresh() and revalidatePath still clear it.
+  experimental: { serverActions: { bodySizeLimit: "20mb" }, staleTimes: { dynamic: 30 } },
   serverExternalPackages: ["ffmpeg-static", "@huggingface/transformers"],
   // The landing page moved from /welcome to /
   async redirects() {

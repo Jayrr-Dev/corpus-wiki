@@ -5,7 +5,7 @@ import type { GlossaryEntry } from "@/lib/glossary/entries";
 
 vi.mock("@/lib/supabase/admin", () => ({ getAdminSupabase: () => { throw new Error("tests pass their own client"); } }));
 
-const { glossaryTermsByUnit, isCompleteScope, loadScopeClaims, namesEntity, pickCoverage, rankScopeClaims, topicDomainIds } = await import("./scope");
+const { glossaryTermsByUnit, isCompleteScope, isCoverageChoice, loadScopeClaims, namesEntity, pickCoverage, rankScopeClaims, topicDomainIds } = await import("./scope");
 
 type Row = Record<string, unknown>;
 
@@ -123,6 +123,20 @@ describe("ranking and coverage", () => {
     expect(pickCoverage(ranked, 100)).toHaveLength(4);
     expect(pickCoverage(ranked.slice(0, 1), 25)).toHaveLength(1);
     expect(pickCoverage([], 50)).toEqual([]);
+  });
+
+  it("keeps the checked claims, in ranked order, for Custom", () => {
+    const ranked = rankScopeClaims(claims);
+    expect(pickCoverage(ranked, { custom: ["c", "b"] }).map((claim) => claim.unitId)).toEqual(["b", "c"]);
+    expect(pickCoverage(ranked, { custom: ["zzz"] })).toEqual([]);
+  });
+
+  it("accepts a share or a non-empty Custom list", () => {
+    expect(isCoverageChoice(50)).toBe(true);
+    expect(isCoverageChoice(30)).toBe(false);
+    expect(isCoverageChoice({ custom: ["a"] })).toBe(true);
+    expect(isCoverageChoice({ custom: [] })).toBe(false);
+    expect(isCoverageChoice({ custom: [1] })).toBe(false);
   });
 });
 

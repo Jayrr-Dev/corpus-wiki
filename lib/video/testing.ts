@@ -18,7 +18,7 @@ export function scene(id: string, narration = `Narration for ${id}.`, extra: Par
 
 export function videoRow(extra: Partial<VideoRow> = {}): VideoRow {
   return {
-    id: VIDEO_ID, title: "Test video", scopeKind: "topic", scopeId: "33333333-3333-4333-8333-333333333333", coverage: 100, length: "short",
+    id: VIDEO_ID, title: "Test video", scopeKind: "topic", scopeId: "33333333-3333-4333-8333-333333333333", coverage: 100, claimIds: null, length: "short",
     voiceId: "voice-1", status: "script", script: { scenes: [scene("a"), scene("b"), scene("c")] }, durationMs: null, videoPath: null,
     posterPath: null, renderJobId: null, error: null, createdBy: null, createdAt: "2026-10-29T10:00:00.000Z", statusChangedAt: "2026-10-29T10:00:00.000Z", ...extra,
   };

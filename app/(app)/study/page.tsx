@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/requireUser";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { loadScopeOptions } from "@/lib/knowledge/scope";
-import { requireModule } from "@/lib/modules";
+import { readEnabledModules, requireModule } from "@/lib/modules";
 import { readStudySets } from "@/lib/study/service";
 import { summarizeSets } from "@/lib/study/session";
 import { practicedPct, studyTree } from "@/lib/study/tree";
@@ -24,13 +24,13 @@ export default async function StudyPage() {
   const db = supabaseRpc(admin);
   await requireModule("study", db);
   const user = await requireUser();
-  const [data, options, domains] = await Promise.all([readStudySets(db, user.id), loadScopeOptions(), admin.from("domains").select("*").is("retired_at", null)]);
+  const [data, options, domains, modules] = await Promise.all([readStudySets(db, user.id), loadScopeOptions(), admin.from("domains").select("*").is("retired_at", null), readEnabledModules(db)]);
   if (domains.error) throw new Error(domains.error.message);
   const { sets, due } = summarizeSets(data, new Date());
   const { roots, other } = studyTree(domains.data, sets);
   const practiced = practicedPct(sets.reduce((sum, set) => ({ sets: 0, due: 0, claims: sum.claims + set.claims, practiced: sum.practiced + set.practiced }), { sets: 0, due: 0, claims: 0, practiced: 0 }));
   return (
-    <ReadingPane title="Study" actions={<NewSetButton options={options} />}>
+    <ReadingPane title="Study" actions={<NewSetButton options={options} videoOn={modules.includes("video")} />}>
       {sets.length ? (
         <>
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border bg-muted/30 px-5 py-4">

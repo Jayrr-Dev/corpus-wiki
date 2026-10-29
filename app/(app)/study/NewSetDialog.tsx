@@ -8,8 +8,9 @@ import { ScopePicker } from "@/components/knowledge/ScopePicker";
 import { InfoHint } from "@/components/standard/info-hint";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { type Coverage, isCompleteScope, type Scope, type ScopeOptions } from "@/lib/knowledge/scopeTypes";
+import { type CoverageChoice, isCompleteScope, isCustomChoice, type Scope, type ScopeOptions, scopeTitle } from "@/lib/knowledge/scopeTypes";
 import { STUDY_KINDS, type StudyKind } from "@/lib/study/types";
+import { ensureSourceVideo } from "../video/actions";
 import { createSet } from "./studyApi";
 
 // The checkbox labels in the New set form (plural, as the plan words them)
@@ -17,8 +18,7 @@ const KIND_CHOICES: Record<StudyKind, string> = { flashcard: "Flashcards", multi
 
 // A set is named after its source
 function setTitle(scope: Scope, options: ScopeOptions): string {
-  if (scope.kind === "glossary") return "Glossary";
-  return options[scope.kind].find((option) => option.id === scope.id)?.label ?? "Study set";
+  return scopeTitle(scope, options, "Study set");
 }
 
 function FieldLabel({ id, label, hint }: { id?: string; label: string; hint?: string }) {
@@ -30,27 +30,39 @@ function FieldLabel({ id, label, hint }: { id?: string; label: string; hint?: st
   );
 }
 
-// NEW SET: source, coverage and question types; Create writes the questions with a running count
-export function NewSetButton({ options }: { options: ScopeOptions }) {
+// NEW SET: source, coverage, question types and the intro video; Create writes the questions with a running count.
+// `videoOn`: the Video module is on, so a set can open with its source's video
+export function NewSetButton({ options, videoOn }: { options: ScopeOptions; videoOn: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [scope, setScope] = useState<Scope | null>(null);
-  const [coverage, setCoverage] = useState<Coverage>(100);
+  const [coverage, setCoverage] = useState<CoverageChoice>(100);
   const [types, setTypes] = useState<StudyKind[]>([...STUDY_KINDS]);
+  const [introVideo, setIntroVideo] = useState(false);
+  const [createMissing, setCreateMissing] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [building, setBuilding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // a Custom pick belongs to its source: changing the source starts again at 100%
+  const chooseScope = (next: Scope | null) => { setScope(next); if (isCustomChoice(coverage)) setCoverage(100); };
   const toggle = (kind: StudyKind, on: boolean) => setTypes((current) => STUDY_KINDS.filter((item) => (item === kind ? on : current.includes(item))));
-  const reset = () => { setScope(null); setCoverage(100); setTypes([...STUDY_KINDS]); setProgress(null); setError(null); };
+  const reset = () => { setScope(null); setCoverage(100); setTypes([...STUDY_KINDS]); setIntroVideo(false); setCreateMissing(false); setProgress(null); setError(null); };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isCompleteScope(scope) || !types.length) return;
     setBuilding(true);
     setError(null);
+    setProgress(null);
     try {
-      const id = await createSet({ title: setTitle(scope, options), scope, coverage, types }, (done, total) => setProgress({ done, total }));
+      // The video first: a missing render setting stops here, before any questions are written
+      if (introVideo && createMissing) {
+        const video = await ensureSourceVideo({ scope, coverage });
+        if (!video.ok) throw new Error(video.error);
+        setProgress({ done: 0, total: 0 });
+      }
+      const id = await createSet({ title: setTitle(scope, options), scope, coverage, types, introVideo }, (done, total) => setProgress({ done, total }));
       setOpen(false);
       reset();
       router.push(`/study/${id}`);
@@ -71,11 +83,11 @@ export function NewSetButton({ options }: { options: ScopeOptions }) {
             </DialogHeader>
             <div>
               <FieldLabel label="Source" />
-              <ScopePicker options={options} value={scope} onChange={setScope} disabled={building} />
+              <ScopePicker options={options} value={scope} onChange={chooseScope} disabled={building} />
             </div>
             <div>
               <FieldLabel label="Coverage" hint="Below 100%, the most-cited claims come first." />
-              <CoveragePicker value={coverage} onChange={setCoverage} disabled={building} />
+              <CoveragePicker value={coverage} onChange={setCoverage} scope={scope} disabled={building} />
             </div>
             <fieldset aria-labelledby="study-questions-label">
               <FieldLabel id="study-questions-label" label="Questions" hint="Short answers are graded by AI against the source." />
@@ -88,9 +100,26 @@ export function NewSetButton({ options }: { options: ScopeOptions }) {
                 ))}
               </div>
             </fieldset>
+            {videoOn ? (
+              <fieldset aria-labelledby="study-video-label">
+                <FieldLabel id="study-video-label" label="Video" />
+                <div className="flex flex-wrap gap-x-5 gap-y-2">
+                  <label className="flex items-center gap-2 text-panel">
+                    <input type="checkbox" className="accent-link" checked={introVideo} disabled={building} onChange={(event) => { setIntroVideo(event.target.checked); if (!event.target.checked) setCreateMissing(false); }} />
+                    <span className="font-medium">Start with video</span>
+                    <InfoHint>Plays the newest video made from this source before the questions.</InfoHint>
+                  </label>
+                  <label className="flex items-center gap-2 text-panel">
+                    <input type="checkbox" className="accent-link" checked={createMissing} disabled={building || !introVideo} onChange={(event) => setCreateMissing(event.target.checked)} />
+                    <span className={`font-medium ${introVideo ? "" : "text-muted-foreground"}`}>Create missing</span>
+                    <InfoHint>No video yet? Makes a short one. This costs voice and render time.</InfoHint>
+                  </label>
+                </div>
+              </fieldset>
+            ) : null}
             {building ? (
               <p role="status" className="text-panel text-muted-foreground">
-                {progress?.total ? `Writing ${progress.total} questions… ${progress.done} / ${progress.total}` : "Writing questions…"}
+                {progress?.total ? `Writing ${progress.total} questions… ${progress.done} / ${progress.total}` : introVideo && createMissing && !progress ? "Checking the video…" : "Writing questions…"}
               </p>
             ) : null}
             <ErrorNote error={error} />

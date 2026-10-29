@@ -24,7 +24,7 @@ import { readSpaceWelcome } from "@/lib/server-actions/spaceWelcome";
 export function PagesHome() {
   const [view, setView] = useState<"front" | "browse">("front");
   return <div className="space-y-5">
-    <nav aria-label="Pages views" className="flex gap-1 border-b pb-3">
+    <nav aria-label="Wiki views" className="flex gap-1 border-b pb-3">
       <Button size="sm" variant={view === "front" ? "secondary" : "ghost"} aria-pressed={view === "front"} onClick={() => setView("front")}>Main page</Button>
       <Button size="sm" variant={view === "browse" ? "secondary" : "ghost"} aria-pressed={view === "browse"} onClick={() => setView("browse")}>Browse pages</Button>
     </nav>

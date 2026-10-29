@@ -1,21 +1,36 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
+import { ErrorNote } from "@/app/(app)/_components/bits";
+import { useUnitSummariesByIds } from "@/app/(app)/units/unitSummaries";
+import { useServerAction } from "@/components/actions/useServerAction";
+import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { scriptSources } from "@/lib/video/script";
 import { formatDuration, type VideoRow } from "@/lib/video/types";
+import { remakeVideo } from "../actions";
 import type { VideoMedia } from "./VideoDetail";
 
-// READY: the player, Download, a chapter per scene and the claims the video cites
+// READY: the player, Download, Remake, a chapter per scene and the claims the video cites
 export function VideoReady({ video, media }: { video: VideoRow; media: VideoMedia }) {
+  const router = useRouter();
   const player = useRef<HTMLVideoElement | null>(null);
+  const remake = useServerAction(remakeVideo, { progress: { title: "Writing the script…" }, refreshTables: [] });
+  const runRemake = async () => {
+    const result = await remake.run(video.id);
+    if (result.ok) router.push(`/video/${result.id}`);
+  };
   const chapters = video.script.scenes.map((scene, index) => ({
     id: scene.id,
     title: scene.title,
     start: video.script.scenes.slice(0, index).reduce((sum, before) => sum + (before.durationMs ?? 0), 0),
   }));
   const sources = scriptSources(video.script);
+  // The claim's live label: its title today, else the derived label (the script keeps the title from when it was written)
+  const units = useUnitSummariesByIds(sources.map((source) => source.unitId));
+  const labelById = new Map((units.data ?? []).map((unit) => [unit.id, unit.label]));
   const seek = (ms: number) => {
     if (!player.current) return;
     player.current.currentTime = ms / 1000;
@@ -29,7 +44,13 @@ export function VideoReady({ video, media }: { video: VideoRow; media: VideoMedi
         ) : (
           <p className="text-panel text-muted-foreground">The video file is missing.</p>
         )}
-        {media.downloadUrl ? <div><Button asChild variant="outline" size="sm"><a href={media.downloadUrl} download>Download</a></Button></div> : null}
+        <div className="flex flex-wrap gap-2">
+          {media.downloadUrl ? <Button asChild variant="outline" size="sm"><a href={media.downloadUrl} download>Download</a></Button> : null}
+          <Tooltip content="New script from the same source. This video stays.">
+            <Button type="button" variant="outline" size="sm" disabled={remake.isPending} onClick={() => void runRemake()}>{remake.isPending ? "Writing…" : "Remake"}</Button>
+          </Tooltip>
+        </div>
+        <ErrorNote error={remake.error} />
       </div>
       <section className="flex flex-col gap-2">
         <h2 className="font-medium">Chapters</h2>
@@ -49,7 +70,7 @@ export function VideoReady({ video, media }: { video: VideoRow; media: VideoMedi
         {sources.length ? (
           <ul className="flex flex-col gap-1 text-panel">
             {sources.map((source) => (
-              <li key={source.unitId}><Link href={`/units/${source.unitId}`} className="text-link hover:underline">{source.title || "Untitled claim"}</Link></li>
+              <li key={source.unitId}><Link href={`/units/${source.unitId}`} className="text-link hover:underline">{labelById.get(source.unitId) || source.title || "Untitled claim"}</Link></li>
             ))}
           </ul>
         ) : <p className="text-panel text-muted-foreground">No sources.</p>}

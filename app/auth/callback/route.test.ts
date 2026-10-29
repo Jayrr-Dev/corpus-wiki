@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { APP_HOME } from "@/lib/auth/paths";
 import { GET } from "./route";
 
 const mocks = vi.hoisted(() => ({ exchange: vi.fn(), verify: vi.fn(), clear: vi.fn() }));
@@ -17,7 +18,7 @@ it("exchanges a confirmation code and clears the old account's space selection",
 it("supports email token hashes but prevents redirects to another origin", async () => {
   const response = await GET(new NextRequest("http://localhost:3003/auth/callback?token_hash=test&type=email&next=%2F%5Cevil.example"));
   expect(mocks.verify).toHaveBeenCalledWith({ token_hash: "test", type: "email" });
-  expect(response.headers.get("location")).toBe("http://localhost:3003/");
+  expect(response.headers.get("location")).toBe(`http://localhost:3003${APP_HOME}`);
 });
 
 it("rejects missing and invalid confirmation credentials", async () => {

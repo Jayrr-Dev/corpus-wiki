@@ -1,4 +1,4 @@
-import type { Coverage, ScopeKind } from "@/lib/knowledge/scopeTypes";
+import type { Coverage, CoverageChoice, ScopeKind } from "@/lib/knowledge/scopeTypes";
 
 // =====================================================================
 // VIDEO TYPES (docs/knowledge-modules-plan.md, section 3): a video, its
@@ -61,7 +61,9 @@ export type VideoRow = {
   title: string;
   scopeKind: ScopeKind;
   scopeId: string | null;
+  // the share of the scope's claims (the stored number); claimIds is set when the picks were checked by hand
   coverage: Coverage;
+  claimIds: string[] | null;
   length: VideoLength;
   voiceId: string;
   status: VideoStatus;
@@ -78,6 +80,9 @@ export type VideoRow = {
 
 // The patch update_video accepts
 export type VideoPatch = Partial<Pick<VideoRow, "title" | "status" | "script" | "durationMs" | "videoPath" | "posterPath" | "renderJobId" | "error" | "voiceId">>;
+
+// The coverage choice a video was made with: its checked claims, or its share
+export const videoCoverage = (video: Pick<VideoRow, "coverage" | "claimIds">): CoverageChoice => (video.claimIds ? { custom: video.claimIds } : video.coverage);
 
 // An ElevenLabs voice, for the New video form
 export type VoiceOption = { id: string; name: string; previewUrl: string | null };

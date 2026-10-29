@@ -281,7 +281,7 @@ function Sidebar({
           "group-data-[collapsible=offcanvas]:w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
-            ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(2)))] group-data-[hover-expanded=true]:w-[calc(var(--sidebar-width-icon)+(--spacing(2)))]!"
+            ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))] group-data-[hover-expanded=true]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]!"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[hover-expanded=true]:w-(--sidebar-width-icon)!"
         )}
       />
@@ -292,12 +292,12 @@ function Sidebar({
           "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
           // Adjust the padding for floating and inset variants.
           variant === "floating" || variant === "inset"
-            ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(2))+2px)] group-data-[collapsible=icon]:pr-0"
+            ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)] group-data-[collapsible=icon]:pr-0"
             : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
           "group-data-[hover-expanded=true]:shadow-lg",
-          // Left inset that centres a 2rem button in the icon rail; items stay left-aligned so collapsing does not jump.
+          // Same side inset as the open sidebar, so icons stay in place when collapsing; the icon rail is wide enough for it.
           variant === "floating" || variant === "inset"
-            ? "[--sidebar-rail-pad:calc((var(--sidebar-width-icon)+2px-2rem)/2)]"
+            ? "[--sidebar-rail-pad:0.5rem]"
             : "[--sidebar-rail-pad:calc((var(--sidebar-width-icon)-2rem)/2)]",
           className
         )}
@@ -419,10 +419,11 @@ function SidebarInput({
 }
 
 // Built-in hairline drawn inside the section's horizontal padding.
+// Icon rail: a short line under the icon column, anchored from the left so it does not slide while the rail animates.
 const separatorLine = {
-  top: "relative before:absolute before:inset-x-2 before:top-0 before:h-px before:bg-sidebar-border group-data-[collapsible=icon]:before:inset-x-[calc(50%-0.625rem)]",
+  top: "relative before:absolute before:inset-x-2 before:top-0 before:h-px before:bg-sidebar-border group-data-[collapsible=icon]:before:right-auto group-data-[collapsible=icon]:before:left-[calc(var(--sidebar-rail-pad)+0.375rem)] group-data-[collapsible=icon]:before:w-5",
   bottom:
-    "relative after:absolute after:inset-x-2 after:bottom-0 after:h-px after:bg-sidebar-border group-data-[collapsible=icon]:after:inset-x-[calc(50%-0.625rem)]",
+    "relative after:absolute after:inset-x-2 after:bottom-0 after:h-px after:bg-sidebar-border group-data-[collapsible=icon]:after:right-auto group-data-[collapsible=icon]:after:left-[calc(var(--sidebar-rail-pad)+0.375rem)] group-data-[collapsible=icon]:after:w-5",
 }
 
 type SidebarSeparatorProp = { separator?: boolean }

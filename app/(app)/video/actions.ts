@@ -4,14 +4,16 @@ import { after } from "next/server";
 import { z } from "zod";
 import { currentActor, withSpaceActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
-import { isCompleteScope, isCoverage, type Scope } from "@/lib/knowledge/scopeTypes";
+import { type CoverageChoice, isCompleteScope, isCoverageChoice, type Scope } from "@/lib/knowledge/scopeTypes";
 import { readEnabledModules } from "@/lib/modules";
 import { type ActionResult, toActionResult } from "@/lib/server-actions/result";
+import { sourceVideo } from "@/lib/video/intro";
 import { runPipeline, startVideo } from "@/lib/video/pipeline";
 import { applyScriptEdit, type ScriptEdit, scriptEditSchema } from "@/lib/video/script";
-import { assertRenderConfigured, narratorWriter, pipelineDeps, videoStore, writeScript } from "@/lib/video/server";
+import { assertRenderConfigured, coverageColumns, narratorWriter, pipelineDeps, videoStore, writeScript } from "@/lib/video/server";
 import { canEditScript } from "@/lib/video/status";
-import { isVideoLength, type VideoLength, type VideoRow } from "@/lib/video/types";
+import { isVideoLength, type VideoLength, type VideoRow, videoCoverage } from "@/lib/video/types";
+import { DEFAULT_VOICE_ID } from "@/lib/video/voice";
 
 // VIDEO ACTIONS: write a script, edit it, then Make video (voice → render) or Try again.
 // Nothing here costs money until makeVideo.
@@ -35,20 +37,20 @@ async function scriptVideo(id: string): Promise<VideoRow> {
   return video;
 }
 
-export type NewVideo = { scope: Scope | null; coverage: number; length: VideoLength; voiceId: string };
+export type NewVideo = { scope: Scope | null; coverage: CoverageChoice; length: VideoLength; voiceId: string };
 
 // WRITE SCRIPT: the Narrator writes scenes; the video starts in status script
 export async function createVideo(input: NewVideo): Promise<ActionResult<{ id: string }>> {
   return toActionResult(async () => {
     const user = await guard();
     if (!isCompleteScope(input.scope)) throw new Error("Choose a source.");
-    if (!isCoverage(input.coverage)) throw new Error("Choose a coverage.");
+    if (!isCoverageChoice(input.coverage)) throw new Error("Choose a coverage.");
     if (!isVideoLength(input.length)) throw new Error("Choose a length.");
     const voiceId = z.string().trim().min(1).max(100).parse(input.voiceId);
     const { title, script } = await writeScript({ scope: input.scope, coverage: input.coverage, length: input.length, writer: await narratorWriter() });
     const video = await videoStore().create({
-      title, scopeKind: input.scope.kind, scopeId: input.scope.kind === "glossary" ? null : input.scope.id,
-      coverage: input.coverage, length: input.length, voiceId, script, createdBy: user.id,
+      title, scopeKind: input.scope.kind, scopeId: input.scope.id ?? null,
+      ...coverageColumns(input.coverage), length: input.length, voiceId, script, createdBy: user.id,
     });
     return { id: video.id };
   });
@@ -72,11 +74,28 @@ export async function rewriteScript(id: string): Promise<ActionResult> {
   return toActionResult(async () => {
     await guard();
     const video = await scriptVideo(id);
-    const scope = (video.scopeKind === "glossary" ? { kind: "glossary" } : { kind: video.scopeKind, id: video.scopeId }) as Scope;
-    const { script } = await writeScript({ scope, coverage: video.coverage, length: video.length, writer: await narratorWriter() });
+    const scope = { kind: video.scopeKind, id: video.scopeId } as Scope;
+    const { script } = await writeScript({ scope, coverage: videoCoverage(video), length: video.length, writer: await narratorWriter() });
     const saved = await videoStore().update(video.id, ["script"], { script });
     if (!saved) throw new Error("This video changed while the script was written. Reload and try again.");
     return {};
+  });
+}
+
+// REMAKE: a new video from a made one's source, length and voice, with a fresh script; the made video stays
+export async function remakeVideo(id: string): Promise<ActionResult<{ id: string }>> {
+  return toActionResult(async () => {
+    const user = await guard();
+    const video = await videoStore().get(videoId(id));
+    if (!video) throw new Error("This video no longer exists.");
+    const scope = { kind: video.scopeKind, id: video.scopeId } as Scope;
+    const choice = videoCoverage(video);
+    const { title, script } = await writeScript({ scope, coverage: choice, length: video.length, writer: await narratorWriter() });
+    const remade = await videoStore().create({
+      title, scopeKind: video.scopeKind, scopeId: video.scopeId,
+      ...coverageColumns(choice), length: video.length, voiceId: video.voiceId, script, createdBy: user.id,
+    });
+    return { id: remade.id };
   });
 }
 
@@ -101,4 +120,29 @@ export async function makeVideo(id: string): Promise<ActionResult> {
 
 export async function retryVideo(id: string): Promise<ActionResult> {
   return start(id, "retry");
+}
+
+// SOURCE VIDEO (New study set, Create missing): keeps a ready or in-progress video from the source,
+// else writes a short script in the default voice and makes it
+export async function ensureSourceVideo(input: { scope: Scope | null; coverage: CoverageChoice }): Promise<ActionResult<{ id: string; created: boolean }>> {
+  return toActionResult(async () => {
+    const user = await guard();
+    if (!isCompleteScope(input.scope)) throw new Error("Choose a source.");
+    if (!isCoverageChoice(input.coverage)) throw new Error("Choose a coverage.");
+    const existing = sourceVideo(await videoStore().list(), input.scope);
+    if (existing) return { id: existing.id, created: false };
+    const actor = await currentActor();
+    const deps = await pipelineDeps(actor.spaceId);
+    assertRenderConfigured(deps);
+    const { title, script } = await writeScript({ scope: input.scope, coverage: input.coverage, length: "short", writer: await narratorWriter() });
+    const created = await videoStore().create({
+      title, scopeKind: input.scope.kind, scopeId: input.scope.id ?? null,
+      ...coverageColumns(input.coverage), length: "short", voiceId: DEFAULT_VOICE_ID, script, createdBy: user.id,
+    });
+    const video = await startVideo(deps, created.id, "make");
+    after(() => withSpaceActor(actor, async () => {
+      await runPipeline(deps, video.id).catch((error) => console.error("Video pipeline failed:", error));
+    }));
+    return { id: video.id, created: true };
+  });
 }

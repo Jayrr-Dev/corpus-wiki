@@ -16,6 +16,10 @@ const screentoneKinds = [
 
 type ScreentoneKind = (typeof screentoneKinds)[number]
 
+/** Mask luminance, not theme colors: white shows the layer, black hides it. */
+const MASK_SHOW = "white"
+const MASK_HIDE = "black"
+
 /** Graded tones: where the ink is densest. `flat` is even all over. */
 const screentoneGradations = [
   "flat",
@@ -224,9 +228,9 @@ function CellField({
             r={size}
             spreadMethod="repeat"
           >
-            <stop offset="0" stopColor="black" />
-            <stop offset="0.5" stopColor="white" />
-            <stop offset="1" stopColor="black" />
+            <stop offset="0" stopColor={MASK_HIDE} />
+            <stop offset="0.5" stopColor={MASK_SHOW} />
+            <stop offset="1" stopColor={MASK_HIDE} />
           </radialGradient>
         </defs>
         <rect width="100%" height="100%" fill={`url(#${id})`} />
@@ -239,14 +243,14 @@ function CellField({
       <defs>
         {kind === "dots" ? (
           <radialGradient id={falloff}>
-            <stop offset="0" stopColor="white" />
-            <stop offset="1" stopColor="black" />
+            <stop offset="0" stopColor={MASK_SHOW} />
+            <stop offset="1" stopColor={MASK_HIDE} />
           </radialGradient>
         ) : (
           <linearGradient id={falloff} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="black" />
-            <stop offset="0.5" stopColor="white" />
-            <stop offset="1" stopColor="black" />
+            <stop offset="0" stopColor={MASK_HIDE} />
+            <stop offset="0.5" stopColor={MASK_SHOW} />
+            <stop offset="1" stopColor={MASK_HIDE} />
           </linearGradient>
         )}
         <pattern
@@ -258,7 +262,7 @@ function CellField({
         >
           {kind === "dots" ? (
             <>
-              <rect width={size} height={size} fill="black" />
+              <rect width={size} height={size} fill={MASK_HIDE} />
               <circle
                 cx={size / 2}
                 cy={size / 2}

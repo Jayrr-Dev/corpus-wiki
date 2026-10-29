@@ -90,7 +90,7 @@ export const NODE_TYPES: Readonly<Record<GraphNodeKind, NodeTypeRule>> = {
   page: {
     kind: "page",
     label: "Page",
-    plural: "Pages",
+    plural: "Wiki",
     role: "hub",
     shownByDefault: false,
     shade: "text",

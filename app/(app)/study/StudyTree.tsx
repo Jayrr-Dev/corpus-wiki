@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, CircleCheck, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { outlineMark, TopicCover } from "@/components/knowledge/TopicCover";
@@ -9,11 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { SCOPE_KIND_LABELS } from "@/lib/knowledge/scopeTypes";
-import { LEVEL_LABELS, LEVELS } from "@/lib/study/levels";
 import type { SetSummary } from "@/lib/study/session";
 import { filterStudyTree, practicedPct, type StudyTotals, type StudyTreeNode } from "@/lib/study/tree";
 import { cn } from "@/lib/utils";
 import { LevelBar } from "./LevelBar";
+import { TestButton, type TestSetOption } from "./TestButton";
 
 // The search box shows once the list is long enough to need it
 const SEARCH_FROM = 7;
@@ -35,35 +35,45 @@ function DueChip({ due }: { due: number }) {
   return <span className="shrink-0 rounded-full bg-link/12 px-2 py-0.5 text-xs font-medium text-link tabular-nums">{due} due</span>;
 }
 
-// BRANCH STATS: share practiced and due (and the set count, on a top-level heading)
-function BranchStats({ totals, showSets = false, className }: { totals: StudyTotals; showSets?: boolean; className?: string }) {
+// BRANCH STATS: due count, plus the set count on a top-level heading and the share practiced on a topic card
+function BranchStats({ totals, showSets = false, showPercent = false, className }: { totals: StudyTotals; showSets?: boolean; showPercent?: boolean; className?: string }) {
   const percent = practicedPct(totals);
   return (
     <span className={cn("flex shrink-0 items-center gap-3 text-xs text-muted-foreground tabular-nums", className)}>
       {showSets ? <span>{totals.sets} set{totals.sets === 1 ? "" : "s"}</span> : null}
-      <span className="flex items-center gap-1.5"><Ring percent={percent} />{percent}%</span>
+      {showPercent ? <span className="flex items-center gap-1.5"><Ring percent={percent} />{percent}%</span> : null}
       <DueChip due={totals.due} />
     </span>
   );
 }
 
-// SET ROW: one set as a link, with its practiced ring, due count and levels
+// A set is done once it has claims and every one sits at Learned
+const allLearned = (set: SetSummary) => set.levels.learned > 0 && set.levels.new + set.levels.familiar + set.levels.known === 0;
+
+// SET ROW: one set as a link, with its due count, a check once all learned, and levels
 function SetRow({ set, label }: { set: SetSummary; label: string }) {
-  const levels = LEVELS.map((level) => `${LEVEL_LABELS[level]} ${set.levels[level]}`).join(", ");
   return (
     <Link href={`/study/${set.id}`} className="group/set -mx-2 flex min-h-8 min-w-0 items-center gap-2.5 rounded-md px-2 py-1.5 hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-ring">
-      <Tooltip content={`${set.practicedPct}% practiced. ${levels}.`}>
-        <span className="flex"><Ring percent={set.practicedPct} /></span>
-      </Tooltip>
       <span className="min-w-0 flex-1 text-panel group-hover/set:text-link sm:truncate">{label}</span>
       <DueChip due={set.due} />
+      {allLearned(set) ? (
+        <Tooltip content="All learned">
+          <span className="shrink-0 text-link"><CircleCheck className="size-4" aria-label="All learned" /></span>
+        </Tooltip>
+      ) : null}
       <LevelBar levels={set.levels} className="hidden w-16 sm:flex" />
     </Link>
   );
 }
 
-// A set on a topic is named by the topic; a part-coverage set also says how much
-const setLabel = (set: SetSummary, name: string) => (set.coverage < 100 ? `${name} (top ${set.coverage}%)` : name);
+// A set on a topic is named by the topic; a part-coverage set also says how much, a custom set that it is hand-picked
+const setLabel = (set: SetSummary, name: string) => (set.custom ? `${name} (custom)` : set.coverage < 100 ? `${name} (top ${set.coverage}%)` : name);
+
+// TEST SETS: every set with items under a section, labelled as its row shows it, for the Test dialog
+const testSets = (node: StudyTreeNode): TestSetOption[] => [
+  ...node.sets.filter((set) => set.items > 0).map((set) => ({ id: set.id, label: setLabel(set, node.children.length ? `All of ${node.name}` : node.name), claims: set.claims })),
+  ...node.children.flatMap(testSets),
+];
 
 function SetRows({ node, label }: { node: StudyTreeNode; label?: string }) {
   if (!node.sets.length) return null;
@@ -97,7 +107,7 @@ function TopicCard({ node }: { node: StudyTreeNode }) {
       <div className="grid min-w-0 flex-1 content-start gap-2 p-3 sm:p-4">
         <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <h4 className="min-w-0 truncate font-semibold">{node.name}</h4>
-          <BranchStats totals={node.totals} />
+          <BranchStats totals={node.totals} showPercent />
         </header>
         <SetRows node={node} label={node.children.length ? `All of ${node.name}` : node.name} />
         <TopicList nodes={node.children} />
@@ -106,16 +116,18 @@ function TopicCard({ node }: { node: StudyTreeNode }) {
   );
 }
 
-// AREA: a second-level topic, as a panel of topic cards that folds away
+// AREA: a second-level topic, as a panel of topic cards that folds away; its Test sits at the far right
 function Area({ node, forceOpen }: { node: StudyTreeNode; forceOpen: boolean }) {
   const [open, setOpen] = useState(true);
   const leaves = node.children.filter((child) => !child.children.length);
   const branches = node.children.filter((child) => child.children.length);
+  const tests = testSets(node);
   return (
     <Collapsible open={forceOpen || open} onOpenChange={setOpen} asChild>
       <div className="rounded-2xl border bg-muted/30">
+      <div className="flex items-center gap-2 pr-3">
       <CollapsibleTrigger asChild>
-        <button type="button" className="group/area flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-ring">
+        <button type="button" className="group/area flex min-w-0 flex-1 items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-ring">
           <span className="flex min-w-0 items-center gap-2">
             <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]/area:rotate-90" aria-hidden />
             <h3 className="truncate font-semibold">{node.name}</h3>
@@ -123,6 +135,8 @@ function Area({ node, forceOpen }: { node: StudyTreeNode; forceOpen: boolean }) 
           <BranchStats totals={node.totals} />
         </button>
       </CollapsibleTrigger>
+      {tests.length ? <TestButton name={node.name} sets={tests} /> : null}
+      </div>
       <CollapsibleContent asChild>
       <div className="grid gap-3 px-3 pb-3 sm:px-4 sm:pb-4">
         {node.sets.length ? <div className="rounded-xl border bg-background px-4 py-2"><SetRows node={node} label={`All of ${node.name}`} /></div> : null}
@@ -141,11 +155,15 @@ function Area({ node, forceOpen }: { node: StudyTreeNode; forceOpen: boolean }) 
 
 // ROOT: a top-level topic as a titled section of areas
 function Root({ node, forceOpen }: { node: StudyTreeNode; forceOpen: boolean }) {
+  const tests = testSets(node);
   return (
     <section className="grid gap-3">
       <header className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
         <h2 className="text-xl font-semibold tracking-tight">{node.name}</h2>
-        <BranchStats totals={node.totals} showSets />
+        <span className="flex items-center gap-3">
+          <BranchStats totals={node.totals} showSets />
+          {tests.length ? <TestButton name={node.name} sets={tests} kind="exam" /> : null}
+        </span>
       </header>
       {node.sets.length ? <div className="rounded-xl border px-4 py-2"><SetRows node={node} label={`All of ${node.name}`} /></div> : null}
       {node.children.map((child) => <Area key={child.id} node={child} forceOpen={forceOpen} />)}

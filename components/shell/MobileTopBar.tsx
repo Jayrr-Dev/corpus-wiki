@@ -17,7 +17,7 @@ import { useRightPanel } from "./RightPanel";
 // opens the right panel as a bottom sheet when the page has filled it.
 // =====================================================================
 
-const ALL_NAV = [...NAV_GROUPS.flat(), SETTINGS_NAV];
+const ALL_NAV = [...NAV_GROUPS.flatMap((group) => group.items), SETTINGS_NAV];
 const APP_NAME = "Corpus Wiki";
 
 // SCREEN TITLE: the nav label of the section the current route belongs to; a module that is off has no title

@@ -1,21 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { MODULE_FLAG_KEYS, type ModuleFlagKey } from "@/lib/flags/registry";
-import { ERROR_LOG_NAV, NAV_GROUPS, visibleNavGroups, visibleNavItems } from "./nav";
+import { NAV_GROUPS, visibleNavGroups, visibleNavItems } from "./nav";
 
-const hrefs = (groups: { href: string }[][]) => groups.flat().map((item) => item.href);
+const hrefs = (groups: { items: { href: string }[] }[]) => groups.flatMap((group) => group.items).map((item) => item.href);
 const MODULE_HREFS = ["/study", "/video", "/docs"];
 // every sidebar module on except Study, Video and Docs (the defaults)
 const BASE = MODULE_FLAG_KEYS.filter((key) => !["study", "video", "docs"].includes(key));
 const without = (...off: ModuleFlagKey[]) => MODULE_FLAG_KEYS.filter((key) => !off.includes(key));
 
 describe("module nav items", () => {
-  it("sit in their own group right after read and ask", () => {
-    expect(NAV_GROUPS[1]!.map((item) => [item.href, item.module])).toEqual([["/study", "study"], ["/video", "video"], ["/docs", "docs"]]);
-    expect(NAV_GROUPS[1]!.some((item) => item.admin)).toBe(false);
+  it("sit in the transform group, after the wiki, right above analyze", () => {
+    expect(NAV_GROUPS[1]!.title).toBe("Transform");
+    expect(NAV_GROUPS[1]!.items.map((item) => [item.href, item.module])).toEqual([["/pages", "pages"], ["/glossary", "glossary"], ["/study", "study"], ["/video", "video"], ["/docs", "docs"]]);
+    expect(NAV_GROUPS[1]!.items.some((item) => item.admin)).toBe(false);
   });
 
   it("give every link and the error log a module switch", () => {
-    const keys = [...NAV_GROUPS.flat(), ERROR_LOG_NAV].map((item) => item.module);
+    const keys = NAV_GROUPS.flatMap((group) => group.items).map((item) => item.module);
     expect(keys.every(Boolean)).toBe(true);
     expect([...keys, "nav_mode_switch"].sort()).toEqual([...MODULE_FLAG_KEYS].sort());
   });
@@ -24,7 +25,7 @@ describe("module nav items", () => {
     for (const admin of [true, false]) {
       const groups = visibleNavGroups({ admin, modules: BASE });
       expect(hrefs(groups).filter((href) => MODULE_HREFS.includes(href))).toEqual([]);
-      expect(groups.every((items) => items.length > 0)).toBe(true);
+      expect(groups.every((group) => group.items.length > 0)).toBe(true);
     }
     expect(visibleNavGroups({ admin: true, modules: [] })).toEqual([]);
   });
@@ -49,7 +50,7 @@ describe("module nav items", () => {
   });
 
   it("filters a flat list the same way (the mobile top bar's titles)", () => {
-    const all = NAV_GROUPS.flat();
+    const all = NAV_GROUPS.flatMap((group) => group.items);
     expect(visibleNavItems(all, { admin: true, modules: BASE }).map((item) => item.href)).not.toContain("/docs");
     expect(visibleNavItems(all, { admin: true, modules: [...BASE, "docs"] }).map((item) => item.href)).toContain("/docs");
   });

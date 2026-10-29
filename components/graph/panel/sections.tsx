@@ -118,9 +118,9 @@ const NODE_STEPS: readonly PopoverWizardStep[] = [
   },
   {
     id: "pages",
-    title: "Pages",
+    title: "Wiki",
     content:
-      "A page is an article. Its sections cite knowledge units. This node is the article. The Pages group draws the circle around the sections.",
+      "A page is an article. Its sections cite knowledge units. This node is the article. The Wiki group draws the circle around the sections.",
   },
 ];
 

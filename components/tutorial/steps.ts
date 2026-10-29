@@ -27,7 +27,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
     targetFor: (pathname) =>
       pathname === "/pages"
         ? { tourId: "new-page", hint: "Click New page, give it a title and press Create." }
-        : { tourId: "nav-pages", hint: "Open Pages first." },
+        : { tourId: "nav-pages", hint: "Open Wiki first." },
     completedBy: "page-created",
   },
   {
@@ -45,7 +45,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
     targetFor: (pathname) =>
       isWikiPage(pathname)
         ? { tourId: "page-body", hint: "This is your page. It updates by itself." }
-        : { tourId: "nav-pages", hint: "Open Pages, then your page." },
+        : { tourId: "nav-pages", hint: "Open Wiki, then your page." },
     completedBy: null,
   },
 ];

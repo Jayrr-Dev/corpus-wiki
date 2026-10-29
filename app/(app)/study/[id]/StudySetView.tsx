@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { ErrorNote, Note } from "@/app/(app)/_components/bits";
@@ -40,8 +41,19 @@ function Tabs({ active, onSelect, panels }: { active: TabId; onSelect: (id: TabI
   );
 }
 
-// ONE SET: rebuilds questions whose claim changed as it opens, then shows the three tabs
-export function StudySetView({ set, data }: { set: StudySetRow; data: StudySetsData }) {
+// The source's video a set opens with; playUrl is set once it is ready
+export type IntroVideo = { id: string; title: string; ready: boolean; playUrl: string | null; posterUrl: string | null };
+
+// INTRO VIDEO: the player, or a line while it is made or when the source has none
+function Intro({ video }: { video: IntroVideo | null }) {
+  if (!video) return <Note>No video for this source yet. <Link href="/video" className="underline">Make one</Link></Note>;
+  if (!video.ready || !video.playUrl) return <Note>The video is being made. <Link href={`/video/${video.id}`} className="underline">Follow it</Link></Note>;
+  return <video controls preload="metadata" poster={video.posterUrl ?? undefined} src={video.playUrl} aria-label={video.title} className="aspect-video w-full rounded-xl bg-black" />;
+}
+
+// ONE SET: rebuilds questions whose claim changed as it opens, then the intro video (if asked for) and the three tabs.
+// `intro` is undefined when the set has no intro video, null when its source has none yet
+export function StudySetView({ set, data, intro }: { set: StudySetRow; data: StudySetsData; intro?: IntroVideo | null }) {
   const router = useRouter();
   const [tab, setTab] = useState<TabId>("practice");
   const [rebuilding, setRebuilding] = useState(false);
@@ -64,6 +76,7 @@ export function StudySetView({ set, data }: { set: StudySetRow; data: StudySetsD
     <div className="grid gap-3">
       {rebuilding ? <Note>Sources changed. Rewriting {stale} question{stale === 1 ? "" : "s"}…</Note> : null}
       <ErrorNote error={error} />
+      {intro !== undefined ? <Intro video={intro} /> : null}
       <Tabs active={tab} onSelect={setTab} panels={{
         practice: <Practice items={items} claims={data.claims} progress={data.progress} />,
         progress: <ProgressPanel set={set} data={data} />,

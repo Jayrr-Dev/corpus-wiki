@@ -4,7 +4,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { defaultFeatureFlags, enabledModuleFlags, FEATURE_FLAG_KEYS, FEATURE_FLAGS, FEATURE_ONLY_KEYS, type FeatureFlagKey, isFeatureFlagKey, MODULE_FLAG_KEYS, resolveFeatureFlags } from "./registry";
 
 const MODULES = ["pages", "graph", "glossary", "stakeholders", "ask", "study", "video", "docs", "upload", "sources", "assets", "knowledge", "changes", "decisions", "exceptions", "domains", "entities", "workflow", "agent_roles", "error_log", "nav_mode_switch"] as const;
-const FEATURES = ["billing", "legal_pages", "audio_ingest", "chat_import", "gmail_import"] as const;
+const FEATURES = ["billing", "legal_pages", "audio_ingest", "chat_import", "gmail_import", "tutorial_button"] as const;
 // every sidebar module starts on except the knowledge modules
 const defaults = () => ({ ...Object.fromEntries(FEATURES.map((key) => [key, false])), ...Object.fromEntries(MODULES.map((key) => [key, !["study", "video", "docs"].includes(key)])) });
 

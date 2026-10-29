@@ -68,6 +68,7 @@ const BASE: VideoRow = {
   scopeKind: "topic",
   scopeId: fakeId("topic", "phoenix-release"),
   coverage: 100,
+  claimIds: null,
   length: "medium",
   voiceId: "stage-voice",
   status: "script",

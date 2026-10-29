@@ -13,6 +13,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuBadge,
@@ -25,11 +26,12 @@ import { useUnfinishedSources } from "@/components/upload/useUnfinishedSources";
 import { useSuggestionAttentionCount } from "./useSuggestionAttentionCount";
 import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
-import { ERROR_LOG_NAV, isActivePath, type NavItem, SETTINGS_NAV, visibleNavGroups, visibleNavItems } from "./nav";
+import { isActivePath, type NavItem, SETTINGS_NAV, visibleNavGroups } from "./nav";
 import { SidebarBackdrop } from "./SidebarBackdrop";
 import { SpaceSwitcher } from "./SpaceSwitcher";
 import { ThemeSwitch } from "./ThemeSwitch";
 import type { ModuleFlagKey } from "@/lib/flags/registry";
+import { useFeatureFlag } from "@/lib/flags/client";
 import type { Space } from "@/lib/spaces/shared";
 import { Tooltip } from "@/components/standard/tooltip";
 import { cn } from "@/lib/utils";
@@ -38,14 +40,25 @@ import { type NavMode, setNavMode, useNavMode } from "./useNavMode";
 // The signed-in person, as the sidebar shows them
 export type SidebarAccount = { email: string | null; name?: string | null; avatarUrl?: string | null };
 
-// Up to two initials from the name, or the email's first letter
-function initials({ name, email }: SidebarAccount) {
-  const words = (name ?? "").split(/\s+/).filter(Boolean);
-  if (words.length) return (words[0]![0]! + (words.length > 1 ? words.at(-1)![0]! : "")).toUpperCase();
-  return (email?.[0] ?? "?").toUpperCase();
+// The same four marks the Pages panels use: square, circle, diamond, triangle
+const AVATAR_SHAPES = {
+  square: <rect x="3" y="3" width="10" height="10" rx="1" />,
+  circle: <circle cx="8" cy="8" r="5" />,
+  diamond: <path d="m8 1.5 6.5 6.5L8 14.5 1.5 8Z" />,
+  triangle: <path d="m8 2 6 11H2Z" />,
+} as const;
+type AvatarShape = keyof typeof AVATAR_SHAPES;
+
+// A random shape that stays the same for each person, picked from their email (or name)
+function avatarShape({ name, email }: SidebarAccount): AvatarShape {
+  const key = email ?? name ?? "";
+  let hash = 0;
+  for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  const shapes = Object.keys(AVATAR_SHAPES) as AvatarShape[];
+  return shapes[hash % shapes.length]!;
 }
 
-// AVATAR: the account picture, or initials when there is none or it fails to load
+// AVATAR: the account picture, or a shape when there is none or it fails to load
 function AccountAvatar({ account }: { account: SidebarAccount }) {
   const [broken, setBroken] = useState(false);
   if (account.avatarUrl && !broken) {
@@ -53,8 +66,8 @@ function AccountAvatar({ account }: { account: SidebarAccount }) {
     return <img src={account.avatarUrl} alt="" referrerPolicy="no-referrer" onError={() => setBroken(true)} className="size-8 shrink-0 rounded-full object-cover" />;
   }
   return (
-    <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-foreground ring-1 ring-sidebar-border">
-      {initials(account)}
+    <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-sidebar-accent ring-1 ring-sidebar-border text-sidebar-foreground">
+      <svg viewBox="0 0 16 16" className="size-4" fill="currentColor">{AVATAR_SHAPES[avatarShape(account)]}</svg>
     </span>
   );
 }
@@ -125,10 +138,23 @@ function NavModeSwitch() {
   );
 }
 
-// NAV GROUP: a run of links with no title; groups are split by a hairline only
-function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; separator?: boolean; badges?: Record<string, number> }) {
+// NAV GROUP: a run of links under a small title; with `separator`, a faint line with the title centered on it
+// Collapsed (icon rail): no title, just a short line where the title's line was, so nothing moves up or down
+function NavGroup({ title, items, separator, badges }: { title: string; items: readonly NavItem[]; separator?: boolean; badges?: Record<string, number> }) {
   return (
-    <SidebarGroup separator={separator}>
+    <SidebarGroup separator={separator} className={separator ? "pt-0 before:hidden group-data-[collapsible=icon]:before:block group-data-[collapsible=icon]:before:top-2.5" : undefined}>
+      <SidebarGroupLabel
+        className={cn(
+          "relative h-5 [font-variant-caps:all-small-caps] tracking-wide",
+          separator && "before:absolute before:inset-x-0 before:top-1/2 before:h-px before:bg-sidebar-border/50 before:content-[''] group-data-[collapsible=icon]:before:hidden"
+        )}
+      >
+        {separator ? (
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-sidebar px-2 group-data-[collapsible=icon]:hidden">{title}</span>
+        ) : (
+          title
+        )}
+      </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => <NavLink key={item.href} item={item} badge={badges?.[item.href]} />)}
@@ -150,11 +176,13 @@ export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spa
   // with the Admin / User switch turned off in Settings, the sidebar shows every module that is on
   const hasModeSwitch = modules.includes("nav_mode_switch");
   const isAdmin = useNavMode() === "admin" || !hasModeSwitch;
+  // the Tutorial link is behind the "tutorial_button" feature flag (off by default)
+  const showTutorial = useFeatureFlag("tutorial_button");
   const badges = { "/units": suggestionCount ?? 0, "/decisions": openCount, "/exceptions": openCount, "/sources": unfinishedSources };
   return (
     <Sidebar variant="inset" collapsible="icon" collapseThumb collapseThumbSize="xs">
       <SidebarBackdrop />
-      <SidebarHeader search searchPlaceholder="Search…" separator>
+      <SidebarHeader search searchPlaceholder="Search…">
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center">
             <SidebarMenuButton asChild tooltip="Corpus Wiki" className="min-w-0 flex-1">
@@ -171,8 +199,8 @@ export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spa
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {visibleNavGroups({ admin: isAdmin, modules }).map((items, index) => (
-          <NavGroup key={items[0]!.href} items={items} separator={index > 0} badges={badges} />
+        {visibleNavGroups({ admin: isAdmin, modules }).map((group) => (
+          <NavGroup key={group.title} title={group.title} items={group.items} separator badges={badges} />
         ))}
         {/* phones have no room for the pages tree beside the page, so the drawer carries it */}
         {isMobile ? <MobileSidebarTree /> : null}
@@ -180,22 +208,24 @@ export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spa
       <SidebarFooter separator>
         <SidebarMenu>
           {account ? <AccountRow account={account} /> : null}
-          {visibleNavItems([ERROR_LOG_NAV], { admin: isAdmin, modules }).map((item) => <NavLink key={item.href} item={item} />)}
-          <NavLink item={SETTINGS_NAV} />
-          <ThemeSwitch />
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Tutorial" onClick={reopenTutorial}>
-              <HelpIcon />
-              <span>Tutorial</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <form action={signOut}>
-              <SidebarMenuButton type="submit" tooltip="Sign out">
-                <SignOutIcon />
-                <span>Sign out</span>
+          {showTutorial ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton tooltip="Tutorial" onClick={reopenTutorial}>
+                <HelpIcon />
+                <span>Tutorial</span>
               </SidebarMenuButton>
-            </form>
+            </SidebarMenuItem>
+          ) : null}
+          <SidebarMenuItem>
+            <div className="flex items-center gap-1">
+              <form action={signOut} className="min-w-0 flex-1">
+                <SidebarMenuButton type="submit" tooltip="Sign out">
+                  <SignOutIcon />
+                  <span>Sign out</span>
+                </SidebarMenuButton>
+              </form>
+              <ThemeSwitch />
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

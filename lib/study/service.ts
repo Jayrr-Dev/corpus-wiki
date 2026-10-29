@@ -5,7 +5,7 @@ import { readModelChoice } from "@/lib/ai/models";
 import { TUTOR_INSTRUCTIONS } from "@/lib/ai/rolePolicies";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import type { DbRpc } from "@/lib/db/rpc";
-import { COVERAGES, type Coverage, loadScopeClaims, pickCoverage, type Scope, type ScopeClaim } from "@/lib/knowledge/scope";
+import { type CoverageChoice, coverageShare, isCustomChoice, loadScopeClaims, MAX_CUSTOM_CLAIMS, pickCoverage, type Scope, type ScopeClaim } from "@/lib/knowledge/scope";
 import { type GeneratedItem, generateStudyItems } from "./generate";
 import { gradeShortAnswer, MAX_ANSWER_LENGTH } from "./grade";
 import { type ClaimProgress, nextProgress, type StudyResult } from "./levels";
@@ -62,28 +62,35 @@ export const newSetSchema = z.object({
   title: z.string().trim().min(1).max(200),
   scope: z.discriminatedUnion("kind", [
     z.object({ kind: z.enum(["topic", "article", "entity"]), id: uuid }),
-    z.object({ kind: z.literal("glossary"), id: z.null().optional() }),
+    z.object({ kind: z.literal("glossary"), id: uuid.nullish() }),
   ]),
-  coverage: z.union(COVERAGES.map((value) => z.literal(value)) as [z.ZodLiteral<25>, z.ZodLiteral<50>, z.ZodLiteral<100>]),
+  // a share of the scope's claims, or the claims the person checked (Custom)
+  coverage: z.union([z.literal(25), z.literal(50), z.literal(100), z.object({ custom: z.array(uuid).min(1).max(MAX_CUSTOM_CLAIMS) })]),
   types: z.array(z.enum(STUDY_KINDS)).min(1).max(3).transform((types) => STUDY_KINDS.filter((kind) => types.includes(kind))),
+  // open the set with the newest video made from its source
+  introVideo: z.boolean().default(false),
 });
 export type NewSetInput = z.infer<typeof newSetSchema>;
 
 // The claims a set is written from: the scope's most central claims at the chosen coverage
-export function setClaims(claims: readonly ScopeClaim[], coverage: Coverage): ScopeClaim[] {
+export function setClaims(claims: readonly ScopeClaim[], coverage: CoverageChoice): ScopeClaim[] {
   return pickCoverage(claims, coverage).slice(0, MAX_SET_CLAIMS);
 }
 
 // BUILD A SET: saves the set, then each batch of questions as the Tutor writes it
 export async function createStudySet(deps: StudyDeps, userId: string, input: NewSetInput, onProgress?: (done: number, total: number) => void): Promise<{ id: string; items: number }> {
-  const scope = input.scope.kind === "glossary" ? { kind: "glossary" as const } : input.scope;
+  const scope = input.scope;
   const scoped = await deps.loadClaims(scope);
   const claims = setClaims(scoped, input.coverage);
   if (!claims.length) throw new Error("This source has no claims to study yet.");
   const tutor = await deps.tutor();
   const id = await deps.db.call<string>("create_study_set", {
-    p_title: input.title, p_scope_kind: scope.kind, p_scope_id: scope.kind === "glossary" ? null : scope.id,
-    p_coverage: input.coverage, p_types: input.types, p_user_id: userId,
+    p_title: input.title, p_scope_kind: scope.kind, p_scope_id: scope.id ?? null,
+    p_coverage: coverageShare(input.coverage), p_types: input.types, p_user_id: userId,
+    // sent only when asked for, so sets still save on a database without the column
+    ...(input.introVideo ? { p_intro_video: true } : {}),
+    // the checked claims, kept only for a Custom set
+    ...(isCustomChoice(input.coverage) ? { p_claim_ids: input.coverage.custom } : {}),
   });
   const { items } = await generateStudyItems(tutor.settings, claims, input.types, {
     instructions: tutor.instructions, siblings: scoped, onProgress,

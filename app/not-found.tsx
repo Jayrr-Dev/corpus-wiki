@@ -12,7 +12,7 @@ export default function NotFound() {
         title="Nothing lives at this address"
         action={
           <Button asChild size="sm" variant="outline">
-            <Link href="/pages">Go to Pages</Link>
+            <Link href="/pages">Go to Wiki</Link>
           </Button>
         }
       />

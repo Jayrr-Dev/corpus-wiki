@@ -33,6 +33,10 @@ export function textReaderFrom(env: NodeJS.ProcessEnv = process.env, logCall?: A
           signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
         });
         const body = (await response.json().catch(() => ({}))) as OcrResponse;
+        // A limit of 0 is the plan, not traffic: the workspace has no OCR until billing is set up
+        if (response.status === 429 && response.headers.get("x-ratelimit-limit-req-minute") === "0") {
+          throw new Error("Your Mistral plan allows no OCR requests. Choose a plan under Billing at console.mistral.ai.");
+        }
         if (!response.ok || !Array.isArray(body.pages)) throw new Error(body.message ?? `OCR request failed (${response.status})`);
         return body;
       });

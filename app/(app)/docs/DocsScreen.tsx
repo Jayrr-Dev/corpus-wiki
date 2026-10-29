@@ -11,6 +11,7 @@ import { docsTopicNav, topicNavSetIds } from "@/lib/docs/topicNav";
 import { docsTree } from "@/lib/docs/tree";
 import type { DocSetSummary } from "@/lib/docs/types";
 import type { Scope, ScopeOptions } from "@/lib/knowledge/scopeTypes";
+import { CleanDocsDialog } from "./CleanDocsDialog";
 import { DocsTopicNav } from "./DocsTopicNav";
 import { DocsTree } from "./DocsTree";
 import { NewDocsDialog } from "./NewDocsDialog";
@@ -22,6 +23,7 @@ export function DocsScreen({ sets, options, domains, topic, startTopic }: {
   const router = useRouter();
   // New docs from the topic bar arrives as ?new=<topic id>; the dialog opens on that topic
   const [creating, setCreating] = useState(startTopic !== null);
+  const [cleaning, setCleaning] = useState(false);
   const startScope: Scope | null = startTopic && options.topic.some((option) => option.id === startTopic) ? { kind: "topic", id: startTopic } : null;
   const openCreating = (next: boolean) => {
     setCreating(next);
@@ -42,13 +44,17 @@ export function DocsScreen({ sets, options, domains, topic, startTopic }: {
   }, [writing, router]);
 
   return (
-    <ReadingPane title="Docs" actions={<Button size="sm" variant="outline" onClick={() => setCreating(true)}>New docs</Button>}>
+    <ReadingPane title="Docs" actions={<div className="flex items-center gap-2">
+      {sets.length > 1 ? <Button size="sm" variant="outline" onClick={() => setCleaning(true)}>Clean</Button> : null}
+      <Button size="sm" variant="outline" onClick={() => setCreating(true)}>New docs</Button>
+    </div>}>
       <DocsTopicNav items={nav} activeKey={topicIds ? topic : null} />
       {shown.length ? (
         <DocsTree roots={tree.roots} other={tree.other} />
       ) : (
         <EmptyState icon={FileCode} title="No docs yet." />
       )}
+      <CleanDocsDialog open={cleaning} onOpenChange={setCleaning} sets={sets} />
       <NewDocsDialog open={creating} onOpenChange={openCreating} options={options} initialScope={startScope} />
     </ReadingPane>
   );

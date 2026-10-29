@@ -9,7 +9,7 @@ function domain(id: string, name: string, parent_id: string | null, retired = fa
 
 function set(id: string, scopeId: string | null, extra: Partial<SetSummary> = {}): SetSummary {
   return {
-    id, title: id, scopeKind: "topic", scopeId, coverage: 100, types: ["flashcard"], createdAt: "",
+    id, title: id, scopeKind: "topic", scopeId, coverage: 100, custom: false, types: ["flashcard"], introVideo: false, createdAt: "",
     items: 4, claims: 4, practiced: 2, practicedPct: 50, due: 1, stale: 0, levels: { new: 2, familiar: 2, known: 0, learned: 0 }, ...extra,
   };
 }

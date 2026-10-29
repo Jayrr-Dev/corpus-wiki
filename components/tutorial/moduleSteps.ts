@@ -12,7 +12,7 @@ function step(title: string, body: string, hint: string, tourId = "reading-pane"
 
 const MODULES: Record<string, ModuleTutorial> = {
   pages: {
-    id: "pages", label: "Pages",
+    id: "pages", label: "Wiki",
     steps: [
       step("Your living knowledge pages", "Pages turn saved knowledge into articles. Home shows featured, recent and related ones.", "Browse an article or use Browse all pages to explore the hierarchy."),
       step("Create a page", "Give it a title. Pick an entity to start with an Overview from its knowledge.", "Choose New page to start.", "new-page"),

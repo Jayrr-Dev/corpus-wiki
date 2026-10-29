@@ -43,9 +43,14 @@ export const FEATURE_FLAGS = {
     description: "Bring in emails from a connected Gmail account.",
     defaultEnabled: false,
   },
+  tutorial_button: {
+    label: "Tutorial button",
+    description: "The Tutorial link at the bottom of the sidebar.",
+    defaultEnabled: false,
+  },
   // SIDEBAR MODULES, in sidebar order; turning one off hides its link, its data stays
   pages: {
-    label: "Pages",
+    label: "Wiki",
     description: "The wiki's articles.",
     defaultEnabled: true,
     module: true,

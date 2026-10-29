@@ -44,4 +44,18 @@ describe("OCR", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 })));
     await expect(read({ bytes: new Uint8Array([1]), mimeType: "application/pdf", fileName: "x.pdf" })).rejects.toThrow("Unauthorized");
   });
+
+  it("says when the Mistral plan allows no OCR at all", async () => {
+    const limited = () => new Response(JSON.stringify({ message: "Rate limit exceeded" }), { status: 429, headers: { "x-ratelimit-limit-req-minute": "0" } });
+    vi.stubGlobal("fetch", vi.fn(async () => limited()));
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    try {
+      const read = textReaderFrom({ MISTRAL_API_KEY: "test-key" } as unknown as NodeJS.ProcessEnv)!;
+      const attempt = expect(read({ bytes: new Uint8Array([1]), mimeType: "image/png", fileName: "x.png" })).rejects.toThrow(/plan allows no OCR/);
+      await vi.runAllTimersAsync();
+      await attempt;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

@@ -11,7 +11,8 @@ const CREDENTIALS = ["ELEVENLABS_API_KEY", "NEBIUS_RENDER_PROJECT_ID", "NEBIUS_P
 function runSpike(set: Record<string, string>) {
   const env: Record<string, string> = {};
   for (const [key, value] of Object.entries(process.env)) if (value !== undefined && !CREDENTIALS.includes(key)) env[key] = value;
-  return spawnSync(process.execPath, [SPIKE], { cwd: mkdtempSync(join(tmpdir(), "video-spike-")), env: { ...env, ...set } as NodeJS.ProcessEnv, encoding: "utf8", timeout: 30_000 });
+  // The flag lets Node 22.14 run .ts; newer Node accepts it as a no-op
+  return spawnSync(process.execPath, ["--experimental-strip-types", "--no-warnings", SPIKE], { cwd: mkdtempSync(join(tmpdir(), "video-spike-")), env: { ...env, ...set } as NodeJS.ProcessEnv, encoding: "utf8", timeout: 30_000 });
 }
 
 describe("video spike", () => {

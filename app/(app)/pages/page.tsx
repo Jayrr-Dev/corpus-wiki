@@ -5,7 +5,7 @@ import { PagesHome } from "../_pages/PagesHome";
 // PAGES (/pages): every wiki page; create, rename and delete them here
 export default function PagesIndexPage() {
   return (
-    <ReadingPane title="Pages" actions={<CreatePageDialog />}>
+    <ReadingPane title="Wiki" actions={<CreatePageDialog />}>
       <PagesHome />
     </ReadingPane>
   );

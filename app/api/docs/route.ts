@@ -19,7 +19,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!outline.pages.length) return Response.json({ ok: false, error: "Keep at least one page." }, { status: 422 });
     const db = adminDb();
     const created = await db.call<{ docSetId: string; pageIds: string[] }>("create_doc_set", {
-      p_title: outline.title, p_scope_kind: scope.kind, p_scope_id: scope.kind === "glossary" ? null : scope.id, p_coverage: coverage, p_pages: outline.pages,
+      p_title: outline.title, p_scope_kind: scope.kind, p_scope_id: scope.id ?? null, p_coverage: coverage, p_pages: outline.pages,
     });
     const { writer } = await getServerDeps();
     after(() => writeDocPages(db, writer, created.docSetId, created.pageIds).catch((error) => console.error("Writing docs failed", error)));

@@ -360,7 +360,7 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
   },
   page: {
     id: "page",
-    label: "Pages",
+    label: "Wiki",
     hubKind: "page",
     separator: PAGE_SEP,
     nests: true,
@@ -440,7 +440,7 @@ export const GROUPINGS: Readonly<Record<GroupingId, GroupingRule>> = {
       return { kind: "section", page: circle.parent, section: circle.label };
     },
     help: [
-      "Pages draws a circle around each article. Each section is a circle inside it, and the knowledge that section uses sits there. Domain nodes show there only when Domains is on in Nodes. Each domain sits in the article, and the section, that uses most of its knowledge. A domain with none of its own sits with the domain it connects to most.",
+      "Wiki draws a circle around each article. Each section is a circle inside it, and the knowledge that section uses sits there. Domain nodes show there only when Domains is on in Nodes. Each domain sits in the article, and the section, that uses most of its knowledge. A domain with none of its own sits with the domain it connects to most.",
       "A unit used in more than one section sits in the earliest one.",
       "Click a selected article, section, suggestion, No article, Orphans, or Linked circle again to open it.",
       "Drag one knowledge unit onto an article, a section, or a suggestion. An article drop uses the earliest section that can take one claim. A blue suggestion adds it to that new article. An orange Merge suggestion adds it to that merge. Go back to the overview before dropping it on a different group.",

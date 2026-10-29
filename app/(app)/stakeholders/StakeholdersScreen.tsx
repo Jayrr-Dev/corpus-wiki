@@ -107,11 +107,11 @@ export function StakeholdersScreen() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="relative w-full max-w-sm [&_input]:pl-8">
-          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input type="search" aria-label="Search stakeholders" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search names, roles, facts…" />
-        </div>
-        <div className="flex flex-wrap items-center gap-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full max-w-sm [&_input]:pl-8">
+            <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input type="search" aria-label="Search stakeholders" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search names, roles, facts…" />
+          </div>
           <div className="flex gap-1 rounded-md border p-0.5" role="group" aria-label="View">
             <KindChip active={view === "cards"} onClick={() => setView("cards")}>Cards</KindChip>
             <KindChip active={view === "structure"} onClick={() => setView("structure")}>Structure</KindChip>

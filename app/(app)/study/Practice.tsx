@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { Textarea } from "@/components/ui/textarea";
 import { levelLabel } from "@/lib/study/levels";
-import { pickQueue } from "@/lib/study/session";
+import { pickQueue, SESSION_LIMIT } from "@/lib/study/session";
 import { type AnswerOutcome, STUDY_KIND_LABELS, type StudyClaim, type StudyItemRow, type StudyProgressRow } from "@/lib/study/types";
 import { cn } from "@/lib/utils";
 import { answer, type Answer } from "./studyApi";
@@ -138,17 +138,18 @@ function Card({ item, claims, onAnswered, onNext }: { item: StudyItemRow; claims
 
 // PRACTICE: the due questions one card at a time, with `8 / 20` and End in the footer.
 // `items` and `progress` are the person's at load; a session takes one question per due claim.
-export function Practice({ items, claims, progress, emptyText = "Nothing due." }: { items: StudyItemRow[]; claims: StudyClaim[]; progress: StudyProgressRow[]; emptyText?: string }) {
+// A test passes `all` (every claim comes up, due or not) and a `limit` that covers the whole pool.
+export function Practice({ items, claims, progress, emptyText = "Nothing due.", all = false, limit = SESSION_LIMIT }: { items: StudyItemRow[]; claims: StudyClaim[]; progress: StudyProgressRow[]; emptyText?: string; all?: boolean; limit?: number }) {
   const router = useRouter();
   const claimMap = new Map(claims.map((claim) => [claim.unitId, claim]));
   // The first question per claim on load (no randomness, so the server and browser agree)
-  const [queue, setQueue] = useState(() => pickQueue(items, progress, new Date(), { random: () => 0 }));
+  const [queue, setQueue] = useState(() => pickQueue(items, progress, new Date(), { all, limit, random: () => 0 }));
   const [index, setIndex] = useState(0);
   const [answered, setAnswered] = useState(0);
   const [ended, setEnded] = useState(false);
 
-  const start = (all: boolean) => {
-    setQueue(pickQueue(items, progress, new Date(), { all }));
+  const start = (again: boolean) => {
+    setQueue(pickQueue(items, progress, new Date(), { all: again, limit }));
     setIndex(0);
     setAnswered(0);
     setEnded(false);

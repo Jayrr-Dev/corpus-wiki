@@ -1,4 +1,4 @@
-import type { Coverage, Scope } from "@/lib/knowledge/scopeTypes";
+import type { CoverageChoice, Scope } from "@/lib/knowledge/scopeTypes";
 import type { AnswerOutcome, StudyKind } from "@/lib/study/types";
 
 // =====================================================================
@@ -18,7 +18,7 @@ async function post<T>(url: string, body?: object, method = "POST"): Promise<T> 
   return response.json() as Promise<T>;
 }
 
-export type NewSet = { title: string; scope: Scope; coverage: Coverage; types: StudyKind[] };
+export type NewSet = { title: string; scope: Scope; coverage: CoverageChoice; types: StudyKind[]; introVideo: boolean };
 
 // NEW SET: streams the question count while the Tutor writes; resolves with the new set's id
 export async function createSet(input: NewSet, onProgress: (done: number, total: number) => void): Promise<string> {

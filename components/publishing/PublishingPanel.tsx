@@ -89,7 +89,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
         <p className="mt-1 text-xs text-muted-foreground">{live ? "Sharing stays active until you apply Private." : "Only you can see this space."}</p>
       </div>
       <dl className="grid grid-cols-3 gap-4">
-        <div><dt className="text-xs text-muted-foreground">Pages</dt><dd className="mt-1 font-medium tabular-nums">{editor.pages.length}</dd></div>
+        <div><dt className="text-xs text-muted-foreground">Wiki</dt><dd className="mt-1 font-medium tabular-nums">{editor.pages.length}</dd></div>
         <div><dt className="text-xs text-muted-foreground">Ready to publish</dt><dd className="mt-1 font-medium tabular-nums">{readyPageCount}</dd></div>
         <div><dt className="text-xs text-muted-foreground">Public access</dt><dd className="mt-1 font-medium">{live ? "Still active" : "Off"}</dd></div>
       </dl>
@@ -107,7 +107,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
       </section>
       <section aria-labelledby="pages-heading" className="space-y-3 border-t pt-5">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2"><h2 id="pages-heading" className="font-medium">Pages</h2><span className="text-xs text-muted-foreground">{selected.size}/100</span>
+          <div className="flex items-center gap-2"><h2 id="pages-heading" className="font-medium">Wiki</h2><span className="text-xs text-muted-foreground">{selected.size}/100</span>
             <InfoPopover label="What gets published"><p>Selected article text, lists, tables, and charts. Media, source files, citations, and history stay private.</p><p className="mt-2">Preview the text and check for sensitive information before publishing.</p></InfoPopover>
           </div>
           <Tooltip content="Refresh drafts"><Button aria-label="Refresh drafts" variant="ghost" size="icon-sm" disabled={save.isPending} onClick={onRefresh}><RefreshCw size={14} aria-hidden="true" /></Button></Tooltip>

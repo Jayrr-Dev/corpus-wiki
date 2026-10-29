@@ -15,7 +15,8 @@ export const isStudyKind = (value: unknown): value is StudyKind => (STUDY_KINDS 
 // Multiple choice always offers four options
 export const CHOICE_COUNT = 4;
 
-export type StudySetRow = { id: string; title: string; scopeKind: ScopeKind; scopeId: string | null; coverage: Coverage; types: StudyKind[]; createdAt: string };
+// `custom`: the claims were checked by hand, so `coverage` is not the share used
+export type StudySetRow = { id: string; title: string; scopeKind: ScopeKind; scopeId: string | null; coverage: Coverage; custom: boolean; types: StudyKind[]; introVideo: boolean; createdAt: string };
 
 // One question on one claim; revisionId is the claim revision it was written from
 export type StudyItemRow = {

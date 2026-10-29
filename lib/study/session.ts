@@ -1,5 +1,6 @@
-import { isDue, levelCounts, type LevelKey } from "./levels";
-import type { StudyItemRow, StudyProgressRow, StudySetRow, StudySetsData } from "./types";
+import { isDue, levelCounts, levelKey, type LevelKey } from "./levels";
+import type { StudyItemRow, StudyKind, StudyProgressRow, StudySetRow, StudySetsData } from "./types";
+import { STUDY_KINDS } from "./types";
 
 // =====================================================================
 // STUDY SESSIONS AND SUMMARIES: pure views over read_study_sets for the
@@ -59,7 +60,17 @@ export function pickQueue(items: readonly StudyItemRow[], progress: readonly Stu
     .map(([, choices]) => choices[Math.min(choices.length - 1, Math.floor(random() * choices.length))]!);
 }
 
-export type ClaimStanding = { unitId: string; title: string | null; content: string; level: number; dueAt: string | null };
+// TEST QUESTIONS: every question from the chosen sets whose claim sits at one of the chosen levels and whose type is chosen (from the pool, nothing written).
+// Due or not, a claim comes up once per question pick; the caller takes one per claim with pickQueue.
+export function testItems(data: StudySetsData, setIds: readonly string[], levels: readonly LevelKey[], kinds: readonly StudyKind[] = STUDY_KINDS): StudyItemRow[] {
+  const sets = new Set(setIds);
+  const wanted = new Set(levels);
+  const wantedKinds = new Set(kinds);
+  const progress = progressMap(data.progress);
+  return data.items.filter((item) => sets.has(item.setId) && !item.stale && wantedKinds.has(item.kind) && wanted.has(levelKey(progress.get(item.unitId)?.level ?? 0)));
+}
+
+export type ClaimStanding ={ unitId: string; title: string | null; content: string; level: number; dueAt: string | null };
 
 // PROGRESS TAB: every claim a set tests with the person's level and next review (null = now, never answered)
 export function claimStandings(data: StudySetsData, setId: string): ClaimStanding[] {

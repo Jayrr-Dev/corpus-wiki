@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { applyOutlineEdits, type DocOutline, movePage, OUTLINE_GROUP_LABELS, type OutlineEdit } from "@/lib/docs/outline";
-import type { Coverage, Scope, ScopeOptions } from "@/lib/knowledge/scopeTypes";
+import { type Coverage, isCoverage, type Scope, type ScopeOptions } from "@/lib/knowledge/scopeTypes";
 
 type Failed = { ok: false; error: string };
 
@@ -86,7 +86,8 @@ export function NewDocsDialog({ open, onOpenChange, options, initialScope = null
           </div>
           <div className="grid gap-2">
             <h3 className="font-medium">Coverage</h3>
-            <CoveragePicker value={coverage} disabled={busy !== null} onChange={(next) => { setCoverage(next); reset(); }} />
+            {/* Custom is not offered here: doc sets do not save their picks yet */}
+            <CoveragePicker value={coverage} scope={scope} allowCustom={false} disabled={busy !== null} onChange={(next) => { if (isCoverage(next)) { setCoverage(next); reset(); } }} />
           </div>
           <div className="grid gap-2">
             <div className="flex items-center justify-between gap-3">

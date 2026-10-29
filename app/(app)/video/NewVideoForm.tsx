@@ -13,7 +13,7 @@ import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import type { Coverage, Scope, ScopeOptions } from "@/lib/knowledge/scopeTypes";
+import type { CoverageChoice, Scope, ScopeOptions } from "@/lib/knowledge/scopeTypes";
 import { LENGTH_PLAN, VIDEO_LENGTHS, type VideoLength, type VoiceOption } from "@/lib/video/types";
 import { createVideo } from "./actions";
 
@@ -37,7 +37,7 @@ export function NewVideoForm({ options, onDone }: { options: ScopeOptions; onDon
   const router = useRouter();
   const lengthName = useId();
   const [scope, setScope] = useState<Scope | null>(null);
-  const [coverage, setCoverage] = useState<Coverage>(100);
+  const [coverage, setCoverage] = useState<CoverageChoice>(100);
   const [length, setLength] = useState<VideoLength>("short");
   const [voiceId, setVoiceId] = useState("");
   const create = useServerAction(createVideo, { progress: { title: "Writing the script…" }, refreshTables: [] });
@@ -52,6 +52,9 @@ export function NewVideoForm({ options, onDone }: { options: ScopeOptions; onDon
   });
   const voice = voiceId || voices.data?.[0]?.id || "";
 
+  // a Custom pick belongs to its source: changing the source starts again at 100%
+  const chooseScope = (next: Scope | null) => { setScope(next); if (typeof coverage !== "number") setCoverage(100); };
+
   const submit = async () => {
     const result = await create.run({ scope, coverage, length, voiceId: voice });
     if (!result.ok) return;
@@ -61,8 +64,8 @@ export function NewVideoForm({ options, onDone }: { options: ScopeOptions; onDon
 
   return (
     <DialogForm title="New video" description="The Narrator writes the scenes. Nothing is voiced until you continue." submitLabel="Write script" isPending={create.isPending} error={create.error} isDisabled={!scope || !voice} onSubmit={submit}>
-      <Field label="Source"><ScopePicker options={options} value={scope} onChange={setScope} disabled={create.isPending} /></Field>
-      <Field label="Coverage"><CoveragePicker value={coverage} onChange={setCoverage} disabled={create.isPending} /></Field>
+      <Field label="Source"><ScopePicker options={options} value={scope} onChange={chooseScope} disabled={create.isPending} /></Field>
+      <Field label="Coverage"><CoveragePicker value={coverage} onChange={setCoverage} scope={scope} disabled={create.isPending} /></Field>
       <Field label="Length" hint="Longer videos cover more claims, not slower narration.">
         <div role="radiogroup" aria-label="Length" className="flex flex-wrap gap-x-5 gap-y-2">
           {VIDEO_LENGTHS.map((item) => (

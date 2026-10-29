@@ -6,7 +6,9 @@ import { type GlossaryEntry, visibleGlossaryEntries } from "@/lib/glossary/entri
 import { readGlossaryView } from "@/lib/glossary/storage";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { type KnowledgeContext, parseKnowledgeContext } from "./context";
-import type { Coverage, Scope, ScopeOptions } from "./scopeTypes";
+import { entityTypeLabel } from "./entityTypes";
+import { mostVoted } from "./scopeGroups";
+import { type CoverageChoice, isCustomChoice, type Scope, type ScopeOptions } from "./scopeTypes";
 
 export * from "./scopeTypes";
 
@@ -16,7 +18,8 @@ export * from "./scopeTypes";
 //   Topic    claims on the topic and its child topics
 //   Article  claims cited by the article's live sections
 //   Entity   claims whose knowledge_context names the entity
-//   Glossary claims the glossary's terms cite, with their definitions
+//   Glossary claims the glossary's terms cite, with their definitions;
+//            with a topic, only those claims in the topic and its child topics
 // Claims come back most central first: cited by the most live sections,
 // then newest. The sets are small, so no new indexes (OrioleDB, AGENTS.md).
 // =====================================================================
@@ -86,10 +89,15 @@ export function rankScopeClaims<T extends Pick<ScopeClaim, "unitId" | "citedBy" 
   return [...claims].sort((a, b) => b.citedBy - a.citedBy || b.createdAt.localeCompare(a.createdAt) || a.unitId.localeCompare(b.unitId));
 }
 
-// The share of ranked claims a coverage level keeps (rounded up, so a non-empty scope keeps at least one)
-export function pickCoverage<T>(ranked: readonly T[], coverage: Coverage): T[] {
-  if (coverage >= 100) return [...ranked];
-  return ranked.slice(0, Math.ceil((ranked.length * coverage) / 100));
+// The claims a coverage choice keeps: a share of the ranked claims (rounded up, so a non-empty scope keeps
+// at least one), or, for Custom, the checked claims in ranked order
+export function pickCoverage<T extends { unitId: string }>(ranked: readonly T[], choice: CoverageChoice): T[] {
+  if (isCustomChoice(choice)) {
+    const checked = new Set(choice.custom);
+    return ranked.filter((claim) => checked.has(claim.unitId));
+  }
+  if (choice >= 100) return [...ranked];
+  return ranked.slice(0, Math.ceil((ranked.length * choice) / 100));
 }
 
 // The claims a scope names, before their current revisions are read
@@ -119,7 +127,12 @@ async function scopeUnitIds(client: Client, scope: Scope): Promise<{ unitIds: st
   const view = await readGlossaryView(client);
   const entries = visibleGlossaryEntries(view?.entries ?? [], view?.status === "ready" ? [] : view?.live_entries);
   const terms = glossaryTermsByUnit(entries);
-  return { unitIds: [...terms.keys()], terms };
+  if (!scope.id) return { unitIds: [...terms.keys()], terms };
+  // a topic's glossary: only the cited claims in the topic or under it
+  const domains = rowsOf(await client.from("domains").select("id,path").is("retired_at", null));
+  const links = await inChunks(topicDomainIds(domains, scope.id), (chunk) => client.from("unit_domains").select("unit_id").in("domain_id", chunk));
+  const inTopic = new Set(links.map((link) => link.unit_id));
+  return { unitIds: [...terms.keys()].filter((unitId) => inTopic.has(unitId)), terms };
 }
 
 // SCOPE CLAIMS: the live claims a scope pulls, as their current revisions, most central first
@@ -143,16 +156,47 @@ export async function loadScopeClaims(scope: Scope, client: Client = getAdminSup
   })));
 }
 
-// What the scope picker offers: live topics (by path), articles and entities, by name
+// An article with no topic of its own goes in the topic most of its cited claims are in, as on the
+// graph (placeLinkedHubs, lib/graph/filters.ts): every topic a claim is in gets a vote
+async function citedTopicIds(client: Client, pageIds: string[], topicPath: ReadonlyMap<string, string>): Promise<Map<string, string>> {
+  if (!pageIds.length) return new Map();
+  const sections = await inChunks(pageIds, (chunk) => client.from("sections").select("id,page_id").in("page_id", chunk).is("retired_at", null));
+  const pageBySection = new Map(sections.map((section) => [section.id, section.page_id]));
+  const inputs = await inChunks([...pageBySection.keys()], (chunk) => client.from("section_inputs").select("section_id,unit_id").in("section_id", chunk));
+  const links = await inChunks(inputs.map((input) => input.unit_id), (chunk) => client.from("unit_domains").select("unit_id,domain_id").in("unit_id", chunk));
+  const topicsByUnit = new Map<string, string[]>();
+  for (const link of links) if (topicPath.has(link.domain_id)) topicsByUnit.set(link.unit_id, [...(topicsByUnit.get(link.unit_id) ?? []), link.domain_id]);
+  const unitsByPage = new Map<string, Set<string>>();
+  for (const input of inputs) {
+    const pageId = pageBySection.get(input.section_id);
+    if (pageId) unitsByPage.set(pageId, (unitsByPage.get(pageId) ?? new Set()).add(input.unit_id));
+  }
+  const chosen = new Map<string, string>();
+  for (const [pageId, units] of unitsByPage) {
+    const winner = mostVoted([...units].flatMap((unitId) => topicsByUnit.get(unitId) ?? []), (topicId) => topicPath.get(topicId) ?? topicId);
+    if (winner) chosen.set(pageId, winner);
+  }
+  return chosen;
+}
+
+// What the scope picker offers: live topics (by path), articles and entities, by name.
+// An article's group is its topic path; an entity's is its type.
 export async function loadScopeOptions(client: Client = getAdminSupabase()): Promise<ScopeOptions> {
   const [domains, pages, entities] = await Promise.all([
     client.from("domains").select("id,path").is("retired_at", null).order("path"),
-    client.from("pages").select("id,title").is("retired_at", null).not("article_type", "is", null).order("title"),
-    client.from("entities").select("id,name").is("retired_at", null).is("merged_into_id", null).order("name"),
+    client.from("pages").select("id,title,domain_id").is("retired_at", null).not("article_type", "is", null).order("title"),
+    client.from("entities").select("id,name,type").is("retired_at", null).is("merged_into_id", null).order("name"),
   ]);
+  const topic = rowsOf(domains).map((domain) => ({ id: domain.id, label: domain.path.replaceAll("/", " › ") }));
+  const topicPath = new Map(topic.map((option) => [option.id, option.label]));
+  const articles = rowsOf(pages);
+  const voted = await citedTopicIds(client, articles.filter((page) => !page.domain_id).map((page) => page.id), topicPath);
   return {
-    topic: rowsOf(domains).map((domain) => ({ id: domain.id, label: domain.path.replaceAll("/", " › ") })),
-    article: rowsOf(pages).map((page) => ({ id: page.id, label: page.title })),
-    entity: rowsOf(entities).map((entity) => ({ id: entity.id, label: entity.name })),
+    topic,
+    article: articles.map((page) => {
+      const topicId = page.domain_id ?? voted.get(page.id);
+      return { id: page.id, label: page.title, group: topicId ? topicPath.get(topicId) : undefined };
+    }),
+    entity: rowsOf(entities).map((entity) => ({ id: entity.id, label: entity.name, group: entityTypeLabel(entity.type) })),
   };
 }
