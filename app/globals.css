@@ -184,26 +184,87 @@
 }
 
 /* =====================================================================
-   LANDING PAGE (/): always dark, so fixed values rather than theme
-   switches. Warm near black base, gold for the neuron and highlights,
-   brand green for the one button.
+   LANDING PAGE (/): follows the theme like the app. Dark is a warm near
+   black base; light is a warm paper base. Gold for the neuron and
+   highlights, brand green for the one button.
+   Text is `landing-ink` (with opacity for quieter text, e.g.
+   text-landing-ink/60), never text-white or text-black.
+   The demo iframes in public/landing-demos copy these values; see
+   public/landing-demos/theme.js for how they learn the theme.
    ===================================================================== */
+
+/* LANDING LIGHT */
+:root,
+.light {
+  --lp-base: #faf7ef;
+  --lp-surface: #f1ece0;
+  --lp-raised: #e9e3d4;
+  --lp-line: #ddd5c3;
+  --lp-ink: #131209;
+  --lp-fade: #666666;
+  /* gold and pale tints darkened so they read as text on paper */
+  --lp-gold: #9a6b1c;
+  --lp-gold-pale: #7a531a;
+  --lp-label: #6f5222;
+  --lp-green-light: #496748;
+  --lp-green-pale: #2f4a2e;
+}
+
+/* LANDING DARK (OS preference, unless the page forces light) */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --lp-base: #131209;
+    --lp-surface: #181818;
+    --lp-raised: #1f1f1f;
+    --lp-line: #313131;
+    --lp-ink: #ffffff;
+    --lp-fade: #9b9b9b;
+    --lp-gold: #d9a441;
+    --lp-gold-pale: #f4d9a0;
+    --lp-label: #e8d3a6;
+    --lp-green-light: #6e9a6c;
+    --lp-green-pale: #cfe3cd;
+  }
+}
+
+/* LANDING DARK (forced) */
+.dark {
+  --lp-base: #131209;
+  --lp-surface: #181818;
+  --lp-raised: #1f1f1f;
+  --lp-line: #313131;
+  --lp-ink: #ffffff;
+  --lp-fade: #9b9b9b;
+  --lp-gold: #d9a441;
+  --lp-gold-pale: #f4d9a0;
+  --lp-label: #e8d3a6;
+  --lp-green-light: #6e9a6c;
+  --lp-green-pale: #cfe3cd;
+}
+
+@theme inline {
+  --color-landing-base: var(--lp-base);
+  --color-landing-surface: var(--lp-surface);
+  --color-landing-raised: var(--lp-raised);
+  --color-landing-line: var(--lp-line);
+  --color-landing-ink: var(--lp-ink);
+  --color-landing-fade: var(--lp-fade);
+  --color-landing-gold: var(--lp-gold);
+  --color-landing-gold-pale: var(--lp-gold-pale);
+  --color-landing-label: var(--lp-label);
+  --color-landing-green-light: var(--lp-green-light);
+  --color-landing-green-pale: var(--lp-green-pale);
+}
+
+/* LANDING FIXED: the same in both themes */
 @theme {
-  --color-landing-base: #131209;
-  --color-landing-surface: #181818;
-  --color-landing-fade: #9b9b9b;
-  --color-landing-gold: #d9a441;
-  --color-landing-gold-pale: #f4d9a0;
   --color-landing-glow: #f2c063;
   --color-landing-spark: #ffe2a1;
   --color-landing-core: #fff4d6;
   --color-landing-ember: #8a5a1c;
-  --color-landing-label: #e8d3a6;
   --color-landing-conflict: #e0705a;
   --color-landing-green: #496748;
   --color-landing-green-hover: #557a54;
-  --color-landing-green-light: #6e9a6c;
-  --color-landing-green-pale: #cfe3cd;
   /* the demos' category red and green, for a problem and its answer */
   --color-landing-red: #ea4335;
   --color-landing-go: #34a853;

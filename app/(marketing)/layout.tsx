@@ -15,10 +15,10 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Corpus Wiki", description: DESCRIPTION },
 };
 
-// LANDING LAYOUT: always dark, on the warm near black base, whatever the app theme is
+// LANDING LAYOUT: follows the app theme; colours come from the landing tokens in globals.css
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
-    <div className={`${geist.className} min-h-svh bg-landing-base text-white antialiased [color-scheme:dark]`}>
+    <div className={`${geist.className} min-h-svh bg-landing-base text-landing-ink antialiased`}>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
