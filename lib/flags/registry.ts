@@ -21,11 +21,6 @@ export const FEATURE_FLAGS = {
     description: "Plans, checkout and invoices for paid spaces.",
     defaultEnabled: false,
   },
-  legal_pages: {
-    label: "Legal pages",
-    description: "Public terms of service and privacy policy pages.",
-    defaultEnabled: false,
-  },
   audio_ingest: {
     label: "Audio uploads",
     description: "Upload recordings and turn their transcripts into knowledge.",

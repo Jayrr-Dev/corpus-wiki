@@ -8,7 +8,6 @@ import {
 import { DemoEmbed } from "@/components/landing/demo-embed";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNav } from "@/components/landing/landing-nav";
-import { PlaceholderTag } from "@/components/landing/product-mocks";
 import { Reveal } from "@/components/landing/reveal";
 import { TaglineReveal } from "@/components/landing/tagline-reveal";
 import { pricingFaqAnswer } from "@/lib/billing/plans";
@@ -20,8 +19,6 @@ import { DATA_STORAGE_ANSWER } from "@/lib/legal/content";
 // LANDING PAGE (/): one offer, one audience, one action.
 // Built to the landing-page-design skill: Geist only, Tailwind scale sizes,
 // spacing from the 2 to 96px set, flat backgrounds, Phosphor icons.
-// Anything marked with <PlaceholderTag> needs real content before launch.
-// The price answer and "No card needed" show only with the billing flag on.
 // =====================================================================
 
 const EASE = "ease-landing";
@@ -65,9 +62,7 @@ const USE_CASES = [
   { visual: AgentsVisual, title: "Memory for AI agents", body: "One sourced memory your AI tools read and write over MCP." },
 ];
 
-type Faq = { q: string; a: string; placeholder?: boolean };
-
-const DATA_STORAGE_QUESTION = "Where is my data stored?";
+type Faq = { q: string; a: string };
 
 const FAQ: Faq[] = [
   { q: "What files can I upload?", a: "PDF, Word and Markdown files. Each one is kept as evidence, so you can always open the original." },
@@ -76,26 +71,15 @@ const FAQ: Faq[] = [
   { q: "Can the AI change my wiki without me knowing?", a: "No. Every change is recorded with its cause, and old versions are never overwritten. You can see what changed, why, and which document triggered it." },
   { q: "What if two documents disagree?", a: "The conflict stays visible. Both claims stay linked to their sources until someone decides which one holds." },
   { q: "Can I share the wiki outside my team?", a: "Yes. You can publish a read only version of a space and share the link or embed it on your site." },
-  { q: "How much does it cost?", a: "Pricing and plan limits still need to be written.", placeholder: true },
-  { q: DATA_STORAGE_QUESTION, a: "Storage location, encryption and retention details still need to be written.", placeholder: true },
+  { q: "How much does it cost?", a: pricingFaqAnswer() },
+  { q: "Where is my data stored?", a: DATA_STORAGE_ANSWER },
 ];
-
-const COST_QUESTION = "How much does it cost?";
-
-// The FAQ with the storage answer while the legal pages are on, and the price answer while billing is on
-function faqFor(legalPages: boolean, billing: boolean): Faq[] {
-  return FAQ.map(f => {
-    if (legalPages && f.q === DATA_STORAGE_QUESTION) return { q: f.q, a: DATA_STORAGE_ANSWER };
-    if (billing && f.q === COST_QUESTION) return { q: f.q, a: pricingFaqAnswer() };
-    return f;
-  });
-}
 
 function faqSchema(faq: Faq[]) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: faq.filter(f => !f.placeholder).map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    mainEntity: faq.map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
   };
 }
 
@@ -110,10 +94,9 @@ function SectionHeading({ eyebrow, title, body }: { eyebrow?: string; title: str
 }
 
 export default async function WelcomePage() {
-  // Rendered per request, so turning legal_pages or billing on or off shows without a rebuild
+  // Rendered per request, so turning billing on or off shows the Pricing link without a rebuild
   await connection();
-  const [legalPages, billing] = await Promise.all([isFeatureEnabled("legal_pages"), isFeatureEnabled("billing")]);
-  const faq = faqFor(legalPages, billing);
+  const billing = await isFeatureEnabled("billing");
   return (
     <>
       <LandingNav />
@@ -131,14 +114,7 @@ export default async function WelcomePage() {
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
-                {billing ? (
-                  <span className="text-sm text-white/50">No card needed</span>
-                ) : (
-                  <>
-                    <span className="text-sm text-white/50">Free to start</span>
-                    <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
-                  </>
-                )}
+                <span className="text-sm text-white/50">Free plan. No card needed.</span>
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
@@ -295,20 +271,19 @@ export default async function WelcomePage() {
             <SectionHeading title="Questions" />
           </Reveal>
           <Reveal className="mx-auto mt-12 flex max-w-3xl flex-col gap-2">
-            {faq.map(f => (
+            {FAQ.map(f => (
               <details key={f.q} className="group rounded-2xl border border-white/10 bg-white/[0.03]">
                 <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-6 text-left font-semibold transition-colors duration-300 hover:bg-white/[0.03] [&::-webkit-details-marker]:hidden ${FOCUS}`}>
                   <span className="text-balance">{f.q}</span>
                   <Plus className={`size-5 shrink-0 text-landing-gold transition-transform duration-500 group-open:rotate-45 ${EASE}`} />
                 </summary>
                 <div className="flex flex-col items-start gap-3 px-6 pb-6 text-white/60 text-pretty">
-                  {f.placeholder && <PlaceholderTag />}
                   <p>{f.a}</p>
                 </div>
               </details>
             ))}
           </Reveal>
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faq)) }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(FAQ)) }} />
         </section>
 
         {/* FINAL ACTION: identical to the hero, with the risk reversal */}
@@ -319,14 +294,12 @@ export default async function WelcomePage() {
               <StartButton />
             </div>
             <p className="mt-4 text-sm text-white/50">Connected claims. Traceable sources. Current knowledge.</p>
-            <div className="mt-3">
-              <PlaceholderTag>Add risk reversal: free plan, no card, cancel anytime</PlaceholderTag>
-            </div>
+            <p className="mt-3 text-sm font-semibold text-white/70">Free plan. No card needed. Cancel anytime.</p>
           </Reveal>
         </section>
       </main>
 
-      <LandingFooter legalPages={legalPages} hasContact={contactEmail() !== null} pricing={billing} />
+      <LandingFooter hasContact={contactEmail() !== null} pricing={billing} />
     </>
   );
 }

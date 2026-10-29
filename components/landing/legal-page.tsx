@@ -40,7 +40,7 @@ export function LegalShell({ eyebrow, title, summary, contactEmail, children }: 
           {children}
         </article>
       </main>
-      <LandingFooter legalPages hasContact={contactEmail !== null} onHome={false} />
+      <LandingFooter hasContact={contactEmail !== null} onHome={false} />
     </>
   );
 }

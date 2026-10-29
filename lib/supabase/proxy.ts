@@ -16,7 +16,7 @@ export const PUBLIC_PATHS = ["/", "/landing-demos", "/privacy", "/terms", "/cont
 // The marketing page and the static demos it embeds never read a session, so the
 // proxy skips the auth refresh for them: a slow or down auth service can't break them.
 export function isMarketingPath(pathname: string): boolean {
-  // /privacy, /terms and /contact are the legal pages (a 404 while legal_pages is off); /pricing is a 404 while billing is off
+  // /privacy, /terms and /contact are the legal pages (/contact is a 404 without a contact address); /pricing is a 404 while billing is off
   return ["/", "/landing-demos", "/privacy", "/terms", "/contact", "/pricing"].some(p => pathname === p || pathname.startsWith(`${p}/`));
 }
 
