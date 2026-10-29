@@ -1,5 +1,9 @@
 import type { Scene } from "@/components/video-stage/scene";
+import { brent } from "./brent";
 import { hello } from "./hello";
+import { rewrite } from "./rewrite";
+import { settled } from "./settled";
+import { page } from "./wiki";
 
 // =====================================================================
 // SCENE REGISTRY: /stage/<id> renders SCENES[id]; any other id is a 404.
@@ -8,5 +12,9 @@ import { hello } from "./hello";
 // =====================================================================
 
 export const SCENES: Record<string, Scene> = {
+  brent,
   hello,
+  page,
+  rewrite,
+  settled,
 };
