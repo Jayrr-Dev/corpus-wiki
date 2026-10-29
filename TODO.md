@@ -23,8 +23,8 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | merged (PR #56); owner applies `20261124100000_reconciliation_input_plain.sql` |
 | reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
 | reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure | waiting |
-| recompute | #46 dependency index and stale marks, glossary first (closes #34) | | in progress |
-| recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | waiting |
+| recompute | #46 dependency index and stale marks, glossary first (closes #34) | | ready for review: PR #58 |
+| recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | in progress (branched from PR #58) |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
 | embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
 | embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
