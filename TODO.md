@@ -14,7 +14,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 
 | Lane | Task | Needs | Status |
 |---|---|---|---|
-| owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | done (2026-10-29) |
+| owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | done; recovery run passed, #35 closed (2026-10-29) |
 | measure | Run `evals/retrieval` on PR #52 vs main (#38) | | in progress (owner approved paid calls) |
 | owner | Turn on #43 env vars in production | | done (2026-10-29); before/after note still due |
 | owner | Apply the HNSW drop, now `20261123100000_drop_hnsw_vector_indexes.sql` (#40) | | done, applied with study_edit (2026-10-29) |
