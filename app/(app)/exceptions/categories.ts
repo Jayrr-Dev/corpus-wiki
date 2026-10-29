@@ -18,6 +18,7 @@ export const CATEGORY_OF_REASON: Record<Enums<"exception_reason">, ExceptionCate
   root_domain_approval: "structure",
   update_request: "updates",
   page_structure_review: "structure",
+  reviewer_budget: "uncertain",
 };
 
 // TAB ORDER AND WORDS

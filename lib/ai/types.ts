@@ -107,6 +107,8 @@ export type ActionInputByType = {
   rename_page: { title: string };
   review_page: { operation: string; recommendation: string; reason: string; quote: string; guideline: string; destinationId: string | null; pageSlug: string; pageTitle: string };
   retire_page: Record<string, never>;
+  // A VERY LARGE UPLOAD'S BUILD, held for a person (no target; changes no content). See lib/living-page/reviewerBudget.ts
+  approve_reviewer_budget: { sections: number; estimate: number; budget: number; reason: string };
   // THE CURATOR'S PAGE-STRUCTURE CHANGE (target = the page; for a merge, the page that goes away).
   // A merge adds the claims the kept page lacks (unitIds) as one section there and moves the child pages over.
   update_page: { curator: true; operation: "merge" | "move" | "rename" | "set_type" | "group"; confident: boolean; reason: string; pageIds?: string[];

@@ -118,6 +118,7 @@ export const EXCEPTION_REASON_TEXT: Record<Enums<"exception_reason">, string> = 
   root_domain_approval: "The AI wants to create a new root domain",
   update_request: "The AI wants to change a line a person wrote",
   page_structure_review: "The Curator wants to change the page structure",
+  reviewer_budget: "A very large upload needs approval before its pages are written",
 };
 
 // JSON READS (jsonb columns arrive as Json; these narrow without casts to any)
@@ -282,6 +283,7 @@ export function describeActionInput(type: Enums<"action_type">, input: Json): st
       return `type ${humanize(text("fromType"))} → ${humanize(text("type"))}: ${text("reason")}`;
     case "retire_entity":
     case "retire_domain":
+    case "approve_reviewer_budget":
       return text("reason");
   }
 }

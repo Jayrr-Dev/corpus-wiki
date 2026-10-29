@@ -1,7 +1,7 @@
 import { withSettledActor } from "@/lib/auth/currentPerson";
 import type { CommitResult } from "@/lib/change-control";
 import { commitAsRole } from "@/lib/change-control";
-import { proposePages, rebuildAfterEvent } from "@/lib/living-page";
+import { holdForReviewerBudget, proposePages, rebuildAfterEvent } from "@/lib/living-page";
 import { processingCancellation } from "@/lib/processing/cancellation";
 import { processingMetric, withProcessingReport } from "@/lib/processing/metrics";
 import type { PipelineDeps } from "./pipeline";
@@ -107,6 +107,11 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
         catch { failed = true; break; }
         // Filing may propose a new root: the rest waits for that approval, as after the save
         if (key === "place" && await db.call<boolean>("upload_workflow_waiting", { p_event_id: eventId })) {
+          await release("waiting");
+          return;
+        }
+        // A very large build waits for a person to approve its Reviewer calls (lib/living-page/reviewerBudget.ts)
+        if (key === "plan" && await holdForReviewerBudget(db, eventId)) {
           await release("waiting");
           return;
         }

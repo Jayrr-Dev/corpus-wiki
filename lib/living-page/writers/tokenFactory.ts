@@ -8,7 +8,7 @@ import { skillInstructions, skillTrace } from "@/lib/ai/skills/prompt";
 import type { StageSkills } from "@/lib/ai/skills/types";
 import { z } from "zod";
 import { unsupportedProseNumbers, withSupportedCharts } from "../blocks";
-import { completeStreamLines, partialSectionAnswer, type SectionProgress } from "../buildProgress";
+import { partialSectionAnswer, type SectionProgress } from "../buildProgress";
 import { IncompleteSectionEvidence } from "../draftEvidence";
 import { withoutEditorialDashes } from "../punctuation";
 import { TEXT_PATCH_INSTRUCTIONS, TextPatchError } from "../textPatch";
@@ -34,15 +34,6 @@ const sectionAnswerSchema = z.object({
   add: z.array(lineSchema),
 });
 type SectionAnswer = z.infer<typeof sectionAnswerSchema>;
-// How many finished lines may be fact-checked while the rest of the section is still streaming.
-const EARLY_LINE_CHECKS = 3;
-type EarlyLineCheck = { text: string; result: Promise<TokenUsage & { verdicts: LineVerdict[] }> };
-
-function dropEarly(early: Map<string, EarlyLineCheck>) {
-  for (const item of early.values()) void item.result.catch(() => undefined);
-  early.clear();
-}
-
 // LAYOUTS a line may use instead of prose (parsed and drawn by ../blocks.ts)
 const LAYOUT_RULES = [
   "Most lines are prose. A line may instead use one of these layouts when it reads better than a paragraph, separating rows with \\n inside the JSON string:",
@@ -105,12 +96,7 @@ export class TokenFactorySectionWriter {
     const patchMode = input.lines.length > 0;
     const schema = patchMode ? patchAnswerSchema : sectionAnswerSchema;
     const write = async (prompt: ChatMessage[]) => {
-      // Finished lines start their fact-check while later lines are still being written.
-      let early = new Map<string, EarlyLineCheck>();
-      const request = (messages: ChatMessage[]) => {
-        dropEarly(early);
-        early = new Map();
-        return chatJson(this.settings, {
+      const request = (messages: ChatMessage[]) => chatJson(this.settings, {
       outputStyle: "wiki_article",
       name: "section_lines",
       subject: `${input.pageTitle} › ${input.sectionTitle}`,
@@ -125,65 +111,45 @@ export class TokenFactorySectionWriter {
           if (patchMode) { if (reasoning.trim()) progress.thinking(tail(reasoning, THINKING_TAIL)); }
           else streamToProgress(content, reasoning, refs, progress);
         }
-        if (!patchMode) queueEarlyLines(content, early);
       },
       });
-      };
       const materialize = (value: unknown): SectionAnswer => patchMode
         ? materializePatchAnswer(patchAnswerSchema.parse(value), input)
         : sectionAnswerSchema.parse(value);
       const first = await request(prompt);
-      try { return { ...first, value: materialize(first.value), early }; }
+      try { return { ...first, value: materialize(first.value) }; }
       catch (error) {
         if (!(error instanceof TextPatchError)) throw error;
         const fixed = await request([...prompt, { role: "user", content: `No patches were applied: ${error.message} Correct the complete patch plan against the original paragraphs. Previous plan: ${JSON.stringify(first.value)}` }]);
-        return { ...fixed, ...addUsage(first, fixed), value: materialize(fixed.value), early };
+        return { ...fixed, ...addUsage(first, fixed), value: materialize(fixed.value) };
       }
     };
     const clean = (answer: SectionAnswer) => {
       const cleaned = withoutInlineClaimAnnotations(answer, claims);
       return patchMode ? { ...cleaned, revise: answer.revise } : cleaned;
     };
-    const queueEarlyLines = (content: string, early: Map<string, EarlyLineCheck>) => {
-      if (early.size >= EARLY_LINE_CHECKS) return;
-      const streamed = completeStreamLines(content);
-      const preview = linesToCheck(clean({ revise: streamed.revised, retire: [], add: streamed.added }), claims);
-      for (const line of preview) {
-        if (early.size >= EARLY_LINE_CHECKS) return;
-        if (early.has(line.ref)) continue;
-        early.set(line.ref, { text: line.text, result: checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: [line], sectionClaims: sectionClaims(claims) }) });
-      }
-    };
     const first = await write(messages);
     let usage: TokenUsage = addUsage(selection, first);
     let answer = clean(first.value);
     progress?.step("Checking each paragraph against its claims…");
-    const check = async (draft: SectionAnswer, early: Map<string, EarlyLineCheck>) => {
+    // All of the draft's lines are fact-checked in one call, once the draft is complete.
+    const check = async (draft: SectionAnswer) => {
       const lines = linesToCheck(draft, claims);
-      const reused: EarlyLineCheck["result"][] = [];
-      const fresh = lines.filter((line) => {
-        const pending = early.get(line.ref);
-        if (pending?.text !== line.text) return true;
-        reused.push(pending.result);
-        return false;
-      });
-      for (const [ref, pending] of early) if (!lines.some((line) => line.ref === ref && line.text === pending.text)) void pending.result.catch(() => undefined);
       // The editorial read uses the same draft and does not need the fact-check to finish first.
-      const [checked, editorial, ...rest] = await Promise.all([
-        fresh.length ? checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: fresh, sectionClaims: sectionClaims(claims) }) : Promise.resolve({ verdicts: [] as LineVerdict[], tokensIn: 0, tokensOut: 0 }),
-        !input.skipEditorialReview && (input.pageContext?.length || omitted.size) ? checkEditorialDraft(this.settings, input, lines) : Promise.resolve({ verdicts: [] as LineVerdict[], tokensIn: 0, tokensOut: 0 }),
-        ...reused,
+      // It reads only the lines that changed enough to add a repeat; with none, it is skipped.
+      const edited = editorialLines(input, refs, lines);
+      const [factual, editorial] = await Promise.all([
+        checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines, sectionClaims: sectionClaims(claims) }),
+        !input.skipEditorialReview && (input.pageContext?.length || omitted.size) ? checkEditorialDraft(this.settings, input, edited) : Promise.resolve({ verdicts: [] as LineVerdict[], tokensIn: 0, tokensOut: 0 }),
       ]);
-      const verdictList = [...checked.verdicts, ...rest.flatMap((item) => item.verdicts)];
-      let factual: TokenUsage = checked;
-      for (const item of rest) factual = addUsage(factual, item);
+      const verdictList = factual.verdicts;
       if (patchMode && lines.some((line) => !verdictList.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
       // Match the final commit's numeric check before the repair attempt, so a
       // missed citation is repaired instead of silently losing the paragraph.
       const verdicts = withNumericSupportVerdicts(withCitations(draft, verdictList), claims, [input.pageTitle, input.sectionTitle], verdictList);
       return { ...addUsage(factual, editorial), factualVerdicts: verdicts, editorialProblems: editorial.verdicts, verdicts: [...verdicts, ...editorial.verdicts] };
     };
-    let checked = await check(answer, first.early);
+    let checked = await check(answer);
     answer = withCitations(answer, checked.verdicts);
     usage = addUsage(usage, checked);
     const failed = failedLines(checked.verdicts);
@@ -193,7 +159,7 @@ export class TokenFactorySectionWriter {
       const fixed = await write([...messages, { role: "user", content: `${repairRequest(answer, failed)}${missing.length ? ` Your draft also omitted required claims ${missing.join(", ")}. Cover each with a supported citation. For a partially overlapping claim, state its new detail only; do not repeat facts already in otherSections. These claims were retained by editorial selection and cannot be dropped. You may revise otherwise supported lines to incorporate the missing details.` : ""}` }]);
       usage = addUsage(usage, fixed);
       answer = clean(fixed.value);
-      checked = await check(answer, fixed.early);
+      checked = await check(answer);
       answer = withCitations(answer, checked.verdicts);
       usage = addUsage(usage, checked);
       // A fact repair can reintroduce a source's redundant wording. Give the
@@ -206,7 +172,7 @@ export class TokenFactorySectionWriter {
         ]);
         usage = addUsage(usage, edited);
         answer = clean(edited.value);
-        checked = await check(answer, edited.early);
+        checked = await check(answer);
         answer = withCitations(answer, checked.verdicts);
         usage = addUsage(usage, checked);
       }
@@ -274,6 +240,34 @@ function linesToCheck(answer: SectionAnswer, claims: CheckedClaim[]): LineToChec
 }
 
 const addRef = (index: number) => `A${index + 1}`;
+
+// =====================================================================
+// EDITORIAL SKIP: the editorial review looks for repeats and filler in
+// new text. A rewrite that changes only a few characters of a line it
+// already passed (a citation refresh, a word or a number) cannot add a
+// repeat worth a call, so only added lines and real rewrites are read.
+// =====================================================================
+
+// Characters a rewrite must change before the editorial review reads it again
+export const EDITORIAL_MIN_CHANGE = 30;
+
+// How many characters differ between two texts, once their shared start and end are set aside
+export function changedCharacters(before: string, after: string): number {
+  let start = 0;
+  while (start < before.length && start < after.length && before[start] === after[start]) start++;
+  let end = 0;
+  while (end < before.length - start && end < after.length - start && before[before.length - 1 - end] === after[after.length - 1 - end]) end++;
+  return Math.max(before.length - start - end, after.length - start - end);
+}
+
+// The lines the editorial review should read: every added line, and each revised line that changed enough
+export function editorialLines<L extends { ref: string; text: string }>(input: SectionReviseInput, refs: Refs, lines: L[]): L[] {
+  const original = new Map(input.lines.map((line) => [line.lineId, line.content]));
+  return lines.filter((line) => {
+    const before = original.get(refs.lineId.get(line.ref) ?? "");
+    return before === undefined || changedCharacters(before.trim(), line.text.trim()) >= EDITORIAL_MIN_CHANGE;
+  });
+}
 
 // Every claim of the section, for mending a line that states a claim it forgot to cite
 function sectionClaims(claims: ReturnType<typeof refClaims>) {
