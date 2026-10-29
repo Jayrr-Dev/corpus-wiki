@@ -1,5 +1,6 @@
 import type { Scene } from "@/components/video-stage/scene";
 import { hello } from "./hello";
+import { video } from "./video";
 
 // =====================================================================
 // SCENE REGISTRY: /stage/<id> renders SCENES[id]; any other id is a 404.
@@ -9,4 +10,5 @@ import { hello } from "./hello";
 
 export const SCENES: Record<string, Scene> = {
   hello,
+  video,
 };
