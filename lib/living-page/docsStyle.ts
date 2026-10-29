@@ -141,14 +141,15 @@ export class DocsSectionWriter implements SectionWriter {
     if (!this.model) return fakeDocsRevision(input);
     progress?.step("Writing doc steps…");
     const request = docsRequest(input);
-    let answer = await this.model(request);
-    // A task with claims to write must come back as steps. Nemotron tends to answer with a lone heading
-    // or nothing: ask once more, then fall back to one cited step per claim rather than an empty task.
-    if (!request.intro && input.uncoveredUnitIds.length && !answerHasSteps(answer.value)) {
-      answer = await this.model({ ...request, user: `${request.user}\n\nYour last answer had no steps block. Write this task as a steps block: one numbered step per action, citing the claims each step states.` });
-      if (!answerHasSteps(answer.value)) return fakeDocsRevision(input);
-    }
     const unitIds = input.units.map((unit) => unit.unitId);
+    let answer = await this.model(request);
+    // A task with claims to write must come back as steps that survive normalization (steps citing
+    // unknown claims are dropped). Nemotron tends to answer with a lone heading, a paragraph or
+    // miscited steps: ask once more, then fall back to one cited step per claim.
+    if (!request.intro && input.uncoveredUnitIds.length && !answerHasSteps(answer.value, unitIds)) {
+      answer = await this.model({ ...request, user: `${request.user}\n\nYour last answer had no usable steps block. Write this task as a steps block: one numbered step per action, each citing the unitIds (from claims) it states.` });
+      if (!answerHasSteps(answer.value, unitIds)) return fakeDocsRevision(input);
+    }
     const flagged = new Set(input.lines.filter((line) => line.needsRewrite).map((line) => line.lineId));
     const toLines = (blocks: DocsAnswerBlock[]): LineText[] =>
       normalizeDocBlocks(blocks.map(blockFromAnswer), unitIds).map((block) => ({ text: serializeDocBlock(block), unitIds: docBlockCites(block) }));
@@ -167,10 +168,11 @@ export class DocsSectionWriter implements SectionWriter {
   }
 }
 
-// True when the answer writes at least one step, directly or inside interface tabs
-export function answerHasSteps(answer: DocsAnswer): boolean {
-  const blocks = [...answer.add, ...answer.revise.flatMap((item) => item.blocks)];
-  return blocks.some((block) => (block.type === "steps" && block.steps.length > 0) || block.tabs?.some((tab) => tab.blocks.some((inner) => inner.type === "steps" && inner.steps.length > 0)));
+// True when the answer keeps at least one step once normalized against the section's claims,
+// directly or inside interface tabs
+export function answerHasSteps(answer: DocsAnswer, unitIds: readonly string[]): boolean {
+  const blocks = normalizeDocBlocks([...answer.add, ...answer.revise.flatMap((item) => item.blocks)].map(blockFromAnswer), unitIds);
+  return blocks.some((block) => block.type === "steps" || (block.type === "tabs" && block.tabs.some((tab) => tab.blocks.some((inner) => inner.type === "steps"))));
 }
 
 // Claims no line will cite are left out on purpose ("leave out anything no claim supports"),
