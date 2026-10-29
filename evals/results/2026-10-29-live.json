@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-10-29T22:52:13.745Z",
+  "commit": "41301f8",
+  "file": "evals/fixtures/e8-confined-space-entry.md (2,678 bytes)",
+  "how": "evals/live.test.ts in a Linux container (postgres:16-bookworm + pgvector + Node 22), throwaway Postgres; AI_MODEL unset so the default Nebius models ran; only ANTHROPIC_API_KEY and NEBIUS_API_KEY passed in. test/db/pgRpc.ts was temporarily replaced with typed arguments (see docs/baseline-2026-10-29.md); without that it fails like evals.test.ts.",
+  "result": "passed",
+  "wholeRunMs": 31273,
+  "stagesMs": {
+    "reconcile": 19993,
+    "tidy": 4,
+    "plan": 88,
+    "pages": 10948,
+    "articles-ready": 18
+  },
+  "ai": {
+    "reconciliation": {
+      "calls": 1,
+      "ms": 14868,
+      "tokensIn": 7309,
+      "tokensOut": 4760
+    },
+    "entity_duplicate_review": {
+      "calls": 4,
+      "ms": 4672,
+      "tokensIn": 4198,
+      "tokensOut": 332
+    },
+    "independent_section_editorial_selection": {
+      "calls": 8,
+      "ms": 7815,
+      "tokensIn": 9099,
+      "tokensOut": 113
+    },
+    "section_lines": {
+      "calls": 9,
+      "ms": 12553,
+      "tokensIn": 33171,
+      "tokensOut": 1248
+    },
+    "line_fact_check": {
+      "calls": 9,
+      "ms": 9683,
+      "tokensIn": 19430,
+      "tokensOut": 315
+    }
+  },
+  "totalTokensIn": 73207,
+  "totalTokensOut": 6768,
+  "caveat": "The test prints the change set actions with console.table; the table was empty, so the test only proves the upload did not fail."
+}
