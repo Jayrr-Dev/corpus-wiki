@@ -27,7 +27,7 @@ export function DemoEmbed({ concept, title, minHeight = 560, className }: { conc
       loading="lazy"
       scrolling="no"
       style={{ height }}
-      className={cn("block w-full border-0 bg-transparent", className)}
+      className={cn("demo-edge-fade block w-full border-0 bg-transparent", className)}
     />
   );
 }

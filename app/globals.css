@@ -282,6 +282,15 @@
   --text-headline--line-height: 1;
 }
 
+/* the demo iframes fade out over their outer 24px, so shadows cut at the frame melt into the page */
+@utility demo-edge-fade {
+  --demo-fade: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: var(--demo-fade), linear-gradient(to bottom, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-image: var(--demo-fade), linear-gradient(to bottom, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
 /* the five category colours the demos use, as an underline under a word */
 @utility palette-underline {
   padding-bottom: 14px;
