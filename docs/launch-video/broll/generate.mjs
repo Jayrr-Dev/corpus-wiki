@@ -6,7 +6,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const KEY = readFileSync(".env.local", "utf8").match(/^OPENROUTER_API_KEY=(.*)$/m)[1].trim().replace(/^"|"$/g, "");
+// Either name works: OPENROUTER_API_KEY or OPENROUTER_KEY, with or without spaces around "="
+const KEY = readFileSync(".env.local", "utf8").match(/^OPENROUTER(?:_API)?_KEY\s*=\s*(.*)$/m)[1].trim().replace(/^"|"$/g, "");
 const MODEL = "google/veo-3.1-lite";
 const STYLE = "Horizontal 16:9 widescreen, cinematic 35mm film look, soft film grain, muted earthy colours, shallow depth of field.";
 const NO_TEXT = "No readable text anywhere, no logos, no subtitles.";
@@ -25,7 +26,15 @@ const CLIPS = [
   ["14b-network", 4, `Horizontal 16:9 widescreen, macro cinematic shot in darkness, shallow depth of field, soft bokeh, film grain. Tiny glowing points of warm amber and sage-green light appear one by one, and thin threads of light draw themselves between them, slowly forming a rotating network. Abstract, hopeful, building. No text, no logos.`],
   ["23-stays", 4, `${STYLE} Warm golden-hour light. An office glass door with no one walking through it. Dust floats in a sunbeam. On a nearby desk a laptop glows softly with a faint, unreadable network of connected dots on its screen. Slow push-in. Calm, warm, reassuring. ${NO_TEXT}`],
   ["29-endcard-bg", 4, `Horizontal 16:9 widescreen abstract background. A slow drift through a soft, out-of-focus web of warm amber and sage-green light points connected by thin lines, on a deep charcoal background. The centre of the frame is soft and uncluttered for a logo. Gentle parallax, film grain, minimal and calm. No text, no logos.`],
+  // v3 cut: stock-style clips that replace the silent on-camera shots, so the only filmed shots are lip-sync
+  ["s03-local-business", 4, `${CLEAN} Warm natural window light. Inside a small local business office: a few staff at desks and a counter, binders on shelves, a busy but friendly atmosphere. Slow sideways dolly. Faces soft, turned away or out of focus. ${NO_TEXT}`],
+  ["s04-whiteboard", 6, `${CLEAN} Warm natural window light. A whiteboard covered only in simple boxes, circles and arrows with no letters or numbers, and blank sticky notes. A hand reaches in and adds another blank sticky note. Slow push-in. ${NO_TEXT}`],
+  ["s05-notebook", 4, `${CLEAN} Warm desk light. Close-up of a hand writing quickly in a paper notebook with a pen, then pausing. Only the hand, pen and page are visible; the handwriting is soft scribbles, not readable. ${NO_TEXT}`],
+  ["s11-home-laptop", 4, `${CLEAN} Evening at home, warm lamp light. Seen from behind and slightly to the side, a person sits on a sofa with a laptop on their knees, the screen glowing softly and out of focus. Static camera. Calm, determined mood. ${NO_TEXT}`],
+  ["s17-laptop-open", 4, `${CLEAN} Close-up of a laptop on a wooden desk. Hands open the lid and the screen lights up with a soft glow. Morning window light. Slow push-in. ${NO_TEXT}`],
+  ["s24-lean-back", 4, `${CLEAN} Warm office light. Seen from the side and behind, a person leans back in a desk chair, stretches their arms and relaxes, a laptop open in front of them. Face not visible. Relieved, satisfied mood. ${NO_TEXT}`],
 ];
+
 
 const api = (path, init = {}) => fetch(`https://openrouter.ai/api/v1${path}`, { ...init, headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json", ...(init.headers || {}) } });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -55,8 +64,8 @@ async function run([name, duration, prompt]) {
   console.log(`${name}: timed out (job ${job.id} may still finish; re-run with its name)`);
 }
 
-// Budget guard: the whole B-roll job is capped at $10 (Veo 3.1 Lite 1080p, no audio: $0.05 per second)
-const BUDGET = 10, PRICE_PER_SECOND = 0.05;
+// Budget guard: the whole B-roll job is capped at $20 (Veo 3.1 Lite 1080p, no audio: $0.05 per second)
+const BUDGET = 20, PRICE_PER_SECOND = 0.05;
 const spent = Object.values(costs).reduce((n, c) => n + (c.cost || 0), 0);
 const estimate = todo.reduce((n, [, d]) => n + d * PRICE_PER_SECOND, 0);
 if (spent + estimate > BUDGET) { console.log(`Refusing: $${spent.toFixed(2)} spent + ~$${estimate.toFixed(2)} for this run is over the $${BUDGET} budget.`); process.exit(1); }
