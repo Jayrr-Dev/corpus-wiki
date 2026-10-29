@@ -166,6 +166,28 @@ While you work with your coding agent, every feature, endpoint and decision is d
 
 </td>
 </tr>
+<tr>
+<td valign="top">
+
+**🎓 Learning from the wiki**
+
+- **Study** (`/study`): quiz sets made from a topic, article, entity or glossary
+- **Practice**: multiple choice and short answers, graded by the Tutor role
+- **Spaced review** (`/study/review`): levels from New to Learned, with due questions from every set
+- **Stays in sync**: a question is rebuilt when the fact behind it changes
+
+</td>
+<td valign="top">
+
+**🎬 Making from the wiki**
+
+- **Video** (`/video`): a narrated video from the facts, with chapters and sources
+- **Script editor**: edit the script and see the cost before you make the video
+- **Docs** (`/docs`): how-to doc sets with an outline step, a reader, Markdown export and Publish
+- Study, Video and Docs are modules: switch each on in Settings
+
+</td>
+</tr>
 </table>
 
 Also: Spaces (separate wikis), per-role AI model settings, usage plans and limits, a guided tour, evals, and a cost report per role and model. The full list is in [docs/features.md](docs/features.md).

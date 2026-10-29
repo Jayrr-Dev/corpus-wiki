@@ -98,6 +98,16 @@ Supporting outputs:
 - **Stakeholders** (`/stakeholders`): cards for people and groups with a 1 to 5 power level (see `power-model.md`).
 - **Assets** (`/assets`): images and figures taken from sources or made by Composer.
 
+### Learning and making from the wiki
+
+Modules you turn on in Settings > Features > Modules. They are off by default.
+
+- **Study** (`/study`): quiz sets written from a topic, article, entity or glossary; multiple choice and short answers graded by the Tutor role.
+- **Spaced review** (`/study/review`): levels from New to Learned; due questions from every set in one review.
+- **Video** (`/video`): the Narrator writes a script from the facts; edit it, see the cost, then make a voiced video with chapters and sources.
+- **Docs** (`/docs`): how-to doc sets written from a scope, with an outline you can rename and reorder; export as Markdown or publish.
+- **Stays in sync**: questions, scripts and doc pages keep their sources, and go stale when a fact changes.
+
 ### Running the app
 
 - **Login and signup** (`/login`, `/signup`): email sign-in through Supabase.
