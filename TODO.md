@@ -14,11 +14,11 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 
 | Lane | Task | Needs | Status |
 |---|---|---|---|
-| owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | PR merged; secrets not confirmed |
-| owner | Run `evals/retrieval` on PR #52 vs main (#38) | | waiting on owner |
-| owner | Turn on #43 env vars in production | | waiting on owner |
-| owner | Fix duplicate migration version `20261122000000` (hnsw drop vs custom claim picks), then apply the HNSW drop (#40) | | waiting on owner |
-| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | owner OK for paid calls | in review, PR #57 (`docs/baseline-2026-10-29.md`); #52 regresses legacy; `evals.test.ts` and `live.test.ts` not run (need Linux Postgres) |
+| owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | done (2026-10-29) |
+| measure | Run `evals/retrieval` on PR #52 vs main (#38) | | done in PR #57: no change with rerank, legacy drops (hit@5 90.0% to 85.0%); do not merge as is |
+| owner | Turn on #43 env vars in production | | done (2026-10-29); before/after note still due |
+| owner | Apply the HNSW drop, now `20261123100000_drop_hnsw_vector_indexes.sql` (#40) | | done, applied with study_edit (2026-10-29) |
+| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | in review, PR #57 (`docs/baseline-2026-10-29.md`); `evals.test.ts` and `live.test.ts` not run (need Linux Postgres) |
 | reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | in progress |
 | reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | in progress |
 | reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
@@ -26,14 +26,14 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | recompute | #46 dependency index and stale marks, glossary first (closes #34) | | in progress |
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | waiting |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
-| embeddings | #39 propose vector versioning on the issue | owner OK to post | waiting on owner |
+| embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
 | embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
 | jobs | #47 small idempotent jobs (with #46 closes #36) | #45, #46, #49 | waiting |
 | organize | #50 one organize step | #46, #47 | waiting |
 | db | #48 full: squash migrations into a baseline | #45, #46, #47, #50 | waiting |
 
 Owned paths:
-- reviewer: `lib/composer/**`, reviewer entries in `lib/ai/roles.ts` and `lib/ai/rolePolicies.ts`.
+- reviewer: `lib/living-page/**` (the reviewer code lives in `lib/living-page/writers/`), `lib/composer/**`, a few lines in `lib/ingest/workflow.ts` to release waiting before article stages, reviewer entries in `lib/ai/roles.ts` and `lib/ai/rolePolicies.ts`.
 - reconcile: `lib/ai/tokenFactory/**`, `lib/ai/fake/FakeReconciliationClient.ts`, the reconcile and embeddings stage code in `lib/ingest/pipeline.ts`, its own migrations.
 - recompute: `lib/glossary/**`, `lib/change-control/**`, a new `lib/staleness/**`, the later stage code in `lib/ingest/pipeline.ts` and `lib/ingest/workflow.ts`, its own migrations.
 - embeddings: `lib/knowledge/embeddingStore.ts` (after reconcile lands, since #45 moves embedding earlier).
