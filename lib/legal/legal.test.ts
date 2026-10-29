@@ -18,7 +18,7 @@ import ContactPage from "@/app/(marketing)/contact/page";
 import PrivacyPage from "@/app/(marketing)/privacy/page";
 import TermsPage from "@/app/(marketing)/terms/page";
 import { contactEmail, mailtoHref } from "./contact";
-import { DATA_STORAGE_ANSWER, DRAFT_NOTICE, PRIVACY, TERMS } from "./content";
+import { DATA_STORAGE_ANSWER, PRIVACY, TERMS } from "./content";
 
 const PAGES = { privacy: PrivacyPage, terms: TermsPage, contact: ContactPage };
 
@@ -67,10 +67,9 @@ describe("legal pages", () => {
     await expect(PAGES[name]()).rejects.toThrow("404");
   });
 
-  it.each(Object.keys(PAGES) as (keyof typeof PAGES)[])("/%s shows the draft notice while legal_pages is on", async (name) => {
+  it.each(Object.keys(PAGES) as (keyof typeof PAGES)[])("/%s renders while legal_pages is on", async (name) => {
     mocks.enabled = true;
     const html = renderToStaticMarkup(await PAGES[name]());
-    expect(html).toContain(DRAFT_NOTICE);
     expect(html).toContain("mailto:hello@corpus.example");
     expect(html).not.toContain("(placeholder)");
   });
@@ -85,7 +84,7 @@ describe("legal pages", () => {
     mocks.enabled = true;
     vi.stubEnv("NEXT_PUBLIC_CONTACT_EMAIL", "");
     const html = renderToStaticMarkup(await PrivacyPage());
-    expect(html).toContain(DRAFT_NOTICE);
+    expect(html).toContain(PRIVACY.title);
     expect(html).not.toContain("mailto:");
   });
 });

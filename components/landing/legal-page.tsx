@@ -1,21 +1,13 @@
 import type { ReactNode } from "react";
-import { WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingNav } from "@/components/landing/landing-nav";
-import { DRAFT_NOTICE, type LegalDocument } from "@/lib/legal/content";
+import type { LegalDocument } from "@/lib/legal/content";
 import { mailtoHref } from "@/lib/legal/contact";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-gold focus-visible:ring-offset-2 focus-visible:ring-offset-landing-base";
 
-// DRAFT NOTICE: stays at the top of every legal page until the text is reviewed
-function DraftNotice() {
-  return (
-    <p role="note" className="mt-8 flex items-start gap-3 rounded-2xl border border-landing-gold/40 bg-landing-gold/10 p-4 text-sm font-semibold text-landing-gold-pale">
-      <WarningCircle aria-hidden className="mt-px size-5 shrink-0 text-landing-gold" />
-      {DRAFT_NOTICE}
-    </p>
-  );
-}
+// The five category colours, one per section in turn: its rule and its bullets
+const ACCENTS = ["bg-landing-blue", "bg-landing-red", "bg-landing-yellow", "bg-landing-go", "bg-landing-purple"];
 
 // The contact address as a mail link, styled like the landing's inline links
 export function ContactLink({ email, subject }: { email: string; subject?: string }) {
@@ -35,8 +27,7 @@ export function LegalShell({ eyebrow, title, summary, contactEmail, children }: 
         <article className="mx-auto max-w-[680px]">
           <p className="text-sm font-semibold text-landing-gold">{eyebrow}</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">{title}</h1>
-          <p className="mt-4 text-lg text-white/60 text-pretty">{summary}</p>
-          <DraftNotice />
+          <p className="mt-4text-lg text-white/60 text-pretty">{summary}</p>
           {children}
         </article>
       </main>
@@ -51,9 +42,10 @@ export function LegalDocumentPage({ eyebrow, doc, contactEmail }: { eyebrow: str
     <LegalShell eyebrow={eyebrow} title={doc.title} summary={doc.summary} contactEmail={contactEmail}>
       <div className="mt-12 flex flex-col gap-12">
         {/* Without a contact address the contact section has nothing to offer, so it is left out */}
-        {doc.sections.filter(section => !section.contact || contactEmail).map(section => (
+        {doc.sections.filter(section => !section.contact || contactEmail).map((section, i) => (
           <section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} className="scroll-mt-24">
-            <h2 id={`${section.id}-title`} className="text-2xl font-semibold tracking-tight text-balance">{section.title}</h2>
+            <span aria-hidden className={`block h-1 w-10 rounded-full ${ACCENTS[i % ACCENTS.length]}`} />
+            <h2 id={`${section.id}-title`} className="mt-4 text-2xl font-semibold tracking-tight text-balance">{section.title}</h2>
             {section.paragraphs?.map(p => (
               <p key={p} className="mt-4 text-white/65 text-pretty">{p}</p>
             ))}
@@ -61,7 +53,7 @@ export function LegalDocumentPage({ eyebrow, doc, contactEmail }: { eyebrow: str
               <ul className="mt-4 flex flex-col gap-3">
                 {section.items.map(item => (
                   <li key={item} className="flex gap-3 text-white/65 text-pretty">
-                    <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-landing-gold" />
+                    <span aria-hidden className={`mt-2 size-1.5 shrink-0 rounded-full ${ACCENTS[i % ACCENTS.length]}`} />
                     {item}
                   </li>
                 ))}

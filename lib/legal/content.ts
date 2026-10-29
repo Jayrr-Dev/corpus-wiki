@@ -27,8 +27,6 @@ export type LegalDocument = {
   sections: LegalSection[];
 };
 
-export const DRAFT_NOTICE = "Draft, not legal advice: review before launch";
-
 // FAQ "Where is my data stored?": the short form of the storage and AI sections below
 export const DATA_STORAGE_ANSWER =
   "Your account, the claims and pages built from your files, and the original files themselves are stored with Supabase. Originals sit in private storage and are kept as evidence for the claims that cite them. To read your files and write claims, text is sent to Nebius Token Factory, or to Anthropic when you pick a Claude model. You can ask us to delete your account and everything in it at any time.";

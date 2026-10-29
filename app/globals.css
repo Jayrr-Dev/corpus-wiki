@@ -207,6 +207,10 @@
   /* the demos' category red and green, for a problem and its answer */
   --color-landing-red: #ea4335;
   --color-landing-go: #34a853;
+  /* the rest of the five category colours, for the legal pages' section accents */
+  --color-landing-blue: #4285f4;
+  --color-landing-yellow: #fbbc04;
+  --color-landing-purple: #673ab7;
   /* Nebius Token Factory lime, for its badge only */
   --color-landing-nebius: #e0ff4f;
   /* weighted, decelerating motion curve for every landing transition */
