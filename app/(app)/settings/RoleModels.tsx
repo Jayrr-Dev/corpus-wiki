@@ -83,8 +83,9 @@ export function RoleModelControls({ role, settings }: { role: ModelRole; setting
     if (missing.length) return `${model} (cannot read ${describeTypes(missing).toLowerCase()})`;
     return settings.modelInputs[model]?.includes("image") && !seesImages ? `${model} · images` : model;
   };
-  // The Media analyst falls back to the vision model, every other role to the active model
-  const fallback = seesImages ? settings.visionModel : settings.activeModel;
+  // With no pick a role uses its built-in default, else the vision model (Media analyst) or the active model
+  const builtIn = settings.roleDefaults?.[role];
+  const fallback = builtIn ?? (seesImages ? settings.visionModel : settings.activeModel);
   // The effort select turns off when the role's model ignores effort
   const effortOn = usesEffort(current || fallback);
   const error = save.error ?? saveEffort.error;
@@ -97,7 +98,7 @@ export function RoleModelControls({ role, settings }: { role: ModelRole; setting
         disabled={isSaving || offered.length === 0}
         onChange={(event) => void apply(event.target.value || null)}
       >
-        <NativeSelectOption value="">{seesImages ? "Vision model" : "Active model"}</NativeSelectOption>
+        <NativeSelectOption value="">{builtIn ? `Default · ${builtIn.split("/").pop()}` : seesImages ? "Vision model" : "Active model"}</NativeSelectOption>
         {options.map((model) => <NativeSelectOption key={model} value={model}>{optionLabel(model)}</NativeSelectOption>)}
       </NativeSelect>
       <NativeSelect

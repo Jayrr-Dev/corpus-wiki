@@ -25,6 +25,7 @@ import {
   CEREBRAS_BASE_URL,
   CEREBRAS_MODEL_PREFIX,
   DEFAULT_AI_MODEL,
+  ROLE_DEFAULT_MODELS,
   TOKEN_FACTORY_BASE_URL,
 } from "./config";
 import { isNemotron3 } from "./effortSupport";
@@ -244,6 +245,15 @@ export function addCompletionUsage(
   };
 }
 
+// The Nemotron-first role defaults, which fill in only when nothing is picked: no workspace model
+// on /settings and no AI_MODEL (they need Token Factory). A role's own pick still wins over them.
+export function roleDefaultModels(
+  chosenModel: string | null | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): Record<string, string> {
+  return !chosenModel && !env.AI_MODEL && env.NEBIUS_API_KEY ? ROLE_DEFAULT_MODELS : {};
+}
+
 // The model AI calls use: the one picked on /settings, else AI_MODEL, else the Nemotron default
 export function resolveModel(
   chosenModel: string | null | undefined,
@@ -281,7 +291,7 @@ export function tokenFactoryFromEnv(
     typeof chosen === "object" && chosen !== null
       ? chosen
       : { model: chosen, roleModels: {} };
-  const roles = Object.entries(choice.roleModels).filter(([, model]) => model);
+  const roles = Object.entries({ ...roleDefaultModels(choice.model, env), ...choice.roleModels }).filter(([, model]) => model);
   const roleRoutes = roles.length
     ? Object.fromEntries(
         roles.map(([role, model]) => [role, routeModel(env, model)]),

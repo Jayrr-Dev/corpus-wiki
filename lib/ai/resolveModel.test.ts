@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveModel, tokenFactoryFromEnv } from "./chat";
-import { CEREBRAS_BASE_URL, DEFAULT_AI_MODEL } from "./config";
+import { CEREBRAS_BASE_URL, DEFAULT_AI_MODEL, ROLE_DEFAULT_MODELS } from "./config";
 
 // MODEL ORDER: the pick on /settings, then AI_MODEL, then the Nemotron default
 describe("resolveModel", () => {
@@ -23,6 +23,21 @@ describe("resolveModel", () => {
   it("passes the pick into the Token Factory settings", () => {
     const settings = tokenFactoryFromEnv({ NEBIUS_API_KEY: "k" } as unknown as NodeJS.ProcessEnv, "openai/gpt-oss-120b");
     expect(settings?.model).toBe("openai/gpt-oss-120b");
+  });
+
+  // ROLE DEFAULTS: Nemotron first, only when nothing is picked; any pick wins
+  it("gives each role its Nemotron-first default when nothing is picked", () => {
+    const settings = tokenFactoryFromEnv({ NEBIUS_API_KEY: "n" } as unknown as NodeJS.ProcessEnv);
+    expect(settings?.roleRoutes?.plan_articles?.model).toBe(ROLE_DEFAULT_MODELS.plan_articles);
+    expect(settings?.roleRoutes?.media_analyst?.model).toBe("nvidia/Nemotron-3.5-Super-VL");
+    expect(settings?.model).toBe(DEFAULT_AI_MODEL);
+  });
+
+  it("keeps a role's own pick and skips the defaults once a model is picked", () => {
+    const env = { NEBIUS_API_KEY: "n" } as unknown as NodeJS.ProcessEnv;
+    expect(tokenFactoryFromEnv(env, { model: null, roleModels: { curator: "zai-org/GLM-5.3" } })?.roleRoutes?.curator?.model).toBe("zai-org/GLM-5.3");
+    expect(tokenFactoryFromEnv(env, "zai-org/GLM-5.3")?.roleRoutes).toBeUndefined();
+    expect(tokenFactoryFromEnv({ ...env, AI_MODEL: "zai-org/GLM-5.3" } as NodeJS.ProcessEnv)?.roleRoutes).toBeUndefined();
   });
 
   it("sends a cerebras/ pick to Cerebras with its own key", () => {
