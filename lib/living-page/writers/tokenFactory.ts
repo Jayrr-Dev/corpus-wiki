@@ -136,9 +136,11 @@ export class TokenFactorySectionWriter {
     const check = async (draft: SectionAnswer) => {
       const lines = linesToCheck(draft, claims);
       // The editorial read uses the same draft and does not need the fact-check to finish first.
+      // It reads only the lines that changed enough to add a repeat; with none, it is skipped.
+      const edited = editorialLines(input, refs, lines);
       const [factual, editorial] = await Promise.all([
         checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines, sectionClaims: sectionClaims(claims) }),
-        !input.skipEditorialReview && (input.pageContext?.length || omitted.size) ? checkEditorialDraft(this.settings, input, lines) : Promise.resolve({ verdicts: [] as LineVerdict[], tokensIn: 0, tokensOut: 0 }),
+        !input.skipEditorialReview && (input.pageContext?.length || omitted.size) ? checkEditorialDraft(this.settings, input, edited) : Promise.resolve({ verdicts: [] as LineVerdict[], tokensIn: 0, tokensOut: 0 }),
       ]);
       const verdictList = factual.verdicts;
       if (patchMode && lines.some((line) => !verdictList.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
@@ -238,6 +240,34 @@ function linesToCheck(answer: SectionAnswer, claims: CheckedClaim[]): LineToChec
 }
 
 const addRef = (index: number) => `A${index + 1}`;
+
+// =====================================================================
+// EDITORIAL SKIP: the editorial review looks for repeats and filler in
+// new text. A rewrite that changes only a few characters of a line it
+// already passed (a citation refresh, a word or a number) cannot add a
+// repeat worth a call, so only added lines and real rewrites are read.
+// =====================================================================
+
+// Characters a rewrite must change before the editorial review reads it again
+export const EDITORIAL_MIN_CHANGE = 30;
+
+// How many characters differ between two texts, once their shared start and end are set aside
+export function changedCharacters(before: string, after: string): number {
+  let start = 0;
+  while (start < before.length && start < after.length && before[start] === after[start]) start++;
+  let end = 0;
+  while (end < before.length - start && end < after.length - start && before[before.length - 1 - end] === after[after.length - 1 - end]) end++;
+  return Math.max(before.length - start - end, after.length - start - end);
+}
+
+// The lines the editorial review should read: every added line, and each revised line that changed enough
+export function editorialLines<L extends { ref: string; text: string }>(input: SectionReviseInput, refs: Refs, lines: L[]): L[] {
+  const original = new Map(input.lines.map((line) => [line.lineId, line.content]));
+  return lines.filter((line) => {
+    const before = original.get(refs.lineId.get(line.ref) ?? "");
+    return before === undefined || changedCharacters(before.trim(), line.text.trim()) >= EDITORIAL_MIN_CHANGE;
+  });
+}
 
 // Every claim of the section, for mending a line that states a claim it forgot to cite
 function sectionClaims(claims: ReturnType<typeof refClaims>) {
