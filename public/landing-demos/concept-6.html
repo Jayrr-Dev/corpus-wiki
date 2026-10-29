@@ -44,6 +44,8 @@
   /* STAGE: drawn at 1152 wide, scaled to fit the column */
   .fit { margin-top: 64px; position: relative; }
   .stage { position: absolute; left: 0; top: 0; width: 1152px; height: 400px; transform-origin: top left; text-align: left; }
+  /* the belts fade out at both ends, so files seem to come from and go off into the page */
+  .stage { -webkit-mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent); }
   .belt { position: absolute; top: 300px; height: 16px; border-radius: 8px; background: repeating-linear-gradient(to right, var(--raised) 0 12px, var(--hi) 12px 24px); }
   .belt.left { left: 0; width: 400px; } .belt.right { left: 752px; width: 400px; }
   .wheel { position: absolute; top: 324px; width: 32px; height: 32px; border-radius: 9999px; background: var(--line); }
