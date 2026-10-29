@@ -25,7 +25,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure, owner-run live evals | waiting (offline comparison in PR #59) |
 | recompute | #46 dependency index and stale marks, glossary first (closes #34) | | merged (PR #58); migration applied (2026-10-29) |
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | ready for review: PR #62 |
-| measure | Fix `test/db/pgRpc.ts` to send typed arguments and return SETOF rows, so `evals/evals.test.ts` passes | | waiting |
+| measure | Fix `test/db/pgRpc.ts` to send typed arguments and return SETOF rows, so `evals/evals.test.ts` passes | | in review (branch `claude/pgrpc-typed-args`): evals 7/7; 3 older failures in `changeControl.test.ts` and `rebuild.test.ts` fail the same with the old helper |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
 | embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
 | embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
