@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useServerAction } from "@/components/actions/useServerAction";
+import { useIsAdminMode } from "@/components/shell/useNavMode";
 import { ComposerFigure } from "@/components/living-page/ComposerFigure";
 import { PublishingDialog } from "@/components/publishing/PublishingDialog";
 import { InfoHint } from "@/components/standard/info-hint";
@@ -19,6 +20,8 @@ import { useComposerFigures } from "@/lib/queries/composer";
 import { illustrateArticle } from "@/lib/server-actions/composer";
 import { cn } from "@/lib/utils";
 import { DocsTopicNav } from "../DocsTopicNav";
+import { DeleteDocsDialog } from "../DeleteDocsDialog";
+import { RenameDocsDialog } from "../RenameDocsDialog";
 import { DocBlockView } from "./DocBlockView";
 
 // =====================================================================
@@ -33,6 +36,10 @@ import { DocBlockView } from "./DocBlockView";
 export function DocsReader({ set, pageId, article = false, topics }: { set: DocSetView; pageId: string | null; article?: boolean; topics: TopicNavItem[] }) {
   const router = useRouter();
   const [publishing, setPublishing] = useState(false);
+  // admin-only controls for this doc: rename and delete (shown in Admin mode)
+  const isAdmin = useIsAdminMode();
+  const [renaming, setRenaming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [rebuilding, setRebuilding] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const page = set.pages.find((item) => item.id === pageId) ?? null;
@@ -91,6 +98,8 @@ export function DocsReader({ set, pageId, article = false, topics }: { set: DocS
           <Button size="sm" variant="outline" asChild><Link href={article ? `/docs/${set.id}` : `/docs/${set.id}?view=article`}>{article ? "Pages" : "One article"}</Link></Button>
           <Button size="sm" variant="outline" asChild><a href={`/api/docs/${set.id}/export`} download>Export</a></Button>
           <Button size="sm" variant="outline" onClick={() => setPublishing(true)}>Publish</Button>
+          {isAdmin ? <Button size="sm" variant="outline" onClick={() => setRenaming(true)}>Rename</Button> : null}
+          {isAdmin ? <Button size="sm" variant="outline" onClick={() => setDeleting(true)}>Delete</Button> : null}
         </div>
       </header>
       {set.status === "failed" && set.error ? <p role="alert" className="px-6 pt-4 text-panel text-destructive">{set.error}</p> : null}
@@ -147,6 +156,8 @@ export function DocsReader({ set, pageId, article = false, topics }: { set: DocS
       </div>
       )}
       <PublishingDialog open={publishing} onOpenChange={setPublishing} />
+      {isAdmin && renaming ? <RenameDocsDialog set={set} onClose={() => setRenaming(false)} /> : null}
+      {isAdmin && deleting ? <DeleteDocsDialog set={set} onClose={() => setDeleting(false)} /> : null}
     </div>
   );
 }
