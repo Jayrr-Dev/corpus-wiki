@@ -156,7 +156,7 @@ export default async function WelcomePage() {
               <p className="mt-10 max-w-[680px] text-lg text-landing-ink/70 text-pretty sm:text-xl">
                 Add your files. Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.
               </p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <div className="mt-8 flex flex-col items-center gap-3">
                 <StartButton />
                 <FreeLine />
               </div>
@@ -173,7 +173,7 @@ export default async function WelcomePage() {
                 <span className="inline-flex items-center gap-3">
                   Powered by
                   <Image src="/brand/nebius/nebius-outline-white.svg" alt="Nebius" width={87} height={24} unoptimized className="h-6 w-auto invert dark:invert-0" />
-                  <span className="rounded-md border border-landing-ink/40 px-2 py-0.5 text-xs font-semibold tracking-wider text-landing-ink uppercase dark:border-landing-nebius dark:text-landing-nebius">Token Factory</span>
+                  <span className="rounded-md bg-landing-nebius px-2 py-0.5 text-xs font-semibold tracking-wider text-black uppercase">Token Factory</span>
                 </span>
               </p>
             </Reveal>
