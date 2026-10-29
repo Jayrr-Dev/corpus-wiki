@@ -4,7 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { startProgress } from "@/components/toast";
 import type { ProcessUploadResult, StartUploadResult } from "@/lib/ingest";
-import { DIRECT_UPLOAD_FORMATS, formatOf } from "@/lib/ingest/formats";
+import { useFeatureFlags } from "@/lib/flags/client";
+import { DIRECT_UPLOAD_FORMATS, type FormatFlags, formatOf } from "@/lib/ingest/formats";
 import { articlesPending, backgroundPending } from "@/lib/ingest/workflowTypes";
 import type { ActionResult } from "@/lib/server-actions/result";
 import { prepareDirectUpload, processUpload, retryUpload, startUpload, startUploadFromPath } from "@/lib/server-actions/upload";
@@ -41,11 +42,11 @@ async function safely<T>(run: () => Promise<T>): Promise<T | { ok: false; error:
   }
 }
 
-// STEP 1 FOR ONE FILE: most files go in the action's form body; a video is too big for it
-// (20 MB, next.config.ts), so the browser puts it in Storage at a signed URL and the
+// STEP 1 FOR ONE FILE: most files go in the action's form body; a video or a recording is too
+// big for it (20 MB, next.config.ts), so the browser puts it in Storage at a signed URL and the
 // server reads it from there
-async function startFileUpload(file: File, sourceDate: string): Promise<ActionResult<StartUploadResult>> {
-  const format = formatOf(file.name, file.type);
+async function startFileUpload(file: File, sourceDate: string, flags: FormatFlags): Promise<ActionResult<StartUploadResult>> {
+  const format = formatOf(file.name, file.type, flags);
   if (format && DIRECT_UPLOAD_FORMATS.includes(format.id)) {
     const prepared = await prepareDirectUpload({ fileName: file.name, browserType: file.type, byteSize: file.size });
     if (!prepared.ok) return prepared;
@@ -71,6 +72,7 @@ export type UploadFlow = {
 export function useUploadFlow(): UploadFlow {
   const queryClient = useQueryClient();
   const [phase, setPhase] = useState<UploadPhase>({ kind: "idle" });
+  const flags = useFeatureFlags();
 
   // STEP 2 (first run or retry): polls while it runs, then shows the end status
   const runPipeline = async (eventId: string, sourceId: string, name: string, run: (id: string) => Promise<ActionResult<ProcessUploadResult>>) => {
@@ -91,7 +93,7 @@ export function useUploadFlow(): UploadFlow {
   const start = async (file: File, sourceDate: string) => {
     setFileName(file.name);
     setPhase({ kind: "starting" });
-    const started = await safely(() => startFileUpload(file, sourceDate));
+    const started = await safely(() => startFileUpload(file, sourceDate, flags));
     if (!started.ok) return setPhase({ kind: "error", error: started.error, eventId: null, sourceId: null });
     if (started.kind === "skipped") return setPhase({ kind: "skipped", sourceId: started.sourceId });
     await runPipeline(started.eventId, started.sourceId, file.name, processUpload);

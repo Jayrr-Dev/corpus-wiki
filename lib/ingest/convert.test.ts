@@ -2,7 +2,18 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CONVERTERS } from "./convert";
-import { DIRECT_UPLOAD_FORMATS, formatOf, mediaKindOf, PLANNED_FORMATS, storedMimeType, UPLOAD_ACCEPT } from "./formats";
+import {
+  DIRECT_UPLOAD_FORMATS,
+  FORMAT_FLAGS,
+  formatOf,
+  mediaKindOf,
+  PLANNED_FORMATS,
+  storedMimeType,
+  UPLOAD_ACCEPT,
+  UPLOAD_FORMATS,
+  uploadAcceptFor,
+  uploadFormatNamesFor,
+} from "./formats";
 import { splitIntoPassages } from "./passages";
 
 // Reads a small sample file from __fixtures__
@@ -36,7 +47,50 @@ describe("one pipeline, one converter per format", () => {
     expect(storedMimeType(video, "clip.mov", "")).toBe("video/quicktime");
     expect(storedMimeType(video, "clip.mp4", "video/mp4")).toBe("video/mp4");
     expect(mediaKindOf(storedMimeType(video, "clip.webm", ""))).toBe("video");
-    expect(DIRECT_UPLOAD_FORMATS).toEqual(["video"]);
+    expect(DIRECT_UPLOAD_FORMATS).toEqual(["video", "audio"]);
+  });
+
+  describe("audio behind the audio_ingest flag", () => {
+    const on = { audio_ingest: true };
+
+    it("refuses audio while the flag is off, and keeps it out of the accept list", () => {
+      for (const flags of [undefined, {}, { audio_ingest: false }]) {
+        expect(formatOf("song.mp3", "audio/mpeg", flags)).toBeNull();
+        expect(formatOf("memo.m4a", "", flags)).toBeNull();
+        expect(formatOf("note.webm", "audio/webm", flags)?.id).toBe("video");
+        expect(uploadAcceptFor(flags)).not.toMatch(/\.mp3|\.m4a|\.wav|\.ogg|audio\//);
+        expect(uploadFormatNamesFor(flags)).not.toContain("Audio");
+      }
+      expect(UPLOAD_ACCEPT).not.toContain("audio/");
+      expect(UPLOAD_FORMATS.map((f) => f.id)).not.toContain("audio");
+      expect(FORMAT_FLAGS.audio).toBe("audio_ingest");
+    });
+
+    it("knows each audio file by extension, or by audio/webm for a shared .webm, once the flag is on", () => {
+      expect(formatOf("song.mp3", "", on)?.id).toBe("audio");
+      expect(formatOf("Memo.M4A", "audio/x-m4a", on)?.id).toBe("audio");
+      expect(formatOf("call.wav", "audio/wav", on)?.id).toBe("audio");
+      expect(formatOf("podcast.ogg", "", on)?.id).toBe("audio");
+      expect(formatOf("recording.webm", "audio/webm", on)?.id).toBe("audio");
+      expect(formatOf("recording.weba", "", on)?.id).toBe("audio");
+      expect(formatOf("talk.webm", "video/webm", on)?.id).toBe("video");
+      expect(formatOf("talk.webm", "", on)?.id).toBe("video");
+      expect(formatOf("blob", "audio/mpeg", on)?.id).toBe("audio");
+      expect(uploadAcceptFor(on)).toContain(".mp3");
+      expect(uploadAcceptFor(on)).toContain("audio/webm");
+      expect(uploadFormatNamesFor(on)).toMatch(/Video or Audio$/);
+      expect(PLANNED_FORMATS).not.toContain("audio");
+    });
+
+    it("stores audio with an audio type and is not shown as a figure", () => {
+      const audio = formatOf("song.mp3", "", on)!;
+      expect(storedMimeType(audio, "song.mp3", "")).toBe("audio/mpeg");
+      expect(storedMimeType(audio, "memo.m4a", "")).toBe("audio/mp4");
+      expect(storedMimeType(audio, "recording.webm", "")).toBe("audio/webm");
+      expect(storedMimeType(audio, "call.wav", "audio/x-wav")).toBe("audio/x-wav");
+      expect(mediaKindOf("audio/mpeg")).toBeNull();
+      expect(DIRECT_UPLOAD_FORMATS).toContain(audio.id);
+    });
   });
 
   it("reads a PDF page by page into located passages", async () => {
@@ -127,6 +181,31 @@ describe("one pipeline, one converter per format", () => {
       ["Recording of the Acme quarterly update.", {}],
       ["Revenue grew 12% in Q3. The Rotterdam warehouse opens in March.", { time: "00:00" }],
     ]);
+  });
+
+  it("reads a recording as its timestamped transcript, one passage per paragraph at its time", async () => {
+    const seen: string[] = [];
+    const long = "word ".repeat(100).trim();
+    const pages = await CONVERTERS.audio(new Uint8Array([1, 2, 3]), {
+      fileName: "standup.m4a",
+      mimeType: "audio/mp4",
+      readAudio: async (audio) => {
+        seen.push(`${audio.fileName} ${audio.mimeType} ${audio.bytes.byteLength}`);
+        return { transcript: [{ start: 0, text: " Revenue grew 12% in Q3. " }, { start: 4.2, text: "" }, { start: 9.9, text: long }, { start: 3725.4, text: "The Rotterdam warehouse opens in March." }] };
+      },
+    });
+    expect(seen).toEqual(["standup.m4a audio/mp4 3"]);
+    expect(pages.every((page) => page.page === null)).toBe(true);
+    expect(splitIntoPassages(pages).map((p) => [p.text, p.location])).toEqual([
+      ["Revenue grew 12% in Q3.", { time: "00:00" }],
+      [long, { time: "00:09" }],
+      ["The Rotterdam warehouse opens in March.", { time: "62:05" }],
+    ]);
+  });
+
+  it("gives no passages for a silent recording, and refuses one with no speech-to-text reader", async () => {
+    expect(await CONVERTERS.audio(new Uint8Array([1]), { fileName: "quiet.wav", mimeType: "audio/wav", readAudio: async () => ({ transcript: [] }) })).toEqual([]);
+    await expect(CONVERTERS.audio(new Uint8Array([1]), { fileName: "x.mp3", mimeType: "audio/mpeg" })).rejects.toThrow(/speech-to-text/);
   });
 
   it("refuses a video when no model can read it", async () => {

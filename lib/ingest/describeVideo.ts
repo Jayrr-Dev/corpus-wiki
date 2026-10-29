@@ -32,6 +32,11 @@ export type VideoToRead = { bytes: Uint8Array; mimeType: string; fileName: strin
 export type VideoReading = { description: string; transcript: TranscriptSegment[] };
 export type VideoReader = (video: VideoToRead) => Promise<VideoReading>;
 
+// WHAT A CONVERTER NEEDS TO HAVE A RECORDING READ: the same speech-to-text step, no frames
+export type AudioToRead = VideoToRead;
+export type AudioReading = { transcript: TranscriptSegment[] };
+export type AudioReader = (audio: AudioToRead) => Promise<AudioReading>;
+
 // One sampled frame, as JPEG, and when it was taken
 export type VideoFrame = { time: number; jpeg: Uint8Array };
 
@@ -65,10 +70,19 @@ export function groupTranscript(segments: readonly TranscriptSegment[]): Transcr
   return groups;
 }
 
+// THE TRANSCRIPT'S TEXT: each paragraph at the time it starts ({ time: "mm:ss" })
+export function transcriptPages(transcript: readonly TranscriptSegment[]): ExtractedPage[] {
+  return groupTranscript(transcript).map((segment) => ({ page: null, text: segment.text, time: formatVideoTime(segment.start) }));
+}
+
 // THE VIDEO'S TEXT: the description (no time), then each transcript paragraph at its time
 export function videoPages(reading: VideoReading): ExtractedPage[] {
-  const transcript = groupTranscript(reading.transcript).map((segment) => ({ page: null, text: segment.text, time: formatVideoTime(segment.start) }));
-  return [...(reading.description.trim() ? [{ page: null, text: reading.description }] : []), ...transcript];
+  return [...(reading.description.trim() ? [{ page: null, text: reading.description }] : []), ...transcriptPages(reading.transcript)];
+}
+
+// A RECORDING'S TEXT: only its transcript, each paragraph at its time
+export function audioPages(reading: AudioReading): ExtractedPage[] {
+  return transcriptPages(reading.transcript);
 }
 
 const SYSTEM_PROMPT = `You describe one video for a personal knowledge base. You get a few frames sampled from it, each with its time, and the transcript of what is said. Your description and the transcript are the only text the knowledge base will have for this video: facts are extracted from them and cited back to the video.

@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
 import { describeImageAnswerJsonSchema, describeImageAnswerSchema, resolveVisionModel } from "./describeMedia";
 import {
+  type AudioReader,
   buildDescribeVideoMessages,
   describeVideoAnswerToText,
   frameTimes,
@@ -33,9 +34,9 @@ export function videoReaderFrom(settings: TokenFactorySettings | null, env: Node
     const path = join(tmpdir(), `second-brain-${randomUUID()}`);
     await writeFile(path, video.bytes);
     try {
-      const probe = await probeVideo(path);
+      const probe = await probeMedia(path, "video");
       const [transcript, frames] = await Promise.all([
-        probe.hasAudio ? transcribe(await readAudio(path), env) : Promise.resolve([]),
+        probe.hasAudio ? transcribe(await readAudio(path, "video"), env) : Promise.resolve([]),
         Promise.all(frameTimes(probe.durationSeconds).map((time) => readFrame(path, time))),
       ]);
       const pictures = frames.filter((frame): frame is VideoFrame => frame !== null);
@@ -49,6 +50,22 @@ export function videoReaderFrom(settings: TokenFactorySettings | null, env: Node
         maxTokens: 4_000,
       });
       return { description: describeVideoAnswerToText(answer.value), transcript };
+    } finally {
+      await rm(path, { force: true });
+    }
+  };
+}
+
+// THE AUDIO READER: the video reader's speech-to-text step on its own (ffmpeg takes the
+// sound, Whisper writes the transcript in this process). Needs no model key.
+export function audioReaderFrom(env: NodeJS.ProcessEnv = process.env): AudioReader {
+  return async (audio) => {
+    const path = join(tmpdir(), `second-brain-${randomUUID()}`);
+    await writeFile(path, audio.bytes);
+    try {
+      const probe = await probeMedia(path, "recording");
+      if (!probe.hasAudio) throw new Error("This recording has no sound to transcribe.");
+      return { transcript: await transcribe(await readAudio(path, "recording"), env) };
     } finally {
       await rm(path, { force: true });
     }
@@ -77,10 +94,11 @@ async function runFfmpeg(args: string[]): Promise<{ code: number | null; stdout:
 }
 
 // LENGTH AND SOUND: from the log `ffmpeg -i` prints (it exits non-zero, having no output)
-async function probeVideo(path: string): Promise<{ durationSeconds: number; hasAudio: boolean }> {
+type MediaNoun = "video" | "recording";
+async function probeMedia(path: string, noun: MediaNoun): Promise<{ durationSeconds: number; hasAudio: boolean }> {
   const { stderr } = await runFfmpeg(["-i", path]);
   const duration = /Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/.exec(stderr);
-  if (!duration && !/Stream #/.test(stderr)) throw new Error("This file could not be read as a video.");
+  if (!duration && !/Stream #/.test(stderr)) throw new Error(`This file could not be read as a ${noun}.`);
   const durationSeconds = duration ? Number(duration[1]) * 3600 + Number(duration[2]) * 60 + Number(duration[3]) : 0;
   return { durationSeconds, hasAudio: /Stream #.*: Audio:/.test(stderr) };
 }
@@ -92,9 +110,9 @@ async function readFrame(path: string, time: number): Promise<VideoFrame | null>
 }
 
 // THE SOUND as Whisper hears it: mono 16 kHz float samples
-async function readAudio(path: string): Promise<Float32Array> {
+async function readAudio(path: string, noun: MediaNoun): Promise<Float32Array> {
   const { code, stdout, stderr } = await runFfmpeg(["-loglevel", "error", "-i", path, "-vn", "-ac", "1", "-ar", "16000", "-f", "f32le", "pipe:1"]);
-  if (code !== 0) throw new Error(`The video's sound could not be read: ${stderr.trim() || `ffmpeg exited with ${code}`}`);
+  if (code !== 0) throw new Error(`The ${noun}'s sound could not be read: ${stderr.trim() || `ffmpeg exited with ${code}`}`);
   const samples = new Float32Array(stdout.byteLength / 4);
   new Uint8Array(samples.buffer).set(stdout.subarray(0, samples.byteLength));
   return samples;
