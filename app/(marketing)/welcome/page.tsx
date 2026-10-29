@@ -87,25 +87,25 @@ export default function WelcomePage() {
     <>
       <LandingNav />
       <main id="main">
-        {/* HERO: the live page demo beside the outcome headline and the one action */}
-        <section className="relative isolate flex min-h-svh flex-col justify-center overflow-hidden px-4 pt-24 pb-12 sm:px-6">
-          <div className="mx-auto grid w-full max-w-7xl items-center gap-8 lg:grid-cols-[4fr_7fr]">
-            <Reveal>
-              <h1 className="max-w-[680px] bg-linear-to-r from-white to-landing-fade bg-clip-text pb-1 text-4xl font-semibold tracking-tight text-balance text-transparent sm:text-5xl">
-                Pages that <br className="hidden sm:inline" />
-                rewrite themselves.
+        {/* HERO: the glass machine under the outcome headline and the one action */}
+        <section className="relative isolate flex min-h-svh flex-col justify-center overflow-hidden px-4 pt-28 pb-12 sm:px-6">
+          <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 text-center">
+            <Reveal className="flex flex-col items-center">
+              <h1 className="max-w-[680px] bg-linear-to-r from-white to-landing-fade bg-clip-text pb-1 text-4xl font-semibold tracking-tight text-balance text-transparent sm:text-6xl">
+                Feed it everything. <br className="hidden sm:inline" />
+                Watch it organize.
               </h1>
               <p className="mt-6 max-w-[680px] text-lg text-white/70 text-pretty sm:text-xl">
-                A new file arrives. Only the sentences it changes are rewritten, each with its source.
+                Corpus Wiki turns your files into pages, a glossary and stakeholder maps that keep themselves current.
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
                 <span className="text-sm text-white/50">Free to start</span>
                 <PlaceholderTag>Confirm free plan terms</PlaceholderTag>
               </div>
             </Reveal>
-            <Reveal delay={150}>
-              <DemoEmbed concept={7} title="A wiki page rewriting itself as new sources arrive" minHeight={640} />
+            <Reveal delay={150} className="w-full">
+              <DemoEmbed concept={6} title="Files feed a graph that organizes itself and produces pages, a glossary and more" minHeight={460} />
             </Reveal>
           </div>
         </section>
@@ -138,14 +138,18 @@ export default function WelcomePage() {
           <TaglineReveal lines={["Every fact knows where it came from.", "Every change knows what it touched."]} />
         </section>
 
-        {/* HOW IT WORKS: the glass machine */}
+        {/* HOW IT WORKS: the live page, sentences rewriting as sources arrive */}
         <section id="how" className="scroll-mt-24 px-4 py-24 sm:px-6">
-          <Reveal>
-            <SectionHeading eyebrow="How it works" title="Feed it everything. Watch it organize." body="Corpus Wiki grows a map of what you know, then writes the pages, guides and lists your team needs." />
-          </Reveal>
-          <Reveal delay={120} className="mx-auto mt-12 max-w-6xl">
-            <DemoEmbed concept={6} title="Files feed a graph that organizes itself and produces pages, a glossary and more" minHeight={460} />
-          </Reveal>
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-8 lg:grid-cols-[4fr_7fr]">
+            <Reveal>
+              <p className="text-sm font-semibold text-landing-gold">How it works</p>
+              <h2 className="mt-3 max-w-[680px] text-3xl font-semibold tracking-tight text-balance sm:text-5xl">Pages that rewrite themselves.</h2>
+              <p className="mt-4 max-w-[680px] text-lg text-white/65 text-pretty sm:text-xl">A new file arrives. Only the sentences it changes are rewritten, each with its source.</p>
+            </Reveal>
+            <Reveal delay={150}>
+              <DemoEmbed concept={7} title="A wiki page rewriting itself as new sources arrive" minHeight={640} />
+            </Reveal>
+          </div>
         </section>
 
         {/* WHAT YOU GET: glossary, dictionary, stakeholders */}

@@ -1,9 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { hasPublicSupabaseEnv } from "@/lib/supabase/env";
-import { isPublicPath, isPublicWikiPath, refreshSession } from "@/lib/supabase/proxy";
+import { isMarketingPath, isPublicPath, isPublicWikiPath, refreshSession } from "@/lib/supabase/proxy";
 
 // AUTH GATE (Next 16 "proxy", formerly middleware): signed-out users go to /login
 export async function proxy(request: NextRequest) {
+  if (isMarketingPath(request.nextUrl.pathname)) return NextResponse.next();
   // Public readers never resolve a signed-in workspace or refresh its cookies.
   if (isPublicWikiPath(request.nextUrl.pathname)) {
     // Server Actions can be posted to page URLs. The public reader is a strict

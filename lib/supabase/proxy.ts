@@ -13,6 +13,12 @@ import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 // cookie; /oauth/authorize sends a signed-out person to /login itself, keeping the request.
 export const PUBLIC_PATHS = ["/welcome", "/landing-demos", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics", "/oauth", "/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"] as const;
 
+// The marketing page and the static demos it embeds never read a session, so the
+// proxy skips the auth refresh for them: a slow or down auth service can't break them.
+export function isMarketingPath(pathname: string): boolean {
+  return ["/welcome", "/landing-demos"].some(p => pathname === p || pathname.startsWith(`${p}/`));
+}
+
 export function isPublicWikiPath(pathname: string): boolean {
   return ["/explore", "/s", "/embed", "/api/public-wiki/metrics"].some(p => pathname === p || pathname.startsWith(`${p}/`));
 }
