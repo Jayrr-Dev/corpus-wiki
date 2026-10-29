@@ -44,8 +44,11 @@ export const RERANK_DEPTH = 40;
 const MIN_SIMILARITY = 0.35;
 const SEMANTIC_WARNING = "Semantic search is unavailable; this answer uses text matches only.";
 
+// Hybrid only when a reranker is configured: the fused order alone measured worse than legacy
+// (hit@5 53% vs 90%, docs/progress-2026-10-26.md), so CHAT_SEARCH=hybrid without one stays legacy.
+// Callers that pass `mode` explicitly (evals, tests) still get exactly the mode they ask for.
 export function searchMode(env: NodeJS.ProcessEnv = process.env): SearchMode {
-  return env.CHAT_SEARCH === "hybrid" ? "hybrid" : "legacy";
+  return env.CHAT_SEARCH === "hybrid" && getReranker(env) ? "hybrid" : "legacy";
 }
 
 export async function rankUnits(question: string, deps: RankDeps): Promise<RankResult> {

@@ -54,15 +54,24 @@ beforeEach(() => {
 });
 
 describe("searchMode", () => {
-  it("is legacy unless CHAT_SEARCH is hybrid", () => {
+  it("is legacy unless CHAT_SEARCH is hybrid and a reranker is configured", () => {
+    const reranked = { CHAT_RERANKER: "voyage", VOYAGE_API_KEY: "key" };
     expect(searchMode({ NODE_ENV: "test" })).toBe("legacy");
-    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "hybrid" })).toBe("hybrid");
-    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "other" })).toBe("legacy");
+    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "hybrid", ...reranked })).toBe("hybrid");
+    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "other", ...reranked })).toBe("legacy");
+  });
+
+  it("stays legacy for CHAT_SEARCH=hybrid without a reranker (fused alone ranks worse)", () => {
+    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "hybrid" })).toBe("legacy");
+    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "hybrid", CHAT_RERANKER: "voyage" })).toBe("legacy");
   });
 
   it("reads the mode from the environment when none is given", async () => {
     vi.stubEnv("CHAT_SEARCH", "hybrid");
-    const result = await rankUnits("lockout", { db, client: fakeClient([]), embedder });
+    vi.stubEnv("CHAT_RERANKER", "voyage");
+    vi.stubEnv("VOYAGE_API_KEY", "key");
+    // The mode comes from the environment; reranking itself is off here so nothing calls Voyage
+    const result = await rankUnits("lockout", { db, client: fakeClient([]), embedder, reranker: null });
     expect(result.mode).toBe("hybrid");
     expect(rpc.searchText).toHaveBeenCalled();
   });
