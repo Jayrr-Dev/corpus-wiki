@@ -13,7 +13,7 @@ The whole script as one block, for re-recording everything in one take. It follo
 
 And when Brent leaves... [lower, matter-of-fact] everything he knew walks out the door with him.
 
-[casual, like talking to a friend] I've worked at a bunch of private companies. And the hardest thing for all of them wasn't sales, or hiring... [leaning in, sincere] it was writing down what people KNOW.
+[casual, like talking to a friend] I've worked at a bunch of small local private companies. And the hardest thing for all of them wasn't sales, or hiring... [leaning in, sincere] it was writing down what people KNOW.
 
 [remembering, slightly amused] At one place, our most senior engineer left on a Friday. By Monday — nobody knew how half the system worked. [light chuckle] We spent WEEKS piecing it back together from old emails and chat messages.
 
@@ -83,7 +83,7 @@ NEW
 ## Act 2: The company problem
 
 ```text
-[Casual, talking to a friend] I've worked at a bunch of private companies. And the hardest thing for all of them wasn't sales, or hiring... [leaning in, sincere] it was writing down what people KNOW.
+[Casual, talking to a friend] I've worked at a bunch of small local private companies. And the hardest thing for all of them wasn't sales, or hiring... [leaning in, sincere] it was writing down what people KNOW.
 
 [Remembering, slightly amused] At one place, our most senior engineer left on a Friday. [short pause] By Monday, nobody knew how half the system worked. [dry laugh] We spent WEEKS piecing it back together from old emails and chat messages.
 
