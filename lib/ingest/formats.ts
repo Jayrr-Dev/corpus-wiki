@@ -77,6 +77,14 @@ export const ALL_UPLOAD_FORMATS: readonly UploadFormat[] = [
 // FORMATS BEHIND A FEATURE FLAG: while the flag is off the format is in no list, so it is refused everywhere
 export const FORMAT_FLAGS: Partial<Record<UploadFormatId, FeatureFlagKey>> = { audio: "audio_ingest", chat: "chat_import" };
 
+// The formats these flags allow (no flags: only the unflagged ones)
+export function uploadFormatsFor(flags: FormatFlags = {}): readonly UploadFormat[] {
+  return ALL_UPLOAD_FORMATS.filter((format) => {
+    const flag = FORMAT_FLAGS[format.id];
+    return !flag || flags[flag] === true;
+  });
+}
+
 // FORMATS WITH A CONVERTER AND NO FLAG
 export const UPLOAD_FORMATS: readonly UploadFormat[] = uploadFormatsFor();
 
