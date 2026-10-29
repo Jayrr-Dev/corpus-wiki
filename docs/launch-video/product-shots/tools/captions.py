@@ -38,8 +38,14 @@ SOFT = r"{\blur6}"  # blurs the dark outline into a soft shadow; the white fill 
 def spoken(path):
     """The spoken words of a take as (text, start, end), without audio events or bracketed tags."""
     words = json.load(open(path, encoding="utf-8"))["words"]
-    return [(w["text"].strip(), w["start"], w["end"]) for w in words
+    return [(rename(w["text"].strip()), w["start"], w["end"]) for w in words
             if w["type"] == "word" and w["text"].strip() and not TAG.match(w["text"].strip())]
+
+
+# "Dave" became "Brent" (a nod to The Phoenix Project). The re-recorded lines are spliced into the
+# same slots of the main take, so the old transcript's timings still hold; only the name changes.
+def rename(text):
+    return re.sub(r"\bDave\b", "Brent", text)
 
 
 def phrases(words):

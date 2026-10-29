@@ -13,7 +13,7 @@ const ARTICLE = {
     { title: "How it works", lines: [
       { id: "schedule", parts: ["The sync runs every night at 2:00 AM and retries a failed batch three times before it alerts the team."], cites: [1, 3] },
       { parts: ["Each invoice is matched to its customer record first; unmatched invoices wait in a review queue instead of being dropped."], cites: [2] },
-      { parts: [["link", "Dave Morales"], " built the current version during the move from ", ["link", "PayCore"], " in March 2026."], cites: [4] },
+      { parts: [["link", "Brent Morales"], " built the current version during the move from ", ["link", "PayCore"], " in March 2026."], cites: [4] },
     ] },
     { title: "When it breaks", lines: [
       { parts: ["A failed run posts an alert with the batch id. Re-run it from the admin panel; never edit the invoice table by hand."], cites: [1] },
@@ -68,7 +68,7 @@ function buildPanel(lineText) {
   const claim = sections[1].querySelector("article");
   claim.querySelector("p").textContent = "Billing sync is scheduled nightly at 02:00 and retries a failed batch up to 3 times.";
   const ev = [...claim.querySelectorAll("a")];
-  const quotes = [["The nightly job starts at 02:00 server time.", "Billing-Sync-Runbook.pdf · p.4"], ["If a batch fails it tries again, three times max.", "dave-handover-walkthrough.mp4 · 03:12"]];
+  const quotes = [["The nightly job starts at 02:00 server time.", "Billing-Sync-Runbook.pdf · p.4"], ["If a batch fails it tries again, three times max.", "brent-handover-walkthrough.mp4 · 03:12"]];
   ev.forEach((a, i) => { if (i >= quotes.length) { a.remove(); return; } a.querySelector("q").textContent = quotes[i][0]; a.querySelector("span.truncate").textContent = quotes[i][1]; });
   const hist = sections[2];
   hist.querySelector("span.text-xs.text-faint").textContent = "AI · Oct 29, 2026, 9:42 AM";

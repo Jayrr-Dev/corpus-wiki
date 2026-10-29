@@ -2,7 +2,7 @@
 // Real Stakeholders screen. Cards are rebuilt with synthetic people and companies, using the app's card markup.
 const KIND = { Person: "bg-rose-950 text-rose-100", Company: "bg-lime-950 text-lime-100" };
 const PEOPLE = [
-  ["Dave Morales", "Person", 720, "Senior engineer who built billing sync and led the move from PayCore to Ledgerly.", "Owns billing sync and its runbook; the person to ask when a batch fails.", [["Team", "Engineering"], ["Left", "Friday, 3 Apr 2026"]], ["Built the current billing sync", "Led the PayCore → Ledgerly migration", "Recorded the handover walkthrough"], "31 claims · 4 sources"],
+  ["Brent Morales", "Person", 720, "Senior engineer who built billing sync and led the move from PayCore to Ledgerly.", "Owns billing sync and its runbook; the person to ask when a batch fails.", [["Team", "Engineering"], ["Left", "Friday, 3 Apr 2026"]], ["Built the current billing sync", "Led the PayCore → Ledgerly migration", "Recorded the handover walkthrough"], "31 claims · 4 sources"],
   ["Priya Nair", "Person", 810, "Finance lead who owns invoicing and signs off on payment providers.", "Approves provider changes and renews expired provider tokens.", [["Team", "Finance"], ["Signs off", "Payment providers"]], ["Signed the Ledgerly contract", "Runs the month-end close"], "22 claims · 3 sources"],
   ["Marco Silva", "Person", 340, "Finance analyst who checks reconciliation reports after each sync.", "Flags invoices that land in the review queue.", [["Team", "Finance"], ["Reports to", "Priya Nair"]], ["Reviews the reconciliation report", "Escalates unmatched invoices"], "9 claims · 2 sources"],
 ];

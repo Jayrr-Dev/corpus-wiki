@@ -5,7 +5,7 @@ const FILES = [
   ["Payment-Provider-Decision.docx", "DOCX", "#4d6ab6"],
   ["standup-notes-2026-03-14.md", "MD", "#8a8a8a"],
   ["billing-architecture.png", "PNG", "#369e94"],
-  ["dave-handover-walkthrough.mp4", "MP4", "#8278cb"],
+  ["brent-handover-walkthrough.mp4", "MP4", "#8278cb"],
 ];
 const MAILS = ["Re: PayCore fees from April", "Fwd: Ledgerly contract signed", "Billing sync failed (batch 4471)"];
 let rows, drop, cards, countEl, rowsLabel;

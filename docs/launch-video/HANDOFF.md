@@ -44,7 +44,20 @@ Lanes run in parallel on their own branches and are merged into `launch-video` o
 | final | `tools/final.py`: no placeholder labels or timecode, captions burned in, optional music ducked under the VO, −14 LUFS, writes `out/final.mp4` | final: timeline, captions | waiting |
 | integration | Wire the `g*` clips into `timeline.py` | graphics, final: timeline | waiting |
 | you | Copy `product-shots/out/*.mp4` from the other machine | | waiting on you |
-| you | Office shoot; shots 25–26 quotes or cut; end card URL; music track | | waiting on you |
+| you | Office shoot; shots 25–26 quotes or cut; music track | | waiting on you |
+| you | Record the four new VO lines below in ElevenLabs | | waiting on you |
+| integration | Splice the new lines into the VO, rebuild lip-sync clips 1 and 3, re-render the scenes that name Brent | you: new lines, out/ and snapshots copied | waiting |
+
+### New VO lines (2026-10-29)
+
+"Dave" is now "Brent", a quiet nod to *The Phoenix Project*. The product scenes (`scenes/*.js`) and the captions already say Brent. Record each line as its own file, in the "Samuel" voice on Eleven v4 with the same settings as `vo-main-v2.mp3`:
+
+1. `brent-01.mp3`, replaces 0:00.1–0:02.0: `[Relaxed, conversational, a knowing half-smile] Every company has a Brent.`
+2. `brent-02.mp3`, replaces 0:02.3–0:06.8: `[short pause] And when Brent leaves... [lower, matter-of-fact] everything he knew walks out the door with him.`
+3. `brent-30.mp3`, replaces main-take 1:51.0–1:53.3: `[Light, satisfied] Brent's knowledge? [chuckles] Still here.`
+4. `nebius-video.mp3`, new, right after "…switch any of them in settings.": `[Matter-of-fact, a little proud] And when it makes a video... every render runs as a serverless job on Nebius cloud.`
+
+Line 4 is true of the app's Video module (`lib/video/render.ts`: one Nebius Serverless AI job per video). It is not true of this launch video, which is built locally, so don't word it that way.
 
 ## Lip-sync shoot (office)
 

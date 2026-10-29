@@ -9,7 +9,7 @@ const ANSWER = [
 const PARAS = [
   `In March 2026 the team moved billing from PayCore to Ledgerly. Two things drove it.`,
   `PayCore raised its fees by 40% from April${CITE(1)}${CITE(2)}, and its webhooks kept failing during month-end, which broke billing sync three times in one quarter${CITE(3)}.`,
-  `Dave Morales led the migration and finished it on 28 March. Priya Nair signed off for finance${CITE(1)}.`,
+  `Brent Morales led the migration and finished it on 28 March. Priya Nair signed off for finance${CITE(1)}.`,
 ];
 const SOURCES = [["Payment-Provider-Decision.docx", "source"], ["Re: PayCore fees from April", "email"], ["standup-notes-2026-03-14.md", "source"]];
 let ta, send, wrapOuter, scroller, empty, log, userMsg, botMsg, botBody, sources, status, tokens = [];
