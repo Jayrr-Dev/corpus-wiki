@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils";
 // DEMO EMBED: one approved landing demo (public/landing-demos/concept-<n>.html)
 // in embed mode, sized to its content. The demo page posts its height as it
 // changes. Fast path until each demo is ported to React (see TODO.md).
-export function DemoEmbed({ concept, title, minHeight = 560, className }: { concept: number; title: string; minHeight?: number; className?: string }) {
+// `eager` is for a demo above the fold; the rest load as they near the screen.
+export function DemoEmbed({ concept, title, minHeight = 560, eager = false, className }: { concept: number; title: string; minHeight?: number; eager?: boolean; className?: string }) {
   const src = `/landing-demos/concept-${concept}.html`;
   const [height, setHeight] = useState(minHeight);
 
@@ -24,7 +25,7 @@ export function DemoEmbed({ concept, title, minHeight = 560, className }: { conc
     <iframe
       src={`${src}?embed`}
       title={title}
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
       scrolling="no"
       style={{ height }}
       className={cn("demo-edge-fade block w-full border-0 bg-transparent", className)}

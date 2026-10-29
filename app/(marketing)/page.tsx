@@ -178,7 +178,7 @@ export default async function WelcomePage() {
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
-              <DemoEmbed concept={6} title="Files feed a graph that organizes itself and produces pages, a glossary and more" minHeight={460} />
+              <DemoEmbed concept={6} title="Files feed a graph that organizes itself and produces pages, a glossary and more" minHeight={460} eager />
             </Reveal>
             <Reveal delay={300}>
               {/* BUILT WITH: the models and the platform behind the app. NVIDIA's
