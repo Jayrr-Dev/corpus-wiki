@@ -1,0 +1,51 @@
+# =====================================================================
+# PROCESSING RECOVERY SCHEDULER
+# Resumes uploads whose run died mid-way (timeout, deploy, crash).
+# The app runs serverless, so nothing resumes them unless a scheduler
+# calls POST /api/processing/recover. Vercel Hobby crons run at most
+# once a day, so GitHub Actions is the scheduler instead.
+#
+# Repository secrets (Settings > Secrets and variables > Actions):
+#   APP_URL                production origin, e.g. https://corpus-wiki.vercel.app
+#   PROCESSING_WORKER_KEY  same value as the Vercel env var of that name
+# =====================================================================
+
+name: Processing recovery
+
+on:
+  schedule:
+    - cron: "*/5 * * * *" # GitHub's shortest interval; runs can start a few minutes late
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+# One recovery pass at a time, so two runs never claim work together
+concurrency:
+  group: processing-recovery
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Each request claims at most one upload and runs for up to 300 s.
+      # Keep calling while it reports work, up to MAX_PASSES per run.
+      - name: Resume interrupted uploads
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          PROCESSING_WORKER_KEY: ${{ secrets.PROCESSING_WORKER_KEY }}
+          MAX_PASSES: "5"
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$PROCESSING_WORKER_KEY" ]; then
+            echo "::warning::APP_URL or PROCESSING_WORKER_KEY secret is not set; skipping recovery."
+            exit 0
+          fi
+          for pass in $(seq 1 "$MAX_PASSES"); do
+            response=$(curl --silent --show-error --fail-with-body --max-time 320 \
+              --request POST "${APP_URL%/}/api/processing/recover" \
+              --header "Authorization: Bearer $PROCESSING_WORKER_KEY")
+            echo "Pass $pass: $response"
+            # {"worked":false} means the queue is empty
+            echo "$response" | grep -q '"worked":true' || break
+          done
