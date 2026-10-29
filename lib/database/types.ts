@@ -1569,6 +1569,7 @@ export type Database = {
           embedding: string;
           model: string;
           revision_id: string;
+          text_version: number;
           unit_id: string;
         };
         Insert: {
@@ -1576,6 +1577,7 @@ export type Database = {
           embedding: string;
           model: string;
           revision_id: string;
+          text_version?: number;
           unit_id: string;
         };
         Update: {
@@ -1583,6 +1585,7 @@ export type Database = {
           embedding?: string;
           model?: string;
           revision_id?: string;
+          text_version?: number;
           unit_id?: string;
         };
         Relationships: [];

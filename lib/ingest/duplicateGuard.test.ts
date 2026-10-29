@@ -76,9 +76,19 @@ describe("guardDuplicates", () => {
   it("embeds repeated new wording only once", async () => {
     const embed = vi.fn(async (texts: string[]) => texts.map(() => [1, 0]));
     const result = await guardDuplicates(deps({ embedder: { model: "m", embed } }), { ...input, existingUnits: [] }, draftOf([add(NEW, ["p1"]), add(NEW, ["p2"])]));
-    expect(embed).toHaveBeenCalledWith([NEW]);
+    // Embedded as stored claims are, context first (no entity names in the input, so keys stand in)
+    expect(embed).toHaveBeenCalledWith([`utilitek · Applies to: utilitek · ${NEW}`]);
     expect(result.actions).toHaveLength(1);
     expect(result.actions[0]?.passageIds).toEqual(["p1", "p2"]);
+  });
+
+  it("embeds the same wording about another entity apart, by entity name", async () => {
+    const embed = vi.fn(async (texts: string[]) => texts.map(() => [1, 0]));
+    const other: KnowledgeContext = { ...context, entities: [{ type: "company", key: "other", role: "subject" }], applicability: { status: "general", entities: [], conditions: null } };
+    const entities = [{ type: "company", key: "utilitek", name: "Utilitek Solutions Inc." }, { type: "company", key: "other", name: "Other Co" }];
+    const second: DraftAction = { ...add(NEW, ["p2"]), input: { ...(add(NEW, ["p2"]).input as object), context: other } } as DraftAction;
+    await guardDuplicates(deps({ embedder: { model: "m", embed } }), { ...input, entities, existingUnits: [] }, draftOf([add(NEW, ["p1"]), second]));
+    expect(embed).toHaveBeenCalledWith([`Utilitek Solutions Inc. · Applies to: Utilitek Solutions Inc. · ${NEW}`, `Other Co · ${NEW}`]);
   });
 
   it("preserves independent enrichments of an earlier new claim", async () => {

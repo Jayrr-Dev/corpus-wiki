@@ -2,6 +2,7 @@ import type { Embedder } from "@/lib/ai/embeddings";
 import type { DbRpc } from "@/lib/db/rpc";
 import { mapConcurrent } from "@/lib/processing/concurrency";
 import { assertActiveUpload, uploadExecution } from "@/lib/ingest/workflowContext";
+import { CLAIM_TEXT_VERSION, claimEmbeddingText } from "@/lib/knowledge/claimEmbeddingText";
 
 // =====================================================================
 // CLAIM VECTORS IN THE DATABASE (public.unit_embeddings): saving the
@@ -12,26 +13,31 @@ import { assertActiveUpload, uploadExecution } from "@/lib/ingest/workflowContex
 // A LIVE CLAIM NEAR A VECTOR (similarity is cosine, 1 = same direction)
 export type SimilarUnit = { unitId: string; revisionId: string; content: string; similarity: number };
 
-type MissingRow = { unit_id: string; revision_id: string; content: string };
+type MissingRow = { unit_id: string; revision_id: string; content: string; subjects?: string[] | null; scope?: string[] | null; conditions?: string | null };
 type SimilarRow = { unit_id: string; revision_id: string; content: string; similarity: number };
 
 // pgvector reads "[0.1,0.2,...]", which is also a JSON array
 const vectorText = (vector: readonly number[]) => JSON.stringify(vector);
 
-// Embeds every live claim whose current wording has no vector yet; returns how many were saved
+// The text a stored claim is embedded as (lib/knowledge/claimEmbeddingText.ts)
+const storedClaimText = (row: MissingRow) =>
+  claimEmbeddingText(row.content, { subjects: row.subjects ?? [], scope: row.scope ?? [], conditions: row.conditions ?? null });
+
+// Embeds every live claim whose current wording has no vector of this model and
+// text version yet (new claims first, then older texts); returns how many were saved
 export async function embedMissingUnits(db: DbRpc, embedder: Embedder, pageSize = 256): Promise<number> {
   let saved = 0;
   for (;;) {
-    const missing = await db.call<MissingRow[]>("missing_unit_embeddings", { p_model: embedder.model, p_limit: pageSize });
+    const missing = await db.call<MissingRow[]>("stale_unit_embeddings", { p_model: embedder.model, p_version: CLAIM_TEXT_VERSION, p_limit: pageSize });
     if (!missing.length) return saved;
     const chunks: MissingRow[][] = [];
     for (let start = 0; start < missing.length; start += 64) chunks.push(missing.slice(start, start + 64));
     const counts = await mapConcurrent(chunks, 2, async (rows) => {
       await assertActiveUpload();
-      const vectors = await embedder.embed(rows.map((row) => row.content));
+      const vectors = await embedder.embed(rows.map(storedClaimText));
       await assertActiveUpload();
       return db.call<number>("save_unit_embeddings", {
-        p_rows: rows.map((row, index) => ({ revisionId: row.revision_id, unitId: row.unit_id, model: embedder.model, embedding: vectors[index] })),
+        p_rows: rows.map((row, index) => ({ revisionId: row.revision_id, unitId: row.unit_id, model: embedder.model, embedding: vectors[index], textVersion: CLAIM_TEXT_VERSION })),
       });
     }, uploadExecution.getStore()?.signal);
     const count = counts.reduce((sum, value) => sum + value, 0);
