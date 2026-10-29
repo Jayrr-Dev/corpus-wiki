@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hero concept 8</title>
+<script src="theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -12,26 +13,26 @@
   /* GLOSSARY PIECES: the term list behind, the definition card in front */
   .terms { left: -24px; top: 0; width: 240px; padding: 16px; transform: translateZ(-140px); }
   .terms .head { font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 0 8px 8px; }
-  .term { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 8px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.75); transition: opacity .5s var(--ease), transform .6s var(--ease), background-color .3s var(--ease); }
-  .term.cur { background: var(--hi); color: #fff; }
+  .term { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-radius: 8px; font-size: 14px; line-height: 20px; color: color-mix(in srgb, var(--ink) 75%, transparent); transition: opacity .5s var(--ease), transform .6s var(--ease), background-color .3s var(--ease); }
+  .term.cur { background: var(--hi); color: var(--ink); }
   .term.hidden { opacity: 0; transform: translateY(-8px); }
   .term.merge { opacity: 0; transform: translateY(-36px) scale(.9); }
   .term.gone { display: none; }
   .term .new { font-size: 12px; line-height: 16px; padding: 0 8px; border-radius: 9999px; background: var(--green); color: #fff; }
   .def.main { left: 200px; top: 56px; width: 520px; }
   .alias { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; font-size: 14px; line-height: 20px; color: var(--fade); }
-  .pill { padding: 2px 8px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--line); color: #fff; font-size: 12px; line-height: 16px; transition: opacity .5s var(--ease), transform .5s var(--ease); }
+  .pill { padding: 2px 8px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--line); color: var(--ink); font-size: 12px; line-height: 16px; transition: opacity .5s var(--ease), transform .5s var(--ease); }
   .pill.hidden { opacity: 0; transform: scale(.8); }
   .pill.fresh { border-color: var(--gold); }
   .meta { display: flex; gap: 24px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: var(--fade); }
-  .meta b { color: #fff; font-weight: 500; }
+  .meta b { color: var(--ink); font-weight: 500; }
   .num { display: inline-block; transition: transform .4s var(--ease), color .4s var(--ease); }
   .num.bump { transform: scale(1.25); color: var(--gold-pale); }
   .newdef { right: -56px; top: 150px; width: 300px; transform: translateZ(150px) translateY(12px); opacity: 0; transition: opacity .5s var(--ease), transform .6s var(--ease); }
   .newdef.in { opacity: 1; transform: translateZ(150px); }
-  .newdef .box { border-radius: 16px; background: var(--raised); border: 1px solid rgba(110,154,108,.6); padding: 16px; box-shadow: 0 32px 64px rgba(0,0,0,.6); }
+  .newdef .box { border-radius: 16px; background: var(--raised); border: 1px solid rgba(110,154,108,.6); padding: 16px; box-shadow: 0 32px 64px rgb(0 0 0 / calc(.6 * var(--shadow))); }
   .newdef h4 { font-size: 16px; line-height: 24px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-  .newdef p { margin-top: 8px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.82); min-height: 60px; }
+  .newdef p { margin-top: 8px; font-size: 14px; line-height: 20px; color: color-mix(in srgb, var(--ink) 82%, transparent); min-height: 60px; }
   .log { bottom: 0; }
   .srcs { top: 340px; left: -16px; }
   .centered .terms { grid-area: terms; padding: 16px; }
@@ -48,8 +49,7 @@ if (location.search.includes("embed")) {
 }
 </script>
 <style>
-html.embed { color-scheme: dark; }
-html.embed, html.embed body { background: #131209; }
+html.embed, html.embed body { background: var(--base); }
 html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
 html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
 html.embed .wrap { grid-template-columns: 1fr !important; }
