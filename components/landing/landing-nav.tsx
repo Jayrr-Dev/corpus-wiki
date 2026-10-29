@@ -35,7 +35,7 @@ export function LandingNav() {
     <>
       <nav aria-label="Main" className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
         <div className="flex w-full max-w-3xl items-center justify-between gap-6 rounded-2xl border border-white/10 bg-landing-base/60 px-4 py-2 backdrop-blur-xl">
-          <Link href="/welcome" aria-current="page" className={cn("flex items-center gap-2 rounded-lg py-1 text-white", FOCUS)}>
+          <Link href="/" aria-current="page" className={cn("flex items-center gap-2 rounded-lg py-1 text-white", FOCUS)}>
             <BrandMark className="size-6 text-landing-green-light" />
             <span className="font-brand text-xl">Corpus Wiki</span>
           </Link>

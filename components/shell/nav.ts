@@ -24,7 +24,7 @@ export type NavItem = { label: string; href: string; icon: ComponentType<IconPro
 export const NAV_GROUPS: readonly (readonly NavItem[])[] = [
   // read and ask
   [
-    { label: "Pages", href: "/", icon: PageIcon },
+    { label: "Pages", href: "/pages", icon: PageIcon },
     { label: "Graph", href: "/graph", icon: GraphIcon },
     { label: "Glossary", href: "/glossary", icon: BookOpen },
     { label: "Stakeholders", href: "/stakeholders", icon: Users },
@@ -55,9 +55,9 @@ export const NAV_GROUPS: readonly (readonly NavItem[])[] = [
   ],
 ];
 
-// True when `pathname` is this item's page or below it ("/" matches only itself and wiki pages)
+// True when `pathname` is this item's page or below it (Pages also matches wiki pages)
 export function isActivePath(href: string, pathname: string): boolean {
-  if (href === "/") return pathname === "/" || pathname.startsWith("/p/");
+  if (href === "/pages") return pathname === "/pages" || pathname.startsWith("/p/");
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

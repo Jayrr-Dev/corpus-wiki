@@ -25,7 +25,7 @@ export const TUTORIAL_STEPS: readonly TutorialStep[] = [
     title: "Create a page",
     body: "A page is what you want kept up to date, for example Project Alpha.",
     targetFor: (pathname) =>
-      pathname === "/"
+      pathname === "/pages"
         ? { tourId: "new-page", hint: "Click New page, give it a title and press Create." }
         : { tourId: "nav-pages", hint: "Open Pages first." },
     completedBy: "page-created",

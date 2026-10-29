@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { resetRequestActor } from "@/lib/auth/currentPerson";
 import { SPACE_COOKIE } from "@/lib/spaces/shared";
+import { APP_HOME } from "@/lib/auth/paths";
 
 export type SignUpState = { error: string | null; message: string | null };
 
@@ -29,7 +30,7 @@ export async function signUp(_previous: SignUpState, form: FormData): Promise<Si
   if (data.session) {
     (await cookies()).delete(SPACE_COOKIE);
     await resetRequestActor();
-    redirect("/");
+    redirect(APP_HOME);
   }
   return { error: null, message: "Check your email to confirm your account, then sign in. If you already have an account, sign in with your existing password." };
 }

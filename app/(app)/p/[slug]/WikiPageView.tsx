@@ -122,7 +122,7 @@ function WikiPageBody({ page }: { page: Tables<"pages"> }) {
     <div className="mx-auto max-w-5xl px-6 py-7">
       <header data-tour="module-header" className="mb-6 border-b pb-4">
         <nav aria-label="Page hierarchy" className="mb-3 flex flex-wrap items-center gap-2 text-panel">
-          <Link href="/" className="text-link hover:underline">Knowledge</Link>
+          <Link href="/pages" className="text-link hover:underline">Knowledge</Link>
           {ancestors.map((ancestor) => <span key={ancestor.id} className="inline-flex items-center gap-2"><span aria-hidden="true">/</span><Link href={`/p/${ancestor.slug}`} className="text-link hover:underline">{ancestor.title}</Link></span>)}
           <span aria-hidden="true">/</span><span aria-current="page">{page.title}</span>
         </nav>

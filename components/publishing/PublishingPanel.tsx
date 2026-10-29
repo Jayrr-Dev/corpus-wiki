@@ -94,7 +94,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
         <div><dt className="text-xs text-muted-foreground">Public access</dt><dd className="mt-1 font-medium">{live ? "Still active" : "Off"}</dd></div>
       </dl>
       <div className="flex flex-wrap items-center gap-2">
-        <Button asChild variant="outline"><Link href="/">{editor.pages.length ? "View pages" : "Create a page"}</Link></Button>
+        <Button asChild variant="outline"><Link href="/pages">{editor.pages.length ? "View pages" : "Create a page"}</Link></Button>
         {readyPageCount > 0 && <Button variant="ghost" disabled={save.isPending} onClick={() => { setVisibility("unlisted"); setReviewed(false); }}>Prepare sharing</Button>}
       </div>
     </section>}
@@ -119,7 +119,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
             <Button variant="ghost" size="sm" disabled={previewAction.isPending || save.isPending} onClick={() => showPreview(page.id)}>Preview</Button>
           </li>)}
           {!editor.pages.some(p => p.title.toLocaleLowerCase().includes(filter.toLocaleLowerCase())) && <li className="py-3 text-muted-foreground">No matching pages.</li>}
-        </ul> : <p className="py-2 text-muted-foreground"><Link href="/" className="text-link hover:underline">Create a page</Link> to start publishing.</p>}
+        </ul> : <p className="py-2 text-muted-foreground"><Link href="/pages" className="text-link hover:underline">Create a page</Link> to start publishing.</p>}
         {previewAction.error && <p role="alert" className="text-failed">{previewAction.error}</p>}
         {preview && <div className="border-y py-4"><div className="mb-5 flex items-center justify-between"><h3 className="text-xs font-medium text-muted-foreground">Visitor preview</h3><Button variant="ghost" size="sm" onClick={() => setPreview(null)}>Close</Button></div>{preview.sections.length ? <WikiArticle body={preview} /> : <p className="text-muted-foreground">No article text yet.</p>}</div>}
       </section>

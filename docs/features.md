@@ -70,7 +70,7 @@ Supporting outputs:
 
 ### Reading the wiki
 
-- **Pages home** (`/`): create, rename and delete pages.
+- **Pages home** (`/pages`): create, rename and delete pages.
 - **Wiki pages** (`/p/<slug>`): live-updating lines with citations; click a line for its facts, sources and history, or edit it.
 - **Page actions**: add a section, add outside information, illustrate a section, update an article, review a page.
 - **Ask and Chatbot** (`/ask`, `/chatbot`): Ask mode answers from the facts; Agent mode can also make changes; pick context and keep history.
@@ -106,7 +106,7 @@ Supporting outputs:
 - **Settings** (`/settings`): preferences, AI model per role, features, security, agent keys, usage, AI costs and speed tests.
 - **Usage plans and limits**: session and weekly limits per plan (see `monetization-plan.md`).
 - **Guided tour**: step-by-step tour and help for each screen.
-- **Welcome page** (`/welcome`): landing page for new visitors.
+- **Landing page** (`/`): landing page for new visitors.
 
 ### For developers
 

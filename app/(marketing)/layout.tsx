@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 // LANDING LAYOUT: always dark, on the warm near black base, whatever the app theme is
-export default function WelcomeLayout({ children }: { children: ReactNode }) {
+export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className={`${geist.className} min-h-svh bg-landing-base text-white antialiased [color-scheme:dark]`}>
       <a

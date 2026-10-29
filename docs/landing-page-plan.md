@@ -1,6 +1,6 @@
 # Landing page plan
 
-Plan for the main marketing page (`/welcome`). Audience: **teams first**. Business teams are the primary reader; developer and agent sections sit lower on the page.
+Plan for the main marketing page (`/`). Audience: **teams first**. Business teams are the primary reader; developer and agent sections sit lower on the page.
 
 One offer, one action: **Start free**.
 

@@ -11,7 +11,7 @@ import { Reveal } from "@/components/landing/reveal";
 import { TaglineReveal } from "@/components/landing/tagline-reveal";
 
 // =====================================================================
-// LANDING PAGE (/welcome): one offer, one audience, one action.
+// LANDING PAGE (/): one offer, one audience, one action.
 // Built to the landing-page-design skill: Geist only, Tailwind scale sizes,
 // spacing from the 2 to 96px set, flat backgrounds, Phosphor icons.
 // Anything marked with <PlaceholderTag> needs real content before launch.

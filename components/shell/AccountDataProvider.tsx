@@ -18,7 +18,7 @@ export function AccountDataProvider({ accountId, children }: { accountId: string
       leaving = true;
       queryClient.clear();
       setSwitching(true);
-      window.location.assign(new URL(id ? "/" : "/login", window.location.origin).href);
+      window.location.assign(new URL(id ? "/pages" : "/login", window.location.origin).href);
     };
     const { data } = client.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "TOKEN_REFRESHED") check(session?.user.id);

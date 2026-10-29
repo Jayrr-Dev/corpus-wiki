@@ -31,7 +31,7 @@ const TREE_LABEL: Record<TreeKind, string> = { pages: "Pages", knowledge: "Knowl
 
 export function useTreeKind(): TreeKind | null {
   const pathname = usePathname();
-  if (pathname === "/" || pathname.startsWith("/p/")) return "pages";
+  if (pathname === "/pages" || pathname.startsWith("/p/")) return "pages";
   if (pathname === "/units") return "knowledge";
   if (pathname === "/changes") return "changes";
   return null;

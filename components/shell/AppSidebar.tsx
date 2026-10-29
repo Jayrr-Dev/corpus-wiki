@@ -110,7 +110,7 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center">
             <SidebarMenuButton asChild tooltip="Corpus Wiki" className="min-w-0 flex-1">
-              <Link href="/">
+              <Link href="/pages">
                 <BrandMark />
                 <BrandName className="text-body" />
               </Link>

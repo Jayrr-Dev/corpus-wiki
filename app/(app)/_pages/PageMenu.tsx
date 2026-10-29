@@ -43,6 +43,6 @@ function useLeaveRemovedPage(slug: string): () => void {
   const router = useRouter();
   const pathname = usePathname();
   return () => {
-    if (pathname === `/p/${slug}`) router.push("/");
+    if (pathname === `/p/${slug}`) router.push("/pages");
   };
 }

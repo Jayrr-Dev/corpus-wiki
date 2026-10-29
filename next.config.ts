@@ -6,6 +6,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   experimental: { serverActions: { bodySizeLimit: "20mb" } },
   serverExternalPackages: ["ffmpeg-static", "@huggingface/transformers"],
+  // The landing page moved from /welcome to /
+  async redirects() {
+    return [{ source: "/welcome", destination: "/", permanent: true }];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: [{ key: "Content-Security-Policy", value: "frame-ancestors 'self'" }, { key: "X-Content-Type-Options", value: "nosniff" }] },
