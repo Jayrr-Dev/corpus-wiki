@@ -5,7 +5,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
-const ON = { NODE_ENV: "test", CHAT_RERANKER: "voyage", VOYAGE_API_KEY: "test-key" } as NodeJS.ProcessEnv;
+const ON = { NODE_ENV: "test", VOYAGE_API_KEY: "test-key" } as NodeJS.ProcessEnv;
 function respond(body: unknown, status = 200) {
   const fetch = vi.fn().mockImplementation(async () => new Response(JSON.stringify(body), { status }));
   vi.stubGlobal("fetch", fetch);
@@ -13,14 +13,12 @@ function respond(body: unknown, status = 200) {
 }
 
 describe("getReranker", () => {
-  it("is off by default", () => {
-    expect(getReranker({ NODE_ENV: "test" })).toBeNull();
-    expect(getReranker({ NODE_ENV: "test", VOYAGE_API_KEY: "test-key" })).toBeNull();
-    expect(getReranker({ ...ON, CHAT_RERANKER: "cohere" })).toBeNull();
+  it("is on whenever a key is set", () => {
+    expect(getReranker(ON)).not.toBeNull();
   });
   it("is off without a key", () => {
+    expect(getReranker({ NODE_ENV: "test" })).toBeNull();
     expect(getReranker({ ...ON, VOYAGE_API_KEY: "" })).toBeNull();
-    expect(getReranker({ NODE_ENV: "test", CHAT_RERANKER: "voyage" })).toBeNull();
   });
   it("uses rerank-2.5 unless VOYAGE_RERANK_MODEL is set", () => {
     expect(getReranker(ON)!.model).toBe("rerank-2.5");

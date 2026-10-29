@@ -45,6 +45,8 @@ const entity = { type: "company", key: "utilitek" };
 beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllEnvs();
+  // A key in the machine's environment must not switch tests to real Voyage calls
+  vi.stubEnv("VOYAGE_API_KEY", "");
   embedder.embed.mockResolvedValue([[1, 0]]);
   mocks.similarUnits.mockResolvedValue([]);
   mocks.savedVectors.mockResolvedValue(new Map());
@@ -54,21 +56,16 @@ beforeEach(() => {
 });
 
 describe("searchMode", () => {
-  it("is legacy unless CHAT_SEARCH is hybrid and a reranker is configured", () => {
-    const reranked = { CHAT_RERANKER: "voyage", VOYAGE_API_KEY: "key" };
-    expect(searchMode({ NODE_ENV: "test" })).toBe("legacy");
-    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "hybrid", ...reranked })).toBe("hybrid");
-    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "other", ...reranked })).toBe("legacy");
+  it("is hybrid whenever a reranker is configured", () => {
+    expect(searchMode({ NODE_ENV: "test", VOYAGE_API_KEY: "key" })).toBe("hybrid");
   });
 
-  it("stays legacy for CHAT_SEARCH=hybrid without a reranker (fused alone ranks worse)", () => {
-    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "hybrid" })).toBe("legacy");
-    expect(searchMode({ NODE_ENV: "test", CHAT_SEARCH: "hybrid", CHAT_RERANKER: "voyage" })).toBe("legacy");
+  it("stays legacy without a reranker (fused alone ranks worse)", () => {
+    expect(searchMode({ NODE_ENV: "test" })).toBe("legacy");
+    expect(searchMode({ NODE_ENV: "test", VOYAGE_API_KEY: "" })).toBe("legacy");
   });
 
   it("reads the mode from the environment when none is given", async () => {
-    vi.stubEnv("CHAT_SEARCH", "hybrid");
-    vi.stubEnv("CHAT_RERANKER", "voyage");
     vi.stubEnv("VOYAGE_API_KEY", "key");
     // The mode comes from the environment; reranking itself is off here so nothing calls Voyage
     const result = await rankUnits("lockout", { db, client: fakeClient([]), embedder, reranker: null });
