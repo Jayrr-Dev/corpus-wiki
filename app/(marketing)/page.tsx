@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, GithubLogo, Plus } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Article, CalendarCheck, Files, GithubLogo, Plus, UsersThree, type Icon } from "@phosphor-icons/react/dist/ssr";
 import { CtaBackdrop, HeroBackdrop, TaglineBackdrop } from "@/components/landing/backdrops";
 import {
   AgentsVisual, BookVisual, ClientVisual, DocsVisual, LifeVisual, MergeVisual, ReviewVisual, SourceVisual, UndoVisual,
@@ -34,6 +34,17 @@ const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:rin
 // A highlighted word gets the palette-underline, never a second text colour.
 const H1 = "text-4xl font-bold leading-none tracking-headline text-balance sm:text-6xl";
 const H2 = "text-headline font-bold leading-none tracking-headline text-balance sm:text-5xl";
+
+// HERO SUBTITLE NOUN: a solid icon before each thing the sentence names. The
+// pair never wraps apart, and the icon is decoration (the word says it).
+function Thing({ icon: IconOf, children }: { icon: Icon; children: React.ReactNode }) {
+  return (
+    <span className="whitespace-nowrap">
+      <IconOf weight="fill" aria-hidden className="mr-1 inline-block size-[1.1em] -translate-y-[0.1em] align-middle text-landing-ink" />
+      {children}
+    </span>
+  );
+}
 
 // PRIMARY ACTION: the same button opens and closes the page
 function StartButton() {
@@ -155,7 +166,8 @@ export default async function WelcomePage() {
                 <span className="palette-underline">maintaining machine</span>
               </h1>
               <p className="mt-10 max-w-[680px] text-lg text-landing-ink/70 text-pretty sm:text-xl">
-                Add your files. Corpus sorts them out, writes simple pages for your team and keeps them up to date.
+                Add your <Thing icon={Files}>files</Thing>. Corpus sorts them out, writes simple <Thing icon={Article}>pages</Thing> for
+                your <Thing icon={UsersThree}>team</Thing> and keeps them <Thing icon={CalendarCheck}>up to date</Thing>.
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
