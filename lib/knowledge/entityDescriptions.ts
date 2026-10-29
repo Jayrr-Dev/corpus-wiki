@@ -41,11 +41,15 @@ export async function planDescribeBatches(client: AdminSupabase): Promise<string
   return batches;
 }
 
-// AFTER AN UPLOAD: describe the entities it created, and again those whose claims it changed
-// (a description written from the first file would otherwise never learn from the next)
+// AFTER AN UPLOAD: describe the entities marked stale (#46): created, renamed or merged, or
+// whose claims changed, by this upload or anything since the last run
+// (a description written from the first file would otherwise never learn from the next).
+// The marks read are frozen for resume and cleared once every batch is saved.
+export type StaleEntities = { entityIds: string[]; marks: { kind: string; key: string; version: number }[] };
 export async function describeEventEntities(deps: Deps, eventId: string): Promise<void> {
-  const ids = [...await supabaseRpc(deps.client).call<string[]>("event_touched_entities", { p_event_id: eventId })];
-  ids.sort();
+  const db = supabaseRpc(deps.client);
+  const stale = await workflowStep(`describe:marks:${eventId}`, () => db.call<StaleEntities>("read_stale_entities", { p_kind: "entity_description" }));
+  const ids = [...stale.entityIds].sort();
   const batches: string[][] = [];
   for (let index = 0; index < ids.length; index += DESCRIBE_BATCH_SIZE) batches.push(ids.slice(index, index + DESCRIBE_BATCH_SIZE));
   // Each batch owns different entities. Drain active calls before returning so
@@ -54,6 +58,9 @@ export async function describeEventEntities(deps: Deps, eventId: string): Promis
     await assertActiveUpload();
     await workflowStep(`describe:${batch.join(":")}`, () => describeEntityBatch(deps, batch));
   }, uploadExecution.getStore()?.signal);
+  await assertActiveUpload();
+  // A mark set again while this ran has a newer version and stays for the next run
+  await db.call("clear_stale_marks", { p_marks: stale.marks });
 }
 
 // ONE BATCH: load the evidence, ask the model, write what it answered

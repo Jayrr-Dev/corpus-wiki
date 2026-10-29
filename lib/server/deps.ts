@@ -80,7 +80,7 @@ export async function getServerDeps(): Promise<ServerDeps> {
     duplicateGuard: settings ? duplicateGuardFor(db, settings, embedder) : undefined,
     entityDescriber: settings ? (eventId) => describeEventEntities({ client: admin, settings }, eventId) : undefined,
     entityTidier: settings ? async (eventId) => void (await cleanUpEntities(db, settings, eventId)) : undefined,
-    profileWriter: settings ? (eventId) => profileEventEntities({ client: admin, settings }, eventId) : undefined,
+    profileWriter: settings ? () => profileEventEntities({ client: admin, settings }) : undefined,
     hierarchyOrganizer: (eventId) => organizeEventHierarchy(db, admin, eventId),
     imageDescriber: imageDescriberFrom(settings),
     knowledgeExpander: settings ? (eventId) => expandEventKnowledge({ settings, client: admin, db, writer }, eventId) : undefined,

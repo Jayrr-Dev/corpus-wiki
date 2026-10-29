@@ -42,6 +42,7 @@ function fixture(count = 30) {
   const saved = new Map<string, unknown>();
   const cards = new Map<string, SavedCard>();
   const writes: SavedCard[][] = [];
+  const cleared: string[] = [];
   const hooks: { beforeSave?: (rows: SavedCard[]) => void | Promise<void>; afterSave?: () => void } = {};
   let anchorDescription = "Original organization context";
   let cancelled = false;
@@ -58,7 +59,8 @@ function fixture(count = 30) {
   });
   const db = { call: call as DbRpc["call"] };
   const rpc = vi.fn(async (name: string, args: RpcArgs = {}) => {
-    if (name === "event_touched_entities") return { data: [...ids].reverse(), error: null };
+    if (name === "read_stale_entities") return { data: { entityIds: [...ids].reverse(), marks: ids.map((id) => ({ kind: "entity_profile", key: id, version: 1 })) }, error: null };
+    if (name === "clear_stale_marks") { cleared.push(...(args.p_marks as { key: string }[]).map((mark) => mark.key)); return { data: null, error: null }; }
     if (name === "get_workspace_settings") return { data: { ourEntityId: "our-org" }, error: null };
     if (name === "entity_profile_evidence") return { data: (args.p_ids as string[]).map(evidence), error: null };
     throw new Error(`Unexpected data RPC: ${name}`);
@@ -91,11 +93,11 @@ function fixture(count = 30) {
   } as unknown as AdminSupabase;
   const deps = { client, settings: { apiKey: "test" } };
   return {
-    ids, deps, saved, cards, writes, hooks, call, rpc, evidence,
+    ids, deps, saved, cards, writes, hooks, call, rpc, evidence, cleared,
     cancel: () => { cancelled = true; abort.abort(new Error("Cancelled")); },
     resume: () => { cancelled = false; abort = new AbortController(); },
     changeAnchor: () => { anchorDescription = "Changed organization context"; },
-    run: () => uploadExecution.run({ eventId: "event", token: "lease", db, signal: abort.signal }, () => profileEventEntities(deps, "event")),
+    run: () => uploadExecution.run({ eventId: "event", token: "lease", db, signal: abort.signal }, () => profileEventEntities(deps)),
   };
 }
 
@@ -216,7 +218,7 @@ it("resumes partial card saves without regrouping batches or rerunning generatio
   // The first upsert committed but cancellation prevented its checkpoint; a safe
   // repeat writes the same rows, while the other groups keep their original IDs.
   expect(f.writes.map((rows) => rows[0]!.entity_id)).toEqual(["e00", "e00", "e06", "e12", "e18", "e24"]);
-  expect(f.rpc.mock.calls.filter(([name]) => name === "event_touched_entities")).toHaveLength(1);
+  expect(f.rpc.mock.calls.filter(([name]) => name === "read_stale_entities")).toHaveLength(1);
 });
 
 it("keeps saved card checkpoints when a later upsert fails", async () => {
@@ -315,4 +317,15 @@ it("reuses formatting-equivalent existing kinds without a model call", async () 
   const rows = [{ entityId: "e", isStakeholder: true, kind: " GOVERNMENT   AGENCY. ", relation: null, keyFacts: [], functions: [], contacts: [], person: null }];
   expect(await resolveProfileKinds(rows, ["government agency"], { apiKey: "test" })).toEqual({ "government agency": "government agency" });
   expect(chat).not.toHaveBeenCalled();
+});
+
+it("clears the profile marks it read only after every card is saved", async () => {
+  const f = fixture();
+  chat.mockImplementation(defaultAnswer);
+  f.hooks.beforeSave = (rows) => { if (rows[0]!.entity_id === "e06") throw new Error("Database unavailable"); };
+  await expect(f.run()).rejects.toThrow("Database unavailable");
+  expect(f.cleared).toEqual([]);
+  f.hooks.beforeSave = undefined;
+  await f.run();
+  expect([...f.cleared].sort()).toEqual([...f.ids].sort());
 });

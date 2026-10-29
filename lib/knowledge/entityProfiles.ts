@@ -16,6 +16,7 @@ import { supabaseRpc } from "@/lib/db/rpc";
 import { assertActiveUpload, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
 import { normalizeProfileKind, resolveProfileKinds } from "./profileKinds";
 import { lookUpNewStakeholders } from "./entityWeb";
+import type { StaleEntities } from "./entityDescriptions";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { processingSpan } from "@/lib/processing/metrics";
 import { mapConcurrent } from "@/lib/processing/concurrency";
@@ -77,19 +78,22 @@ export async function planProfileBatches(client: AdminSupabase): Promise<string[
   return batches;
 }
 
-// AFTER AN UPLOAD: the cards of the entities whose claims it added, revised, retired or merged
-export async function profileEventEntities(deps: Deps, eventId: string): Promise<void> {
+// AFTER AN UPLOAD: the cards of the entities marked stale (#46): created, renamed or merged,
+// or whose claims were added, revised, retired or merged, by this upload or since the last run.
+// The marks read are frozen with the plan and cleared once every card is saved.
+export async function profileEventEntities(deps: Deps): Promise<void> {
   // Freeze batch membership, organization and vocabulary so partial saves do not
   // regroup the remaining entities or change prompts when the upload resumes.
   const plan = await workflowStep("profiles:plan", async () => {
     await assertProfileActive();
-    const ids = [...new Set(await supabaseRpc(deps.client).call<string[]>("event_touched_entities", { p_event_id: eventId }))].sort();
+    const marked = await supabaseRpc(deps.client).call<StaleEntities>("read_stale_entities", { p_kind: "entity_profile" });
+    const ids = [...new Set(marked.entityIds)].sort();
     const anchor = await readAnchor(deps.client);
     const evidence = await needingCards(deps.client, ids, anchor);
     const stale = evidence.map((entity) => entity.entityId).sort();
     const batches: string[][] = [];
     for (let index = 0; index < stale.length; index += PROFILE_BATCH_SIZE) batches.push(stale.slice(index, index + PROFILE_BATCH_SIZE));
-    return { ids, anchor, batches, kinds: await kindsInUse(deps.client), evidence };
+    return { ids, anchor, batches, kinds: await kindsInUse(deps.client), evidence, marks: marked.marks };
   });
   const drafts = await mapConcurrent(plan.batches, 3, async (batch) => {
     await assertProfileActive();
@@ -110,6 +114,9 @@ export async function profileEventEntities(deps: Deps, eventId: string): Promise
   // New stakeholders are looked up on the web (when allowed); a failed lookup never fails the upload
   try { await processingSpan("stage.stakeholder-web", () => lookUpNewStakeholders(deps, plan.ids)); } catch (error) { console.warn("Stakeholder web lookup failed:", error instanceof Error ? error.message : error); }
   await assertProfileActive();
+  // A mark set again while this ran has a newer version and stays for the next run.
+  // Plans saved before marks existed have none to clear.
+  await supabaseRpc(deps.client).call("clear_stale_marks", { p_marks: plan.marks ?? [] });
 }
 
 // ONE BATCH: load the evidence, ask the model, write what it answered. `force` rewrites a card
