@@ -16,7 +16,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 |---|---|---|---|
 | owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | done; recovery run passed, #35 closed (2026-10-29) |
 | measure | Run `evals/retrieval` on PR #52 vs main (#38) | | done in PR #57: no change with rerank, legacy drops (hit@5 90.0% to 85.0%); do not merge as is |
-| owner | Turn on #43 env vars in production | | done (2026-10-29); before/after note still due |
+| owner | Turn on #43 env vars in production | | done (2026-10-29); defaults and note in PR #63 (`docs/progress-2026-10-29.md`): hybrid + rerank whenever `VOYAGE_API_KEY` is set, `TOPIC_PROMPT_BUDGET` on unless `off` until about 2026-11-05; NLI prefilter still unwired |
 | owner | Apply the HNSW drop, now `20261123100000_drop_hnsw_vector_indexes.sql` (#40) | | done, applied with study_edit (2026-10-29) |
 | measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | done, PR #57 merged (`docs/baseline-2026-10-29.md`); `evals.test.ts` fails 7/7 on stale `test/db/pgRpc.ts` (passes with typed args), `live.test.ts` passes |
 | reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | merged (PR #60); migration applied (2026-10-29); paid fact-check replay not run |
@@ -25,7 +25,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure, owner-run live evals | waiting (offline comparison in PR #59) |
 | recompute | #46 dependency index and stale marks, glossary first (closes #34) | | merged (PR #58); migration applied (2026-10-29) |
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | in progress (branched from PR #58) |
-| measure | Fix `test/db/pgRpc.ts` to send typed arguments and return SETOF rows, so `evals/evals.test.ts` passes | | waiting |
+| measure | Fix `test/db/pgRpc.ts` to send typed arguments and return SETOF rows, so `evals/evals.test.ts` passes | | in review (branch `claude/pgrpc-typed-args`): evals 7/7; 3 older failures in `changeControl.test.ts` and `rebuild.test.ts` fail the same with the old helper |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | in review (PR #65): fixtures 26 to 2 and 50 to 2 change sets per upload; migration not applied |
 | embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
 | embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |

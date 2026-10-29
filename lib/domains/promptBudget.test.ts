@@ -1,10 +1,10 @@
 import { expect, it } from "vitest";
 import { estimatePromptTokens, scopeNeighbors, topicPromptBudgetOn } from "./promptBudget";
 
-it("is off unless TOPIC_PROMPT_BUDGET is on", () => {
-  expect(topicPromptBudgetOn({})).toBe(false);
-  expect(topicPromptBudgetOn({ TOPIC_PROMPT_BUDGET: "off" })).toBe(false);
+it("is on unless TOPIC_PROMPT_BUDGET is off", () => {
+  expect(topicPromptBudgetOn({})).toBe(true);
   expect(topicPromptBudgetOn({ TOPIC_PROMPT_BUDGET: "on" })).toBe(true);
+  expect(topicPromptBudgetOn({ TOPIC_PROMPT_BUDGET: "off" })).toBe(false);
 });
 
 it("estimates tokens on the safe side of the measured 2.45 characters per token", () => {

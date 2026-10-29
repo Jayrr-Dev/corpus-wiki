@@ -101,7 +101,7 @@ try {
   // No call logger: the app's logger writes to the database, and this run stays read-only
   const embedder = embedderFromEnv(env);
   if (!embedder) throw new Error("Set NEBIUS_API_KEY to embed the questions.");
-  const voyage = getReranker({ ...env, CHAT_RERANKER: "voyage" });
+  const voyage = getReranker(env);
   if (variants.includes("hybrid-rerank") && !voyage) throw new Error("Set VOYAGE_API_KEY for hybrid-rerank.");
   const reranker: Reranker | null = voyage && {
     model: voyage.model,
