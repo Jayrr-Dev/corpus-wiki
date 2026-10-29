@@ -1,7 +1,7 @@
-import { FileCode } from "lucide-react";
-import { EmptyState } from "@/components/EmptyState";
-import { ReadingPane } from "@/components/shell";
+import { listDocSets } from "@/lib/docs/server";
+import { loadScopeOptions } from "@/lib/knowledge/scope";
 import { requireModule } from "@/lib/modules";
+import { DocsScreen } from "./DocsScreen";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +9,6 @@ export const dynamic = "force-dynamic";
 // 404 while the module is off in Settings → Features.
 export default async function DocsPage() {
   await requireModule("docs");
-  return (
-    <ReadingPane title="Docs">
-      <EmptyState icon={FileCode} title="No docs yet." />
-    </ReadingPane>
-  );
+  const [sets, options] = await Promise.all([listDocSets(), loadScopeOptions()]);
+  return <DocsScreen sets={sets} options={options} />;
 }

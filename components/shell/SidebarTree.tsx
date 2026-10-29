@@ -145,7 +145,9 @@ function SidebarGroup({ title, onMinimize, actions, children }: { title: string;
 // PAGES: every wiki page, linking to /p/[slug], with a "…" menu on hover
 function PagesList() {
   const pathname = usePathname();
-  const { data: pages = [], isPending } = usePages();
+  const { data: rows = [], isPending } = usePages();
+  // Doc pages (pages.kind = 'doc') live in their doc set under /docs, not in the wiki tree
+  const pages = rows.filter((page) => (page as { kind?: string }).kind !== "doc");
   if (isPending) return <Loader inline className="px-1.5 py-1" />;
   if (pages.length === 0) return <SidebarNote text="No pages yet" />;
   return <PageBranch nodes={buildPageTree(pages)} pathname={pathname} depth={0} />;

@@ -17,8 +17,10 @@ import { needsRewrite, releaseIrrelevantClaims, revisionToActions, uncoveredUnit
 import type { FinishedSectionBuild, PageContextSection, SectionRef, SectionReviseInput, SectionRevision, SectionState } from "./types";
 import { FakeSectionWriter } from "./writers/fake";
 import { TokenFactorySectionWriter } from "./writers/tokenFactory";
+import { chatDocsModel, DocsSectionWriter, sectionStyle, withDocsStyle } from "./docsStyle";
 
 export { commitLineEdit } from "./editLine";
+export { DocsSectionWriter, withDocsStyle } from "./docsStyle";
 export { needsRewrite, releaseIrrelevantClaims, revisionToActions, uncoveredUnitIds } from "./plan";
 export { MIN_CLAIMS_FOR_PAGE, pageProposalActions, proposePages, type PageCandidate } from "./proposePages";
 export type * from "./types";
@@ -44,10 +46,12 @@ export interface SectionWriter {
   reviewSections?: (sectionIds: string[], checkpointScope?: string) => Promise<void>;
 }
 
-// Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake
+// Picks the writer from server env: Token Factory when NEBIUS_API_KEY is set, else the fake.
+// Docs page sections go to the Docs writer (a section style); every other section to the article writer.
 export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenModel: string | null | ModelChoice = null, skills?: StageSkills, logCall?: AiCallLogger): SectionWriter {
   const settings = tokenFactoryFromEnv(env, chosenModel, logCall);
-  return settings ? new TokenFactorySectionWriter({ ...settings, skills }) : new FakeSectionWriter();
+  const article = settings ? new TokenFactorySectionWriter({ ...settings, skills }) : new FakeSectionWriter();
+  return withDocsStyle(article, new DocsSectionWriter(settings ? chatDocsModel(settings) : null));
 }
 
 // =====================================================================
@@ -264,7 +268,8 @@ async function rewriteLines(
   options?: { skipEditorialReview?: boolean },
 ): Promise<{ applied: number; modelVersion: string }> {
   const [pageContext, articleStructure] = await Promise.all([readPageContext(db, state.sectionId), readStructureContext(db, state.sectionId)]);
-  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}), ...(articleStructure ? { articleStructure } : {}), ...(options?.skipEditorialReview ? { skipEditorialReview: true } : {}) };
+  const style = sectionStyle(state);
+  const input = { pageTitle: state.pageTitle, sectionTitle: state.title, units: state.units, lines: state.lines, uncoveredUnitIds: uncoveredUnitIds(state), ...(pageContext.length ? { pageContext } : {}), ...(articleStructure ? { articleStructure } : {}), ...(options?.skipEditorialReview ? { skipEditorialReview: true } : {}), ...(style ? { style } : {}) };
   const flagged = state.lines.filter((line) => line.needsRewrite).length;
   console.info("Section rewrite started", { sectionId: state.sectionId, page: state.pageTitle, section: state.title, flagged, uncovered: input.uncoveredUnitIds.length, units: state.units.length });
   progress?.step(writingStep(flagged, input.uncoveredUnitIds.length));

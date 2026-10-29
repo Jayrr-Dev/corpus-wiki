@@ -68,6 +68,9 @@ export type SectionReviseInput = {
   skipEditorialReview?: boolean;
   // What the page's other sections already say, in page order, so the writer builds on it instead of repeating it
   pageContext?: PageContextSection[];
+  // The section's style when it is not an article section (sections.query.style): a Docs page
+  // section is written as doc blocks by the Docs writer (lib/living-page/docsStyle.ts)
+  style?: { kind: "doc"; intro: boolean };
 };
 
 // DB: read_page_context (the other sections of the page, with their current text)

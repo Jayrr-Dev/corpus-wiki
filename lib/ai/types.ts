@@ -137,6 +137,10 @@ export type SectionQuery = {
   entity?: { type: string; key: string };
   domainPaths?: string[];
   kinds?: UnitKind[];
+  // A Docs page section (lib/living-page/docsStyle.ts): written as doc blocks by the Docs writer;
+  // "intro" is the page's opening paragraph, shown under the title without a heading
+  style?: "doc";
+  docPart?: "intro" | "task";
 };
 
 // A NEW GENERATED SECTION: its title and the query that picks its claims
