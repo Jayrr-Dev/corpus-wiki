@@ -19,7 +19,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | owner | Turn on #43 env vars in production | | done (2026-10-29); before/after note still due |
 | owner | Apply the HNSW drop, now `20261123100000_drop_hnsw_vector_indexes.sql` (#40) | | done, applied with study_edit (2026-10-29) |
 | measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | in progress (owner approved paid calls) |
-| reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | in progress |
+| reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | ready for review (PR open; owner applies `20261124042000_reviewer_budget.sql` and replays fact-check agreement) |
 | reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | in progress |
 | reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
 | reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure | waiting |

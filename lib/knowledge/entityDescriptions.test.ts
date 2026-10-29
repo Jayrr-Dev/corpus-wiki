@@ -8,7 +8,7 @@ import { describeEventEntities } from "./entityDescriptions";
 const { chat } = vi.hoisted(() => ({ chat: vi.fn() }));
 vi.mock("@/lib/ai/chat", () => ({ chatJson: chat }));
 vi.mock("@/lib/auth/currentPerson", () => ({ withSettledActor: (run: () => unknown) => run() }));
-vi.mock("@/lib/living-page", () => ({ proposePages: vi.fn(), rebuildAfterEvent: vi.fn() }));
+vi.mock("@/lib/living-page", () => ({ holdForReviewerBudget: vi.fn(async () => false), proposePages: vi.fn(), rebuildAfterEvent: vi.fn() }));
 vi.mock("@/lib/change-control", () => ({ commitAsRole: vi.fn() }));
 afterEach(() => vi.clearAllMocks());
 
