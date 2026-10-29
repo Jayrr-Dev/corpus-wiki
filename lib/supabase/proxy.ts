@@ -11,12 +11,13 @@ import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 // no cookie to redirect; every other route, future /api routes included, stays behind sign-in.
 // /oauth and the authorization server metadata serve MCP clients, which have no
 // cookie; /oauth/authorize sends a signed-out person to /login itself, keeping the request.
-export const PUBLIC_PATHS = ["/", "/landing-demos", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics", "/oauth", "/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"] as const;
+export const PUBLIC_PATHS = ["/", "/landing-demos", "/privacy", "/terms", "/contact", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/explore", "/s", "/embed", "/api/public-wiki/metrics", "/oauth", "/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"] as const;
 
 // The marketing page and the static demos it embeds never read a session, so the
 // proxy skips the auth refresh for them: a slow or down auth service can't break them.
 export function isMarketingPath(pathname: string): boolean {
-  return ["/", "/landing-demos"].some(p => pathname === p || pathname.startsWith(`${p}/`));
+  // /privacy, /terms and /contact are the legal pages (a 404 while legal_pages is off)
+  return ["/", "/landing-demos", "/privacy", "/terms", "/contact"].some(p => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 export function isPublicWikiPath(pathname: string): boolean {
