@@ -7,6 +7,7 @@ import { cosine } from "@/lib/knowledge/similarity";
 import type { ServerSupabase } from "@/lib/supabase/server";
 import { reciprocalRankFusion } from "./fusion";
 import { searchFilter } from "./validation";
+import { queryText } from "@/lib/ai/queryText";
 
 // =====================================================================
 // CLAIM RANKING FOR CHAT: which claims a question should see, best first.
@@ -56,7 +57,7 @@ export async function rankUnits(question: string, deps: RankDeps): Promise<RankR
   let vector = deps.vector;
   if (vector === undefined) {
     try {
-      [vector] = await embedder.embed([question]);
+      [vector] = await embedder.embed([queryText(embedder.model, "knowledge", question)]);
       if (!vector) throw new Error("No query embedding returned.");
     } catch { vector = null; warning = SEMANTIC_WARNING; }
   }

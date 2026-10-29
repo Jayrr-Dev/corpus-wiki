@@ -14,6 +14,7 @@ import { glossaryClient } from "@/lib/glossary/storage";
 import { toActionResult } from "./result";
 import { z } from "zod";
 import { glossaryHistoryKeys, type GlossaryEntry } from "@/lib/glossary/entries";
+import { queryText } from "@/lib/ai/queryText";
 
 export async function changeGlossaryDefinition(original: GlossaryEntry, definition: string | null) {
   return toActionResult(async () => {
@@ -126,7 +127,7 @@ export async function searchGlossaryMeaning(question: string) {
     const db = supabaseRpc(client);
     const embedder = embedderFromEnv(process.env, (call) => db.call("log_ai_call", { p_call: { ...call, purpose: "glossary_search" } }));
     if (!embedder) throw new Error("The embedding provider is not configured.");
-    const [vector] = await embedder.embed([query]);
+    const [vector] = await embedder.embed([queryText(embedder.model, "glossary", query)]);
     if (!vector) throw new Error("No search embedding was returned.");
     const matches = await similarGlossary(db, embedder.model, vector, 12);
     return { query, entries: matches.map((match) => match.entry) };

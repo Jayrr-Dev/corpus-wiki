@@ -11,6 +11,7 @@ import { contextDescription, contextRelevance } from "@/lib/knowledge/contextSel
 import { similarGlossary } from "@/lib/glossary/embeddingStore";
 import { glossaryReferences } from "@/lib/glossary/retrieve";
 import { compositesFor, stepsText } from "./composites";
+import { queryText } from "@/lib/ai/queryText";
 
 export async function retrieve(question: string, db: DbRpc, embedder: Embedder, entityId?: string) {
   const client = await getServerSupabase();
@@ -21,7 +22,7 @@ export async function retrieve(question: string, db: DbRpc, embedder: Embedder, 
   let warning: string | null = null;
   let queryVector: number[] | undefined;
   try {
-    const [vector] = await embedder.embed([question]);
+    const [vector] = await embedder.embed([queryText(embedder.model, "knowledge", question)]);
     if (!vector) throw new Error("No query embedding returned.");
     queryVector = vector;
   } catch { warning = "Semantic search is unavailable; this answer uses text matches only."; }
