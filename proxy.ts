@@ -4,6 +4,8 @@ import { isMarketingPath, isPublicPath, isPublicWikiPath, refreshSession } from 
 
 // AUTH GATE (Next 16 "proxy", formerly middleware): signed-out users go to /login
 export async function proxy(request: NextRequest) {
+  // The launch video's /stage scenes render fake data with no session, in development only
+  if (process.env.NODE_ENV === "development" && /^\/stage(\/|$)/.test(request.nextUrl.pathname)) return NextResponse.next();
   if (isMarketingPath(request.nextUrl.pathname)) return NextResponse.next();
   // Public readers never resolve a signed-in workspace or refresh its cookies.
   if (isPublicWikiPath(request.nextUrl.pathname)) {
