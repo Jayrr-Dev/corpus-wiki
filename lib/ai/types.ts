@@ -171,6 +171,8 @@ export type DraftChangeSet = {
 // THE SEAM: one call per uploaded file
 export interface ReconciliationClient {
   readonly name: string;
+  // Compares drafts with stored claims found by meaning (the split client): the pipeline embeds passages first
+  readonly readsNeighborhood?: boolean;
   draftChangeSet(input: ReconciliationInput, publish?: PublishKnowledgeBatch): Promise<DraftChangeSet>;
 }
 

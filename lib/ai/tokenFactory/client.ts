@@ -175,7 +175,8 @@ function earlierComposites(claims: AnswerClaim[], links: AnswerLink[]): EarlierC
   });
 }
 
-function passageBatches(passages: ReconciliationInput["passages"]): ReconciliationInput["passages"][] {
+// The file in batches of at most MAX_BATCH_CHARS / MAX_BATCH_PASSAGES (the split client reads the same batches)
+export function passageBatches(passages: ReconciliationInput["passages"]): ReconciliationInput["passages"][] {
   const batches: ReconciliationInput["passages"][] = [];
   let batch: ReconciliationInput["passages"] = [];
   let chars = 0;

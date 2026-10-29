@@ -18,13 +18,14 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | measure | Run `evals/retrieval` on PR #52 vs main (#38) | | done in PR #57: no change with rerank, legacy drops (hit@5 90.0% to 85.0%); do not merge as is |
 | owner | Turn on #43 env vars in production | | done (2026-10-29); before/after note still due |
 | owner | Apply the HNSW drop, now `20261123100000_drop_hnsw_vector_indexes.sql` (#40) | | done, applied with study_edit (2026-10-29) |
-| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | done, PR #57 merged (`docs/baseline-2026-10-29.md`); `evals.test.ts` and `live.test.ts` not run (need Linux Postgres) |
-| reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | merged (PR #60); owner applies `20261124042000_reviewer_budget.sql`; paid fact-check replay not run |
-| reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | merged (PR #56); owner applies `20261124100000_reconciliation_input_plain.sql` |
-| reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
-| reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure | waiting |
-| recompute | #46 dependency index and stale marks, glossary first (closes #34) | | ready for review: PR #58 |
-| recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | ready for review: PR #62 (stacked on #58) |
+| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | done, PR #57 merged (`docs/baseline-2026-10-29.md`); `evals.test.ts` fails 7/7 on stale `test/db/pgRpc.ts` (passes with typed args), `live.test.ts` passes |
+| reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | merged (PR #60); migration applied (2026-10-29); paid fact-check replay not run |
+| reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | merged (PR #56); migration applied (2026-10-29) |
+| reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | merged (PR #59), off unless `RECONCILE_CLIENT=split`; migration applied (2026-10-29) |
+| reconcile | Compare #45 against the current client, switch on, close #33 | reconcile: #45, measure, owner-run live evals | waiting (offline comparison in PR #59) |
+| recompute | #46 dependency index and stale marks, glossary first (closes #34) | | merged (PR #58); migration applied (2026-10-29) |
+| recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | ready for review: PR #62 |
+| measure | Fix `test/db/pgRpc.ts` to send typed arguments and return SETOF rows, so `evals/evals.test.ts` passes | | waiting |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
 | embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
 | embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
