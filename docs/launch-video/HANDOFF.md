@@ -62,14 +62,14 @@ Contracts, fixed before any scene lane starts:
 
 | Lane | Task | Needs | Status |
 |---|---|---|---|
-| foundation | Stage route, providers, kit, Phoenix core data, one sample scene | | in progress |
-| integration | `render.mjs` renders an http URL | | in progress |
-| timeline | Single-take timing: cut.py, timeline rows from scene-flow.md, captions from the v3 transcript, lip-sync count-in clips | | in progress |
-| scenes-page | Wiki page, rewrite, settled (18, 22a, 22c) | foundation | waiting |
-| scenes-intake | Upload with Gmail, Ask (17, 21) | foundation | waiting |
-| scenes-connect | Graph, glossary, stakeholders (19, 19b, 19c) | foundation | waiting |
-| scenes-control | Exception, AI handoffs, AI costs, model picker (22b, n3, n7a, n7b) | foundation | waiting |
-| scenes-video | Video module rendering on Nebius (n8, new) | foundation | waiting |
+| foundation | Stage route, providers, kit, Phoenix core data, one sample scene | | merged into main |
+| integration | `render.mjs` renders an http URL | | done |
+| timeline | Single-take timing: cut.py, timeline rows from scene-flow.md, captions from the v3 transcript, lip-sync count-in clips | | merged |
+| scenes-page | Wiki page, rewrite, settled, Brent's page | foundation | ready to start |
+| scenes-intake | Upload with Gmail, Ask | foundation | ready to start |
+| scenes-connect | Graph, glossary, stakeholders | foundation | ready to start |
+| scenes-control | Exception, AI roles, AI costs, model picker | foundation | ready to start |
+| scenes-video | Video module rendering on Nebius | foundation | ready to start |
 | integration | Render every scene, wire into the timeline, rebuild the preview | all scene lanes, timeline | waiting |
 
 ### New VO lines (2026-10-29)
