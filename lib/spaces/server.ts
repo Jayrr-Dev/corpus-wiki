@@ -1,13 +1,13 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { requireUser } from "@/lib/auth/requireUser";
+import { requireUser, type SignedInUser } from "@/lib/auth/requireUser";
 import { resetRequestActor } from "@/lib/auth/currentPerson";
 import { supabaseRpc } from "@/lib/db/rpc";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { SPACE_COOKIE, type Space } from "./shared";
 
-export async function readMySpaces(): Promise<{ spaces: Space[]; activeSpace: Space; account: { id: string; email: string | null } }> {
+export async function readMySpaces(): Promise<{ spaces: Space[]; activeSpace: Space; account: SignedInUser }> {
   // The claims check and the owned-spaces list run together (RLS shows only the caller's live spaces)
   const [account, listed, store] = await Promise.all([requireUser(), listMySpaces(), cookies()]);
   // ensure_my_space returns the oldest owned space, which is the list's first row.

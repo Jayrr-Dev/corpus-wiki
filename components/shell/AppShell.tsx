@@ -3,7 +3,7 @@ import { RoutedErrorBoundary } from "@/components/error";
 import { Tutorial } from "@/components/tutorial";
 import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "./AppSidebar";
+import { AppSidebar, type SidebarAccount } from "./AppSidebar";
 import { MobileTopBar } from "./MobileTopBar";
 import { RightPanel, RightPanelProvider } from "./RightPanel";
 import { SidebarTree } from "./SidebarTree";
@@ -14,12 +14,12 @@ import type { Space } from "@/lib/spaces/shared";
 // on desktop; the module tutorial button sits in the page's top-right corner. Phones get a slim top bar instead that opens the sidebars as drawers.
 // `defaultOpen` comes from the sidebar_state cookie (read in the layout) so the first paint matches;
 // `modules` are the modules switched on in Settings, whose links the sidebar and top bar show
-export function AppShell({ children, defaultOpen = true, spaces, activeSpace, accountEmail, modules = [] }: { children: ReactNode; defaultOpen?: boolean; spaces: Space[]; activeSpace: Space; accountEmail?: string | null; modules?: readonly ModuleKey[] }) {
+export function AppShell({ children, defaultOpen = true, spaces, activeSpace, account, modules = [] }: { children: ReactNode; defaultOpen?: boolean; spaces: Space[]; activeSpace: Space; account?: SidebarAccount; modules?: readonly ModuleKey[] }) {
   return (
     <RightPanelProvider>
       <SidebarProvider defaultOpen={defaultOpen} className="h-dvh min-h-0 overflow-hidden">
         <RoutedErrorBoundary where="The sidebar">
-          <AppSidebar spaces={spaces} activeSpace={activeSpace} accountEmail={accountEmail} modules={modules} />
+          <AppSidebar spaces={spaces} activeSpace={activeSpace} account={account} modules={modules} />
         </RoutedErrorBoundary>
         <SidebarInset className="min-h-0 flex-row overflow-hidden">
           <RoutedErrorBoundary where="The page list">

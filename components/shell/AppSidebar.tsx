@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useOpenExceptionCount } from "@/app/(app)/exceptions/useExceptionInbox";
 import { BrandMark, BrandName } from "@/components/brand/BrandMark";
@@ -25,6 +26,7 @@ import { useSuggestionAttentionCount } from "./useSuggestionAttentionCount";
 import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
 import { ERROR_LOG_NAV, isActivePath, type NavItem, SETTINGS_NAV, visibleNavGroups } from "./nav";
+import { SidebarBackdrop } from "./SidebarBackdrop";
 import { SpaceSwitcher } from "./SpaceSwitcher";
 import { ThemeSwitch } from "./ThemeSwitch";
 import type { ModuleKey } from "@/lib/modules";
@@ -32,6 +34,48 @@ import type { Space } from "@/lib/spaces/shared";
 import { Tooltip } from "@/components/standard/tooltip";
 import { cn } from "@/lib/utils";
 import { type NavMode, setNavMode, useNavMode } from "./useNavMode";
+
+// The signed-in person, as the sidebar shows them
+export type SidebarAccount = { email: string | null; name?: string | null; avatarUrl?: string | null };
+
+// Up to two initials from the name, or the email's first letter
+function initials({ name, email }: SidebarAccount) {
+  const words = (name ?? "").split(/\s+/).filter(Boolean);
+  if (words.length) return (words[0]![0]! + (words.length > 1 ? words.at(-1)![0]! : "")).toUpperCase();
+  return (email?.[0] ?? "?").toUpperCase();
+}
+
+// AVATAR: the account picture, or initials when there is none or it fails to load
+function AccountAvatar({ account }: { account: SidebarAccount }) {
+  const [broken, setBroken] = useState(false);
+  if (account.avatarUrl && !broken) {
+    // eslint-disable-next-line @next/next/no-img-element -- a remote picture (e.g. Google), not a local asset
+    return <img src={account.avatarUrl} alt="" referrerPolicy="no-referrer" onError={() => setBroken(true)} className="size-8 shrink-0 rounded-full object-cover" />;
+  }
+  return (
+    <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-sidebar-accent text-xs font-semibold text-sidebar-foreground ring-1 ring-sidebar-border">
+      {initials(account)}
+    </span>
+  );
+}
+
+// ACCOUNT ROW: avatar, name and email; opens Settings. Collapsed, the avatar alone stays.
+function AccountRow({ account }: { account: SidebarAccount }) {
+  const label = account.name ?? account.email ?? "Account";
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton asChild size="lg" tooltip={label}>
+        <Link href={SETTINGS_NAV.href}>
+          <AccountAvatar account={account} />
+          <span className="grid min-w-0 flex-1 leading-tight">
+            <span className="truncate font-medium">{label}</span>
+            {account.name && account.email ? <span className="truncate text-xs text-muted-foreground">{account.email}</span> : null}
+          </span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
 
 // NAV LINK: one menu row; the tooltip only shows when the sidebar is collapsed to icons
 function NavLink({ item, badge }: { item: NavItem; badge?: number }) {
@@ -97,7 +141,7 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
 // APP SIDEBAR: brand and search, the two nav groups, then error log / settings / theme / tutorial / sign out
 // On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links.
 // `modules`: the modules that are on; links to the others are hidden
-export function AppSidebar({ spaces, activeSpace, accountEmail, modules = [] }: { spaces: Space[]; activeSpace: Space; accountEmail?: string | null; modules?: readonly ModuleKey[] }) {
+export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spaces: Space[]; activeSpace: Space; account?: SidebarAccount; modules?: readonly ModuleKey[] }) {
   // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
   const openCount = useOpenExceptionCount();
   const suggestionCount = useSuggestionAttentionCount();
@@ -107,6 +151,7 @@ export function AppSidebar({ spaces, activeSpace, accountEmail, modules = [] }: 
   const badges = { "/units": suggestionCount ?? 0, "/decisions": openCount, "/exceptions": openCount, "/sources": unfinishedSources };
   return (
     <Sidebar variant="inset" collapsible="icon" collapseThumb collapseThumbSize="xs">
+      <SidebarBackdrop />
       <SidebarHeader search searchPlaceholder="Search…" separator>
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center">
@@ -131,8 +176,8 @@ export function AppSidebar({ spaces, activeSpace, accountEmail, modules = [] }: 
         {isMobile ? <MobileSidebarTree /> : null}
       </SidebarContent>
       <SidebarFooter separator>
-        {accountEmail ? <Tooltip content={accountEmail}><p className="truncate px-2 py-1 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">{accountEmail}</p></Tooltip> : null}
         <SidebarMenu>
+          {account ? <AccountRow account={account} /> : null}
           {isAdmin ? <NavLink item={ERROR_LOG_NAV} /> : null}
           <NavLink item={SETTINGS_NAV} />
           <ThemeSwitch />

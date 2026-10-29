@@ -1,4 +1,5 @@
 "use client"
+/* eslint-disable shadcn/no-raw-colors -- black and white here are mask luminance (ink coverage), not theme colours */
 
 import * as React from "react"
 

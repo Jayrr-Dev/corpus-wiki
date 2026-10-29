@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       <SpaceProvider space={activeSpace}>
         <FeatureFlagsProvider flags={featureFlags}>
           <TimeZoneProvider timeZone={timeZone}>
-            <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email} modules={enabledModules(featureFlags)}>
+            <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} account={account} modules={enabledModules(featureFlags)}>
               <RoutedErrorBoundary where="Open questions">
                 <ExceptionNotifications />
               </RoutedErrorBoundary>
