@@ -62,6 +62,7 @@ type Part = { passages: ReconciliationInput["passages"]; answer: Answer };
 
 export class SplitReconciliationClient implements ReconciliationClient {
   readonly name = "token-factory-split";
+  readonly readsNeighborhood = true;
 
   constructor(private readonly settings: TokenFactorySettings, private readonly ports: () => SplitPorts | null = () => null) {}
 

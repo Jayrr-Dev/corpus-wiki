@@ -107,10 +107,10 @@ export async function finishApprovedUpload(deps: PipelineDeps, eventId: string):
 // so the next upload and the cleaning cycle can find them by meaning (not fatal).
 async function draftAndCommit({ db, reconciler, duplicateGuard, claimEmbedder }: PipelineDeps, eventId: string, shape: (draft: DraftChangeSet, input: ReconciliationInput) => DraftChangeSet = (draft) => draft, guardOptions?: GuardOptions, externalScope?: ReconciliationInput["externalScope"]) {
   await setEventStatus(db, eventId, "reconciling", null);
-  // The file's passages (and any claim still without a vector) are embedded before reading, so
-  // reconcile can find a draft claim's neighbors by meaning (issue #45). A failure only narrows
-  // that search; the "embeddings" stage after the save tries again.
-  try { await workflowStep("embed-passages", async () => { await claimEmbedder?.(); }); }
+  // For a client that reads neighborhoods (issue #45), the file's passages and any claim still
+  // without a vector are embedded before reading, so a draft's neighbors can be found by meaning.
+  // A failure only narrows that search; the "embeddings" stage after the save tries again.
+  if (reconciler.readsNeighborhood) try { await workflowStep("embed-passages", async () => { await claimEmbedder?.(); }); }
   catch (error) {
     uploadExecution.getStore()?.signal?.throwIfAborted();
     console.error("Passages could not be embedded before reconcile:", error);
