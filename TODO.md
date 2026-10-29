@@ -33,7 +33,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | db | #48 full: squash migrations into a baseline | #45, #46, #47, #50 | waiting |
 
 Owned paths:
-- reviewer: `lib/composer/**`, reviewer entries in `lib/ai/roles.ts` and `lib/ai/rolePolicies.ts`.
+- reviewer: `lib/living-page/**` (the reviewer code lives in `lib/living-page/writers/`), `lib/composer/**`, a few lines in `lib/ingest/workflow.ts` to release waiting before article stages, reviewer entries in `lib/ai/roles.ts` and `lib/ai/rolePolicies.ts`.
 - reconcile: `lib/ai/tokenFactory/**`, `lib/ai/fake/FakeReconciliationClient.ts`, the reconcile and embeddings stage code in `lib/ingest/pipeline.ts`, its own migrations.
 - recompute: `lib/glossary/**`, `lib/change-control/**`, a new `lib/staleness/**`, the later stage code in `lib/ingest/pipeline.ts` and `lib/ingest/workflow.ts`, its own migrations.
 - embeddings: `lib/knowledge/embeddingStore.ts` (after reconcile lands, since #45 moves embedding earlier).
