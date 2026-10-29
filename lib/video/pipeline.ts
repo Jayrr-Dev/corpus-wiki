@@ -1,5 +1,5 @@
 import { composeVideo, placeScenes, type RenderManifest, totalDurationMs } from "./compose";
-import { type RenderJobClient, RENDER_JOB_DEFAULTS, timeoutMessage } from "./render";
+import { isJobFinished, type RenderJobClient, RENDER_JOB_DEFAULTS, timeoutMessage } from "./render";
 import { isOverdue, RENDER_CALLBACK_GRACE_MS, RENDER_JOB_TIMEOUT_MS, transition, type VideoEvent } from "./status";
 import { FRAME } from "./templates";
 import { signCallbackToken } from "./token";
@@ -8,7 +8,8 @@ import { sceneAudioPath, type VoiceClient, voiceScenes } from "./voice";
 
 // =====================================================================
 // MAKE VIDEO: voice every scene, compose, start the render job, then wait
-// for its callback (or the timeout check). Every outside service comes in
+// for its callback, the status poll reading the job (pollRender), or the
+// timeout check. Every outside service comes in
 // through PipelineDeps: the video rows (update_video), Storage, ElevenLabs
 // and Nebius. lib/video/server.ts wires the real ones; tests wire fakes.
 // =====================================================================
@@ -107,7 +108,10 @@ export async function runPipeline(deps: PipelineDeps, id: string): Promise<Video
     await deps.files.upload(`${base}/composition/index.html`, html, "text/html");
     files.unshift({ path: "index.html", url: await deps.files.signedDownloadUrl(`${base}/composition/index.html`, LINK_SECONDS) });
 
-    const token = signCallbackToken({ videoId: id, spaceId: deps.spaceId, exp: now(deps) + LINK_SECONDS * 1000 }, deps.callbackSecret);
+    // The callback is optional: without a public app URL the status poll reads the job from Nebius (pollRender)
+    const callback = deps.callbackBaseUrl && deps.callbackSecret
+      ? { url: `${deps.callbackBaseUrl.replace(/\/+$/, "")}/api/video/${id}/rendered`, token: signCallbackToken({ videoId: id, spaceId: deps.spaceId, exp: now(deps) + LINK_SECONDS * 1000 }, deps.callbackSecret) }
+      : null;
     const manifest: RenderManifest = {
       videoId: id,
       durationMs: totalDurationMs(scenes),
@@ -117,7 +121,7 @@ export async function runPipeline(deps: PipelineDeps, id: string): Promise<Video
       files,
       audio: placeScenes(scenes).map((item) => ({ path: item.audioFile, startMs: item.startMs })),
       output: { videoUploadUrl: await deps.files.signedUploadUrl(videoFilePath(deps.spaceId, id)), posterUploadUrl: await deps.files.signedUploadUrl(posterFilePath(deps.spaceId, id)) },
-      callback: { url: `${deps.callbackBaseUrl.replace(/\/+$/, "")}/api/video/${id}/rendered`, token },
+      callback,
     };
     await deps.files.upload(`${base}/composition/manifest.json`, JSON.stringify(manifest), "application/json");
     const manifestUrl = await deps.files.signedDownloadUrl(`${base}/composition/manifest.json`, LINK_SECONDS);
@@ -152,6 +156,17 @@ export async function finishRender(deps: Pick<PipelineDeps, "spaceId" | "store">
   const error = [body.error?.trim() || "The render failed.", body.logTail?.trim()].filter(Boolean).join("\n");
   const failed = await applyEvent(deps.store, video, { type: "fail", error });
   return { result: failed ? "failed" : "ignored", video: failed };
+}
+
+// RENDER POLL (rendering → ready or failed) without a callback: the job's own state says how it ended.
+// render.mjs exits 0 only after both uploads, so a succeeded job means the MP4 and poster are in place.
+// A job Nebius cannot be asked about right now leaves the video rendering for the next poll.
+export async function pollRender(deps: Pick<PipelineDeps, "spaceId" | "store" | "jobs">, video: VideoRow): Promise<VideoRow> {
+  if (video.status !== "rendering" || !video.renderJobId) return video;
+  const job = await deps.jobs().getJob(video.renderJobId).catch(() => null);
+  if (!job || !isJobFinished(job.state)) return video;
+  const body: RenderedBody = job.state === "succeeded" ? { ok: true } : { ok: false, error: job.state === "cancelled" ? "The render was stopped before it finished." : "The render failed.", logTail: job.logTail };
+  return (await finishRender(deps, video.id, body)).video ?? (await deps.store.get(video.id)) ?? video;
 }
 
 // TIMEOUT CHECK: a video stuck in voicing, or rendering with no callback past the job timeout, becomes

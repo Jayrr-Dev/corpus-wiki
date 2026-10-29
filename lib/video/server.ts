@@ -28,8 +28,9 @@ import { DEFAULT_VOICE_ID, elevenLabsClient } from "./voice";
 //   NEBIUS_SERVICE_ACCOUNT_ID, NEBIUS_PUBLIC_KEY_ID and NEBIUS_PRIVATE_KEY_PATH (or
 //                             NEBIUS_PRIVATE_KEY) mint the IAM tokens for the API and the image pull
 //   VIDEO_RENDER_IMAGE        the render image in Nebius Container Registry
-//   VIDEO_CALLBACK_SECRET     signs the render callback token
-//   VIDEO_CALLBACK_BASE_URL   the app's public URL the job calls back
+//   VIDEO_CALLBACK_BASE_URL   optional: the app's public URL the job calls back; without it the
+//                             status poll reads the job from Nebius (works on localhost)
+//   VIDEO_CALLBACK_SECRET     signs the callback token (needed with VIDEO_CALLBACK_BASE_URL)
 // =====================================================================
 
 export const VIDEO_BUCKET = "videos";
@@ -110,8 +111,8 @@ export function assertRenderConfigured(deps: PipelineDeps): void {
   required("NEBIUS_RENDER_PROJECT_ID or NEBIUS_PROJECT_ID", renderProjectId());
   serviceAccountKeyFromEnv(process.env);
   required("VIDEO_RENDER_IMAGE", deps.renderImage);
-  required("VIDEO_CALLBACK_BASE_URL", deps.callbackBaseUrl);
-  required("VIDEO_CALLBACK_SECRET", deps.callbackSecret);
+  // The callback is optional (renders finish through the status poll); a URL needs its secret
+  if (deps.callbackBaseUrl) required("VIDEO_CALLBACK_SECRET", deps.callbackSecret);
 }
 
 // THE NARRATOR (role "narrator", call name video_script)

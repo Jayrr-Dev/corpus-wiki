@@ -14,7 +14,7 @@
 FROM node:22-bookworm-slim
 
 # Pin the HyperFrames CLI the spike verified; a render must not change under us
-ARG HYPERFRAMES_VERSION=latest
+ARG HYPERFRAMES_VERSION=0.8.158
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PUPPETEER_SKIP_DOWNLOAD=true \
@@ -35,5 +35,7 @@ COPY render.mjs /app/render.mjs
 
 RUN useradd --create-home --uid 10001 render && mkdir -p /work && chown render /work
 USER render
+# No usage data leaves a render job
+RUN hyperframes telemetry disable >/dev/null 2>&1 || true
 
 ENTRYPOINT ["node", "/app/render.mjs"]
