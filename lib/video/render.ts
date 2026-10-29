@@ -12,8 +12,9 @@ import { RENDER_JOB_TIMEOUT_MS } from "./status";
 // through an injected runner, so it never runs in tests either.
 // =====================================================================
 
-// Suggested start (docs/knowledge-modules-plan.md): cpu-e1, 4vcpu-16gb, 20 GiB disk, 30 min
-export const RENDER_JOB_DEFAULTS = { platform: "cpu-e1", preset: "4vcpu-16gb", diskGiB: 20, timeoutMinutes: RENDER_JOB_TIMEOUT_MS / 60_000 } as const;
+// What the spike ran (2026-10-29, eu-west1): cpu-d3 is the CPU platform in the regions with CPU quota,
+// 8 vCPUs rendered 5.5 s of video in 11 s; Nebius accepts no job timeout under 1 hour
+export const RENDER_JOB_DEFAULTS = { platform: "cpu-d3", preset: "8vcpu-32gb", diskGiB: 30, shmGiB: 1, timeoutMinutes: RENDER_JOB_TIMEOUT_MS / 60_000 } as const;
 
 export type RenderJobSpec = {
   name: string;
@@ -55,7 +56,8 @@ export type CommandRunner = (command: string, args: string[], env: Record<string
 export type NebiusJobConfig = {
   // the project the jobs run in (NEBIUS_PROJECT_ID)
   projectId: string;
-  // an IAM token for the CLI (NEBIUS_IAM_TOKEN); without it the CLI uses its own profile
+  // an IAM token for the CLI (NEBIUS_IAM_TOKEN); without it the CLI uses its own profile.
+  // It also lets the job pull the private render image (registry user "iam").
   iamToken?: string | null;
   cli?: string;
   run: CommandRunner;
@@ -89,7 +91,11 @@ export function nebiusJobClient(config: NebiusJobConfig): RenderJobClient {
         "--platform", spec.platform ?? RENDER_JOB_DEFAULTS.platform,
         "--preset", spec.preset ?? RENDER_JOB_DEFAULTS.preset,
         "--disk-size", `${spec.diskGiB ?? RENDER_JOB_DEFAULTS.diskGiB}Gi`,
+        "--shm-size", `${RENDER_JOB_DEFAULTS.shmGiB}Gi`,
         "--timeout", `${spec.timeoutMinutes ?? RENDER_JOB_DEFAULTS.timeoutMinutes}m`,
+        // a preemptible VM can be stopped mid-render
+        "--on-demand",
+        ...(config.iamToken ? ["--registry-username", "iam", "--registry-password", config.iamToken] : []),
         ...Object.entries(spec.env).flatMap(([key, value]) => ["--env", `${key}=${value}`]),
         "--format", "json",
       ];
@@ -102,7 +108,7 @@ export function nebiusJobClient(config: NebiusJobConfig): RenderJobClient {
       const job = parseJson(await config.run(cli, ["ai", "job", "get", "--id", id, "--format", "json"], env));
       const state = jobState(pick(job, "status", "state") ?? pick(job, "status", "phase") ?? pick(job, "state"));
       let log: string | null = null;
-      if (state === "failed" || state === "cancelled") log = await config.run(cli, ["ai", "job", "logs", id, "--tail", "40"], env).catch(() => null);
+      if (state === "failed" || state === "cancelled") log = await config.run(cli, ["ai", "job", "logs", id], env).catch(() => null);
       return { id, state, logTail: logTail(log) };
     },
   };

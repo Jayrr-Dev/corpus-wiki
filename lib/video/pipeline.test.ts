@@ -35,7 +35,7 @@ describe("make video", () => {
       `${SPACE_ID}/${VIDEO_ID}/composition/index.html`, `${SPACE_ID}/${VIDEO_ID}/composition/manifest.json`,
     ]);
     expect(jobs.created).toHaveLength(1);
-    expect(jobs.created[0]).toMatchObject({ image: "cr.test/render:1", platform: "cpu-e1", preset: "4vcpu-16gb", diskGiB: 20, timeoutMinutes: 30 });
+    expect(jobs.created[0]).toMatchObject({ image: "cr.test/render:1", platform: "cpu-d3", preset: "8vcpu-32gb", diskGiB: 30, timeoutMinutes: 60 });
     expect(jobs.created[0]!.env.MANIFEST_URL).toContain("composition/manifest.json");
 
     const manifest = JSON.parse(String(files.saved.get(`${SPACE_ID}/${VIDEO_ID}/composition/manifest.json`)!.bytes)) as RenderManifest;

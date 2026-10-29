@@ -14,7 +14,7 @@ function fakeRunner(answers: Record<string, string | Error>) {
 }
 
 describe("Nebius render jobs", () => {
-  it("creates a CPU job with the suggested platform, preset, disk and timeout", async () => {
+  it("creates an on-demand CPU job with the spike's platform, preset, disk and timeout", async () => {
     const { run, calls } = fakeRunner({ "ai job create": JSON.stringify({ metadata: { id: "aijob-1" } }) });
     const client = nebiusJobClient({ projectId: "project-1", iamToken: "iam", run });
     expect(await client.createJob({ name: "video-1", image: "cr.example/render:1", env: { MANIFEST_URL: "https://m" } })).toEqual({ id: "aijob-1" });
@@ -25,10 +25,21 @@ describe("Nebius render jobs", () => {
     expect(flag("--parent-id")).toBe("project-1");
     expect(flag("--image")).toBe("cr.example/render:1");
     expect(flag("--platform")).toBe(RENDER_JOB_DEFAULTS.platform);
-    expect(flag("--preset")).toBe("4vcpu-16gb");
-    expect(flag("--disk-size")).toBe("20Gi");
-    expect(flag("--timeout")).toBe("30m");
+    expect(flag("--platform")).toBe("cpu-d3");
+    expect(flag("--preset")).toBe("8vcpu-32gb");
+    expect(flag("--disk-size")).toBe("30Gi");
+    expect(flag("--shm-size")).toBe("1Gi");
+    expect(flag("--timeout")).toBe("60m");
+    expect(args).toContain("--on-demand");
+    expect(flag("--registry-username")).toBe("iam");
+    expect(flag("--registry-password")).toBe("iam");
     expect(flag("--env")).toBe("MANIFEST_URL=https://m");
+  });
+
+  it("leaves out registry credentials when it has no token", async () => {
+    const { run, calls } = fakeRunner({ "ai job create": JSON.stringify({ metadata: { id: "aijob-2" } }) });
+    await nebiusJobClient({ projectId: "project-1", run }).createJob({ name: "v", image: "i", env: {} });
+    expect(calls[0]!.args).not.toContain("--registry-password");
   });
 
   it("fails clearly when Nebius returns no id or no JSON", async () => {
@@ -67,6 +78,6 @@ describe("Nebius render jobs", () => {
     expect(timeoutMessage(null)).toBe("The render did not report back in time.");
     expect(timeoutMessage({ id: "j", state: "succeeded", logTail: null })).toBe("The render finished but did not report back.");
     expect(timeoutMessage({ id: "j", state: "failed", logTail: "oom" })).toBe("The render failed.\noom");
-    expect(timeoutMessage({ id: "j", state: "running", logTail: null })).toBe("The render did not finish within 30 minutes.");
+    expect(timeoutMessage({ id: "j", state: "running", logTail: null })).toBe("The render did not finish within 60 minutes.");
   });
 });

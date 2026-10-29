@@ -1,7 +1,7 @@
 # =====================================================================
 # VIDEO RENDER IMAGE: Node, headless Chromium, HyperFrames and ffmpeg.
 # Nebius Serverless AI runs one CPU job per video from this image
-# (cpu-e1, 4vcpu-16gb, 20 GiB disk, 30 min timeout); render.mjs reads the
+# (cpu-d3, 8vcpu-32gb, 30 GiB disk, 1 h timeout); render.mjs reads the
 # manifest at MANIFEST_URL, renders, muxes, uploads and calls back.
 #
 # Build and push (spike S2, docs/knowledge-modules-plan.md):

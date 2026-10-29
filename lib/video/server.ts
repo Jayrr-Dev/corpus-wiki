@@ -23,7 +23,8 @@ import { DEFAULT_VOICE_ID, elevenLabsClient } from "./voice";
 // Nebius) and the Narrator call behind ScriptWriter.
 // Server env:
 //   ELEVENLABS_API_KEY        voices scenes (Settings → Intelligence shows "Connected.")
-//   NEBIUS_PROJECT_ID         where render jobs run; NEBIUS_IAM_TOKEN for the CLI
+//   NEBIUS_RENDER_PROJECT_ID  where render jobs run (a region with CPU quota; falls back to
+//                             NEBIUS_PROJECT_ID); NEBIUS_IAM_TOKEN for the CLI and the image pull
 //   VIDEO_RENDER_IMAGE        the render image in Nebius Container Registry
 //   VIDEO_CALLBACK_SECRET     signs the render callback token
 //   VIDEO_CALLBACK_BASE_URL   the app's public URL the job calls back
@@ -79,6 +80,9 @@ const required = (name: string, value: string | undefined) => {
 export const voiceConnected = () => Boolean(process.env.ELEVENLABS_API_KEY);
 export const videoRates = () => ratesFromEnv(process.env);
 
+// The project render jobs run in; it can sit in another region than the registry
+const renderProjectId = () => process.env.NEBIUS_RENDER_PROJECT_ID || process.env.NEBIUS_PROJECT_ID || "";
+
 // Everything runPipeline needs, for the current space
 export async function pipelineDeps(spaceId?: string | null): Promise<PipelineDeps> {
   const space = spaceId ?? (await currentActor()).spaceId;
@@ -89,7 +93,7 @@ export async function pipelineDeps(spaceId?: string | null): Promise<PipelineDep
     store: videoStore(),
     files: videoFiles(),
     voice: () => elevenLabsClient(process.env.ELEVENLABS_API_KEY ?? ""),
-    jobs: () => nebiusJobClient({ projectId: process.env.NEBIUS_PROJECT_ID ?? "", iamToken: process.env.NEBIUS_IAM_TOKEN, run: execRunner }),
+    jobs: () => nebiusJobClient({ projectId: renderProjectId(), iamToken: process.env.NEBIUS_IAM_TOKEN, run: execRunner }),
     renderImage: process.env.VIDEO_RENDER_IMAGE ?? "",
     callbackBaseUrl: process.env.VIDEO_CALLBACK_BASE_URL ?? "",
     callbackSecret: process.env.VIDEO_CALLBACK_SECRET ?? "",
@@ -106,7 +110,7 @@ export async function pipelineDeps(spaceId?: string | null): Promise<PipelineDep
 // Checks the settings Make video needs, before anything starts
 export function assertRenderConfigured(deps: PipelineDeps): void {
   required("ELEVENLABS_API_KEY", process.env.ELEVENLABS_API_KEY);
-  required("NEBIUS_PROJECT_ID", process.env.NEBIUS_PROJECT_ID);
+  required("NEBIUS_RENDER_PROJECT_ID or NEBIUS_PROJECT_ID", renderProjectId());
   required("VIDEO_RENDER_IMAGE", deps.renderImage);
   required("VIDEO_CALLBACK_BASE_URL", deps.callbackBaseUrl);
   required("VIDEO_CALLBACK_SECRET", deps.callbackSecret);

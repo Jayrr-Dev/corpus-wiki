@@ -68,7 +68,8 @@ export const isWorking = (status: VideoStatus) => status === "voicing" || status
 // TIMEOUTS: voicing runs in the app and should finish in minutes; rendering waits for the
 // job's timeout plus a grace period for the upload and callback
 export const VOICING_TIMEOUT_MS = 15 * 60_000;
-export const RENDER_JOB_TIMEOUT_MS = 30 * 60_000;
+// Nebius rejects job timeouts under 1 hour
+export const RENDER_JOB_TIMEOUT_MS = 60 * 60_000;
 export const RENDER_CALLBACK_GRACE_MS = 5 * 60_000;
 
 // True when a working video has waited past its deadline
