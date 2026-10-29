@@ -49,14 +49,14 @@ function DropdownMenuItem({
   variant = "default",
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Item> & {
-  variant?: "default" | "destructive"
+  variant?: "default" | "destructive" | "link"
 }) {
   return (
     <DropdownMenuPrimitive.Item
       data-slot="dropdown-menu-item"
       data-variant={variant}
       className={cn(
-        "relative flex cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-panel outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive data-disabled:pointer-events-none data-disabled:opacity-50",
+        "relative flex cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-panel outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[variant=link]:text-link data-[variant=link]:focus:text-link data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive data-disabled:pointer-events-none data-disabled:opacity-50",
         className
       )}
       {...props}

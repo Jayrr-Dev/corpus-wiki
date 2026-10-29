@@ -58,6 +58,9 @@ it("saves reversible illustration versions, rejects stale saves and preserves dr
     expect(await db.call("asset_article_usage")).toEqual([]);
     await expect(save()).rejects.toThrow('article changed');
     await expect(db.call("select_composer_run", { p_page_id: page, p_run_id: run })).rejects.toThrow('no longer matches');
+    // A signed-in browser reads assets only in its current space
+    const space = (await pg.query<{ space_id: string }>("select space_id from assets where id=$1", [generated[0]!.id])).rows[0]!.space_id;
+    await pg.query("select set_config('request.headers',$1,false)", [JSON.stringify({ "x-space-id": space })]);
     await pg.exec('set role authenticated');
     expect((await pg.query("select id from assets where origin='generated'")).rows).toHaveLength(1);
     await expect(pg.query("select * from generated_asset_content")).rejects.toThrow('permission denied');

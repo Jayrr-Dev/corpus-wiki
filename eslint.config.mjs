@@ -30,7 +30,7 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  globalIgnores([".claude/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "node_modules/**"]),
+  globalIgnores([".claude/**", ".next/**", ".next.recovery-*/**","out/**", "build/**", "next-env.d.ts", "node_modules/**"]),
 ]);
 
 export default eslintConfig;

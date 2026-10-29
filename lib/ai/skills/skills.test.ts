@@ -67,8 +67,8 @@ describe("assigned skills reach actual AI requests",()=>{
     expect(writer.promptVersion).toContain(`${custom.id}@3`);
   });
   it("uses planning assignments without changing verified claim inputs",async()=>{
-    const request=intercept({title:"Noise protection",introduction:["C1"],sections:[{title:"Hearing protection",claims:["C1"]}]});
-    await planArticle({apiKey:"test",skills:{plan_articles:custom}},{entity:{id:"company",name:"ExampleCo",type:"company",key:"exampleco"},units:[unit]});
+    const request=intercept({centralMessage:"Hearing protection",readingOrderRationale:"One claim.",plan:{title:"Noise protection",introduction:["C1"],sections:[{title:"Hearing protection",claims:["C2"]}]}});
+    await planArticle({apiKey:"test",skills:{plan_articles:custom}},{entity:{id:"company",name:"ExampleCo",type:"company",key:"exampleco"},units:[unit,{...unit,unitId:"unit2",revisionId:"revision2",content:"ExampleCo tests noise levels yearly."}]},undefined,undefined,{skipReview:true});
     expect(request().messages.filter((message: {role:string})=>message.role==="system").map((message: {content:string})=>message.content).join(" ")).toContain(custom.instructions);
     expect(JSON.parse(request().messages.find((message: {role:string})=>message.role==="user").content).claims[0].content).toBe(unit.content);
   });

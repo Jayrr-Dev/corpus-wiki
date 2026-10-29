@@ -54,10 +54,12 @@ export function StatusLegend() {
             </li>
           ))}
         </ul>
-        <PopoverHeader className="mt-2 border-t pt-3">
-          <PopoverTitle>Evidence</PopoverTitle>
-          <p className="text-muted-foreground">What happened to the files it cites. Shown only when something did.</p>
-        </PopoverHeader>
+        <div className="mt-2 border-t pt-3">
+          <PopoverHeader>
+            <PopoverTitle>Evidence</PopoverTitle>
+            <p className="text-muted-foreground">What happened to the files it cites. Shown only when something did.</p>
+          </PopoverHeader>
+        </div>
         <ul className="flex flex-col gap-2">
           {(["stale", "lost"] as const).map((evidence) => (
             <li key={evidence}>

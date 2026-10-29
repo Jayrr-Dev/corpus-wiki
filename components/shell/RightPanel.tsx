@@ -70,7 +70,7 @@ function DesktopPanel() {
     <aside
       aria-label="Details"
       aria-hidden={!open}
-      className={`hidden shrink-0 overflow-hidden bg-sidebar transition-[width,border-color] duration-300 ease-out motion-reduce:transition-none lg:flex ${
+      className={`hidden shrink-0 overflow-hidden bg-sidebar transition-all duration-300 ease-out motion-reduce:transition-none lg:flex ${
         open ? "w-72 border-l" : "w-0 border-l border-transparent"
       }`}
     >

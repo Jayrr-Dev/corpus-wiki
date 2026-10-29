@@ -59,9 +59,8 @@ export function RowMenu({ label, items }: RowMenuProps) {
           {orderMenuItems(items).map(({ item, hasSeparator }) => {
             const menuItem = (
               <DropdownMenuItem
-                variant={item.isDestructive ? "destructive" : "default"}
+                variant={item.isDestructive ? "destructive" : item.isAccent ? "link" : "default"}
                 disabled={item.isDisabled}
-                className={item.isAccent ? "text-link focus:text-link" : undefined}
                 onSelect={() => choose(item)}
               >
                 {item.label}

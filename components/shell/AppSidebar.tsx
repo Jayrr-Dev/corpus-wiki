@@ -62,7 +62,7 @@ function NavModeSwitch() {
     { value: "user", label: "User", hint: "Show only what a regular user needs" },
   ];
   return (
-    <div role="radiogroup" aria-label="Sidebar mode" className="ml-auto flex shrink-0 rounded-md border bg-background p-px text-[11px] leading-4 group-data-[collapsible=icon]:hidden">
+    <div role="radiogroup" aria-label="Sidebar mode" className="ml-auto flex shrink-0 rounded-md border bg-background p-px text-xs leading-4 group-data-[collapsible=icon]:hidden">
       {options.map((option) => (
         <Tooltip key={option.value} content={option.hint}>
           <button
@@ -109,7 +109,7 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
       <SidebarHeader search searchPlaceholder="Search…" separator>
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center">
-            <SidebarMenuButton asChild tooltip="Corpus Wiki" className="min-w-0 flex-1 pr-1">
+            <SidebarMenuButton asChild tooltip="Corpus Wiki" className="min-w-0 flex-1">
               <Link href="/">
                 <BrandMark />
                 <BrandName className="text-body" />

@@ -7,6 +7,8 @@ describe("sections once per commit in PostgreSQL", () => {
   let store: Awaited<ReturnType<typeof portablePostgres>>;
   beforeAll(async () => {
     store = await portablePostgres();
+    // These sections have no lines, which the empty-section guard would mark stale on insert
+    await store.pg.exec("alter table sections disable trigger guard_empty_section_completion");
     await store.pg.exec("insert into entities(type,key,name) values ('company','pass-a','Pass A'),('company','pass-b','Pass B')");
   }, 60000);
   afterAll(async () => { await store?.pg.close(); });
