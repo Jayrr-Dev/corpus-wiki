@@ -186,7 +186,7 @@ describe("canonical glossary publication", () => {
   });
 
   it("does not expose mutation RPCs to browser clients", async () => {
-    const result = await store.pg.query<{ allowed: boolean }>("select has_function_privilege('authenticated','public.publish_glossary_meanings(uuid,text,jsonb,jsonb,jsonb,jsonb)','execute') allowed");
+    const result = await store.pg.query<{ allowed: boolean }>("select has_function_privilege('authenticated','public.publish_glossary_meanings(uuid,text,jsonb,jsonb,jsonb,jsonb,jsonb,boolean,jsonb)','execute') allowed");
     expect(result.rows[0]?.allowed).toBe(false);
   });
 });
