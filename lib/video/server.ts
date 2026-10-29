@@ -1,6 +1,5 @@
 import "server-only";
 
-import { execFile } from "node:child_process";
 import { z } from "zod";
 import { chatJson, tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readModelChoice } from "@/lib/ai/models";
@@ -12,7 +11,8 @@ import { loadScopeClaims, loadScopeOptions, pickCoverage, type Scope } from "@/l
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { ratesFromEnv } from "./cost";
 import type { PipelineDeps, VideoFiles, VideoStore } from "./pipeline";
-import { type CommandRunner, nebiusJobClient } from "./render";
+import { nebiusTokenSource, serviceAccountKeyFromEnv, type TokenSource } from "./nebius";
+import { nebiusJobClient } from "./render";
 import { draftSchema, scriptFromDraft, scriptPrompt, type ScriptWriter } from "./script";
 import { LENGTH_PLAN, type VideoLength, type VideoPatch, type VideoRow, type VideoScript, type VoiceOption } from "./types";
 import { DEFAULT_VOICE_ID, elevenLabsClient } from "./voice";
@@ -24,7 +24,9 @@ import { DEFAULT_VOICE_ID, elevenLabsClient } from "./voice";
 // Server env:
 //   ELEVENLABS_API_KEY        voices scenes (Settings → Intelligence shows "Connected.")
 //   NEBIUS_RENDER_PROJECT_ID  where render jobs run (a region with CPU quota; falls back to
-//                             NEBIUS_PROJECT_ID); NEBIUS_IAM_TOKEN for the CLI and the image pull
+//                             NEBIUS_PROJECT_ID)
+//   NEBIUS_SERVICE_ACCOUNT_ID, NEBIUS_PUBLIC_KEY_ID and NEBIUS_PRIVATE_KEY_PATH (or
+//                             NEBIUS_PRIVATE_KEY) mint the IAM tokens for the API and the image pull
 //   VIDEO_RENDER_IMAGE        the render image in Nebius Container Registry
 //   VIDEO_CALLBACK_SECRET     signs the render callback token
 //   VIDEO_CALLBACK_BASE_URL   the app's public URL the job calls back
@@ -63,15 +65,6 @@ export function videoFiles(): VideoFiles {
   };
 }
 
-// Runs the `nebius` CLI; the job spec stays out of any shell
-export const execRunner: CommandRunner = (command, args, env) =>
-  new Promise((resolve, reject) => {
-    execFile(command, args, { env: { ...process.env, ...env }, timeout: 120_000, maxBuffer: 4 * 1024 * 1024, windowsHide: true }, (error, stdout, stderr) => {
-      if (error) reject(new Error(`${command} ${args.slice(0, 3).join(" ")} failed: ${(stderr || error.message).trim().slice(0, 400)}`));
-      else resolve(stdout);
-    });
-  });
-
 const required = (name: string, value: string | undefined) => {
   if (!value) throw new Error(`Add ${name} to the server environment to make videos.`);
   return value;
@@ -83,6 +76,10 @@ export const videoRates = () => ratesFromEnv(process.env);
 // The project render jobs run in; it can sit in another region than the registry
 const renderProjectId = () => process.env.NEBIUS_RENDER_PROJECT_ID || process.env.NEBIUS_PROJECT_ID || "";
 
+// One token source per server process, so a minted token is reused until it nears expiry
+let tokens: TokenSource | null = null;
+const nebiusToken: TokenSource = () => (tokens ??= nebiusTokenSource(serviceAccountKeyFromEnv(process.env)))();
+
 // Everything runPipeline needs, for the current space
 export async function pipelineDeps(spaceId?: string | null): Promise<PipelineDeps> {
   const space = spaceId ?? (await currentActor()).spaceId;
@@ -93,7 +90,7 @@ export async function pipelineDeps(spaceId?: string | null): Promise<PipelineDep
     store: videoStore(),
     files: videoFiles(),
     voice: () => elevenLabsClient(process.env.ELEVENLABS_API_KEY ?? ""),
-    jobs: () => nebiusJobClient({ projectId: renderProjectId(), iamToken: process.env.NEBIUS_IAM_TOKEN, run: execRunner }),
+    jobs: () => nebiusJobClient({ projectId: renderProjectId(), token: nebiusToken }),
     renderImage: process.env.VIDEO_RENDER_IMAGE ?? "",
     callbackBaseUrl: process.env.VIDEO_CALLBACK_BASE_URL ?? "",
     callbackSecret: process.env.VIDEO_CALLBACK_SECRET ?? "",
@@ -111,6 +108,7 @@ export async function pipelineDeps(spaceId?: string | null): Promise<PipelineDep
 export function assertRenderConfigured(deps: PipelineDeps): void {
   required("ELEVENLABS_API_KEY", process.env.ELEVENLABS_API_KEY);
   required("NEBIUS_RENDER_PROJECT_ID or NEBIUS_PROJECT_ID", renderProjectId());
+  serviceAccountKeyFromEnv(process.env);
   required("VIDEO_RENDER_IMAGE", deps.renderImage);
   required("VIDEO_CALLBACK_BASE_URL", deps.callbackBaseUrl);
   required("VIDEO_CALLBACK_SECRET", deps.callbackSecret);
