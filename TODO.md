@@ -14,7 +14,7 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 
 | Lane | Task | Needs | Status |
 |---|---|---|---|
-| owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | waiting on owner |
+| owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | PR merged; secrets not confirmed |
 | owner | Run `evals/retrieval` on PR #52 vs main (#38) | | waiting on owner |
 | owner | Turn on #43 env vars in production | | waiting on owner |
 | owner | Fix duplicate migration version `20261122000000` (hnsw drop vs custom claim picks), then apply the HNSW drop (#40) | | waiting on owner |
