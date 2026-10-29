@@ -21,7 +21,7 @@ export type ExtractedPage = { page: number | null; text: string; time?: string; 
 export type PassageDraft = {
   position: number;
   text: string;
-  location: { page?: number; heading?: string; sectionPath?: string[]; time?: string; figure?: string };
+  location: { page?: number; heading?: string; sectionPath?: string[]; time?: string; figure?: string; sender?: string; sentAt?: string };
   hash: string;
   speakerLabel: string | null;
 };
@@ -67,4 +67,22 @@ function packSentences(paragraph: string): string[] {
 function passageOf(text: string, location: PassageDraft["location"]): Omit<PassageDraft, "position"> {
   const speaker = /^([A-Z][\w .'-]{0,40}):\s/.exec(text)?.[1] ?? null;
   return { text, location, hash: sha256(text), speakerLabel: speaker };
+}
+
+// ONE MESSAGE OF AN EMAIL THREAD (lib/connectors/gmail): who sent it, when, and its text
+export type MessageDraft = { sender: string; senderName: string; sentAt: string; text: string };
+
+// EMAIL THREADS: one passage per message, located by its sender and sent date, the
+// sender named as its speaker. Paragraph breaks are kept; lines inside a paragraph join.
+export function messagePassages(subject: string, messages: readonly MessageDraft[]): PassageDraft[] {
+  return messages
+    .map((message) => ({ message, text: message.text.split(PARAGRAPH_BREAK).map((paragraph) => paragraph.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean).join("\n\n") }))
+    .filter(({ text }) => text)
+    .map(({ message, text }, position) => ({
+      position,
+      text,
+      location: { heading: subject, sender: message.sender, sentAt: message.sentAt },
+      hash: sha256(`${message.sender}\n${message.sentAt}\n${text}`),
+      speakerLabel: message.senderName || null,
+    }));
 }

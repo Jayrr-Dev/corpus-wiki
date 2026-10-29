@@ -10,7 +10,7 @@ import { getServerDeps } from "@/lib/server/deps";
 import { CONVERTERS } from "./convert";
 import { DIRECT_UPLOAD_FORMATS, formatOf, mediaKindOf, MAX_DIRECT_UPLOAD_BYTES, storedMimeType, type UploadFormat, UPLOAD_FORMAT_NAMES } from "./formats";
 import { sha256 } from "./hash";
-import { splitIntoPassages } from "./passages";
+import { type MessageDraft, messagePassages, splitIntoPassages } from "./passages";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { reconcileExternalUpload, reconcileUpload, recordUpload } from "./pipeline";
 import { externalApproval, openRerunEvent } from "./rerun";
@@ -61,6 +61,30 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
   // Media the file brought in (the file itself, or pictures inside it) goes on the Assets page
   if (mediaKindOf(mimeType) || pages.some((page) => page.figure)) after(() => describeNewAssets(db));
   return started;
+}
+
+// STEP 1 FOR AN EMAIL ATTACHMENT (Gmail import): a file in a supported format runs the same
+// step 1 as an upload; null when its format cannot be read
+export async function startUploadFromAttachment(input: { bytes: Uint8Array; fileName: string; mimeType: string; sourceDate: string }): Promise<StartUploadResult | null> {
+  if (!formatOf(input.fileName, input.mimeType)) return null;
+  return startUploadFromBytes({ bytes: input.bytes, fileName: input.fileName, browserType: input.mimeType, sourceDate: input.sourceDate });
+}
+
+// STEP 1 FOR AN EMAIL THREAD (Gmail import): the thread is stored as a Markdown file, titled by
+// its subject and dated by its first message; each message is one passage with its sender and
+// date. The same thread text stored before is skipped, like any file.
+export async function startEmailThreadSource(input: { subject: string; sentAt: string; markdown: string; messages: readonly MessageDraft[] }): Promise<StartUploadResult | null> {
+  const passages = messagePassages(input.subject, input.messages);
+  if (passages.length === 0) return null;
+  const sentAt = new Date(input.sentAt);
+  if (Number.isNaN(sentAt.getTime())) throw new Error("The email has no readable sent date.");
+  const bytes = new TextEncoder().encode(input.markdown);
+  const hash = sha256(bytes);
+  const known = await findSourceByHash(hash);
+  if (known) return { kind: "skipped", sourceId: known };
+  const storagePath = await storeSourceFile(`${hash}.md`, bytes, "text/markdown");
+  const { db } = await getServerDeps();
+  return recordUpload(db, { title: input.subject, mimeType: "text/markdown", sourceDate: sentAt.toISOString(), hash, storagePath, passages, byteSize: bytes.byteLength, pageCount: null });
 }
 
 // ASSETS AFTER AN UPLOAD: found and described once the response is sent; a failure never fails the upload
