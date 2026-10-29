@@ -12,7 +12,8 @@ import { RowMenu } from "@/components/row-menu/RowMenu";
 import { DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import type { Tables } from "@/lib/database/types";
-import { UPLOAD_ACCEPT } from "@/lib/ingest/formats";
+import { useFeatureFlags } from "@/lib/flags/client";
+import { uploadAcceptFor } from "@/lib/ingest/formats";
 import { sourceState } from "@/lib/knowledge/evidence";
 import { queryKeys } from "@/lib/queries";
 import {
@@ -115,6 +116,7 @@ function ReplaceForm({ source, onDone }: FormProps) {
   const router = useRouter();
   const fileId = useId();
   const dateId = useId();
+  const flags = useFeatureFlags();
   const [file, setFile] = useState<File | null>(null);
   const [sourceDate, setSourceDate] = useState(() => toDateInputValue(Date.now()));
   const replace = useServerAction(replaceSource, { progress: { title: `Uploading new version of “${source.title}”`, delayMs: 800 } });
@@ -142,7 +144,7 @@ function ReplaceForm({ source, onDone }: FormProps) {
       onSubmit={submit}
     >
       <FormRow htmlFor={fileId} label="New version">
-        <Input id={fileId} type="file" accept={UPLOAD_ACCEPT} onChange={(event) => {
+        <Input id={fileId} type="file" accept={uploadAcceptFor(flags)} onChange={(event) => {
           const picked = event.target.files?.[0] ?? null;
           setFile(picked);
           if (picked) setSourceDate(toDateInputValue(picked.lastModified));

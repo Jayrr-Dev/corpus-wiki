@@ -8,7 +8,9 @@ import type { DbRpc } from "@/lib/db/rpc";
 
 import { getServerDeps } from "@/lib/server/deps";
 import { CONVERTERS } from "./convert";
-import { DIRECT_UPLOAD_FORMATS, formatOf, mediaKindOf, MAX_DIRECT_UPLOAD_BYTES, storedMimeType, type UploadFormat, UPLOAD_FORMAT_NAMES } from "./formats";
+import { getFeatureFlagsOrDefaults } from "@/lib/flags/server";
+import { audioReaderFrom } from "./describeVideoServer";
+import { DIRECT_UPLOAD_FORMATS, formatOf, mediaKindOf, MAX_DIRECT_UPLOAD_BYTES, storedMimeType, type UploadFormat, uploadFormatNamesFor } from "./formats";
 import { sha256 } from "./hash";
 import { splitIntoPassages } from "./passages";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -40,7 +42,7 @@ export async function startUploadFromFile(input: { file: File; sourceDate: strin
 // STEP 1 FOR ANY BYTES: a form's file, or a file the browser put in Storage itself
 async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string; browserType: string; sourceDate: string; replacement?: boolean }): Promise<StartUploadResult> {
   const { bytes, fileName, sourceDate } = input;
-  const format = requireFormat(fileName, input.browserType);
+  const format = await requireFormat(fileName, input.browserType);
   if (!DATE_ONLY.test(sourceDate)) throw new Error("Give the file's date as YYYY-MM-DD.");
   const hash = sha256(bytes);
   const { db, imageDescriber, videoReader } = await getServerDeps();
@@ -52,7 +54,7 @@ async function startUploadFromBytes(input: { bytes: Uint8Array; fileName: string
     if (existing) return { kind: "skipped", sourceId: existing };
   }
   const mimeType = storedMimeType(format, fileName, input.browserType);
-  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, storeFigure: storeSourceFile });
+  const pages = await CONVERTERS[format.id](bytes, { fileName, mimeType, describeImage: imageDescriber, readVideo: videoReader, readAudio: format.id === "audio" ? audioReaderFrom() : null, storeFigure: storeSourceFile });
   const passages = splitIntoPassages(pages);
   if (passages.length === 0) throw new Error(NOTHING_READ[format.id] ?? "No text was found in this file (is it a scan?).");
   const storagePath = await storeSourceFile(`${hash}${extensionOf(fileName, format)}`, bytes, mimeType);
@@ -78,12 +80,13 @@ async function describeNewAssets(db: DbRpc): Promise<void> {
 const NOTHING_READ: Partial<Record<UploadFormat["id"], string>> = {
   image: "The model wrote no description for this image.",
   video: "Nothing could be read from this video: no speech was heard and no description was written.",
+  audio: "No speech was heard in this recording.",
 };
 
 // DIRECT UPLOAD STEP 0: a signed URL the browser puts a large file (a video) at, in Storage,
 // so it never travels in a Server Action body; startUploadFromStorage reads it there next
 export async function startDirectUpload(input: { fileName: string; browserType: string; byteSize: number }): Promise<{ path: string; token: string }> {
-  const format = requireFormat(input.fileName, input.browserType);
+  const format = await requireFormat(input.fileName, input.browserType);
   if (!DIRECT_UPLOAD_FORMATS.includes(format.id)) throw new Error(`${format.label} files are sent with the form, not uploaded directly.`);
   if (input.byteSize > MAX_DIRECT_UPLOAD_BYTES) {
     throw new Error(`This file is ${Math.ceil(input.byteSize / 1024 / 1024)} MB; files up to ${MAX_DIRECT_UPLOAD_BYTES / 1024 / 1024} MB can be uploaded. Save a shorter or smaller copy and upload that.`);
@@ -170,10 +173,12 @@ export async function processExternalEvent(eventId: string, scope: { article: st
   return reconcileExternalUpload(await getServerDeps(), eventId, { ...scope, referenceDomainPaths, fallbackDomainPath });
 }
 
-// The file's format, or a clear message naming the formats that work
-function requireFormat(fileName: string, browserType: string): UploadFormat {
-  const format = formatOf(fileName, browserType);
-  if (!format) throw new Error(`This file type can't be read yet. Upload ${UPLOAD_FORMAT_NAMES}.`);
+// The file's format, or a clear message naming the formats that work. A format behind a flag
+// that is off (audio without audio_ingest) is refused like an unknown type.
+async function requireFormat(fileName: string, browserType: string): Promise<UploadFormat> {
+  const flags = await getFeatureFlagsOrDefaults();
+  const format = formatOf(fileName, browserType, flags);
+  if (!format) throw new Error(`This file type can't be read yet. Upload ${uploadFormatNamesFor(flags)}.`);
   return format;
 }
 
