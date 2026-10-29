@@ -3,7 +3,7 @@ import type { DbRpc } from "@/lib/db/rpc";
 import { roleForPurpose } from "@/lib/ai/roles";
 import { parseDocBlock } from "@/lib/docs/blocks";
 import { getSectionWriter, rebuildSection, type SectionWriter } from "./index";
-import { type DocsAnswer, type DocsAnswerBlock, type DocsModel, DocsSectionWriter, sectionStyle, withDocsStyle } from "./docsStyle";
+import { type DocsAnswer, type DocsAnswerBlock, type DocsModel, docsAnswerSchema, DocsSectionWriter, sectionAnswerSchema, sectionStyle, withDocsStyle } from "./docsStyle";
 import type { SectionState } from "./types";
 
 const chat = vi.hoisted(() => ({ calls: [] as { name: string }[] }));
@@ -97,6 +97,43 @@ describe("docs section style", () => {
     expect(revision.omittedUnitIds).toEqual(["cli", "backup"]);
   });
 
+  it("asks the model for the same fields the answer is parsed with, intro and task alike", () => {
+    const fields = (schema: { shape: { add: { element: { shape: object } } } }) => Object.keys(schema.shape.add.element.shape).sort();
+    expect(fields(sectionAnswerSchema(true))).toEqual(fields(docsAnswerSchema));
+    expect(fields(sectionAnswerSchema(false))).toEqual(fields(docsAnswerSchema));
+    const intro = { revise: [], retire: [], add: [block({ type: "text", text: "A cluster is a database.", cites: ["console"] })] };
+    expect(sectionAnswerSchema(true).safeParse(intro).success && docsAnswerSchema.safeParse(intro).success).toBe(true);
+    expect(sectionAnswerSchema(false).safeParse(intro).success).toBe(false);
+  });
+
+  it("asks again when a task comes back without steps, and keeps the second answer", async () => {
+    const headingOnly: DocsAnswer = { revise: [], retire: [], add: [block({ type: "heading", text: "Create a cluster", cites: ["console"] })] };
+    const withSteps: DocsAnswer = { revise: [], retire: [], add: [block({ type: "steps", steps: [{ text: "Click Create cluster.", cites: ["console"], substeps: [] }] })] };
+    const model = vi.fn<DocsModel>()
+      .mockResolvedValueOnce({ value: headingOnly, model: "mock", tokensIn: null, tokensOut: null })
+      .mockResolvedValueOnce({ value: withSteps, model: "mock", tokensIn: null, tokensOut: null });
+    const revision = await new DocsSectionWriter(model).reviseSection({ pageTitle: "P", sectionTitle: "Create", units, lines: [], uncoveredUnitIds: ["console"], style: { kind: "doc", intro: false } });
+    expect(model).toHaveBeenCalledTimes(2);
+    expect(model.mock.calls[1]![0].user).toContain("no steps block");
+    expect(revision.add.map((line) => parseDocBlock(line.text).type)).toEqual(["steps"]);
+  });
+
+  it("falls back to one cited step per claim when the retry still has no steps", async () => {
+    const empty: DocsAnswer = { revise: [], retire: [], add: [] };
+    const model = vi.fn<DocsModel>().mockResolvedValue({ value: empty, model: "mock", tokensIn: null, tokensOut: null });
+    const revision = await new DocsSectionWriter(model).reviseSection({ pageTitle: "P", sectionTitle: "Create", units, lines: [], uncoveredUnitIds: ["console", "cli"], style: { kind: "doc", intro: false } });
+    expect(model).toHaveBeenCalledTimes(2);
+    expect(parseDocBlock(revision.add[0]!.text)).toMatchObject({ type: "steps" });
+    expect(revision.add[0]!.unitIds).toEqual(["console", "cli"]);
+  });
+
+  it("never asks again for the intro", async () => {
+    const model = vi.fn<DocsModel>().mockResolvedValue({ value: { revise: [], retire: [], add: [block({ type: "text", text: "A cluster is a database.", cites: ["console"] })] }, model: "mock", tokensIn: null, tokensOut: null });
+    await new DocsSectionWriter(model).reviseSection({ pageTitle: "P", sectionTitle: "Intro", units, lines: [], uncoveredUnitIds: ["console"], style: { kind: "doc", intro: true } });
+    expect(model).toHaveBeenCalledTimes(1);
+    expect(model.mock.calls[0]![0].intro).toBe(true);
+  });
+
   it("rewrites only the stale line when a cited claim changes", async () => {
     const lines = [
       { lineId: "l1", lineRevisionId: "lr1", position: 0, content: JSON.stringify({ type: "steps", steps: [{ text: "Old step.", cites: ["console"] }] }), author: "ai" as const, unitIds: ["console"], needsRewrite: true },
@@ -158,6 +195,7 @@ describe("docs section style", () => {
     const writer = getSectionWriter({ NEBIUS_API_KEY: "test" } as unknown as NodeJS.ProcessEnv);
     expect(writer.name).toBe("token-factory");
     await writer.reviseSection({ pageTitle: "P", sectionTitle: "Create", units: [units[0]!], lines: [], uncoveredUnitIds: ["console"], style: { kind: "doc", intro: false } });
-    expect(chat.calls).toEqual([{ name: "docs_page" }]);
+    // the mocked answer has no steps, so the task is asked for once more
+    expect(chat.calls).toEqual([{ name: "docs_page" }, { name: "docs_page" }]);
   });
 });

@@ -16,7 +16,7 @@ import type { LineText, SectionReviseInput, SectionRevision, SectionState } from
 // and the answer is committed through Change control.
 // =====================================================================
 
-export const DOCS_PROMPT_VERSION = "docs-writer-v1";
+export const DOCS_PROMPT_VERSION = "docs-writer-v2";
 export const DOCS_FAKE_MODEL = "fake-docs";
 
 // The style a section's query asks for (null: an article section)
@@ -54,6 +54,19 @@ export const docsAnswerSchema = z.object({
 export type DocsAnswer = z.infer<typeof docsAnswerSchema>;
 export type DocsAnswerBlock = z.infer<typeof answerBlock>;
 
+// The schema the model must follow for one section. Left free to choose, Nemotron wrote every task
+// as one summary paragraph, so a task may not use text blocks (steps carry the how-to) and the
+// intro may use only text blocks.
+const TASK_TYPES = ["heading", "steps", "prereqs", "code", "params", "callout"] as const;
+export function sectionAnswerSchema(intro: boolean) {
+  const inner = answerInner.extend({ type: intro ? z.enum(["text"]) : z.enum(TASK_TYPES) });
+  // every block keeps the tabs field (empty when unused) so the answer still parses as docsAnswerSchema
+  const block = inner.extend({ type: intro ? z.enum(["text"]) : z.enum([...TASK_TYPES, "tabs"]), tabs: z.array(z.object({ label: z.string(), blocks: z.array(inner) })) });
+  return z.object({ revise: z.array(z.object({ lineId: z.string(), blocks: z.array(block) })), retire: z.array(z.string()), add: z.array(block) });
+}
+const INTRO_ANSWER_SCHEMA = sectionAnswerSchema(true);
+const TASK_ANSWER_SCHEMA = sectionAnswerSchema(false);
+
 function innerFromAnswer(block: z.infer<typeof answerInner>): DocInnerBlock {
   switch (block.type) {
     case "text": return { type: "text", text: block.text, cites: block.cites };
@@ -72,7 +85,7 @@ export function blockFromAnswer(block: DocsAnswerBlock): DocBlock {
 }
 
 // THE MODEL SEAM: production calls the Docs writer role (purpose "docs_page"); tests pass a mock
-export type DocsModelRequest = { system: string; user: string; subject: string };
+export type DocsModelRequest = { system: string; user: string; subject: string; intro: boolean };
 export type DocsModel = (request: DocsModelRequest) => Promise<{ value: DocsAnswer; model: string; tokensIn: number | null; tokensOut: number | null }>;
 
 export function chatDocsModel(settings: TokenFactorySettings): DocsModel {
@@ -80,7 +93,7 @@ export function chatDocsModel(settings: TokenFactorySettings): DocsModel {
     name: "docs_page",
     subject: request.subject,
     schema: docsAnswerSchema,
-    jsonSchema: z.toJSONSchema(docsAnswerSchema),
+    jsonSchema: z.toJSONSchema(request.intro ? INTRO_ANSWER_SCHEMA : TASK_ANSWER_SCHEMA),
     maxTokens: 12_000,
     messages: [{ role: "system", content: request.system }, { role: "user", content: request.user }],
   });
@@ -95,6 +108,7 @@ const FORMAT_RULES = `Answer with doc blocks. Block types:
 - params: right after a code block, one entry per <placeholder> (name without brackets, description, cites).
 - callout: tone tip or warning, used sparingly (text, cites).
 - tabs: interface tabs (label such as Web console, CLI or API; blocks). Use tabs only when the claims describe more than one way to do the task; with one way, write the steps without tabs.
+A task section (not the intro) is how-to content and has no text blocks: write a steps block, one numbered step per action in the order the reader does them, each starting with a verb ("Ventilate the space for at least 15 minutes."). Use callouts for safety limits or easy mistakes. Never copy a claim's wording as a block; a claim that names a tool or record becomes the step that uses it.
 Every block lists in cites the unitIds of the claims it states. State nothing the claims do not support, and keep their numbers exactly.
 Rewrite only the lines marked needsRewrite (revise them, or retire them when their claims are gone) and write blocks for uncoveredUnitIds (add). Fields a block type does not use are empty.`;
 
@@ -109,7 +123,7 @@ function docsRequest(input: SectionReviseInput): DocsModelRequest {
     uncoveredUnitIds: input.uncoveredUnitIds,
     ...(input.pageContext?.length ? { otherSections: input.pageContext } : {}),
   });
-  return { system: `${DOCS_WRITER_INSTRUCTIONS}\n${FORMAT_RULES}`, user, subject: `${input.pageTitle} › ${intro ? "Intro" : input.sectionTitle}` };
+  return { system: `${DOCS_WRITER_INSTRUCTIONS}\n${FORMAT_RULES}`, user, subject: `${input.pageTitle} › ${intro ? "Intro" : input.sectionTitle}`, intro };
 }
 
 // =====================================================================
@@ -126,7 +140,14 @@ export class DocsSectionWriter implements SectionWriter {
   async reviseSection(input: SectionReviseInput, progress?: SectionProgress): Promise<SectionRevision> {
     if (!this.model) return fakeDocsRevision(input);
     progress?.step("Writing doc steps…");
-    const answer = await this.model(docsRequest(input));
+    const request = docsRequest(input);
+    let answer = await this.model(request);
+    // A task with claims to write must come back as steps. Nemotron tends to answer with a lone heading
+    // or nothing: ask once more, then fall back to one cited step per claim rather than an empty task.
+    if (!request.intro && input.uncoveredUnitIds.length && !answerHasSteps(answer.value)) {
+      answer = await this.model({ ...request, user: `${request.user}\n\nYour last answer had no steps block. Write this task as a steps block: one numbered step per action, citing the claims each step states.` });
+      if (!answerHasSteps(answer.value)) return fakeDocsRevision(input);
+    }
     const unitIds = input.units.map((unit) => unit.unitId);
     const flagged = new Set(input.lines.filter((line) => line.needsRewrite).map((line) => line.lineId));
     const toLines = (blocks: DocsAnswerBlock[]): LineText[] =>
@@ -144,6 +165,12 @@ export class DocsSectionWriter implements SectionWriter {
     add.push(...toLines(answer.value.add));
     return withOmissions(input, { revise, retire: [...retire], add, modelVersion: answer.model, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut });
   }
+}
+
+// True when the answer writes at least one step, directly or inside interface tabs
+export function answerHasSteps(answer: DocsAnswer): boolean {
+  const blocks = [...answer.add, ...answer.revise.flatMap((item) => item.blocks)];
+  return blocks.some((block) => (block.type === "steps" && block.steps.length > 0) || block.tabs?.some((tab) => tab.blocks.some((inner) => inner.type === "steps" && inner.steps.length > 0)));
 }
 
 // Claims no line will cite are left out on purpose ("leave out anything no claim supports"),

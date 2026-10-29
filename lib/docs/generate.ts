@@ -29,6 +29,7 @@ export function chatOutlineModel(settings: TokenFactorySettings): OutlineModel {
 
 const OUTLINE_RULES = `Plan the pages of a doc set before any page is written. Group pages by task: set_up (create, install, connect), use (everyday tasks), change (modify, resize, update) and remove (delete, clean up).
 Each page has a short title in the docs' imperative style (for example "Creating a cluster" or "Managing backups"), introUnitIds (one or two claims that say what the subject is) and tasks: sections with a short title and the unitIds of the claims each task is written from.
+Order pages, and the tasks within a page, in the order a reader does them: when the claims give a sequence (step numbers, "before", "after", "then"), follow it.
 Use only the supplied unitIds, each at most once. Leave out claims that describe no task or subject. At most ${MAX_OUTLINE_PAGES} pages and ${MAX_PAGE_SECTIONS} tasks per page. Also give the set a short title.`;
 
 // Asks the Docs writer for an outline (or builds a plain one without AI), always normalized

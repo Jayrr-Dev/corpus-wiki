@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { serializeDocBlock } from "./blocks";
 import { docSetExportFiles } from "./markdown";
 import { claimsByUnit, pageHeadings, pageTree, readerSections } from "./reader";
-import { type DocPageRow, isPageStale, isPageWriting } from "./types";
+import { type DocPageRow, isPageStale, isPageUnwritten, isPageWriting } from "./types";
 
 const page: DocPageRow = {
   id: "11111111-page", title: "Managing clusters", slug: "managing-clusters", position: 0, group: "change",
@@ -43,6 +43,14 @@ describe("reader model", () => {
     const unwritten = { ...page, sections: [{ ...page.sections[1]!, status: "stale" as const, builtAt: null, lines: [] }] };
     expect(isPageWriting(unwritten)).toBe(true);
     expect(isPageStale(unwritten)).toBe(false);
+  });
+
+  it("stops treating an unbuilt page as writing once the set has finished (its first build failed)", () => {
+    const unwritten = { ...page, sections: [{ ...page.sections[1]!, status: "stale" as const, builtAt: null, lines: [] }] };
+    expect(isPageUnwritten(unwritten)).toBe(true);
+    expect(isPageWriting(unwritten, false)).toBe(false);
+    const building = { ...page, sections: [{ ...page.sections[1]!, status: "building" as const, builtAt: null, lines: [] }] };
+    expect(isPageWriting(building, false)).toBe(true);
   });
 
   it("finds the claim behind each citation", () => {

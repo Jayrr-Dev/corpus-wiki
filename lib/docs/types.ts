@@ -38,7 +38,13 @@ export function isPageStale(page: DocPageRow): boolean {
   return page.sections.some((section) => section.lines.some((line) => line.isStale) || (section.status === "stale" && section.builtAt !== null));
 }
 
-// A page not written yet (its first build is pending or running)
-export function isPageWriting(page: DocPageRow): boolean {
-  return page.sections.some((section) => section.status === "building" || (section.builtAt === null && section.status === "stale"));
+// A page with a section that has never been built
+export function isPageUnwritten(page: DocPageRow): boolean {
+  return page.sections.some((section) => section.builtAt === null && section.status === "stale");
+}
+
+// A page being written: a section is building, or (while the set is still writing) its first build is
+// pending. Once the set is done, an unwritten page failed and offers Rebuild page instead of waiting.
+export function isPageWriting(page: DocPageRow, setWriting = true): boolean {
+  return page.sections.some((section) => section.status === "building") || (setWriting && isPageUnwritten(page));
 }

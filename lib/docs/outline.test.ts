@@ -28,6 +28,11 @@ describe("normalizeOutline", () => {
     expect(outlineUnitIds(outline).sort()).toEqual(["a", "b", "c", "d"]);
   });
 
+  it("turns a page that has only intro claims into one task, so it is written as steps", () => {
+    const outline = normalizeOutline({ title: "Docs", pages: [{ title: "Ventilate the space", group: "set_up", introUnitIds: ["a"], sections: [] }] }, ["a"]);
+    expect(outline.pages[0]).toMatchObject({ introUnitIds: [], sections: [{ title: "Ventilate the space", unitIds: ["a"] }] });
+  });
+
   it("falls back to a title when the model gives none", () => {
     expect(normalizeOutline({ title: " ", pages: [] }, [], "Topic › Clusters").title).toBe("Topic › Clusters");
   });

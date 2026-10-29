@@ -66,7 +66,10 @@ export function normalizeOutline(outline: DocOutline, scopeUnitIds: Iterable<str
     }).slice(0, MAX_PAGE_SECTIONS);
     if (!sections.length && !introUnitIds.length) continue;
     titles.add(title.toLowerCase());
-    pages.push({ title, group: OUTLINE_GROUPS.includes(page.group) ? page.group : "use", introUnitIds, sections });
+    // A page with no tasks would be an intro paragraph only: its claims become the page's one task,
+    // written as steps (the reader leaves out a task heading that repeats the page title)
+    const onlyIntro = !sections.length;
+    pages.push({ title, group: OUTLINE_GROUPS.includes(page.group) ? page.group : "use", introUnitIds: onlyIntro ? [] : introUnitIds, sections: onlyIntro ? [{ title, unitIds: introUnitIds }] : sections });
   }
   const order = (group: OutlineGroup) => OUTLINE_GROUPS.indexOf(group);
   const sorted = pages.map((page, index) => ({ page, index })).sort((a, b) => order(a.page.group) - order(b.page.group) || a.index - b.index).map(({ page }) => page);

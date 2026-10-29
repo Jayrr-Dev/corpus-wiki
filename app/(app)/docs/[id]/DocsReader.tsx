@@ -7,7 +7,7 @@ import { PublishingDialog } from "@/components/publishing/PublishingDialog";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { claimsByUnit, pageHeadings, pageTree, readerSections, subtaskAnchor } from "@/lib/docs/reader";
-import { type DocSetView, isPageStale, isPageWriting } from "@/lib/docs/types";
+import { type DocSetView, isPageStale, isPageUnwritten, isPageWriting } from "@/lib/docs/types";
 import { cn } from "@/lib/utils";
 import { DocBlockView } from "./DocBlockView";
 
@@ -27,7 +27,11 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
   const claims = useMemo(() => claimsByUnit(set), [set]);
   const sections = useMemo(() => (page ? readerSections(page) : []), [page]);
   const headings = pageHeadings(sections);
-  const writing = set.status === "writing" || set.pages.some(isPageWriting);
+  const setWriting = set.status === "writing";
+  const writing = setWriting || set.pages.some((item) => isPageWriting(item, false));
+  // a page whose first build failed once the set finished; it needs a rebuild like a stale one
+  const needsRebuild = (item: DocSetView["pages"][number]) => isPageStale(item) || (!setWriting && isPageUnwritten(item));
+  const rebuildLabel = (item: DocSetView["pages"][number]) => (isPageStale(item) ? "Sources changed" : "Not written");
 
   useEffect(() => {
     if (!writing) return;
@@ -66,7 +70,7 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
       {error ? <p role="alert" className="text-panel text-destructive">{error}</p> : null}
 
       <div className="grid gap-8 md:grid-cols-[13rem_minmax(0,1fr)] xl:grid-cols-[13rem_minmax(0,1fr)_12rem]">
-        <nav aria-label="Pages" className="md:sticky md:top-4 md:self-start">
+        <nav aria-label="Pages" className="min-w-0 md:sticky md:top-4 md:self-start">
           {pageTree(set.pages).map((group) => (
             <div key={group.label ?? "pages"} className="mb-4">
               {group.label ? <p className="mb-1 text-xs font-medium text-muted-foreground uppercase">{group.label}</p> : null}
@@ -75,10 +79,10 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
                   <li key={item.id}>
                     <Link href={`/docs/${set.id}?page=${item.id}`} aria-current={item.id === page?.id ? "page" : undefined}
                       className={cn("flex items-center justify-between gap-2 rounded-md px-2 py-1 text-panel hover:bg-muted", item.id === page?.id && "bg-muted font-medium")}>
-                      <span className="truncate">{item.title}</span>
-                      {isPageStale(item) ? (
-                        <Tooltip content="Sources changed">
-                          <span aria-label="Sources changed" className="size-2 shrink-0 rounded-full bg-destructive" />
+                      <span className="min-w-0 break-words">{item.title}</span>
+                      {needsRebuild(item) ? (
+                        <Tooltip content={rebuildLabel(item)}>
+                          <span aria-label={rebuildLabel(item)} className="size-2 shrink-0 rounded-full bg-destructive" />
                         </Tooltip>
                       ) : null}
                     </Link>
@@ -93,16 +97,18 @@ export function DocsReader({ set, pageId }: { set: DocSetView; pageId: string | 
           {page ? (
             <div className="grid gap-4">
               <h2 className="text-2xl font-semibold">{page.title}</h2>
-              {isPageStale(page) ? (
+              {needsRebuild(page) ? (
                 <div className="flex flex-wrap items-center gap-3 text-panel">
-                  <span className="text-destructive">Sources changed</span>
+                  <span className="text-destructive">{rebuildLabel(page)}</span>
                   <Button size="sm" variant="outline" disabled={writing || rebuilding !== null} onClick={() => rebuild(page.id)}>Rebuild page</Button>
                 </div>
               ) : null}
-              {isPageWriting(page) ? <p className="text-panel text-muted-foreground">Writing this page…</p> : null}
+              {isPageWriting(page, setWriting) ? <p className="text-panel text-muted-foreground">Writing this page…</p> : null}
               {sections.map((section) => (
                 <section key={section.id} aria-labelledby={section.intro ? undefined : section.anchor} className="grid gap-3">
-                  {section.intro ? null : <h2 id={section.anchor} className="scroll-mt-20 pt-4 text-xl font-semibold">{section.title}</h2>}
+                  {section.intro || section.title.trim().toLowerCase() === page.title.trim().toLowerCase()
+                    ? null
+                    : <h2 id={section.anchor} className="scroll-mt-20 pt-4 text-xl font-semibold">{section.title}</h2>}
                   {section.blocks.map(({ key, block }) => <DocBlockView key={key} block={block} claims={claims} anchor={block.type === "heading" ? subtaskAnchor(key) : undefined} />)}
                 </section>
               ))}
