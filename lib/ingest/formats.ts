@@ -6,7 +6,13 @@
 // Pure data, safe to import in the browser (the Upload screen's accept list).
 // =====================================================================
 
-export type UploadFormatId = "pdf" | "docx" | "markdown" | "text" | "image" | "video";
+import type { FeatureFlagKey } from "@/lib/flags/registry";
+
+export type UploadFormatId = "pdf" | "docx" | "markdown" | "text" | "image" | "video" | "chat";
+
+// FORMATS THAT BECOME ONE SOURCE: each has a converter in lib/ingest/convert.ts.
+// A chat export becomes one source per conversation instead (lib/ingest/chatImport.ts).
+export type FileFormatId = Exclude<UploadFormatId, "chat">;
 
 export type UploadFormat = {
   id: UploadFormatId;
@@ -44,6 +50,28 @@ export const UPLOAD_FORMATS: readonly UploadFormat[] = [
   },
 ];
 
+// CHAT EXPORT (behind the chat_import flag): a ChatGPT data export, its conversations.json
+// or the export .zip holding it. The name only suggests it; the server checks the content
+// (lib/ingest/chatExport.ts) and turns each conversation into its own source.
+export const CHAT_EXPORT_FORMAT: UploadFormat = {
+  id: "chat",
+  label: "ChatGPT export",
+  mimeTypes: ["application/json", "application/zip", "application/x-zip-compressed"],
+  extensions: [".json", ".zip"],
+};
+
+// FORMATS BEHIND A FEATURE FLAG: listed only while their flag is on
+export const FLAGGED_FORMATS: readonly { flag: FeatureFlagKey; format: UploadFormat }[] = [{ flag: "chat_import", format: CHAT_EXPORT_FORMAT }];
+
+// The flags a caller knows (the browser's provider, the server's read); a missing flag is off
+export type FormatFlags = Partial<Record<FeatureFlagKey, boolean>>;
+
+// Every format readable with these flags: the ones above, plus each flagged one that is on
+export function uploadFormats(flags: FormatFlags = {}): readonly UploadFormat[] {
+  const flagged = FLAGGED_FORMATS.filter(({ flag }) => flags[flag] === true).map(({ format }) => format);
+  return flagged.length ? [...UPLOAD_FORMATS, ...flagged] : UPLOAD_FORMATS;
+}
+
 // FORMATS WITH A SLOT BUT NO CONVERTER YET: audio is video's transcript without the
 // frames; it becomes one more entry above plus one converter, and the rest of the
 // pipeline stays as is.
@@ -54,15 +82,19 @@ export const PLANNED_FORMATS = ["audio"] as const;
 export const DIRECT_UPLOAD_FORMATS: readonly UploadFormatId[] = ["video"];
 export const MAX_DIRECT_UPLOAD_BYTES = 50 * 1024 * 1024; // Supabase Storage's default per-file limit
 
-// For <input accept>: every extension and MIME type above
-export const UPLOAD_ACCEPT = UPLOAD_FORMATS.flatMap((f) => [...f.extensions, ...f.mimeTypes]).join(",");
+// For <input accept>: every extension and MIME type above (and the flagged ones that are on)
+export function uploadAccept(flags: FormatFlags = {}): string {
+  return uploadFormats(flags).flatMap((f) => [...f.extensions, ...f.mimeTypes]).join(",");
+}
+export const UPLOAD_ACCEPT = uploadAccept();
 
 // The format of a file, by extension first (browsers often send no or a generic MIME type)
-export function formatOf(fileName: string, mimeType: string): UploadFormat | null {
+export function formatOf(fileName: string, mimeType: string, flags: FormatFlags = {}): UploadFormat | null {
   const name = fileName.toLowerCase();
+  const formats = uploadFormats(flags);
   return (
-    UPLOAD_FORMATS.find((f) => f.extensions.some((ext) => name.endsWith(ext))) ??
-    UPLOAD_FORMATS.find((f) => f.mimeTypes.includes(mimeType)) ??
+    formats.find((f) => f.extensions.some((ext) => name.endsWith(ext))) ??
+    formats.find((f) => f.mimeTypes.includes(mimeType)) ??
     null
   );
 }
@@ -85,4 +117,7 @@ export function mediaKindOf(mimeType: string | null | undefined): MediaKind | nu
 }
 
 // "PDF, Word, Markdown or Text": for messages on the Upload screen
-export const UPLOAD_FORMAT_NAMES = UPLOAD_FORMATS.map((f) => f.label).join(", ").replace(/, ([^,]*)$/, " or $1");
+export function uploadFormatNames(flags: FormatFlags = {}): string {
+  return uploadFormats(flags).map((f) => f.label).join(", ").replace(/, ([^,]*)$/, " or $1");
+}
+export const UPLOAD_FORMAT_NAMES = uploadFormatNames();

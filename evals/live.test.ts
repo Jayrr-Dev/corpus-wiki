@@ -37,7 +37,7 @@ describe.skipIf(!LIVE_FILE || !process.env.NEBIUS_API_KEY || !hasLocalPostgres()
   it("turns the file into applied knowledge", async () => {
     const bytes = new Uint8Array(readFileSync(LIVE_FILE ?? ""));
     const format = formatOf(LIVE_FILE ?? "", "");
-    if (!format) throw new Error("LIVE_FILE has no converter");
+    if (!format || format.id === "chat") throw new Error("LIVE_FILE has no converter");
     const deps = { db: pgRpc(client), reconciler: getReconciliationClient(), writer: getSectionWriter() };
     const started = await recordUpload(deps.db, {
       title: LIVE_FILE?.split("/").at(-1) ?? "live-file",

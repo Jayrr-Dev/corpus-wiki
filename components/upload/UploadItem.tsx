@@ -5,6 +5,7 @@ import { ErrorNote, TextLink } from "@/app/(app)/_components/bits";
 import { toDateInputValue } from "@/app/(app)/_lib/format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useFeatureFlags } from "@/lib/flags/client";
 import { formatOf } from "@/lib/ingest/formats";
 import { useLiveShiftEvent } from "@/lib/queries/screens";
 import { EventProgress } from "./EventProgress";
@@ -15,13 +16,14 @@ import { retryTarget, type UploadPhase, useUploadFlow } from "./useUploadFlow";
 export function UploadItem({ file }: { file: File }) {
   const [sourceDate, setSourceDate] = useState(() => toDateInputValue(file.lastModified));
   const { phase, start, retry } = useUploadFlow();
+  const flags = useFeatureFlags();
   const isBusy = phase.kind === "starting" || phase.kind === "processing";
   const inputId = `date-${file.name}-${file.lastModified}`;
   return (
     <li className="flex flex-col gap-2 border-b py-3">
       <div className="flex flex-wrap items-center gap-3">
         <span className="min-w-0 flex-1 truncate font-medium">{file.name}</span>
-        <span className="text-xs text-faint">{formatOf(file.name, file.type)?.label}</span>
+        <span className="text-xs text-faint">{formatOf(file.name, file.type, flags)?.label}</span>
         <label htmlFor={inputId} className="text-xs text-faint">
           File date
         </label>
