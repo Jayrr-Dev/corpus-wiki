@@ -1,0 +1,371 @@
+{
+  "generatedAt": "2026-10-29T22:12:17.323Z",
+  "commit": "62998b5 (main as of 2026-10-29)",
+  "command": "PROCESSING_BENCHMARK=1 PROCESSING_SYNTHETIC=1 vitest run test/performance/syntheticUpload.test.ts --silent=false (same files and env as pnpm test:synthetic, console kept so the Upload stage timing logs are visible)",
+  "kind": "isolated PostgreSQL, deterministic extraction and section prose, no live AI; stages with no AI wired here (duplicates, tidy, place, hierarchy, expand, embeddings, describe, profiles, glossary, curate) are near 0 ms",
+  "runs": 3,
+  "machine": "Windows 11, Node 22.14, other lanes running tests on the same machine at the same time (noisy)",
+  "note": "firstRunMs is the first reconcileUpload call for the event (the second call is a checkpoint-only repeat, about 15 ms). Times in milliseconds.",
+  "scenarios": [
+    {
+      "scenario": "short document (8 entities x 9 claims = 72 claims)",
+      "firstRunMs": [
+        2735,
+        5822,
+        2815
+      ],
+      "medianFirstRunMs": 2815,
+      "stagesMs": {
+        "reconcile": [
+          544,
+          1435,
+          602
+        ],
+        "duplicates": [
+          0,
+          0,
+          0
+        ],
+        "tidy": [
+          0,
+          0,
+          0
+        ],
+        "place": [
+          0,
+          0,
+          0
+        ],
+        "hierarchy": [
+          0,
+          0,
+          0
+        ],
+        "expand": [
+          0,
+          0,
+          0
+        ],
+        "embeddings": [
+          0,
+          0,
+          0
+        ],
+        "plan": [
+          88,
+          192,
+          86
+        ],
+        "pages": [
+          1935,
+          3569,
+          1925
+        ],
+        "articles-ready": [
+          10,
+          31,
+          14
+        ],
+        "describe": [
+          0,
+          0,
+          0
+        ],
+        "profiles": [
+          0,
+          0,
+          0
+        ],
+        "glossary": [
+          0,
+          0,
+          0
+        ],
+        "curate": [
+          0,
+          0,
+          0
+        ]
+      },
+      "medianStagesMs": {
+        "reconcile": 602,
+        "duplicates": 0,
+        "tidy": 0,
+        "place": 0,
+        "hierarchy": 0,
+        "expand": 0,
+        "embeddings": 0,
+        "plan": 88,
+        "pages": 1935,
+        "articles-ready": 14,
+        "describe": 0,
+        "profiles": 0,
+        "glossary": 0,
+        "curate": 0
+      },
+      "rebuildSection": [
+        {
+          "count": 24,
+          "durationMs": 4902,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        },
+        {
+          "count": 24,
+          "durationMs": 8879,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        },
+        {
+          "count": 24,
+          "durationMs": 4794,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        }
+      ]
+    },
+    {
+      "scenario": "long document (16 entities x 12 claims = 192 claims)",
+      "firstRunMs": [
+        6322,
+        10645,
+        12566
+      ],
+      "medianFirstRunMs": 10645,
+      "stagesMs": {
+        "reconcile": [
+          1542,
+          2762,
+          1976
+        ],
+        "duplicates": [
+          0,
+          0,
+          0
+        ],
+        "tidy": [
+          0,
+          0,
+          0
+        ],
+        "place": [
+          0,
+          0,
+          0
+        ],
+        "hierarchy": [
+          0,
+          0,
+          0
+        ],
+        "expand": [
+          0,
+          0,
+          0
+        ],
+        "embeddings": [
+          0,
+          0,
+          0
+        ],
+        "plan": [
+          125,
+          190,
+          143
+        ],
+        "pages": [
+          4499,
+          7414,
+          10225
+        ],
+        "articles-ready": [
+          12,
+          13,
+          20
+        ],
+        "describe": [
+          0,
+          0,
+          0
+        ],
+        "profiles": [
+          0,
+          0,
+          0
+        ],
+        "glossary": [
+          0,
+          0,
+          0
+        ],
+        "curate": [
+          0,
+          0,
+          0
+        ]
+      },
+      "medianStagesMs": {
+        "reconcile": 1976,
+        "duplicates": 0,
+        "tidy": 0,
+        "place": 0,
+        "hierarchy": 0,
+        "expand": 0,
+        "embeddings": 0,
+        "plan": 143,
+        "pages": 7414,
+        "articles-ready": 13,
+        "describe": 0,
+        "profiles": 0,
+        "glossary": 0,
+        "curate": 0
+      },
+      "rebuildSection": [
+        {
+          "count": 48,
+          "durationMs": 12041,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        },
+        {
+          "count": 48,
+          "durationMs": 19912,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        },
+        {
+          "count": 48,
+          "durationMs": 27493,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        }
+      ]
+    },
+    {
+      "scenario": "update to existing pages (24 new claims into the short document pages)",
+      "firstRunMs": [
+        2810,
+        3600,
+        4190
+      ],
+      "medianFirstRunMs": 3600,
+      "stagesMs": {
+        "reconcile": [
+          607,
+          856,
+          1127
+        ],
+        "duplicates": [
+          0,
+          0,
+          0
+        ],
+        "tidy": [
+          0,
+          0,
+          0
+        ],
+        "place": [
+          0,
+          0,
+          0
+        ],
+        "hierarchy": [
+          0,
+          0,
+          0
+        ],
+        "expand": [
+          0,
+          0,
+          0
+        ],
+        "embeddings": [
+          0,
+          0,
+          0
+        ],
+        "plan": [
+          17,
+          30,
+          35
+        ],
+        "pages": [
+          2008,
+          2529,
+          2762
+        ],
+        "articles-ready": [
+          18,
+          12,
+          14
+        ],
+        "describe": [
+          0,
+          0,
+          0
+        ],
+        "profiles": [
+          0,
+          0,
+          0
+        ],
+        "glossary": [
+          0,
+          0,
+          0
+        ],
+        "curate": [
+          0,
+          0,
+          0
+        ]
+      },
+      "medianStagesMs": {
+        "reconcile": 856,
+        "duplicates": 0,
+        "tidy": 0,
+        "place": 0,
+        "hierarchy": 0,
+        "expand": 0,
+        "embeddings": 0,
+        "plan": 30,
+        "pages": 2529,
+        "articles-ready": 14,
+        "describe": 0,
+        "profiles": 0,
+        "glossary": 0,
+        "curate": 0
+      },
+      "rebuildSection": [
+        {
+          "count": 24,
+          "durationMs": 4845,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        },
+        {
+          "count": 24,
+          "durationMs": 6192,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        },
+        {
+          "count": 24,
+          "durationMs": 6602,
+          "failures": 0,
+          "tokensIn": 0,
+          "tokensOut": 0
+        }
+      ]
+    }
+  ]
+}

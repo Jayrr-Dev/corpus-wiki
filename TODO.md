@@ -15,10 +15,10 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | Lane | Task | Needs | Status |
 |---|---|---|---|
 | owner | Set `APP_URL` and `PROCESSING_WORKER_KEY` secrets, then land PR #37 (#35) | | done; recovery run passed, #35 closed (2026-10-29) |
-| measure | Run `evals/retrieval` on PR #52 vs main (#38) | | in progress (owner approved paid calls) |
+| measure | Run `evals/retrieval` on PR #52 vs main (#38) | | done in PR #57: no change with rerank, legacy drops (hit@5 90.0% to 85.0%); do not merge as is |
 | owner | Turn on #43 env vars in production | | done (2026-10-29); before/after note still due |
 | owner | Apply the HNSW drop, now `20261123100000_drop_hnsw_vector_indexes.sql` (#40) | | done, applied with study_edit (2026-10-29) |
-| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | in progress (owner approved paid calls) |
+| measure | Phase 0 baseline: cost report, `test:synthetic` timings, `evals/` and `evals/retrieval` | | done, PR #57 merged (`docs/baseline-2026-10-29.md`); `evals.test.ts` and `live.test.ts` not run (need Linux Postgres) |
 | reviewer | #42 batch fact-checks, skip unchanged sections, reviewer budget | | in progress |
 | reconcile | #48 scoped: collapse `reconciliation_input` wrappers into one definition | | in progress |
 | reconcile | #45 extraction and resolution split, behind a flag | reconcile: #48 scoped | waiting |
