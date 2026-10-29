@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  BookA, BookOpenText, Binary, ClipboardList, CopyCheck, Eraser, FileCheck, FolderTree, Fingerprint, Globe,
+  BookA, BookOpenText, Binary, Clapperboard, ClipboardList, CopyCheck, Eraser, FileCheck, FileCode, FolderTree, Fingerprint, Globe, GraduationCap,
   IdCard, ImagePlay, Library, Link2, ListTree, MapPin, Network, PenLine, Scale, ScanText, ShieldCheck, Telescope,
 } from "lucide-react";
 
@@ -11,6 +11,7 @@ export const ROLE_ICONS: Record<string, LucideIcon> = {
   define_concepts: BookOpenText, plan_articles: ClipboardList, write_articles: PenLine,
   researcher: Telescope, sourcer: Telescope, reviewer: ShieldCheck, article_reviewer: FileCheck, domain_decider: Network, domain_steward: Network, curator: Library,
   reconciler: Scale, deduplicator: CopyCheck, media_analyst: ImagePlay, dictionary_editor: BookA, composer: ImagePlay,
+  tutor: GraduationCap, narrator: Clapperboard, docs_writer: FileCode,
 };
 
 // AI steps without a role name and app steps on the canvas, keyed by canvas node id

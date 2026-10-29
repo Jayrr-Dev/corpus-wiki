@@ -24,9 +24,10 @@ import { useUnfinishedSources } from "@/components/upload/useUnfinishedSources";
 import { useSuggestionAttentionCount } from "./useSuggestionAttentionCount";
 import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
-import { ERROR_LOG_NAV, isActivePath, NAV_GROUPS, type NavItem, SETTINGS_NAV } from "./nav";
+import { ERROR_LOG_NAV, isActivePath, type NavItem, SETTINGS_NAV, visibleNavGroups } from "./nav";
 import { SpaceSwitcher } from "./SpaceSwitcher";
 import { ThemeSwitch } from "./ThemeSwitch";
+import type { ModuleKey } from "@/lib/modules";
 import type { Space } from "@/lib/spaces/shared";
 import { Tooltip } from "@/components/standard/tooltip";
 import { cn } from "@/lib/utils";
@@ -94,15 +95,15 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
 }
 
 // APP SIDEBAR: brand and search, the two nav groups, then error log / settings / theme / tutorial / sign out
-// On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links
-export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Space[]; activeSpace: Space; accountEmail?: string | null }) {
+// On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links.
+// `modules`: the modules that are on; links to the others are hidden
+export function AppSidebar({ spaces, activeSpace, accountEmail, modules = [] }: { spaces: Space[]; activeSpace: Space; accountEmail?: string | null; modules?: readonly ModuleKey[] }) {
   // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
   const openCount = useOpenExceptionCount();
   const suggestionCount = useSuggestionAttentionCount();
   const unfinishedSources = useUnfinishedSources().size;
   const { isMobile } = useSidebar();
   const isAdmin = useNavMode() === "admin";
-  const visible = (items: readonly NavItem[]) => (isAdmin ? items : items.filter((item) => !item.admin));
   const badges = { "/units": suggestionCount ?? 0, "/decisions": openCount, "/exceptions": openCount, "/sources": unfinishedSources };
   return (
     <Sidebar variant="inset" collapsible="icon" collapseThumb collapseThumbSize="xs">
@@ -123,7 +124,7 @@ export function AppSidebar({ spaces, activeSpace, accountEmail }: { spaces: Spac
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {NAV_GROUPS.map(visible).filter((items) => items.length > 0).map((items, index) => (
+        {visibleNavGroups({ admin: isAdmin, modules }).map((items, index) => (
           <NavGroup key={items[0]!.href} items={items} separator={index > 0} badges={badges} />
         ))}
         {/* phones have no room for the pages tree beside the page, so the drawer carries it */}

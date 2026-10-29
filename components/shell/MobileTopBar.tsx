@@ -6,7 +6,8 @@ import { Menu } from "lucide-react";
 import { InfoIcon } from "@/components/icons";
 import { ModuleHelp } from "@/components/tutorial/ModuleHelp";
 import { useSidebar } from "@/components/ui/sidebar";
-import { isActivePath, NAV_GROUPS, SETTINGS_NAV } from "./nav";
+import type { ModuleKey } from "@/lib/modules";
+import { isActivePath, NAV_GROUPS, SETTINGS_NAV, visibleNavItems } from "./nav";
 import { useRightPanel } from "./RightPanel";
 
 // =====================================================================
@@ -19,10 +20,10 @@ import { useRightPanel } from "./RightPanel";
 const ALL_NAV = [...NAV_GROUPS.flat(), SETTINGS_NAV];
 const APP_NAME = "Corpus Wiki";
 
-// SCREEN TITLE: the nav label of the section the current route belongs to
-function useScreenTitle(): string {
+// SCREEN TITLE: the nav label of the section the current route belongs to; a module that is off has no title
+function useScreenTitle(modules: readonly ModuleKey[]): string {
   const pathname = usePathname();
-  return ALL_NAV.find((item) => isActivePath(item.href, pathname))?.label ?? APP_NAME;
+  return visibleNavItems(ALL_NAV, { admin: true, modules }).find((item) => isActivePath(item.href, pathname))?.label ?? APP_NAME;
 }
 
 // CLOSE ON NAVIGATE: a tap on a link in either drawer should land on the new page, not leave the drawer over it
@@ -36,9 +37,9 @@ function useCloseDrawersOnNavigate() {
   }, [pathname, setOpenMobile, setSheetOpen]);
 }
 
-// TOP BAR: menu | title | tutorial | details
-export function MobileTopBar() {
-  const title = useScreenTitle();
+// TOP BAR: menu | title | tutorial | details. `modules`: the modules that are on
+export function MobileTopBar({ modules = [] }: { modules?: readonly ModuleKey[] }) {
+  const title = useScreenTitle(modules);
   const { setOpenMobile } = useSidebar();
   const { hasContent, setSheetOpen } = useRightPanel();
   useCloseDrawersOnNavigate();

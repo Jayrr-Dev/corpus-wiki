@@ -7,6 +7,7 @@ import { SuggestionProgress } from "@/components/toast/SuggestionProgress";
 import { AppShell } from "@/components/shell";
 import { TimeZoneProvider } from "@/app/(app)/_components/DateTime";
 import { isTimeZone, TIME_ZONE_COOKIE } from "@/app/(app)/_lib/format";
+import { readEnabledModules } from "@/lib/modules";
 import { readMySpaces } from "@/lib/spaces/server";
 import { AccountDataProvider } from "@/components/shell/AccountDataProvider";
 import { SpaceProvider } from "@/components/shell/SpaceProvider";
@@ -21,11 +22,17 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const timeZone = zone && isTimeZone(zone) ? zone : null;
   const { spaces, activeSpace, account } = await readMySpaces();
   if (!activeSpace.owner_id) throw new Error("This space has no account owner.");
+  // the sidebar links to Study, Video and Docs only while each is switched on; a failed read hides
+  // them rather than the whole app (their pages check again and 404)
+  const modules = await readEnabledModules().catch((error: unknown) => {
+    console.error("Could not read the module switches:", error);
+    return [];
+  });
   return (
     <AccountDataProvider key={activeSpace.id} accountId={account.id}>
       <SpaceProvider space={activeSpace}>
         <TimeZoneProvider timeZone={timeZone}>
-          <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email}>
+          <AppShell defaultOpen={sidebarOpen} spaces={spaces} activeSpace={activeSpace} accountEmail={account.email} modules={modules}>
             <RoutedErrorBoundary where="Open questions">
               <ExceptionNotifications />
             </RoutedErrorBoundary>

@@ -17,7 +17,7 @@ import { ANTHROPIC_MODEL_PREFIX, CEREBRAS_BASE_URL, CEREBRAS_MODEL_PREFIX, TOKEN
 
 type ModelsResponse = { data?: { id?: string; architecture?: { modality?: string } }[] };
 
-type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; aiRoleAuto?: string[]; autoUpdateStale?: boolean; glossaryAutoDecide?: boolean; allowExternalKnowledge?: boolean; monetizationEnabled?: boolean; articleCharter?: unknown };
+type WorkspaceSettings = { aiModel: string | null; aiRoleModels?: Record<string, string>; aiEffort?: ReasoningEffort | null; aiRoleEfforts?: Record<string, ReasoningEffort>; aiRoleAuto?: string[]; autoUpdateStale?: boolean; glossaryAutoDecide?: boolean; allowExternalKnowledge?: boolean; monetizationEnabled?: boolean; modules?: Record<string, unknown>; articleCharter?: unknown };
 
 // The model picked on /settings, or null when none is picked
 export async function readChosenModel(db: DbRpc): Promise<string | null> {
