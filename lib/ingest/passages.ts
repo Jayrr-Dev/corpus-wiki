@@ -22,7 +22,7 @@ export type ExtractedPage = { page: number | null; text: string; time?: string; 
 export type PassageDraft = {
   position: number;
   text: string;
-  location: { page?: number; heading?: string; sectionPath?: string[]; time?: string; figure?: string };
+  location: { page?: number; heading?: string; sectionPath?: string[]; time?: string; figure?: string; sender?: string; sentAt?: string };
   hash: string;
   speakerLabel: string | null;
 };
@@ -33,7 +33,7 @@ export function splitIntoPassages(pages: readonly ExtractedPage[]): PassageDraft
   let heading: string | undefined;
   for (const { page, text, time, figure, sectionPath, speaker } of pages) {
     if (speaker) {
-      drafts.push(...messagePassages(speaker, text, page));
+      drafts.push(...chatMessagePassages(speaker, text, page));
       continue;
     }
     for (const paragraph of text.split(PARAGRAPH_BREAK)) {
@@ -76,7 +76,7 @@ function passageOf(text: string, location: PassageDraft["location"]): Omit<Passa
 
 // ONE MESSAGE OF A CONVERSATION: its paragraphs read as one passage starting "Speaker: ", so a
 // message never splits mid-thought; a long one is cut at sentence ends, every piece labelled
-function messagePassages(speaker: string, text: string, page: number | null): Omit<PassageDraft, "position">[] {
+function chatMessagePassages(speaker: string, text: string, page: number | null): Omit<PassageDraft, "position">[] {
   const clean = text.replace(/\s*\n\s*/g, " ").trim();
   if (!clean) return [];
   const location = page !== null ? { page } : {};
@@ -84,4 +84,22 @@ function messagePassages(speaker: string, text: string, page: number | null): Om
     const labelled = `${speaker}: ${piece}`;
     return { text: labelled, location, hash: sha256(labelled), speakerLabel: speaker };
   });
+}
+
+// ONE MESSAGE OF AN EMAIL THREAD (lib/connectors/gmail): who sent it, when, and its text
+export type MessageDraft = { sender: string; senderName: string; sentAt: string; text: string };
+
+// EMAIL THREADS: one passage per message, located by its sender and sent date, the
+// sender named as its speaker. Paragraph breaks are kept; lines inside a paragraph join.
+export function messagePassages(subject: string, messages: readonly MessageDraft[]): PassageDraft[] {
+  return messages
+    .map((message) => ({ message, text: message.text.split(PARAGRAPH_BREAK).map((paragraph) => paragraph.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean).join("\n\n") }))
+    .filter(({ text }) => text)
+    .map(({ message, text }, position) => ({
+      position,
+      text,
+      location: { heading: subject, sender: message.sender, sentAt: message.sentAt },
+      hash: sha256(`${message.sender}\n${message.sentAt}\n${text}`),
+      speakerLabel: message.senderName || null,
+    }));
 }
