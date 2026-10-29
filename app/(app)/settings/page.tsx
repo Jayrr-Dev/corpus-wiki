@@ -9,6 +9,7 @@ import { AiSpeed } from "./AiSpeed";
 import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoDecide } from "./AutoDecide";
 import { AutoUpdateStale } from "./AutoUpdateStale";
+import { MODULE_FLAG_KEYS } from "@/lib/flags/registry";
 import { getFeatureFlags } from "@/lib/flags/server";
 import { loadGmailCard } from "@/lib/connectors/gmail/server";
 import { ExternalKnowledge } from "./ExternalKnowledge";
@@ -113,6 +114,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
         <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} billing={featureFlags.billing} /></div>
+        <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} keys={MODULE_FLAG_KEYS} title="Sidebar" hint="What the sidebar shows, in every space. A hidden link's page still opens by URL, except Study, Video and Docs." /></div>
         <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} /></div>
       </SettingsCard>
     ),

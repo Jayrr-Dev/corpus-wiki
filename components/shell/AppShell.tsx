@@ -7,14 +7,14 @@ import { AppSidebar, type SidebarAccount } from "./AppSidebar";
 import { MobileTopBar } from "./MobileTopBar";
 import { RightPanel, RightPanelProvider } from "./RightPanel";
 import { SidebarTree } from "./SidebarTree";
-import type { ModuleKey } from "@/lib/modules";
+import type { ModuleFlagKey } from "@/lib/flags/registry";
 import type { Space } from "@/lib/spaces/shared";
 
 // APP SHELL: app sidebar | inset (context tree | reading pane | right panel); no top header bar
 // on desktop; the module tutorial button sits in the page's top-right corner. Phones get a slim top bar instead that opens the sidebars as drawers.
 // `defaultOpen` comes from the sidebar_state cookie (read in the layout) so the first paint matches;
 // `modules` are the modules switched on in Settings, whose links the sidebar and top bar show
-export function AppShell({ children, defaultOpen = true, spaces, activeSpace, account, modules = [] }: { children: ReactNode; defaultOpen?: boolean; spaces: Space[]; activeSpace: Space; account?: SidebarAccount; modules?: readonly ModuleKey[] }) {
+export function AppShell({ children, defaultOpen = true, spaces, activeSpace, account, modules = [] }: { children: ReactNode; defaultOpen?: boolean; spaces: Space[]; activeSpace: Space; account?: SidebarAccount; modules?: readonly ModuleFlagKey[] }) {
   return (
     <RightPanelProvider>
       <SidebarProvider defaultOpen={defaultOpen} className="h-dvh min-h-0 overflow-hidden">

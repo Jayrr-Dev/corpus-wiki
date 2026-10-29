@@ -25,11 +25,11 @@ import { useUnfinishedSources } from "@/components/upload/useUnfinishedSources";
 import { useSuggestionAttentionCount } from "./useSuggestionAttentionCount";
 import { signOut } from "@/lib/auth/actions";
 import { MobileSidebarTree } from "./SidebarTree";
-import { ERROR_LOG_NAV, isActivePath, type NavItem, SETTINGS_NAV, visibleNavGroups } from "./nav";
+import { ERROR_LOG_NAV, isActivePath, type NavItem, SETTINGS_NAV, visibleNavGroups, visibleNavItems } from "./nav";
 import { SidebarBackdrop } from "./SidebarBackdrop";
 import { SpaceSwitcher } from "./SpaceSwitcher";
 import { ThemeSwitch } from "./ThemeSwitch";
-import type { ModuleKey } from "@/lib/modules";
+import type { ModuleFlagKey } from "@/lib/flags/registry";
 import type { Space } from "@/lib/spaces/shared";
 import { Tooltip } from "@/components/standard/tooltip";
 import { cn } from "@/lib/utils";
@@ -141,13 +141,15 @@ function NavGroup({ items, separator, badges }: { items: readonly NavItem[]; sep
 // APP SIDEBAR: brand and search, the two nav groups, then error log / settings / theme / tutorial / sign out
 // On a phone it is a drawer opened from the top bar, with the pages tree or filters under the links.
 // `modules`: the modules that are on; links to the others are hidden
-export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spaces: Space[]; activeSpace: Space; account?: SidebarAccount; modules?: readonly ModuleKey[] }) {
+export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spaces: Space[]; activeSpace: Space; account?: SidebarAccount; modules?: readonly ModuleFlagKey[] }) {
   // OPEN EXCEPTION COUNT: the one "needs you" number on every screen
   const openCount = useOpenExceptionCount();
   const suggestionCount = useSuggestionAttentionCount();
   const unfinishedSources = useUnfinishedSources().size;
   const { isMobile } = useSidebar();
-  const isAdmin = useNavMode() === "admin";
+  // with the Admin / User switch turned off in Settings, the sidebar shows every module that is on
+  const hasModeSwitch = modules.includes("nav_mode_switch");
+  const isAdmin = useNavMode() === "admin" || !hasModeSwitch;
   const badges = { "/units": suggestionCount ?? 0, "/decisions": openCount, "/exceptions": openCount, "/sources": unfinishedSources };
   return (
     <Sidebar variant="inset" collapsible="icon" collapseThumb collapseThumbSize="xs">
@@ -161,7 +163,7 @@ export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spa
                 <BrandName className="text-body" />
               </Link>
             </SidebarMenuButton>
-            <NavModeSwitch />
+            {hasModeSwitch ? <NavModeSwitch /> : null}
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SpaceSwitcher spaces={spaces} activeSpace={activeSpace} />
@@ -178,7 +180,7 @@ export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spa
       <SidebarFooter separator>
         <SidebarMenu>
           {account ? <AccountRow account={account} /> : null}
-          {isAdmin ? <NavLink item={ERROR_LOG_NAV} /> : null}
+          {visibleNavItems([ERROR_LOG_NAV], { admin: isAdmin, modules }).map((item) => <NavLink key={item.href} item={item} />)}
           <NavLink item={SETTINGS_NAV} />
           <ThemeSwitch />
           <SidebarMenuItem>

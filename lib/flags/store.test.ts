@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 import type { DbRpc } from "@/lib/db/rpc";
-import type { FeatureFlagKey } from "./registry";
+import { defaultFeatureFlags, type FeatureFlagKey } from "./registry";
 import { readFeatureFlags, saveFeatureFlag } from "./store";
 
 function fakeDb(result: unknown) {
@@ -8,15 +8,15 @@ function fakeDb(result: unknown) {
   return { db: { call } as unknown as DbRpc, call };
 }
 
-it("reads every flag, off when the database has no row", async () => {
+it("reads every flag, at its default when the database has no row", async () => {
   const { db, call } = fakeDb({ audio_ingest: true, retired_flag: true });
-  expect(await readFeatureFlags(db)).toEqual({ billing: false, legal_pages: false, audio_ingest: true, chat_import: false, gmail_import: false, study: false, video: false, docs: false });
+  expect(await readFeatureFlags(db)).toEqual({ ...defaultFeatureFlags(), audio_ingest: true });
   expect(call).toHaveBeenCalledWith("get_feature_flags");
 });
 
-it("reads every flag off from an empty table", async () => {
+it("reads every flag at its default from an empty table", async () => {
   const { db } = fakeDb({});
-  expect(Object.values(await readFeatureFlags(db)).every((on) => on === false)).toBe(true);
+  expect(await readFeatureFlags(db)).toEqual(defaultFeatureFlags());
 });
 
 it("saves one flag through set_feature_flag", async () => {
