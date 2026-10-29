@@ -1,4 +1,4 @@
-# Builds the preview cut: the v2 voiceover with the rendered product scenes at their times
+# Builds the preview cut: the v3 voiceover take with the rendered product scenes at their times
 # and a labelled placeholder card for every shot still to come. The shot list is TIMELINE in
 # tools/timeline.py; missing clips fall back to their card. A timecode is burned in.
 # Usage: python -I tools/preview.py  ->  out/preview.mp4

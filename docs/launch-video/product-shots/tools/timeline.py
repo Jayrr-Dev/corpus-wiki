@@ -2,75 +2,75 @@
 # (labelled placeholder cards, timecode) and final.py (the export). Every timing number comes from cut.py.
 # Run from docs/launch-video/product-shots; scripts put tools/ on sys.path before importing this.
 import os, subprocess
-from cut import VO, NEM_VO, INSERT_AT, PAD_IN, PAD_OUT, SHIFT, nem_to_final
+from cut import VO, TAIL, duration, to_final
 
-# Main-take (v2) times: (start, end, clip or None, shot label, what goes here).
-# Put a clip's path in the third column to swap in a shot; 'path@seconds' starts partway in.
+END = duration(VO) + TAIL  # the end card holds through the silence after the take
+
+# Take (v3) times from scene-flow.md: (start, end, clip or None, shot label, what goes here).
+# 'path@seconds' starts partway in; 'a|b' uses the first clip that exists. A missing clip shows
+# a placeholder card with the label and note, so keep both filled in.
 TIMELINE = [
-    (0.0, 2.4, "../broll/01-hook-bg.mp4", "Shots 1–2 · Hook", "Chat bubble, then you: “Every company has a Brent.” (avatar)"),
-    (2.4, 7.3, "../broll/03-leaving.mp4", "Shot 3 · Someone leaving", "Gemini clip: person walks out with a box"),
-    (7.3, 14.1, "../broll/05-whiteboard.mp4", "Shots 4–5 · Desk + whiteboard", "Gemini: you at the desk · messy whiteboard"),
-    (14.1, 17.0, None, "Shot 6 · Leaning in", "Gemini: you leaning toward camera"),
-    (17.0, 20.9, "../broll/04b-empty-desk.mp4", "Shot 4b · Empty desk", "Gemini: empty desk on a Monday"),
-    (20.9, 29.9, "../broll/09-asking.mp4", "Shot 9 · Engineer story", "Gemini: coworkers asking each other"),
-    (29.9, 34.4, "out/g07-knowledge-lost.mp4", "Shot 7 · Knowledge lost", "HyperFrames: avatar fades, icons drift away"),
-    (34.4, 38.1, "out/g08-stale-docs.mp4", "Shot 8 · Stale docs", "HyperFrames: “Last updated 2 years ago” banner"),
-    (38.1, 42.9, "../broll/05-whiteboard.mp4@3", "Shot 9 · Asking around", "Gemini: coworker shrugs and points"),
-    (42.9, 45.5, None, "Shot 10 · Evening at home", "Gemini: you on the couch with a laptop"),
-    (45.5, 51.0, "out/g11-note-graph.mp4", "Shot 11 · Note-app graph", "Screen recording: Obsidian-style graph"),
-    (51.0, 56.5, "../broll/12-typing.mp4", "Shot 12 · Linking by hand", "Your hands typing [[ … ]]"),
-    (56.5, 59.1, "out/g13-second-job.mp4", "Shot 13 · A second job", "HyperFrames: tag it → link it → file it → forget it"),
-    (59.1, 62.0, "../broll/14-fatigue.mp4", "Shot 14 · Wistful", "Gemini: chin on hand"),
-    (62.0, 63.6, "../broll/14b-network.mp4", "Shot 14b · The pause", "Gemini: slow smile to camera"),
-    (63.6, 65.0, None, "Shot 15 · “So I built it.”", "Gemini: you hold up the laptop"),
-    (65.0, 66.8, "out/16-logo.mp4", "", ""),
-    (66.8, 73.4, "out/17-upload.mp4", "", ""),
-    (73.4, 79.0, "out/18-page.mp4", "", ""),
-    (79.0, 81.5, "out/19-graph.mp4", "", ""),
-    (81.5, 82.9, "out/19b-glossary.mp4", "", ""),
-    (82.9, 84.6, "out/19c-stakeholders.mp4", "", ""),
-    (84.6, 86.6, None, "Shot 20 · “No brackets. Ever.”", "Gemini: playful grin"),
-    (86.6, 94.2, "out/21-ask.mp4", "", ""),
-    (94.2, 98.2, "out/22a-rewrite.mp4", "", ""),
-    (98.2, 101.6, "out/22b-exception.mp4", "", ""),
-    (101.6, 107.3, "out/22c-settled.mp4", "", ""),
-    (107.3, 111.0, "../broll/23-stays.mp4", "Shot 23 · Knowledge stays", "HyperFrames / Gemini: icons fly into the graph"),
-    (111.0, 113.4, None, "Shot 24 · “Still here.”", "Avatar: you, satisfied"),
-    (113.4, 118.2, None, "Shots 25–26 · Proof", "Real quotes and real numbers only"),
-    (118.2, 123.3, None, "Shot 27 · Floor, talking", "Avatar: “If your team keeps losing knowledge…”"),
-    (123.3, 126.5, None, "Shot 28 · “Drop in a folder…”", "Avatar: warm smile, points down"),
-    (126.5, 130.0, "out/g29-endcard.mp4", "Shot 29 · End card", "Logo + link"),
-]
-
-# The Nemotron / Token Factory section (its own VO take) goes in after "This one keeps up on its own."
-# Final-cut times; S is where the section's voice starts.
-S = nem_to_final(0)
-NEMOTRON = [
-    (INSERT_AT, S + 2.4, "../broll/14b-network.mp4@1.2", "", ""),
-    (S + 2.4, S + 8.5, "out/n2-title.mp4", "", ""),
-    (S + 8.5, S + 26.4, "out/n3-models.mp4", "", ""),
-    (S + 26.4, S + 33.3, "out/n6-api.mp4", "", ""),
-    (S + 33.3, S + 36.3, "out/n7a-costs.mp4", "", ""),
-    (S + 36.3, INSERT_AT + SHIFT, "out/n7b-picker.mp4", "", ""),
+    # Act 1: Hook
+    (0.0, 1.9, "../camera/01-every-company.mp4", "Shot 1 · You, lip-sync", "“Every company has a Brent.” Desk by a window, knowing half-smile"),
+    (1.9, 6.7, "../broll/03-leaving.mp4", "Shot 2 · Someone leaving", "B-roll: person walks out with a box"),
+    # Act 2: The problem
+    (6.7, 10.0, "../camera/03-companies.mp4", "Shot 3 · You, silent", "Wide, casual, laptop and coffee"),
+    (10.0, 14.4, "../broll/05-whiteboard.mp4", "Shot 4 · Whiteboard", "B-roll: messy office whiteboard"),
+    (14.4, 16.8, "../camera/05-what-people-know.mp4", "Shot 5 · You, silent", "Lean toward the camera, sincere"),
+    (16.8, 20.6, "../broll/04b-empty-desk.mp4", "Shot 6 · Empty desk", "B-roll: empty desk on a Monday"),
+    (20.6, 28.8, "../broll/09-asking.mp4", "Shot 7 · Piecing it together", "B-roll: coworkers asking each other"),
+    (28.8, 33.4, "out/g07-knowledge-lost.mp4", "Shot 8 · Knowledge lost", "Graphic: years of context, gone"),
+    (33.4, 37.9, "out/g08-stale-docs.mp4", "Shot 9 · Stale docs", "Graphic: Phoenix release runbook, Owner: Brent"),
+    (37.9, 42.4, "../broll/05-whiteboard.mp4@3", "Shot 10 · Over and over", "B-roll: people asking each other"),
+    # Act 3: My own pain
+    (42.4, 45.4, "../camera/11-fixing-it.mp4", "Shot 11 · You, silent", "At the laptop, the screen lighting your face"),
+    (45.4, 51.0, "out/g11-note-graph.mp4", "Shot 12 · Note-app graph", "Graphic: Obsidian-style graph"),
+    (51.0, 56.2, "../broll/12-typing.mp4", "Shot 13 · Linking by hand", "B-roll: hands typing [[ … ]]"),
+    (56.2, 59.0, "out/g13-second-job.mp4", "Shot 14 · A second job", "Graphic: tag it, link it, file it, forget it"),
+    (59.0, 62.2, "../camera/15-wished.mp4", "Shot 15 · You, silent", "Chin on hand, looking away"),
+    (62.2, 63.3, "../camera/16-the-pause.mp4", "Shot 16 · You, silent", "The pause: look into the lens, a slow smile starts"),
+    # Act 4: The reveal and demo
+    (63.3, 65.2, "../camera/17-so-i-built-it.mp4", "Shot 17 · You, silent", "“So I built it.” Hold the open laptop up to the camera"),
+    (65.2, 66.9, "out/16-logo.mp4", "Shot 18 · Logo", "Graphic: “It's called Corpus Wiki.”"),
+    (66.9, 73.6, "out/p-upload.mp4", "Shot 19 · Upload", "Product: files fly onto the drop zone; Gmail import"),
+    (73.6, 79.2, "out/p-page.mp4", "Shot 20 · Wiki page", "Product: the Phoenix release page writes itself; evidence panel"),
+    (79.2, 81.9, "out/p-graph.mp4", "Shot 21 · Graph", "Product: nodes and links grow in; slow push-in"),
+    (81.9, 82.9, "out/p-glossary.mp4", "Shot 22 · Glossary", "Product: terms pop in"),
+    (82.9, 84.9, "out/p-stakeholders.mp4", "Shot 23 · Stakeholders", "Product: Brent, Bill, Wes, Patty cards land"),
+    (84.9, 86.8, "../camera/24-no-brackets.mp4", "Shot 24 · You, silent", "“No brackets. Ever.” Grin, small head shake"),
+    (86.8, 94.4, "out/p-ask.mp4", "Shot 25 · Ask", "Product: question, Send, answer streams with source chips"),
+    (94.4, 98.1, "out/p-rewrite.mp4", "Shot 26 · Rewrite", "Product: a newer file; one line flashes and rewrites"),
+    (98.1, 101.3, "out/p-exception.mp4", "Shot 27 · Exception", "Product: conflict card; click Approve change"),
+    (101.3, 106.7, "out/p-settled.mp4", "Shot 28 · Settled page", "Product: the approved line, a toast, a slow drift"),
+    # Hackathon section
+    (106.7, 109.2, "../camera/29-how-does-it-work.mp4|../broll/14b-network.mp4", "Shot 29 · How does it work?", "You, lip-sync (optional), or B-roll 14b-network"),
+    (109.2, 114.8, "out/n2-title.mp4", "Shot 30 · Nemotron title", "Graphic: NVIDIA Nemotron on Nebius Token Factory"),
+    (114.8, 131.8, "out/p-models.mp4", "Shot 31 · AI handoffs", "Product: nodes light per model (Super, Ultra, Nano, Vision)"),
+    (131.8, 138.7, "out/n6-api.mp4", "Shot 32 · One API", "Graphic: Token Factory API, valid output"),
+    (138.7, 141.9, "out/p-costs.mp4", "Shot 33 · AI costs", "Product: cheapest model per step; cursor on Nano"),
+    (141.9, 144.7, "out/p-picker.mp4", "Shot 34 · Model picker", "Product: open a role's picker, click a model"),
+    (144.7, 150.0, "out/p-video.mp4", "Shot 35 · Video", "Product: Make video, Rendering on Nebius Serverless AI"),
+    # Payoff and call to action
+    (150.0, 153.8, "../broll/23-stays.mp4", "Shot 36 · Knowledge stays", "B-roll: what they knew stays"),
+    (153.8, 156.5, "../camera/37-still-here.mp4", "Shot 37 · You, lip-sync", "“Brent's knowledge? Still here.” Leaning back, satisfied"),
+    (156.5, 161.3, None, "Shot 38 · Proof", "Real quotes and real numbers only, or cut the line"),
+    (161.3, 166.9, "../camera/39-if-your-team.mp4", "Shot 39 · You, lip-sync", "“If your team keeps losing knowledge…” Talking with your hands"),
+    (166.9, 169.8, "../camera/40-drop-in-a-folder.mp4", "Shot 40 · You, lip-sync", "“Drop in a folder…” Same spot, closer"),
+    (169.8, END, "out/g29-endcard.mp4", "Shot 41 · End card", "Logo + link. “Link's below.”"),
 ]
 
 
 def final_rows():
-    """TIMELINE in final-cut time, with the Nemotron rows spliced in at INSERT_AT."""
-    rows = []
-    for a, b, *rest in TIMELINE:
-        if b <= INSERT_AT + 0.1: rows.append((a, min(b, INSERT_AT), *rest))
-        elif a >= INSERT_AT - 0.1: rows.append((max(a, INSERT_AT) + SHIFT, b + SHIFT, *rest))
-        else: rows.append((a, b, *rest))
-        if abs(b - INSERT_AT) <= 0.1: rows.extend(NEMOTRON)
-    return rows
+    """TIMELINE in final-cut time (the take's own time; there is no splice)."""
+    return [(to_final(a), to_final(b), *rest) for a, b, *rest in TIMELINE]
 
 
 def source(clip):
-    """A row's clip ('path' or 'path@seconds') as (path, offset); path is None when the clip is missing."""
-    if not clip: return None, 0
-    path, _, offset = clip.partition("@")
-    return (path if os.path.exists(path) else None), float(offset or 0)
+    """A row's clip ('path', 'path@seconds' or 'a|b') as (path, offset); path is None when no clip exists."""
+    for c in (clip or "").split("|"):
+        path, _, offset = c.partition("@")
+        if path and os.path.exists(path): return path, float(offset or 0)
+    return None, 0
 
 
 # Generated B-roll: crop the film-gate border Veo adds, and soften the whiteboard's gibberish handwriting
@@ -103,8 +103,6 @@ def segments(rows, folder, card=lambda i, label, note: ""):
 
 
 def voiceover(out):
-    """Writes the full voice track: the main take with the Nemotron take spliced in, padded with silence."""
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", VO, "-i", NEM_VO, "-filter_complex",
-                    f"[0]atrim=0:{INSERT_AT},asetpts=PTS-STARTPTS[a];[1]adelay={int(PAD_IN*1000)}:all=1,apad=pad_dur={PAD_OUT}[b];[0]atrim=start={INSERT_AT},asetpts=PTS-STARTPTS[c];[a][b][c]concat=n=3:v=0:a=1[o]",
-                    "-map", "[o]", "-ar", "44100", out], check=True)
+    """Writes the full voice track: the take, then TAIL seconds of silence for the end card."""
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", VO, "-af", f"apad=pad_dur={TAIL}", "-ar", "44100", out], check=True)
     return out
