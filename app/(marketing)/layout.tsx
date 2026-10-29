@@ -21,7 +21,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
     <div className={`${geist.className} min-h-svh bg-landing-base text-landing-ink antialiased`}>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-landing-ink focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:text-landing-base"
       >
         Skip to content
       </a>

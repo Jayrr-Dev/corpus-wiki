@@ -7,13 +7,25 @@
 import type { ReactNode } from "react";
 
 const B = "#4285f4", R = "#ea4335", Y = "#fbbc04", G = "#34a853", P = "#673ab7";
-const PAPER = "#efe6d2", INK = "#c9bc9f", INK_DARK = "#8d8169", CARD = "#1f1f1f", LIFT = "#262626", EDGE = "#353535", RULE = "#3c3c3c";
-const WHITE = "#ffffff", BRIGHT = "rgba(255,255,255,.8)", DIM = "rgba(255,255,255,.35)";
-const GREEN_PALE = "#8fd19e", BLUE_PALE = "#a8c7fa", PURPLE_PALE = "#b39ddb", PURPLE_DARK = "#4a2a86", YELLOW_DARK = "#a87a00";
+const INK = "#c9bc9f", INK_DARK = "#8d8169", WHITE = "#ffffff", PURPLE_DARK = "#4a2a86", YELLOW_DARK = "#a87a00";
+// THEMED: the frame, cards, lines, text and pale tints swap with the page theme.
+// Dark keeps the original drawing; light is the same scene on paper.
+// Each name reads a variable that THEME sets on the frame.
+const PAPER = "var(--cv-paper)", CARD = "var(--cv-card)", LIFT = "var(--cv-lift)", EDGE = "var(--cv-edge)", RULE = "var(--cv-rule)";
+const TEXT = "var(--cv-text)", BRIGHT = "var(--cv-bright)", DIM = "var(--cv-dim)", SOFT = "var(--cv-soft)", MUTED = "var(--cv-muted)";
+const GREEN_PALE = "var(--cv-green-pale)", BLUE_PALE = "var(--cv-blue-pale)", PURPLE_PALE = "var(--cv-purple-pale)", RED_PALE = "var(--cv-red-pale)";
+const THEME = [
+  "[--cv-paper:#ffffff] [--cv-card:#faf7ef] [--cv-lift:#ffffff] [--cv-edge:#d6cdb9] [--cv-rule:#d0c7b3]",
+  "[--cv-text:#131209] [--cv-bright:rgba(19,18,9,.7)] [--cv-dim:rgba(19,18,9,.3)] [--cv-soft:rgba(19,18,9,.65)] [--cv-muted:rgba(19,18,9,.6)]",
+  "[--cv-green-pale:#2f7a3e] [--cv-blue-pale:#1a5fd0] [--cv-purple-pale:#4a2a86] [--cv-red-pale:#c5221f] [--cv-mark:#131209]",
+  "dark:[--cv-paper:#efe6d2] dark:[--cv-card:#1f1f1f] dark:[--cv-lift:#262626] dark:[--cv-edge:#353535] dark:[--cv-rule:#3c3c3c]",
+  "dark:[--cv-text:#ffffff] dark:[--cv-bright:rgba(255,255,255,.8)] dark:[--cv-dim:rgba(255,255,255,.35)] dark:[--cv-soft:rgba(255,255,255,.7)] dark:[--cv-muted:rgba(255,255,255,.55)]",
+  "dark:[--cv-green-pale:#8fd19e] dark:[--cv-blue-pale:#a8c7fa] dark:[--cv-purple-pale:#b39ddb] dark:[--cv-red-pale:#f6aea9] dark:[--cv-mark:#f2f2f2]",
+].join(" ");
 const MOVE = "transition-transform duration-500 ease-landing motion-reduce:transition-none";
 
 // AGENT MARKS: Claude, Cursor, OpenAI (ChatGPT) and Gemini, 24x24 paths from Simple Icons, in brand colours
-const CLAUDE = "#d97757", GEMINI = "#8e75b2", MARK_LIGHT = "#f2f2f2";
+const CLAUDE = "#d97757", GEMINI = "#8e75b2", MARK_LIGHT = "var(--cv-mark)";
 const MARKS = {
   claude: "m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z",
   cursor: "M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23",
@@ -37,13 +49,13 @@ function Person({ x, y, color, r = 7 }: { x: number; y: number; color: string; r
   );
 }
 
-function Label({ x, y, children, color = "rgba(255,255,255,.55)", anchor = "middle", size = 9, weight = 500 }: { x: number; y: number; children: ReactNode; color?: string; anchor?: "start" | "middle" | "end"; size?: number; weight?: number }) {
+function Label({ x, y, children, color = MUTED, anchor = "middle", size = 9, weight = 500 }: { x: number; y: number; children: ReactNode; color?: string; anchor?: "start" | "middle" | "end"; size?: number; weight?: number }) {
   return <text x={x} y={y} fill={color} fontSize={size} fontWeight={weight} textAnchor={anchor} fontFamily="inherit">{children}</text>;
 }
 
 function Frame({ children }: { children: ReactNode }) {
   return (
-    <svg viewBox="0 0 240 140" aria-hidden className="block h-auto w-full rounded-xl border border-white/5 bg-black/25">
+    <svg viewBox="0 0 240 140" aria-hidden className={`block h-auto w-full rounded-xl border border-landing-ink/5 bg-landing-surface dark:bg-black/25 ${THEME}`}>
       {children}
     </svg>
   );
@@ -90,7 +102,7 @@ export function ReviewVisual() {
       <path d="M106 43 H152" stroke={G} strokeWidth={2} />
       <path d="M148 38 L156 43 L148 48" stroke={G} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
       <rect x="14" y="84" width="86" height="26" rx="13" fill={R} fillOpacity={0.15} stroke={R} />
-      <Label x={57} y={100} color="#f6aea9" size={10} weight={600}>− Delete</Label>
+      <Label x={57} y={100} color={RED_PALE} size={10} weight={600}>− Delete</Label>
       <path d="M106 97 H118" stroke={R} strokeWidth={2} strokeDasharray="3 3" />
       <path d="M124 80 V114" stroke={Y} strokeWidth={4} strokeLinecap="round" />
       <g className={`${MOVE} group-hover:-translate-y-1`}>
@@ -222,7 +234,7 @@ export function LifeVisual() {
         <path d="M191 104 H205 M191 109 H203 M191 114 H199" stroke={YELLOW_DARK} strokeWidth={2} strokeLinecap="round" transform="rotate(6 198 108)" />
       </g>
       <circle cx={120} cy={70} r={20} fill={LIFT} stroke={DIM} />
-      <Person x={120} y={70} color={WHITE} r={9} />
+      <Person x={120} y={70} color={TEXT} r={9} />
     </Frame>
   );
 }
@@ -254,7 +266,7 @@ export function ClientVisual() {
           <path d={`M168 ${y + 9} H150`} stroke={c} strokeOpacity={0.6} strokeWidth={1.5} strokeDasharray="3 3" />
           <rect x="168" y={y} width="58" height="18" rx="9" fill={c} fillOpacity={0.18} stroke={c} />
           <circle cx="178" cy={y + 9} r="3" fill={c} />
-          <Label x={186} y={y + 12} anchor="start" color={i === 2 ? PURPLE_PALE : WHITE} size={8} weight={600}>{name}</Label>
+          <Label x={186} y={y + 12} anchor="start" color={i === 2 ? PURPLE_PALE : TEXT} size={8} weight={600}>{name}</Label>
         </g>
       ))}
     </Frame>
@@ -310,7 +322,7 @@ export function AgentsVisual() {
         <path d="M108 62 V76 a12 4 0 0 0 24 0 V62 M108 69 a12 4 0 0 0 24 0" stroke={GREEN_PALE} strokeWidth={1.8} fill="none" />
       </g>
       <rect x="102" y="98" width="36" height="14" rx="7" fill={LIFT} stroke={EDGE} />
-      <Label x={120} y={108} color="rgba(255,255,255,.7)" size={8} weight={600}>MCP</Label>
+      <Label x={120} y={108} color={SOFT} size={8} weight={600}>MCP</Label>
     </Frame>
   );
 }

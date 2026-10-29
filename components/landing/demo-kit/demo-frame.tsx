@@ -21,8 +21,8 @@ export function DemoFrame({
   const heading = (
     <div className={cn(layout === "centered" && "mx-auto max-w-[680px] text-center")}>
       {eyebrow && <p className="text-sm font-semibold text-landing-gold">{eyebrow}</p>}
-      <h2 className="mt-3 max-w-[680px] bg-linear-to-r from-white to-landing-fade bg-clip-text pb-1 text-3xl font-semibold tracking-tight text-balance text-transparent sm:text-5xl">{title}</h2>
-      {body && <p className="mt-4 max-w-[680px] text-lg text-white/65 text-pretty sm:text-xl">{body}</p>}
+      <h2 className="mt-3 max-w-[680px] bg-linear-to-r from-landing-ink to-landing-fade bg-clip-text pb-1 text-3xl font-semibold tracking-tight text-balance text-transparent sm:text-5xl">{title}</h2>
+      {body && <p className="mt-4 max-w-[680px] text-lg text-landing-ink/65 text-pretty sm:text-xl">{body}</p>}
       {action && <div className="mt-8">{action}</div>}
     </div>
   );

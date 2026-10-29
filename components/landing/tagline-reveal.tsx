@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-// TAGLINE REVEAL: each word lights up from 30% to full white, one at a time in
+// TAGLINE REVEAL: each word lights up from 30% to full ink, one at a time in
 // reading order, as the section scrolls up through the viewport. One scroll
 // listener, throttled to one read per animation frame. A line can carry its
 // own colour, and `marks` colours single words (matched without punctuation).
@@ -44,7 +44,7 @@ export function TaglineReveal({ lines, marks = {} }: { lines: Line[]; marks?: Re
 
   let index = 0;
   return (
-    <div ref={ref} className="mx-auto max-w-[680px] text-center text-4xl font-semibold tracking-tight text-balance text-white sm:text-5xl">
+    <div ref={ref} className="mx-auto max-w-[680px] text-center text-4xl font-semibold tracking-tight text-balance text-landing-ink sm:text-5xl">
       {words.map((line, l) => (
         <p key={l} className={lineClass(l)}>
           {line.map((word, w) => {

@@ -33,7 +33,7 @@ export function PlanButton({ plan, interval, label, primary }: { plan: PlanId; i
         type="button"
         onClick={choose}
         disabled={pending}
-        className={`w-full rounded-xl px-3 py-2 text-base font-semibold transition duration-300 active:scale-[0.98] disabled:opacity-60 ${primary ? "bg-landing-green text-white hover:bg-landing-green-hover" : "border border-white/15 text-white hover:bg-white/[0.06]"} ${FOCUS}`}
+        className={`w-full rounded-xl px-3 py-2 text-base font-semibold transition duration-300 active:scale-[0.98] disabled:opacity-60 ${primary ? "bg-landing-green text-white hover:bg-landing-green-hover" : "border border-landing-ink/15 text-landing-ink hover:bg-landing-ink/[0.06]"} ${FOCUS}`}
       >
         {pending ? "Opening…" : label}
       </button>

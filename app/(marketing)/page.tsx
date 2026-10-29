@@ -107,7 +107,7 @@ function SectionHeading({ eyebrow, title, body }: { eyebrow?: string; title: str
     <div className="mx-auto max-w-[680px] text-center">
       {eyebrow && <p className="text-sm font-semibold text-landing-gold">{eyebrow}</p>}
       <h2 className={`mt-3 ${H2}`}>{title}</h2>
-      {body && <p className="mt-4 text-lg text-white/60 text-pretty">{body}</p>}
+      {body && <p className="mt-4 text-lg text-landing-ink/60 text-pretty">{body}</p>}
     </div>
   );
 }
@@ -130,13 +130,13 @@ export default async function WelcomePage() {
                 Your automated <br className="hidden sm:inline" />
                 <span className="palette-underline">knowledge base</span>
               </h1>
-              <p className="mt-10 max-w-[680px] text-lg text-white/70 text-pretty sm:text-xl">
+              <p className="mt-10 max-w-[680px] text-lg text-landing-ink/70 text-pretty sm:text-xl">
                 Add your files. Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
                 <StartButton />
                 {/* true with or without billing: signup asks for no card and the Free plan costs nothing */}
-                <span className="text-sm text-white/50">Free plan · No card needed</span>
+                <span className="text-sm text-landing-ink/50">Free plan · No card needed</span>
               </div>
             </Reveal>
             <Reveal delay={150} className="w-full">
@@ -145,13 +145,13 @@ export default async function WelcomePage() {
             <Reveal delay={300}>
               {/* BUILT WITH: the models and the platform behind the app. NVIDIA's
                   brand rules allow its logo only with written approval, so Nemotron is text. */}
-              <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-sm text-white/60">
-                <span>Built with <span className="font-semibold text-white">NVIDIA Nemotron</span></span>
-                <span aria-hidden className="text-white/25">·</span>
+              <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 text-sm text-landing-ink/60">
+                <span>Built with <span className="font-semibold text-landing-ink">NVIDIA Nemotron</span></span>
+                <span aria-hidden className="text-landing-ink/25">·</span>
                 <span className="inline-flex items-center gap-3">
                   Powered by
-                  <Image src="/brand/nebius/nebius-outline-white.svg" alt="Nebius" width={87} height={24} unoptimized className="h-6 w-auto" />
-                  <span className="rounded-md border border-landing-nebius px-2 py-0.5 text-xs font-semibold tracking-wider text-landing-nebius uppercase">Token Factory</span>
+                  <Image src="/brand/nebius/nebius-outline-white.svg" alt="Nebius" width={87} height={24} unoptimized className="h-6 w-auto invert dark:invert-0" />
+                  <span className="rounded-md border border-landing-ink/40 px-2 py-0.5 text-xs font-semibold tracking-wider text-landing-ink uppercase dark:border-landing-nebius dark:text-landing-nebius">Token Factory</span>
                 </span>
               </p>
             </Reveal>
@@ -166,10 +166,10 @@ export default async function WelcomePage() {
           <div className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {USE_CASES.map((b, i) => (
               <Reveal key={b.title} delay={i * 80}>
-                <div className="group h-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-transform duration-500 hover:-translate-y-1 ease-landing">
+                <div className="group h-full rounded-2xl border border-landing-ink/10 bg-landing-ink/[0.03] p-4 transition-transform duration-500 hover:-translate-y-1 ease-landing">
                   <b.visual />
                   <h3 className="mt-5 px-2 text-base font-semibold">{b.title}</h3>
-                  <p className="mt-2 px-2 pb-2 text-sm text-white/60 text-pretty">{b.body}</p>
+                  <p className="mt-2 px-2 pb-2 text-sm text-landing-ink/60 text-pretty">{b.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -202,7 +202,7 @@ export default async function WelcomePage() {
               <p className="text-sm font-semibold text-landing-gold">Self-maintaining</p>
               {/* a size down beside the demo, so the longer headline keeps to two lines */}
               <h2 className={`mt-3 max-w-[680px] ${H2} lg:text-3xl xl:text-4xl`}>We turn knowledge into pages that rewrite themselves.</h2>
-              <p className="mt-4 max-w-[680px] text-lg text-white/65 text-pretty sm:text-xl">A new file arrives. Only the sentences it changes are rewritten, each with its source.</p>
+              <p className="mt-4 max-w-[680px] text-lg text-landing-ink/65 text-pretty sm:text-xl">A new file arrives. Only the sentences it changes are rewritten, each with its source.</p>
             </Reveal>
             <Reveal delay={150}>
               <DemoEmbed concept={7} title="A wiki page rewriting itself as new sources arrive" minHeight={640} />
@@ -228,10 +228,10 @@ export default async function WelcomePage() {
           <div className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {TRUST.map((b, i) => (
               <Reveal key={b.title} delay={i * 80}>
-                <div className="group h-full rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-transform duration-500 hover:-translate-y-1 ease-landing">
+                <div className="group h-full rounded-2xl border border-landing-ink/10 bg-landing-ink/[0.03] p-4 transition-transform duration-500 hover:-translate-y-1 ease-landing">
                   <b.visual />
                   <h3 className="mt-5 px-2 text-lg font-semibold">{b.title}</h3>
-                  <p className="mt-2 px-2 pb-2 text-sm text-white/60 text-pretty">{b.body}</p>
+                  <p className="mt-2 px-2 pb-2 text-sm text-landing-ink/60 text-pretty">{b.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -295,12 +295,12 @@ export default async function WelcomePage() {
           </Reveal>
           <Reveal className="mx-auto mt-12 flex max-w-3xl flex-col gap-2">
             {faq.map(f => (
-              <details key={f.q} className="group rounded-2xl border border-white/10 bg-white/[0.03]">
-                <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-6 text-left font-semibold transition-colors duration-300 hover:bg-white/[0.03] [&::-webkit-details-marker]:hidden ${FOCUS}`}>
+              <details key={f.q} className="group rounded-2xl border border-landing-ink/10 bg-landing-ink/[0.03]">
+                <summary className={`flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl p-6 text-left font-semibold transition-colors duration-300 hover:bg-landing-ink/[0.03] [&::-webkit-details-marker]:hidden ${FOCUS}`}>
                   <span className="text-balance">{f.q}</span>
                   <Plus className={`size-5 shrink-0 text-landing-gold transition-transform duration-500 group-open:rotate-45 ${EASE}`} />
                 </summary>
-                <div className="flex flex-col items-start gap-3 px-6 pb-6 text-white/60 text-pretty">
+                <div className="flex flex-col items-start gap-3 px-6 pb-6 text-landing-ink/60 text-pretty">
                   {f.placeholder && <PlaceholderTag />}
                   <p>{f.a}</p>
                 </div>
@@ -318,7 +318,7 @@ export default async function WelcomePage() {
             <div className="mt-8">
               <StartButton />
             </div>
-            <p className="mt-4 text-sm text-white/50">Free plan · No card needed</p>
+            <p className="mt-4 text-sm text-landing-ink/50">Free plan · No card needed</p>
           </Reveal>
         </section>
       </main>

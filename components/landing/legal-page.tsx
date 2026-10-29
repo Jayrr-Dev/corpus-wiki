@@ -27,7 +27,7 @@ export function LegalShell({ eyebrow, title, summary, contactEmail, children }: 
         <article className="mx-auto max-w-[680px]">
           <p className="text-sm font-semibold text-landing-gold">{eyebrow}</p>
           <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance sm:text-5xl">{title}</h1>
-          <p className="mt-4text-lg text-white/60 text-pretty">{summary}</p>
+          <p className="mt-4 text-lg text-landing-ink/60 text-pretty">{summary}</p>
           {children}
         </article>
       </main>
@@ -47,12 +47,12 @@ export function LegalDocumentPage({ eyebrow, doc, contactEmail }: { eyebrow: str
             <span aria-hidden className={`block h-1 w-10 rounded-full ${ACCENTS[i % ACCENTS.length]}`} />
             <h2 id={`${section.id}-title`} className="mt-4 text-2xl font-semibold tracking-tight text-balance">{section.title}</h2>
             {section.paragraphs?.map(p => (
-              <p key={p} className="mt-4 text-white/65 text-pretty">{p}</p>
+              <p key={p} className="mt-4 text-landing-ink/65 text-pretty">{p}</p>
             ))}
             {section.items && (
               <ul className="mt-4 flex flex-col gap-3">
                 {section.items.map(item => (
-                  <li key={item} className="flex gap-3 text-white/65 text-pretty">
+                  <li key={item} className="flex gap-3 text-landing-ink/65 text-pretty">
                     <span aria-hidden className={`mt-2 size-1.5 shrink-0 rounded-full ${ACCENTS[i % ACCENTS.length]}`} />
                     {item}
                   </li>
@@ -60,7 +60,7 @@ export function LegalDocumentPage({ eyebrow, doc, contactEmail }: { eyebrow: str
               </ul>
             )}
             {section.contact && contactEmail && (
-              <p className="mt-4 text-white/65">
+              <p className="mt-4 text-landing-ink/65">
                 Email <ContactLink email={contactEmail} subject={doc.title} />.
               </p>
             )}

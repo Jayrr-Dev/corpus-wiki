@@ -36,20 +36,20 @@ export function LandingNav({ onHome = true }: { onHome?: boolean }) {
   return (
     <>
       <nav aria-label="Main" className="fixed inset-x-0 top-4 z-50 flex justify-center px-4">
-        <div className="flex w-full max-w-3xl items-center justify-between gap-6 rounded-2xl border border-white/10 bg-landing-base/60 px-4 py-2 backdrop-blur-xl">
-          <Link href="/" aria-current={onHome ? "page" : undefined} className={cn("flex items-center gap-2 rounded-lg py-1 text-white", FOCUS)}>
+        <div className="flex w-full max-w-3xl items-center justify-between gap-6 rounded-2xl border border-landing-ink/10 bg-landing-base/60 px-4 py-2 backdrop-blur-xl">
+          <Link href="/" aria-current={onHome ? "page" : undefined} className={cn("flex items-center gap-2 rounded-lg py-1 text-landing-ink", FOCUS)}>
             <BrandMark className="size-6 text-landing-green-light" />
             <span className="font-brand text-xl">Corpus Wiki</span>
           </Link>
           <div className="hidden items-center gap-6 md:flex">
             {links.map(link => (
-              <a key={link.href} href={link.href} className={cn("rounded-md text-sm text-white/70 transition-colors duration-300 hover:text-white", EASE, FOCUS)}>
+              <a key={link.href} href={link.href} className={cn("rounded-md text-sm text-landing-ink/70 transition-colors duration-300 hover:text-landing-ink", EASE, FOCUS)}>
                 {link.label}
               </a>
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/login" className={cn("hidden rounded-lg px-3 py-2 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/10 active:scale-[0.98] md:inline-block", EASE, FOCUS)}>
+            <Link href="/login" className={cn("hidden rounded-lg px-3 py-2 text-sm font-semibold text-landing-ink transition-colors duration-300 hover:bg-landing-ink/10 active:scale-[0.98] md:inline-block", EASE, FOCUS)}>
               Sign in
             </Link>
             <button
@@ -58,7 +58,7 @@ export function LandingNav({ onHome = true }: { onHome?: boolean }) {
               aria-controls="landing-menu"
               aria-label={open ? "Close menu" : "Open menu"}
               onClick={() => setOpen(o => !o)}
-              className={cn("relative z-50 grid size-10 place-items-center rounded-lg text-white transition-colors duration-300 hover:bg-white/10 md:hidden", FOCUS)}
+              className={cn("relative z-50 grid size-10 place-items-center rounded-lg text-landing-ink transition-colors duration-300 hover:bg-landing-ink/10 md:hidden", FOCUS)}
             >
               <span aria-hidden className={cn("absolute h-0.5 w-6 rounded-full bg-current transition-transform duration-500", EASE, open ? "rotate-45" : "-translate-y-1")} />
               <span aria-hidden className={cn("absolute h-0.5 w-6 rounded-full bg-current transition-transform duration-500", EASE, open ? "-rotate-45" : "translate-y-1")} />
@@ -90,7 +90,7 @@ export function LandingNav({ onHome = true }: { onHome?: boolean }) {
                 open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
               )}
             >
-              <a href={link.href} onClick={() => setOpen(false)} className={cn("block rounded-lg py-3 text-3xl font-semibold text-white", FOCUS)}>
+              <a href={link.href} onClick={() => setOpen(false)} className={cn("block rounded-lg py-3 text-3xl font-semibold text-landing-ink", FOCUS)}>
                 {link.label}
               </a>
             </li>

@@ -20,7 +20,7 @@ export default async function ContactPage() {
   if (!email) notFound();
   return (
     <LegalShell eyebrow="Contact" title="Talk to us" summary="Questions, feedback, privacy or account requests." contactEmail={email}>
-      <div className="mt-12 rounded-2xl border border-white/10 bg-white/[0.03] p-8">
+      <div className="mt-12 rounded-2xl border border-landing-ink/10 bg-landing-ink/[0.03] p-8">
         <a
           href={mailtoHref(email, "Corpus Wiki")}
           className={`inline-flex items-center gap-2 rounded-xl bg-landing-green px-3 py-2 text-base font-semibold text-white transition duration-300 ease-landing hover:bg-landing-green-hover active:scale-[0.98] ${FOCUS}`}
@@ -28,13 +28,13 @@ export default async function ContactPage() {
           <EnvelopeSimple aria-hidden className="size-4" />
           Email us
         </a>
-        <p className="mt-4 text-white/65">
+        <p className="mt-4 text-landing-ink/65">
           Or write to <ContactLink email={email} subject="Corpus Wiki" />.
         </p>
       </div>
       <section aria-labelledby="deletion-title" className="mt-12">
         <h2 id="deletion-title" className="text-2xl font-semibold tracking-tight">Deleting your account</h2>
-        <p className="mt-4 text-white/65 text-pretty">
+        <p className="mt-4 text-landing-ink/65 text-pretty">
           Email us from the address you sign in with. We delete your account, your spaces and the files stored for them, and reply when it is done.
         </p>
       </section>

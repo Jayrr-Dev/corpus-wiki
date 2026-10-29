@@ -26,9 +26,9 @@ function PlanPrice({ plan }: { plan: Plan }) {
     <div className="mt-4">
       <p className="flex items-baseline gap-1">
         <span className="text-4xl font-semibold tracking-tight">{formatPrice(plan.monthlyUsd)}</span>
-        <span className="text-sm text-white/50">{plan.perSeat ? "per seat / month" : "/ month"}</span>
+        <span className="text-sm text-landing-ink/50">{plan.perSeat ? "per seat / month" : "/ month"}</span>
       </p>
-      <p className="mt-1 h-5 text-sm text-white/50">{plan.yearlyUsd !== null ? `or ${formatPrice(plan.yearlyUsd)} / year` : ""}</p>
+      <p className="mt-1 h-5 text-sm text-landing-ink/50">{plan.yearlyUsd !== null ? `or ${formatPrice(plan.yearlyUsd)} / year` : ""}</p>
     </div>
   );
 }
@@ -40,10 +40,10 @@ function PlanCard({ plan }: { plan: Plan }) {
     plan.sessionCredits !== null ? `${formatCredits(plan.sessionCredits)} per 5-hour session` : null,
   ].filter((line): line is string => line !== null);
   return (
-    <div className={`flex h-full flex-col rounded-2xl border p-6 ${featured ? "border-landing-gold/60 bg-white/[0.05]" : "border-white/10 bg-white/[0.03]"}`}>
+    <div className={`flex h-full flex-col rounded-2xl border p-6 ${featured ? "border-landing-gold/60 bg-landing-ink/[0.05]" : "border-landing-ink/10 bg-landing-ink/[0.03]"}`}>
       <h2 className="text-lg font-semibold">{plan.name}</h2>
       <PlanPrice plan={plan} />
-      <ul className="mt-6 flex flex-1 flex-col gap-2 text-sm text-white/70">
+      <ul className="mt-6 flex flex-1 flex-col gap-2 text-sm text-landing-ink/70">
         {[...credits, ...plan.features].map((line) => (
           <li key={line} className="flex gap-2">
             <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-landing-gold" />
@@ -53,7 +53,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       </ul>
       <div className="mt-6">
         {plan.monthlyUsd === 0 ? (
-          <Link href="/signup" className={`block w-full rounded-xl border border-white/15 px-3 py-2 text-center text-base font-semibold transition duration-300 hover:bg-white/[0.06] ${FOCUS}`}>
+          <Link href="/signup" className={`block w-full rounded-xl border border-landing-ink/15 px-3 py-2 text-center text-base font-semibold transition duration-300 hover:bg-landing-ink/[0.06] ${FOCUS}`}>
             Start free
           </Link>
         ) : (
@@ -72,12 +72,12 @@ export default async function PricingPage() {
       <main id="main" className="px-4 pt-32 pb-24 sm:px-6">
         <div className="mx-auto max-w-[680px] text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Pricing</h1>
-          <p className="mt-4 text-lg text-white/60 text-pretty">Start free. No card needed.</p>
+          <p className="mt-4 text-lg text-landing-ink/60 text-pretty">Start free. No card needed.</p>
         </div>
         <div className="mx-auto mt-12 grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {PLANS.map((plan) => <PlanCard key={plan.id} plan={plan} />)}
         </div>
-        <p className="mx-auto mt-8 max-w-3xl text-center text-sm text-white/50 text-pretty">
+        <p className="mx-auto mt-8 max-w-3xl text-center text-sm text-landing-ink/50 text-pretty">
           Credits measure AI use: one credit is a tenth of a cent of model cost, so small models use fewer. Limits reset every 5 hours and every week.
         </p>
       </main>
