@@ -5,7 +5,7 @@
   <img alt="Corpus Wiki" src="public/brand/corpus-wiki/Corpus-Wiki-Horizontal-RGB-Full-Colour.svg" width="360">
 </picture>
 
-### Your automated knowledge base
+### The knowledge maintaining machine
 
 Add your files. Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.
 

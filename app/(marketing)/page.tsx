@@ -150,11 +150,11 @@ export default async function WelcomePage() {
           <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 text-center">
             <Reveal className="flex flex-col items-center">
               <h1 className={`max-w-[900px] uppercase ${H1}`}>
-                Your automated <br className="hidden sm:inline" />
-                <span className="palette-underline">knowledge base</span>
+                The knowledge <br className="hidden sm:inline" />
+                <span className="palette-underline">maintaining machine</span>
               </h1>
               <p className="mt-10 max-w-[680px] text-lg text-landing-ink/70 text-pretty sm:text-xl">
-                Add your files. Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.
+                Corpus Wiki sorts them out, writes simple pages for your team and keeps them up to date.
               </p>
               <div className="mt-8">
                 <StartButton />
