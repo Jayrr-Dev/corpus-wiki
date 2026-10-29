@@ -1,0 +1,94 @@
+<!doctype html>
+<!-- Shot 29, 2:45.9 (about 3.6 s): "Link's below."
+     End card: the logo, "Your automated knowledge base." and the link, with a graph slowly rotating behind.
+     The real URL is not decided yet: change LINK at the top of the script. -->
+<html class="dark"><head><meta charset="utf-8"><title>G29 End Card</title>
+<link rel="stylesheet" href="assets/app.css">
+<script src="engine.js"></script>
+<style>
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  #cursor { display: none !important; }
+  canvas { position: absolute; inset: 0; }
+  .veil { position: absolute; inset: 0; background: radial-gradient(ellipse 760px 380px at 50% 50%, rgba(30,30,30,.92) 0%, rgba(30,30,30,.6) 55%, rgba(30,30,30,0) 100%); }
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+  #logo { width: 720px; }
+  #tag { font-size: 34px; color: #a3a3a3; }
+  #link { margin-top: 26px; font-size: 32px; font-weight: 600; color: #8fae8d; border: 1px solid #496748; background: rgba(38,38,38,.85); border-radius: 999px; padding: 14px 34px; display: flex; align-items: center; gap: 14px; }
+  #link svg { width: 26px; height: 26px; }
+</style></head>
+<body>
+<canvas id="cv" width="1920" height="1080"></canvas>
+<div class="veil"></div>
+<div class="center">
+  <img id="logo" src="assets/logo-white.svg" alt="">
+  <div id="tag">Your automated knowledge base.</div>
+  <div id="link"><svg viewBox="0 0 24 24" fill="none" stroke="#8fae8d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4L12 18.4"/></svg><span id="url"></span></div>
+</div>
+<script>
+const LINK = "corpus.example.com";
+const COLORS = ["#8fae8d", "#72b7e5", "#d9a032", "#8278cb", "#36ab78", "#e88070", "#52c4c4", "#b09de0", "#c66fa5", "#91a64b"];
+function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; }
+const gauss = (r) => { let s = 0; for (let i = 0; i < 4; i++) s += r(); return (s - 2) / 1.15; };
+
+// Same clustered 3D graph as g11, but wider and in the app's graph colours
+function makeGraph(seed, hubs, perHub) {
+  const r = rng(seed), nodes = [], links = [];
+  for (let h = 0; h < hubs; h++) {
+    const u = r() * 2 - 1, th = (h + r() * 0.6) / hubs * Math.PI * 2, R = 380 + r() * 120, s = Math.sqrt(1 - u * u);
+    const hub = { x: Math.cos(th) * s * R * 1.9, y: u * R * 0.65, z: Math.sin(th) * s * R, deg: 0, hub: true, c: h };
+    nodes.push(hub);
+    const n = perHub[0] + Math.floor(r() * (perHub[1] - perHub[0])), first = nodes.length;
+    for (let i = 0; i < n; i++) {
+      const sp = 80 + r() * 70;
+      nodes.push({ x: hub.x + gauss(r) * sp, y: hub.y + gauss(r) * sp, z: hub.z + gauss(r) * sp, deg: 0, c: h });
+      links.push([nodes.indexOf(hub), nodes.length - 1]);
+      if (i > 1 && r() < 0.35) links.push([first + Math.floor(r() * i), nodes.length - 1]);
+    }
+  }
+  const hubIdx = nodes.map((n, i) => (n.hub ? i : -1)).filter((i) => i >= 0);
+  for (let i = 0; i < hubIdx.length; i++) for (let j = i + 1; j < hubIdx.length; j++) if (r() < 0.3) links.push([hubIdx[i], hubIdx[j]]);
+  for (const [a, b] of links) { nodes[a].deg++; nodes[b].deg++; }
+  nodes.forEach((n) => { n.ph = r() * 6.28; n.amp = 4 + r() * 8; });
+  return { nodes, links };
+}
+
+const G = makeGraph(29, 10, [10, 18]);
+const W = 1920, H = 1080, F = 1600;
+function project(n, t, rotY, rotX) {
+  const dx = Math.sin(t * 0.9 + n.ph) * n.amp, dy = Math.cos(t * 0.7 + n.ph * 1.3) * n.amp;
+  let x = n.x + dx, y = n.y + dy, z = n.z;
+  const cy = Math.cos(rotY), sy = Math.sin(rotY);
+  [x, z] = [x * cy + z * sy, -x * sy + z * cy];
+  const cx = Math.cos(rotX), sx = Math.sin(rotX);
+  [y, z] = [y * cx - z * sx, y * sx + z * cx];
+  const s = F / (F + z + 400);
+  return { x: W / 2 + x * s, y: H / 2 + y * s, s, z };
+}
+
+window.SCENE = { duration: 3.6,
+  setup() { $("#url").textContent = LINK; },
+  frame(t) {
+    camera(t, 3.6, 1.0, 1.03);
+    const ctx = $("#cv").getContext("2d");
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = 0.9 * easeOut(seg(t, 0, 0.8));
+    const P = G.nodes.map((n) => project(n, t, 0.6 + t * 0.09, -0.25));
+    ctx.lineWidth = 1.2;
+    for (const [a, b] of G.links) {
+      ctx.strokeStyle = G.nodes[a].c === G.nodes[b].c ? COLORS[G.nodes[a].c % COLORS.length] + "40" : "rgba(150,150,150,.16)";
+      ctx.beginPath(); ctx.moveTo(P[a].x, P[a].y); ctx.lineTo(P[b].x, P[b].y); ctx.stroke();
+    }
+    const order = P.map((p, i) => i).sort((i, j) => P[j].z - P[i].z);
+    for (const i of order) {
+      const n = G.nodes[i], p = P[i];
+      const d = clamp(1 - (p.z + 500) / 1400, 0.3, 1);
+      const r = (n.hub ? 9 : 3.2 + Math.min(n.deg, 6) * 0.5) * p.s;
+      ctx.fillStyle = COLORS[n.c % COLORS.length] + Math.round(255 * (0.35 + 0.65 * d)).toString(16).padStart(2, "0");
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    [["#logo", 0.1, 18], ["#tag", 0.5, 12], ["#link", 0.9, 12]].forEach(([s, a, dy]) => { const p = easeOut(seg(t, a, a + 0.6)); $(s).style.opacity = p; $(s).style.transform = `translateY(${(1 - p) * dy}px)`; });
+  }
+};
+</script>
+</body></html>
