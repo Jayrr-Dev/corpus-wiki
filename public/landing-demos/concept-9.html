@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hero concept 9</title>
+<script src="theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -13,10 +14,10 @@
   .index { grid-area: terms; padding: 16px; }
   .letters { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .letters span { display: grid; place-items: center; height: 24px; border-radius: 6px; font-size: 12px; line-height: 16px; color: var(--fade); }
-  .letters span.on { background: var(--gold); color: #131209; font-weight: 600; }
+  .letters span.on { background: var(--gold); color: var(--base); font-weight: 600; }
   .words { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
-  .word { padding: 8px; border-radius: 8px; font-size: 14px; line-height: 20px; color: rgba(255,255,255,.75); transition: opacity .5s var(--ease), transform .6s var(--ease); }
-  .word.cur { background: var(--hi); color: #fff; }
+  .word { padding: 8px; border-radius: 8px; font-size: 14px; line-height: 20px; color: color-mix(in srgb, var(--ink) 75%, transparent); transition: opacity .5s var(--ease), transform .6s var(--ease); }
+  .word.cur { background: var(--hi); color: var(--ink); }
   .word.merge { opacity: 0; transform: translateY(-36px) scale(.9); }
   .word.gone { display: none; }
   .entry-card .head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -24,14 +25,14 @@
   .class { margin-top: 8px; font-size: 14px; line-height: 20px; color: var(--gold-pale); }
   .class span { color: var(--fade); }
   .also { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; font-size: 14px; line-height: 20px; color: var(--fade); }
-  .pill { padding: 2px 8px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--line); color: #fff; font-size: 12px; line-height: 16px; transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
+  .pill { padding: 2px 8px; border-radius: 9999px; background: var(--hi); border: 1px solid var(--line); color: var(--ink); font-size: 12px; line-height: 16px; transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
   .pill.hidden { opacity: 0; transform: scale(.8); } .pill.gone { display: none; } .pill.fresh { border-color: var(--gold); }
   .senses { list-style: none; padding: 0; margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
   .sense { display: grid; grid-template-columns: 24px 1fr; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); transition: opacity .5s var(--ease), transform .5s var(--ease); }
   .sense .n { font-size: 16px; line-height: 28px; font-weight: 600; color: var(--gold); }
-  .sense p.def { font-size: 16px; line-height: 28px; color: rgba(255,255,255,.88); text-wrap: pretty; }
+  .sense p.def { font-size: 16px; line-height: 28px; color: color-mix(in srgb, var(--ink) 88%, transparent); text-wrap: pretty; }
   .sense p.ex { margin-top: 4px; font-size: 14px; line-height: 20px; color: var(--fade); }
-  .sense p.ex b { font-weight: 400; color: rgba(255,255,255,.7); }
+  .sense p.ex b { font-weight: 400; color: color-mix(in srgb, var(--ink) 70%, transparent); }
   .sense.hidden { opacity: 0; transform: translateY(8px); } .sense.gone { display: none; }
   .see { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; line-height: 20px; color: var(--fade); }
   .see a { color: var(--gold-pale); text-decoration: none; }
@@ -50,8 +51,7 @@ if (location.search.includes("embed")) {
 }
 </script>
 <style>
-html.embed { color-scheme: dark; }
-html.embed, html.embed body { background: #131209; }
+html.embed, html.embed body { background: var(--base); }
 html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
 html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
 html.embed .wrap { grid-template-columns: 1fr !important; }

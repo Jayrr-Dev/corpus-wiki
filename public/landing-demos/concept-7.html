@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hero concept 7</title>
+<script src="theme.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
@@ -11,19 +12,23 @@
 <style>
   /* FACTS: the knowledge units each source turns into, floating between the sources and the page */
   /* Facts and the change log sit below the page, never over its text */
-  /* WIKI PAGE: dressed like the app's article view (dark theme) */
-  .main { background: #1e1e1e; border-color: #363636; }
-  .main .crumb { font-size: 13px; color: #a3a3a3; }
-  .wl { color: #b3cefa; text-decoration: none; cursor: pointer; }
+  /* WIKI PAGE: dressed like the app's article view */
+  :root { --page: #1e1e1e; --page-line: #363636; --page-fade: #a3a3a3; --page-text: #dcdcdc; --link: #b3cefa; --ku-line: #3c3c3c;
+    --st-blue: #a8c7fa; --st-green: #8fd19e; --st-red: #f6aea9; }
+  html.light { --page: #fffdf8; --page-line: #e2dbca; --page-fade: #666666; --page-text: #2b2a22; --link: #1a5bc4; --ku-line: #d3cab6;
+    --st-blue: #1a5bc4; --st-green: #1e7b3a; --st-red: #b3261e; }
+  .main { background: var(--page); border-color: var(--page-line); }
+  .main .crumb { font-size: 13px; color: var(--page-fade); }
+  .wl { color: var(--link); text-decoration: none; cursor: pointer; }
   .wl:hover { text-decoration: underline; }
-  .main h2 { margin-top: 12px; padding-bottom: 16px; border-bottom: 1px solid #363636; font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif; font-size: 32px; line-height: 1.2; font-weight: 400; }
-  .main h3 { margin-top: 24px; padding-bottom: 6px; border-bottom: 1px solid #363636; font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif; font-size: 22px; line-height: 1.3; font-weight: 400; }
-  .main p.para { font-size: 15px; line-height: 1.75; color: #dcdcdc; }
-  .main p.para b { font-weight: 600; color: #fff; }
-  .main .ref { display: inline; min-width: 0; height: auto; padding: 0 1px; margin-left: 1px; border-radius: 3px; background: none; color: #b3cefa; font-size: 11px; line-height: 0; vertical-align: super; }
+  .main h2 { margin-top: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--page-line); font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif; font-size: 32px; line-height: 1.2; font-weight: 400; }
+  .main h3 { margin-top: 24px; padding-bottom: 6px; border-bottom: 1px solid var(--page-line); font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif; font-size: 22px; line-height: 1.3; font-weight: 400; }
+  .main p.para { font-size: 15px; line-height: 1.75; color: var(--page-text); }
+  .main p.para b { font-weight: 600; color: var(--ink); }
+  .main .ref { display: inline; min-width: 0; height: auto; padding: 0 1px; margin-left: 1px; border-radius: 3px; background: none; color: var(--link); font-size: 11px; line-height: 0; vertical-align: super; }
   .main .ref::before { content: "["; } .main .ref::after { content: "]"; }
-  .main .ref.fresh { background: rgba(251,188,4,.3); color: #fff; transform: none; }
-  .main .see { margin-top: 20px; padding-top: 12px; border-top: 1px solid #363636; font-size: 13px; line-height: 20px; color: #a3a3a3; }
+  .main .ref.fresh { background: rgba(251,188,4,.3); color: var(--ink); transform: none; }
+  .main .see { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--page-line); font-size: 13px; line-height: 20px; color: var(--page-fade); }
   .stage { height: 800px; }
   @media (max-width: 700px) { .stage { height: 500px; } }
   .log { top: 500px; bottom: auto; right: 8px; }
@@ -31,16 +36,16 @@
   .kus { left: 8px; top: 500px; width: 260px; transform: translateZ(150px); display: flex; flex-direction: column; gap: 8px; }
   .kus .title { align-self: flex-start; font-size: 12px; line-height: 16px; color: var(--fade); text-transform: uppercase; letter-spacing: .08em; padding: 4px 8px; border-radius: 9999px; background: var(--raised); border: 1px solid var(--line); opacity: 0; transition: opacity .4s var(--ease); }
   .kus.has .title { opacity: 1; }
-  .ku { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; padding: 12px; border-radius: 12px; background: var(--hi); border: 1px solid #3c3c3c; box-shadow: 0 24px 48px rgba(0,0,0,.5); opacity: 0; transform: translateY(8px) scale(.96); transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
+  .ku { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 8px; align-items: center; padding: 12px; border-radius: 12px; background: var(--hi); border: 1px solid var(--ku-line); box-shadow: 0 24px 48px rgb(0 0 0 / calc(.5 * var(--shadow))); opacity: 0; transform: translateY(8px) scale(.96); transition: opacity .5s var(--ease), transform .5s var(--ease), border-color .3s var(--ease); }
   .ku.in { opacity: 1; transform: none; }
   .ku .id { font-size: 12px; line-height: 16px; color: var(--gold); font-weight: 600; }
-  .ku .claim { font-size: 14px; line-height: 20px; color: #fff; }
+  .ku .claim { font-size: 14px; line-height: 20px; color: var(--ink); }
   .ku .was { grid-column: 2 / 4; font-size: 12px; line-height: 16px; color: var(--fade); }
   .ku .was s { color: var(--conflict); }
   .st { font-size: 12px; line-height: 16px; padding: 2px 8px; border-radius: 9999px; white-space: nowrap; transition: background-color .3s var(--ease), color .3s var(--ease); }
-  .st.rev { background: rgba(66,133,244,.2); color: #a8c7fa; }
-  .st.new { background: rgba(52,168,83,.2); color: #8fd19e; }
-  .st.dis { background: rgba(234,67,53,.2); color: #f6aea9; }
+  .st.rev { background: rgba(66,133,244,.2); color: var(--st-blue); }
+  .st.new { background: rgba(52,168,83,.2); color: var(--st-green); }
+  .st.dis { background: rgba(234,67,53,.2); color: var(--st-red); }
 </style>
 <script>
 // EMBED MODE (?embed): the landing page supplies the headline, so hide this page's own
@@ -52,8 +57,7 @@ if (location.search.includes("embed")) {
 }
 </script>
 <style>
-html.embed { color-scheme: dark; }
-html.embed, html.embed body { background: #131209; }
+html.embed, html.embed body { background: var(--base); }
 html.embed .tag, html.embed .logo, html.embed .intro, html.embed .wrap > div:first-child:not(.stage):not(.demo):not(.intro):has(h1) { display: none !important; }
 html.embed section.hero { min-height: 0; padding: 24px 16px; overflow: visible; }
 html.embed .wrap { grid-template-columns: 1fr !important; }
