@@ -173,7 +173,7 @@ export function Practice({ items, claims, progress, emptyText = "Nothing due.", 
 
   return (
     <div className="flex flex-col items-center gap-4 py-4">
-      <Card key={`${current.id}:${index}`} item={current} claims={claimMap} onAnswered={() => setAnswered((count) => count + 1)} onNext={() => {
+      <Card key={`${current.id}:${index}`} item={current} claims={claimMap} onAnswered={() => { setAnswered((count) => count + 1); router.refresh(); }} onNext={() => {
         if (index + 1 >= queue.length) { setIndex(queue.length); router.refresh(); } else setIndex(index + 1);
       }} />
       <div className="flex w-full max-w-xl items-center justify-between text-panel text-muted-foreground">
