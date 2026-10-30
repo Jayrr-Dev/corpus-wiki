@@ -12,7 +12,7 @@ import { nameDuplicateJudge } from "@/lib/ai/nameDuplicateJudge";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { DOMAIN_DECIDER_INSTRUCTIONS } from "@/lib/domains/decider";
 import { skillInstructions } from "@/lib/ai/skills/prompt";
-import { uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "@/lib/domains/uploadAssignment";
+import { afterReview, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "@/lib/domains/uploadAssignment";
 import { confirmFilingObjections, UPLOAD_FILING_CONTRACT } from "@/lib/domains/filingObjections";
 import { TAB_FILING_RULES } from "@/lib/domains/tabOrganization";
 import { BUDGET_PROFILE_NOTE, estimatePromptTokens, PROMPT_TOKEN_LIMIT, scopeNeighbors, topicPromptBudgetOn } from "@/lib/domains/promptBudget";
@@ -69,7 +69,7 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
             claims:claims.map(c=>({ref:c.ref,title:c.title,content:c.content,entities:c.entities})),
             overview:evidence.claims.map(c=>({ref:c.ref,title:c.title})),priorGroups:plan.groups,
             neighbors,candidates:evidence.candidates.filter(c=>refs.has(c.ref)),links:evidence.links.filter(l=>refs.has(l.from)||refs.has(l.to)),profiles,feedback})},
-          {role:"system",content:"Planning scopes are anchors, not proposed child topics. When domains is empty, EVERY scopePath must be one root label with NO slash. For example scopePath='Reference subject', subject='Origins' is valid; scopePath='Reference subject/Origins' is INVALID unless that exact path already exists in domains. All groups may share the same root scope while having distinct subjects. New roots remain proposals requiring the person's approval. Never create a nested scope simply to express its subject."}];
+          {role:"system",content:"Planning scopes are anchors, not proposed child topics. When domains is empty, EVERY scopePath must be one root label with NO slash. For example scopePath='Reference subject', subject='Origins' is valid; scopePath='Reference subject/Origins' is INVALID unless that exact path already exists in domains. All groups may share the same root scope while having distinct subjects. New roots remain proposals requiring the person's approval. Never create a nested scope simply to express its subject. A domain that belongs to a different organization, place, product or person is not a scope for these claims, however alike the subjects are: use the owner's own domain, or propose a new root named for that owner."}];
     };
     for (let start=0,size=0;start<evidence.claims.length;start+=size) {
     size=PLAN_CLAIMS_PER_STEP;
@@ -177,28 +177,28 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
           }
           freshAttempts++;
           const repairClaims=previousProposal&&correctionRefs?.size?claims.filter(c=>correctionRefs!.has(c.ref)):claims;
-          const repairInput:PlaceTopicsInput={...input,claims:repairClaims,
+          const repairInput:PlaceTopicsInput={...afterReview(input,history.length>0),claims:repairClaims,
             previousPlacements:[...previousPlacements,...(previousProposal?claims.filter(c=>!repairClaims.includes(c)).map(c=>({ref:c.ref,domainPaths:previousProposal!.get(c.unitId)!})):[])]};
           const answer=await chatJson(settings,{name:"place_topics",subject:context.sourceTitle,schema:placeTopicsAnswerSchema,jsonSchema:placeTopicsJsonSchema,
-            messages:guardPromptSize("place_topics",[...buildPlaceTopicsMessages(repairInput),{role:"system",content:policy+"\nThe plan's subject groups are navigation hints, not facts or constraints on individual claims. If a claim does not fit its provisional subject group, choose a defensible destination elsewhere inside scopePath. Correct concrete independent-review feedback using the claim's full text and source evidence; do not retain a wrong subject just to follow the provisional grouping. On a corrective retry, claims may contain only the refs flagged by the reviewer: return those refs only, and address their concrete subject errors. The complete combined batch will be independently reviewed again."},{role:"user",content:feedback+"\nRequired answer refs (exactly once each, no context-only refs): "+JSON.stringify(repairClaims.map(c=>c.ref))}])});
+            messages:guardPromptSize("place_topics",[...buildPlaceTopicsMessages(repairInput),{role:"system",content:policy+"\nThe plan's subject groups are navigation hints, not facts or constraints on individual claims. If a claim does not fit its provisional subject group, choose a defensible destination elsewhere inside scopePath. When review says scopePath itself belongs to a different owner than the claim, the scope no longer binds it: file it under its true owner's existing domain, or a new root named for that owner. Correct concrete independent-review feedback using the claim's full text and source evidence; do not retain a wrong subject just to follow the provisional grouping. On a corrective retry, claims may contain only the refs flagged by the reviewer: return those refs only, and address their concrete subject errors. The complete combined batch will be independently reviewed again."},{role:"user",content:feedback+"\nRequired answer refs (exactly once each, no context-only refs): "+JSON.stringify(repairClaims.map(c=>c.ref))}])});
           captureBatch(answer);
           try {
             const corrected=readPlacements(answer.value,repairInput);
             validateUploadPlacements(corrected,repairInput);
             const proposal=new Map(previousProposal);
             for(const [id,paths]of corrected)proposal.set(id,paths);
-            validateUploadPlacements(proposal,input);
+            validateUploadPlacements(proposal,afterReview(input,history.length>0));
             const names=await reuseFuzzyDomainPaths([...new Set([...proposal.values()].flat())],[...known],
               nameDuplicateJudge(settings,"domain",{claims,domainTabs:context.domainTabs,scope:group.scopePath},captureBatch));
             for(const [id,paths] of proposal) proposal.set(id,[...new Set(paths.map(p=>names.get(p)??p))]);
-            validateUploadPlacements(proposal,input);
+            validateUploadPlacements(proposal,afterReview(input,history.length>0));
             const allProposals=new Map([...placed,...proposal]);
             const parents=[...new Set([...proposal.values()].flat())].map(path=>({path,refs:claims.filter(c=>proposal.get(c.unitId)?.includes(path)).map(c=>c.ref!)}));
             const destinations=new Set(parents.map(p=>p.path));
             let previousDestinationClaims:{ref?:string;title:string;content?:string;domainPaths?:string[]}[]=evidence.claims.filter(c=>placed.get(c.unitId)?.some(path=>destinations.has(path))).map(c=>({ref:c.ref,title:c.title,content:c.content,domainPaths:placed.get(c.unitId)}));
             const reviewMessages=():ChatMessage[]=>[{role:"system",content:policy+"\nIndependently review the CURRENT proposed domain assignments. The upload is processed group by group. pendingRefs are deliberately scheduled for later groups: their absence from the current proposal is expected and MUST NOT be reported as missing coverage or a reason to reject. Coverage of the current batch is checked by code. Evaluate only proposal refs and supplied parents; use other claims as context. Check ownership, candidate domain evidence, existing children, coherent subject groups, duplicate branches and parent residuals. Review every supplied parent path and exactly its supplied refs; explain why its direct claims belong together and whether useful children or neighboring existing domains were missed. Reject broad dumping, unsupported ownership, or artificial tiny topics. Existing domain examples are read-only context. Do not require every connected pair to share a domain. approved is true only when issues is empty and current placements are defensible."},
                 {role:"system",content:"Source identity and provenance are already preserved by passage citations. Do not require a book-named or file-named parent: domains organize knowledge by subject and ownership, not by source filename. Judge each claim's actual meaning and the explicit filing policy. An equally defensible alternative subdivision is not itself a defect; prefer the simpler coherent hierarchy. Small current groups may grow as pendingRefs are filed: assess the whole-file plan before rejecting a branch merely for its current size. Still reject concrete unsupported ownership, incorrect subject placement, duplicate branches, broad dumping, or missing evidence, and identify the affected refs and required correction."},
-                {role:"system",content:"proposal and parents contain this batch only. Previous placements have already passed independent review; use previousDestinationClaims (their full text) and previousPlacements to check cumulative parent coherence and duplicate branches. Judge this batch's additions against that context. Do not demand that previously reviewed refs appear again in parents. Group subject labels are provisional: judge the actual content and destination rather than requiring every claim to stay in its initial subject group."},
+                {role:"system",content:"proposal and parents contain this batch only. Previous placements have already passed independent review; use previousDestinationClaims (their full text) and previousPlacements to check cumulative parent coherence and duplicate branches. Judge this batch's additions against that context. Do not demand that previously reviewed refs appear again in parents. Group subject labels are provisional: judge the actual content and destination rather than requiring every claim to stay in its initial subject group. The same goes for scopePath once priorReviewIssues rejected it: a claim moved to its true owner is a correction, not a defect."},
                 {role:"system",content:"issues is a blocking-defect list, not review commentary. Do not put observations described as acceptable, defensible, noted-not-a-defect, or merely alternative wording into issues. Do not reject a current batch because a context-only ref would be better elsewhere; only current proposal refs can be corrected here. On retries, use priorReviewIssues to verify the requested repairs. Do not reverse a previously requested valid correction merely to prefer another equally defensible hierarchy. Still report any concrete remaining wrong placement in the current proposal."},
                 {role:"user",content:JSON.stringify({input:JSON.parse(buildPlaceTopicsMessages(input)[1]!.content as string),group,previousDestinationClaims,priorReviewIssues:history,pendingRefs:evidence.claims.filter(c=>!allProposals.has(c.unitId)).map(c=>c.ref),proposal:claims.map(c=>({ref:c.ref,domainPaths:proposal.get(c.unitId)})),parents})}];
             // These claims already passed review; past the budget their titles
@@ -250,7 +250,7 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
         return {placements:[...accepted],rationales:[...batchRationales],objectionChecks,...batchUsage,model:batchModel};
         });
         const accepted=new Map(saved.placements);
-        validateUploadPlacements(accepted,input);
+        validateUploadPlacements(accepted,afterReview(input,true));
         capture(saved);
         for(const [id,rationale] of saved.rationales)rationales.set(id,rationale);
         for(const [id,paths] of accepted) {placed.set(id,paths);addKnown(paths);}

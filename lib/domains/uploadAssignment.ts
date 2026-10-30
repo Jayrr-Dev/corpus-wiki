@@ -67,6 +67,12 @@ export function validateUploadGroups(groups: {scopePath:string; refs:string[]}[]
   if (seen.size !== expected.size) throw new Error("The domain plan omitted knowledge units. Account for every claim.");
 }
 
+// The plan's scope binds the first proposal only. Once review rejects it, a claim may go to its true
+// owner outside that scope, or nothing a retry can say would ever satisfy the reviewer.
+export function afterReview(input: PlaceTopicsInput, rejected: boolean): PlaceTopicsInput {
+  return rejected ? { ...input, scopePath: undefined } : input;
+}
+
 export function validateUploadPlacements(placed: Map<string,string[]>, input: PlaceTopicsInput) {
   const missing=input.claims.filter(c=>!placed.has(c.unitId));
   if (missing.length || placed.size !== input.claims.length) throw new Error(`Some knowledge units have no domain assignment. Missing refs: ${missing.map(c=>c.ref).join(", ")}. Return every supplied claim exactly once.`);

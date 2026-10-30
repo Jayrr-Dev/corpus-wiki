@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "./uploadAssignment";
+import { afterReview, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "./uploadAssignment";
 
 export const context: UploadTopicContext = {
  sourceTitle:"ULA requirements.docx",sourceSections:[{position:0,location:{heading:"Permit thresholds"}}],domainPaths:["EPCOR","EPCOR/Requirements"],domainTabs:[],
@@ -19,6 +19,14 @@ it("retrieves domain examples using current embeddings and real connections with
  expect(result.evidence[0]!.passages[0]!.location).toEqual({heading:"Permit thresholds"});
  expect(JSON.stringify(result.neighbors)).not.toContain('"existing"');
 });
+it("lets a rejected claim leave its planned scope for its true owner",()=>{
+ const claims=[{unitId:"u1",ref:"C1",title:"Hours",content:"Harbor Food Bank opens Tuesdays.",entities:[]}];
+ const input={sourceTitle:"Guide",claims,existingPaths:["Eastside Food Bank"],scopePath:"Eastside Food Bank"};
+ const placed=new Map([["u1",["Harbor Food Bank/Hours"]]]);
+ expect(()=>validateUploadPlacements(placed,afterReview(input,false))).toThrow("inside its planned domain scope");
+ expect(()=>validateUploadPlacements(placed,afterReview(input,true))).not.toThrow();
+});
+
 it("rejects incomplete and duplicate plans, missing assignments and out-of-scope invented domains",()=>{
  const claims=uploadAssignmentEvidence(context).claims;
  expect(()=>validateUploadGroups([{scopePath:"EPCOR",refs:["C1"]}],claims,context.domainPaths)).toThrow("omitted");
