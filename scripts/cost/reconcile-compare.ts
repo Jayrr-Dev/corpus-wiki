@@ -7,6 +7,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { vector } from "@electric-sql/pglite-pgvector";
 import type { AiCallRecord } from "../../lib/ai/callLog.ts";
 import type { DbRpc, RpcArgs } from "../../lib/db/rpc.ts";
+import type { PassageDraft } from "../../lib/ingest/passages.ts";
 
 // =====================================================================
 // RECONCILE CLIENT COMPARISON (#45 live check): the current client
@@ -26,7 +27,7 @@ import type { DbRpc, RpcArgs } from "../../lib/db/rpc.ts";
 // 2026-10-28). Needs ANTHROPIC_API_KEY and NEBIUS_API_KEY (embeddings).
 // =====================================================================
 
-type Source = { title: string; mimeType: string; sourceDate: string; passages: { position: number; text: string; location: unknown; hash: string; speakerLabel: string | null }[] };
+type Source = { title: string; mimeType: string; sourceDate: string; passages: PassageDraft[] };
 type Spend = Record<string, { calls: number; tokensIn: number; tokensOut: number; usd: number; ms: number; failed: number }>;
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
