@@ -2,7 +2,7 @@ import { processingMetric } from "@/lib/processing/metrics";
 import { withRequestSlot } from "@/lib/processing/requests";
 import { setTimeout as delay } from "node:timers/promises";
 import "server-only";
-import { withAiActivity } from "./inactivityTimeout";
+import { AiInactivityError, withAiActivity } from "./inactivityTimeout";
 import {
   OPENROUTER_BASE_URL,
   isOpenRouterModel,
@@ -408,11 +408,22 @@ export async function chatJson<S extends z.ZodType>(
   const settings = settingsForCall(workspace, request.name);
   const memory = await openRoleMemory(settings.memoryDb, request.name);
   const notes = memory ? memoryNotes(memory) : null;
-  if (!notes) return chatJsonAnswer(settings, request);
-  return chatJsonAnswer(settings, {
-    ...request,
-    messages: [{ role: "system", content: notes }, ...request.messages],
-  });
+  const call = notes
+    ? { ...request, messages: [{ role: "system" as const, content: notes }, ...request.messages] }
+    : request;
+  return askAgainAfterStall(() => chatJsonAnswer(settings, call));
+}
+
+// A stream that sent nothing for a minute (usually an overloaded provider) saved nothing,
+// so it is asked once more; a second stall stops the call
+async function askAgainAfterStall<T>(run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (!(error instanceof AiInactivityError)) throw error;
+    processingMetric("provider.stall");
+    return run();
+  }
 }
 
 async function chatJsonAnswer<S extends z.ZodType>(

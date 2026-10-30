@@ -241,6 +241,27 @@ describe("Nebius response handling", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("asks once more after a stall, and gives up after a second one", async () => {
+    vi.useFakeTimers();
+    // A request that never answers until it is aborted
+    const stall = (_url: unknown, init?: RequestInit) => new Promise<Response>((_, reject) =>
+      init?.signal?.addEventListener("abort", () => reject(init.signal!.reason), { once: true }));
+    const fetchMock = vi.fn<typeof fetch>().mockImplementationOnce(stall).mockResolvedValueOnce(okCompletion('{"ok":true}'));
+    vi.stubGlobal("fetch", fetchMock);
+    const pending = chatJson({ apiKey: "test" }, okRequest);
+    await vi.advanceTimersByTimeAsync(60_000);
+    await expect(pending).resolves.toMatchObject({ value: { ok: true } });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const always = vi.fn<typeof fetch>().mockImplementation(stall);
+    vi.stubGlobal("fetch", always);
+    const stuck = chatJson({ apiKey: "test" }, okRequest);
+    const failed = expect(stuck).rejects.toThrow("no new output for 60 seconds");
+    await vi.advanceTimersByTimeAsync(120_000);
+    await failed;
+    expect(always).toHaveBeenCalledTimes(2);
+  });
+
   it("waits out an overloaded provider (529) like a throttled one", async () => {
     vi.useFakeTimers();
     const fetchMock = vi.fn<typeof fetch>()
