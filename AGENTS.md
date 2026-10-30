@@ -28,5 +28,5 @@ The Agents tab in Settings (`app/(app)/settings/Agent*.tsx`) is the reference: e
 
 ## Database rules
 
-- **The Supabase database runs on OrioleDB** (`default_table_access_method = orioledb`, Postgres 17; see https://supabase.com/docs/guides/database/orioledb). Only B-tree indexes are native. **Don't add GIN, GiST or other non-B-tree indexes in migrations.** They go through an experimental bridge: a GIN index on an array column made `INSERT ... ON CONFLICT DO UPDATE` drop the connection ("Connection terminated unexpectedly") and hid rows inserted inside a plpgsql function. Filter arrays and jsonb without one (the tables are small), or ask first.
-- If a migration fails with a dropped connection, suspect OrioleDB first. Narrow it down with `begin; …; rollback;` through `scripts/db/targets.ts`, then apply with `npm run db:migrate` (on Node 22.14 run `node --experimental-strip-types --env-file-if-exists=.env.local scripts/db/migrate.ts`).
+- **The Supabase database is standard Postgres 17** (project `apvxpxuzujvxxcjuudfs`, moved off OrioleDB on 2026-10-30 after its change-log decoding crashed the server). Apply migrations with `npm run db:migrate` (on Node 22.14 run `node --experimental-strip-types --env-file-if-exists=.env.local scripts/db/migrate.ts`).
+- **Don't add tables to the `supabase_realtime` publication.** Open screens refresh on a timer (`lib/realtime/useRealtimeInvalidation.ts`); live progress uses Realtime broadcast.
