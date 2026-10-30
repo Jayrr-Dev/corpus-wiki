@@ -157,6 +157,33 @@ it("keeps the last valid filing when independent review rejects every attempt, s
  expect(warn.mock.calls.some(([message])=>/Filing kept/.test(String(message)))).toBe(true);
  warn.mockRestore();
 });
+it("lets a claim leave the planned scope once the first answer is turned down for leaving it",async()=>{
+ const event=await setup();model();
+ const original=vi.mocked(chatJson).getMockImplementation()!;
+ let answers=0;
+ vi.mocked(chatJson).mockImplementation(async(settings,request)=>{
+  if(request.name==="upload_domain_plan")return {value:{groups:[{scopePath:"Upload test/Permits",subject:"Permit policy",reason:"Source scope",refs:["C1","C2","C3"]}]},model:"test",tokensIn:10,tokensOut:10} as never;
+  if(request.name!=="place_topics")return original(settings,request);
+  answers++;
+  return {value:{placements:payloadOf(request).claims.map((c:{ref:string})=>({ref:c.ref,domainPaths:["Upload test/Responsibilities"]}))},model:"test",tokensIn:10,tokensOut:10} as never;
+ });
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(answers).toBe(2);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+});
+it("files a batch under its planned scope when no answer is ever valid, so the upload goes on",async()=>{
+ const warn=vi.spyOn(console,"warn").mockImplementation(()=>{});
+ const event=await setup();model();
+ const original=vi.mocked(chatJson).getMockImplementation()!;
+ vi.mocked(chatJson).mockImplementation(async(settings,request)=>{
+  if(request.name!=="place_topics")return original(settings,request);
+  return {value:{placements:[]},model:"test",tokensIn:10,tokensOut:10} as never;
+ });
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ expect(warn.mock.calls.some(([message])=>/fell back to the planned scope/.test(String(message)))).toBe(true);
+ warn.mockRestore();
+});
 it("heals a plan's invented scope and repeated claim without another model call",async()=>{
  const event=await setup();model();
  const original=vi.mocked(chatJson).getMockImplementation()!;

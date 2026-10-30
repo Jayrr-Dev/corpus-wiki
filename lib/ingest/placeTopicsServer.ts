@@ -211,8 +211,11 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
             continue;
           }
           freshAttempts++;
+          // The plan's scope binds the first answer only: a claim the plan grouped wrongly can then
+          // reach its true owner, whether review or the scope check turned that answer down
+          const rejected=attempt>0;
           const repairClaims=previousProposal&&correctionRefs?.size?claims.filter(c=>correctionRefs!.has(c.ref)):claims;
-          const repairInput:PlaceTopicsInput={...afterReview(input,history.length>0),claims:repairClaims,
+          const repairInput:PlaceTopicsInput={...afterReview(input,rejected),claims:repairClaims,
             previousPlacements:previousProposal?claims.filter(c=>!repairClaims.includes(c)).map(c=>({ref:c.ref,domainPaths:previousProposal!.get(c.unitId)!})):undefined};
           const [rules,...blocks]=buildPlaceTopicsMessages(repairInput);
           const answer=await chatJson(settings,{name:"place_topics",subject:context.sourceTitle,schema:placeTopicsAnswerSchema,jsonSchema:placeTopicsJsonSchema,
@@ -223,11 +226,11 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
             validateUploadPlacements(corrected,repairInput);
             const proposal=new Map(previousProposal);
             for(const [id,paths]of corrected)proposal.set(id,paths);
-            validateUploadPlacements(proposal,afterReview(input,history.length>0));
+            validateUploadPlacements(proposal,afterReview(input,rejected));
             const names=await reuseFuzzyDomainPaths([...new Set([...proposal.values()].flat())],[...known],
               nameDuplicateJudge(settings,"domain",{claims,domainTabs:context.domainTabs,scope:group.scopePath},captureBatch));
             for(const [id,paths] of proposal) proposal.set(id,[...new Set(paths.map(p=>names.get(p)??p))]);
-            validateUploadPlacements(proposal,afterReview(input,history.length>0));
+            validateUploadPlacements(proposal,afterReview(input,rejected));
             const allProposals=new Map([...placed,...proposal]);
             const parentsOf=(subset:typeof claims)=>[...new Set(subset.flatMap(c=>proposal.get(c.unitId)!))].map(path=>({path,refs:subset.filter(c=>proposal.get(c.unitId)!.includes(path)).map(c=>c.ref!)}));
             // A corrective retry reviews the corrected refs only, with the batch's other
@@ -301,13 +304,13 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
           }
         }
         // Rounds spent on objections to a valid proposal: it is kept and logged, since a domain can be
-        // moved later and a stopped upload can't. Only a batch with no valid proposal stops here.
-        if(!accepted&&previousProposal) {
-          console.warn("Filing kept with review objections left",{source:context.sourceTitle,issues:history.at(-1)});
-          accepted=previousProposal;
+        // moved later and a stopped upload can't. With no valid proposal at all, the batch goes to
+        // its planned scope for the same reason.
+        if(!accepted) {
+          console.warn(previousProposal?"Filing kept with review objections left":"Filing fell back to the planned scope",{source:context.sourceTitle,scope:group.scopePath,issues:history.at(-1)});
+          accepted=previousProposal??new Map(claims.map(c=>[c.unitId,[group.scopePath]]));
           for(const c of claims) batchRationales.set(c.unitId,reasons.get(c.ref)??group.reason);
         }
-        if(!accepted) throw new Error("Topic filing paused after repeated review corrections; no assignments were saved. Your extracted knowledge is saved. Resume to continue from the saved corrections.");
         return {placements:[...accepted],rationales:[...batchRationales],objectionChecks,...batchUsage,model:batchModel};
         });
         const accepted=new Map(saved.placements);
