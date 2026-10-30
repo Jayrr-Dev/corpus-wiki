@@ -72,20 +72,23 @@ function AccountAvatar({ account }: { account: SidebarAccount }) {
   );
 }
 
-// ACCOUNT ROW: avatar, name and email; opens Settings. Collapsed, the avatar alone stays.
-function AccountRow({ account }: { account: SidebarAccount }) {
+// ACCOUNT ROW: avatar, name and email; opens Settings. The Admin / User switch sits in the card, far right of the name.
+// The switch can't nest in the link, so it floats over it and the card stays lit while it's hovered.
+// Collapsed, the avatar alone stays.
+function AccountRow({ account, modeSwitch }: { account: SidebarAccount; modeSwitch?: boolean }) {
   const label = account.name ?? account.email ?? "Account";
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild size="lg" tooltip={label}>
+      <SidebarMenuButton asChild size="lg" tooltip={label} className={cn(modeSwitch && "group-hover/menu-item:bg-sidebar-accent group-hover/menu-item:text-sidebar-accent-foreground")}>
         <Link href={SETTINGS_NAV.href}>
           <AccountAvatar account={account} />
           <span className="grid min-w-0 flex-1 leading-tight">
-            <span className="truncate font-medium">{label}</span>
+            <span className={cn("truncate font-medium", modeSwitch && "pr-22")}>{label}</span>
             {account.name && account.email ? <span className="truncate text-xs text-muted-foreground">{account.email}</span> : null}
           </span>
         </Link>
       </SidebarMenuButton>
+      {modeSwitch ? <NavModeSwitch /> : null}
     </SidebarMenuItem>
   );
 }
@@ -120,7 +123,7 @@ function NavModeSwitch() {
     { value: "user", label: "User", hint: "Show only what a regular user needs" },
   ];
   return (
-    <div role="radiogroup" aria-label="Sidebar mode" className="ml-auto flex shrink-0 rounded-md border bg-background p-px text-xs leading-4 group-data-[collapsible=icon]:hidden">
+    <div role="radiogroup" aria-label="Sidebar mode" className="absolute right-2 top-1.5 flex rounded-md border bg-background p-px text-xs leading-4 group-data-[collapsible=icon]:hidden">
       {options.map((option) => (
         <Tooltip key={option.value} content={option.hint}>
           <button
@@ -184,14 +187,13 @@ export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spa
       <SidebarBackdrop />
       <SidebarHeader search searchPlaceholder="Search…">
         <SidebarMenu>
-          <SidebarMenuItem className="flex items-center">
-            <SidebarMenuButton asChild tooltip="Corpus Wiki" className="min-w-0 flex-1">
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="Corpus Wiki">
               <Link href="/pages">
                 <BrandMark />
                 <BrandName className="text-body" />
               </Link>
             </SidebarMenuButton>
-            {hasModeSwitch ? <NavModeSwitch /> : null}
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SpaceSwitcher spaces={spaces} activeSpace={activeSpace} />
@@ -207,7 +209,7 @@ export function AppSidebar({ spaces, activeSpace, account, modules = [] }: { spa
       </SidebarContent>
       <SidebarFooter separator>
         <SidebarMenu>
-          {account ? <AccountRow account={account} /> : null}
+          {account ? <AccountRow account={account} modeSwitch={hasModeSwitch} /> : null}
           {showTutorial ? (
             <SidebarMenuItem>
               <SidebarMenuButton tooltip="Tutorial" onClick={reopenTutorial}>
