@@ -5,7 +5,7 @@ import json, math, os, re, sys
 
 sys.dont_write_bytecode = True  # importing cut.py would otherwise leave tools/__pycache__ behind
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from cut import to_final
+from cut import in_cut, to_final
 
 TRANSCRIPT = "../vo-v3-transcript.json"
 OUT = "out/captions.ass"
@@ -38,7 +38,7 @@ def spoken(path):
     """The spoken words of a take as (text, start, end), without audio events or bracketed tags."""
     words = json.load(open(path, encoding="utf-8"))["words"]
     return fix([(rename(w["text"].strip()), w["start"], w["end"]) for w in words
-                if w["type"] == "word" and w["text"].strip() and not TAG.match(w["text"].strip())])
+                if w["type"] == "word" and w["text"].strip() and not TAG.match(w["text"].strip()) and not in_cut(w["start"])])
 
 
 # What the transcriber misheard or wrote in the wrong case, as (heard, meant) word runs.

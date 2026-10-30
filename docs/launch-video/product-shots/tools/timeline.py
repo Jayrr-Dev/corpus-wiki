@@ -2,7 +2,7 @@
 # (labelled placeholder cards, timecode) and final.py (the export). Every timing number comes from cut.py.
 # Run from docs/launch-video/product-shots; scripts put tools/ on sys.path before importing this.
 import os, subprocess
-from cut import VO, TAIL, duration, to_final
+from cut import CUT, VO, TAIL, duration, to_final
 
 END = duration(VO) + TAIL  # the end card holds through the silence after the take
 
@@ -52,9 +52,11 @@ TIMELINE = [
     (144.7, 150.0, "out/p-video.mp4", "Shot 35 · Video", "Product: Make video, Rendering on Nebius Serverless AI"),
     # Payoff and call to action
     (150.0, 153.8, "../broll/23-stays.mp4", "Shot 36 · Knowledge stays", "B-roll: what they knew stays"),
-    (153.8, 156.5, "out/p-brent.mp4", "Shot 37 · Brent's page", "Product: Brent's profile, Left 3 Apr 2026; his handover page opens"),
-    (156.5, 161.3, None, "Shot 38 · Proof", "Real quotes and real numbers only, or cut the line"),
-    (161.3, 169.8, "../camera/39-try-it.mp4", "Shots 39–40 · You, lip-sync", "“If your team keeps losing knowledge… build your brain.” Same desk as shot 1"),
+    # Shot 38 (proof) is cut with its line (cut.CUT). Shot 37 runs to 162.03 so "If your" plays over it
+    # and the cut to camera lands on "team", where the camera take starts.
+    (153.8, 162.03, "out/p-brent.mp4", "Shot 37 · Brent's page", "Product: Brent's profile, Left 3 Apr 2026; his handover page opens"),
+    (162.03, 166.9, "../camera/39-try-it.mp4", "Shot 39 · You, lip-sync", "“…team keeps losing knowledge… try it.” Same desk as shot 1"),
+    (166.9, 169.8, "../camera/40-drop-in.mp4", "Shot 40 · You, lip-sync", "“Drop in a folder, and watch it build your brain.” Closer"),
     (169.8, END, "out/g29-endcard.mp4", "Shot 41 · End card", "Logo + link. “Link's below.”"),
 ]
 
@@ -102,6 +104,10 @@ def segments(rows, folder, card=lambda i, label, note: ""):
 
 
 def voiceover(out):
-    """Writes the full voice track: the take, then TAIL seconds of silence for the end card."""
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", VO, "-af", f"apad=pad_dur={TAIL}", "-ar", "44100", out], check=True)
+    """Writes the full voice track: the take without CUT (10 ms fades at the join), then TAIL seconds of silence."""
+    a, b = CUT
+    graph = (f"[0]atrim=0:{a},asetpts=PTS-STARTPTS,afade=t=out:st={a - 0.01}:d=0.01[x];"
+             f"[0]atrim={b},asetpts=PTS-STARTPTS,afade=t=in:d=0.01[y];"
+             f"[x][y]concat=n=2:v=0:a=1,apad=pad_dur={TAIL}[o]")
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", VO, "-filter_complex", graph, "-map", "[o]", "-ar", "44100", out], check=True)
     return out
