@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ const LINKS = [
   { href: "#product", label: "Product" },
   { href: "#how", label: "How it works" },
   { href: "#faq", label: "Questions" },
+  { href: "/explore", label: "Public" },
 ];
 
 const EASE = "ease-landing";
@@ -17,9 +19,12 @@ const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:rin
 // LANDING NAV: a compact bar floating off the top edge over a blur. On small
 // screens the toggle opens a full height panel whose links arrive one by one.
 // Off the landing page (`onHome` false) the section links lead back to it.
-export function LandingNav({ onHome = true }: { onHome?: boolean }) {
+// A signed-in visitor gets Account, which opens the app, in place of Sign in.
+export function LandingNav({ onHome = true, signedIn = false }: { onHome?: boolean; signedIn?: boolean }) {
   const [open, setOpen] = useState(false);
-  const links = onHome ? LINKS : LINKS.map(link => ({ ...link, href: `/${link.href}` }));
+  const pathname = usePathname();
+  const links = onHome ? LINKS : LINKS.map(link => ({ ...link, href: link.href.startsWith("#") ? `/${link.href}` : link.href }));
+  const account = signedIn ? { href: "/pages", label: "Account" } : { href: "/login", label: "Sign in" };
 
   // While the panel is open the page behind it stays put and Escape closes it
   useEffect(() => {
@@ -43,14 +48,14 @@ export function LandingNav({ onHome = true }: { onHome?: boolean }) {
           </Link>
           <div className="hidden items-center gap-6 md:flex">
             {links.map(link => (
-              <a key={link.href} href={link.href} className={cn("rounded-md text-sm text-landing-ink/70 transition-colors duration-300 hover:text-landing-ink", EASE, FOCUS)}>
+              <Link key={link.href} href={link.href} aria-current={pathname === link.href ? "page" : undefined} className={cn("rounded-md text-sm text-landing-ink/70 transition-colors duration-300 hover:text-landing-ink aria-[current=page]:font-semibold aria-[current=page]:text-landing-ink", EASE, FOCUS)}>
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/login" className={cn("hidden rounded-lg px-3 py-2 text-sm font-semibold text-landing-ink transition-colors duration-300 hover:bg-landing-ink/10 active:scale-[0.98] md:inline-block", EASE, FOCUS)}>
-              Sign in
+            <Link href={account.href} className={cn("hidden rounded-lg px-3 py-2 text-sm font-semibold text-landing-ink transition-colors duration-300 hover:bg-landing-ink/10 active:scale-[0.98] md:inline-block", EASE, FOCUS)}>
+              {account.label}
             </Link>
             <button
               type="button"
@@ -79,7 +84,7 @@ export function LandingNav({ onHome = true }: { onHome?: boolean }) {
         )}
       >
         <ul className="flex flex-col gap-2">
-          {[...links, { href: "/login", label: "Sign in" }].map((link, i) => (
+          {[...links, account].map((link, i) => (
             <li
               key={link.href}
               // 60ms per link, capped so the whole entrance stays under 400ms
@@ -90,9 +95,9 @@ export function LandingNav({ onHome = true }: { onHome?: boolean }) {
                 open ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
               )}
             >
-              <a href={link.href} onClick={() => setOpen(false)} className={cn("block rounded-lg py-3 text-3xl font-semibold text-landing-ink", FOCUS)}>
+              <Link href={link.href} onClick={() => setOpen(false)} aria-current={pathname === link.href ? "page" : undefined} className={cn("block rounded-lg py-3 text-3xl font-semibold text-landing-ink", FOCUS)}>
                 {link.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>

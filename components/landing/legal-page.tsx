@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { LandingFooter } from "@/components/landing/landing-footer";
-import { LandingNav } from "@/components/landing/landing-nav";
+import { SiteNav } from "@/components/landing/site-nav";
 import type { LegalDocument } from "@/lib/legal/content";
 import { mailtoHref } from "@/lib/legal/contact";
 
@@ -22,7 +22,7 @@ export function ContactLink({ email, subject }: { email: string; subject?: strin
 export function LegalShell({ eyebrow, title, summary, contactEmail, children }: { eyebrow: string; title: string; summary: string; contactEmail: string | null; children: ReactNode }) {
   return (
     <>
-      <LandingNav onHome={false} />
+      <SiteNav onHome={false} />
       <main id="main" className="px-4 pt-32 pb-24 sm:px-6">
         <article className="mx-auto max-w-[680px]">
           <p className="text-sm font-semibold text-landing-gold">{eyebrow}</p>

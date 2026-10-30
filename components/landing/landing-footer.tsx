@@ -26,6 +26,7 @@ export function LandingFooter({ hasContact, pricing = false, onHome = true }: { 
           <li><a href={`${base}#product`} className={LINK}>Product</a></li>
           <li><a href={`${base}#how`} className={LINK}>How it works</a></li>
           <li><a href={`${base}#faq`} className={LINK}>Questions</a></li>
+          <li><Link href="/explore" className={LINK}>Public</Link></li>
           {pricing && <li><Link href="/pricing" className={LINK}>Pricing</Link></li>}
           {LEGAL.filter(({ href }) => href !== "/contact" || hasContact).map(({ href, label }) => (
             <li key={label}><Link href={href} className={LINK}>{label}</Link></li>

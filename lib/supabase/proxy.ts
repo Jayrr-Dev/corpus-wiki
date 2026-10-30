@@ -11,7 +11,7 @@ import { isSpaceId, SPACE_COOKIE } from "@/lib/spaces/shared";
 // no cookie to redirect; every other route, future /api routes included, stays behind sign-in.
 // /oauth and the authorization server metadata serve MCP clients, which have no
 // cookie; /oauth/authorize sends a signed-out person to /login itself, keeping the request.
-export const PUBLIC_PATHS = ["/", "/landing-demos", "/privacy", "/terms", "/contact", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/api/billing/webhook", "/explore", "/s", "/embed", "/api/public-wiki/metrics", "/oauth", "/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"] as const;
+export const PUBLIC_PATHS = ["/", "/landing-demos", "/privacy", "/terms", "/contact", "/login", "/signup", "/auth/callback", "/api/capture", "/api/mcp", "/.well-known/oauth-protected-resource", "/api/processing/recover", "/api/billing/webhook", "/explore", "/s", "/embed", "/api/public-wiki/metrics", "/api/public-wiki/thumbnail", "/oauth", "/.well-known/oauth-authorization-server", "/.well-known/openid-configuration"] as const;
 
 // The marketing page and the static demos it embeds never read a session, so the
 // proxy skips the auth refresh for them: a slow or down auth service can't break them.
@@ -21,7 +21,7 @@ export function isMarketingPath(pathname: string): boolean {
 }
 
 export function isPublicWikiPath(pathname: string): boolean {
-  return ["/explore", "/s", "/embed", "/api/public-wiki/metrics"].some(p => pathname === p || pathname.startsWith(`${p}/`));
+  return ["/explore", "/s", "/embed", "/api/public-wiki/metrics", "/api/public-wiki/thumbnail"].some(p => pathname === p || pathname.startsWith(`${p}/`));
 }
 
 // The render job's callback (/api/video/<id>/rendered) has no cookie; it checks its own signed token

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { describeCallError } from "@/lib/server-actions/result";
 import { loadPublishingDialog } from "@/lib/server-actions/publishing";
-import type { PublicationEditor, WikiMetrics } from "@/lib/publishing/types";
+import type { PublicationEditor, ThumbnailState, WikiMetrics } from "@/lib/publishing/types";
 import { PublishingPanel } from "./PublishingPanel";
 
 function editionKey(editor: PublicationEditor) {
@@ -15,7 +15,7 @@ function editionKey(editor: PublicationEditor) {
 }
 
 export function PublishingDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  const [data, setData] = useState<{ editor: PublicationEditor; metrics: WikiMetrics } | null>(null);
+  const [data, setData] = useState<{ editor: PublicationEditor; metrics: WikiMetrics; thumbnail: ThumbnailState | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
 
@@ -26,7 +26,7 @@ export function PublishingDialog({ open, onOpenChange }: { open: boolean; onOpen
       .then((result) => {
         if (cancelled) return;
         if (result.ok) {
-          setData({ editor: result.editor, metrics: result.metrics });
+          setData({ editor: result.editor, metrics: result.metrics, thumbnail: result.thumbnail });
           setError(null);
         } else setError(result.error);
       })
@@ -67,7 +67,7 @@ export function PublishingDialog({ open, onOpenChange }: { open: boolean; onOpen
           </div>
         ) : null}
         {data ? (
-          <PublishingPanel key={editionKey(data.editor)} editor={data.editor} initialMetrics={data.metrics} onRefresh={() => { setError(null); setTick((value) => value + 1); }} />
+          <PublishingPanel key={editionKey(data.editor)} editor={data.editor} initialMetrics={data.metrics} thumbnail={data.thumbnail} onRefresh={() => { setError(null); setTick((value) => value + 1); }} />
         ) : null}
       </DialogContent>
     </Dialog>

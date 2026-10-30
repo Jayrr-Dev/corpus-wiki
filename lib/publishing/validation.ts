@@ -7,6 +7,8 @@ export const publicationInput = z.object({
   description: z.string().trim().max(500),
   publisher: z.string().trim().max(80),
   embedEnabled: z.boolean(),
+  includeSources: z.boolean().default(false),
+  thumbnailChosen: z.boolean().default(false),
   pages: z.array(z.object({ id: z.uuid(), fingerprint: z.string().regex(/^[a-f0-9]{32}$/) })).max(100),
 }).refine(v => v.visibility === "private" || v.pages.length > 0, { message: "Choose at least one page to publish." })
   .refine(v => new Set(v.pages.map(p => p.id)).size === v.pages.length, { message: "Choose each page once." });

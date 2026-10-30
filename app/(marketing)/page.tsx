@@ -9,8 +9,8 @@ import {
 } from "@/components/landing/card-visuals";
 import { DemoEmbed } from "@/components/landing/demo-embed";
 import { LandingFooter } from "@/components/landing/landing-footer";
-import { LandingNav } from "@/components/landing/landing-nav";
 import { Reveal } from "@/components/landing/reveal";
+import { SiteNav } from "@/components/landing/site-nav";
 import { TaglineReveal } from "@/components/landing/tagline-reveal";
 import { pricingFaqAnswer } from "@/lib/billing/plans";
 import { isFeatureEnabled } from "@/lib/flags/server";
@@ -139,7 +139,7 @@ export default async function WelcomePage() {
   const billing = await isFeatureEnabled("billing");
   return (
     <>
-      <LandingNav />
+      <SiteNav />
       <main id="main">
         {/* HERO: the glass machine under the outcome headline and the one action */}
         <section className="relative isolate flex min-h-svh flex-col justify-center overflow-hidden px-4 pt-28 pb-12 sm:px-6">

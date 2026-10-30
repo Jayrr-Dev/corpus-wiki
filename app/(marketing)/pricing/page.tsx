@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "@phosphor-icons/react/dist/ssr";
-import { LandingNav } from "@/components/landing/landing-nav";
+import { SiteNav } from "@/components/landing/site-nav";
 import { PlanButton } from "@/components/landing/plan-button";
 import { requireFeature } from "@/lib/flags/server";
 import { formatCredits, formatPrice, type Plan, PLANS } from "@/lib/billing/plans";
@@ -68,7 +68,7 @@ export default async function PricingPage() {
   await requireFeature("billing");
   return (
     <>
-      <LandingNav />
+      <SiteNav />
       <main id="main" className="px-4 pt-32 pb-24 sm:px-6">
         <div className="mx-auto max-w-[680px] text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">Pricing</h1>

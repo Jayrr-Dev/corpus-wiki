@@ -8,7 +8,7 @@ import { publicationSlug } from "./validation";
 import type { ExploreResult, PublicationEditor, PublicWiki, WikiMetrics } from "./types";
 
 // An anonymous client deliberately carries no workspace cookie or secret key.
-// Only the two public, allowlisted read RPCs are reachable through this port.
+// Only the public, allowlisted read RPCs are reachable through this port.
 function publicReader() {
   const { url, publishableKey } = getPublicSupabaseEnv();
   return supabaseRpc(createClient(url, publishableKey, {
@@ -24,6 +24,11 @@ export async function readPublicWiki(slug: string, page: string | null = null, e
 
 export async function explorePublicWikis(query: string, offset = 0): Promise<ExploreResult> {
   return publicReader().call("explore_public_wikis", { p_query: query.slice(0, 120).trim(), p_offset: offset });
+}
+
+export async function publicWikiThumbnailPath(slug: string): Promise<string | null> {
+  if (!publicationSlug.safeParse(slug).success) return null;
+  return publicReader().call("public_wiki_thumbnail", { p_slug: slug });
 }
 
 export async function loadPublicationEditor(): Promise<PublicationEditor> {

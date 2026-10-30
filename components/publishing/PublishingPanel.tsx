@@ -6,29 +6,34 @@ import { RefreshCw } from "lucide-react";
 import { RadioGroup } from "radix-ui";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
+import { InfoHint } from "@/components/standard/info-hint";
 import { InfoPopover } from "@/components/standard/info-popover";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { useServerAction } from "@/components/actions/useServerAction";
-import { publishSpaceWiki, previewWikiPublication, getWikiMetrics } from "@/lib/server-actions/publishing";
+import { chooseSpaceThumbnail, publishSpaceWiki, previewWikiPublication, getWikiMetrics, uploadSpaceThumbnail } from "@/lib/server-actions/publishing";
 import { WikiArticle } from "@/components/publishing/WikiArticle";
-import type { PublicationEditor, Visibility, WikiBody, WikiMetrics } from "@/lib/publishing/types";
+import { ThumbnailDraftPicker, ThumbnailPicker, type ThumbnailDraft } from "@/components/publishing/ThumbnailPicker";
+import type { PublicationEditor, ThumbnailState, Visibility, WikiBody, WikiMetrics, WikiSource } from "@/lib/publishing/types";
 
 const subscribeOrigin = () => () => {};
 const readOrigin = () => window.location.origin;
 const emptyOrigin = () => "";
 const inputClass = "w-full rounded-lg border bg-transparent px-2.5 py-2 text-panel outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 
-export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor: PublicationEditor; initialMetrics: WikiMetrics; onRefresh: () => void }) {
+export function PublishingPanel({ editor, initialMetrics, thumbnail, onRefresh }: { editor: PublicationEditor; initialMetrics: WikiMetrics; thumbnail: ThumbnailState | null; onRefresh: () => void }) {
   const pub = editor.publication;
   const [visibility, setVisibility] = useState<Visibility>(pub?.visibility ?? "private");
   const [title, setTitle] = useState(pub?.title ?? editor.spaceName);
   const [description, setDescription] = useState(pub?.description ?? "");
   const [publisher, setPublisher] = useState(pub?.publisher ?? "");
   const [embedEnabled, setEmbedEnabled] = useState(pub?.embedEnabled ?? false);
+  const [includeSources, setIncludeSources] = useState(pub?.includeSources ?? false);
+  const [thumbnailDraft, setThumbnailDraft] = useState<ThumbnailDraft | null>(null);
   const [selected, setSelected] = useState(() => new Set(editor.pages.filter(p => p.selected).map(p => p.id)));
   const [fingerprints, setFingerprints] = useState(() => Object.fromEntries(editor.pages.map(p => [p.id, p.fingerprint])));
   const [preview, setPreview] = useState<WikiBody | null>(null);
+  const [previewSources, setPreviewSources] = useState<WikiSource[]>([]);
   const [reviewed, setReviewed] = useState(false);
   const [filter, setFilter] = useState("");
   const [message, setMessage] = useState("");
@@ -36,7 +41,10 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
   const origin = useSyncExternalStore(subscribeOrigin, readOrigin, emptyOrigin);
   const save = useServerAction(publishSpaceWiki, { progress: { title: "Publishing wiki", detail: "Saving the reviewed edition…" } });
   const previewAction = useServerAction(previewWikiPublication, { progress: false });
+  const uploadThumbnail = useServerAction(uploadSpaceThumbnail, { progress: { title: "Saving thumbnail" } });
+  const chooseThumbnail = useServerAction(chooseSpaceThumbnail, { progress: { title: "Saving thumbnail" } });
   const live = pub && pub.visibility !== "private";
+  const thumbnailError = uploadThumbnail.error || chooseThumbnail.error;
   const readyPageCount = editor.pages.filter(page => page.hasText).length;
   const publicUrl = pub ? `${origin}/s/${pub.slug}` : "";
   const embedUrl = pub ? `${origin}/embed/${pub.slug}${embedPage ? `/wiki/${encodeURIComponent(embedPage)}` : ""}` : "";
@@ -44,17 +52,27 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
 
   async function publish(makePrivate = false) {
     setMessage("");
+    const pendingThumbnail = makePrivate || visibility === "private" ? null : thumbnailDraft;
     const result = await save.run({ visibility: makePrivate ? "private" : visibility, title: makePrivate ? editor.spaceName : title, description, publisher, embedEnabled,
+      includeSources: !makePrivate && includeSources, thumbnailChosen: !!pendingThumbnail,
       pages: makePrivate ? [] : [...selected].map(id => ({ id, fingerprint: fingerprints[id]! })),
     });
     if (result.ok) {
+      // Stays on this screen if the picture fails, so the note shows and Publish can try again
+      if (pendingThumbnail && !await saveThumbnailDraft(pendingThumbnail)) { setMessage("Published, but the thumbnail wasn’t saved."); return; }
       setMessage(makePrivate || visibility === "private" ? "Space is private." : "Published.");
       onRefresh();
     }
   }
+  async function saveThumbnailDraft(draft: ThumbnailDraft) {
+    if ("asset" in draft) return (await chooseThumbnail.run(draft.asset.id)).ok;
+    const form = new FormData();
+    form.set("file", draft.file);
+    return (await uploadThumbnail.run(form)).ok;
+  }
   async function showPreview(id: string) {
     const result = await previewAction.run(id);
-    if (result.ok) { setPreview(result.body); setFingerprints(f => ({ ...f, [id]: result.fingerprint })); setReviewed(false); }
+    if (result.ok) { setPreview(result.body); setPreviewSources(result.sources ?? []); setFingerprints(f => ({ ...f, [id]: result.fingerprint })); setReviewed(false); }
   }
   async function copy(value: string) {
     try { await navigator.clipboard.writeText(value); setMessage("Copied to clipboard."); }
@@ -70,7 +88,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
       <div className="flex items-center gap-2">
         <h2 id="visibility-heading" className="font-medium">Visibility</h2>
         <InfoPopover label="About visibility">
-          <p>Private: only you. Unlisted: anyone with the link. Public: also listed in Explore.</p>
+          <p>Private: only you. Unlisted: anyone with the link. Public: also listed on the Public page.</p>
           <p className="mt-2">Only published pages are shared. Later edits stay private until republished. Unlisted links can be forwarded.</p>
         </InfoPopover>
       </div>
@@ -99,7 +117,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
       </div>
     </section>}
     {visibility !== "private" && <>
-      <p className="text-xs text-muted-foreground">{visibility === "unlisted" ? "Anyone with the link can read." : "Listed in Explore. Anyone can read."}</p>
+      <p className="text-xs text-muted-foreground">{visibility === "unlisted" ? "Anyone with the link can read." : "Listed on the Public page. Anyone can read."}</p>
       <section aria-label="Public details" className="grid gap-4 border-t pt-5 sm:grid-cols-2">
         <label className="space-y-2">Wiki name<Input value={title} maxLength={80} onChange={e => setTitle(e.target.value)} disabled={save.isPending} /></label>
         <label className="space-y-2">Publisher<Input value={publisher} placeholder="Optional" maxLength={80} onChange={e => setPublisher(e.target.value)} disabled={save.isPending} /></label>
@@ -108,7 +126,7 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
       <section aria-labelledby="pages-heading" className="space-y-3 border-t pt-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2"><h2 id="pages-heading" className="font-medium">Wiki</h2><span className="text-xs text-muted-foreground">{selected.size}/100</span>
-            <InfoPopover label="What gets published"><p>Selected article text, lists, tables, and charts. Media, source files, citations, and history stay private.</p><p className="mt-2">Preview the text and check for sensitive information before publishing.</p></InfoPopover>
+            <InfoPopover label="What gets published"><p>Selected article text, lists, tables, and charts. Media, source files, and history stay private.</p><p className="mt-2">Preview the text and check for sensitive information before publishing.</p></InfoPopover>
           </div>
           <Tooltip content="Refresh drafts"><Button aria-label="Refresh drafts" variant="ghost" size="icon-sm" disabled={save.isPending} onClick={onRefresh}><RefreshCw size={14} aria-hidden="true" /></Button></Tooltip>
         </div>
@@ -121,8 +139,16 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
           {!editor.pages.some(p => p.title.toLocaleLowerCase().includes(filter.toLocaleLowerCase())) && <li className="py-3 text-muted-foreground">No matching pages.</li>}
         </ul> : <p className="py-2 text-muted-foreground"><Link href="/pages" className="text-link hover:underline">Create a page</Link> to start publishing.</p>}
         {previewAction.error && <p role="alert" className="text-failed">{previewAction.error}</p>}
-        {preview && <div className="border-y py-4"><div className="mb-5 flex items-center justify-between"><h3 className="text-xs font-medium text-muted-foreground">Visitor preview</h3><Button variant="ghost" size="sm" onClick={() => setPreview(null)}>Close</Button></div>{preview.sections.length ? <WikiArticle body={preview} /> : <p className="text-muted-foreground">No article text yet.</p>}</div>}
+        {preview && <div className="border-y py-4"><div className="mb-5 flex items-center justify-between"><h3 className="text-xs font-medium text-muted-foreground">Visitor preview</h3><Button variant="ghost" size="sm" onClick={() => setPreview(null)}>Close</Button></div>{preview.sections.length ? <WikiArticle body={includeSources ? { ...preview, sources: previewSources } : preview} /> : <p className="text-muted-foreground">No article text yet.</p>}</div>}
       </section>
+      {!live && editor.publishChoices && <ThumbnailDraftPicker draft={thumbnailDraft} title={title} disabled={save.isPending} onChange={setThumbnailDraft} />}
+      {editor.publishChoices && <div className="space-y-2 border-t pt-5">
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-3"><input type="checkbox" checked={includeSources} disabled={save.isPending} onChange={e => { setIncludeSources(e.target.checked); setReviewed(false); }} className="size-3.5 accent-foreground" />Include sources</label>
+          <InfoHint>Lists the sources behind each page, with web links. Files and quotes stay private.</InfoHint>
+        </div>
+        {includeSources && <p className="text-xs text-muted-foreground">Readers will see source names. Check they’re safe to share.</p>}
+      </div>}
       <div className="flex items-center justify-between gap-3 border-t pt-5">
         <label className="flex items-center gap-3"><input type="checkbox" checked={embedEnabled} disabled={save.isPending} onChange={e => setEmbedEnabled(e.target.checked)} className="size-3.5 accent-foreground" />Allow embeds</label>
         <InfoPopover label="About embeds">Any website can embed the published wiki. Private workspace content stays hidden.</InfoPopover>
@@ -132,10 +158,12 @@ export function PublishingPanel({ editor, initialMetrics, onRefresh }: { editor:
     {(visibility !== "private" || live) && <div className="flex flex-wrap items-center gap-2">
       <Button disabled={save.isPending || (visibility !== "private" && (!selected.size || !reviewed || !title.trim()))} onClick={() => publish(visibility === "private")}>{save.isPending ? "Saving…" : visibility === "private" ? "Make private" : live ? "Publish changes" : "Publish"}</Button>
       {live && visibility !== "private" && <Button disabled={save.isPending} variant="ghost" onClick={() => publish(true)}>Unpublish</Button>}
-      {live && <InfoPopover label="About unpublishing">Unpublishing disables public links, embeds, and the Explore listing. Existing copies cannot be recalled.</InfoPopover>}
+      {live && <InfoPopover label="About unpublishing">Unpublishing disables public links, embeds, and the Public page listing. Existing copies cannot be recalled.</InfoPopover>}
     </div>}
     {save.error && <p role="alert" className="text-failed">{save.error}</p>}
+    {thumbnailError && <p role="alert" className="text-failed">{thumbnailError}</p>}
     {message && <p role="status">{message}</p>}
+    {live && thumbnail && <ThumbnailPicker thumbnail={thumbnail} title={pub.title} onChange={onRefresh} />}
     {live && <section aria-labelledby="share-heading" className="space-y-4 border-t pt-5">
       <h2 id="share-heading" className="font-medium">Share</h2>
       <div className="flex items-center gap-2"><Input aria-label="Public wiki link" readOnly value={publicUrl} onFocus={e => e.target.select()} /><Button variant="outline" onClick={() => copy(publicUrl)}>Copy</Button><Button asChild variant="ghost"><a href={publicUrl} target="_blank" rel="noopener noreferrer">Open</a></Button></div>
@@ -171,7 +199,7 @@ function OwnerMetrics({ initial }: { initial: WikiMetrics }) {
     </header>
     {action.error && <p role="alert" className="text-failed">{action.error}</p>}
     <dl className="grid grid-cols-3 gap-x-4 gap-y-5 sm:grid-cols-5">{[
-      ["Views", metrics.views], ["Daily sessions", metrics.sessions], ["Engaged", metrics.engagedReads], ["Embeds", metrics.embedViews], ["Explore", metrics.exploreViews],
+      ["Views", metrics.views], ["Daily sessions", metrics.sessions], ["Engaged", metrics.engagedReads], ["Embeds", metrics.embedViews], ["Public page", metrics.exploreViews],
     ].map(([label, value]) => <div key={label}><dt className="text-xs text-muted-foreground">{label}</dt><dd className="mt-1 text-xl font-medium tabular-nums">{Number(value).toLocaleString()}</dd></div>)}</dl>
     {metrics.views ? <div className="space-y-5">
       <table className="w-full text-left"><caption className="mb-2 text-left text-xs text-muted-foreground">Most-read pages</caption><thead className="sr-only"><tr><th scope="col">Page</th><th scope="col">Views</th></tr></thead><tbody>{metrics.topPages.map(p => <tr key={p.slug} className="border-b last:border-0"><td className="py-2 pr-3">{p.title}</td><td className="py-2 text-right tabular-nums">{p.views}</td></tr>)}</tbody></table>

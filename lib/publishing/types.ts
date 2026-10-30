@@ -1,8 +1,10 @@
 export type Visibility = "private" | "unlisted" | "public";
-export type WikiBody = { title: string; slug: string; sections: { title: string; lines: string[] }[] };
-export type Publication = { slug: string; visibility: Visibility; title: string; description: string; publisher: string; embedEnabled: boolean; publishedAt: string };
-export type PublicationEditor = { spaceId: string; spaceName: string; publication: Publication | null; publishedPages: { slug: string; title: string }[]; pages: { id: string; slug: string; title: string; selected: boolean; hasText: boolean; fingerprint: string }[] };
+export type WikiSource = { title: string; url: string | null };
+export type WikiBody = { title: string; slug: string; sections: { title: string; lines: string[] }[]; sources?: WikiSource[] };
+export type Publication = { slug: string; visibility: Visibility; title: string; description: string; publisher: string; embedEnabled: boolean; includeSources?: boolean; publishedAt: string };
+export type PublicationEditor = { spaceId: string; spaceName: string; publishChoices?: boolean; publication: Publication | null; publishedPages: { slug: string; title: string }[]; pages: { id: string; slug: string; title: string; selected: boolean; hasText: boolean; fingerprint: string }[] };
 export type PublicWiki = Publication & { edition: string; pages: { slug: string; title: string }[]; page: WikiBody | null };
-export type ExploreResult = { total: number; spaces: { slug: string; title: string; description: string; publisher: string; published_at: string; page_count: number; matching_pages: { slug: string; title: string }[] }[] };
+export type ExploreResult = { total: number; spaces: { slug: string; title: string; description: string; publisher: string; published_at: string; page_count: number; thumbnail_version?: string | null; matching_pages: { slug: string; title: string }[] }[] };
+export type ThumbnailState = { slug: string; path: string | null; version: string | null; auto: boolean };
 export type WikiMetrics = { days: number; views: number; sessions: number; embedViews: number; engagedReads: number; exploreViews: number; topPages: { slug: string; title: string; views: number }[]; daily: { date: string; views: number; embeds: number }[] };
-export type PublishInput = { visibility: Visibility; title: string; description: string; publisher: string; embedEnabled: boolean; pages: { id: string; fingerprint: string }[] };
+export type PublishInput = { visibility: Visibility; title: string; description: string; publisher: string; embedEnabled: boolean; includeSources?: boolean; thumbnailChosen?: boolean; pages: { id: string; fingerprint: string }[] };

@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   notFound: vi.fn(() => { throw new Error("NEXT_HTTP_ERROR_FALLBACK;404"); }),
 }));
 vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
+// The nav reads the session, which needs a request; these tests render the page text only
+vi.mock("@/components/landing/site-nav", () => ({ SiteNav: () => null }));
 
 import { LandingFooter } from "@/components/landing/landing-footer";
 import ContactPage from "@/app/(marketing)/contact/page";

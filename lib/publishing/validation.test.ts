@@ -3,7 +3,7 @@ import { exploreOffset, publicationInput, publicationSlug } from "./validation";
 import { isPublicPath, isPublicWikiPath } from "@/lib/supabase/proxy";
 
 it("keeps only the dedicated reader and metrics paths public", () => {
-  for (const path of ["/explore", "/explore/", "/s/abc/wiki/test", "/embed/abc", "/api/public-wiki/metrics"]) {
+  for (const path of ["/explore", "/explore/", "/s/abc/wiki/test", "/embed/abc", "/api/public-wiki/metrics", "/api/public-wiki/thumbnail/abc"]) {
     expect(isPublicPath(path)).toBe(true); expect(isPublicWikiPath(path)).toBe(true);
   }
   for (const path of ["/publishing", "/settings", "/p/secret", "/sources", "/api/public-wiki/private", "/explorer", "/something", "/embedded"]) {
@@ -26,4 +26,6 @@ it("validates publication scope and allows immediate withdrawal without selected
   expect(publicationInput.safeParse({ ...base, pages: [page, page] }).success).toBe(false);
   expect(publicationInput.safeParse({ ...base, visibility: "private", pages: [] }).success).toBe(true);
   expect(publicationInput.safeParse({ ...base, description: "a".repeat(501) }).success).toBe(false);
+  expect(publicationInput.parse(base)).toMatchObject({ includeSources: false, thumbnailChosen: false });
+  expect(publicationInput.safeParse({ ...base, includeSources: "yes" }).success).toBe(false);
 });
