@@ -64,7 +64,8 @@ export async function runUploadJobs(db: DbRpc, eventId: string, token: string, o
   await db.call("enqueue_upload_jobs", { p_event_id: eventId, p_token: token, p_jobs: INITIAL_JOBS });
   if (options.retry) await db.call("reset_upload_jobs", { p_event_id: eventId, p_token: token });
   for (;;) {
-    if (options.budgetMs !== undefined && performance.now() - startedAt > options.budgetMs) return { state: "incomplete" };
+    // Out of time: stop claiming; the upload is complete if nothing is left
+    if (options.budgetMs !== undefined && performance.now() - startedAt > options.budgetMs) break;
     await options.checkLease();
     const job = await db.call<UploadJobRow | null>("claim_upload_job", { p_event_id: eventId, p_token: token, p_kinds: options.kinds });
     if (!job) break;

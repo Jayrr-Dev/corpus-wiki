@@ -2,7 +2,8 @@ import type { DraftChangeSet, ReconciliationInput } from "@/lib/ai/types";
 import { FakeSectionWriter } from "@/lib/living-page";
 import { portablePostgres } from "@/test/db/portablePostgres";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
-import { INITIAL_JOBS, KNOWLEDGE_JOB_KINDS } from "./jobs";
+import { ALL_JOB_KINDS, INITIAL_JOBS, KNOWLEDGE_JOB_KINDS, runUploadJobs } from "./jobs";
+import type { DbRpc } from "@/lib/db/rpc";
 import { splitIntoPassages } from "./passages";
 import { reconcileUpload, recordUpload, type PipelineDeps } from "./pipeline";
 
@@ -105,4 +106,13 @@ it("a job left running by a lost owner is handed out again, with the same key", 
   const plan = (await jobs(source.eventId)).find((job) => job.key === "plan")!;
   expect(plan.state).toBe("succeeded");
   expect(plan.attempts).toBe(1);
+});
+
+it("reports complete, not incomplete, when time runs out after the last job", async () => {
+  const counts = { succeeded: INITIAL_JOBS.length };
+  const call = vi.fn(async (name: string) => (name === "upload_job_counts" ? counts : null));
+  const db = { call: call as DbRpc["call"] };
+  const result = await runUploadJobs(db, "event", "token", { kinds: ALL_JOB_KINDS, handlers: {}, checkLease: async () => {}, retry: false, budgetMs: -1 });
+  expect(result).toEqual({ state: "complete" });
+  expect(call).not.toHaveBeenCalledWith("claim_upload_job", expect.anything());
 });
