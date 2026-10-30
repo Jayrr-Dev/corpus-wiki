@@ -18,7 +18,9 @@ import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { computePower, computePowerOverUs } from "./power";
 import { StakeholderCard } from "./StakeholderCard";
+import { StakeholderMap } from "./StakeholderMap";
 import { StakeholderStructure } from "./StakeholderStructure";
+import { buildStakeholderMap } from "./mapLayout";
 import { buildStructure } from "./structureTree";
 
 export const CARDS_KEY = [...queryKeys.table("entity_profiles"), "cards"] as const;
@@ -56,7 +58,8 @@ export function useStakeholderStructure() {
 
 // STAKEHOLDERS (/stakeholders): one card per party in the knowledge, grouped by the kind the
 // card writer gave it; search, a filter per kind, a sort by Power Level (general or over our
-// work), a Structure view (the nested map), and a pass that brings the cards up to date
+// work), a Structure view (the nested map), a Map view (dots and lines), and a pass that brings
+// the cards up to date
 export function StakeholdersScreen() {
   const cards = useStakeholderCards();
   const structure = useStakeholderStructure();
@@ -71,7 +74,7 @@ export function StakeholdersScreen() {
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<string | null>(null);
   const [showHidden, setShowHidden] = useState(false);
-  const [view, setView] = useState<"cards" | "structure">("cards");
+  const [view, setView] = useState<"cards" | "structure" | "map">("cards");
   const [sortBy, setSortBy] = useState<"default" | "general" | "overUs">("default");
   const all = useMemo(() => cards.data ?? [], [cards.data]);
   const relations = useMemo(() => structure.data ?? [], [structure.data]);
@@ -97,7 +100,8 @@ export function StakeholdersScreen() {
   const scoreOf = (entityId: string) => sortLevels.get(entityId)?.score ?? 0;
   const ordered = sortBy !== "default" ? [...shown].sort((a, b) => scoreOf(b.entityId) - scoreOf(a.entityId) || a.name.localeCompare(b.name)) : shown;
   const groups = kinds.map(([name]) => [name, ordered.filter((card) => cardKind(card) === name)] as const).filter(([, list]) => list.length > 0);
-  const map = view === "structure" ? buildStructure(shown, relations, scoreOf) : null;
+  const tree = view === "structure" ? buildStructure(shown, relations, scoreOf) : null;
+  const map = view === "map" ? buildStakeholderMap(shown, relations, scoreOf) : null;
 
   return (
     <div className="space-y-5 pb-8">
@@ -115,6 +119,7 @@ export function StakeholdersScreen() {
           <div className="flex gap-1 rounded-md border p-0.5" role="group" aria-label="View">
             <KindChip active={view === "cards"} onClick={() => setView("cards")}>Cards</KindChip>
             <KindChip active={view === "structure"} onClick={() => setView("structure")}>Structure</KindChip>
+            <KindChip active={view === "map"} onClick={() => setView("map")}>Map</KindChip>
           </div>
           <KindChip active={sortBy === "general"} onClick={() => setSortBy(sortBy === "general" ? "default" : "general")}>Sort by power</KindChip>
           {overUs && <KindChip active={sortBy === "overUs"} onClick={() => setSortBy(sortBy === "overUs" ? "default" : "overUs")}>Sort by power over us</KindChip>}
@@ -145,9 +150,10 @@ export function StakeholdersScreen() {
         </div>
       ) : null}
 
-      {map && shown.length > 0 && <StakeholderStructure structure={map} power={power} overUs={overUs} />}
+      {tree && shown.length > 0 && <StakeholderStructure structure={tree} power={power} overUs={overUs} />}
+      {map && shown.length > 0 && <StakeholderMap map={map} />}
 
-      {!map && groups.map(([name, list]) => (
+      {view === "cards" && groups.map(([name, list]) => (
         <section key={name} aria-label={kindPlural(name)} className="space-y-3 border-t pt-5">
           <h2 className="text-sm font-semibold">{kindPlural(name)} <span className="font-normal text-faint">{list.length}</span></h2>
           <ul className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
