@@ -18,7 +18,7 @@
     "test:synthetic": "node scripts/performance/run.mjs --synthetic",
     "test:live:utilitek": "node --env-file-if-exists=.env.local scripts/performance/live-utilitek.mjs",
     "db:migrate": "node --env-file-if-exists=.env.local scripts/db/migrate.ts",
-    "db:types": "echo 'Regenerate lib/database/types.ts with: npx supabase gen types typescript --project-id qeuvxnvwommyjdzxoodd --schema public > lib/database/types.ts (needs supabase login; keep the Constants block and helpers at the bottom)'"
+    "db:types": "echo 'Regenerate lib/database/types.ts with: npx supabase gen types typescript --project-id apvxpxuzujvxxcjuudfs --schema public > lib/database/types.ts (needs supabase login; keep the Constants block and helpers at the bottom)'"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.131.0",
