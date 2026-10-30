@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
       { source: "/:path*", headers: [{ key: "Content-Security-Policy", value: "frame-ancestors 'self'" }, { key: "X-Content-Type-Options", value: "nosniff" }] },
       // Only the dedicated read-only renderer can be embedded externally.
       { source: "/embed/:path*", headers: [{ key: "Content-Security-Policy", value: "frame-ancestors *" }] },
+      // The landing demos share these files across nine frames: reuse them instead of asking again each time
+      { source: "/landing-demos/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=604800" }] },
     ];
   },
 };

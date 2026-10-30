@@ -15,7 +15,7 @@ export function loop(length, reset, steps) {
     timers.push(setTimeout(() => toggle($("scene"), "fading"), length - 500));
     timers.push(setTimeout(run, length));
   };
-  document.fonts.ready.then(run);
+  demoFontsReady.then(run);
 }
 
 // WRITE: put text into an element word by word, with a caret while it grows

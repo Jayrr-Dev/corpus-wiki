@@ -4,12 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="theme.js"></script>
+<script src="demo-runtime.js"></script>
 <title>Hero concept 13</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="phosphor/regular/style.css">
-<link rel="stylesheet" href="phosphor/duotone/style.css">
-<link rel="stylesheet" href="phosphor/fill/style.css">
+<link rel="stylesheet" href="demo-fonts.css">
 <style>
   :root {
     --ink: #fff; --h1-from: #fff; --shadow: rgba(0,0,0,.45); --shadow-sm: rgba(0,0,0,.4); --viewer: #2a2824; --row-line: #222; --ok: #8fd19e;
@@ -440,7 +437,7 @@ function resize() {
 }
 addEventListener("resize", resize); resize();
 
-document.fonts.ready.then(() => {
+demoFontsReady.then(() => {
   resize();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     // STILL: both pages in view, every fact marked, the filler dimmed, the whole index counted

@@ -4,12 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="theme.js"></script>
+<script src="demo-runtime.js"></script>
 <title>Hero concept 14</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="phosphor/regular/style.css">
-<link rel="stylesheet" href="phosphor/duotone/style.css">
-<link rel="stylesheet" href="phosphor/fill/style.css">
+<link rel="stylesheet" href="demo-fonts.css">
 <style>
   :root {
     --ink: #fff; --h1-from: #fff; --shadow: rgba(0,0,0,.45); --shadow-sm: rgba(0,0,0,.4); --art: #1e1e1e; --art-deep: #141414; --art-line: #363636; --art-text: #dcdcdc; --art-fade: #a3a3a3; --art-link: #b3cefa; --art-mute: #5a5a5a; --art-thumb: #2f2f2f; --code: #cfcfcf; --code-str: #8fd19e; --code-prompt: #a8c7fa; --wave: #4a4a4a;
@@ -335,7 +332,7 @@ let still = false;
 function resize() { layout(); if (still) render(LOOP, true); }
 addEventListener("resize", resize); resize();
 
-document.fonts.ready.then(() => {
+demoFontsReady.then(() => {
   resize();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
     // STILL: every format made, each with the units it used
