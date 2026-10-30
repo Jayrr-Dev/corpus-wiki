@@ -4,6 +4,9 @@ import { after } from "next/server";
 import { z } from "zod";
 import { currentActor, withSpaceActor } from "@/lib/auth/currentPerson";
 import { requireUser } from "@/lib/auth/requireUser";
+import { supabaseRpc } from "@/lib/db/rpc";
+import { readPages } from "@/lib/queries/batched";
+import { notStartedKnowledge, runningUploads, type UploadWorkflow } from "@/lib/suggestions/newKnowledge";
 import { abortSuggestionApply } from "@/lib/suggestions/run";
 import { drainSuggestionWork, startSuggestionWorker } from "@/lib/suggestions/worker";
 import { getAdminSupabase } from "@/lib/supabase/admin";
@@ -29,6 +32,40 @@ const runScope = z.object({
   unitIds: z.array(z.string().uuid()).max(5000).optional(),
   kind: z.enum(["create", "merge"]).optional(),
 });
+
+// An upload this old is stuck, not running; it must not hold the dialog back for good
+const UPLOAD_RUNNING_MS = 6 * 60 * 60 * 1000;
+
+// NEW KNOWLEDGE: claims not started yet, and uploads that may still place their own
+export async function readNewKnowledge(): Promise<ActionResult<{ notStarted: number; newestAt: string | null; uploading: number }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const actor = await currentActor();
+    if (!actor.spaceId) throw new Error("Choose a space first.");
+    const client = getAdminSupabase();
+    const db = supabaseRpc(client);
+    const [units, cited, held, dismissed, recent] = await Promise.all([
+      readPages((from, to) => client.from("units").select("id, created_at").is("retired_at", null).order("id").range(from, to)),
+      readPages((from, to) => client.from("section_knowledge").select("unit_id").order("unit_id").order("section_id").range(from, to)),
+      db.call<string[]>("held_suggestion_units"),
+      readPages((from, to) => client.from("article_suggestions").select("unit_ids").eq("space_id", actor.spaceId!).eq("status", "dismissed").order("id").range(from, to)),
+      client.from("shift_events").select("id, status").eq("cause", "upload")
+        .gte("created_at", new Date(Date.now() - UPLOAD_RUNNING_MS).toISOString()),
+    ]);
+    if (recent.error) throw new Error(recent.error.message);
+    const uploads = recent.data ?? [];
+    // An upload keeps writing articles after its claims are saved, so its workflow says when it ended
+    const workflows = uploads.length
+      ? await db.call<UploadWorkflow[]>("read_upload_workflows", { p_event_ids: uploads.map((upload) => upload.id) })
+      : [];
+    const { count, newestAt } = notStartedKnowledge(units, [
+      ...cited.flatMap((row) => row.unit_id ?? []),
+      ...held,
+      ...dismissed.flatMap((row) => row.unit_ids),
+    ]);
+    return { notStarted: count, newestAt, uploading: runningUploads(uploads, workflows) };
+  });
+}
 
 // RUN: queue a run over unused knowledge. Optional domain, claim list, and one kind.
 export async function runArticleSuggestions(

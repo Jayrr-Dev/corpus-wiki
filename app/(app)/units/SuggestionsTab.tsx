@@ -42,6 +42,7 @@ import {
   dismissArticleSuggestion,
   runArticleSuggestions,
 } from "@/lib/server-actions/suggestions";
+import { isWritingSuggestion as isWriting } from "@/lib/suggestions/newKnowledge";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Check, Circle, CircleAlert, LoaderCircle } from "lucide-react";
 import {
@@ -89,13 +90,6 @@ const MARK_ICON: Record<MarkState, ReactNode> = {
   stuck: <CircleAlert className="size-3.5 text-destructive" />,
   todo: <Circle className="size-3.5 text-faint" />,
 };
-
-// A created article is saved as applied before its text is written.
-function isWriting(item: Suggestion) {
-  return (
-    item.status === "applied" && Boolean((item.signals as Signals)?.writing)
-  );
-}
 
 function reasonPoints(text: string): string[] {
   return text
