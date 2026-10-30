@@ -262,6 +262,21 @@ describe("Nebius response handling", () => {
     expect(always).toHaveBeenCalledTimes(2);
   });
 
+  it("moves to a backup provider when the picked one keeps failing, but not for a bad request", async () => {
+    vi.stubEnv("OPENROUTER_API_KEY", "router-key");
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (url) => String(url).startsWith("https://openrouter.ai")
+      ? okCompletion('{"ok":true}') : new Response("Payment required", { status: 402 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(chatJson({ apiKey: "test", backups: [{ model: "openrouter/inception/mercury-3", costPerM: null, tokensPerSecond: null, intelligence: null }] }, okRequest)).resolves.toMatchObject({ value: { ok: true } });
+    expect(String(fetchMock.mock.calls.at(-1)![0])).toMatch(/^https:\/\/openrouter\.ai/);
+
+    const badRequest = vi.fn<typeof fetch>().mockResolvedValue(new Response("bad request", { status: 400 }));
+    vi.stubGlobal("fetch", badRequest);
+    await expect(chatJson({ apiKey: "test", backups: [{ model: "openrouter/inception/mercury-3", costPerM: null, tokensPerSecond: null, intelligence: null }] }, okRequest)).rejects.toThrow("400");
+    expect(badRequest).toHaveBeenCalledTimes(1);
+    vi.unstubAllEnvs();
+  });
+
   it("waits out an overloaded provider (529) like a throttled one", async () => {
     vi.useFakeTimers();
     const fetchMock = vi.fn<typeof fetch>()

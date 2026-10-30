@@ -9,6 +9,8 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import type { ReasoningEffort } from "@/lib/ai/chat";
 import { roleName } from "@/lib/ai/roles";
 import { describeTypes } from "@/lib/ai/modelInputs";
+import { INTELLIGENCE_CHECKED_ON, intelligenceOf } from "@/lib/ai/backupModels";
+import { InfoHint } from "@/components/standard/info-hint";
 import type { StoredSpeedTest } from "@/lib/ai/speedTest";
 import { testModelSpeed } from "@/lib/server-actions/settings";
 import type { ModelSettings } from "./loadModelSettings";
@@ -136,13 +138,16 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
       <ErrorNote error={settings.listError} />
       <ErrorNote error={test.error} />
       <div className="max-h-[36rem] overflow-auto rounded-xl border">
-        <table className="w-full min-w-[54rem] text-panel">
+        <table className="w-full min-w-[60rem] text-panel">
           <thead className="sticky top-0 z-10 bg-sidebar text-left text-xs text-muted-foreground">
             <tr>
               <th className="px-4 py-2.5 font-medium">Model</th>
               <th className="px-3 py-2.5 font-medium">Effort</th>
               <th className="px-3 py-2.5 text-right font-medium">Latency</th>
               <th className="px-3 py-2.5 text-right font-medium">Speed</th>
+              <th className="px-3 py-2.5 text-right font-medium">
+                <span className="inline-flex items-center gap-1">Intelligence<InfoHint>{`Artificial Analysis Intelligence Index (0-100), read ${INTELLIGENCE_CHECKED_ON}. It also ranks the backup models used when a provider fails.`}</InfoHint></span>
+              </th>
               <th className="px-3 py-2.5 text-right font-medium">Tokens</th>
               <th className="px-3 py-2.5 text-right font-medium">Total</th>
               <th className="px-3 py-2.5 font-medium">Tested</th>
@@ -176,6 +181,7 @@ export function AiSpeed({ settings, saved }: { settings: ModelSettings; saved: R
                   </td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.latencyMs != null ? ms(ok.latencyMs) : null)}</td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.tokensPerSecond != null ? `${ok.tokensPerSecond.toFixed(1)} tok/s` : null)}</td>
+                  <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{intelligenceOf(model) ?? "—"}</td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.tokensOut != null ? `${ok.estimated ? "~" : ""}${ok.tokensOut}` : null)}</td>
                   <td className="px-3 py-3 text-right font-mono whitespace-nowrap">{cell(ok?.totalMs != null ? ms(ok.totalMs) : null)}</td>
                   <td className="px-3 py-3 text-xs whitespace-nowrap text-faint">

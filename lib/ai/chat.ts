@@ -3,6 +3,7 @@ import { withRequestSlot } from "@/lib/processing/requests";
 import { setTimeout as delay } from "node:timers/promises";
 import "server-only";
 import { AiInactivityError, withAiActivity } from "./inactivityTimeout";
+import { backupCandidates, isProviderFailure, providerOf, rankedBackups, type BackupCandidate } from "./backupModels";
 import {
   OPENROUTER_BASE_URL,
   isOpenRouterModel,
@@ -63,6 +64,8 @@ export type TokenFactorySettings = {
   roleEfforts?: Record<string, ReasoningEffort>;
   // Meters credits before each call (lib/billing/gate.ts); it only blocks while the monetization switch is on
   usageGate?: UsageGate;
+  // Models on other providers a JSON call moves to when its provider fails, ranked per role (lib/ai/backupModels.ts)
+  backups?: BackupCandidate[];
 };
 
 // WHERE ONE MODEL'S CALLS GO: the provider key, the model id and (for Cerebras) the endpoint
@@ -76,6 +79,8 @@ export type ModelChoice = {
   db?: DbRpc;
   effort?: ReasoningEffort | null;
   roleEfforts?: Record<string, ReasoningEffort>;
+  // Latest AI Speed test per model (tokens per second), for ranking backup models
+  speeds?: Record<string, number | null>;
 };
 
 export type ChatMessage = { role: "system" | "user"; content: string };
@@ -309,9 +314,11 @@ export function tokenFactoryFromEnv(
     Object.keys(choice.roleEfforts).length
       ? choice.roleEfforts
       : undefined;
+  const backups = backupCandidates(env, "speeds" in choice ? choice.speeds : undefined);
   return {
     ...routeModel(env, resolveModel(choice.model, env)),
     logCall,
+    ...(backups.length ? { backups } : {}),
     ...(roleRoutes ? { roleRoutes } : {}),
     ...(memoryDb ? { memoryDb } : {}),
     ...(effort ? { effort } : {}),
@@ -411,7 +418,26 @@ export async function chatJson<S extends z.ZodType>(
   const call = notes
     ? { ...request, messages: [{ role: "system" as const, content: notes }, ...request.messages] }
     : request;
-  return askAgainAfterStall(() => chatJsonAnswer(settings, call));
+  try {
+    return await askAgainAfterStall(() => chatJsonAnswer(settings, call));
+  } catch (error) {
+    if (!isProviderFailure(error) || request.signal?.aborted) throw error;
+    // The provider failed, not the request: the same call goes to a backup on another provider
+    const own = providerOf(settings.model ?? DEFAULT_AI_MODEL);
+    for (const model of rankedBackups(settings.backups ?? [], roleForPurpose(request.name))) {
+      if (providerOf(model) === own) continue;
+      let route: ModelRoute;
+      try { route = routeModel(process.env, model); } catch { continue; }
+      console.warn(`${request.name}: ${error instanceof Error ? error.message.slice(0, 120) : error}; trying backup ${model}`);
+      processingMetric("provider.backup");
+      try {
+        return await chatJsonAnswer({ ...settings, apiKey: route.apiKey, model: route.model, baseUrl: route.baseUrl }, call);
+      } catch (backupError) {
+        if (!isProviderFailure(backupError)) throw backupError;
+      }
+    }
+    throw error;
+  }
 }
 
 // A stream that sent nothing for a minute (usually an overloaded provider) saved nothing,

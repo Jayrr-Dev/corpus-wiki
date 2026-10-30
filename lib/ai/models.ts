@@ -29,7 +29,10 @@ export async function readChosenModel(db: DbRpc): Promise<string | null> {
 // the roles' memory lives in, as tokenFactoryFromEnv takes them
 export async function readModelChoice(db: DbRpc): Promise<ModelChoice> {
   const settings = await db.call<WorkspaceSettings>("get_workspace_settings");
-  return { model: settings.aiModel, roleModels: settings.aiRoleModels ?? {}, effort: settings.aiEffort ?? null, roleEfforts: settings.aiRoleEfforts ?? {}, db };
+  // Speeds only order the backup models; without them backups rank by cost and intelligence
+  const tests = await db.call<{ model: string; tokensPerSecond: number | null; status: string }[]>("get_latest_ai_speed_tests").catch(() => []);
+  const speeds = Object.fromEntries(tests.filter((test) => test.status === "ok").map((test) => [test.model, test.tokensPerSecond]));
+  return { model: settings.aiModel, roleModels: settings.aiRoleModels ?? {}, effort: settings.aiEffort ?? null, roleEfforts: settings.aiRoleEfforts ?? {}, db, speeds };
 }
 
 // Saves the default reasoning effort (null goes back to the built-in default, medium)
