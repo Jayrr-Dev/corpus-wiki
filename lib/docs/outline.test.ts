@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyOutlineEdits, type DocOutline, fallbackOutline, movePage, normalizeOutline, outlineUnitIds } from "./outline";
+import { applyOutlineEdits, type DocOutline, fallbackOutline, mergeThinPages, movePage, normalizeOutline, outlineUnitIds } from "./outline";
 
 const proposed: DocOutline = {
   title: " Cluster  docs ",
@@ -55,6 +55,29 @@ describe("outline edits", () => {
     const edits = [{ index: 0, title: "a" }, { index: 1, title: "b" }];
     expect(movePage(edits, 1, -1).map((edit) => edit.index)).toEqual([1, 0]);
     expect(movePage(edits, 0, -1)).toBe(edits);
+  });
+});
+
+describe("mergeThinPages", () => {
+  const ids = (prefix: string, count: number) => Array.from({ length: count }, (_, index) => `${prefix}${index}`);
+  const page = (title: string, intro: string[], unitIds: string[]) => ({ title, group: "use" as const, introUnitIds: intro, sections: [{ title: `${title} task`, unitIds }] });
+
+  it("turns one-line pages into one page, each old page a task with its claims in order", () => {
+    const outline = mergeThinPages({ title: "Confined spaces", pages: [page("Understand", ["a"], ["b"]), page("Prepare", ["c"], ["d"]), page("Respond", [], ["e"])] });
+    expect(outline.pages).toEqual([{ title: "Confined spaces", group: "use", introUnitIds: ["a"], sections: [
+      { title: "Understand", unitIds: ["b"] },
+      { title: "Prepare", unitIds: ["c", "d"] },
+      { title: "Respond", unitIds: ["e"] },
+    ] }]);
+  });
+
+  it("keeps pages that have enough to say, a single page, and merges that would need too many tasks", () => {
+    const full = { title: "Clusters", pages: [page("Create", [], ids("c", 4)), page("Delete", [], ids("d", 4))] };
+    expect(mergeThinPages(full)).toBe(full);
+    const single = { title: "One", pages: [page("Only", [], ["a"])] };
+    expect(mergeThinPages(single)).toBe(single);
+    const many = { title: "Many", pages: ids("p", 9).map((id) => page(id, [], [id])) };
+    expect(mergeThinPages(many)).toBe(many);
   });
 });
 

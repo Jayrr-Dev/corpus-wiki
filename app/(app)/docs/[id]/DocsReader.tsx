@@ -19,7 +19,7 @@ import { useComposerFigures } from "@/lib/queries/composer";
 import { illustrateArticle } from "@/lib/server-actions/composer";
 import { cn } from "@/lib/utils";
 import { DocsTopicNav } from "../DocsTopicNav";
-import { DocBlockView } from "./DocBlockView";
+import { CitationScope, DocBlockView } from "./DocBlockView";
 
 // =====================================================================
 // DOCS READER, laid out like MDN: breadcrumbs with Rebuild, Export and
@@ -88,7 +88,7 @@ export function DocsReader({ set, pageId, article = false, topics }: { set: DocS
         </nav>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" disabled={writing || rebuilding !== null} onClick={() => rebuild("all")}>{writing ? "Writing…" : "Rebuild"}</Button>
-          <Button size="sm" variant="outline" asChild><Link href={article ? `/docs/${set.id}` : `/docs/${set.id}?view=article`}>{article ? "Pages" : "One article"}</Link></Button>
+          {article || set.pages.length > 1 ? <Button size="sm" variant="outline" asChild><Link href={article ? `/docs/${set.id}` : `/docs/${set.id}?view=article`}>{article ? "Pages" : "One article"}</Link></Button> : null}
           <Button size="sm" variant="outline" asChild><a href={`/api/docs/${set.id}/export`} download>Export</a></Button>
           <Button size="sm" variant="outline" onClick={() => setPublishing(true)}>Publish</Button>
         </div>
@@ -249,17 +249,22 @@ function DocPageSections({ page, sections, claims }: { page: DocPageRow; section
   const figures = useComposerFigures(page.id, lines).data ?? [];
   const sectionOf = new Map(sections.flatMap((section) => section.blocks.map(({ key }) => [key, section.id] as const)));
   const figuresIn = (sectionId: string) => figures.filter((figure) => (figure.sectionId ?? sectionOf.get(figure.after)) === sectionId);
-  return sections.map((section) => (
-    <section key={section.id} aria-labelledby={section.intro ? undefined : section.anchor} className="grid gap-3">
-      {section.intro || section.title.trim().toLowerCase() === page.title.trim().toLowerCase()
-        ? null
-        : <h2 id={section.anchor} className="scroll-mt-20 pt-6 text-2xl font-semibold tracking-tight">{section.title}</h2>}
-      <div className="flow-root space-y-3">
-        {figuresIn(section.id).map((figure) => <ComposerFigure key={figure.id} figure={figure} />)}
-        {section.blocks.map(({ key, block }) => <DocBlockView key={key} block={block} claims={claims} anchor={block.type === "heading" ? subtaskAnchor(key) : undefined} />)}
-      </div>
-    </section>
-  ));
+  const blocks = useMemo(() => sections.flatMap((section) => section.blocks.map(({ block }) => block)), [sections]);
+  return (
+    <CitationScope prefix={page.id} blocks={blocks} claims={claims}>
+      {sections.map((section) => (
+        <section key={section.id} aria-labelledby={section.intro ? undefined : section.anchor} className="grid gap-3">
+          {section.intro || section.title.trim().toLowerCase() === page.title.trim().toLowerCase()
+            ? null
+            : <h2 id={section.anchor} className="scroll-mt-20 pt-6 text-2xl font-semibold tracking-tight">{section.title}</h2>}
+          <div className="flow-root space-y-3">
+            {figuresIn(section.id).map((figure) => <ComposerFigure key={figure.id} figure={figure} />)}
+            {section.blocks.map(({ key, block }) => <DocBlockView key={key} block={block} claims={claims} anchor={block.type === "heading" ? subtaskAnchor(key) : undefined} />)}
+          </div>
+        </section>
+      ))}
+    </CitationScope>
+  );
 }
 
 // ILLUSTRATE: asks Composer for figures on this page now (it also runs on its own after a page is written)

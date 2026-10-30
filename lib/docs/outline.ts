@@ -76,6 +76,26 @@ export function normalizeOutline(outline: DocOutline, scopeUnitIds: Iterable<str
   return { title: clean(outline.title) || fallbackTitle, pages: sorted.slice(0, MAX_OUTLINE_PAGES) };
 }
 
+// THIN PAGES: a page should carry at least this many claims on average, or the set reads as
+// a pile of one-line pages. Below it, the whole outline becomes one page.
+export const MIN_PAGE_CLAIMS = 4;
+
+// MERGE THIN PAGES: when pages average fewer than MIN_PAGE_CLAIMS claims, they become one page
+// named after the set. Each old page becomes a task under its own title, keeping its claims in
+// order; the first page's intro stays the intro. A merge that would need more than
+// MAX_PAGE_SECTIONS tasks is skipped, so no claim is dropped.
+export function mergeThinPages(outline: DocOutline): DocOutline {
+  if (outline.pages.length < 2) return outline;
+  const claims = outlineUnitIds(outline).length;
+  if (claims >= outline.pages.length * MIN_PAGE_CLAIMS || outline.pages.length > MAX_PAGE_SECTIONS) return outline;
+  const [first] = outline.pages;
+  const sections = outline.pages.flatMap((page, index) => {
+    const unitIds = [...(index === 0 ? [] : page.introUnitIds), ...page.sections.flatMap((section) => section.unitIds)];
+    return unitIds.length ? [{ title: page.title, unitIds }] : [];
+  });
+  return { title: outline.title, pages: [{ title: outline.title, group: first!.group, introUnitIds: first!.introUnitIds, sections }] };
+}
+
 // A PERSON'S EDITS in the dialog: the pages to keep, in the order to keep them, with their titles
 export type OutlineEdit = { index: number; title: string }[];
 

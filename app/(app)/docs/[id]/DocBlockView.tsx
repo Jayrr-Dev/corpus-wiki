@@ -1,34 +1,67 @@
 "use client";
 
 import { AlertTriangle, Lightbulb } from "lucide-react";
-import { useState } from "react";
-import { Tooltip } from "@/components/standard/tooltip";
-import type { DocBlock, DocInnerBlock, DocStep } from "@/lib/docs/blocks";
+import { createContext, useContext, useMemo, useState } from "react";
+import { type DocBlock, type DocInnerBlock, type DocStep, docBlockCites } from "@/lib/docs/blocks";
 import type { DocClaimRow } from "@/lib/docs/types";
 import { cn } from "@/lib/utils";
 
 // =====================================================================
 // DOC BLOCKS IN THE READER: numbered steps, Prerequisites, code with its
 // <placeholders> and parameter list, Tip and Warning callouts, and
-// interface tabs. Each cited piece shows its claims on hover, like
-// article lines.
+// interface tabs. Each cited piece gets a numbered note like Wikipedia's;
+// CitationScope lists the notes at the end of the page.
 // =====================================================================
 
 type Claims = ReadonlyMap<string, DocClaimRow>;
 
-// Hover shows the claims a piece of the doc came from
+// The numbers of one page's notes, keyed by claim (unit id). The prefix keeps note ids unique on a page.
+type CitationScope = { prefix: string; numbers: ReadonlyMap<string, number> };
+const CitationContext = createContext<CitationScope>({ prefix: "", numbers: new Map() });
+
+// A cited piece ends with its note numbers, like [1]; a click jumps to the note
 function Cited({ cites, claims, children, block = false }: { cites: string[]; claims: Claims; children: React.ReactNode; block?: boolean }) {
-  const found = cites.flatMap((id) => claims.get(id) ?? []);
+  const { prefix, numbers } = useContext(CitationContext);
   const Tag = block ? "div" : "span";
+  const found = cites.flatMap((id) => claims.get(id) ?? []);
   if (!found.length) return <Tag>{children}</Tag>;
   return (
-    <Tooltip className="max-w-96" content={(
-      <span className="grid gap-1 text-left">
-        {found.map((claim) => <span key={claim.revisionId}>{claim.title ? <strong>{claim.title}: </strong> : null}{claim.content}</span>)}
-      </span>
-    )}>
-      <Tag tabIndex={0} className="rounded-sm decoration-dotted underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring">{children}</Tag>
-    </Tooltip>
+    <Tag>
+      {children}
+      {found.map((claim) => (
+        <sup key={claim.unitId} className="ml-0.5 text-panel">
+          <a href={`#${prefix}-note-${numbers.get(claim.unitId)}`} className="text-link">[{numbers.get(claim.unitId)}]</a>
+        </sup>
+      ))}
+    </Tag>
+  );
+}
+
+// The notes of one page: each claim gets a number in reading order, and the list of notes sits at the end
+export function CitationScope({ prefix, blocks, claims, children }: { prefix: string; blocks: DocBlock[]; claims: Claims; children: React.ReactNode }) {
+  const order = useMemo(() => [...new Set(blocks.flatMap(docBlockCites))].filter((id) => claims.has(id)), [blocks, claims]);
+  const numbers = useMemo(() => new Map(order.map((id, index) => [id, index + 1])), [order]);
+  const scope = useMemo(() => ({ prefix, numbers }), [prefix, numbers]);
+  return (
+    <CitationContext.Provider value={scope}>
+      {children}
+      {order.length ? (
+        <section aria-label="References" className="grid gap-2 border-t pt-4 text-panel">
+          <p className="font-semibold">References</p>
+          <ol className="grid gap-1.5">
+            {order.map((id) => {
+              const claim = claims.get(id)!;
+              return (
+                <li key={id} id={`${prefix}-note-${numbers.get(id)}`} className="scroll-mt-20 flex gap-2">
+                  <span className="text-muted-foreground">{numbers.get(id)}.</span>
+                  <span>{claim.title ? <strong>{claim.title}: </strong> : null}{claim.content}</span>
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      ) : null}
+    </CitationContext.Provider>
   );
 }
 

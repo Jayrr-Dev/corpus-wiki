@@ -31,7 +31,7 @@ export function SpaceSwitcher({ spaces, activeSpace }: { spaces: Space[]; active
   // so a tab cannot display one space while its next action writes to another.
   useEffect(() => {
     const changed = (event: StorageEvent) => {
-      if (event.key === SPACE_CHANGED_KEY) window.location.assign(new URL("/", window.location.origin).href);
+      if (event.key === SPACE_CHANGED_KEY) window.location.assign(new URL("/pages", window.location.origin).href);
     };
     window.addEventListener("storage", changed);
     return () => window.removeEventListener("storage", changed);
@@ -52,7 +52,7 @@ export function SpaceSwitcher({ spaces, activeSpace }: { spaces: Space[]; active
   function enterSpace() {
     try { localStorage.setItem(SPACE_CHANGED_KEY, crypto.randomUUID()); } catch { /* storage may be disabled */ }
     // A full navigation discards all query caches, subscriptions and page state.
-    window.location.assign(new URL("/", window.location.origin).href);
+    window.location.assign(new URL("/pages", window.location.origin).href);
   }
 
   function openPublishing(space: Space) {
