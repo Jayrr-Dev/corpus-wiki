@@ -1,0 +1,298 @@
+{
+ "summary": {
+  "ranOn": "2026-10-29T23:46:00.605Z",
+  "code": "C:\\Users\\Work\\Documents\\projects\\second-brain-engine\\.claude\\worktrees\\issue-55-live-checks-bba8a5",
+  "model": "anthropic/claude-haiku-5-5",
+  "sections": 15,
+  "built": 12,
+  "stoppedAtLimit": false,
+  "usd": 0.17523302500000007,
+  "reviewerCalls": 107,
+  "reviewerCallsPerSection": 7.133333333333334,
+  "writesPerSection": 2.533333333333333,
+  "byPurpose": {
+   "independent_section_editorial_selection": 15,
+   "section_lines": 38,
+   "line_fact_check": 38,
+   "independent_section_editorial_review": 49,
+   "line_fact_confirm": 5
+  },
+  "medianMs": 67706
+ },
+ "rows": [
+  {
+   "item": "Type One (Reformer) › The nine levels of Type One",
+   "claims": 11,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 1,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 3,
+   "writes": 1,
+   "usd": 0.004634615,
+   "tokensIn": 32829,
+   "tokensOut": 4384,
+   "ms": 17705,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type Nine (Peacemaker) › Levels of development",
+   "claims": 18,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 3,
+    "line_fact_check": 3,
+    "independent_section_editorial_review": 3
+   },
+   "reviewerCalls": 7,
+   "writes": 3,
+   "usd": 0.013967364999999999,
+   "tokensIn": 99101,
+   "tokensOut": 13411,
+   "ms": 67706,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Levels of development › Structure of the nine Levels, ranges, and shock points",
+   "claims": 16,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 2,
+    "line_fact_check": 2,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 7,
+   "writes": 2,
+   "usd": 0.01396225,
+   "tokensIn": 73379,
+   "tokensOut": 17590,
+   "ms": 75850,
+   "lines": 0,
+   "error": "anthropic/claude-haiku-5-5 ran out of room after 2000 tokens (2000 allowed) before finishing its answer. Try again, or pick another model in Settings."
+  },
+  {
+   "item": "Type Seven (Enthusiast) › Thinking, focus, and the quiet mind",
+   "claims": 6,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 1,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 3,
+   "writes": 1,
+   "usd": 0.003140565,
+   "tokensIn": 26453,
+   "tokensOut": 2675,
+   "ms": 16287,
+   "lines": 2,
+   "error": null
+  },
+  {
+   "item": "Essence and personality › How personality forms and functions",
+   "claims": 6,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 4,
+    "line_fact_confirm": 1,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 10,
+   "writes": 4,
+   "usd": 0.013436625,
+   "tokensIn": 96208,
+   "tokensOut": 15049,
+   "ms": 83415,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Levels of development › Centers, basic motivations, and personality disorders across the ranges",
+   "claims": 4,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 1,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 3,
+   "writes": 1,
+   "usd": 0.0024937400000000004,
+   "tokensIn": 24353,
+   "tokensOut": 1806,
+   "ms": 12915,
+   "lines": 2,
+   "error": null
+  },
+  {
+   "item": "Type Four (Individualist) › Feelings, imagination, and inner states",
+   "claims": 11,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 3,
+    "line_fact_check": 3,
+    "independent_section_editorial_review": 5
+   },
+   "reviewerCalls": 9,
+   "writes": 3,
+   "usd": 0.016139665,
+   "tokensIn": 104967,
+   "tokensOut": 17401,
+   "ms": 69840,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type Two (Helper) › Deterioration from ingratiating to manipulation",
+   "claims": 7,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 4,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 9,
+   "writes": 4,
+   "usd": 0.013647099999999999,
+   "tokensIn": 100984,
+   "tokensOut": 14231,
+   "ms": 73056,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type Three (Achiever) › Unhealthy patterns and extreme behavior",
+   "claims": 6,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 4,
+    "line_fact_confirm": 1,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 10,
+   "writes": 4,
+   "usd": 0.01507695,
+   "tokensIn": 105245,
+   "tokensOut": 16146,
+   "ms": 77623,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Typing and mistyping › Sixes compared with Sevens, Eights and other types",
+   "claims": 5,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 2,
+    "line_fact_check": 2,
+    "independent_section_editorial_review": 2,
+    "line_fact_confirm": 1
+   },
+   "reviewerCalls": 6,
+   "writes": 2,
+   "usd": 0.00776078,
+   "tokensIn": 63334,
+   "tokensOut": 6582,
+   "ms": 38245,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Typing and mistyping › How the Enneagram frames personality types",
+   "claims": 11,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 1,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 3,
+   "writes": 1,
+   "usd": 0.00541519,
+   "tokensIn": 39560,
+   "tokensOut": 4547,
+   "ms": 27404,
+   "lines": 4,
+   "error": null
+  },
+  {
+   "item": "Enneagram › Centers and Triads",
+   "claims": 5,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 3,
+    "line_fact_check": 3,
+    "independent_section_editorial_review": 3
+   },
+   "reviewerCalls": 7,
+   "writes": 3,
+   "usd": 0.008716615,
+   "tokensIn": 77822,
+   "tokensOut": 7159,
+   "ms": 45720,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type Five (Investigator) › Levels of development",
+   "claims": 24,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 4,
+    "independent_section_editorial_review": 8
+   },
+   "reviewerCalls": 13,
+   "writes": 4,
+   "usd": 0.030974050000000003,
+   "tokensIn": 188960,
+   "tokensOut": 32940,
+   "ms": 127390,
+   "lines": 0,
+   "error": "anthropic/claude-haiku-5-5 ran out of room after 2000 tokens (2000 allowed) before finishing its answer. Try again, or pick another model in Settings."
+  },
+  {
+   "item": "Type Nine (Peacemaker) › Thinking style and view of the world",
+   "claims": 8,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 1,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 3,
+   "writes": 1,
+   "usd": 0.0028188500000000003,
+   "tokensIn": 24824,
+   "tokensOut": 1861,
+   "ms": 12462,
+   "lines": 1,
+   "error": null
+  },
+  {
+   "item": "Type Seven (Enthusiast) › Average levels 4 to 6",
+   "claims": 12,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 4,
+    "line_fact_confirm": 2,
+    "independent_section_editorial_review": 7
+   },
+   "reviewerCalls": 14,
+   "writes": 4,
+   "usd": 0.023048665000000003,
+   "tokensIn": 139583,
+   "tokensOut": 26822,
+   "ms": 113725,
+   "lines": 0,
+   "error": "The section draft omits required evidence after checking; no incomplete draft was saved. Retry the section update."
+  }
+ ]
+}
