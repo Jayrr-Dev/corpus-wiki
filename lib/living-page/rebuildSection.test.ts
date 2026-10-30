@@ -126,7 +126,7 @@ describe("one build per section", () => {
   it("reviews new knowledge only after all affected sections finish", async () => {
     const { db, call } = fakeDb([true, true], [{ rebuildRequested: false }, { rebuildRequested: false }]);
     const original = db.call;
-    db.call = (async (name: string, args?: Record<string, unknown>) => name === "list_affected_sections"
+    db.call = (async (name: string, args?: Record<string, unknown>) => name === "list_stale_sections"
       ? [{ sectionId: "a", pageId: "page" }, { sectionId: "b", pageId: "page" }]
       : original(name, args)) as DbRpc["call"];
     const reviewSections = vi.fn(async () => {

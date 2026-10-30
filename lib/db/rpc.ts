@@ -24,7 +24,7 @@ const RETRY_DELAYS_MS = [250, 500, 1000, 2000, 4000, 8000, 15000];
 // These processing readers are SQL STABLE functions: replaying them cannot
 // duplicate a write. Keep this explicit; POST is also used for ordinary writes.
 const REPLAYABLE_READS = new Set([
-  "glossary_claim_snapshot",
+  "glossary_claim_snapshot", "read_stale_marks", "read_stale_entities", "list_stale_sections",
   "article_knowledge_candidates",
   "read_article_structure", "read_section_article_structure", "article_structure_snapshot",
   "get_workspace_settings", "get_feature_flags", "get_glossary_auto_decide", "get_ai_role_instructions", "get_ai_skill_library", "get_all_role_memory", "get_role_memory",

@@ -63,7 +63,9 @@ export function getSectionWriter(env: NodeJS.ProcessEnv = process.env, chosenMod
 // The sections an event rebuilds, saved once as an upload checkpoint (the reviewer budget reads the same one)
 export function affectedSections(db: DbRpc, eventId: string, checkpointScope = eventId, addedUnitIds?: readonly string[]): Promise<SectionRef[]> {
   return workflowStep(`affected-sections:${checkpointScope}${addedUnitIds ? ":scoped-v2" : ""}`, async () => {
-    const candidates = await db.call<SectionRef[]>("list_affected_sections", { p_event_id: eventId });
+    // An event's own rebuild starts from the section stale marks (#46); a scoped pass
+    // for new articles still narrows the affected-section search
+    const candidates = await db.call<SectionRef[]>(addedUnitIds ? "list_affected_sections" : "list_stale_sections", { p_event_id: eventId });
     if (!addedUnitIds) return candidates;
     const added = new Set(addedUnitIds);
     const affected: SectionRef[] = [];

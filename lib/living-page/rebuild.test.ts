@@ -47,6 +47,8 @@ const ADD_DATABASE_DECISION = `
   values ('${ADDED.changeSet}', '${ADDED.event}', 'ai', 'applied', 'Database decision', now());
   insert into public.actions (id, change_set_id, position, type, target_id, input, outcome, after_revision_id, applied_at)
   values ('${ADDED.action}', '${ADDED.changeSet}', 0, 'add_claim', '${ADDED.unit}', '{}', 'applied', '${ADDED.revision}', now());
+  -- A real commit's section pass marks the sections its claim joins (stale marks, #46)
+  select public.mark_section_stale((x ->> 'sectionId')::uuid) from jsonb_array_elements(public.list_affected_sections('${ADDED.event}')) x;
   commit;`;
 
 // THE UNDO: a revert event that retires the unit and marks the action reverted by it
@@ -115,7 +117,8 @@ describe.skipIf(!hasLocalPostgres())("living page rebuilds on a throwaway Postgr
     await client.query(UNDO_DATABASE_DECISION);
     await rebuildAfterEvent(db, writer, ADDED.revertEvent);
 
-    expect(await readSection(SECTION.dataLayer)).toMatchObject({ body: "", status: "current" });
+    // An empty generated section stays unfinished (20261118210000_empty_section_completion)
+    expect(await readSection(SECTION.dataLayer)).toMatchObject({ body: "", status: "stale" });
     expect(await readLines(SECTION.dataLayer)).toEqual([]);
     const inputs = await client.query("select 1 from public.section_inputs where section_id = $1", [SECTION.dataLayer]);
     expect(inputs.rowCount).toBe(0);

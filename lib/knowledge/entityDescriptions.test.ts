@@ -30,6 +30,7 @@ function fixture(count = 50) {
   const ids = Array.from({ length: count }, (_, index) => `e${String(index).padStart(2, "0")}`);
   const saved = new Map<string, unknown>();
   const writes: string[] = [];
+  const cleared: string[] = [];
   const abort = new AbortController();
   let cancelled = false;
   let state = "running";
@@ -52,7 +53,12 @@ function fixture(count = 50) {
   });
   const db = { call: call as DbRpc["call"] };
   const client = {
-    rpc: vi.fn(async () => ({ data: [...ids].reverse(), error: null })),
+    // Stale description marks for every fixture entity; clearing records what was read
+    rpc: vi.fn(async (name: string, args: RpcArgs = {}) => {
+      if (name === "read_stale_entities") return { data: { entityIds: [...ids].reverse(), marks: ids.map((id) => ({ kind: "entity_description", key: id, version: 1 })) }, error: null };
+      if (name === "clear_stale_marks") { cleared.push(...(args.p_marks as { key: string }[]).map((mark) => mark.key)); return { data: null, error: null }; }
+      throw new Error(`Unexpected data RPC: ${name}`);
+    }),
     from(table: string) {
       let selected: string[] = [];
       return {
@@ -77,7 +83,7 @@ function fixture(count = 50) {
   } as unknown as AdminSupabase;
   const deps = { client, settings: { apiKey: "test" } };
   return {
-    db, call, deps, ids, saved, writes,
+    db, call, deps, ids, saved, writes, cleared,
     cancel: () => { cancelled = true; abort.abort(new Error("Cancelled")); },
     resume: () => { cancelled = false; },
     run: (signal: AbortSignal = abort.signal) => uploadExecution.run({ eventId: "event", token: "lease", db, signal }, () => describeEventEntities(deps, "event")),
@@ -173,7 +179,7 @@ it("prevents late description saves after cancellation and resumes completed che
   await rejection;
   expect(chat).toHaveBeenCalledTimes(3);
   expect(f.writes).toEqual([]);
-  expect(f.saved.size).toBe(1);
+  expect(f.saved.size).toBe(2); // The first batch and the frozen marks
 
   f.resume();
   chat.mockClear();
@@ -188,4 +194,19 @@ it("does no model work for an upload without touched entities", async () => {
   await f.run();
   expect(chat).not.toHaveBeenCalled();
   expect(f.writes).toEqual([]);
+});
+
+it("describes the marked entities and clears only the marks it read, after every save", async () => {
+  const f = fixture(12);
+  chat.mockImplementation(async (_settings, request: Request) => answer(request));
+  await f.run();
+  expect([...f.writes].sort()).toEqual(f.ids);
+  expect([...f.cleared].sort()).toEqual(f.ids);
+});
+
+it("keeps the marks when a batch fails, so the next run describes them again", async () => {
+  const f = fixture(12);
+  chat.mockRejectedValue(new Error("Provider down"));
+  await expect(f.run()).rejects.toThrow("Provider down");
+  expect(f.cleared).toEqual([]);
 });
