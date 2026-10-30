@@ -7,6 +7,13 @@ export const UPLOAD_FILING_CONTRACT = `Filing execution contract: the answer con
 
 // Like the independent line checker, a repeated filing objection gets a fresh
 // evidence-only second opinion before it sends the writer around another loop.
+// A reviewer can repeat an issue word for word after the placement it complained about has moved.
+// One that names a domain path, but none the proposal still uses, describes an earlier proposal.
+export function dropFixedIssues(issues: string[], history: string[][], destinations: Set<string>) {
+  const raised = new Set(history.flat());
+  return issues.filter((issue) => !(raised.has(issue) && /\S\/\S/.test(issue) && ![...destinations].some((path) => issue.includes(path))));
+}
+
 export async function confirmFilingObjections(settings: TokenFactorySettings, issues: string[], evidence: unknown) {
   const result = await chatJson(settings, {
     name: "independent_upload_domain_issue_check", schema, jsonSchema: z.toJSONSchema(schema),

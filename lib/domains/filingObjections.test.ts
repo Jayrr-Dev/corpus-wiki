@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { chatJson } from '@/lib/ai/chat';
-import { confirmFilingObjections } from './filingObjections';
+import { confirmFilingObjections, dropFixedIssues } from './filingObjections';
 vi.mock('@/lib/ai/chat',()=>({chatJson:vi.fn()}));
 afterEach(()=>vi.mocked(chatJson).mockReset());
 
@@ -23,4 +23,16 @@ it.each([
 ].map(verdicts=>({verdicts})))('never accepts an incomplete or malformed objection check',async({verdicts})=>{
  vi.mocked(chatJson).mockResolvedValue({value:{verdicts},model:'test',tokensIn:1,tokensOut:1});
  await expect(confirmFilingObjections({apiKey:'test'},['First issue','Second issue'],{})).rejects.toThrow('issue');
+});
+
+const fixed="C1 is about Harbor Food Bank. It must not be placed under Eastside Food Bank/Forklift permits.";
+it("drops an issue repeated word for word once its placement has moved",()=>{
+ expect(dropFixedIssues([fixed],[[fixed]],new Set(["Harbor Food Bank/Forklift permits"]))).toEqual([]);
+});
+it("keeps a repeated issue the proposal still deserves",()=>{
+ expect(dropFixedIssues([fixed],[[fixed]],new Set(["Eastside Food Bank/Forklift permits"]))).toEqual([fixed]);
+});
+it("keeps new issues, and repeats that name no path",()=>{
+ const vague="C2 has no evidence for its owner.";
+ expect(dropFixedIssues([fixed,vague],[[vague]],new Set(["Harbor Food Bank"]))).toEqual([fixed,vague]);
 });
