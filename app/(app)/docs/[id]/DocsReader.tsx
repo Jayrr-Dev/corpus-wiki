@@ -11,6 +11,7 @@ import { InfoHint } from "@/components/standard/info-hint";
 import { Tooltip } from "@/components/standard/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useIsAdminMode } from "@/components/shell/useNavMode";
 import { claimsByUnit, pageHeadings, pageTree, type ReaderSection, readerSections, subtaskAnchor } from "@/lib/docs/reader";
 import { type TopicNavItem, topicNavKeyFor } from "@/lib/docs/topicNav";
 import { type DocClaimRow, type DocPageRow, type DocSetView, isPageStale, isPageUnwritten, isPageWriting } from "@/lib/docs/types";
@@ -20,6 +21,7 @@ import { illustrateArticle } from "@/lib/server-actions/composer";
 import { cn } from "@/lib/utils";
 import { DocsTopicNav } from "../DocsTopicNav";
 import { DocBlockView } from "./DocBlockView";
+import { DeleteDocSetDialog, RenameDocSetDialog } from "./DocSetAdminDialogs";
 
 // =====================================================================
 // DOCS READER, laid out like MDN: breadcrumbs with Rebuild, Export and
@@ -33,6 +35,10 @@ import { DocBlockView } from "./DocBlockView";
 export function DocsReader({ set, pageId, article = false, topics }: { set: DocSetView; pageId: string | null; article?: boolean; topics: TopicNavItem[] }) {
   const router = useRouter();
   const [publishing, setPublishing] = useState(false);
+  // Admin mode only: rename and delete this doc set (the dialogs mount while open)
+  const admin = useIsAdminMode();
+  const [renaming, setRenaming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [rebuilding, setRebuilding] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const page = set.pages.find((item) => item.id === pageId) ?? null;
@@ -91,6 +97,8 @@ export function DocsReader({ set, pageId, article = false, topics }: { set: DocS
           <Button size="sm" variant="outline" asChild><Link href={article ? `/docs/${set.id}` : `/docs/${set.id}?view=article`}>{article ? "Pages" : "One article"}</Link></Button>
           <Button size="sm" variant="outline" asChild><a href={`/api/docs/${set.id}/export`} download>Export</a></Button>
           <Button size="sm" variant="outline" onClick={() => setPublishing(true)}>Publish</Button>
+          {admin ? <Button size="sm" variant="outline" onClick={() => setRenaming(true)}>Rename</Button> : null}
+          {admin ? <Button size="sm" variant="outline" onClick={() => setDeleting(true)}>Delete</Button> : null}
         </div>
       </header>
       {set.status === "failed" && set.error ? <p role="alert" className="px-6 pt-4 text-panel text-destructive">{set.error}</p> : null}
@@ -147,6 +155,8 @@ export function DocsReader({ set, pageId, article = false, topics }: { set: DocS
       </div>
       )}
       <PublishingDialog open={publishing} onOpenChange={setPublishing} />
+      {admin && renaming ? <RenameDocSetDialog docSetId={set.id} title={set.title} onOpenChange={setRenaming} /> : null}
+      {admin && deleting ? <DeleteDocSetDialog docSetId={set.id} title={set.title} onOpenChange={setDeleting} /> : null}
     </div>
   );
 }

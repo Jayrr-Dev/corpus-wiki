@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { readModelChoice } from "@/lib/ai/models";
@@ -60,4 +61,16 @@ export async function listDocSets(db: DbRpc = adminDb()): Promise<DocSetSummary[
 export async function readDocSet(id: string, db: DbRpc = adminDb()): Promise<DocSetView | null> {
   if (!z.uuid().safeParse(id).success) return null;
   return db.call<DocSetView | null>("read_doc_set", { p_doc_set_id: id });
+}
+
+// RENAME: sets the title of a live doc set in one space. False when no live set matched.
+// doc_sets is not in lib/database/types.ts yet (npm run db:types), so the client is untyped here.
+export async function renameDocSetTitle(id: string, spaceId: string, title: string): Promise<boolean> {
+  const client = getAdminSupabase() as unknown as SupabaseClient;
+  const { data, error } = await client.from("doc_sets")
+    .update({ title, updated_at: new Date().toISOString() })
+    .eq("id", id).eq("space_id", spaceId).is("retired_at", null)
+    .select("id");
+  if (error) throw new Error(error.message);
+  return (data ?? []).length > 0;
 }
