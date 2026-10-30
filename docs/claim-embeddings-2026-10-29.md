@@ -1,4 +1,6 @@
-# Claim embeddings results, 2026-10-29 (#39) — PARTIAL
+# Claim embeddings results, 2026-10-29 (#39) — PARTIAL, ON TEST DATA, NOT MEANINGFUL
+
+**Stopped by the owner.** The live claims are made-up test data that will be removed, so these numbers are not meaningful. Do not re-embed or measure on them; rerun the steps below on real data once it exists.
 
 Stopped early: the machine had to shut down. Only the "before" count was taken.
 
