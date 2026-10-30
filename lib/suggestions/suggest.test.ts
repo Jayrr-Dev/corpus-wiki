@@ -31,6 +31,19 @@ describe("readSuggestions", () => {
     expect(() => readSuggestions({ suggestions: [create(), merge({ sections: [{ title: "X", existingSection: null, claims: ["C1"] }] })] }, input)).toThrow(/more than once/);
   });
 
+  it("after the second answer, leaves out what is wrong and keeps the rest", () => {
+    const [created, merged, ...rest] = readSuggestions({ suggestions: [
+      create({ sections: [{ title: "Entry", existingSection: null, claims: ["C1", "C2", "C1", "C9"] }, { title: "Permits", existingSection: null, claims: ["C3"] }] }),
+      merge({ sections: [{ title: "Repeat", existingSection: null, claims: ["C1"] }, { title: "Isolation", existingSection: null, claims: ["C5"] }] }),
+      merge({ sections: [{ title: "Only repeats", existingSection: null, claims: ["C2"] }] }),
+      create({ title: "Too thin", sections: [{ title: "One", existingSection: null, claims: ["C4"] }] }),
+      merge({ article: "P9" }),
+    ] }, input, true);
+    expect(created!.unitIds).toEqual(["u1", "u2", "u3"]);
+    expect(merged!.sections).toEqual([{ title: "Isolation", sectionId: null, unitIds: ["u5"] }]);
+    expect(rest).toEqual([]);
+  });
+
   it("refuses a new article with too few claims or an existing title", () => {
     expect(() => readSuggestions({ suggestions: [create({ sections: [{ title: "Entry", existingSection: null, claims: ["C1", "C2"] }] })] }, input)).toThrow(/at least 3/);
     expect(() => readSuggestions({ suggestions: [create({ title: "lockout procedure" })] }, input)).toThrow(/already exists/);

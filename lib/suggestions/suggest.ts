@@ -90,8 +90,10 @@ export function buildSuggestionMessages(instructions: string, input: SuggestionI
   ];
 }
 
-// Refs to ids; throws on anything invalid so the caller can ask once more with the message
-export function readSuggestions(answer: SuggestionsAnswer, input: SuggestionInput): Suggestion[] {
+// Refs to ids; throws on anything invalid so the caller can ask once more with the message.
+// dropInvalid: after that second answer, an unknown or repeated claim is left out, then a section
+// left empty, then a suggestion that still does not hold up. The claims stay for the next run.
+export function readSuggestions(answer: SuggestionsAnswer, input: SuggestionInput, dropInvalid = false): Suggestion[] {
   const sectionsByRef = new Map<string, { pageId: string; id: string; title: string }>();
   let count = 0;
   for (const close of input.closest) for (const item of close.sections) sectionsByRef.set(`S${++count}`, { pageId: close.id, ...item });
@@ -104,26 +106,35 @@ export function readSuggestions(answer: SuggestionsAnswer, input: SuggestionInpu
   const existingTitles = new Map(input.articles.map((article) => [article.title.trim().toLowerCase(), article.title]));
   const used = new Set<string>();
   const titles = new Set<string>();
-  return answer.suggestions.map((item): Suggestion => {
+  const claimOf = (value: string) => {
+    try { return ref(input.claims, "C", value, "claim"); }
+    catch (error) { if (dropInvalid) return null; throw error; }
+  };
+  const read = (item: SuggestionsAnswer["suggestions"][number]): Suggestion => {
     const sectionTitles = new Set<string>();
     const merge = item.action === "merge";
     const page = merge ? (item.article ? ref(input.articles, "P", item.article, "article") : null) : null;
     if (merge && !page) throw new Error("A merge needs article set to a P ref from the index.");
-    const sections = item.sections.map((section): SuggestedSection => {
+    const sections = item.sections.flatMap((section): SuggestedSection[] => {
       const existing = section.existingSection ? sectionsByRef.get(section.existingSection.trim().toUpperCase()) : null;
       if (section.existingSection && !existing) throw new Error(`A suggestion cited an unknown section: ${section.existingSection}.`);
       if (existing && (!merge || existing.pageId !== page!.id)) throw new Error(`Section ${section.existingSection} belongs to another article; only a merge into that article can use it.`);
       const title = existing ? existing.title : section.title;
       if (sectionTitles.has(title.toLowerCase())) throw new Error(`Two sections of one suggestion are both titled “${title}”.`);
       sectionTitles.add(title.toLowerCase());
-      const unitIds = section.claims.map((value) => {
-        const claim = ref(input.claims, "C", value, "claim");
-        if (used.has(claim.unitId)) throw new Error(`Claim ${value} is used more than once; each claim goes in at most one section.`);
+      const unitIds = section.claims.flatMap((value) => {
+        const claim = claimOf(value);
+        if (!claim) return [];
+        if (used.has(claim.unitId)) {
+          if (dropInvalid) return [];
+          throw new Error(`Claim ${value} is used more than once; each claim goes in at most one section.`);
+        }
         used.add(claim.unitId);
-        return claim.unitId;
+        return [claim.unitId];
       });
-      return { title, sectionId: existing?.id ?? null, unitIds };
+      return unitIds.length ? [{ title, sectionId: existing?.id ?? null, unitIds }] : [];
     });
+    if (!sections.length) throw new Error("A suggestion has no claims left.");
     const words = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
     if (words(item.rationale) > 40) throw new Error("rationale is too long. Use at most 20 words for why it fits. A second fact is another sentence of at most 20 words. Do not restate the claims.");
     if (!merge && words(item.scope) > 24) throw new Error("scope is too long. Use at most 20 words: what it covers, and what it leaves out.");
@@ -142,5 +153,9 @@ export function readSuggestions(answer: SuggestionsAnswer, input: SuggestionInpu
     if (item.type === "entity" && !entity) throw new Error(`The entity article “${item.title}” needs the E ref of the entity it profiles.`);
     return { kind: "create", pageId: null, title: item.title, type: item.type, scope: item.scope, parentPageId: parent?.id ?? null,
       entityId: item.type === "entity" ? entity!.id : null, rationale: item.rationale, sections, unitIds, revisionIds };
+  };
+  return answer.suggestions.flatMap((item) => {
+    try { return [read(item)]; }
+    catch (error) { if (dropInvalid) return []; throw error; }
   });
 }

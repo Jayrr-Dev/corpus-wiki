@@ -872,7 +872,7 @@ async function suggestForGroup(
       ],
     });
     usage = addUsage(usage, answer);
-    suggestions = readSuggestions(answer.value, input);
+    suggestions = readSuggestions(answer.value, input, true);
   }
   const closeness = new Map(closest.map((page) => [page.id, page.closeness]));
   const kept = kind
