@@ -926,7 +926,8 @@ function parseJson(content: string): unknown {
 }
 
 // THROTTLING: Cerebras limits tokens per minute (150K), so a page review's parallel parts can
-// trip it for up to a minute; earlier retries after 1s and 2s always failed again
+// trip it for up to a minute; earlier retries after 1s and 2s always failed again.
+// Token Factory answers 529 "worker overloaded" when it is busy: waited out the same way.
 const THROTTLE_RETRIES = 4;
 const THROTTLE_BACKOFF_S = [5, 15, 30, 60];
 const MAX_THROTTLE_WAIT_S = 60;
@@ -972,7 +973,7 @@ async function postCompletion(url: URL, init: RequestInit): Promise<Response> {
       }
       throw error;
     }
-    const throttled = response.status === 429;
+    const throttled = response.status === 429 || response.status === 529;
     if (
       (!throttled && ![502, 503, 504].includes(response.status)) ||
       attempt >= (throttled ? THROTTLE_RETRIES : 2)

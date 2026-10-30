@@ -241,6 +241,20 @@ describe("Nebius response handling", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("waits out an overloaded provider (529) like a throttled one", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response('{"error":{"message":"worker overloaded"}}', { status: 529 }))
+      .mockResolvedValueOnce(okCompletion('{"ok":true}'));
+    vi.stubGlobal("fetch", fetchMock);
+    const pending = chatJson({ apiKey: "test" }, okRequest);
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    await expect(pending).resolves.toMatchObject({ value: { ok: true } });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("stops after five throttled attempts", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async () => new Response("Rate limited", { status: 429, headers: { "Retry-After": "0" } }));
     vi.stubGlobal("fetch", fetchMock);

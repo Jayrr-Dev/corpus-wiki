@@ -59,7 +59,7 @@ export async function fetchWithRetry(url: string | URL, init: RequestInit, attem
   for (let attempt = 0; ; attempt++) {
     init.signal?.throwIfAborted();
     const response = await fetch(url, init);
-    if (![429, 502, 503, 504].includes(response.status) || attempt >= attempts - 1) return response;
+    if (![429, 502, 503, 504, 529].includes(response.status) || attempt >= attempts - 1) return response;
     const retryAfter = response.headers.get("retry-after");
     const seconds = retryAfter === null ? NaN : Number(retryAfter);
     const requested = Number.isFinite(seconds) ? seconds * 1000 : retryAfter ? Date.parse(retryAfter) - Date.now() : NaN;
