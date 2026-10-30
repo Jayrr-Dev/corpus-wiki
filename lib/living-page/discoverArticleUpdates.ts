@@ -12,9 +12,11 @@ import type { SectionUnit } from "./types";
 import type { Embedder } from "@/lib/ai/embeddings";
 import { articleKnowledgeCandidates } from "./articleKnowledgeCandidates";
 import { readIdBatches, readPages } from "@/lib/queries/batched";
+import { coveredBasis, discoveryBasis, readArticleJudgments, rememberedJudgment, saveArticleJudgments, scopeBasis } from "./articleJudgments";
 
 const sectionSchema = z.object({ title: z.string().trim().min(1).max(100), claims: z.array(z.string()).min(1) });
 export type UpdateDiscovery = { sections: z.infer<typeof sectionSchema>[] };
+export type DiscoveryExclusion = { unitId: string; reason: "outside_scope" | "already_covered" | "source_metadata"; explanation: string };
 
 // Existing section selections bound the search. Never search the entire knowledge base
 // for an unscoped page, or reuse explicit IDs as though they were a general topic.
@@ -50,7 +52,7 @@ export function discoverySections(answer: UpdateDiscovery, candidates: SectionUn
 // Usage totals every discovery batch (zero when no candidates needed a call).
 // extraUnitIds: claims outside the page's scope worth offering too (the Curator's
 // pick of stored claims no page cites); they are judged like the rest.
-export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, pageId: string, note: string, extraUnitIds: readonly string[] = [], embedder?: Embedder | null): Promise<TokenUsage & { sections: SectionDraft[] }> {
+export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, settings: TokenFactorySettings, pageId: string, note: string, extraUnitIds: readonly string[] = [], embedder?: Embedder | null): Promise<TokenUsage & { sections: SectionDraft[]; excluded?: DiscoveryExclusion[] }> {
   const { data: page, error: pageError } = await client.from("pages").select("title,scope").eq("id", pageId).single();
   if (pageError) throw new Error(pageError.message);
   const { data: sections, error } = await client.from("sections").select("id, title, query, mode").eq("page_id", pageId).is("retired_at", null);
@@ -65,20 +67,39 @@ export async function discoverArticleUpdates(db: DbRpc, client: AdminSupabase, s
   if (!candidateIds.size) return { sections: [], tokensIn: 0, tokensOut: 0 };
   const units = await readIdBatches([...candidateIds], batch => readPages((from, to) => client.from("units").select("id, current_revision_id, kind, epistemic_status").in("id", batch).is("retired_at", null).order("id").range(from, to)));
   if (!units?.length) return { sections: [], tokensIn: 0, tokensOut: 0 };
-  const revisions = await readIdBatches(units.map(unit => unit.current_revision_id), batch => readPages((from, to) => client.from("revisions").select("id,content,knowledge_context").in("id", batch).order("id").range(from, to)));
-  const contents = new Map((revisions ?? []).map((revision) => [revision.id, revision]));
-  const candidates: SectionUnit[] = units.map((unit) => ({ unitId: unit.id, revisionId: unit.current_revision_id, kind: unit.kind, epistemicStatus: unit.epistemic_status,
-    content: contents.get(unit.current_revision_id)?.content ?? "", context: parseKnowledgeContext(contents.get(unit.current_revision_id)?.knowledge_context) }));
   const { data: lines, error: lineError } = await client.from("section_lines").select("content").eq("page_id", pageId);
   if (lineError) throw new Error(lineError.message);
-  return groupClaimsForArticle(settings, page.title, (sections ?? []).map((section) => section.title), candidates, note, page.scope, (lines ?? []).flatMap(line => line.content ? [line.content] : []));
+  const existingText = (lines ?? []).flatMap(line => line.content ? [line.content] : []);
+  // Claim revisions this article already turned down (here or in scope selection) are
+  // not offered again until the claim, the scope or the covering text changes. A
+  // person's note asks for a fresh look, so it neither reads nor saves decisions.
+  const remember = !note.trim();
+  const judgments = remember ? await readArticleJudgments(db, pageId) : [];
+  const bases = { outside_scope: discoveryBasis(page.title, page.scope), source_metadata: discoveryBasis(page.title, page.scope), already_covered: coveredBasis(page.title, page.scope, existingText) };
+  const offered = new Set(extraUnitIds);
+  const fresh = units.filter(unit => offered.has(unit.id) || !(
+    rememberedJudgment(judgments, "scope", unit.id, unit.current_revision_id, scopeBasis(page.title, page.scope))?.decision === "outside_scope"
+    || (["outside_scope", "source_metadata", "already_covered"] as const).some(reason => rememberedJudgment(judgments, "discovery", unit.id, unit.current_revision_id, bases[reason])?.decision === reason)));
+  if (!fresh.length) return { sections: [], tokensIn: 0, tokensOut: 0 };
+  const revisions = await readIdBatches(fresh.map(unit => unit.current_revision_id), batch => readPages((from, to) => client.from("revisions").select("id,content,knowledge_context").in("id", batch).order("id").range(from, to)));
+  const contents = new Map((revisions ?? []).map((revision) => [revision.id, revision]));
+  const candidates: SectionUnit[] = fresh.map((unit) => ({ unitId: unit.id, revisionId: unit.current_revision_id, kind: unit.kind, epistemicStatus: unit.epistemic_status,
+    content: contents.get(unit.current_revision_id)?.content ?? "", context: parseKnowledgeContext(contents.get(unit.current_revision_id)?.knowledge_context) }));
+  const result = await groupClaimsForArticle(settings, page.title, (sections ?? []).map((section) => section.title), candidates, note, page.scope, existingText);
+  if (remember) {
+    const revisionOf = new Map(candidates.map(unit => [unit.unitId, unit.revisionId]));
+    await saveArticleJudgments(db, pageId, "discovery", result.excluded.map(item => ({ subject: item.unitId, revisionId: revisionOf.get(item.unitId) ?? null,
+      basis: bases[item.reason], decision: item.reason, reason: item.explanation })));
+  }
+  return result;
 }
 
 // GROUPS CLAIMS INTO NEW SECTIONS of an existing article, 40 at a time (a batch whose answer is
 // cut off runs again as two halves); claims that do not belong are left out.
 // Also used when the Article Reviewer sends new claims to an existing article.
-export async function groupClaimsForArticle(settings: TokenFactorySettings, article: string, existingSections: string[], candidates: SectionUnit[], note: string, scope?: string | null, existingText: string[] = []): Promise<TokenUsage & { sections: SectionDraft[] }> {
+export async function groupClaimsForArticle(settings: TokenFactorySettings, article: string, existingSections: string[], candidates: SectionUnit[], note: string, scope?: string | null, existingText: string[] = []): Promise<TokenUsage & { sections: SectionDraft[]; excluded: DiscoveryExclusion[] }> {
   const added: SectionDraft[] = [];
+  const excluded: DiscoveryExclusion[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   // Bound each discovery call, including for very large contexts.
   const groupBatch = async (batch: SectionUnit[]): Promise<void> => {
@@ -112,6 +133,7 @@ Identify NEW relevant knowledge for this existing article. Candidates come from 
       usage = addUsage(usage, answer);
       added.push(...accept(answer.value));
     }
+    for (const item of answer.value.excluded ?? []) excluded.push({ unitId: batch[Number(item.claim.slice(1)) - 1]!.unitId, reason: item.reason, explanation: item.explanation });
   };
   const countCutOff = (error: Error) => { if (error instanceof CompletionLengthError) usage = addUsage(usage, error); };
   for (let offset = 0; offset < candidates.length; offset += 40) await splitOnCutOff(candidates.slice(offset, offset + 40), groupBatch, countCutOff);
@@ -122,7 +144,7 @@ Identify NEW relevant knowledge for this existing article. Candidates come from 
     if (prior) prior.query.unitIds = [...new Set([...(prior.query.unitIds ?? []), ...(section.query.unitIds ?? [])])];
     else merged.set(key, section);
   }
-  return { sections: [...merged.values()], ...usage };
+  return { sections: [...merged.values()], excluded, ...usage };
 }
 
 

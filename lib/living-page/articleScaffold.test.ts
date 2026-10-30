@@ -2,7 +2,8 @@ import type { DbRpc } from "@/lib/db/rpc";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { beforeEach, expect, it, vi } from "vitest";
-import { applyArticleScaffold, articleAdditionActions, scaffoldChanges, type ExistingScaffoldSection } from "./articleScaffold";
+import { applyArticleScaffold, articleAdditionActions, SCAFFOLD_OUTLINE_ATTEMPTS, scaffoldChanges, type ExistingScaffoldSection } from "./articleScaffold";
+import { OutlineRejectedError } from "./outlineBuilder";
 import type { SectionUnit } from "./types";
 
 const planner = vi.hoisted(() => vi.fn());
@@ -10,11 +11,12 @@ const submit = vi.hoisted(() => vi.fn());
 const commit = vi.hoisted(() => vi.fn());
 const revert = vi.hoisted(() => vi.fn());
 const rebuild = vi.hoisted(() => vi.fn());
+const autoAccept = vi.hoisted(() => vi.fn());
 const scope = vi.hoisted(() => vi.fn());
 vi.mock("./articleScope", () => ({ selectArticleScope: scope }));
 vi.mock("./articlePlanner", async original => ({ ...await original<object>(), planArticle: planner }));
 vi.mock("./index", () => ({ rebuildUploadSection: rebuild }));
-vi.mock("@/lib/change-control", () => ({ submitChangeSet: submit, commitChangeSet: commit, revertChangeSet: revert }));
+vi.mock("@/lib/change-control", () => ({ submitChangeSet: submit, commitChangeSet: commit, revertChangeSet: revert, autoAcceptHeld: autoAccept }));
 
 const unit = (id: string): SectionUnit => ({ unitId: id, revisionId: `r-${id}`, content: `Fact ${id}.`, kind: "fact", epistemicStatus: "established" });
 function old(id: string, title: string, units: string[], position: number, protectedSection = false): ExistingScaffoldSection {
@@ -33,7 +35,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   queries.clear();
   changeSets.clear();
-  scope.mockResolvedValue({ excludedIds: [], tokensIn: 0, tokensOut: 0 });
+  scope.mockResolvedValue({ excludedIds: [], judged: [], tokensIn: 0, tokensOut: 0 });
   planner.mockResolvedValue({ plan: { title: "Subject", introduction: ["C1"], sections: [{ title: "Details", claims: ["C2", "C3"] }] }, tokensIn: 5, tokensOut: 6 });
   submit.mockImplementation(async (_db, _origin, value: { actions: Submitted[] }) => {
     const type = value.actions[0]!.type;
@@ -123,7 +125,7 @@ function context(createdIds = ["new-details"], alreadyRetired: string[] = []) {
 }
 it("keeps an existing out-of-scope section unchanged and plans only eligible additions", async () => {
   const { db, client } = context();
-  scope.mockResolvedValueOnce({ excludedIds: ["u2"], tokensIn: 4, tokensOut: 2 });
+  scope.mockResolvedValueOnce({ excludedIds: ["u2"], judged: [], tokensIn: 4, tokensOut: 2 });
   planner.mockResolvedValueOnce({ plan: { title: "Subject", introduction: ["C1"], sections: [{ title: "New evidence", claims: ["C2"] }] }, tokensIn: 5, tokensOut: 6 });
   const actions = await articleAdditionActions(db, client, { apiKey: "test" }, "page", [draft("New evidence", ["u3"])]);
   expect(planner.mock.calls[0]![1].units.map((unit: SectionUnit) => unit.unitId)).toEqual(["u1", "u3"]);
@@ -132,7 +134,7 @@ it("keeps an existing out-of-scope section unchanged and plans only eligible add
 });
 it("keeps the entire saved article when no supplied evidence fits its scope", async () => {
   const { db, client } = context();
-  scope.mockResolvedValueOnce({ excludedIds: ["u1", "u2", "u3"], tokensIn: 1, tokensOut: 1 });
+  scope.mockResolvedValueOnce({ excludedIds: ["u1", "u2", "u3"], judged: [], tokensIn: 1, tokensOut: 1 });
   expect(await articleAdditionActions(db, client, { apiKey: "test" }, "page", [draft("Outside", ["u3"])])).toEqual([]);
   expect(planner).not.toHaveBeenCalled();
   expect(submit).not.toHaveBeenCalled();
@@ -273,4 +275,49 @@ it("does not rewrite a retained section merely because its cached plan snapshot 
   await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", [draft("Provisional", ["u3"])]);
   expect(introReads).toBe(2);
   expect(rebuild.mock.calls.map(args => args[2])).toEqual(["details"]);
+});
+it("skips scope, outline and writing when nothing new arrived and nothing is stale", async () => {
+  const { db, client, call } = context();
+  expect(await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", [])).toEqual({ changed: 0, sectionIds: [] });
+  expect(scope).not.toHaveBeenCalled();
+  expect(planner).not.toHaveBeenCalled();
+  expect(call.mock.calls.map(([name]) => name)).not.toContain("save_article_structure_plan");
+});
+it("still plans with no additions when a person's note asks for it, a section is stale, or a saved plan is unfinished", async () => {
+  const { db, client, call } = context();
+  planner.mockResolvedValue({ plan: { title: "Subject", introduction: ["C1"], sections: [{ title: "Details", claims: ["C2"] }] }, tokensIn: 1, tokensOut: 1 });
+  await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", [], "Merge the short sections.");
+  expect(planner).toHaveBeenCalledTimes(1);
+  existing[1]!.state.lines[0]!.needsRewrite = true;
+  try { await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", []); }
+  finally { existing[1]!.state.lines[0]!.needsRewrite = false; }
+  expect(planner).toHaveBeenCalledTimes(2);
+  call.mockImplementationOnce(async () => ({ planned: { id: "unfinished" }, applied: null, current: [] }) as never);
+  await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", []);
+  expect(planner).toHaveBeenCalledTimes(3);
+});
+it("keeps the structure, raises one recommendation and stops re-planning when the outline review keeps objecting", async () => {
+  const { db, client, call } = context();
+  const original = call.getMockImplementation()!;
+  let judgments: object[] = [];
+  call.mockImplementation(async (name, args) => {
+    if (name === "read_article_judgments") return judgments as never;
+    if (name === "save_article_judgments") { judgments = [...judgments, ...(args!.p_judgments as object[]).map(item => ({ ...item, stage: args!.p_stage }))]; return 1 as never; }
+    if (name === "record_outline_hold") return { exceptions: 1, changeSetId: "hold" } as never;
+    return original(name, args);
+  });
+  const attempt = { plan: { title: "Subject", introduction: ["C1"], sections: [] }, centralMessage: null, readingOrderRationale: null, problems: [],
+    review: { blockingIssues: ["C3 belongs with Details."], fixes: ["Move C3 into Details."] } as never, accepted: false };
+  planner.mockRejectedValue(new OutlineRejectedError([attempt, attempt, attempt], { tokensIn: 9, tokensOut: 3 }));
+  const additions = [draft("Details", ["u3"]), draft("Unmatched topic", ["u4"])];
+  expect(await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", additions)).toMatchObject({ sectionIds: ["details"] });
+  expect(planner.mock.calls[0]![4]).toEqual({ maxAttempts: SCAFFOLD_OUTLINE_ATTEMPTS });
+  expect(call).toHaveBeenCalledWith("record_outline_hold", expect.objectContaining({ p_page_id: "page", p_finding: expect.objectContaining({ reason: "C3 belongs with Details.", guideline: "Move C3 into Details." }) }));
+  expect(autoAccept).toHaveBeenCalledWith(db, "reviewer", "hold", 1);
+  // The addition whose topic already exists joins it in place; nothing is retired or created.
+  expect(submit.mock.calls.flatMap(args => args[2].actions)).toEqual([expect.objectContaining({ type: "update_section_query", targetId: "details", input: expect.objectContaining({ query: { article: true, unitIds: ["u2", "u3"] } }) })]);
+  submit.mockClear();
+  await applyArticleScaffold(db, client, { apiKey: "test" }, writer, "page", additions);
+  expect(planner).toHaveBeenCalledTimes(1);
+  expect(call.mock.calls.filter(([name]) => name === "record_outline_hold")).toHaveLength(1);
 });

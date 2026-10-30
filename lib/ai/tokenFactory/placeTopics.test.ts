@@ -13,11 +13,24 @@ const input: PlaceTopicsInput = {
 
 describe("topic placement after cleaning", () => {
   it("shows the model every claim of the file and the existing tree, by short refs only", () => {
-    const [, user] = buildPlaceTopicsMessages(input);
-    const payload = JSON.parse(user!.content as string);
-    expect(payload.existingPaths).toEqual(["EPCOR", "EPCOR/Utility Right of Way"]);
-    expect(payload.claims.map((claim: { ref: string }) => claim.ref)).toEqual(["C1", "C2", "C3"]);
-    expect(JSON.stringify(payload)).not.toContain("u1");
+    const [, shared, batch] = buildPlaceTopicsMessages(input);
+    expect(JSON.parse(shared!.content as string).existingPaths).toEqual(["EPCOR", "EPCOR/Utility Right of Way"]);
+    expect(JSON.parse(batch!.content as string).claims.map((claim: { ref: string }) => claim.ref)).toEqual(["C1", "C2", "C3"]);
+    expect(JSON.stringify([shared, batch])).not.toContain("u1");
+  });
+
+  it("keeps the cached shared block identical across batches and sends only the batch after it", () => {
+    const first: PlaceTopicsInput = { ...input, basePaths: input.existingPaths, filePlan: { groups: [{ subject: "URW", claims: 3 }] },
+      context: { sections: [{ position: 0, location: { heading: "Process" } }], neighbors: [{ ref: "E1", content: "Saved", domains: ["EPCOR"] }] } };
+    const later: PlaceTopicsInput = { ...first, claims: first.claims.slice(2), existingPaths: [...input.existingPaths, "EPCOR/Utility Right of Way/Steps"],
+      filedDestinations: [{ path: "EPCOR/Utility Right of Way/Steps", claims: 2, examples: ["Step 1: title search"] }], context: { ...first.context as object, neighbors: [] } };
+    const [, sharedA, batchA] = buildPlaceTopicsMessages(first);
+    const [, sharedB, batchB] = buildPlaceTopicsMessages(later);
+    expect(sharedA).toEqual(sharedB);
+    expect(sharedA).toMatchObject({ role: "user", cache: true });
+    expect(JSON.parse(sharedA!.content as string).sections).toHaveLength(1);
+    expect(JSON.parse(batchA!.content as string).context).toEqual({ neighbors: [{ ref: "E1", content: "Saved", domains: ["EPCOR"] }] });
+    expect(JSON.parse(batchB!.content as string)).toMatchObject({ newPaths: ["EPCOR/Utility Right of Way/Steps"], filedDestinations: [{ claims: 2 }], claims: [{ ref: "C1" }] });
   });
 
   it("reuses existing spellings, drops a root repeated under itself and skips unknown refs", () => {

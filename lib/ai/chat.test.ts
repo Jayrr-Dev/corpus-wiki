@@ -144,6 +144,15 @@ describe("chatJson request options", () => {
     expect(sent.messages.slice(1)).toEqual(messages);
   });
 
+  it("never sends the Claude cache flag to OpenAI-compatible providers, keeping the shared prefix first", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(okCompletion('{"ok":true}'));
+    vi.stubGlobal("fetch", fetchMock);
+    await chatJson({ apiKey: "test", model: "cerebras/qwen" }, { ...okRequest, messages: [{ role: "system", content: "Rules" }, { role: "user", content: "Shared", cache: true }, { role: "user", content: "Batch" }] });
+    const sent = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(sent.messages.slice(1)).toEqual([{ role: "user", content: "Shared" }, { role: "user", content: "Batch" }]);
+    expect(JSON.stringify(sent)).not.toContain("cache");
+  });
+
   it("adds concise guidance once per retry, preserving custom instructions and media evidence", async () => {
     const fetchMock = vi.fn<typeof fetch>()
       .mockResolvedValueOnce(okCompletion(null, "length"))

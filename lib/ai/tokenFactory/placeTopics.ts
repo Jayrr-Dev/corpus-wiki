@@ -11,14 +11,15 @@ import { TAB_FILING_RULES } from "@/lib/domains/tabOrganization";
 // longer names topics: each batch of a long file used to invent its own
 // ("Utility Right of Way/Process" next to "Right of Way/URW Application
 // Process" for one procedure). Each scoped call now sees the whole-file
-// overview, previous placements, source evidence, neighbors and typed links.
+// plan outline, earlier destinations, and its own claims' source evidence,
+// neighbors and typed links.
 // The answer becomes create_domain actions for new paths (parents first;
 // a new root waits for a person's approval as before) and one place_claim
 // per claim, all in one audited ChangeSet.
 // =====================================================================
 
 // PROMPT VERSION: recorded on the ChangeSet
-export const PLACE_TOPICS_PROMPT_VERSION = "place-topics-evidence-v4";
+export const PLACE_TOPICS_PROMPT_VERSION = "place-topics-evidence-v5";
 
 // Claims per scoped call; groups come from the whole-file assignment plan.
 export const PLACE_TOPICS_BATCH = 80;
@@ -30,11 +31,17 @@ export type PlaceTopicsInput = {
   sourceTitle: string;
   claims: TopicClaim[];
   existingPaths: string[];
+  // The domain tree when the upload started; existingPaths beyond it were created by earlier batches
+  basePaths?: string[];
   domainTabs?: ReconciliationInput["domainTabs"];
   scopePath?: string;
+  // Evidence for this batch's claims; `sections` (the source outline) is shared by every batch
   context?: unknown;
   filePlan?: unknown;
+  // This batch's claims already proposed (a corrective retry re-files only the flagged ones)
   previousPlacements?: { ref: string; domainPaths: string[] }[];
+  // Where earlier batches of this upload filed their claims: path, count and example titles
+  filedDestinations?: { path: string; claims: number; examples: string[] }[];
 };
 
 const answerSchema = z.object({ placements: z.array(z.object({ ref: z.string(), domainPaths: z.array(z.string()) })) });
@@ -42,12 +49,12 @@ export const placeTopicsAnswerSchema = answerSchema;
 export type PlaceTopicsAnswer = z.infer<typeof answerSchema>;
 export const placeTopicsJsonSchema = z.toJSONSchema(answerSchema);
 
-const SYSTEM_PROMPT = `You are the Domain Decider assigning knowledge units from an upload. You get the source context, a whole-file assignment plan, this scoped group, existing domain examples, semantic neighbors and typed connections. Neighbor claims are read-only evidence. Similarity and graph proximity suggest candidates; judge the actual meaning and ownership before deciding.
+const SYSTEM_PROMPT = `You are the Domain Decider assigning knowledge units from an upload. You get the source context, a whole-file assignment plan, this scoped group, existing domain examples, semantic neighbors and typed connections. The first message is shared by every batch of the file; the second is this batch. newPaths were created by earlier batches and exist like existingPaths. Neighbor claims are read-only evidence. Similarity and graph proximity suggest candidates; judge the actual meaning and ownership before deciding.
 
 Answer with JSON only: { "placements": [{ "ref": "C1", "domainPaths": ["ROOT/TOPIC/SUBTOPIC"] }] }, one item per claim.
 - domainPaths: 1 or 2 paths per claim, ROOT / TOPIC / SUBTOPIC, at most 4 levels.
-- Follow the whole-file plan and previous placements consistently. A procedure can have meaningful subject children for requirements, responsibilities, equipment or review, while its steps remain connected. Do not force all claims from one file or procedure into one broad parent. Conversely, do not create tiny children merely because two claims share words. Reuse the same branch across batches.
-- When previousPlacements use domainRefs, resolve them through previousDomains. When sourceEvidence uses passageRef, resolve it through sourcePassages. These shared dictionaries preserve the full paths and evidence without repeating them. Your answer must use full domain paths, never D or P refs.
+- Follow the whole-file plan and filedDestinations (where earlier batches of this upload went, with counts and example titles) consistently. A procedure can have meaningful subject children for requirements, responsibilities, equipment or review, while its steps remain connected. Do not force all claims from one file or procedure into one broad parent. Conversely, do not create tiny children merely because two claims share words. Reuse the same branch across batches.
+- previousPlacements are this batch's claims already proposed; when they use domainRefs, resolve them through previousDomains. When sourceEvidence uses passageRef, resolve it through sourcePassages. Domain profiles name their example neighbors by exampleRefs. These shared dictionaries preserve the full paths and evidence without repeating them. Your answer must use full domain paths, never D, E or P refs.
 - Every supplied claim must appear exactly once. Give each a primary path within scopePath (itself or a child). A second path is allowed when genuinely useful; outside scopePath it must already exist. With no scopePath, use the right existing domain or a new root named for the claim's owner. Never move or rename existing domains or edit neighboring claims.
 - For substantial groups left directly in a broad parent, consider whether an existing child or a meaningful new subdomain fits better. Distinguish process summaries from detailed requirements and steps.
 - Reuse existing paths exactly, spelling included, whenever one fits. Create a new topic only when no existing one fits, and never a synonym of an existing one.
@@ -60,17 +67,27 @@ Answer with JSON only: { "placements": [{ "ref": "C1", "domainPaths": ["ROOT/TOP
 // Short refs (C1, C2...) instead of ids
 export const topicClaimRef = (index: number) => `C${index + 1}`;
 
-export function buildPlaceTopicsMessages(input: PlaceTopicsInput): ChatMessage[] {
-  const payload = {
-    file: input.sourceTitle,
-    existingPaths: input.existingPaths,
-    domainTabs: input.domainTabs,
-    scopePath: input.scopePath, context: compactFilingEvidence(input.context), filePlan: input.filePlan, ...compactPreviousPlacements(input.previousPlacements),
+// WHAT ONE REQUEST SENDS: `shared` is word for word the same for every batch of an upload (the
+// file, its outline, the starting tree and the plan), so it is cached once; `batch` is this batch's.
+export function placeTopicsPayload(input: PlaceTopicsInput) {
+  const base = input.basePaths ? new Set(input.basePaths) : null;
+  const { sections, ...evidence } = (input.context && typeof input.context === "object" && !Array.isArray(input.context) ? input.context : {}) as Record<string, unknown>;
+  const shared = { file: input.sourceTitle, existingPaths: input.basePaths ?? input.existingPaths, domainTabs: input.domainTabs, sections, filePlan: input.filePlan };
+  const batch = {
+    scopePath: input.scopePath, ...(base ? { newPaths: input.existingPaths.filter((path) => !base.has(path)) } : {}),
+    filedDestinations: input.filedDestinations, ...compactPreviousPlacements(input.previousPlacements),
+    context: input.context === undefined ? undefined : compactFilingEvidence(evidence),
     claims: input.claims.map((claim, index) => ({ ref: claim.ref ?? topicClaimRef(index), title: claim.title, content: claim.content, about: claim.entities })),
   };
+  return { shared, batch };
+}
+
+export function buildPlaceTopicsMessages(input: PlaceTopicsInput): ChatMessage[] {
+  const { shared, batch } = placeTopicsPayload(input);
   return [
     { role: "system", content: SYSTEM_PROMPT + "\n" + TAB_FILING_RULES },
-    { role: "user", content: JSON.stringify(payload) },
+    { role: "user", content: JSON.stringify(shared), cache: true },
+    { role: "user", content: JSON.stringify(batch) },
   ];
 }
 

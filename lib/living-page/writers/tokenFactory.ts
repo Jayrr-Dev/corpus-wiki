@@ -132,18 +132,29 @@ export class TokenFactorySectionWriter {
     let usage: TokenUsage = addUsage(selection, first);
     let answer = clean(first.value);
     progress?.step("Checking each paragraph against its claims…");
-    // All of the draft's lines are fact-checked in one call, once the draft is complete.
+    // Only new or changed paragraphs are reviewed again: one whose wording is unchanged
+    // keeps its editorial review, and one whose wording and evidence are both
+    // unchanged keeps its fact-check too (citation-only updates are still checked).
+    const original = (ref: string) => /^L([1-9]\d*)$/.test(ref) ? input.lines[Number(ref.slice(1)) - 1] : undefined;
+    const revisionOfRef = new Map(input.units.map((unit) => [refs.unitRef.get(unit.unitId)!, unit.revisionId]));
+    const sameWording = (line: LineToCheck) => original(line.ref)?.content === line.text;
+    const sameEvidence = (line: LineToCheck) => {
+      const cited = new Set(line.claims.map((claim) => revisionOfRef.get(claim.ref)));
+      const before = new Set(original(line.ref)?.unitRevisionIds ?? []);
+      return sameWording(line) && before.size > 0 && cited.size === before.size && [...cited].every((id) => id && before.has(id));
+    };
     const check = async (draft: SectionAnswer) => {
       const lines = linesToCheck(draft, claims);
+      const changed = lines.filter((line) => !sameEvidence(line));
       // The editorial read uses the same draft and does not need the fact-check to finish first.
       // It reads only the lines that changed enough to add a repeat; with none, it is skipped.
       const edited = editorialLines(input, refs, lines);
       const [factual, editorial] = await Promise.all([
-        checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines, sectionClaims: sectionClaims(claims) }),
+        checkLines(this.settings, { page: input.pageTitle, section: input.sectionTitle, lines: changed, sectionClaims: sectionClaims(claims) }),
         !input.skipEditorialReview && (input.pageContext?.length || omitted.size) ? checkEditorialDraft(this.settings, input, edited) : Promise.resolve({ verdicts: [] as LineVerdict[], tokensIn: 0, tokensOut: 0 }),
       ]);
       const verdictList = factual.verdicts;
-      if (patchMode && lines.some((line) => !verdictList.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
+      if (patchMode && changed.some((line) => !verdictList.some((verdict) => verdict.line === line.ref))) throw new Error("An edit received no evidence verdict; no patches were saved.");
       // Match the final commit's numeric check before the repair attempt, so a
       // missed citation is repaired instead of silently losing the paragraph.
       const verdicts = withNumericSupportVerdicts(withCitations(draft, verdictList), claims, [input.pageTitle, input.sectionTitle], verdictList);
@@ -400,7 +411,8 @@ export function buildMessages(input: SectionReviseInput, refs: Refs, skills?: St
 Preserve each claim's explicit context and conditions. General reference knowledge does not establish an organization's policy or a person's preferences. Unspecified applicability means unknown. Mentioned entities do not own the claim.
 ${skillInstructions(["write_articles"],skills)}` },
     { role: "system", content: input.lines.length ? PATCH_RULE : 'Answer with JSON only: {"revise":[],"retire":[],"add":[{"text":"...","claims":["C1"]}]}.' },
-    { role: "user", content: JSON.stringify(request) },
+    // Every repair round resends these messages first, so the section request ends the cached prefix.
+    { role: "user", content: JSON.stringify(request), cache: true },
   ];
 }
 

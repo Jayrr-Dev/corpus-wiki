@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DbRpc } from "@/lib/db/rpc";
-import { runPageReview, reviewRebuiltSections } from "./runPageReview";
+import { pageReviewMessages, runPageReview, reviewRebuiltSections } from "./runPageReview";
 
 const chat = vi.hoisted(() => vi.fn());
 const similar = vi.hoisted(() => vi.fn());
@@ -22,6 +22,7 @@ function database() {
     if (name === "page_review_related") return [{ content: "Related claim", passages: [{ text: "Supporting evidence" }] }];
     if (name === "complete_page_review") return { summary: "Reviewed", edits: (args?.p_edits as unknown[]).length, exceptions: 0, changeSetId: null };
     if (name === "pages_needing_editorial_review") return [];
+    if (name === "page_review_state") return { current: false, partialRuns: 0, unfinishedSections: 0 };
     throw new Error(name);
   });
   return { db: { call: call as DbRpc["call"] }, call };
@@ -150,7 +151,7 @@ describe("review workflow", () => {
     const embed = vi.fn().mockResolvedValue([[0.1, 0.2]]);
     await runPageReview(db, { apiKey: "test" }, page, { model: "embedding", embed });
     expect(similar).toHaveBeenCalledWith(db, "embedding", [0.1, 0.2], 12, 0.65);
-    expect(chat.mock.calls[0]![1].messages[1].content).toContain("Supporting evidence");
+    expect(chat.mock.calls[0]![1].messages[2].content).toContain("Supporting evidence");
     expect(chat.mock.calls[0]![1].reasoningEffort).toBe("low");
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [], p_review: expect.objectContaining({ findings: [] }) }));
   });
@@ -195,6 +196,39 @@ describe("review workflow", () => {
   });
 });
 
+describe("reviewing only what changed", () => {
+  const states = (...values: object[]) => {
+    const { db, call } = database();
+    const original = call.getMockImplementation()!;
+    let reads = 0;
+    call.mockImplementation(async (name, args) => {
+      if (name === "pages_needing_editorial_review") return [page];
+      if (name === "page_review_content_hash") return "same-content";
+      if (name === "page_review_state") return values[Math.min(reads++, values.length - 1)];
+      return original(name, args);
+    });
+    return { db, call };
+  };
+  it("skips a page whose current content was already reviewed", async () => {
+    const { db, call } = states({ current: true, partialRuns: 0, unfinishedSections: 0 });
+    await reviewRebuiltSections(db, { apiKey: "test" }, [line]);
+    expect(chat).not.toHaveBeenCalled();
+    expect(call.mock.calls.filter(([name]) => name === "complete_page_review")).toHaveLength(0);
+  });
+  it("stops resending identical content after two partial reviews of it", async () => {
+    const { db } = states({ current: false, partialRuns: 2, unfinishedSections: 0 });
+    await expect(reviewRebuiltSections(db, { apiKey: "test" }, [line])).resolves.toBeUndefined();
+    expect(chat).not.toHaveBeenCalled();
+  });
+  it("logs an article with unfinished sections without paying for another identical review", async () => {
+    const { db } = states({ current: true, partialRuns: 0, unfinishedSections: 1 });
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await expect(reviewRebuiltSections(db, { apiKey: "test" }, [line])).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith("Article review left unfinished; the page stays flagged for review", expect.anything());
+    warn.mockRestore();
+    expect(chat).not.toHaveBeenCalled();
+  });
+});
 
 describe("approval noise control", () => {
   const finding = { operation: "investigate", quote: "Inspections occur weekly.", guideline: "Evidence", reason: "Check another page", recommendation: "Compare with the training page.", destinationId: null, decisionKind: null, decisionQuestion: null };
@@ -216,5 +250,33 @@ describe("approval noise control", () => {
     const { db, call } = database();
     await runPageReview(db, { apiKey: "test" }, page);
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_review: expect.objectContaining({ findings: [] }) }));
+  });
+  it("keeps the system message identical with a Curator focus and caches the cited evidence before the page", async () => {
+    const { db } = database();
+    chat.mockResolvedValueOnce({ value: { summary: "Bad", findings: [], edits: [{ type: "revise_line", targetId: page, patches: [], reason: "test" }] }, model: "test", tokensIn: 1, tokensOut: 1 });
+    await runPageReview(db, { apiKey: "test" }, page, undefined, undefined, "Check the inspection schedule");
+    await runPageReview(db, { apiKey: "test" }, page);
+    const [first, retry, plain] = chat.mock.calls.map((call) => call[1].messages as { role: string; content: string; cache?: boolean }[]);
+    expect(first!.map((message) => [message.role, message.cache === true])).toEqual([["system", false], ["user", true], ["user", false], ["user", false]]);
+    expect(first![0]!.content).toBe(plain![0]!.content);
+    expect(first![0]!.content).not.toContain("Curator");
+    expect(first![1]!.content).toBe(plain![1]!.content);
+    expect(JSON.parse(first![1]!.content)).toEqual({ claims: snapshot.claims, passages: [], sources: [] });
+    expect(JSON.parse(first![2]!.content).lines).toHaveLength(1);
+    expect(first![3]!.content).toContain("Check the inspection schedule");
+    // The validation retry repeats the same prefix and adds the correction last.
+    expect(retry!.slice(0, 4)).toEqual(first);
+    expect(retry![4]!.content).toContain("failed validation");
+    expect(plain).toHaveLength(3);
+  });
+});
+
+describe("page review messages", () => {
+  it("puts the cited evidence after the system message and before the page, and skips empty parts", () => {
+    const batch = { snapshot: snapshot as never, evidence: "{\"lines\":[]}", citedEvidence: "{\"claims\":[]}" };
+    expect(pageReviewMessages("rules", batch, "focus")).toEqual([
+      { role: "system", content: "rules" }, { role: "user", content: batch.citedEvidence, cache: true }, { role: "user", content: batch.evidence }, { role: "user", content: "focus" },
+    ]);
+    expect(pageReviewMessages("rules", { snapshot: snapshot as never, evidence: "{}" })).toEqual([{ role: "system", content: "rules" }, { role: "user", content: "{}" }]);
   });
 });

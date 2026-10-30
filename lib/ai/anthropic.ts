@@ -102,8 +102,9 @@ export async function requestClaudeCompletion(
             {
               model: request.model.slice(ANTHROPIC_MODEL_PREFIX.length),
               max_tokens: request.maxTokens,
-              // Book batches share the same instructions and schema. Cache only that
-              // stable prefix; source passages remain specific to each request.
+              // Book batches share the same instructions and schema. Cache that stable
+              // prefix, and a user message marked cache (shared filing context) after it;
+              // source passages remain specific to each request.
               ...(system
                 ? {
                     system: [
@@ -250,6 +251,17 @@ function restoreValueConstraints(
 function toClaudeMessage(
   message: ChatMessage | ChatMediaMessage,
 ): Anthropic.MessageParam {
+  if ("cache" in message && message.cache)
+    return {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: message.content,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+    };
   if (typeof message.content === "string")
     return { role: "user", content: message.content };
   return { role: "user", content: message.content.map(toClaudeBlock) };

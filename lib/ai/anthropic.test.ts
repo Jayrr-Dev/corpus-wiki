@@ -56,3 +56,13 @@ it("preserves supported nested enum and const constraints in the provider schema
   expect(sent.optional.anyOf[0].enum).toEqual(["all", "any"]);
   expect(jsonSchema).toEqual(original);
 });
+
+it("ends the cached prefix after a user message marked cache, leaving the rest uncached", async () => {
+  stream.mockReturnValue({ on: vi.fn(), finalMessage: async () => ({ content: [{ type: "text", text: "{}" }], usage: { input_tokens: 1, output_tokens: 1 }, stop_reason: "end_turn" }) });
+  await requestClaudeCompletion({ apiKey: "test", model: "anthropic/test", jsonSchema: { type: "object" }, maxTokens: 100, effort: "low",
+    messages: [{ role: "system", content: "Rules" }, { role: "user", content: "Shared book context", cache: true }, { role: "user", content: "This batch" }] });
+  expect(stream.mock.calls.at(-1)![0].messages).toEqual([
+    { role: "user", content: [{ type: "text", text: "Shared book context", cache_control: { type: "ephemeral" } }] },
+    { role: "user", content: "This batch" },
+  ]);
+});

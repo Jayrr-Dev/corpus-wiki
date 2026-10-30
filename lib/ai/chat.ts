@@ -83,7 +83,10 @@ export type ModelChoice = {
   speeds?: Record<string, number | null>;
 };
 
-export type ChatMessage = { role: "system" | "user"; content: string };
+// `cache` marks a user message that every request of a run repeats word for word (a book's shared
+// filing context). On Claude it ends the cached prefix, after the system message; other providers
+// never see the flag and cache the identical prefix themselves where they can.
+export type ChatMessage = { role: "system" | "user"; content: string; cache?: boolean };
 
 // A USER MESSAGE WITH A PICTURE: text plus an image as a data URL (vision models only)
 export type ChatContentPart =
@@ -608,9 +611,8 @@ async function requestCompletion(
       ? "Cerebras"
       : "Token Factory";
   let tools = request.tools?.length ? request.tools : undefined;
-  let conversation: WireMessage[] = cerebras
-    ? oneLeadingSystemMessage(messages)
-    : messages;
+  const wire = messages.map((message) => ("cache" in message ? { role: message.role, content: message.content } : message));
+  let conversation: WireMessage[] = cerebras ? oneLeadingSystemMessage(wire) : wire;
   let usage: CompletionUsage | undefined;
   // A strict json_schema response format stops Token Factory models from ever calling a tool
   // (measured on GLM-5.3-Flash: same request, tool call only without it). So a round that offers

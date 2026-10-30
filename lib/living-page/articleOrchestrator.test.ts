@@ -13,7 +13,7 @@ afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 it("gathers relevant saved knowledge before planning the complete initial scaffold", async () => {
   const candidateSearch = vi.spyOn(retrieval, "articleKnowledgeCandidates").mockResolvedValue(["extra", "unrelated"]);
-  const selection = vi.spyOn(discovery, "groupClaimsForArticle").mockResolvedValue({ sections: [{ title: "Provisional batch heading", query: { unitIds: ["extra"] } }], tokensIn: 2, tokensOut: 3 });
+  const selection = vi.spyOn(discovery, "groupClaimsForArticle").mockResolvedValue({ sections: [{ title: "Provisional batch heading", query: { unitIds: ["extra"] } }], excluded: [], tokensIn: 2, tokensOut: 3 });
   const planning = vi.spyOn(articlePlanner, "planArticle").mockResolvedValue({ plan: { title: "Subject", introduction: ["C1"], sections: [{ title: "Complete structure", claims: ["C2"] }] }, tokensIn: 5, tokensOut: 6 });
   const rows: Record<string, unknown> = { units: ["extra", "unrelated"].map(id => ({ id, current_revision_id: `r-${id}`, kind: "fact", epistemic_status: "established" })),
     revisions: ["extra", "unrelated"].map(id => ({ id: `r-${id}`, content: `Fact ${id}`, knowledge_context: null })), unit_entities: [], unit_domains: [] };

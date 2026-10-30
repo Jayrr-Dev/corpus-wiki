@@ -6,11 +6,14 @@ import type { SectionUnit } from "./types";
 
 // Select before the outline's lossless routing contract. Never retire text,
 // edit knowledge, or broaden the article's approved scope here.
+// remembered: decisions saved for this article (articleJudgments.ts). A group whose
+// members all keep their judged revision reuses its decision; only the rest are sent.
+export type ScopeJudgment = { unitId: string; revisionId: string; decision: "in_scope" | "outside_scope"; reason: string };
 export async function selectArticleScope(settings: TokenFactorySettings, title: string, scope: string | null | undefined,
-  units: SectionUnit[]): Promise<{ excludedIds: string[]; tokensIn: number | null; tokensOut: number | null }> {
+  units: SectionUnit[], remembered: (unit: SectionUnit) => ScopeJudgment["decision"] | undefined = () => undefined): Promise<{ excludedIds: string[]; judged: ScopeJudgment[]; tokensIn: number | null; tokensOut: number | null }> {
   if (!scope?.trim() || !units.length) {
     console.info("Article scope review skipped", { title, units: units.length, reason: scope?.trim() ? "no evidence" : "no scope" });
-    return { excludedIds: [], tokensIn: 0, tokensOut: 0 };
+    return { excludedIds: [], judged: [], tokensIn: 0, tokensOut: 0 };
   }
   const parent = new Map(units.map(unit => [unit.unitId, unit.unitId]));
   const root = (id: string): string => parent.get(id) === id ? id : root(parent.get(id)!);
@@ -20,7 +23,16 @@ export async function selectArticleScope(settings: TokenFactorySettings, title: 
   }
   const grouped = new Map<string, SectionUnit[]>();
   for (const unit of units) grouped.set(root(unit.unitId), [...(grouped.get(root(unit.unitId)) ?? []), unit]);
-  const groups = [...grouped.values()].map((members, i) => ({ ref: `G${i + 1}`, claims: members.map(unit => ({
+  const reused: string[] = [];
+  const pending: SectionUnit[][] = [];
+  for (const members of grouped.values()) {
+    const decisions = new Set(members.map(remembered));
+    const [decision] = decisions;
+    if (decisions.size === 1 && decision) { if (decision === "outside_scope") reused.push(...members.map(unit => unit.unitId)); }
+    else pending.push(members);
+  }
+  if (!pending.length) return { excludedIds: reused, judged: [], tokensIn: 0, tokensOut: 0 };
+  const groups = pending.map((members, i) => ({ ref: `G${i + 1}`, claims: members.map(unit => ({
     id: unit.unitId, revision: unit.revisionId, content: unit.content, context: unit.context, memberOf: unit.memberOf,
   })) }));
   const schema = z.object({ groups: z.array(z.object({
@@ -40,8 +52,9 @@ export async function selectArticleScope(settings: TokenFactorySettings, title: 
     if (refs.length !== groups.length || new Set(refs).size !== groups.length) throw new Error("Scope review must account for every evidence group exactly once; saved sections were kept.");
     return result;
   });
-  const excluded = new Set(answer.value.groups.filter(group => group.decision === "outside_scope").map(group => group.ref));
-  const excludedIds = groups.filter(group => excluded.has(group.ref)).flatMap(group => group.claims.map(claim => claim.id));
-  console.info("Article scope review finished", { title, durationMs: Math.round(performance.now() - started), groups: groups.length, excludedGroups: excluded.size, excludedUnits: excludedIds.length });
-  return { excludedIds, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut };
+  const decided = new Map(answer.value.groups.map(group => [group.ref, group]));
+  const judged = groups.flatMap(group => group.claims.map(claim => ({ unitId: claim.id, revisionId: claim.revision, decision: decided.get(group.ref)!.decision, reason: decided.get(group.ref)!.reason })));
+  console.info("Article scope review finished", { title, durationMs: Math.round(performance.now() - started), groups: groups.length, excludedGroups: answer.value.groups.filter(group => group.decision === "outside_scope").length, reusedUnits: reused.length });
+  return { excludedIds: [...reused, ...judged.filter(item => item.decision === "outside_scope").map(item => item.unitId)], judged,
+    tokensIn: answer.tokensIn, tokensOut: answer.tokensOut };
 }

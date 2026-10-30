@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
+import { buildReviewBatches, estimateReviewTokens, type ReviewBatch } from "./reviewContext";
 import type { PageReviewSnapshot } from "./pageReview";
+
+// The model reads both parts of a batch; tests check them together.
+const whole = (batch: ReviewBatch) => ({ ...JSON.parse(batch.citedEvidence ?? "{}"), ...JSON.parse(batch.evidence) });
 
 const snapshot = { page: { id: "p", title: "Safety", slug: "safety" }, pages: [], sections: [], lines: [{ line_id: "l", content: "Weekly inspections.", unit_revision_ids: ["r"] }], claims: [{ id: "r", content: "Weekly inspections.", passage_ids: ["e"] }], passages: [{ id: "e", source_id: "s", text: "Inspect weekly.", confidence: 0.8 }], sources: [{ id: "s", title: "Manual" }] };
 
@@ -21,8 +24,8 @@ describe("review context packing", () => {
     expect(batches.length).toBeGreaterThan(1);
     expect(batches.flatMap((batch) => batch.snapshot.lines)).toEqual(large.lines);
     for (const batch of batches) {
-      expect(estimateReviewTokens(batch.evidence)).toBeLessThanOrEqual(5000);
-      const data = JSON.parse(batch.evidence);
+      expect(estimateReviewTokens(batch.evidence + (batch.citedEvidence ?? ""))).toBeLessThanOrEqual(5000);
+      const data = whole(batch);
       expect(data.scope.completeArticle).toBe(false);
       for (const line of data.lines) {
         const claim = data.claims.find((claim: { id: string }) => claim.id === line.unit_revision_ids[0]);
@@ -35,10 +38,27 @@ describe("review context packing", () => {
   it("omits oversized optional context with an explicit scope flag", () => {
     const { batches, limitedRelated } = buildReviewBatches(snapshot, [{ content: "Related", pages: [{ id: "other", title: "Other", content: "x".repeat(30000) }] }], [], 3000);
     expect(limitedRelated).toBe(true);
-    const data = JSON.parse(batches[0]!.evidence);
+    const data = whole(batches[0]!);
     expect(data.passages).toEqual(snapshot.passages);
     expect(data.scope.relatedContextLimited).toBe(true);
     expect(data.relatedPages).toEqual([]);
+  });
+
+  it("sends the cited claims, passages and sources apart from the page's own lines, repairs and scope", () => {
+    const repairs = [{ type: "retire_section", targetId: "x" }];
+    const { batches } = buildReviewBatches(snapshot, [{ content: "Related", pages: [] }], repairs, 20000);
+    expect(JSON.parse(batches[0]!.citedEvidence!)).toEqual({ claims: snapshot.claims, passages: snapshot.passages, sources: snapshot.sources });
+    const rest = JSON.parse(batches[0]!.evidence);
+    expect(Object.keys(rest)).toEqual(["page", "sections", "lines", "automaticRepairs", "scope", "relatedKnowledge", "relatedPages", "pages"]);
+    expect(rest.automaticRepairs).toEqual(repairs);
+    // A different repair list or scope leaves the cited part byte for byte the same.
+    expect(buildReviewBatches(snapshot, [], [], 20000).batches[0]!.citedEvidence).toBe(batches[0]!.citedEvidence);
+  });
+
+  it("sends no cited part for lines that cite nothing", () => {
+    const uncited = { ...snapshot, lines: [{ line_id: "l", content: "Uncited." }], claims: [], passages: [], sources: [] };
+    const { batches } = buildReviewBatches(uncited, [], [], 20000);
+    expect(batches[0]!.citedEvidence).toBeUndefined();
   });
 
   it("splits an oversized paragraph losslessly instead of stopping", () => {

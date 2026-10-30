@@ -1,4 +1,4 @@
-import { chatJson, type TokenFactorySettings } from "@/lib/ai/chat";
+import { chatJson, type ChatMessage, type TokenFactorySettings } from "@/lib/ai/chat";
 import { reviewContextWindow } from "@/lib/ai/contextWindow";
 import { type Embedder } from "@/lib/ai/embeddings";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "@/lib/ai/outputStyle";
@@ -13,7 +13,7 @@ import { expandArticleCoverage, type CoverageDeps } from "./articleCoverage";
 import { reviewFragments } from "./fragmentReview";
 import { duplicateSectionRepairs, needsPageReviewDecision, PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, settleUnplacedFindings, validatePageReview, type PageReviewSnapshot } from "./pageReview";
 import { reviewMap } from "./reviewConcurrency";
-import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
+import { buildReviewBatches, estimateReviewTokens, type ReviewBatch } from "./reviewContext";
 import { checkReviewEdits, ReviewEditsRejected } from "./reviewEditCheck";
 import { materializeReviewPatches, pagePatchReviewSchema } from "./reviewPatches";
 import { TextPatchError } from "./textPatch";
@@ -21,6 +21,18 @@ import { reviewStreamDetail } from "./reviewProgress";
 
 export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null; coverageComplete?: boolean };
 export type PageReviewStatus = { latest: { summary: string; edits: number; exceptions: number; change_set_id: string | null; created_at: string } | null; openExceptions: number };
+
+// Stable before volatile: the shared instructions, then the batch's cited evidence (cached, so a
+// validation retry or a second pass over the same claims reads it back), then the page's lines,
+// repairs and scope, then any Curator focus.
+export function pageReviewMessages(instructions: string, batch: ReviewBatch, focus = ""): ChatMessage[] {
+  return [
+    { role: "system", content: instructions },
+    ...(batch.citedEvidence ? [{ role: "user" as const, content: batch.citedEvidence, cache: true }] : []),
+    { role: "user", content: batch.evidence },
+    ...(focus ? [{ role: "user" as const, content: focus }] : []),
+  ];
+}
 
 // note: what to focus on, when another role (the Curator) asks for the review
 export async function runPageReview(db: DbRpc, settings: TokenFactorySettings, pageId: string, embedder?: Embedder | null, progress?: (detail: string) => void, note?: string, coverage?: CoverageDeps): Promise<PageReviewResult> {
@@ -71,14 +83,16 @@ async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, page
       console.error("Page reviewer vector search:", error);
     }
   }
-  const instructions = `${PAGE_REVIEW_INSTRUCTIONS}\nThe automaticRepairs are already planned; do not duplicate those findings or edit their surviving introduction. Related knowledge was retrieved by vector similarity, which is not proof of equivalence. Related page text is stored once in relatedPages; relatedKnowledge.pageIds references it. Use actual evidence to identify overlap or conflicts; do not add uncited related claims into this article.\nWhen scope.completeArticle is false, review only the supplied lines and their evidence. Do not infer missing content, rename sections, judge the whole article's structure, or claim a complete cross-section review. Missing optional related context is a limitation, never an approval request.${note?.trim() ? `
-The Curator asked for this review with a focus (guidance on where to look, not evidence and not an order to change anything the evidence does not support): ${note.trim().slice(0, 1000)}` : ""}`;
+  const instructions = `${PAGE_REVIEW_INSTRUCTIONS}\nThe automaticRepairs are already planned; do not duplicate those findings or edit their surviving introduction. Related knowledge was retrieved by vector similarity, which is not proof of equivalence. Related page text is stored once in relatedPages; relatedKnowledge.pageIds references it. Use actual evidence to identify overlap or conflicts; do not add uncited related claims into this article.\nWhen scope.completeArticle is false, review only the supplied lines and their evidence. Do not infer missing content, rename sections, judge the whole article's structure, or claim a complete cross-section review. Missing optional related context is a limitation, never an approval request.`;
+  // The Curator's focus goes after the evidence, so the system message and cited evidence
+  // stay identical across pages and passes and can be read from the provider's cache.
+  const focus = note?.trim() ? `The Curator asked for this review with a focus (guidance on where to look, not evidence and not an order to change anything the evidence does not support): ${note.trim().slice(0, 1000)}` : "";
   const jsonSchema = z.toJSONSchema(pagePatchReviewSchema);
   // Reserve output, system/schema instructions (schema is transmitted twice), and padding.
   // Provider metadata is not always available; use a conservative 64K planning window.
   const maxTokens = Math.min(16000, Math.floor((settings.contextWindowTokens ?? 65536) / 4));
   const tokenBudget = Math.floor(settings.contextWindowTokens ?? 65536) - maxTokens - 2048
-    - estimateReviewTokens(instructions + CONCISE_OUTPUT_INSTRUCTIONS + JSON.stringify(jsonSchema).repeat(2));
+    - estimateReviewTokens(instructions + focus + CONCISE_OUTPUT_INSTRUCTIONS + JSON.stringify(jsonSchema).repeat(2));
   const { batches, limitedRelated } = await measure("packing", async () => buildReviewBatches(snapshot, relatedKnowledge, repairs, tokenBudget));
   progress?.("Checking structure, repetition, and claims against the evidence…");
   let lastSent = 0;
@@ -98,7 +112,7 @@ The Curator asked for this review with a focus (guidance on where to look, not e
           lastSent = Date.now(); lastDetail = detail; progress(detail);
         }
       } : undefined,
-      messages: [{ role: "system" as const, content: instructions }, { role: "user" as const, content: batch.evidence }] };
+      messages: pageReviewMessages(instructions, batch, focus) };
     let raw = await chatJson(settings, request);
     const normalize = (dropMisquoted = false) => {
       const value = settleUnplacedFindings(materializeReviewPatches(pagePatchReviewSchema.parse(raw.value), batch.snapshot, dropMisquoted), batch.snapshot);
@@ -184,26 +198,38 @@ export async function verifyEventArticleReviews(db: DbRpc, settings: TokenFactor
   await reviewRebuiltSections(db, settings, affected.map(section => section.sectionId), embedder, `final:${eventId}`);
 }
 
-export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string, coverage?: CoverageDeps) {
+// The same content reviewed partially this many times is not sent again: its
+// packing and limits are the same, so another call would repeat the result.
+export const MAX_IDENTICAL_PARTIAL_REVIEWS = 2;
+type ReviewState = { current: boolean; partialRuns: number; unfinishedSections: number };
+const settled = (state: ReviewState) => state.current || state.partialRuns >= MAX_IDENTICAL_PARTIAL_REVIEWS;
+
+// Content the review already saw is not sent again, so a rebuild that changed
+// nothing, or a retry of the same partial review, costs no review call.
+export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySettings, sectionIds: string[], embedder?: Embedder | null, checkpointScope?: string) {
   const pages = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
   const reviewedProgress = (done: number) => reportUploadProgress({ step: "pages", done, total: pages.length, phase: "review" });
+  const scope = checkpointScope ? `${checkpointScope}:` : "";
+  const state = (pageId: string) => db.call<ReviewState>("page_review_state", { p_page_id: pageId });
   if (pages.length) await reviewedProgress(0);
   for (const [index, pageId] of pages.entries()) {
-    await workflowStep(`editorial-review:v2:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}`, () => runPageReview(db, settings, pageId, embedder, undefined, undefined, coverage));
+    await workflowStep(`editorial-review:v2:${scope}${pageId}`, async () => settled(await state(pageId)) ? null : runPageReview(db, settings, pageId, embedder));
     const pending = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-    if (!pending.includes(pageId)) { await reviewedProgress(index + 1); continue; }
+    const reviewed = await state(pageId);
+    if (!pending.includes(pageId) || (settled(reviewed) && !reviewed.unfinishedSections)) { await reviewedProgress(index + 1); continue; }
     // Legacy partial reviews are already durable, as are their scaffold writes.
     // Review the finished text directly; replaying coverage could replace its
     // saved sections again. Bind the completion checkpoint to current content.
     const hash = await db.call<string>("page_review_content_hash", { p_page_id: pageId });
-    const result = await workflowStep(`editorial-complete:v1:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}:${hash}`, () => runPageReview(db, settings, pageId, embedder));
+    const result = await workflowStep(`editorial-complete:v1:${scope}${pageId}:${hash}`, async () => settled(await state(pageId)) ? null : runPageReview(db, settings, pageId, embedder));
     // The article is written and each section was checked as it was built; this review is a
     // second pass. A page it could not settle (a partial review, or text that changed since)
     // stays flagged by pages_needing_editorial_review for the next update, the Curator or a
     // person's Review, instead of failing the upload. Errors still fail the step above.
     const remaining = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-    if (!result.coverageComplete || remaining.includes(pageId)) {
-      console.warn("Article review left unfinished; the page stays flagged for review", { pageId, coverageComplete: result.coverageComplete });
+    const after = await state(pageId);
+    if ((result && !result.coverageComplete) || (remaining.includes(pageId) && !(settled(after) && !after.unfinishedSections))) {
+      console.warn("Article review left unfinished; the page stays flagged for review", { pageId, coverageComplete: result?.coverageComplete ?? null });
     }
     await reviewedProgress(index + 1);
   }
