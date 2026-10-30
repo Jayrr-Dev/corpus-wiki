@@ -1,9 +1,10 @@
 import { withSettledActor } from "@/lib/auth/currentPerson";
 import type { CommitResult } from "@/lib/change-control";
 import { commitAsRole } from "@/lib/change-control";
-import { holdForReviewerBudget, proposePages, rebuildAfterEvent } from "@/lib/living-page";
+import { holdForReviewerBudget, proposePages, rebuildAfterEvent, ReviewerBudgetDeclined } from "@/lib/living-page";
 import { processingCancellation } from "@/lib/processing/cancellation";
 import { processingMetric, withProcessingReport } from "@/lib/processing/metrics";
+import { ALL_JOB_KINDS, KNOWLEDGE_JOB_KINDS, runUploadJobs, uploadJobsEnabled, type JobHandler, type UploadJobKind } from "./jobs";
 import type { PipelineDeps } from "./pipeline";
 import type { ProcessUploadResult } from "./types";
 import { uploadExecution, workflowStep } from "./workflowContext";
@@ -13,6 +14,10 @@ import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, failedWorkflowStag
 // checkpoints, unfinished ones run first, so articles never read half-cleaned knowledge.
 // How often a run renews its lease, and so how soon a cancel reaches an AI call in flight
 const HEARTBEAT_MS = 5_000;
+// With UPLOAD_JOBS, no new job starts after this long, so the one in flight still fits a 300 s request
+const JOB_BUDGET_MS = 180_000;
+// A failure of these is the upload's own error; a failed stage shows as a warning from its checkpoint
+const FATAL_JOB_KINDS = new Set<UploadJobKind>(["reconcile", "coverage", "verify"]);
 
 // `continuation`: started automatically after the knowledge job, so it never overrides a cancel.
 export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
@@ -53,14 +58,10 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
         .catch((error) => { leaseError = error; abort.abort(error); }).finally(() => { heartbeatPending = false; });
     }, HEARTBEAT_MS);
     await uploadExecution.run({ eventId, token, db, signal }, async () => {
-      await timedStage(eventId, "reconcile", async () => {
+      const reconcileStage = () => timedStage(eventId, "reconcile", async () => {
         await checkLease();
         return claim.changeSetId ? commitAsRole(db, "reconciler", claim.changeSetId) : reconcile();
       });
-      if (await db.call<boolean>("upload_workflow_waiting", { p_event_id: eventId })) {
-        await release("waiting");
-        return;
-      }
       const articleInputs = () => db.call<{ unitId: string; revisionId: string }[]>("upload_article_inputs", { p_event_id: eventId });
       const run: Record<(typeof KNOWLEDGE_STAGES)[number] | (typeof ARTICLE_STAGES)[number] | (typeof ENRICHMENT_STAGES)[number] | "articles-ready", () => Promise<unknown>> = {
         duplicates: async () => deps.deduper?.(eventId),
@@ -92,6 +93,43 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
         // instead of showing a completed stage after only logging the failure.
         curate: async () => deps.pageMaintainer?.(eventId),
       };
+      // Claims still unfiled after placement stop the articles. Rejecting a proposed root
+      // can leave claims unfiled after the placement stage itself completed.
+      const unplacedError = async () => {
+        if (!deps.topicPlacer) return null;
+        const coverage = await db.call<{ unplaced: string[] }>("verify_upload_topic_coverage", { p_event_id: eventId });
+        return coverage.unplaced.length ? `${coverage.unplaced.length} knowledge units still need domain assignments. Assign them before resuming articles.` : null;
+      };
+      if (uploadJobsEnabled()) {
+        const stage = (key: keyof typeof run): JobHandler => async () => { await timedStage(eventId, key, run[key]); };
+        const handlers: Partial<Record<UploadJobKind, JobHandler>> = {
+          reconcile: async () => { await reconcileStage(); },
+          duplicates: stage("duplicates"), tidy: stage("tidy"), place: stage("place"),
+          coverage: async () => { const error = await unplacedError(); if (error) throw new Error(error); },
+          hierarchy: stage("hierarchy"), expand: stage("expand"), embeddings: stage("embeddings"),
+          // A very large build waits for a person to approve its Reviewer calls (lib/living-page/reviewerBudget.ts)
+          // Run again after the answer: a checkpoint hit, then the answer is read (a decline throws)
+          plan: async () => { await timedStage(eventId, "plan", run.plan); return { again: await holdForReviewerBudget(db, eventId) }; },
+          pages: stage("pages"),
+          "articles-ready": async () => {
+            const result = await timedStage(eventId, "articles-ready", run["articles-ready"]);
+            console.info("Upload articles ready", { eventId, ...(result as { readyAt: string }) });
+          },
+          describe: stage("describe"), profiles: stage("profiles"), glossary: stage("glossary"), curate: stage("curate"),
+          verify: async () => { await deps.articleVerifier?.(eventId); },
+        };
+        const result = await runUploadJobs(db, eventId, token, {
+          kinds: job === "knowledge" ? KNOWLEDGE_JOB_KINDS : ALL_JOB_KINDS, handlers, checkLease, retry: !continuation, budgetMs: JOB_BUDGET_MS,
+        });
+        if (result.failed && (FATAL_JOB_KINDS.has(result.failed.kind) || result.failed.caught instanceof ReviewerBudgetDeclined)) fatal = result.failed.error;
+        await release(result.state);
+        return;
+      }
+      await reconcileStage();
+      if (await db.call<boolean>("upload_workflow_waiting", { p_event_id: eventId })) {
+        await release("waiting");
+        return;
+      }
       // Completed roles are not repeated on resume.
       // Articles are written once the knowledge, definitions and index are saved.
       // Descriptions, profiles, the glossary and the curator run after that and add no claims.
@@ -115,15 +153,10 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           await release("waiting");
           return;
         }
-        // Recheck even on a checkpoint hit: rejecting a proposed root can leave
-        // claims unfiled after the original placement stage completed.
-        if (key === "place" && deps.topicPlacer) {
-          const coverage = await db.call<{ unplaced: string[] }>("verify_upload_topic_coverage", { p_event_id: eventId });
-          if (coverage.unplaced.length) {
-            fatal = `${coverage.unplaced.length} knowledge units still need domain assignments. Assign them before resuming articles.`;
-            failed = true;
-            break;
-          }
+        // Recheck even on a checkpoint hit
+        if (key === "place") {
+          fatal = await unplacedError();
+          if (fatal) { failed = true; break; }
         }
       }
       // Enrichment and curation can change an article outside the rebuilt subset.
