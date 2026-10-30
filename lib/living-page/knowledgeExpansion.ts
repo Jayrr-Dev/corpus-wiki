@@ -21,7 +21,7 @@ Return up to 12 useful glossary subjects, prioritizing undefined acronyms, compa
 Extract a short explanatory definition from the SOURCE PASSAGES; do not use background knowledge, make up acronym expansions, invent laws, or assert that a planned program already exists.
 If the material only describes this entity's version, explicitly scope the definition to that entity's context.
 Return applicability: { status: "unspecified" | "general" | "scoped", entities: [{type,key,name}], conditions: string | null }. Use existing entity identities only. General requires explicit evidence of a general definition; do not infer generality from missing restrictions. Scoped needs entities or conditions. General and unspecified have no scope entities. The context entity and domain placement are navigation, not evidence that a definition belongs to that entity. Preserve source-supported restrictions; do not attach general definitions to a company merely because its handbook contains them.
-Definitions must explain what a term means or does, not simply say "this is important". Skip a subject if no definition can be supported.
+Definitions must explain what a term means or does, not simply say "this is important". Write each one as a complete sentence with a verb, naming the term: "Fresh produce sorting is the same-morning check of incoming produce.", never a bare phrase. Skip a subject if no definition can be supported.
 Reuse existing entity type/key for the same subject. Give useful aliases, including acronyms when stated in the text. Do not recreate the context entity itself.
 Choose domainPath from the supplied existing domains. Cite the supporting claim refs C1... and exact passage refs P1....
 ${GLOSSARY_POLICY}
@@ -76,7 +76,7 @@ export async function expandEntityKnowledge(deps: Dependencies, entityId: string
   const context = await loadContext(deps.client, entityId);
   if (!context.knowledge.units.length) throw new NoArticleClaimsError();
   if (!context.passages.length) throw new Error("This knowledge has no source passages to support definitions.");
-  const schema = expansionAnswerSchema(context.knowledge.units.length, context.passages.length);
+  const schema = expansionAnswerSchema(context.knowledge.units.length, context.passages.length, context.domainPaths);
   const result = await chatJson(deps.settings, {
     name: "knowledge_expansion", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: 8000, retryInvalidOutput: true,
     messages: [{ role: "system", content: `${skillInstructions(["define_concepts","identify_entities","organize_topics"],deps.settings.skills)}\n${PROMPT}` }, { role: "user", content: JSON.stringify({ contextEntity: context.knowledge.entity, existingEntities: context.existingEntities, domains: context.domainPaths, claims: context.knowledge.units.map((unit, index) => ({ ref: `C${index + 1}`, text: unit.content, context: unit.context })), passages: context.passages.map((passage, index) => ({ ref: `P${index + 1}`, text: passage.text })) }) }],

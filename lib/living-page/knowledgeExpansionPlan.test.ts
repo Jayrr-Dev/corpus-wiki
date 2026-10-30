@@ -10,6 +10,7 @@ const plan: KnowledgeExpansion = { concepts: [{ name: "Personal protective equip
 
 describe("source-backed knowledge expansion", () => {
   it("constrains generated citations to actual claim and passage references", () => {
+    expect(expansionAnswerSchema(1, 1, ["Known"]).safeParse({ concepts: [{ ...plan.concepts[0]!, domainPath: "Invented" }] }).success).toBe(false);
     const schema = expansionAnswerSchema(1, 1);
     expect(schema.safeParse(plan).success).toBe(true);
     for (const refs of [{ claims: ["P1 states that an offprint can be ordered."] }, { claims: ["C2"] }, { passages: ["P2"] }]) {

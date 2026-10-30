@@ -13,7 +13,8 @@ export const pagePatchReviewSchema = pageReviewSchema.extend({
 
 // dropMisquoted: after a corrective retry, a paragraph edit whose quoted text still cannot be
 // found, or a second edit to the same target, is left out instead of failing the whole review;
-// the other edits and the findings stand. Unknown or protected targets still fail.
+// the other edits and the findings stand. So is one aimed at an unknown or protected paragraph,
+// which then stays exactly as it was.
 export function materializeReviewPatches(proposal: z.infer<typeof pagePatchReviewSchema>, snapshot: PageReviewSnapshot, dropMisquoted = false): z.infer<typeof pageReviewSchema> {
   const seen = new Set<string>();
   const edits = proposal.edits.flatMap((edit): z.infer<typeof pageReviewSchema>["edits"] => {
@@ -24,8 +25,8 @@ export function materializeReviewPatches(proposal: z.infer<typeof pagePatchRevie
     seen.add(edit.targetId);
     if (edit.type === "rename_section") return [edit];
     const line = snapshot.lines.find((item) => item.line_id === edit.targetId);
-    if (!line || line.author !== "ai") throw new TextPatchError("The review targets an unknown or protected paragraph.");
     const misquoted = (message: string): [] => { if (dropMisquoted) return []; throw new TextPatchError(message); };
+    if (!line || line.author !== "ai") return misquoted("The review targets an unknown or protected paragraph.");
     if (edit.type === "retire_line" && edit.old_text !== line.content) return misquoted("A paragraph removal must quote its entire original text exactly.");
     let text = edit.reason;
     if (edit.type === "revise_line") {

@@ -154,11 +154,11 @@ describe("review workflow", () => {
     expect(chat.mock.calls[0]![1].reasoningEffort).toBe("low");
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [], p_review: expect.objectContaining({ findings: [] }) }));
   });
-  it("rejects fabricated edit targets before making database changes", async () => {
+  it("leaves out fabricated edit targets after the retry, and the review still completes", async () => {
     chat.mockResolvedValue({ value: { summary: "Edited", findings: [], edits: [{ type: "revise_line", targetId: page, patches: [], reason: "test" }] } });
     const { db, call } = database();
-    await expect(runPageReview(db, { apiKey: "test" }, page)).rejects.toThrow(/unknown or protected/);
-    expect(call.mock.calls.some(([name]) => name === "complete_page_review")).toBe(false);
+    await runPageReview(db, { apiKey: "test" }, page);
+    expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [] }));
   });
   it("does not call the model when the database returns no pages needing review", async () => {
     const { db } = database();
