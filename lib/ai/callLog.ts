@@ -35,6 +35,7 @@ export type CompletionUsage = {
   completion_tokens?: number;
   reasoning_tokens?: number;
   completion_tokens_details?: { reasoning_tokens?: number | null } | null;
+  prompt_tokens_details?: { cached_tokens?: number | null } | null;
   cache_read_input_tokens?: number;
   cache_creation_input_tokens?: number;
   cache_creation?: { ephemeral_5m_input_tokens?: number; ephemeral_1h_input_tokens?: number } | null;

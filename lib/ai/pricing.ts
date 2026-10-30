@@ -3,11 +3,13 @@
 // to estimate what the logged AI calls cost. Reasoning tokens bill as
 // output. Prices change: update this table when Nebius changes theirs.
 // Source: Nebius Token Factory pricing, checked 2026-10-15; Claude rows: Anthropic API list prices, checked 2026-10-16.
+// Token Factory cached input rates: https://tokenfactory.nebius.com/model-catalog.md, checked 2026-10-30.
 // =====================================================================
 
-export const PRICES_CHECKED_ON = "2026-10-19 (Claude, embeddings, and OpenRouter Mercury 3); 2026-10-15 (Token Factory chat)";
+export const PRICES_CHECKED_ON = "2026-10-30 (Token Factory cached input); 2026-10-19 (Claude, embeddings, and OpenRouter Mercury 3); 2026-10-15 (Token Factory chat)";
 
-export type ModelPrice = { model: string; inputPerM: number; outputPerM: number; cacheReadMultiplier?: number; longContext?: { above: number; inputPerM: number; outputPerM: number } };
+// cachedInputPerM: a provider's own rate for cached input; a model without one bills it as plain input
+export type ModelPrice = { model: string; inputPerM: number; outputPerM: number; cachedInputPerM?: number; cacheReadMultiplier?: number; longContext?: { above: number; inputPerM: number; outputPerM: number } };
 
 // Keyed by the model name without its org prefix ("zai-org/GLM-5.3-Flash" -> "GLM-5.3-Flash")
 export const MODEL_PRICES: readonly ModelPrice[] = [
@@ -16,14 +18,15 @@ export const MODEL_PRICES: readonly ModelPrice[] = [
   { model: "GLM-5.2", inputPerM: 1.4, outputPerM: 4.4 },
   { model: "GLM-5.1", inputPerM: 1.4, outputPerM: 4.4 },
   { model: "GLM-5", inputPerM: 1.0, outputPerM: 3.2 },
-  { model: "nemotron-3-super-120b-a12b", inputPerM: 0.3, outputPerM: 0.9 },
-  { model: "Nemotron-3-Ultra-550b-a55b", inputPerM: 1.0, outputPerM: 3.0 },
+  { model: "nemotron-3-super-120b-a12b", inputPerM: 0.3, outputPerM: 0.9, cachedInputPerM: 0.06 },
+  { model: "Nemotron-3-Ultra-550b-a55b", inputPerM: 1.0, outputPerM: 3.0, cachedInputPerM: 0.12 },
   { model: "NVIDIA-Nemotron-3-Nano-30B-A3B", inputPerM: 0.06, outputPerM: 0.24 },
   { model: "Nemotron-3-Nano-Omni", inputPerM: 0.06, outputPerM: 0.24 },
   { model: "Nemotron-3_5-Lightning", inputPerM: 0.06, outputPerM: 0.24 },
   { model: "DeepSeek-V4-Pro", inputPerM: 1.75, outputPerM: 3.5 },
   { model: "DeepSeek-V4-Flash", inputPerM: 0.14, outputPerM: 0.28 },
-  { model: "DeepSeek-V4.1-Flash", inputPerM: 0.3, outputPerM: 1.2 },
+  { model: "DeepSeek-V4.1-Flash", inputPerM: 0.3, outputPerM: 1.2, cachedInputPerM: 0.01 },
+  { model: "DeepSeek-V4.1-Flash-1017", inputPerM: 0.3, outputPerM: 1.2, cachedInputPerM: 0.006 },
   { model: "Kimi-K3", inputPerM: 3.0, outputPerM: 15.0 },
   { model: "Kimi-K2.6", inputPerM: 0.95, outputPerM: 4.0 },
   { model: "MiniMax-M3", inputPerM: 0.3, outputPerM: 1.2 },
@@ -40,7 +43,7 @@ export const MODEL_PRICES: readonly ModelPrice[] = [
   { model: "gemma-3-27b-it", inputPerM: 0.1, outputPerM: 0.3 },
   { model: "muse-spark-open", inputPerM: 1.25, outputPerM: 4.25 },
   { model: "Hermes-4-405B", inputPerM: 1, outputPerM: 3 },
-  { model: "Nemotron-3.5-Super-VL", inputPerM: 0.3, outputPerM: 0.9 },
+  { model: "Nemotron-3.5-Super-VL", inputPerM: 0.3, outputPerM: 0.9, cachedInputPerM: 0.06 },
   { model: "MiniCPM-V-4_5", inputPerM: 0.658, outputPerM: 1.11 },
   { model: "Kimi-K2.7-Code", inputPerM: 0.95, outputPerM: 4 },
   { model: "beam", inputPerM: 0.25, outputPerM: 1 },
@@ -95,10 +98,12 @@ export function estimateCost(model: string, promptTokens: number, completionToke
   const write = claude ? count(usage.cache_creation_input_tokens) : 0;
   const creation = usage.cache_creation as { ephemeral_1h_input_tokens?: number } | null | undefined;
   const hourWrite = claude ? count(creation?.ephemeral_1h_input_tokens) : 0;
-  if (read + write > promptTokens || hourWrite > write) return null;
-  const input = promptTokens - read - write;
+  const details = usage.prompt_tokens_details as { cached_tokens?: number } | null | undefined;
+  const cached = price.cachedInputPerM !== undefined ? count(details?.cached_tokens ?? usage.prompt_cache_hit_tokens) : 0;
+  if (read + write + cached > promptTokens || hourWrite > write) return null;
+  const input = promptTokens - read - write - cached;
   return (rates.inputPerM * (input + read * (price.cacheReadMultiplier ?? 0.1) + (write - hourWrite) * 1.25 + hourWrite * 2)
-    + completionTokens * rates.outputPerM) / 1_000_000;
+    + cached * (price.cachedInputPerM ?? 0) + completionTokens * rates.outputPerM) / 1_000_000;
 }
 
 export type CostedCall = { model: string; prompt_tokens: number | null; completion_tokens: number | null; usage_details?: unknown };

@@ -28,6 +28,25 @@ it("preserves usage through logging and prices tool rounds separately", () => {
   expect(estimateCost("anthropic/claude-haiku-5-5", 120000, 2000, usage)).toBeCloseTo(0.004);
 });
 
+it("bills Token Factory cached input at its own rate", () => {
+  const cached = { prompt_tokens_details: { cached_tokens: 9584 }, prompt_cache_hit_tokens: 9584 };
+  expect(estimateCost("nvidia/nemotron-3-super-120b-a12b", 9610, 45, cached)).toBeCloseTo((26 * 0.3 + 9584 * 0.06 + 45 * 0.9) / 1_000_000, 9);
+  expect(estimateCost("nvidia/nemotron-3-super-120b-a12b", 9610, 45, { prompt_cache_hit_tokens: 9584 })).toBeCloseTo((26 * 0.3 + 9584 * 0.06 + 45 * 0.9) / 1_000_000, 9);
+  expect(estimateCost("nvidia/nemotron-3-super-120b-a12b", 100, 0, { prompt_tokens_details: { cached_tokens: 200 } })).toBeNull();
+  expect(estimateCost("zai-org/GLM-5.3", 1_000_000, 0, cached)).toBeCloseTo(1.4);
+});
+
+it("prices each tool round's cached input on its own", () => {
+  const usage = addCompletionUsage({ prompt_tokens: 1000, completion_tokens: 0, prompt_tokens_details: { cached_tokens: 0 } },
+    { prompt_tokens: 1000, completion_tokens: 0, prompt_tokens_details: { cached_tokens: 1000 } });
+  expect(estimateCost("nvidia/nemotron-3-super-120b-a12b", 2000, 0, usage)).toBeCloseTo((1000 * 0.3 + 1000 * 0.06) / 1_000_000, 9);
+});
+
+it("prices the dated DeepSeek V4.1 Flash build the Deduplicator runs on", () => {
+  expect(estimateCost("deepseek-ai/DeepSeek-V4.1-Flash-1017", 1_000_000, 1_000_000)).toBeCloseTo(1.5);
+  expect(estimateCost("deepseek-ai/DeepSeek-V4.1-Flash-1017", 1000, 0, { prompt_tokens_details: { cached_tokens: 1000 } })).toBeCloseTo(0.000006, 9);
+});
+
 it("does not show missing usage, unknown pricing or invalid counts as free calls", () => {
   expect(estimateCallCost({ model: "anthropic/claude-haiku-5-5", prompt_tokens: null, completion_tokens: null })).toBeNull();
   expect(estimateCost("Qwen/Qwen3-Embedding-8B", 1_000_000, 0)).toBeCloseTo(0.01);

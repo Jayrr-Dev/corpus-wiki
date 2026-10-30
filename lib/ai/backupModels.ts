@@ -77,11 +77,11 @@ export function intelligenceOf(model: string): number | null {
 export const CACHED_INPUT_SHARE = 0.5;
 
 // Blended price per 1M tokens with prompt caching, or null when the price table has none.
-// Like estimateCost (./pricing.ts), only Claude bills cached input at its cache-read rate.
+// Like estimateCost (./pricing.ts), Claude bills cached input at its cache-read rate and other models at their cached rate, if any.
 export function blendedCostPerM(model: string): number | null {
   const price = priceFor(model.startsWith(ANTHROPIC_MODEL_PREFIX) ? model.slice(ANTHROPIC_MODEL_PREFIX.length) : model);
   if (!price) return null;
-  const cacheRate = price.model.startsWith("claude-") ? (price.cacheReadMultiplier ?? 0.1) : 1;
+  const cacheRate = price.model.startsWith("claude-") ? (price.cacheReadMultiplier ?? 0.1) : (price.cachedInputPerM ?? price.inputPerM) / price.inputPerM;
   const inputPerM = price.inputPerM * (1 - CACHED_INPUT_SHARE + CACHED_INPUT_SHARE * cacheRate);
   return (3 * inputPerM + price.outputPerM) / 4;
 }
