@@ -1,3 +1,4 @@
+import { lineText } from "@/lib/docs/blocks";
 import type { Enums } from "@/lib/database/types";
 import type { ChangeContext } from "@/lib/queries/changeContexts";
 
@@ -97,7 +98,7 @@ export function classifyChange(types: readonly ActionType[]): ChangeType {
 
 const lastSegment = (path: string) => path.split("/").filter(Boolean).at(-1) ?? path;
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? "" : "s"}`;
-const quote = (content: string) => `“${content.replace(/\s+/g, " ").trim()}”`;
+const quote = (content: string) => `“${lineText(content).replace(/\s+/g, " ").trim()}”`;
 
 // A summary that says what changed instead of where: the first line's new words, or the stored text without its section name
 function shortSummary(type: ChangeType, context: ChangeContext, stored: string): string | null {
