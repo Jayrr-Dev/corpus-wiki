@@ -1270,7 +1270,10 @@ async function mergeIntoSections(
     progress.mark(`Writing “${section.title}”…`, section.title, "current", id);
     sectionWriter ??= writerWithProgress(await writer(), progress.report);
     try {
-      const built = await rebuildUploadSection(db, sectionWriter, id, null);
+      // A person accepted these claims for this section, so the editorial pick cannot drop them.
+      const built = await rebuildUploadSection(db, sectionWriter, id, null, {
+        skipEditorialReview: true,
+      });
       if (!built || built.rebuildRequested)
         throw new Error(
           `“${section.title}” is still being written. Retry when it finishes.`,

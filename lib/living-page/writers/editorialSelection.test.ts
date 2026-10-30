@@ -35,6 +35,19 @@ it("keeps all claims after two unsupported omission proposals instead of failing
   expect(await selectEditorialClaims({ apiKey: "test" }, input)).toMatchObject({ omittedUnitIds: [], tokensIn: 2, tokensOut: 2 });
   expect(chatJson).toHaveBeenCalledTimes(2);
 });
+it("keeps a section's only claim when it is labelled source metadata", async () => {
+  answer("source_metadata", null);
+  expect(await selectEditorialClaims({ apiKey: "test" }, { ...input, sectionTitle: "Overview" })).toMatchObject({ omittedUnitIds: [] });
+});
+it("still drops source metadata when the section has other claims", async () => {
+  answer("source_metadata", null);
+  const units = [input.units[0]!, { ...input.units[0]!, unitId: "other", revisionId: "r2" }];
+  expect(await selectEditorialClaims({ apiKey: "test" }, { ...input, sectionTitle: "Overview", units })).toMatchObject({ omittedUnitIds: ["fact"] });
+});
+it("still lets a section empty out when its claims are already covered", async () => {
+  answer("already_covered");
+  expect(await selectEditorialClaims({ apiKey: "test" }, input)).toMatchObject({ omittedUnitIds: ["fact"] });
+});
 it("does not apply a partly valid omission list when another item is unsupported", async () => {
   vi.mocked(chatJson).mockResolvedValue({ value: { omit: [
     { ref: "C1", reason: "already_covered", contextSection: "Overview", explanation: "Same fact" },

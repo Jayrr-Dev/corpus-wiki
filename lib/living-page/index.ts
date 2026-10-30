@@ -191,13 +191,13 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
 
 // Another page update can own the section briefly. Keep the upload lease alive
 // and wait for that owner instead of making the person repeatedly press Resume.
-export async function rebuildUploadSection(db: DbRpc, writer: SectionWriter, sectionId: string, eventId: string | null): Promise<FinishedSectionBuild | null> {
+export async function rebuildUploadSection(db: DbRpc, writer: SectionWriter, sectionId: string, eventId: string | null, options?: { skipEditorialReview?: boolean }): Promise<FinishedSectionBuild | null> {
   const execution = uploadExecution.getStore();
   const deadline = Date.now() + 180_000;
   let incompleteDrafts = 0;
   for (;;) {
     let built: FinishedSectionBuild | null;
-    try { built = await rebuildSection(db, writer, sectionId, eventId, false); }
+    try { built = await rebuildSection(db, writer, sectionId, eventId, false, options); }
     catch (error) {
       // Redraft only a known pre-save evidence rejection. Database errors and
       // uncertain saves retain their existing recovery and ownership rules.
