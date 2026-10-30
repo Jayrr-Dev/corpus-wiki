@@ -144,8 +144,10 @@ export async function newArticleSections(deps: OrchestratorDeps, item: Extract<P
   const { plan, ...planningUsage } = await planArticle(deps.settings, knowledge, `${item.title}. Scope: ${item.scope}`,
     "Finish the complete article scaffold before prose is written. Group all supplied knowledge coherently; avoid a heading per batch, fact, or example. Choose the reading order and evidence assignments first.");
   const usage = addUsage(selection, planningUsage);
+  // A section that lists its claims needs no entity filter: the filter can only hide claims the
+  // plan picked (a definition is about its term, not the organization), leaving the section unwritable
   const sections = topicSections(plan, knowledge).map((section) => {
-    if (entity.id) return section;
+    if (entity.id && !section.query.unitIds?.length) return section;
     const query = { ...section.query };
     delete query.entity;
     return { ...section, query };

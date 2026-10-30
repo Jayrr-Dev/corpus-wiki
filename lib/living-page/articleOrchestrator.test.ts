@@ -33,6 +33,26 @@ it("gathers relevant saved knowledge before planning the complete initial scaffo
   expect(result).toMatchObject({ tokensIn: 7, tokensOut: 9 });
 });
 
+it("drops the entity filter from an entity article's sections that list their claims", async () => {
+  vi.spyOn(retrieval, "articleKnowledgeCandidates").mockResolvedValue([]);
+  vi.spyOn(articlePlanner, "planArticle").mockResolvedValue({ plan: { title: "Food bank", introduction: ["C1"], sections: [{ title: "Visits", claims: ["C2"] }] }, tokensIn: 1, tokensOut: 1 });
+  const client = { from: () => {
+    const chain = { select: () => chain, in: () => chain, is: () => chain, neq: () => chain, order: () => chain, range: () => chain,
+      then: (resolve: (result: object) => unknown) => Promise.resolve(resolve({ data: [], error: null })) };
+    return chain;
+  } } as unknown as AdminSupabase;
+  const claim = (id: string) => ({ unitId: id, revisionId: `r-${id}`, content: `Fact ${id}`, kind: "definition" as const, epistemicStatus: "established" as const, topics: [], entityIds: [] });
+  const { sections } = await newArticleSections({ db: { call: vi.fn() }, client, settings: { apiKey: "test" }, embedder: null }, {
+    action: "create", title: "Food bank", scope: "The food bank", type: "entity", parentPageId: null,
+    entity: { id: "e1", type: "organization", key: "food-bank", name: "Food bank" }, claims: [claim("a"), claim("b")],
+  });
+  expect(sections.length).toBeGreaterThan(0);
+  for (const section of sections) {
+    expect(section.query.unitIds?.length).toBeGreaterThan(0);
+    expect(section.query).not.toHaveProperty("entity");
+  }
+});
+
 it.each(["quality", "transport"])("records an editorial rejection but keeps a %s failure distinct", async (failure) => {
   const attempt: Attempt = { plan: { title: "Recorded subject", introduction: ["C1"], sections: [{ title: "Recorded details", claims: ["C2", "C3"] }] },
     centralMessage: null, readingOrderRationale: null, problems: ["A heading promises unsupported facts."], review: null, accepted: false };
