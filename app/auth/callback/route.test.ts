@@ -24,8 +24,16 @@ it("supports email token hashes but prevents redirects to another origin", async
 it("rejects missing and invalid confirmation credentials", async () => {
   const missing = await GET(new NextRequest("http://localhost:3003/auth/callback"));
   expect(missing.headers.get("location")).toContain("/login?confirmation=failed");
-  mocks.exchange.mockResolvedValue({ error: new Error("expired") });
-  const expired = await GET(new NextRequest("http://localhost:3003/auth/callback?code=expired"));
+  mocks.verify.mockResolvedValue({ error: new Error("expired") });
+  const expired = await GET(new NextRequest("http://localhost:3003/auth/callback?token_hash=old&type=email"));
   expect(expired.headers.get("location")).toContain("/login?confirmation=failed");
+  expect(mocks.clear).not.toHaveBeenCalled();
+});
+
+it("sends a code opened in another browser to sign-in as confirmed", async () => {
+  // Supabase confirmed the address before redirecting; only this browser lacks the sign-up verifier
+  mocks.exchange.mockResolvedValue({ error: new Error("code verifier not found") });
+  const response = await GET(new NextRequest("http://localhost:3003/auth/callback?code=elsewhere"));
+  expect(response.headers.get("location")).toContain("/login?confirmation=signin");
   expect(mocks.clear).not.toHaveBeenCalled();
 });
