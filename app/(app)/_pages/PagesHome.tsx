@@ -16,7 +16,8 @@ import { useArticleEvidence } from "@/lib/queries/articleEvidence";
 import { sourceFileSrc } from "@/lib/living-page/articleEvidence";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { queryKeys } from "@/lib/queries/keys";
-import { buildFrontArticles, dailyOrder, editionDay, frontSelections, plainExcerpt, type FrontArticle } from "@/lib/living-page/frontPage";
+import { buildFrontArticles, dailyOrder, editionDay, excerptBlocks, frontSelections, plainExcerpt, type FrontArticle } from "@/lib/living-page/frontPage";
+import { BlockPartView } from "@/components/living-page/LineBlock";
 import { PagesTable } from "./PagesTable";
 import { useActiveSpace } from "@/components/shell/SpaceProvider";
 import { readSpaceWelcome } from "@/lib/server-actions/spaceWelcome";
@@ -135,7 +136,7 @@ function FeaturedArticle({ article }: { article: FrontArticle }) {
     <h3 className="mb-3 text-lg font-medium"><TextLink href={`/p/${article.slug}`}>{article.title}</TextLink></h3>
     <div className="flow-root text-body leading-7">
       {figure && <figure className="mb-3 sm:float-left sm:mr-4 sm:w-40"><MediaPreview sourceId={figure.sourceId} src={figure.src} kind="image" title={figure.title} caption={figure.caption} /><figcaption className="mt-1 text-xs leading-5 text-muted-foreground">{plainExcerpt(figure.caption, 150)}</figcaption></figure>}
-      <p>{article.excerpt}</p>
+      <div className="space-y-3">{excerptBlocks(article.body).map((part, index) => <BlockPartView key={index} part={part} />)}</div>
     </div>
     <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs"><span className="text-muted-foreground">{article.sectionCount} {article.sectionCount === 1 ? "section" : "sections"}</span><TextLink href={`/p/${article.slug}`}>Continue reading →</TextLink></footer>
   </article>;

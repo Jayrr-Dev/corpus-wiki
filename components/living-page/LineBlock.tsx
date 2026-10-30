@@ -33,7 +33,7 @@ function Linked({ text, links }: { text: string; links: ArticleLink[] }) {
 }
 
 // `trailing` (citations and the details button) ends a closing paragraph, callout or list; it goes under a table or chart
-function BlockPartView({ part, links, trailing }: { part: BlockPart; links: ArticleLink[]; trailing: ReactNode }) {
+export function BlockPartView({ part, links = [], trailing = null }: { part: BlockPart; links?: ArticleLink[]; trailing?: ReactNode }) {
   switch (part.kind) {
     case "text":
       return <p className="text-body leading-7"><Linked text={part.text} links={links} />{trailing}</p>;

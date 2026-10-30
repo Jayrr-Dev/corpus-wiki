@@ -1,7 +1,9 @@
 import type { Tables } from "@/lib/database/types";
+import { blockSummary, parseBlocks, type BlockPart } from "@/lib/living-page/blocks";
 import { withoutEditorialDashes } from "@/lib/living-page/punctuation";
 
 export type FrontArticle = Pick<Tables<"pages">, "id" | "title" | "slug" | "parent_page_id" | "domain_id"> & {
+  body: string;
   excerpt: string;
   changedAt: string;
   sectionCount: number;
@@ -13,17 +15,57 @@ export function editionDay(now: Date, timeZone: string): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 }
 
-export function plainExcerpt(content: string, max = 800): string {
-  const text = withoutEditorialDashes(content)
+// Rows stay on their own lines, and a lone "* " still marks a bullet. An underscore
+// inside a word is kept: tables often hold code names such as model_id.
+function withoutMarkup(content: string): string {
+  return withoutEditorialDashes(content)
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/^\s*[#>*-]+\s*/gm, "")
-    .replace(/[*_`]/g, "")
-    .replace(/\s+/g, " ").trim();
+    .replace(/^[ \t]*#+[ \t]*/gm, "")
+    .replace(/(?<=\S)\*|\*(?=\S)|`|(?<![\p{L}\d])_|_(?![\p{L}\d])/gu, "");
+}
+
+function clip(text: string, max: number): string {
   if (text.length <= max) return text;
   const clipped = text.slice(0, max);
   return `${clipped.slice(0, Math.max(clipped.lastIndexOf(" "), max - 25)).trimEnd()}…`;
+}
+
+export function plainExcerpt(content: string, max = 800): string {
+  return clip(blockSummary(withoutMarkup(content).replace(/^\s*[>*-]+\s*/gm, "")).replace(/\s+/g, " ").trim(), max);
+}
+
+// The article's opening with its layout kept, for a panel with room to draw it.
+// Stops at the budget: prose ends at a word, lists and tables at a whole row.
+export function excerptBlocks(content: string, max = 800): BlockPart[] {
+  const parts: BlockPart[] = [];
+  let room = max;
+  for (const part of parseBlocks(withoutMarkup(content))) {
+    if (room <= 0) break;
+    if (part.kind === "text" || part.kind === "callout") {
+      parts.push({ ...part, text: clip(part.text, room) });
+      room -= part.text.length;
+    } else if (part.kind === "bullets" || part.kind === "numbered") {
+      const items: string[] = [];
+      for (const item of part.items) {
+        if (room <= 0) break;
+        items.push(clip(item, room));
+        room -= item.length;
+      }
+      parts.push({ ...part, items });
+    } else if (part.kind === "table") {
+      room -= part.header.join("").length;
+      const rows: string[][] = [];
+      for (const row of part.rows) {
+        if (room <= 0) break;
+        rows.push(row);
+        room -= row.join("").length;
+      }
+      if (rows.length) parts.push({ ...part, rows });
+    } else parts.push(part);
+  }
+  return parts;
 }
 
 export function buildFrontArticles(pages: Tables<"pages">[], sections: FrontSection[], changes: { section_id: string; last_changed_at: string }[] = []): FrontArticle[] {
@@ -38,7 +80,8 @@ export function buildFrontArticles(pages: Tables<"pages">[], sections: FrontSect
   return pages.filter((page) => !page.retired_at).map((page) => {
     const content = grouped.get(page.id) ?? [];
     const changedAt = content.reduce((latest, section) => [latest, section.built_at ?? "", changed.get(section.id) ?? ""].sort().at(-1)!, page.created_at);
-    return { ...page, excerpt: plainExcerpt(content.map((s) => s.body).join("\n\n")), changedAt, sectionCount: content.filter((s) => s.body.trim()).length };
+    const body = content.map((s) => s.body).join("\n\n");
+    return { ...page, body, excerpt: plainExcerpt(body), changedAt, sectionCount: content.filter((s) => s.body.trim()).length };
   });
 }
 

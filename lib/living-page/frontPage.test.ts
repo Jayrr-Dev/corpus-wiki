@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildFrontArticles, dailyOrder, editionDay, frontSelections, plainExcerpt, type FrontArticle } from "./frontPage";
+import { buildFrontArticles, dailyOrder, editionDay, excerptBlocks, frontSelections, plainExcerpt, type FrontArticle } from "./frontPage";
 import type { Tables } from "@/lib/database/types";
 
-const article = (id: string): FrontArticle => ({ id, title: id, slug: id, domain_id: null, excerpt: "A meaningful article paragraph. ".repeat(15), changedAt: "2026-10-15T12:00:00Z", sectionCount: 1 });
+const article = (id: string): FrontArticle => ({ id, title: id, slug: id, domain_id: null, parent_page_id: null, body: "", excerpt: "A meaningful article paragraph. ".repeat(15), changedAt: "2026-10-15T12:00:00Z", sectionCount: 1 });
 
 describe("front page selection", () => {
   it("is stable regardless of query ordering and rotates on the next local day", () => {
@@ -21,6 +21,21 @@ describe("front page selection", () => {
   it("does not feature empty articles or expose markdown syntax", () => {
     expect(frontSelections([{ ...article("empty"), excerpt: "" }], "2026-10-15").featured).toBeUndefined();
     expect(plainExcerpt("## Intro\n**Read** [this](https://example.com) ![secret](image.png)\n```chart bar\nA: 12\n```" )).toBe("Intro Read this");
+  });
+  it("flattens a table into words for short excerpts", () => {
+    expect(plainExcerpt("Each region:\n| Region | URL |\n|---|---|\n| us-central1 | a.com |\n| eu-west1 | b.com |")).toBe("Each region: Region, URL; us-central1, a.com; eu-west1, b.com");
+  });
+  it("keeps tables and lists as blocks for the featured panel", () => {
+    expect(excerptBlocks("Each **region**:\n| Region | model_id |\n|---|---|\n| us | `a_b` |\n\n* First\n* Second")).toEqual([
+      { kind: "text", text: "Each region:" },
+      { kind: "table", header: ["Region", "model_id"], rows: [["us", "a_b"]] },
+      { kind: "bullets", items: ["First", "Second"] },
+    ]);
+  });
+  it("stops the featured excerpt at the budget, at a whole table row", () => {
+    const table = "| A | B |\n|---|---|\n| 1234 | 5678 |\n| 1234 | 5678 |\n| 1234 | 5678 |";
+    expect(excerptBlocks(`${table}\n\nAfter the table`, 12)).toEqual([{ kind: "table", header: ["A", "B"], rows: [["1234", "5678"], ["1234", "5678"]] }]);
+    expect(excerptBlocks("One two three four five six", 12)).toEqual([{ kind: "text", text: "One two…" }]);
   });
   it("excludes retired sections and uses manual line edits for recent activity", () => {
     const pages = [{ ...article("a"), retired_at: null, entity_id: null, created_at: "2026-01-01T00:00:00Z" }] as Tables<"pages">[];
