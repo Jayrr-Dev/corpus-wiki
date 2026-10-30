@@ -1,0 +1,94 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;900&family=Anton&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1280px;height:720px;overflow:hidden;font-family:Inter,"Segoe UI",sans-serif}
+.v{display:none;position:absolute;inset:0;overflow:hidden}
+body.a #a, body.b #b, body.c #c, body.d #a{display:block}
+body.d #a .headline{font-size:106px}
+body.d #a .headline em{color:#c6f432}
+.headline{font-family:Anton,Impact,sans-serif;text-transform:uppercase;line-height:.92;letter-spacing:.5px;color:#fff}
+.brand{position:absolute;display:flex;align-items:center;gap:12px;font-weight:700;color:#fff;font-size:34px}
+.brand img{width:52px;height:52px}
+svg.graph{position:absolute}
+
+/* A: stale vs alive */
+#a{background:radial-gradient(circle at 78% 60%,#2b4a12 0,#0b0f0a 55%)}
+#a .headline{position:absolute;left:0;right:0;top:34px;text-align:center;font-size:118px}
+#a .headline em{font-style:normal;color:#ff3b3b}
+.doc{position:absolute;width:470px;height:390px;border-radius:18px;padding:26px 30px;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.doc.stale{left:70px;top:260px;background:#d9d6cf;transform:rotate(-5deg);filter:saturate(.6)}
+.banner{background:#f2c230;color:#3a2c00;font-weight:800;font-size:26px;border-radius:10px;padding:12px 16px}
+.doc h3{font-size:30px;font-weight:800;color:#333;margin:22px 0 18px}
+.line{height:14px;border-radius:7px;background:#b5b1a8;margin:12px 0}
+.stamp{position:absolute;right:-30px;bottom:40px;transform:rotate(-14deg);border:7px solid #ff3b3b;color:#ff3b3b;font-family:Anton,Impact;font-size:76px;padding:0 18px;border-radius:12px;background:rgba(255,255,255,.75)}
+.doc.alive{right:70px;top:250px;background:#111a0c;border:3px solid #c6f432;transform:rotate(4deg);box-shadow:0 0 70px rgba(198,244,50,.45),0 30px 60px rgba(0,0,0,.6);overflow:hidden}
+.fresh{position:absolute;left:26px;bottom:24px;background:#c6f432;color:#142000;font-weight:900;font-size:26px;border-radius:10px;padding:10px 16px}
+.arrow{position:absolute;left:548px;top:370px;font-size:170px;color:#c6f432;font-weight:900;text-shadow:0 0 30px rgba(198,244,50,.6)}
+
+/* B: face */
+#b{background:#c6f432}
+#b .photo{position:absolute;right:0;top:0;width:700px;height:720px;background:url(f_0.5.png) no-repeat;background-size:1700px auto;background-position:-640px -30px;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 140px)}
+#b .headline{position:absolute;left:56px;top:70px;font-size:205px;color:#0b0f0a}
+.sticky{position:absolute;left:66px;top:520px;width:430px;background:#fff7a8;color:#222;font-family:"Segoe Print","Comic Sans MS",cursive;font-weight:700;font-size:34px;line-height:1.15;padding:22px 24px;transform:rotate(-4deg);box-shadow:0 18px 30px rgba(0,0,0,.35)}
+#b .brand{right:28px;bottom:24px;color:#fff;font-size:30px;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+
+/* C: product hero */
+#c{background:radial-gradient(circle at 50% 55%,#1d3a0a 0,#070a06 70%)}
+#c .headline{position:absolute;left:0;right:0;top:170px;text-align:center;font-size:150px;text-shadow:0 8px 40px rgba(0,0,0,.9)}
+#c .headline em{font-style:normal;color:#c6f432}
+#c .brand{left:50%;transform:translateX(-50%);bottom:54px;font-size:44px}
+#c .brand img{width:64px;height:64px}
+</style></head>
+<body>
+<div class="v" id="a">
+  <div class="headline">Your docs are <em>lying</em></div>
+  <div class="doc stale">
+    <div class="banner">⚠ Last updated 2 years ago</div>
+    <h3>Phoenix release runbook</h3>
+    <div class="line" style="width:92%"></div><div class="line" style="width:80%"></div><div class="line" style="width:86%"></div><div class="line" style="width:60%"></div><div class="line" style="width:75%"></div>
+    <div class="stamp">STALE</div>
+  </div>
+  <div class="arrow">→</div>
+  <div class="doc alive"><svg class="graph" data-n="64" data-seed="11" width="470" height="390" style="left:0;top:0"></svg><div class="fresh">✓ Updated today</div></div>
+</div>
+
+<div class="v" id="b">
+  <div class="photo"></div>
+  <div class="headline">Brent<br>left.</div>
+  <div class="sticky">Nobody knows how this works…</div>
+  <div class="brand"><img src="logo.svg">Corpus Wiki</div>
+</div>
+
+<div class="v" id="c">
+  <svg class="graph" data-n="90" data-seed="3" width="1280" height="720" style="left:0;top:0;opacity:.9"></svg>
+  <div class="headline">This wiki<br><em>writes itself</em></div>
+  <div class="brand"><img src="logo.svg">Corpus Wiki</div>
+</div>
+
+<script>
+document.body.className = location.hash.slice(1) || "a";
+if (document.body.className === "d") document.querySelector("#a .headline").innerHTML = "This wiki <em>writes itself</em>";
+const NS = "http://www.w3.org/2000/svg";
+const COLORS = ["#c6f432", "#7cf0c8", "#5cc8ff", "#ffd166", "#ff7aa8"];
+document.querySelectorAll("svg.graph").forEach(svg => {
+  let s = +svg.dataset.seed;
+  const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const w = +svg.getAttribute("width"), h = +svg.getAttribute("height"), n = +svg.dataset.n;
+  const hubs = Array.from({length: Math.max(3, n / 12 | 0)}, () => ({x: w * (.12 + rnd() * .76), y: h * (.12 + rnd() * .76)}));
+  const nodes = hubs.map((p, i) => ({...p, r: 9, c: COLORS[i % 5], hub: i}));
+  for (let i = nodes.length; i < n; i++) {
+    const hb = i % hubs.length, a = rnd() * 6.28, d = 30 + rnd() * (w / 7);
+    nodes.push({x: hubs[hb].x + Math.cos(a) * d, y: hubs[hb].y + Math.sin(a) * d * .8, r: 3 + rnd() * 3, c: COLORS[hb % 5], hub: hb});
+  }
+  const line = (a, b, op) => { const l = document.createElementNS(NS, "line");
+    Object.entries({x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: a.c, "stroke-opacity": op, "stroke-width": 1.5}).forEach(([k, v]) => l.setAttribute(k, v)); svg.appendChild(l); };
+  nodes.slice(hubs.length).forEach(p => line(p, nodes[p.hub], .45));
+  for (let i = 0; i < hubs.length; i++) line(nodes[i], nodes[(i + 1) % hubs.length], .35);
+  nodes.forEach(p => { const c = document.createElementNS(NS, "circle");
+    Object.entries({cx: p.x, cy: p.y, r: p.r, fill: p.c, style: `filter:drop-shadow(0 0 ${p.r + 4}px ${p.c})`}).forEach(([k, v]) => c.setAttribute(k, v)); svg.appendChild(c); });
+});
+</script>
+</body></html>

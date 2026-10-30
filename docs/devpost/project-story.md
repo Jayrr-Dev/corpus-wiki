@@ -32,7 +32,7 @@ Corpus Wiki is **the knowledge maintaining machine**.
 
 - **Models:** every AI step runs on open **NVIDIA Nemotron** models served by **Nebius Token Factory**. Nemotron 3 Ultra makes the rare judgment calls, Nemotron 3 Super does the everyday reconciling and writing, Nemotron 3 Nano does bulk linking, and Nemotron 3.5 Super VL reads images and video frames. Qwen3 Embedding 8B finds claims that say the same thing in different words.
 - **Structured output:** Token Factory's `json_schema` response format makes Nemotron return valid ChangeSets, which we validate again with zod before anything is committed.
-- **Right-sized roles:** 17 AI roles each get the smallest model that does the job well, switchable in Settings from Token Factory's live model list, with per-role reasoning effort.
+- **Right-sized roles:** 20 AI roles each get the smallest model that does the job well, switchable in Settings from Token Factory's live model list, with per-role reasoning effort.
 - **Compute:** narrated videos render as **Nebius Serverless AI jobs** on CPU VMs, using our render image from Nebius Container Registry (headless Chromium, HyperFrames, ffmpeg). The VM is billed only while it runs.
 - **App:** Next.js 16 and React 19 on Vercel, with Supabase Postgres (pgvector, Realtime) holding the knowledge graph.
 - **Agents:** an MCP server at `/api/mcp` with its own OAuth 2.1 sign-in, five permission scopes, rate limits and an audit log.

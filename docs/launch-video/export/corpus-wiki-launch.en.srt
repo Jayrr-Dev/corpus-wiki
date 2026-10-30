@@ -1,0 +1,228 @@
+1
+00:00:00,280 --> 00:00:02,080
+Every company has a Brent.
+
+2
+00:00:02,300 --> 00:00:06,720
+And when Brent leaves, everything
+he knew walks out the door with him.
+
+3
+00:00:07,120 --> 00:00:10,160
+I've worked at a bunch of
+small local private companies,
+
+4
+00:00:10,240 --> 00:00:14,240
+and the hardest thing for all
+of them wasn't sales or hiring.
+
+5
+00:00:14,520 --> 00:00:16,960
+It was writing down what people know.
+
+6
+00:00:17,220 --> 00:00:20,760
+At one place, our most senior
+engineer left on a Friday.
+
+7
+00:00:20,860 --> 00:00:24,060
+By Monday, nobody knew how
+half the system worked.
+
+8
+00:00:24,600 --> 00:00:28,960
+We spent weeks piecing it back together
+from old emails and chat messages.
+
+9
+00:00:29,300 --> 00:00:33,480
+Someone leaves, and years
+of context are just gone.
+
+10
+00:00:33,700 --> 00:00:36,520
+And the docs that do exist, stale.
+
+11
+00:00:36,640 --> 00:00:37,940
+Nobody trusts them.
+
+12
+00:00:38,760 --> 00:00:42,480
+So people just ask each
+other over and over.
+
+13
+00:00:42,920 --> 00:00:46,470
+So I tried fixing it for
+myself first: Obsidian,
+
+14
+00:00:46,520 --> 00:00:48,080
+Notion, all of them.
+
+15
+00:00:48,140 --> 00:00:53,900
+And honestly, the graphs are gorgeous,
+but making them is so tedious.
+
+16
+00:00:54,020 --> 00:00:56,740
+Every note, you're linking things by hand.
+
+17
+00:00:57,280 --> 00:00:59,020
+It turns into a second job.
+
+18
+00:00:59,260 --> 00:01:02,300
+I always wished it would
+just do that for me.
+
+19
+00:01:03,880 --> 00:01:07,070
+So I built it. It's called Corpus Wiki.
+
+20
+00:01:07,120 --> 00:01:11,310
+You just feed it PDFs,
+Word docs, notes, screenshots,
+
+21
+00:01:11,360 --> 00:01:13,820
+even videos, or connect your Gmail.
+
+22
+00:01:13,900 --> 00:01:16,820
+It pulls out the facts and
+writes the wiki for you,
+
+23
+00:01:16,940 --> 00:01:19,310
+every line linked to where it came from.
+
+24
+00:01:19,360 --> 00:01:22,810
+And it connects everything:
+the graph, the glossary,
+
+25
+00:01:22,860 --> 00:01:25,040
+who's who, automatically.
+
+26
+00:01:25,160 --> 00:01:26,920
+No brackets, ever.
+
+27
+00:01:27,060 --> 00:01:30,570
+Ask it anything, like, "Why did
+we switch payment providers?"
+
+28
+00:01:30,620 --> 00:01:34,480
+And it answers from what your
+team actually wrote with sources.
+
+29
+00:01:34,580 --> 00:01:38,250
+Drop in a newer file, and it only
+rewrites the lines that changed.
+
+30
+00:01:38,300 --> 00:01:41,540
+And if two files disagree,
+it asks you first.
+
+31
+00:01:41,620 --> 00:01:45,180
+A normal wiki only knows what
+someone remembered to write down.
+
+32
+00:01:45,260 --> 00:01:47,060
+This one keeps up on its own.
+
+33
+00:01:47,260 --> 00:01:49,280
+So how does it actually work?
+
+34
+00:01:49,440 --> 00:01:55,020
+Every AI step runs on open NVIDIA Nemotron
+models served by Nebius Token Factory.
+
+35
+00:01:55,140 --> 00:01:57,480
+Nemotron Super does the everyday work.
+
+36
+00:01:57,540 --> 00:02:01,020
+It reads each upload, writes
+the lines, and fact-checks them.
+
+37
+00:02:01,120 --> 00:02:03,250
+Nemotron Ultra makes the big calls,
+
+38
+00:02:03,300 --> 00:02:05,900
+like planning articles and
+building the topic tree.
+
+39
+00:02:06,000 --> 00:02:09,989
+Nano handles the bulk linking, and the
+vision model reads your screenshots,
+
+40
+00:02:10,039 --> 00:02:11,990
+diagrams, and video frames.
+
+41
+00:02:12,040 --> 00:02:16,450
+Token Factory gives us one API for
+all of them with structured output,
+
+42
+00:02:16,500 --> 00:02:18,820
+so every change comes back valid.
+
+43
+00:02:19,040 --> 00:02:22,300
+Each step gets the cheapest
+model that does its job well,
+
+44
+00:02:22,540 --> 00:02:24,820
+and I can switch any of them in settings.
+
+45
+00:02:25,000 --> 00:02:30,160
+And when it makes a video, every render
+runs as a serverless job on Nebius cloud.
+
+46
+00:02:30,400 --> 00:02:34,080
+And when someone leaves,
+what they knew stays.
+
+47
+00:02:34,360 --> 00:02:36,540
+Brent's knowledge, still here.
+
+48
+00:02:37,060 --> 00:02:41,420
+If your team keeps losing knowledge or
+you're tired of linking notes by hand,
+
+49
+00:02:41,620 --> 00:02:45,280
+try it. Drop in a folder and
+watch it build your brain.
+
+50
+00:02:45,460 --> 00:02:46,460
+Link's below.

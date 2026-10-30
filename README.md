@@ -44,7 +44,7 @@ Every AI step in Corpus Wiki runs on **open NVIDIA Nemotron models** served by *
 
 - ⚡ **One API, every model.** Token Factory is OpenAI-compatible, so chat, vision and embeddings share one small client. Moving a role from Super to Ultra or Nano is a setting, not a code change.
 - 🧱 **Structured output on the server.** `response_format: json_schema` makes Nemotron return valid ChangeSets, so the pipeline never parses free text.
-- 🎛️ **Right-sized models per role.** Ultra, Super and Nano sit side by side, so each of the 17 AI roles gets the cheapest model that does its job well. Settings shows a per-role picker fed live from Token Factory's model list.
+- 🎛️ **Right-sized models per role.** Ultra, Super and Nano sit side by side, so each of the 20 AI roles gets the cheapest model that does its job well. Settings shows a per-role picker fed live from Token Factory's model list.
 - 🧠 **Reasoning effort control.** `reasoning_effort` can be set per role on `/settings`, trading speed for depth where it matters.
 - 📊 **Measured, not guessed.** A built-in speed test times every Token Factory model (latency and tokens per second), and a cost report prices each call by role and model at Token Factory's published rates.
 
