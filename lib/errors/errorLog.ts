@@ -97,6 +97,8 @@ export function captureConsole(): void {
       return;
     }
     const message = args.map((arg) => (arg instanceof Error ? arg.message : typeof arg === "string" ? arg : inspect(arg, { depth: 3 }))).join(" ");
+    // Node's notice about its own experimental features, once per worker: not an error of ours
+    if (message.includes("ExperimentalWarning")) return;
     void logError({ level, source: "console", message, stack: thrown instanceof Error ? (thrown.stack ?? null) : null });
   };
   console.error = capture("error");

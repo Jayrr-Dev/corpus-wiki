@@ -275,12 +275,14 @@ async function buildClaimedSection(
     const written = rewrite ? await rewriteLines(db, writer, state, eventId, progress, cancellable, options) : null;
     progress?.step("Finishing up…");
     await assertActiveUpload();
-    return await db.call<FinishedSectionBuild>("finish_section_build", {
+    const finished = await db.call<FinishedSectionBuild>("finish_section_build", {
       p_section_id: sectionId,
       p_event_id: eventId,
       p_model_version: written?.modelVersion ?? null,
       p_changed: (written?.applied ?? 0) > 0,
     });
+    if (!state.lines.some(line => line.content.trim())) await retireIfEmpty(db, sectionId, eventId);
+    return finished;
   } catch (error) {
     if (error instanceof SectionBuildCancelled) throw error;
     // Release this section even when the enclosing upload was cancelled. The
@@ -292,6 +294,23 @@ async function buildClaimedSection(
     throw error;
   } finally {
     progress?.done();
+  }
+}
+
+// A generated section left with no claims and no text (every claim left out) has nothing to show or
+// rebuild, so it is retired instead of staying as an empty heading. A failure here leaves it as it was.
+async function retireIfEmpty(db: DbRpc, sectionId: string, eventId: string | null) {
+  try {
+    const state = await db.call<SectionState>("read_section_state", { p_section_id: sectionId });
+    if (state.lines.length || state.units.length || !state.query?.unitIds) return;
+    const { changeSetId } = await submitChangeSet(db, { eventId, cause: "edit", actor: "ai", operationKey: `section:${sectionId}:retire-empty` }, {
+      summary: `Removed the empty section "${state.title}"`,
+      actions: [{ type: "retire_section", targetId: sectionId, expectedRevisionId: null, speechAct: null, passageIds: [], input: {} }],
+      trace: { modelVersion: null, promptVersion: null, tokensIn: null, tokensOut: null },
+    });
+    await commitAsRole(db, "write_articles", changeSetId);
+  } catch (error) {
+    console.warn("An empty section could not be retired", { sectionId, error });
   }
 }
 
