@@ -157,22 +157,31 @@ it("keeps the last valid filing when independent review rejects every attempt, s
  expect(warn.mock.calls.some(([message])=>/Filing kept/.test(String(message)))).toBe(true);
  warn.mockRestore();
 });
-it("identifies an invented planning child scope and requires a valid anchor on retry",async()=>{
+it("heals a plan's invented scope and repeated claim without another model call",async()=>{
  const event=await setup();model();
  const original=vi.mocked(chatJson).getMockImplementation()!;
  let attempts=0;
  vi.mocked(chatJson).mockImplementation(async(settings,request)=>{
   if(request.name!=="upload_domain_plan")return original(settings,request);
   attempts++;
-  if(attempts>1) {
-   const payload=payloadOf(request);
-   expect(payload.feedback).toContain('Invalid scopePath: "Upload test/Invented child"');
-   expect(payload.feedback).toContain("ONE root name with no slash");
-  }
-  return {value:{groups:[{scopePath:attempts===1?"Upload test/Invented child":"Upload test",subject:"Permit policy",reason:"Source scope",refs:["C1","C2","C3"]}]},model:"test",tokensIn:10,tokensOut:10} as never;
+  return {value:{groups:[{scopePath:"Upload test/Invented child",subject:"Permit policy",reason:"Source scope",refs:["C1","C2","C3"]},{scopePath:"Upload test",subject:"Repeat",reason:"Source scope",refs:["C2"]}]},model:"test",tokensIn:10,tokensOut:10} as never;
  });
  await topicPlacerFor(store.db,{apiKey:"test"})(event);
- expect(attempts).toBe(2);
+ expect(attempts).toBe(1);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+});
+it("asks again for omitted claims, then files any still missing beside their neighbor",async()=>{
+ const event=await setup();model();
+ const original=vi.mocked(chatJson).getMockImplementation()!;
+ let attempts=0;
+ vi.mocked(chatJson).mockImplementation(async(settings,request)=>{
+  if(request.name!=="upload_domain_plan")return original(settings,request);
+  attempts++;
+  if(attempts>1)expect(payloadOf(request).feedback).toContain("These refs have no group: C2, C3");
+  return {value:{groups:[{scopePath:"Upload test",subject:"Permit policy",reason:"Source scope",refs:["C1"]}]},model:"test",tokensIn:10,tokensOut:10} as never;
+ });
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(attempts).toBe(3);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 it("requires a corrected proposal after concrete independent review feedback",async()=>{

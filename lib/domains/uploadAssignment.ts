@@ -67,6 +67,53 @@ export function validateUploadGroups(groups: {scopePath:string; refs:string[]}[]
   if (seen.size !== expected.size) throw new Error("The domain plan omitted knowledge units. Account for every claim.");
 }
 
+// The deepest part of a path that exists, or its root as a new proposal. Children come at placement.
+const nearestScope = (path: string, knownPaths: string[]) => {
+  if (knownPaths.includes(path)) return path;
+  const parts = path.split("/").map(p => p.trim()).filter(Boolean);
+  for (let depth = parts.length; depth > 1; depth--) {
+    const ancestor = parts.slice(0, depth).join("/");
+    if (knownPaths.includes(ancestor)) return ancestor;
+  }
+  return parts[0];
+};
+
+// A plan is only a first anchor: placement and review settle where each claim goes, and a rejected
+// claim may leave its scope. So a slip in the plan is repaired, never a reason to stop the upload:
+// a repeated claim stays in its first group, a ref from outside this step is dropped, and a scope
+// that does not exist falls back to its nearest real one. Omitted refs are returned to plan again.
+export function healUploadGroups<G extends {scopePath:string; refs:string[]}>(groups: G[], claims: TopicClaim[], knownPaths: string[]) {
+  const expected = new Set(claims.map(c => c.ref!));
+  const seen = new Set<string>();
+  let repairs = 0;
+  const healed = groups.flatMap(group => {
+    const scopePath = nearestScope(group.scopePath, knownPaths);
+    if (scopePath !== group.scopePath) repairs++;
+    if (!scopePath) return [];
+    const refs = group.refs.filter(ref => {
+      const keep = expected.has(ref) && !seen.has(ref);
+      if (keep) seen.add(ref); else repairs++;
+      return keep;
+    });
+    return refs.length ? [{ ...group, scopePath, refs }] : [];
+  });
+  return { groups: healed, missing: [...expected].filter(ref => !seen.has(ref)), repairs };
+}
+
+// Last resort for refs no plan attempt covered: each joins the group of the claim before it, its
+// neighbor in the source, and placement and review judge it on its meaning from there.
+export function fileOmittedRefs<G extends {refs:string[]}>(groups: G[], claims: TopicClaim[]) {
+  const filled = groups.map(group => ({ ...group, refs: [...group.refs] }));
+  const owners = new Map(filled.flatMap(group => group.refs.map(ref => [ref, group] as const)));
+  let previous = filled[0]!;
+  for (const claim of claims) {
+    const owner = owners.get(claim.ref!);
+    if (owner) previous = owner;
+    else previous.refs.push(claim.ref!);
+  }
+  return filled;
+}
+
 // The plan's scope binds the first proposal only. Once review rejects it, a claim may go to its true
 // owner outside that scope, or nothing a retry can say would ever satisfy the reviewer.
 export function afterReview(input: PlaceTopicsInput, rejected: boolean): PlaceTopicsInput {

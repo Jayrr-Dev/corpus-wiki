@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { afterReview, scopedFilingEvidence, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "./uploadAssignment";
+import { afterReview, fileOmittedRefs, healUploadGroups, scopedFilingEvidence, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "./uploadAssignment";
 
 export const context: UploadTopicContext = {
  sourceTitle:"ULA requirements.docx",sourceSections:[{position:0,location:{heading:"Permit thresholds"}}],domainPaths:["EPCOR","EPCOR/Requirements"],domainTabs:[],
@@ -36,6 +36,31 @@ it("rejects incomplete and duplicate plans, missing assignments and out-of-scope
  expect(()=>validateUploadPlacements(new Map([["new",["EPCOR/Requirements"]]]),input)).toThrow("no domain");
  expect(()=>validateUploadPlacements(new Map([["new",["Elsewhere"]],["new2",["EPCOR"]]]),input)).toThrow("primary");
  expect(()=>validateUploadPlacements(new Map([["new",["EPCOR/Requirements","Unknown/Child"]],["new2",["EPCOR"]]]),input)).toThrow("Secondary");
+});
+it("heals a plan's repeated refs, stray refs and invented scopes instead of failing",()=>{
+ const claims=uploadAssignmentEvidence(context).claims;
+ const healed=healUploadGroups([
+  {scopePath:"EPCOR/Requirements/Invented",refs:["C1","C1","C99"]},
+  {scopePath:"Invented/Child",refs:["C1","C2"]},
+ ],claims,context.domainPaths);
+ expect(healed.groups).toEqual([{scopePath:"EPCOR/Requirements",refs:["C1"]},{scopePath:"Invented",refs:["C2"]}]);
+ expect(healed.missing).toEqual([]);
+ expect(healed.repairs).toBe(5);
+ expect(()=>validateUploadGroups(healed.groups,claims,context.domainPaths)).not.toThrow();
+});
+it("drops a group left empty or without a usable scope, and reports what it leaves unplanned",()=>{
+ const claims=uploadAssignmentEvidence(context).claims;
+ const healed=healUploadGroups([{scopePath:"EPCOR",refs:["C99"]},{scopePath:" / ",refs:["C1"]},{scopePath:"EPCOR",refs:["C2"]}],claims,context.domainPaths);
+ expect(healed.groups).toEqual([{scopePath:"EPCOR",refs:["C2"]}]);
+ expect(healed.missing).toEqual(["C1"]);
+});
+it("files an omitted ref with its neighbor in the source",()=>{
+ const claims=["C1","C2","C3","C4"].map(ref=>({unitId:ref,ref,title:ref,content:ref,entities:[]}));
+ const groups=[{scopePath:"A",refs:["C2"]},{scopePath:"B",refs:["C3"]}];
+ const filled=fileOmittedRefs(groups,claims);
+ expect(filled).toEqual([{scopePath:"A",refs:["C2","C1"]},{scopePath:"B",refs:["C3","C4"]}]);
+ expect(groups[0]!.refs).toEqual(["C2"]);
+ expect(()=>validateUploadGroups(filled,claims,["A","B"])).not.toThrow();
 });
 it("scopes neighbors, profiles and links to one request's claims",()=>{
  const evidence=uploadAssignmentEvidence(context);

@@ -12,7 +12,7 @@ import { nameDuplicateJudge } from "@/lib/ai/nameDuplicateJudge";
 import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { DOMAIN_DECIDER_INSTRUCTIONS } from "@/lib/domains/decider";
 import { skillInstructions } from "@/lib/ai/skills/prompt";
-import { afterReview, scopedFilingEvidence, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "@/lib/domains/uploadAssignment";
+import { afterReview, fileOmittedRefs, healUploadGroups, scopedFilingEvidence, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "@/lib/domains/uploadAssignment";
 import { confirmFilingObjections, dropFixedIssues, reviewIsStuck, UPLOAD_FILING_CONTRACT } from "@/lib/domains/filingObjections";
 import { filedDestinations, sampleDestinationClaims } from "@/lib/domains/filingEvidence";
 import { filingStepKey, legacyFilingPrefix, legacyReviewKey } from "./filingCheckpoints";
@@ -91,15 +91,20 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
     let partUsage:TokenUsage={tokensIn:0,tokensOut:0};
     let partModel:string|null=null;
     let feedback="";
+    let best:ReturnType<typeof healUploadGroups<z.infer<typeof planSchema>["groups"][number]>>|undefined;
     for(let attempt=0;attempt<3;attempt++) {
       const answer = await chatJson(settings,{
         name:"upload_domain_plan",subject:context.sourceTitle,schema:planSchema,jsonSchema:z.toJSONSchema(planSchema),
         messages:guardPromptSize("upload_domain_plan",planMessages(claims,feedback)),
       });
       partUsage=addUsage(partUsage,answer);partModel=answer.model;
-      try { validateUploadGroups(answer.value.groups,claims,context.domainPaths); return {...answer.value,...partUsage,model:partModel}; }
-      catch(error) { feedback=error instanceof Error?error.message:String(error); }
+      const healed=healUploadGroups(answer.value.groups,claims,context.domainPaths);
+      if(healed.repairs)processingMetric("upload_domain_plan_repairs",0);
+      if(healed.groups.length&&!healed.missing.length)return {groups:healed.groups,...partUsage,model:partModel};
+      if(healed.groups.length&&(!best||healed.missing.length<best.missing.length))best=healed;
+      feedback=`These refs have no group: ${healed.missing.join(", ")}. Cover every ref in claims exactly once.`;
     }
+    if(best)return {groups:fileOmittedRefs(best.groups,claims),...partUsage,model:partModel};
     throw new Error("Domain assignment plan is incomplete: "+feedback);
     };
     let part=await durableStep(planKey,`${prefix}:plan:${start}`,planStep);
