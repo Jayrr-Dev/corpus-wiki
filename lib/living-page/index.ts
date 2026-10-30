@@ -242,7 +242,7 @@ export async function rebuildSection(
     if (!claim.claimed) return finished;
     const buildDb = claim.buildToken ? cancellableBuildDb(db, sectionId, claim.buildToken) : db;
     try {
-      finished = await buildClaimedSection(buildDb, writer, sectionId, causeId, Boolean(claim.buildToken), options);
+      finished = await buildClaimedSection(buildDb, writer, sectionId, causeId, Boolean(claim.buildToken), options, db);
     } catch (error) {
       if (error instanceof SectionBuildCancelled) return finished;
       throw error;
@@ -264,6 +264,8 @@ async function buildClaimedSection(
   eventId: string | null,
   cancellable = false,
   options?: { skipEditorialReview?: boolean },
+  // Outlives the build: `db` may be fenced by a token that finishing the build ends
+  afterBuildDb: DbRpc = db,
 ): Promise<FinishedSectionBuild> {
   const progress = writer.progress?.(sectionId);
   try {
@@ -281,7 +283,7 @@ async function buildClaimedSection(
       p_model_version: written?.modelVersion ?? null,
       p_changed: (written?.applied ?? 0) > 0,
     });
-    if (!state.lines.some(line => line.content.trim())) await retireIfEmpty(db, sectionId, eventId);
+    if (!state.lines.some(line => line.content.trim())) await retireIfEmpty(afterBuildDb, sectionId, eventId);
     return finished;
   } catch (error) {
     if (error instanceof SectionBuildCancelled) throw error;
