@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
 // Re-embeds claims after the claim embedding text changes (#39, lib/knowledge/claimEmbeddingText.ts).
+// Both modes visit every space (lib/spaces/workers.ts) and print one line per space.
 //   default   embeds every live claim whose vector is missing or of an older text version.
 //             Pages of 256, requests of 64, 2 at a time; safe to stop and run again (it only
 //             asks for what is still missing) and it holds no locks, so uploads keep running.
@@ -22,6 +23,9 @@ try {
   const { CLAIM_TEXT_VERSION } = await runtime.ssrLoadModule("/lib/knowledge/claimEmbeddingText.ts");
   const { contextsCompatibleForMerge, parseKnowledgeContext } = await runtime.ssrLoadModule("/lib/knowledge/context.ts");
   const { CANDIDATE_COSINE, cosine, normalizeClaim } = await runtime.ssrLoadModule("/lib/knowledge/similarity.ts");
+  const { forEachWorkerSpace } = await runtime.ssrLoadModule("/lib/spaces/workers.ts");
+  const { currentActor } = await runtime.ssrLoadModule("/lib/auth/currentPerson.ts");
+  const spaceLabel = async () => `Space ${(await currentActor()).spaceId}`;
 
   const client = getAdminSupabase();
   const db = supabaseRpc(client);
@@ -29,9 +33,14 @@ try {
   if (!process.argv.includes("--pairs")) {
     const embedder = embedderFromEnv(process.env, (call: unknown) => db.call("log_ai_call", { p_call: call }));
     if (!embedder) throw new Error("Set NEBIUS_API_KEY in .env.local first.");
-    const started = Date.now();
-    console.log(`Embedded ${await embedMissingUnits(db, embedder)} claims as text version ${CLAIM_TEXT_VERSION} in ${Math.round((Date.now() - started) / 1000)} seconds.`);
-  } else {
+    const counts: number[] = await forEachWorkerSpace(async () => {
+      const started = Date.now();
+      const count = await embedMissingUnits(db, embedder);
+      console.log(`${await spaceLabel()}: embedded ${count} claims as text version ${CLAIM_TEXT_VERSION} in ${Math.round((Date.now() - started) / 1000)} seconds.`);
+      return count;
+    });
+    console.log(`Embedded ${counts.reduce((sum, count) => sum + count, 0)} claims in ${counts.length} spaces.`);
+  } else await forEachWorkerSpace(async () => {
     // LIVE CLAIMS with their context and saved vector
     type Context = { entities: { role: string }[]; applicability: unknown };
     type Claim = { revisionId: string; text: string; context: Context | null; version: number; vector?: number[] };
@@ -81,10 +90,10 @@ try {
     }
     const versions = new Map<number, number>();
     for (const claim of claims) versions.set(claim.version, (versions.get(claim.version) ?? 0) + 1);
-    console.log(`${claims.length} live claims; text versions: ${[...versions].sort((a, b) => a[0] - b[0]).map(([version, count]) => `${version === -1 ? "none" : version} ${count}`).join(", ")}.`);
-    console.log(`Cross-entity same wording: ${crossEntity.pairs} pairs, ${crossEntity.aboveLine} at or above cosine ${CANDIDATE_COSINE}.`);
-    console.log(`Same-context candidates (other wording): ${sameContext.aboveLine} of ${sameContext.pairs} pairs at or above cosine ${CANDIDATE_COSINE}.`);
-  }
+    console.log(`${await spaceLabel()}: ${claims.length} live claims; text versions: ${[...versions].sort((a, b) => a[0] - b[0]).map(([version, count]) => `${version === -1 ? "none" : version} ${count}`).join(", ")}.`);
+    console.log(`  Cross-entity same wording: ${crossEntity.pairs} pairs, ${crossEntity.aboveLine} at or above cosine ${CANDIDATE_COSINE}.`);
+    console.log(`  Same-context candidates (other wording): ${sameContext.aboveLine} of ${sameContext.pairs} pairs at or above cosine ${CANDIDATE_COSINE}.`);
+  });
 } finally {
   await runtime.close();
 }
