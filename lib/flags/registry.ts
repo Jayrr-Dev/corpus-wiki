@@ -15,6 +15,8 @@ export type FeatureFlagDefinition = {
   defaultEnabled: boolean;
   // A sidebar module: listed under Settings > Features > Sidebar, in sidebar order
   module?: true;
+  // Hidden from Settings and refused by setFeatureFlag unless the caller is a platform admin
+  devOnly?: true;
 };
 
 export const FEATURE_FLAGS = {
@@ -22,11 +24,13 @@ export const FEATURE_FLAGS = {
     label: "Billing",
     description: "Plans, checkout and invoices for paid spaces.",
     defaultEnabled: false,
+    devOnly: true,
   },
   legal_pages: {
     label: "Legal pages",
     description: "Public terms of service and privacy policy pages.",
     defaultEnabled: false,
+    devOnly: true,
   },
   audio_ingest: {
     label: "Audio uploads",
@@ -47,6 +51,7 @@ export const FEATURE_FLAGS = {
     label: "Tutorial button",
     description: "The Tutorial link at the bottom of the sidebar.",
     defaultEnabled: false,
+    devOnly: true,
   },
   // SIDEBAR MODULES, in sidebar order; turning one off hides its link, its data stays
   pages: {
@@ -192,6 +197,9 @@ export const isModuleFlagKey = (key: FeatureFlagKey): key is ModuleFlagKey => "m
 // Sidebar modules in sidebar order, and the features without them
 export const MODULE_FLAG_KEYS: ModuleFlagKey[] = FEATURE_FLAG_KEYS.filter(isModuleFlagKey);
 export const FEATURE_ONLY_KEYS = FEATURE_FLAG_KEYS.filter((key) => !isModuleFlagKey(key));
+
+// Flags only a platform admin may see or change (`devOnly: true`)
+export const isDevOnlyFlagKey = (key: FeatureFlagKey): boolean => "devOnly" in FEATURE_FLAGS[key];
 
 // The sidebar modules that are on, in sidebar order
 export function enabledModuleFlags(flags: FeatureFlags): ModuleFlagKey[] {

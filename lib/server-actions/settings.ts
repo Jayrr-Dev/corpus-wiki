@@ -5,6 +5,7 @@ import { autoDecideGlossary } from "@/lib/glossary/autoDecide";
 import { readModelChoice } from "@/lib/ai/models";
 import { tokenFactoryFromEnv } from "@/lib/ai/chat";
 import { currentActor } from "@/lib/auth/currentPerson";
+import { requirePlatformAdmin } from "@/lib/auth/platformAdmin";
 import { requireUser } from "@/lib/auth/requireUser";
 import { listAvailableModels, saveAiEffort, saveAllowExternalKnowledge, saveArticleCharter, saveAutoUpdateStale, saveChosenModel, saveMonetizationEnabled, saveRoleAuto, saveRoleEffort, saveRoleModel } from "@/lib/ai/models";
 import { REASONING_EFFORTS, type ReasoningEffort } from "@/lib/ai/chat";
@@ -116,7 +117,7 @@ export async function setAutoUpdateStale(enabled: boolean): Promise<ActionResult
 // MONETIZATION: turns usage-based plans with weekly limits on or off (off by default)
 export async function setMonetizationEnabled(enabled: boolean): Promise<ActionResult> {
   return toActionResult(async () => {
-    await requireUser();
+    await requirePlatformAdmin();
     await saveMonetizationEnabled(supabaseRpc(getAdminSupabase()), enabled);
     return {};
   });

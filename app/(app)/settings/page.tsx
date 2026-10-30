@@ -9,7 +9,9 @@ import { AiSpeed } from "./AiSpeed";
 import { ArticleCharterForm } from "./ArticleCharterForm";
 import { AutoDecide } from "./AutoDecide";
 import { AutoUpdateStale } from "./AutoUpdateStale";
-import { MODULE_FLAG_KEYS } from "@/lib/flags/registry";
+import { isPlatformAdmin } from "@/lib/auth/platformAdmin";
+import { requireUser } from "@/lib/auth/requireUser";
+import { FEATURE_ONLY_KEYS, isDevOnlyFlagKey, MODULE_FLAG_KEYS } from "@/lib/flags/registry";
 import { getFeatureFlags } from "@/lib/flags/server";
 import { loadGmailCard } from "@/lib/connectors/gmail/server";
 import { ExternalKnowledge } from "./ExternalKnowledge";
@@ -62,7 +64,8 @@ function SettingsCard({ id, title, description, icon: Icon, children }: {
 const GMAIL_OUTCOMES: readonly string[] = ["connected", "denied", "failed", "setup"];
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ gmail?: string }> }) {
-  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide, monetization, featureFlags, gmail] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide(), loadMonetization(), getFeatureFlags(), loadGmailCard()]);
+  const [modelSettings, autoUpdateStale, profile, externalKnowledge, articleCharter, speedTests, glossaryAutoDecide, monetization, featureFlags, gmail, user] = await Promise.all([loadModelSettings(), loadAutoUpdateStale(), loadMyProfile(), loadExternalKnowledge(), loadArticleCharter(), loadSpeedTests(), loadGlossaryAutoDecide(), loadMonetization(), getFeatureFlags(), loadGmailCard(), requireUser()]);
+  const platformAdmin = isPlatformAdmin(user.email);
   const gmailParam = (await searchParams).gmail;
   const gmailOutcome = (gmailParam && GMAIL_OUTCOMES.includes(gmailParam) ? gmailParam : null) as GmailOutcome;
   const panels: Record<string, ReactNode> = {
@@ -113,9 +116,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <AutoDecide enabled={glossaryAutoDecide} />
         <div className="mt-6 border-t pt-6"><AutoUpdateStale enabled={autoUpdateStale} /></div>
         <div className="mt-6 border-t pt-6"><ExternalKnowledge enabled={externalKnowledge.enabled} ready={externalKnowledge.ready} /></div>
-        <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} billing={featureFlags.billing} /></div>
+        {platformAdmin ? <div className="mt-6 border-t pt-6"><Monetization enabled={monetization} billing={featureFlags.billing} /></div> : null}
         <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} keys={MODULE_FLAG_KEYS} title="Sidebar" hint="What the sidebar shows, in every space. A hidden link's page still opens by URL, except Study, Video and Docs." /></div>
-        <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} /></div>
+        <div className="mt-6 border-t pt-6"><FeatureFlags flags={featureFlags} keys={platformAdmin ? FEATURE_ONLY_KEYS : FEATURE_ONLY_KEYS.filter((key) => !isDevOnlyFlagKey(key))} /></div>
       </SettingsCard>
     ),
     security: <SettingsCard id="security" title="Security" description="Keep your account protected with a strong password." icon={LockKeyhole}><PasswordForm /></SettingsCard>,
