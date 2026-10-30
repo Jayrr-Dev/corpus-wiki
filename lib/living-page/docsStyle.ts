@@ -164,6 +164,8 @@ export class DocsSectionWriter implements SectionWriter {
       add.push(...more);
     }
     add.push(...toLines(answer.value.add));
+    // Nothing usable for knowledge the section has to state (an intro citing no real claim): the plain version
+    if (!revise.length && !add.length && input.uncoveredUnitIds.length) return fakeDocsRevision(input);
     return withOmissions(input, { revise, retire: [...retire], add, modelVersion: answer.model, tokensIn: answer.tokensIn, tokensOut: answer.tokensOut });
   }
 }

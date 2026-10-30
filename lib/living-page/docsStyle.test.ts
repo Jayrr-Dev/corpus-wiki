@@ -97,6 +97,14 @@ describe("docs section style", () => {
     expect(revision.omittedUnitIds).toEqual(["cli", "backup"]);
   });
 
+  it("writes the plain version when an intro comes back citing no real claim", async () => {
+    const answer: DocsAnswer = { revise: [], retire: [], add: [block({ type: "text", text: "A cluster is a database.", cites: ["invented"] })] };
+    const writer = new DocsSectionWriter(async () => ({ value: answer, model: "mock", tokensIn: null, tokensOut: null }));
+    const revision = await writer.reviseSection({ pageTitle: "P", sectionTitle: "Intro", units, lines: [], uncoveredUnitIds: ["console"], style: { kind: "doc", intro: true } });
+    expect(revision.add).toHaveLength(1);
+    expect(revision.add[0]!.unitIds).toEqual(["console"]);
+  });
+
   it("asks the model for the same fields the answer is parsed with, intro and task alike", () => {
     const fields = (schema: { shape: { add: { element: { shape: object } } } }) => Object.keys(schema.shape.add.element.shape).sort();
     expect(fields(sectionAnswerSchema(true))).toEqual(fields(docsAnswerSchema));
