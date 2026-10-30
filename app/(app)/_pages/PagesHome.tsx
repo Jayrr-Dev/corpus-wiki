@@ -4,10 +4,12 @@ import { MediaImage } from "@/components/preview/MediaImage";
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Clock3, ImageIcon, Shuffle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { ArrowUpRight, BookOpen, Clock3, ImageIcon, RefreshCw, Shuffle } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Tooltip } from "@/components/standard/tooltip";
 import { QueryState, TextLink } from "@/app/(app)/_components/bits";
 import { DateTime, useTimeZone } from "@/app/(app)/_components/DateTime";
 import { useFrontPage } from "@/lib/queries/frontPage";
@@ -20,7 +22,8 @@ import { buildFrontArticles, dailyOrder, editionDay, excerptBlocks, frontSelecti
 import { BlockPartView } from "@/components/living-page/LineBlock";
 import { PagesTable } from "./PagesTable";
 import { useActiveSpace } from "@/components/shell/SpaceProvider";
-import { readSpaceWelcome } from "@/lib/server-actions/spaceWelcome";
+import { readSpaceWelcome, refreshSpaceWelcome } from "@/lib/server-actions/spaceWelcome";
+import { describeCallError } from "@/lib/server-actions/result";
 
 export function PagesHome() {
   const [view, setView] = useState<"front" | "browse">("front");
@@ -49,7 +52,19 @@ function FrontPage({ browse }: { browse: () => void }) {
     staleTime: Infinity,
     retry: false,
   });
-  const subtitle = saved ?? welcome.data;
+  const router = useRouter();
+  // The refresh shows at once; router.refresh brings the saved copy into the layout's space.
+  const refresh = useMutation({
+    mutationFn: async () => {
+      const result = await refreshSpaceWelcome();
+      if (!result.ok) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => router.refresh(),
+    onError: (error) => toast.error(describeCallError(error)),
+  });
+  const refreshed = refresh.data?.spaceId === space.id && refresh.data.title === space.name ? refresh.data.subtitle : null;
+  const subtitle = refreshed ?? saved ?? welcome.data;
   const data = useFrontPage();
   const zone = useTimeZone();
   const [now, setNow] = useState<Date | null>(null);
@@ -66,13 +81,16 @@ function FrontPage({ browse }: { browse: () => void }) {
   const parents = articles.filter((a) => articles.some((child) => child.parent_page_id === a.id));
   const topics = parents.length ? parents : articles.filter((a) => !a.parent_page_id);
   const query = { isPending: !now || data.pages.isPending || data.sections.isPending, error: data.pages.error ?? data.sections.error };
-  const router = useRouter();
   return <QueryState query={query}>
     <div className="space-y-4">
       <section className="rounded-md border bg-sidebar/40 px-5 py-7 text-center sm:px-8" aria-label="Welcome">
         <p className="mb-2 text-xs text-muted-foreground">{now?.toLocaleDateString("en-US", { timeZone: zone, weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
         <h2 className="break-words text-2xl font-medium tracking-tight">{space.name}</h2>
-        <p className="mt-2 text-muted-foreground">{subtitle || "A place to collect ideas, make connections, and keep exploring."}</p>
+        <p className="group/subtitle mt-2 text-muted-foreground">
+          {subtitle || "A place to collect ideas, make connections, and keep exploring."}
+          {/* The negative margin keeps the line centred on the words, not words plus icon. */}
+          <Tooltip content="Update from new knowledge"><button type="button" aria-label="Update tag line" disabled={refresh.isPending} onClick={() => refresh.mutate()} className={`-mr-7 ml-1 inline-flex size-6 items-center justify-center rounded-md align-middle outline-none transition-opacity hover:bg-hover hover:text-foreground group-hover/subtitle:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-wait [@media(hover:none)]:opacity-100 ${refresh.isPending ? "opacity-100" : "opacity-0"}`}><RefreshCw className={`size-3.5 ${refresh.isPending ? "animate-spin" : ""}`} aria-hidden="true" /></button></Tooltip>
+        </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
           <button className="text-link hover:underline" onClick={browse}>{data.pages.data?.count.toLocaleString()} articles</button>
           <TextLink href="/sources">{data.sources.isSuccess ? `${data.sources.data.count.toLocaleString()} sources` : "Sources"}</TextLink>
