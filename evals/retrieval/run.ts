@@ -8,6 +8,7 @@ import type { Reranker } from "../../lib/ai/rerank.ts";
 import type { RankDeps, RankResult, SearchMode } from "../../lib/chatbot/rank.ts";
 import type { Database } from "../../lib/database/types.ts";
 import type { DbRpc } from "../../lib/db/rpc.ts";
+import { queryText } from "../../lib/ai/queryText.ts";
 
 // =====================================================================
 // RETRIEVAL EVAL RUNNER (C2 of "Plan: hybrid chat search" in TODO.md)
@@ -119,7 +120,7 @@ try {
   for (const id of entityIds) if (!entities.has(id)) console.warn(`Entity ${id} is no longer live; its questions run unscoped.`);
 
   // Embed each question once, so variants differ only in ranking
-  const vectors = await embedder.embed(questions.map(question => question.question));
+  const vectors = await embedder.embed(questions.map(question => queryText(embedder.model, "knowledge", question.question)));
   const date = new Date().toISOString().slice(0, 10);
   mkdirSync(join(HERE, "results"), { recursive: true });
 
