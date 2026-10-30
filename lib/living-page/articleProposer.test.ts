@@ -51,6 +51,31 @@ describe("readProposals", () => {
   it("refuses unknown claim refs", () => {
     expect(() => readProposals({ proposals: [proposal({ claims: ["C9"] })] }, input)).toThrow(/unknown claim/);
   });
+  describe("after the corrective retry (dropInvalid)", () => {
+    const read = (proposals: ArticleProposalsAnswer["proposals"]) => readProposals({ proposals }, input, true);
+    it("leaves out unknown claims and keeps the rest", () => {
+      expect(read([proposal({ claims: ["C42", "C1"] })]).map((item) => item.claims.map((claim) => claim.unitId))).toEqual([["u1"]]);
+      expect(read([proposal({ claims: ["C42"] })])).toEqual([]);
+    });
+    it("leaves out a bad proposal without losing its claims to a later one", () => {
+      const planned = read([proposal({ action: "update", pageId: "nope", claims: ["C1"] }), proposal({ title: "", claims: ["C2"] }), proposal({ type: "entity", entity: "E9", claims: ["C3"] }), proposal({ title: "Kept", claims: ["C1", "C2", "C3"] })]);
+      expect(planned).toHaveLength(1);
+      expect(planned[0]!.claims.map((claim) => claim.unitId)).toEqual(["u1", "u2", "u3"]);
+    });
+    it("keeps the first of two proposals with one title", () => {
+      expect(read([proposal({ claims: ["C1"] }), proposal({ claims: ["C2"] })]).map((item) => item.claims.length)).toEqual([1]);
+    });
+    it("puts an article with a bad parent, its own title or a parent loop at the top level", () => {
+      expect(read([proposal({ parentPageId: "Nowhere" })])[0]).toMatchObject({ parentPageId: null });
+      expect(read([proposal({ parentPageId: "Minimum clearances" })])[0]).not.toHaveProperty("parentTitle");
+      const loop = read([proposal({ title: "A", parentPageId: "B", claims: ["C1"] }), proposal({ title: "B", parentPageId: "A", claims: ["C2"] })]);
+      expect(loop).toHaveLength(2);
+      expect(loop.filter((item) => item.action === "create" && item.parentTitle)).toHaveLength(1);
+    });
+    it("keeps an article whose entity ref is unknown unless it profiles that entity", () => {
+      expect(read([proposal({ entity: "E9" })])[0]).toMatchObject({ entity: null });
+    });
+  });
 });
 
 describe("buildProposerMessages", () => {

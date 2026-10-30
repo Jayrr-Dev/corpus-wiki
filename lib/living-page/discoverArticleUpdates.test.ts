@@ -14,6 +14,7 @@ describe("article update discovery boundaries", () => {
     expect(discoverySections({ sections: [{ title: "New requirements", claims: [" c1 "] }] }, [candidate])[0]?.query.unitIds).toEqual(["new"]);
     expect(() => discoverySections({ sections: [{ title: "Invented", claims: ["C2"] }] }, [candidate])).toThrow("unknown");
     expect(() => discoverySections({ sections: [{ title: "Duplicate", claims: ["C1", "C1"] }] }, [candidate])).toThrow("repeated");
+    expect(discoverySections({ sections: [{ title: "Kept", claims: ["C1", "C1", "C2"] }, { title: "Empty", claims: ["C9"] }] }, [candidate], true)).toEqual([{ title: "Kept", query: { unitIds: ["new"], article: true } }]);
     expect(() => discoverySections({ sections: [{ title: "Duplicate", claims: ["C1", " c1 "] }] }, [candidate])).toThrow("repeated");
   });
   it("bounds one-run notes and rejects malformed targets", () => {
@@ -46,10 +47,22 @@ it("merges the same new topic across discovery batches without losing claims", a
   expect(result.sections).toHaveLength(1);
   expect(result.sections[0]?.query.unitIds).toHaveLength(41);
 });
-it("rejects silent omissions instead of accepting thin coverage", async () => {
+it("asks again about skipped claims and never saves an unanswered one as turned down", async () => {
+  const answers = [
+    { sections: [{ title: "First", claims: ["C1"] }], excluded: [] }, { sections: [{ title: "First", claims: ["C1", "C1"] }], excluded: [] },
+    { sections: [{ title: "Second", claims: ["C1"] }], excluded: [] }, { sections: [{ title: "Second", claims: ["C1"] }], excluded: [] },
+  ];
+  const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => new Response(JSON.stringify({ model: "test", choices: [{ finish_reason: "stop", message: { content: JSON.stringify(answers.shift() ?? { sections: [], excluded: [] }) } }] })));
+  vi.stubGlobal("fetch", fetch);
+  const result = await groupClaimsForArticle({ apiKey: "test" }, "Example", [], [{ ...candidate, unitId: "a" }, { ...candidate, unitId: "b" }, { ...candidate, unitId: "c" }], "");
+  expect(result.sections.map((section) => section.query.unitIds)).toEqual([["a"], ["b"]]);
+  expect(result.excluded).toEqual([]);
+  expect(fetch).toHaveBeenCalledTimes(6);
+});
+it("does not loop on a batch the model will not answer", async () => {
   const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(async () => new Response(JSON.stringify({ model: "test", choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ sections: [], excluded: [] }) } }] })));
   vi.stubGlobal("fetch", fetch);
-  await expect(groupClaimsForArticle({ apiKey: "test" }, "Example", [], [candidate], "")).rejects.toThrow("every claim");
+  await expect(groupClaimsForArticle({ apiKey: "test" }, "Example", [], [candidate], "")).resolves.toMatchObject({ sections: [], excluded: [] });
   expect(fetch).toHaveBeenCalledTimes(2);
 });
 it("discovers relevant new claims using current planning skills and the one-run note", async () => {

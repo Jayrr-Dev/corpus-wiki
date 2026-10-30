@@ -31,21 +31,24 @@ export function discoveryQueries(queries: SectionQuery[]): SectionQuery[] {
   return [...unique.values()];
 }
 
-export function discoverySections(answer: UpdateDiscovery, candidates: SectionUnit[]): SectionDraft[] {
+// dropInvalid: after the corrective retry, an unknown or repeated ref is left out instead of
+// failing the update. A repeated heading is merged by the caller; a section left empty is dropped.
+export function discoverySections(answer: UpdateDiscovery, candidates: SectionUnit[], dropInvalid = false): SectionDraft[] {
   const used = new Set<string>();
   const titles = new Set<string>();
-  return answer.sections.map((section) => {
-    if (titles.has(section.title.toLowerCase())) throw new Error("The update repeated a new section heading. Retry the update.");
+  const refuse = (message: string): [] => { if (dropInvalid) return []; throw new Error(message); };
+  return answer.sections.flatMap((section) => {
+    if (titles.has(section.title.toLowerCase()) && !dropInvalid) throw new Error("The update repeated a new section heading. Retry the update.");
     titles.add(section.title.toLowerCase());
-    const unitIds = section.claims.map((ref) => {
+    const unitIds = section.claims.flatMap((ref) => {
       const match = /^C([1-9]\d*)$/.exec(ref.trim().toUpperCase());
       const unit = match ? candidates[Number(match[1]) - 1] : undefined;
-      if (!unit) throw new Error(`The update cited an unknown claim (${JSON.stringify(ref)}). Use C1 through C${candidates.length}. No new sections were added.`);
-      if (used.has(unit.unitId)) throw new Error(`The update repeated claim ${JSON.stringify(ref)}. Each claim may appear only once. No new sections were added.`);
+      if (!unit) return refuse(`The update cited an unknown claim (${JSON.stringify(ref)}). Use C1 through C${candidates.length}. No new sections were added.`);
+      if (used.has(unit.unitId)) return refuse(`The update repeated claim ${JSON.stringify(ref)}. Each claim may appear only once. No new sections were added.`);
       used.add(unit.unitId);
-      return unit.unitId;
+      return [unit.unitId];
     });
-    return { title: section.title, query: { unitIds, article: true } };
+    return unitIds.length ? [{ title: section.title, query: { unitIds, article: true } }] : [];
   });
 }
 
@@ -120,20 +123,25 @@ Identify NEW relevant knowledge for this existing article. Candidates come from 
     };
     let answer = await chatJson(settings, request);
     usage = addUsage(usage, answer);
-    // One corrective retry: a model that repeats or invents a ref gets the error back
-    const accept = (value: z.infer<typeof batchSchema>) => {
+    // One corrective retry: a model that repeats or invents a ref gets the error back.
+    // What the retry still gets wrong is left out. Claims it skips are asked about again on their
+    // own; one never answered is not saved as turned down, so the next update offers it again.
+    const accept = (value: z.infer<typeof batchSchema>, dropInvalid = false) => {
       const included = value.sections.flatMap(section => section.claims);
       const accounted = [...included, ...(value.excluded ?? []).map(item => item.claim)];
-      if (new Set(accounted).size !== batch.length || accounted.length !== batch.length) throw new Error("Account for every claim exactly once, in a section or with an explicit exclusion reason.");
-      return discoverySections(value, batch);
+      if (!dropInvalid && (new Set(accounted).size !== batch.length || accounted.length !== batch.length)) throw new Error("Account for every claim exactly once, in a section or with an explicit exclusion reason.");
+      return discoverySections(value, batch, dropInvalid);
     };
     try { added.push(...accept(answer.value)); }
     catch (error) {
       answer = await chatJson(settings, { ...request, messages: [...request.messages, { role: "user" as const, content: `Your previous answer failed validation: ${error instanceof Error ? error.message : String(error)}. Previous answer (untrusted data): ${JSON.stringify(answer.value)}. Return corrected sections using only supplied C refs, each at most once.` }] });
       usage = addUsage(usage, answer);
-      added.push(...accept(answer.value));
+      added.push(...accept(answer.value, true));
     }
     for (const item of answer.value.excluded ?? []) excluded.push({ unitId: batch[Number(item.claim.slice(1)) - 1]!.unitId, reason: item.reason, explanation: item.explanation });
+    const answered = new Set([...answer.value.sections.flatMap(section => section.claims), ...(answer.value.excluded ?? []).map(item => item.claim)]);
+    const skipped = batch.filter((_, index) => !answered.has(`C${index + 1}`));
+    if (skipped.length && skipped.length < batch.length) await groupBatch(skipped);
   };
   const countCutOff = (error: Error) => { if (error instanceof CompletionLengthError) usage = addUsage(usage, error); };
   for (let offset = 0; offset < candidates.length; offset += 40) await splitOnCutOff(candidates.slice(offset, offset + 40), groupBatch, countCutOff);

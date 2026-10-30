@@ -66,43 +66,50 @@ export function buildProposerMessages(instructions: string, input: ProposerInput
 // Refs to ids; throws on anything invalid so the caller can retry once with the message.
 // A parent proposed in the same answer comes before the articles under it. A claim given to
 // two proposals stays in the first; a proposal left without claims is dropped.
-export function readProposals(answer: ArticleProposalsAnswer, input: ProposerInput): PlannedArticle[] {
+// dropInvalid: after the corrective retry, a bad ref or proposal is left out instead of failing
+// the batch (its claims stay in the knowledge store), and an article with a bad parent sits at the top.
+export function readProposals(answer: ArticleProposalsAnswer, input: ProposerInput, dropInvalid = false): PlannedArticle[] {
   const pageIds = new Set(input.articles.map((article) => article.id));
   const titleKey = (title: string) => title.trim().toLowerCase();
   const proposedTitles = new Set(answer.proposals.filter((proposal) => proposal.action === "create").map((proposal) => titleKey(proposal.title)));
   const used = new Set<string>();
   const titles = new Set<string>();
-  const ref = <T>(list: T[], prefix: string, value: string, what: string): T => {
+  const refuse = (message: string): [] => { if (dropInvalid) return []; throw new Error(message); };
+  const ref = <T>(list: T[], prefix: string, value: string, what: string): T[] => {
     const match = new RegExp(`^${prefix}([1-9]\\d*)$`).exec(value.trim().toUpperCase());
     const item = match ? list[Number(match[1]) - 1] : undefined;
-    if (!item) throw new Error(`A proposal cited an unknown ${what}: ${value}.`);
-    return item;
+    return item ? [item] : refuse(`A proposal cited an unknown ${what}: ${value}.`);
   };
   const planned = answer.proposals.flatMap((proposal): PlannedArticle[] => {
-    const claims = proposal.claims.map((value) => ref(input.claims, "C", value, "claim")).filter((claim) => !used.has(claim.unitId));
-    claims.forEach((claim) => used.add(claim.unitId));
+    const claims = proposal.claims.flatMap((value) => ref(input.claims, "C", value, "claim")).filter((claim) => !used.has(claim.unitId));
     if (!claims.length) return [];
     if (proposal.action === "update") {
-      if (!proposal.pageId || !pageIds.has(proposal.pageId)) throw new Error("An update needs pageId to be an id from the article index.");
+      if (!proposal.pageId || !pageIds.has(proposal.pageId)) return refuse("An update needs pageId to be an id from the article index.");
+      claims.forEach((claim) => used.add(claim.unitId));
       return [{ action: "update", pageId: proposal.pageId, claims }];
     }
-    if (!proposal.title || !proposal.scope || !proposal.type) throw new Error("A new article needs a title, a type and a scope.");
+    if (!proposal.title || !proposal.scope || !proposal.type) return refuse("A new article needs a title, a type and a scope.");
     const key = proposal.title.toLowerCase();
-    if (titles.has(key)) throw new Error(`Two proposals share the title “${proposal.title}”.`);
-    titles.add(key);
+    if (titles.has(key)) return refuse(`Two proposals share the title “${proposal.title}”.`);
     const parent = proposal.parentPageId?.trim() || null;
-    const parentTitle = parent && !pageIds.has(parent) && proposedTitles.has(titleKey(parent)) ? parent : undefined;
-    if (parent && !pageIds.has(parent) && !parentTitle) throw new Error("parentPageId must be an id from the article index, the title of another article proposed here, or null.");
-    if (parentTitle && titleKey(parentTitle) === titleKey(proposal.title)) throw new Error(`The article “${proposal.title}” cannot sit under itself.`);
-    const entity = proposal.entity ? ref(input.entities, "E", proposal.entity, "entity") : null;
-    if (proposal.type === "entity" && !entity) throw new Error(`The entity article “${proposal.title}” needs the E ref of the entity it profiles.`);
-    return [{ action: "create", title: proposal.title, type: proposal.type, scope: proposal.scope, parentPageId: parentTitle ? null : parent, ...(parentTitle ? { parentTitle } : {}), entity, claims }];
+    const indexed = !!parent && pageIds.has(parent);
+    const proposed = parent && !indexed && proposedTitles.has(titleKey(parent)) ? parent : undefined;
+    const underItself = !!proposed && titleKey(proposed) === titleKey(proposal.title);
+    if (parent && !indexed && !proposed && !dropInvalid) throw new Error("parentPageId must be an id from the article index, the title of another article proposed here, or null.");
+    if (underItself && !dropInvalid) throw new Error(`The article “${proposal.title}” cannot sit under itself.`);
+    const parentTitle = underItself ? undefined : proposed;
+    const entity = proposal.entity ? ref(input.entities, "E", proposal.entity, "entity")[0] ?? null : null;
+    if (proposal.type === "entity" && !entity) return refuse(`The entity article “${proposal.title}” needs the E ref of the entity it profiles.`);
+    titles.add(key);
+    claims.forEach((claim) => used.add(claim.unitId));
+    return [{ action: "create", title: proposal.title, type: proposal.type, scope: proposal.scope, parentPageId: indexed ? parent : null, ...(parentTitle ? { parentTitle } : {}), entity, claims }];
   });
-  return parentsFirst(planned, titleKey);
+  return parentsFirst(planned, titleKey, dropInvalid);
 }
 
-// Each new article after the new article it sits under; a loop of parents is refused
-function parentsFirst(planned: PlannedArticle[], titleKey: (title: string) => string): PlannedArticle[] {
+// Each new article after the new article it sits under; a loop of parents is refused, or with
+// dropInvalid broken where it closes
+function parentsFirst(planned: PlannedArticle[], titleKey: (title: string) => string, dropInvalid: boolean): PlannedArticle[] {
   const byTitle = new Map(planned.flatMap((item) => item.action === "create" ? [[titleKey(item.title), item] as const] : []));
   const ordered: PlannedArticle[] = [];
   const placed = new Set<PlannedArticle>();
@@ -112,7 +119,8 @@ function parentsFirst(planned: PlannedArticle[], titleKey: (title: string) => st
     if (visiting.has(item)) throw new Error("New articles cannot sit under each other in a loop.");
     visiting.add(item);
     const parent = item.action === "create" && item.parentTitle ? byTitle.get(titleKey(item.parentTitle)) : undefined;
-    if (parent) place(parent);
+    if (parent && dropInvalid && visiting.has(parent) && item.action === "create") delete item.parentTitle;
+    else if (parent) place(parent);
     visiting.delete(item);
     placed.add(item);
     ordered.push(item);

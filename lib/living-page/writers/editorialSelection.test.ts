@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { chatJson, InvalidStructuredAnswerError } from "@/lib/ai/chat";
+import { chatJson, CompletionLengthError, InvalidStructuredAnswerError } from "@/lib/ai/chat";
 import { checkEditorialDraft, selectEditorialClaims } from "./editorialSelection";
 import type { SectionReviseInput } from "../types";
 
@@ -62,6 +62,12 @@ it("does not offer already-covered omissions when there is no supporting context
   const schema = vi.mocked(chatJson).mock.calls[0]![1].schema;
   expect(schema.safeParse({ omit: [{ ref: "C1", reason: "already_covered", contextSection: null, explanation: "Already covered" }] }).success).toBe(false);
 });
+it("skips optional editorial feedback when the answer is cut off", async () => {
+  vi.mocked(chatJson).mockRejectedValue(new CompletionLengthError(5, 2000, "test", 2000));
+  await expect(checkEditorialDraft({ apiKey: "test" }, input, [{ ref: "L1", text: "Company is based in Edmonton." }])).resolves.toEqual({ verdicts: [], tokensIn: 5, tokensOut: 2000 });
+  await expect(selectEditorialClaims({ apiKey: "test" }, input)).resolves.toMatchObject({ omittedUnitIds: [] });
+});
+
 it("retains all claims and usage when the omission answer fails its schema", async () => {
   vi.mocked(chatJson).mockRejectedValueOnce(new InvalidStructuredAnswerError("Unknown supporting section", 12, 3));
   expect(await selectEditorialClaims({ apiKey: "test" }, input)).toEqual({ omittedUnitIds: [], tokensIn: 12, tokensOut: 3 });

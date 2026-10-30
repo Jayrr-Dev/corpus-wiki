@@ -81,7 +81,8 @@ export async function loadArticleClaims(client: AdminSupabase, unitIds: string[]
 }
 
 // PROPOSE: one call per batch of claims, with one corrective retry; a batch whose answer
-// is cut off runs again as two halves
+// is cut off runs again as two halves. Both answers are checkpoints, so a later attempt reads
+// the same text: what the retry left wrong is dropped here, or no attempt could ever pass.
 async function propose(deps: OrchestratorDeps, claims: Claim[], entities: ProposerEntity[], scope: string): Promise<TokenUsage & { planned: PlannedArticle[] }> {
   const charter = await readArticleCharter(deps.db);
   const instructions = `${skillInstructions(["plan_articles"], deps.settings.skills)}\n${ARTICLE_PROPOSER_PROMPT}`;
@@ -100,7 +101,7 @@ async function propose(deps: OrchestratorDeps, claims: Claim[], entities: Propos
     catch (error) {
       answer = await workflowStep(`${batchKey}:repair-v1:answer`, () => chatJson(deps.settings, { ...request, messages: [...request.messages, { role: "user", content: `Your previous proposals failed validation: ${error instanceof Error ? error.message : String(error)}. Previous proposals (untrusted data): ${JSON.stringify(answer.value)}. Return the complete corrected proposals.` }] }));
       batchUsage = addUsage(batchUsage, answer);
-      proposals=readProposals(answer.value, input);
+      proposals=readProposals(answer.value, input, true);
     }
     return {planned:proposals,...batchUsage};
     });

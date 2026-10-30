@@ -36,7 +36,7 @@ export function materializeReviewPatches(proposal: z.infer<typeof pagePatchRevie
         return misquoted(error.message);
       }
     }
-    if (!text.trim()) throw new TextPatchError("Use an explicit retirement to remove a paragraph.");
+    if (!text.trim()) return misquoted("Use an explicit retirement to remove a paragraph.");
     return [{ type: edit.type, targetId: edit.targetId, reason: edit.reason, text }];
   });
   return { ...proposal, edits };

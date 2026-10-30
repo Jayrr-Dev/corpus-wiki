@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { addUsage, chatJson, InvalidStructuredAnswerError, type TokenFactorySettings } from "@/lib/ai/chat";
+import { addUsage, chatJson, CompletionLengthError, InvalidStructuredAnswerError, type TokenFactorySettings } from "@/lib/ai/chat";
 import type { SectionReviseInput } from "../types";
 import type { LineVerdict } from "./lineCheck";
 import { SOURCE_ATTRIBUTION_POLICY } from "../articleStyle";
@@ -23,8 +23,8 @@ export async function checkEditorialDraft(settings: TokenFactorySettings, input:
   const review = async (messages = request.messages) => {
     try { return await chatJson(settings, { ...request, messages }); }
     catch (error) {
-      if (!(error instanceof InvalidStructuredAnswerError)) throw error;
-      // Malformed editorial feedback cannot authorize an edit. The separate
+      if (!(error instanceof InvalidStructuredAnswerError || error instanceof CompletionLengthError)) throw error;
+      // Malformed or cut-off editorial feedback cannot authorize an edit. The separate
       // factual reviewer still checks the draft against its cited claims.
       return { value: { issues: [] }, tokensIn: error.tokensIn, tokensOut: error.tokensOut };
     }
@@ -90,7 +90,7 @@ export async function selectEditorialClaims(settings: TokenFactorySettings, inpu
   const select = async (messages = request.messages) => {
     try { return await chatJson(settings, { ...request, messages }); }
     catch (error) {
-      if (!(error instanceof InvalidStructuredAnswerError)) throw error;
+      if (!(error instanceof InvalidStructuredAnswerError || error instanceof CompletionLengthError)) throw error;
       return { value: { omit: [] }, tokensIn: error.tokensIn, tokensOut: error.tokensOut };
     }
   };

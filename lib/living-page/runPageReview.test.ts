@@ -78,6 +78,16 @@ describe("review workflow", () => {
     expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_snapshot: snapshot }));
   });
 
+  it("leaves out what the corrective retry still gets wrong and keeps the rest", async () => {
+    const { db, call } = database();
+    const unknown = "33333333-3333-4333-8333-333333333333";
+    const bad = { summary: "Reviewed", edits: [{ type: "revise_line", targetId: unknown, patches: [{ old_str: "x", new_str: "y" }], reason: "Fix" }], findings: [] };
+    chat.mockResolvedValueOnce({ value: bad, model: "test" });
+    chat.mockResolvedValueOnce({ value: { ...bad, edits: [...bad.edits, { type: "rename_section", targetId: unknown, text: "New heading", reason: "Fix" }], findings: [{ operation: "investigate", quote: "Not on this page.", guideline: "Evidence", reason: "Unsure", recommendation: "Check it", destinationId: null, decisionKind: null, decisionQuestion: null }] }, model: "test" });
+    await runPageReview(db, { apiKey: "test" }, page);
+    expect(call).toHaveBeenCalledWith("complete_page_review", expect.objectContaining({ p_edits: [], p_review: expect.objectContaining({ findings: [] }) }));
+  });
+
   it("does not retry authentication failures as context problems", async () => {
     const { db, call } = database();
     chat.mockRejectedValueOnce(new Error("Token Factory 401: Unauthorized"));

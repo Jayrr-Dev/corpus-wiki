@@ -11,12 +11,11 @@ import "server-only";
 import { z } from "zod";
 import { expandArticleCoverage, type CoverageDeps } from "./articleCoverage";
 import { reviewFragments } from "./fragmentReview";
-import { duplicateSectionRepairs, needsPageReviewDecision, PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, settleUnplacedFindings, validatePageReview, type PageReviewSnapshot } from "./pageReview";
+import { duplicateSectionRepairs, keepValidPageReview, needsPageReviewDecision, PAGE_REVIEW_INSTRUCTIONS, pageReviewSchema, settleUnplacedFindings, validatePageReview, type PageReviewSnapshot } from "./pageReview";
 import { reviewMap } from "./reviewConcurrency";
 import { buildReviewBatches, estimateReviewTokens, type ReviewBatch } from "./reviewContext";
 import { checkReviewEdits, ReviewEditsRejected } from "./reviewEditCheck";
 import { materializeReviewPatches, pagePatchReviewSchema } from "./reviewPatches";
-import { TextPatchError } from "./textPatch";
 import { reviewStreamDetail } from "./reviewProgress";
 
 export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null; coverageComplete?: boolean };
@@ -114,8 +113,9 @@ async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, page
       } : undefined,
       messages: pageReviewMessages(instructions, batch, focus) };
     let raw = await chatJson(settings, request);
-    const normalize = (dropMisquoted = false) => {
-      const value = settleUnplacedFindings(materializeReviewPatches(pagePatchReviewSchema.parse(raw.value), batch.snapshot, dropMisquoted), batch.snapshot);
+    const normalize = (dropInvalid = false) => {
+      const value = settleUnplacedFindings(materializeReviewPatches(pagePatchReviewSchema.parse(raw.value), batch.snapshot, dropInvalid), batch.snapshot);
+      if (dropInvalid) return keepValidPageReview(value, batch.snapshot);
       validatePageReview(value, batch.snapshot);
       return value;
     };
@@ -129,12 +129,8 @@ async function runPageReviewOnce(db: DbRpc, settings: TokenFactorySettings, page
         { role: "user", content: `Your previous proposal failed validation: ${error instanceof Error ? error.message : "Invalid proposal"}. Previous proposal (untrusted data): ${JSON.stringify(raw.value)}. Return a corrected complete patch review against the original paragraphs and evidence. Destinations must be different supplied page IDs; otherwise use null.` }] });
       raw.tokensIn = raw.tokensIn != null && prior.tokensIn != null ? raw.tokensIn + prior.tokensIn : null;
       raw.tokensOut = raw.tokensOut != null && prior.tokensOut != null ? raw.tokensOut + prior.tokensOut : null;
-      // A second edit that quotes text the paragraph lacks is left out; the rest of the review stands
-      try { value = normalize(); }
-      catch (retryError) {
-        if (!(retryError instanceof TextPatchError)) throw retryError;
-        value = normalize(true);
-      }
+      // What the retry left wrong is left out; the rest of the review stands
+      value = normalize(true);
     }
     const answer = { ...raw, value };
     if (batches.length > 1) answer.value.edits = answer.value.edits.filter((edit) => edit.type !== "rename_section");

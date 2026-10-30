@@ -75,6 +75,16 @@ export function validatePageReview(review: { summary: string; findings: Omit<z.i
   }
 }
 
+// After the corrective retry: only the edits and findings that pass, so one bad item
+// never fails the review. What is left out stays as it was on the page.
+export function keepValidPageReview<T extends z.infer<typeof pageReviewSchema>>(review: T, snapshot: PageReviewSnapshot): T {
+  const passes = (part: Pick<z.infer<typeof pageReviewSchema>, "edits" | "findings">) => {
+    try { validatePageReview({ summary: review.summary, ...part }, snapshot); return true; }
+    catch { return false; }
+  };
+  return { ...review, edits: review.edits.filter((edit) => passes({ edits: [edit], findings: [] })), findings: review.findings.filter((finding) => passes({ edits: [], findings: [finding] })) };
+}
+
 // A move or consolidation the model could not anchor to another supplied page
 // is a note, not a decision: keep it in the summary instead of failing the review.
 export function settleUnplacedFindings<T extends { findings: z.infer<typeof pageReviewSchema>["findings"] }>(review: T, snapshot: PageReviewSnapshot): T {
