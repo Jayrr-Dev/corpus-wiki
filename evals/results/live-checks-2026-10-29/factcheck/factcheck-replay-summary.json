@@ -1,0 +1,78 @@
+{
+ "ranOn": "2026-10-29T23:28:11.608Z",
+ "runs": 2,
+ "limitUsd": 1,
+ "stoppedAtLimit": false,
+ "spentUsd": 0.47352845000000005,
+ "spend": {
+  "sonnet:line_fact_check": {
+   "calls": 52,
+   "tokensIn": 269488,
+   "tokensOut": 7360,
+   "usd": 0.3974982000000001
+  },
+  "haiku:line_fact_check": {
+   "calls": 50,
+   "tokensIn": 253142,
+   "tokensOut": 32157,
+   "usd": 0.031109875000000006
+  },
+  "sonnet:line_fact_confirm": {
+   "calls": 10,
+   "tokensIn": 23742,
+   "tokensOut": 1102,
+   "usd": 0.043056
+  },
+  "haiku:line_fact_confirm": {
+   "calls": 5,
+   "tokensIn": 12706,
+   "tokensOut": 1533,
+   "usd": 0.0018643750000000001
+  }
+ },
+ "errors": 0,
+ "run1": {
+  "newHaikuVsSavedHaiku": {
+   "agree": 76,
+   "total": 78
+  },
+  "newSonnetVsSavedSonnet": {
+   "agree": 76,
+   "total": 78
+  },
+  "newSonnetVsNewHaiku": {
+   "agree": 75,
+   "total": 78
+  },
+  "newHaikuVsSavedSonnet": {
+   "agree": 77,
+   "total": 78
+  },
+  "flaggedLines": {
+   "sonnet": 1,
+   "haiku": 2
+  }
+ },
+ "run2": {
+  "newHaikuVsSavedHaiku": {
+   "agree": 77,
+   "total": 78
+  },
+  "newSonnetVsSavedSonnet": {
+   "agree": 77,
+   "total": 78
+  },
+  "newSonnetVsNewHaiku": {
+   "agree": 77,
+   "total": 78
+  },
+  "newHaikuVsSavedSonnet": {
+   "agree": 78,
+   "total": 78
+  },
+  "flaggedLines": {
+   "sonnet": 2,
+   "haiku": 1
+  }
+ }
+}

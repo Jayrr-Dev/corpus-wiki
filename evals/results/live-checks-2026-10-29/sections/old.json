@@ -1,0 +1,297 @@
+{
+ "summary": {
+  "ranOn": "2026-10-29T23:39:29.870Z",
+  "code": "C:\\Users\\Work\\Documents\\projects\\second-brain-engine\\.claude\\worktrees\\live-checks-old-42",
+  "model": "anthropic/claude-haiku-5-5",
+  "sections": 15,
+  "built": 15,
+  "stoppedAtLimit": false,
+  "usd": 0.20382760000000005,
+  "reviewerCalls": 193,
+  "reviewerCallsPerSection": 12.866666666666667,
+  "writesPerSection": 2.7333333333333334,
+  "byPurpose": {
+   "independent_section_editorial_selection": 15,
+   "section_lines": 41,
+   "line_fact_check": 122,
+   "independent_section_editorial_review": 53,
+   "line_fact_confirm": 3
+  },
+  "medianMs": 77250
+ },
+ "rows": [
+  {
+   "item": "Type Nine (Peacemaker) › Levels of development",
+   "claims": 18,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 3,
+    "line_fact_check": 9,
+    "independent_section_editorial_review": 5,
+    "line_fact_confirm": 1
+   },
+   "reviewerCalls": 16,
+   "writes": 3,
+   "usd": 0.019370935000000002,
+   "tokensIn": 149112,
+   "tokensOut": 17549,
+   "ms": 86371,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type One (Reformer) › The nine levels of Type One",
+   "claims": 11,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 3,
+    "line_fact_check": 6,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 11,
+   "writes": 3,
+   "usd": 0.016415705,
+   "tokensIn": 110476,
+   "tokensOut": 16968,
+   "ms": 90564,
+   "lines": 2,
+   "error": null
+  },
+  {
+   "item": "Type Four (Individualist) › Feelings, imagination, and inner states",
+   "claims": 11,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 3,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 5,
+   "writes": 1,
+   "usd": 0.00508946,
+   "tokensIn": 39930,
+   "tokensOut": 5272,
+   "ms": 27538,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type Seven (Enthusiast) › Thinking, focus, and the quiet mind",
+   "claims": 6,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 2,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 4,
+   "writes": 1,
+   "usd": 0.00308902,
+   "tokensIn": 29679,
+   "tokensOut": 2867,
+   "ms": 16727,
+   "lines": 2,
+   "error": null
+  },
+  {
+   "item": "Levels of development › Structure of the nine Levels, ranges, and shock points",
+   "claims": 16,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 16,
+    "independent_section_editorial_review": 8
+   },
+   "reviewerCalls": 25,
+   "writes": 4,
+   "usd": 0.031085505,
+   "tokensIn": 202024,
+   "tokensOut": 34398,
+   "ms": 161435,
+   "lines": 5,
+   "error": null
+  },
+  {
+   "item": "Essence and personality › How personality forms and functions",
+   "claims": 6,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 12,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 17,
+   "writes": 4,
+   "usd": 0.013724449999999997,
+   "tokensIn": 119216,
+   "tokensOut": 14673,
+   "ms": 83761,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Levels of development › Centers, basic motivations, and personality disorders across the ranges",
+   "claims": 4,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 3,
+    "line_fact_check": 6,
+    "independent_section_editorial_review": 3
+   },
+   "reviewerCalls": 10,
+   "writes": 3,
+   "usd": 0.00726684,
+   "tokensIn": 75305,
+   "tokensOut": 6542,
+   "ms": 43105,
+   "lines": 2,
+   "error": null
+  },
+  {
+   "item": "Type Two (Helper) › Deterioration from ingratiating to manipulation",
+   "claims": 7,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 12,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 17,
+   "writes": 4,
+   "usd": 0.01531418,
+   "tokensIn": 128216,
+   "tokensOut": 16008,
+   "ms": 84635,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type Three (Achiever) › Unhealthy patterns and extreme behavior",
+   "claims": 6,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 12,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 17,
+   "writes": 4,
+   "usd": 0.01404583,
+   "tokensIn": 129212,
+   "tokensOut": 13309,
+   "ms": 77250,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Typing and mistyping › How the Enneagram frames personality types",
+   "claims": 11,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 4,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 6,
+   "writes": 1,
+   "usd": 0.00533072,
+   "tokensIn": 50875,
+   "tokensOut": 4184,
+   "ms": 28375,
+   "lines": 5,
+   "error": null
+  },
+  {
+   "item": "Typing and mistyping › Sixes compared with Sevens, Eights and other types",
+   "claims": 5,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 12,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 17,
+   "writes": 4,
+   "usd": 0.0162445,
+   "tokensIn": 153472,
+   "tokensOut": 13023,
+   "ms": 78792,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Enneagram › Centers and Triads",
+   "claims": 5,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 2,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 4,
+   "writes": 1,
+   "usd": 0.00278892,
+   "tokensIn": 32094,
+   "tokensOut": 1854,
+   "ms": 20085,
+   "lines": 2,
+   "error": null
+  },
+  {
+   "item": "Type Nine (Peacemaker) › Thinking style and view of the world",
+   "claims": 8,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 1,
+    "line_fact_check": 1,
+    "independent_section_editorial_review": 1
+   },
+   "reviewerCalls": 3,
+   "writes": 1,
+   "usd": 0.00237797,
+   "tokensIn": 24820,
+   "tokensOut": 2027,
+   "ms": 15210,
+   "lines": 1,
+   "error": null
+  },
+  {
+   "item": "Type Seven (Enthusiast) › Average levels 4 to 6",
+   "claims": 12,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 3,
+    "line_fact_check": 9,
+    "line_fact_confirm": 1,
+    "independent_section_editorial_review": 4
+   },
+   "reviewerCalls": 15,
+   "writes": 3,
+   "usd": 0.01443947,
+   "tokensIn": 110558,
+   "tokensOut": 15846,
+   "ms": 76198,
+   "lines": 3,
+   "error": null
+  },
+  {
+   "item": "Type Five (Investigator) › Levels of development",
+   "claims": 24,
+   "calls": {
+    "independent_section_editorial_selection": 1,
+    "section_lines": 4,
+    "line_fact_check": 16,
+    "independent_section_editorial_review": 8,
+    "line_fact_confirm": 1
+   },
+   "reviewerCalls": 26,
+   "writes": 4,
+   "usd": 0.03724409500000001,
+   "tokensIn": 261205,
+   "tokensOut": 36424,
+   "ms": 164003,
+   "lines": 6,
+   "error": null
+  }
+ ]
+}

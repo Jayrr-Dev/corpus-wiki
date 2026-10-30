@@ -1,0 +1,1160 @@
+[
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Nine (Peacemaker) › Levels of development",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Levels of development › Structure of the nine Levels, ranges, and shock points",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Levels of development › Structure of the nine Levels, ranges, and shock points",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L5": "The claim places shock points between ranges, so saying they mark transitions between ranges is a rewording of the same location, not an added fact."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Nine (Peacemaker) › Levels of development",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Essence and personality › How personality forms and functions",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type One (Reformer) › The nine levels of Type One",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "C1 says the type moves through nine levels from Level 1 to Level 9, which covers 'in sequence'. C2–C10 give every level a named character and a trait. The line adds nothing unsupported."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Four (Individualist) › Feelings, imagination, and inner states",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Essence and personality › How personality forms and functions",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Seven (Enthusiast) › Thinking, focus, and the quiet mind",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Seven (Enthusiast) › Thinking, focus, and the quiet mind",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Four (Individualist) › Feelings, imagination, and inner states",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type One (Reformer) › The nine levels of Type One",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "Claims C2 through C10 state a named character and a trait for each of the nine levels, so the line is supported by the supplied claims."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Two (Helper) › Deterioration from ingratiating to manipulation",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Levels of development › Centers, basic motivations, and personality disorders across the ranges",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Two (Helper) › Deterioration from ingratiating to manipulation",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Levels of development › Centers, basic motivations, and personality disorders across the ranges",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Three (Achiever) › Unhealthy patterns and extreme behavior",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Quality inspection › Definitions and relationship to quality control",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Three (Achiever) › Unhealthy patterns and extreme behavior",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Quality inspection › Definitions and relationship to quality control",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Typing and mistyping › Sixes compared with Sevens, Eights and other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Typing and mistyping › Sixes compared with Sevens, Eights and other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Typing and mistyping › How the Enneagram frames personality types",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Five (Investigator) › Levels of development",
+  "lines": 6,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "Every item on the line matches the claims: nine levels from healthy 1 to unhealthy 9, and the names and traits for Levels 1, 2, 5 and 9. The objection text is empty and names no fault."
+  },
+  "savedSonnet": [
+   "L3"
+  ],
+  "savedHaiku": [
+   "L3"
+  ]
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Five (Investigator) › Levels of development",
+  "lines": 6,
+  "error": null,
+  "flagged": {
+   "L3": "\"Excessive conceptualizing also leads to a growing loss of confidence\" drops the qualifier. C4 says excessive conceptualizing can lead to distorted perception and a growing loss of confidence."
+  },
+  "overruled": {},
+  "savedSonnet": [
+   "L3"
+  ],
+  "savedHaiku": [
+   "L3"
+  ]
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Seven (Enthusiast) › Average levels 4 to 6",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Typing and mistyping › How the Enneagram frames personality types",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Enneagram › Centers and Triads",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Enneagram › Centers and Triads",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Nine (Peacemaker) › Thinking style and view of the world",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": [
+   "L2"
+  ]
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Seven (Enthusiast) › Average levels 4 to 6",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Five (Investigator) › Contrasts with other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Nine (Peacemaker) › Thinking style and view of the world",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": [
+   "L2"
+  ]
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Enneagram › Purpose: self-understanding and understanding others",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type One (Reformer) › Recommendations for growth",
+  "lines": 6,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Enneagram › Purpose: self-understanding and understanding others",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Six (Loyalist) › Thinking mode, duty mode and security strategies",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Five (Investigator) › Contrasts with other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {
+   "L2": "\"As noted above\" says this point appeared earlier on the page. The cited claims do not state that."
+  },
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type One (Reformer) › Recommendations for growth",
+  "lines": 6,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "All three sentences match the claims. C1, C3 and C2 support them, and \"set aside inner judgment\" is a fair paraphrase of \"dispel inner judgment and criticism.\" The objection is empty and names no fault."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Eight (Challenger) › Self-reliance and dependence on others",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Six (Loyalist) › Thinking mode, duty mode and security strategies",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "The line says 'has difficulty' where the claim says 'cannot'. That is a weaker statement, and saying less than the claim is not a fault. It adds no new fact, cause or qualifier."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Utility Line Assignment (ULA) application process › Appendix contents",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Eight (Challenger) › Self-reliance and dependence on others",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Utility Line Assignment (ULA) application process › Appendix contents",
+  "lines": 2,
+  "error": null,
+  "flagged": {
+   "L1": "The line lists \"A ULA memo\" as a sample document. The claim says only the form, permit, circulation responses and drawings are samples; the memo is not described as a sample."
+  },
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Utility Line Assignment (ULA) application process › Design standards and minimum clearances",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Four (Individualist) › Placement within the Enneagram",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Four (Individualist) › Placement within the Enneagram",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Utility Line Assignment (ULA) application process › Design standards and minimum clearances",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "sonnet",
+  "item": "Type Two (Helper) › Hidden expectations and pride",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 1,
+  "model": "haiku",
+  "item": "Type Two (Helper) › Hidden expectations and pride",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Levels of development › Structure of the nine Levels, ranges, and shock points",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Nine (Peacemaker) › Levels of development",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Nine (Peacemaker) › Levels of development",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Levels of development › Structure of the nine Levels, ranges, and shock points",
+  "lines": 5,
+  "error": null,
+  "flagged": {
+   "L5": "\"Shock points mark the transitions between ranges\" adds a function no cited claim states. C15 only says where shock points occur."
+  },
+  "overruled": {
+   "L2": "The claim says the Continuum provides evidence; the line says it is presented as evidence, which weakens the claim and adds no unsupported fact. The objection is mistaken."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Essence and personality › How personality forms and functions",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Essence and personality › How personality forms and functions",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type One (Reformer) › The nine levels of Type One",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "C1 says the type moves through nine levels from Level 1 to Level 9, which matches 'in sequence'. C2-C10 give each level a named character and a trait. The line adds nothing unsupported."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Four (Individualist) › Feelings, imagination, and inner states",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Seven (Enthusiast) › Thinking, focus, and the quiet mind",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Four (Individualist) › Feelings, imagination, and inner states",
+  "lines": 4,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Seven (Enthusiast) › Thinking, focus, and the quiet mind",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type One (Reformer) › The nine levels of Type One",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "Claims C2 to C10 each give a named character and a trait for Levels 1 to 9, so the line's statement is supported by the claims supplied with it."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Two (Helper) › Deterioration from ingratiating to manipulation",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Levels of development › Centers, basic motivations, and personality disorders across the ranges",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Two (Helper) › Deterioration from ingratiating to manipulation",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Three (Achiever) › Unhealthy patterns and extreme behavior",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Levels of development › Centers, basic motivations, and personality disorders across the ranges",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Quality inspection › Definitions and relationship to quality control",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Three (Achiever) › Unhealthy patterns and extreme behavior",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Quality inspection › Definitions and relationship to quality control",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Typing and mistyping › Sixes compared with Sevens, Eights and other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Typing and mistyping › Sixes compared with Sevens, Eights and other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Five (Investigator) › Levels of development",
+  "lines": 6,
+  "error": null,
+  "flagged": {
+   "L3": ""
+  },
+  "overruled": {
+   "L1": "The claims support every level name, trait and the nine-level range from Level 1 to Level 9. No facts were added or changed."
+  },
+  "savedSonnet": [
+   "L3"
+  ],
+  "savedHaiku": [
+   "L3"
+  ]
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Typing and mistyping › How the Enneagram frames personality types",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Seven (Enthusiast) › Average levels 4 to 6",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Typing and mistyping › How the Enneagram frames personality types",
+  "lines": 5,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Enneagram › Centers and Triads",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Five (Investigator) › Levels of development",
+  "lines": 6,
+  "error": null,
+  "flagged": {
+   "L3": "\"Excessive conceptualizing also leads to a growing loss of confidence.\" C4 says excessive conceptualizing can lead to distorted perception and a growing loss of confidence, so the line drops the \"can\" qualifier and states the effect as certain."
+  },
+  "overruled": {},
+  "savedSonnet": [
+   "L3"
+  ],
+  "savedHaiku": [
+   "L3"
+  ]
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Seven (Enthusiast) › Average levels 4 to 6",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Nine (Peacemaker) › Thinking style and view of the world",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": [
+   "L2"
+  ]
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Enneagram › Centers and Triads",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Five (Investigator) › Contrasts with other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type One (Reformer) › Recommendations for growth",
+  "lines": 6,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Nine (Peacemaker) › Thinking style and view of the world",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": [
+   "L2"
+  ]
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Five (Investigator) › Contrasts with other types",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Enneagram › Purpose: self-understanding and understanding others",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Enneagram › Purpose: self-understanding and understanding others",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type One (Reformer) › Recommendations for growth",
+  "lines": 6,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Eight (Challenger) › Self-reliance and dependence on others",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Six (Loyalist) › Thinking mode, duty mode and security strategies",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {
+   "L1": "The line says \"has difficulty\" where the claim says \"cannot\". That is a weaker statement than the claim makes, and saying less than the claim is not a fault."
+  },
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Six (Loyalist) › Thinking mode, duty mode and security strategies",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Utility Line Assignment (ULA) application process › Appendix contents",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Utility Line Assignment (ULA) application process › Appendix contents",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Utility Line Assignment (ULA) application process › Design standards and minimum clearances",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Eight (Challenger) › Self-reliance and dependence on others",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Utility Line Assignment (ULA) application process › Design standards and minimum clearances",
+  "lines": 3,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Four (Individualist) › Placement within the Enneagram",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Four (Individualist) › Placement within the Enneagram",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "sonnet",
+  "item": "Type Two (Helper) › Hidden expectations and pride",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ },
+ {
+  "run": 2,
+  "model": "haiku",
+  "item": "Type Two (Helper) › Hidden expectations and pride",
+  "lines": 2,
+  "error": null,
+  "flagged": {},
+  "overruled": {},
+  "savedSonnet": [],
+  "savedHaiku": []
+ }
+]

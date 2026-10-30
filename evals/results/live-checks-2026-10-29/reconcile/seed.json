@@ -1,0 +1,464 @@
+{
+ "ranOn": "2026-10-30T00:06:53.260Z",
+ "model": "anthropic/claude-haiku-5-5",
+ "counts": {
+  "units": 305,
+  "embedded": 305,
+  "entities": 144
+ },
+ "spentUsd": 0.20822870000000002,
+ "spend": {
+  "reconciliation": {
+   "calls": 32,
+   "tokensIn": 1264508,
+   "tokensOut": 207088,
+   "usd": 0.19341685,
+   "ms": 818632,
+   "failed": 0
+  },
+  "entity_duplicate_review": {
+   "calls": 64,
+   "tokensIn": 195004,
+   "tokensOut": 5496,
+   "usd": 0.014521720000000012,
+   "ms": 105331,
+   "failed": 0
+  },
+  "embeddings": {
+   "calls": 31,
+   "tokensIn": 29013,
+   "tokensOut": 0,
+   "usd": 0.00029013000000000004,
+   "ms": 25977,
+   "failed": 0
+  }
+ },
+ "uploads": [
+  {
+   "title": "WHMIS - General",
+   "eventId": "4d2ce367-dd84-4fb9-b3e5-ab2c81abe647",
+   "sourceId": "a38b4163-66bb-4f1f-946c-f985d3953f27",
+   "ms": 86433,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 4,
+     "tokensIn": 64021,
+     "tokensOut": 26427,
+     "usd": 0.017821209999999997,
+     "ms": 103068,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 5,
+     "tokensIn": 9935,
+     "tokensOut": 1241,
+     "usd": 0.00127872,
+     "ms": 12977,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 3,
+     "tokensIn": 5318,
+     "tokensOut": 0,
+     "usd": 0.00005318,
+     "ms": 2804,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "WHMIS Training Requirements: What Employers Must Know",
+   "eventId": "bbba1bbf-a685-4815-a038-6e15e34fb397",
+   "sourceId": "9796233e-05cc-4534-899e-3a241ac6c879",
+   "ms": 210575,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 9,
+     "tokensIn": 242556,
+     "tokensOut": 77769,
+     "usd": 0.05195966999999999,
+     "ms": 305489,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 11,
+     "tokensIn": 33732,
+     "tokensOut": 910,
+     "usd": 0.0024947000000000007,
+     "ms": 18023,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 5,
+     "tokensIn": 8980,
+     "tokensOut": 0,
+     "usd": 0.00008980000000000001,
+     "ms": 5280,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "The Complete Guide to Quality Inspection: Types, Processes, and Best Practices",
+   "eventId": "0fc48378-f93f-40e1-80a7-db72662bfbed",
+   "sourceId": "22c15e6c-07aa-4096-9b36-122d6004c155",
+   "ms": 73559,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 3,
+     "tokensIn": 115149,
+     "tokensOut": 21991,
+     "usd": 0.018783590000000017,
+     "ms": 83860,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 7,
+     "tokensIn": 21853,
+     "tokensOut": 473,
+     "usd": 0.0016369399999999995,
+     "ms": 15324,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 2327,
+     "tokensOut": 0,
+     "usd": 0.000023269999999999986,
+     "ms": 1799,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "Inspection - Wikipedia",
+   "eventId": "28099ba0-6845-4c4f-b39f-824832c3d702",
+   "sourceId": "03784f47-9bee-4d78-886e-4c9b06709535",
+   "ms": 35287,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 2,
+     "tokensIn": 87728,
+     "tokensOut": 8004,
+     "usd": 0.010290259999999996,
+     "ms": 33618,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 5,
+     "tokensIn": 15726,
+     "tokensOut": 353,
+     "usd": 0.0012385600000000005,
+     "ms": 6984,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 2573,
+     "tokensOut": 0,
+     "usd": 0.000025730000000000013,
+     "ms": 1923,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "Workplace Hazardous Materials Information System (WHMIS)",
+   "eventId": "f47c8a90-a8de-423b-9089-a314f145104f",
+   "sourceId": "85602cd6-90be-45c1-80a0-bcba586caeb5",
+   "ms": 24668,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 2,
+     "tokensIn": 90931,
+     "tokensOut": 5113,
+     "usd": 0.009165060000000003,
+     "ms": 21444,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 1,
+     "tokensIn": 2907,
+     "tokensOut": 55,
+     "usd": 0.00018104000000000037,
+     "ms": 1668,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 1828,
+     "tokensOut": 0,
+     "usd": 0.00001828000000000002,
+     "ms": 1793,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "3.1 Utility Line Assignment (ULA ) Application.docx",
+   "eventId": "e3c3531f-4877-460e-b6ca-4687a2236602",
+   "sourceId": "db50de08-f50d-47e2-9cd7-49615e458154",
+   "ms": 133890,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 5,
+     "tokensIn": 237076,
+     "tokensOut": 39362,
+     "usd": 0.037177249999999995,
+     "ms": 160452,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 19,
+     "tokensIn": 60251,
+     "tokensOut": 1400,
+     "usd": 0.004119060000000008,
+     "ms": 27747,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 3,
+     "tokensIn": 3463,
+     "tokensOut": 0,
+     "usd": 0.00003463000000000001,
+     "ms": 3255,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "e8-confined-space-entry.md",
+   "eventId": "b3eda47e-0b13-4036-aa69-23709166e109",
+   "sourceId": "0d9f4f3d-f2eb-4e6c-87df-6e208171e1ec",
+   "ms": 55022,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 1,
+     "tokensIn": 54904,
+     "tokensOut": 10786,
+     "usd": 0.009641129999999998,
+     "ms": 38856,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 8,
+     "tokensIn": 25839,
+     "tokensOut": 540,
+     "usd": 0.0019318800000000021,
+     "ms": 11862,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 1350,
+     "tokensOut": 0,
+     "usd": 0.000013500000000000003,
+     "ms": 1604,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "Duties of Confined Space Team Members",
+   "eventId": "35e99aa4-44a0-42c7-9e4c-5d462d6c6796",
+   "sourceId": "0f58c56c-2cbe-4414-82bc-3dc1bc646d32",
+   "ms": 20411,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 1,
+     "tokensIn": 58325,
+     "tokensOut": 4188,
+     "usd": 0.006684230000000013,
+     "ms": 17076,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 1,
+     "tokensIn": 2966,
+     "tokensOut": 66,
+     "usd": 0.00019244000000000032,
+     "ms": 956,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 283,
+     "tokensOut": 0,
+     "usd": 0.0000028299999999999983,
+     "ms": 1181,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "The Role of a Safety Officer in Construction",
+   "eventId": "97b3303e-81a4-4c17-9773-a4bbff0530f0",
+   "sourceId": "27fa74bc-2bff-445b-a771-c81aeb634166",
+   "ms": 33685,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 1,
+     "tokensIn": 59782,
+     "tokensOut": 5689,
+     "usd": 0.007580429999999999,
+     "ms": 23271,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 4,
+     "tokensIn": 12250,
+     "tokensOut": 234,
+     "usd": 0.0007933599999999999,
+     "ms": 5412,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 631,
+     "tokensOut": 0,
+     "usd": 0.000006309999999999985,
+     "ms": 1266,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "Utilitek Solutions Inc.",
+   "eventId": "dfbd0ff0-5d7c-4eb6-88d8-d5fe1c68a52e",
+   "sourceId": "0f323092-a734-48c8-bfc8-954e6f00eb7e",
+   "ms": 11435,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 1,
+     "tokensIn": 61301,
+     "tokensOut": 1470,
+     "usd": 0.005622829999999995,
+     "ms": 6165,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 2,
+     "tokensIn": 6408,
+     "tokensOut": 139,
+     "usd": 0.00043598000000000074,
+     "ms": 2581,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 243,
+     "tokensOut": 0,
+     "usd": 0.0000024299999999999886,
+     "ms": 1325,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "LIVE TEST - Utilitek website - 2026-10-17T02-37-03-214Z.md",
+   "eventId": "4f400497-a87b-407f-8112-975e68d3bccb",
+   "sourceId": "a4dac643-cdfd-4df8-8573-83321bc96c95",
+   "ms": 14006,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 1,
+     "tokensIn": 64126,
+     "tokensOut": 2458,
+     "usd": 0.006399330000000009,
+     "ms": 8618,
+     "failed": 0
+    },
+    "entity_duplicate_review": {
+     "calls": 1,
+     "tokensIn": 3137,
+     "tokensOut": 85,
+     "usd": 0.0002190400000000002,
+     "ms": 1797,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 1414,
+     "tokensOut": 0,
+     "usd": 0.000014139999999999997,
+     "ms": 1575,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "EPCOR Utilities - Wikipedia",
+   "eventId": "f2abfca7-a52d-4559-8226-24eece820310",
+   "sourceId": "af0d8609-5a6c-40f0-a15d-6b73af2946eb",
+   "ms": 8169,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 1,
+     "tokensIn": 63883,
+     "tokensOut": 1255,
+     "usd": 0.005773529999999999,
+     "ms": 5421,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 243,
+     "tokensOut": 0,
+     "usd": 0.0000024299999999999886,
+     "ms": 1071,
+     "failed": 0
+    }
+   }
+  },
+  {
+   "title": "What Is a Safety Manager? Roles, Responsibilities, and Why Every Workplace Needs One",
+   "eventId": "30e38c4b-e510-4c62-a3d6-57da13f4afd0",
+   "sourceId": "3d517b43-282f-4cea-9ca3-f5b52b092bbe",
+   "ms": 14063,
+   "status": "applied",
+   "error": null,
+   "calls": {
+    "reconciliation": {
+     "calls": 1,
+     "tokensIn": 64726,
+     "tokensOut": 2576,
+     "usd": 0.006518329999999989,
+     "ms": 11294,
+     "failed": 0
+    },
+    "embeddings": {
+     "calls": 2,
+     "tokensIn": 360,
+     "tokensOut": 0,
+     "usd": 0.0000036000000000000333,
+     "ms": 1101,
+     "failed": 0
+    }
+   }
+  }
+ ]
+}
