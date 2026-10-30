@@ -16,6 +16,7 @@ import { reviewMap } from "./reviewConcurrency";
 import { buildReviewBatches, estimateReviewTokens } from "./reviewContext";
 import { checkReviewEdits, ReviewEditsRejected } from "./reviewEditCheck";
 import { materializeReviewPatches, pagePatchReviewSchema } from "./reviewPatches";
+import { TextPatchError } from "./textPatch";
 import { reviewStreamDetail } from "./reviewProgress";
 
 export type PageReviewResult = { summary: string; exceptions: number; edits: number; changeSetId: string | null; coverageComplete?: boolean };
@@ -99,8 +100,8 @@ The Curator asked for this review with a focus (guidance on where to look, not e
       } : undefined,
       messages: [{ role: "system" as const, content: instructions }, { role: "user" as const, content: batch.evidence }] };
     let raw = await chatJson(settings, request);
-    const normalize = () => {
-      const value = settleUnplacedFindings(materializeReviewPatches(pagePatchReviewSchema.parse(raw.value), batch.snapshot), batch.snapshot);
+    const normalize = (dropMisquoted = false) => {
+      const value = settleUnplacedFindings(materializeReviewPatches(pagePatchReviewSchema.parse(raw.value), batch.snapshot, dropMisquoted), batch.snapshot);
       validatePageReview(value, batch.snapshot);
       return value;
     };
@@ -114,7 +115,12 @@ The Curator asked for this review with a focus (guidance on where to look, not e
         { role: "user", content: `Your previous proposal failed validation: ${error instanceof Error ? error.message : "Invalid proposal"}. Previous proposal (untrusted data): ${JSON.stringify(raw.value)}. Return a corrected complete patch review against the original paragraphs and evidence. Destinations must be different supplied page IDs; otherwise use null.` }] });
       raw.tokensIn = raw.tokensIn != null && prior.tokensIn != null ? raw.tokensIn + prior.tokensIn : null;
       raw.tokensOut = raw.tokensOut != null && prior.tokensOut != null ? raw.tokensOut + prior.tokensOut : null;
-      value = normalize();
+      // A second edit that quotes text the paragraph lacks is left out; the rest of the review stands
+      try { value = normalize(); }
+      catch (retryError) {
+        if (!(retryError instanceof TextPatchError)) throw retryError;
+        value = normalize(true);
+      }
     }
     const answer = { ...raw, value };
     if (batches.length > 1) answer.value.edits = answer.value.edits.filter((edit) => edit.type !== "rename_section");
