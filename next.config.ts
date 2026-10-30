@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 // would refuse most PDFs and Word files (a video skips it: the browser puts it in Storage).
 // ffmpeg-static and Whisper (transformers.js) load native files by path, so they stay unbundled.
 const nextConfig: NextConfig = {
+  turbopack: { root: "C:/Users/Work/Documents/projects/second-brain-engine" },
   experimental: { serverActions: { bodySizeLimit: "20mb" } },
   serverExternalPackages: ["ffmpeg-static", "@huggingface/transformers"],
   // The landing page moved from /welcome to /
