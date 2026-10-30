@@ -11,6 +11,20 @@ function respond(data: unknown) {
 }
 
 describe("embedding response validation", () => {
+  it("asks again after a timeout, and gives up after three", async () => {
+    const timeout = () => Promise.reject(new DOMException("The operation was aborted due to timeout", "TimeoutError"));
+    const fetch = vi.fn().mockImplementationOnce(timeout).mockImplementationOnce(timeout)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: [{ index: 0, embedding: vector() }] }) });
+    vi.stubGlobal("fetch", fetch);
+    const embedder = embedderFromEnv({ NODE_ENV: "test", NEBIUS_API_KEY: "test" })!;
+    expect(await embedder.embed(["claim"])).toEqual([vector()]);
+    expect(fetch).toHaveBeenCalledTimes(3);
+    const always = vi.fn().mockImplementation(timeout);
+    vi.stubGlobal("fetch", always);
+    await expect(embedder.embed(["claim"])).rejects.toThrow("timeout");
+    expect(always).toHaveBeenCalledTimes(3);
+  });
+
   it("overlaps two requests, preserves chunk ordering, and aborts queued work", async () => {
     let release!: () => void;
     const blocked = new Promise<void>((resolve) => { release = resolve; });

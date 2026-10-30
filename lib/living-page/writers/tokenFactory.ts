@@ -188,8 +188,13 @@ export class TokenFactorySectionWriter {
       }
       answer = withoutLines(answer, new Set(stillFailing.map((verdict) => verdict.line)));
     }
-    if (missingDraftClaims(input, answer).length) throw new IncompleteSectionEvidence();
-    return { ...answerToRevision(answer, refs), textPatches: patchMode, omittedUnitIds: selection.omittedUnitIds, modelVersion: first.model, ...usage };
+    const unwritten = missingDraftClaims(input, answer);
+    // Claims a person accepted must be written. Otherwise a claim that still can't be stated after
+    // the repairs (a fragment the fact-check refuses every time) stays out, and the section is saved
+    if (unwritten.length && input.skipEditorialReview) throw new IncompleteSectionEvidence();
+    if (unwritten.length) console.warn("Claims left out of a section after its repairs", { page: input.pageTitle, section: input.sectionTitle, unwritten });
+    const leftOut = input.units.map((unit) => unit.unitId).filter((id) => unwritten.includes(refs.unitRef.get(id)!));
+    return { ...answerToRevision(answer, refs), textPatches: patchMode, omittedUnitIds: [...selection.omittedUnitIds, ...leftOut], modelVersion: first.model, ...usage };
   }
 }
 

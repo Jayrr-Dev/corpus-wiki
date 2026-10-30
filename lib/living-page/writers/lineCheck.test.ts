@@ -115,14 +115,28 @@ describe("line fact-check", () => {
     expect(revision).toMatchObject({ tokensIn: 50, tokensOut: 25 });
   });
 
-  it("rejects an incomplete draft when dropping a failed line would lose required evidence", async () => {
+  it("leaves out a claim the fact-check keeps refusing, and saves the rest of the section", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     fakeModel({
       section_lines: [writerAnswer(GOOD, INVENTED), writerAnswer(GOOD, INVENTED)],
       line_fact_check: [verdicts(["A1", true], ["A2", false, "invented tests"]), verdicts(["A1", true], ["A2", false, "invented tests"])],
       line_fact_confirm: [UPHELD, UPHELD],
     });
-    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT)).rejects.toThrow("no incomplete draft was saved");
+    const revision = await new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT);
+    expect(revision.add).toHaveLength(1);
+    expect(revision.omittedUnitIds).toEqual(["plan"]);
+    expect(warn).toHaveBeenCalledWith("Claims left out of a section after its repairs", expect.objectContaining({ unwritten: ["C2"] }));
+    warn.mockRestore();
+  });
+
+  it("rejects an incomplete draft of claims a person accepted", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    fakeModel({
+      section_lines: [writerAnswer(GOOD, INVENTED), writerAnswer(GOOD, INVENTED)],
+      line_fact_check: [verdicts(["A1", true], ["A2", false, "invented tests"]), verdicts(["A1", true], ["A2", false, "invented tests"])],
+      line_fact_confirm: [UPHELD, UPHELD],
+    });
+    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection({ ...INPUT, skipEditorialReview: true })).rejects.toThrow("no incomplete draft was saved");
     expect(warn).toHaveBeenCalledWith("Writer line dropped by the fact-check", expect.objectContaining({ line: "A2", problem: "invented tests" }));
     warn.mockRestore();
   });
@@ -160,7 +174,7 @@ describe("line fact-check", () => {
       line_fact_check: [verdicts([GOOD.text, true], [` ${INVENTED.text.toUpperCase()} `, false, "x"]), verdicts(["A1", true], [INVENTED.text, false, "x"])],
       line_fact_confirm: [UPHELD, UPHELD],
     });
-    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection(INPUT)).rejects.toThrow("no incomplete draft was saved");
+    await expect(new TokenFactorySectionWriter({ apiKey: "k", model: "test" }).reviseSection({ ...INPUT, skipEditorialReview: true })).rejects.toThrow("no incomplete draft was saved");
     vi.restoreAllMocks();
   });
 

@@ -40,6 +40,17 @@ it("runs definitions first, then the wiki, then the other modules, each once", a
   });
 });
 
+it("lets the next modules run once the wiki has failed for good", async () => {
+  const eventId = await upload("upkeep-wiki-failed");
+  await store.db.call("enqueue_module_upkeep", { p_event_id: eventId });
+  const definitions = await claim("definitions");
+  await store.db.call("finish_module_upkeep", { p_id: definitions!.id, p_token: definitions!.token, p_error: null });
+  await store.pg.query("update public.module_upkeep set attempts = 2 where module = 'wiki'");
+  const wiki = await claim("wiki");
+  await store.db.call("finish_module_upkeep", { p_id: wiki!.id, p_token: wiki!.token, p_error: "Writer down" });
+  expect(await claim("entities")).toMatchObject({ eventId, module: "entities" });
+});
+
 it("retries a failed item after a pause, fails it for good after three attempts, and a person's Retry starts it again", async () => {
   const eventId = await upload("upkeep-retry");
   await store.db.call("enqueue_module_upkeep", { p_event_id: eventId });

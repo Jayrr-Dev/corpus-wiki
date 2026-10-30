@@ -20,6 +20,7 @@ export const EMBEDDING_DIMENSIONS = 1024;
 // Texts per request (keeps one request well under the provider's limits)
 const BATCH_SIZE = 64;
 const REQUEST_TIMEOUT_MS = 60_000;
+const TIMEOUT_TRIES = 3;
 
 // TEXTS -> VECTORS, in the same order
 export type Embedder = { model: string; embed: (texts: string[]) => Promise<number[][]> };
@@ -27,6 +28,17 @@ export type Embedder = { model: string; embed: (texts: string[]) => Promise<numb
 type EmbeddingResponse = { data?: { index: number; embedding: number[] }[]; usage?: { prompt_tokens?: number }; error?: { message?: string } };
 
 // The embedder from server env; null without NEBIUS_API_KEY (callers then compare words only)
+// A provider that goes quiet for a minute usually answers the next request, so a timeout is
+// asked again before it can stop an upload; a person's cancel is not
+async function retryTimeouts<T>(signal: AbortSignal | undefined, run: () => Promise<T>): Promise<T> {
+  for (let tries = 1; ; tries++) {
+    try { return await run(); }
+    catch (error) {
+      if (tries >= TIMEOUT_TRIES || signal?.aborted || !(error instanceof Error && error.name === "TimeoutError")) throw error;
+    }
+  }
+}
+
 export function embedderFromEnv(env: NodeJS.ProcessEnv = process.env, logCall?: AiCallLogger): Embedder | null {
   if (!env.NEBIUS_API_KEY) return null;
   const apiKey = env.NEBIUS_API_KEY;
@@ -37,7 +49,7 @@ export function embedderFromEnv(env: NodeJS.ProcessEnv = process.env, logCall?: 
     let error: string | null = null;
     try {
       const signal = uploadExecution.getStore()?.signal;
-      const body = await withRequestSlot("embedding", new URL(TOKEN_FACTORY_BASE_URL).host, apiKey, async (requestSignal) => {
+      const body = await retryTimeouts(signal, () => withRequestSlot("embedding", new URL(TOKEN_FACTORY_BASE_URL).host, apiKey, async (requestSignal) => {
       const response = await fetchWithRetry(new URL("embeddings", TOKEN_FACTORY_BASE_URL), {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -47,7 +59,7 @@ export function embedderFromEnv(env: NodeJS.ProcessEnv = process.env, logCall?: 
       const body = (await response.json()) as EmbeddingResponse;
       if (!response.ok || !body.data) throw new Error(body.error?.message ?? `Embedding request failed (${response.status})`);
       return body;
-      }, signal);
+      }, signal));
       promptTokens = body.usage?.prompt_tokens ?? null;
       const ordered = [...body.data!].sort((a, b) => a.index - b.index);
       if (ordered.length !== texts.length || ordered.some((item, index) => item.index !== index ||
