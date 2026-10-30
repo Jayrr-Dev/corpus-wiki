@@ -15,7 +15,7 @@ describe("model limits", () => {
   });
 
   it("gives an answer the window left after the prompt", () => {
-    expect(answerRoom("nvidia/nemotron-3-super-120b-a12b", 30_000)).toBe(262144 - 10_000 - 1_000);
+    expect(answerRoom("nvidia/nemotron-3-super-120b-a12b", 30_000)).toBe(262144 - 15_000 - 1_000);
   });
 
   it("stops at the model's own answer limit", () => {

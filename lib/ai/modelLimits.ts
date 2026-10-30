@@ -12,8 +12,9 @@ export type ModelLimit = { contextTokens: number; maxOutputTokens?: number };
 
 const PROVIDERS: Record<string, Record<string, ModelLimit>> = limits.providers;
 
-// Prompts run from about 3 to 4 characters a token; the low end leaves room to spare
-const CHARS_PER_TOKEN = 3;
+// Prompts run from about 3 to 4 characters a token, but JSON runs denser and the schema is
+// sent twice. Too low a count fails the whole call, so this errs well to the safe side.
+const CHARS_PER_TOKEN = 2;
 // Message wrappers and tool text the character count leaves out
 const PROMPT_MARGIN_TOKENS = 1_000;
 // An oversized prompt still gets a real answer budget; the provider then says it is too long
