@@ -231,26 +231,47 @@ const phaseEl = document.getElementById("phase"), countEl = document.getElementB
 function sizeCanvas() { const dpr = devicePixelRatio || 1; canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
 sizeCanvas();
 
+// SPEED: settled edges and points are batched into one path per colour, so a frame is a
+// handful of draw calls instead of about 1500. Only points still growing are drawn alone.
+const RGB = GROUPS.map((g) => hex(g.color));
+const LAST_BIRTH = Math.max(...births);
+// from here until the fade nothing in the glass moves, so the canvas is left as it is
+const STATIC_START = Math.max(ORG_END, LABEL_START + (GROUPS.length - 1) * 0.25 + 0.8, LAST_BIRTH + 0.9);
+let drawnStill = false;
+
 function draw(t) {
-  const org = ease((t - ORG_START) / (ORG_END - ORG_START)), lab = ease((t - LABEL_START) / 1.2), fade = 1 - ease((t - FADE_START) / 1.2);
+  const org = ease((t - ORG_START) / (ORG_END - ORG_START)), fade = 1 - ease((t - FADE_START) / 1.2);
   ctx.clearRect(0, 0, W, H);
-  const pos = (n) => [mix(n.sx, n.tx, org), mix(n.sy, n.ty, org)];
   const grow = (n) => ease((t - n.born) / 0.6);
+  const x = (n) => mix(n.sx, n.tx, org), y = (n) => mix(n.sy, n.ty, org);
   // group halos once organized
-  GROUPS.forEach((g) => { ctx.globalAlpha = 0.1 * org * fade; ctx.fillStyle = g.color; ctx.beginPath(); ctx.arc(g.cx, g.cy, 42, 0, 7); ctx.fill(); });
-  // edges
+  if (org > 0) GROUPS.forEach((g) => { ctx.globalAlpha = 0.1 * org * fade; ctx.fillStyle = g.color; ctx.beginPath(); ctx.arc(g.cx, g.cy, 42, 0, 7); ctx.fill(); });
+  // edges: one path per group colour plus one grey path for links between groups
   ctx.lineWidth = 1;
-  edges.forEach(([a, b]) => { const v = Math.min(grow(a), grow(b)); if (!v) return; const [ax, ay] = pos(a), [bx, by] = pos(b); ctx.globalAlpha = 0.16 * v * fade * (a.g === b.g ? 1 : 1 - org * 0.7); ctx.strokeStyle = a.g === b.g ? GROUPS[a.g].color : C.fade; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke(); });
+  const paths = GROUPS.map(() => new Path2D()), cross = new Path2D();
+  edges.forEach(([a, b]) => {
+    const v = Math.min(grow(a), grow(b)); if (!v) return;
+    const same = a.g === b.g;
+    if (v === 1) { const p = same ? paths[a.g] : cross; p.moveTo(x(a), y(a)); p.lineTo(x(b), y(b)); return; }
+    ctx.globalAlpha = 0.16 * v * fade * (same ? 1 : 1 - org * 0.7); ctx.strokeStyle = same ? GROUPS[a.g].color : C.fade;
+    ctx.beginPath(); ctx.moveTo(x(a), y(a)); ctx.lineTo(x(b), y(b)); ctx.stroke();
+  });
+  ctx.globalAlpha = 0.16 * fade; paths.forEach((p, g) => { ctx.strokeStyle = GROUPS[g].color; ctx.stroke(p); });
+  ctx.globalAlpha = 0.16 * fade * (1 - org * 0.7); ctx.strokeStyle = C.fade; ctx.stroke(cross);
   // nodes: grey while scattered, group colour as they sort
+  const k = 0.35 + 0.65 * org, fills = RGB.map((c) => `rgb(${mix(155, c[0], k)},${mix(155, c[1], k)},${mix(155, c[2], k)})`);
+  const dots = GROUPS.map(() => new Path2D()), rings = [];
   let alive = 0;
   nodes.forEach((n) => {
     const v = grow(n); if (!v) return; alive++;
-    const [x, y] = pos(n), c = hex(GROUPS[n.g].color), k = 0.35 + 0.65 * org;
-    ctx.globalAlpha = fade; ctx.fillStyle = `rgb(${mix(155, c[0], k)},${mix(155, c[1], k)},${mix(155, c[2], k)})`;
-    ctx.beginPath(); ctx.arc(x, y, n.size * v, 0, 7); ctx.fill();
+    const nx = x(n), ny = y(n), r = n.size * v;
+    dots[n.g].moveTo(nx + r, ny); dots[n.g].arc(nx, ny, r, 0, 7);
     const fresh = clamp(1 - (t - n.born) / 0.9); // a new point flashes as it lands
-    if (fresh > 0) { ctx.globalAlpha = fresh * 0.4 * fade; ctx.strokeStyle = C.flash; ctx.beginPath(); ctx.arc(x, y, n.size + 6 * (1 - fresh), 0, 7); ctx.stroke(); }
+    if (fresh > 0) rings.push([nx, ny, n.size + 6 * (1 - fresh), fresh]);
   });
+  ctx.globalAlpha = fade; dots.forEach((p, g) => { ctx.fillStyle = fills[g]; ctx.fill(p); });
+  ctx.strokeStyle = C.flash;
+  rings.forEach(([rx, ry, r, fresh]) => { ctx.globalAlpha = fresh * 0.4 * fade; ctx.beginPath(); ctx.arc(rx, ry, r, 0, 7); ctx.stroke(); });
   // labels
   ctx.font = "500 12px Geist, system-ui"; ctx.textAlign = "center";
   GROUPS.forEach((g, i) => {
@@ -264,31 +285,35 @@ function draw(t) {
   return alive;
 }
 
+// writes a style or text only when it changed, so idle elements cost nothing
+const put = (el, key, value) => { if (el["_" + key] !== value) { el["_" + key] = value; if (key === "text") el.textContent = value; else el.style[key] = value; } };
+
+let raf = 0;
 function frame(now) {
   const t = (now / 1000) % LOOP;
   // files on the left belt: ride in and slide through the left slot (the #items clip hides them past it)
   items.forEach((el, i) => {
     const s = (t - i * SPACING) / ARRIVE;
-    if (s < 0 || s > 1) { el.style.opacity = 0; return; }
-    const h = el.firstElementChild.height.baseVal.value;
-    el.style.opacity = clamp(s * 6);
-    el.style.transform = `translate(${mix(-90, 372, ease(s))}px, ${300 - h}px)`;
+    if (s < 0 || s > 1) { put(el, "opacity", "0"); return; }
+    const h = (el.h ??= el.firstElementChild.height.baseVal.value);
+    put(el, "opacity", String(clamp(s * 6)));
+    put(el, "transform", `translate(${mix(-90, 372, ease(s))}px, ${300 - h}px)`);
   });
   // outputs on the right belt: slide out of the right slot one by one, then ride off
   outs.forEach((el, i) => {
     const s = (t - OUT_START - i * 0.95) / 3.0;
-    if (s < 0 || s > 1) { el.style.opacity = 0; return; }
+    if (s < 0 || s > 1) { put(el, "opacity", "0"); return; }
     const x = mix(650, 1200, s), out = clamp((x - 780) / 130); // 0 inside the slot, 1 once fully out
-    el.style.opacity = clamp((1 - s) * 8);
-    el.style.transform = `translate(${x}px, ${300 - (el.h ??= el.offsetHeight)}px) rotate(${(i % 2 ? 2 : -2) * out}deg)`;
+    put(el, "opacity", String(clamp((1 - s) * 8)));
+    put(el, "transform", `translate(${x}px, ${300 - (el.h ??= el.offsetHeight)}px) rotate(${(i % 2 ? 2 : -2) * out}deg)`);
   });
-  const alive = draw(t);
-  countEl.textContent = `${alive} ${alive === 1 ? "fact" : "facts"}`;
-  phaseEl.textContent = t < 2.4 ? "Waiting for files" : t < RAMP_START ? "Reading files" : t < FEED_END ? "Converting to knowledge units" : t < LABEL_START ? "Organizing" : t < OUT_START ? "Naming groups" : t < FADE_START ? "Writing outputs" : "Ready for more";
+  const still = t >= STATIC_START && t < FADE_START;
+  if (!still || !drawnStill) { const alive = draw(t); drawnStill = still; put(countEl, "text", `${alive} ${alive === 1 ? "fact" : "facts"}`); }
+  put(phaseEl, "text", t < 2.4 ? "Waiting for files" : t < RAMP_START ? "Reading files" : t < FEED_END ? "Converting to knowledge units" : t < LABEL_START ? "Organizing" : t < OUT_START ? "Naming groups" : t < FADE_START ? "Writing outputs" : "Ready for more");
   const busy = t > 2.4 && t < OUT_START;
   lamp.classList.toggle("idle", t <= 2.4); lamp.classList.toggle("busy", busy);
-  lamp.style.opacity = !busy || Math.sin(now / 160) > 0 ? 1 : 0.35;
-  requestAnimationFrame(frame);
+  put(lamp, "opacity", !busy || Math.sin(now / 160) > 0 ? "1" : "0.35");
+  raf = requestAnimationFrame(frame);
 }
 
 // FIT: scale the 1152 wide stage to the column
@@ -298,14 +323,18 @@ addEventListener("resize", resize); resize();
 
 // THEME CHANGE: re-read the colours and repaint the pictures (the canvas redraws every frame)
 const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-new MutationObserver(() => { readColours(); paintOuts(); if (still) draw(OUT_START + 1); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+new MutationObserver(() => { readColours(); paintOuts(); drawnStill = false; if (still) draw(OUT_START + 1); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
 if (still) {
   // STILL: the organised, labelled graph with every output lined up
   draw(OUT_START + 1); countEl.textContent = `${nodes.length} facts`; phaseEl.textContent = "Ready";
   outs.forEach((el, i) => { el.style.transform = `translate(${790 + (i % 3) * 120}px, ${Math.floor(i / 3) * 96 - 24}px) scale(0.78)`; });
 } else {
-  demoFontsReady.then(() => requestAnimationFrame(frame));
+  // run only while the machine is on screen; the loop time comes from the clock, so it resumes in step
+  demoFontsReady.then(() => new IntersectionObserver(([e]) => {
+    cancelAnimationFrame(raf); raf = 0;
+    if (e.isIntersecting) { drawnStill = false; raf = requestAnimationFrame(frame); }
+  }).observe(fit));
 }
 </script>
 </body>
