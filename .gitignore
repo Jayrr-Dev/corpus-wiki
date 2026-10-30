@@ -1,5 +1,6 @@
 # DEPENDENCIES
 node_modules/
+.pnpm-store/
 
 # BUILD OUTPUT
 .next/
