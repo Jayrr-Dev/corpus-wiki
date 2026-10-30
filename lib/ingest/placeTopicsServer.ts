@@ -251,6 +251,13 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
             await workflowStep<FilingRepair>(repairKey,async()=>({proposal:previousProposal?[...previousProposal]:null,correctionRefs:correctionRefs?[...correctionRefs]:null,feedback,reviewFeedback,history,usage:batchUsage,model:batchModel,objectionChecks}));
           }
         }
+        // Rounds spent on objections to a valid proposal: it is kept and logged, since a domain can be
+        // moved later and a stopped upload can't. Only a batch with no valid proposal stops here.
+        if(!accepted&&previousProposal) {
+          console.warn("Filing kept with review objections left",{source:context.sourceTitle,issues:history.at(-1)});
+          accepted=previousProposal;
+          for(const c of claims) batchRationales.set(c.unitId,reasons.get(c.ref)??group.reason);
+        }
         if(!accepted) throw new Error("Topic filing paused after repeated review corrections; no assignments were saved. Your extracted knowledge is saved. Resume to continue from the saved corrections.");
         return {placements:[...accepted],rationales:[...batchRationales],objectionChecks,...batchUsage,model:batchModel};
         });

@@ -134,11 +134,14 @@ it("supplies real source context, repairs missing assignments, files every unit 
  await store.db.call("revert_change_set",{p_change_set_id:writes.rows[0]!.id});
  expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
 });
-it("saves no assignments when independent review rejects every attempt",async()=>{
+it("keeps the last valid filing when independent review rejects every attempt, so the upload goes on",async()=>{
+ const warn=vi.spyOn(console,"warn").mockImplementation(()=>{});
  const event=await setup();model({rejectAll:true});
- await expect(topicPlacerFor(store.db,{apiKey:"test"})(event)).rejects.toThrow("no assignments were saved");
- expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
- expect((await store.pg.query("select id from change_sets where event_id=$1 and summary like 'Assigned %'",[event])).rows).toHaveLength(0);
+ await topicPlacerFor(store.db,{apiKey:"test"})(event);
+ expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
+ expect((await store.pg.query("select id from change_sets where event_id=$1 and summary like 'Assigned %'",[event])).rows).toHaveLength(1);
+ expect(warn.mock.calls.some(([message])=>/Filing kept/.test(String(message)))).toBe(true);
+ warn.mockRestore();
 });
 it("identifies an invented planning child scope and requires a valid anchor on retry",async()=>{
  const event=await setup();model();
@@ -416,10 +419,10 @@ it("resumes saved review corrections after interruption without regenerating rej
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
-it("retains corrections after the retry budget and allows a later resume to finish",async()=>{
+it("stops asking after three matching reviews of a proposal that no longer changes",async()=>{
  const event=await setup();
  const owner=await store.db.call<{token:string}>("claim_upload_workflow",{p_event_id:event});
- let proposals=0,reviews=0,approve=false;
+ let proposals=0,reviews=0;
  vi.mocked(chatJson).mockImplementation(async(_settings,request)=>{
   let value:unknown;
   if(request.name==="upload_domain_plan")value={groups:[{scopePath:"Upload test",subject:"Policy",reason:"Source scope",refs:["C1","C2","C3"]}]};
@@ -432,20 +435,17 @@ it("retains corrections after the retry budget and allows a later resume to fini
    reviews++;
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    expect(payload.priorReviewIssues).toHaveLength(reviews-1);
-   value={approved:approve,issues:approve?[]:["C3 needs a supported responsibility assignment"],parents:payload.parents.map((p:object)=>({...p,reason:"Subject coherence assessed."}))};
+   value={approved:false,issues:["C3 needs a supported responsibility assignment"],parents:payload.parents.map((p:object)=>({...p,reason:"Subject coherence assessed."}))};
   } else if(request.name==="independent_upload_domain_issue_check") {
    const payload=JSON.parse(request.messages.at(-1)!.content as string);
    value={verdicts:payload.issues.map((issue:{issue:number})=>({issue:issue.issue,blocking:true,reason:"The placement defect remains."}))};
   } else throw new Error(request.name);
   return {value,model:"test",tokensIn:10,tokensOut:10} as never;
  });
- const run=()=>uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
- await expect(run()).rejects.toThrow("Resume to continue from the saved corrections");
- expect(proposals).toBe(6);
- expect((await store.db.call<{unplaced:string[]}>("verify_upload_topic_coverage",{p_event_id:event})).unplaced).toHaveLength(3);
- approve=true;
- await run();
- expect(proposals).toBe(7);expect(reviews).toBe(7);
+ const warn=vi.spyOn(console,"warn").mockImplementation(()=>{});
+ await uploadExecution.run({eventId:event,token:owner.token,db:store.db},()=>topicPlacerFor(store.db,{apiKey:"test"})(event));
+ warn.mockRestore();
+ expect(proposals).toBe(3);expect(reviews).toBe(3);
  expect(await store.db.call("verify_upload_topic_coverage",{p_event_id:event})).toEqual({unplaced:[]});
 });
 
