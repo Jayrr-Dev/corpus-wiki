@@ -85,12 +85,28 @@ means `running`; waiting flag means `waiting`; all succeeded means `complete`; a
 ready or running means `incomplete`. `UploadWorkflow.steps` is filled from jobs so the UI in
 `workflowTypes.ts` keeps working unchanged.
 
+## Where steps 2 and 3 differ (migration `20261127100000_upload_job_functions.sql`)
+
+- A job runs inside the upload's own lease: `claim_upload_job` and the other functions take the
+  `upload_workflows` token, and the heartbeat of `runUploadWorkflow` keeps it. So the lease checks,
+  checkpoints and `workflowWrite` keys stay as they are, and there is no `renew_upload_job` yet.
+  Jobs of one upload run one at a time until step 4 gives each job its own lease.
+- Two checks between stages became jobs: `coverage` (claims still unfiled after `place`) and
+  `verify` (`articleVerifier`). `glossary` and `pages` are single jobs until the fan-out.
+- A job that raises an approval returns `again`: it goes back to `blocked` and runs once more after
+  the answer, to read it. `plan` does this for the Reviewer budget, so a decline still stops the upload.
+- `upload_jobs` got `space_id` and the space policies, and the functions run as `space_runtime`.
+- A request runs ready jobs back to back and starts no new one after 180 s, leaving the upload
+  `incomplete`. Recovery still dispatches the whole upload (`upload_recovery_jobs`), which then
+  claims its next job; the recover route claiming jobs directly waits for per-job leases.
+- Each stage still writes its `upload_steps` checkpoint, so the UI reads the same steps.
+
 ## Order of PRs
 
-1. This PR: plan, `upload_jobs` table migration, typed runner skeleton (`lib/ingest/jobs.ts`), not wired in.
-2. SQL functions: `enqueue_upload_jobs`, `claim_upload_job`, `renew_upload_job`, `finish_upload_job`
+1. Done (PR #70): plan, `upload_jobs` table migration, typed runner skeleton (`lib/ingest/jobs.ts`).
+2. Done: SQL functions: `enqueue_upload_jobs`, `claim_upload_job`, `renew_upload_job`, `finish_upload_job`
    with readiness, plus the cancel trigger. Tests against a local database only.
-3. Runner wiring behind a flag (`UPLOAD_JOBS=true`): each existing stage becomes one job with the
+3. Done: runner wiring behind a flag (`UPLOAD_JOBS=true`): each existing stage becomes one job with the
    static graph. Same work as today, but one job per request. `app/api/processing/recover` claims jobs.
 4. Fan-out: `page:<unitId>` and `glossary-entry:<termId>` jobs, run in parallel.
 5. Status view replaces `upload_steps` as the source for `UploadWorkflow`.
