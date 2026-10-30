@@ -15,6 +15,7 @@ function fixture(sections: SectionRef[]) {
   const progress: number[] = [];
   const abort = new AbortController();
   let cancelled = false;
+  const marks: { kind: string; key: string; version: number }[] = [];
   const call = vi.fn(async (name: string, args: RpcArgs = {}): Promise<unknown> => {
     if (cancelled && ["assert_upload_lease", "start_upload_step", "finish_upload_step", "report_upload_progress"].includes(name)) throw new Error("Cancelled");
     if (name === "start_upload_step") return { done: saved.has(args.p_key as string), output: saved.get(args.p_key as string) };
@@ -28,6 +29,7 @@ function fixture(sections: SectionRef[]) {
       return;
     }
     if (name === "list_stale_sections" || name === "list_affected_sections") return sections;
+    if (name === "read_stale_marks") return marks;
     if (name === "read_upload_workflows") return [{ event_id: "event", steps: [...saved.keys()].map(key => ({ key, state: "succeeded" })) }];
     if (name === "claim_section_build") {
       builds.push(args.p_section_id as string);
@@ -41,7 +43,7 @@ function fixture(sections: SectionRef[]) {
   const reviewSections = vi.fn(async () => {});
   const writer: SectionWriter = { name: "test", reviseSection: vi.fn(), reviewSections };
   return {
-    db, call, writer, builds, progress, saved, reviewSections,
+    db, call, writer, builds, progress, saved, reviewSections, marks,
     cancel: () => { cancelled = true; abort.abort(new Error("Cancelled")); },
     resume: () => { cancelled = false; },
     run: (signal: AbortSignal = abort.signal) => uploadExecution.run({ eventId: "event", token: "lease", db, signal }, () => rebuildAfterEvent(db, writer, "event")),
@@ -206,4 +208,17 @@ it("cancels concurrent work before later sections or review and resumes saved se
   await f.run(new AbortController().signal);
   expect([...f.builds].sort()).toEqual(["a2", "b1", "b2", "c1"]);
   expect(f.reviewSections).toHaveBeenCalledOnce();
+});
+
+it("builds a finished section again when it was marked stale after its build, once per mark", async () => {
+  const f = fixture([{ pageId: "page", sectionId: "a" }, { pageId: "page", sectionId: "b" }]);
+  await f.run();
+  expect(f.builds).toEqual(["a", "b"]);
+  // A later stage changed b's claims (or a crash cut its build short): b is stale again
+  f.marks.push({ kind: "section", key: "b", version: 7 });
+  await f.run();
+  expect(f.builds).toEqual(["a", "b", "b"]);
+  // The same mark never builds it twice
+  await f.run();
+  expect(f.builds).toEqual(["a", "b", "b"]);
 });

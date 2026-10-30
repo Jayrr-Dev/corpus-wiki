@@ -111,9 +111,24 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
     });
   };
   let finished = new Set<string>();
+  // A section built earlier in this upload and marked stale again since then (a later stage changed
+  // its claims, or a crash cut its build short) is built again under its mark's version; otherwise
+  // its saved checkpoint skips it and the review waits forever for a current section.
+  const again = new Map<string, number>();
+  const buildKey = (section: SectionRef) => {
+    const key = `rebuild-section:${checkpointScope}:${section.sectionId}`;
+    const version = again.get(section.sectionId);
+    return version === undefined ? key : `${key}:stale-${version}`;
+  };
   if (sections.length && uploadExecution.getStore()) {
     finished = await finishedUploadSteps(db, eventId);
-    if (sections.every(section => finished.has(`rebuild-section:${checkpointScope}:${section.sectionId}`))) {
+    const marks = await db.call<{ key: string; version: number }[]>("read_stale_marks", { p_kinds: ["section"] });
+    const marked = new Map(marks.map(mark => [mark.key, mark.version]));
+    for (const section of sections) {
+      const version = marked.get(section.sectionId);
+      if (version !== undefined && finished.has(`rebuild-section:${checkpointScope}:${section.sectionId}`)) again.set(section.sectionId, version);
+    }
+    if (sections.every(section => finished.has(buildKey(section)))) {
       // These same durable keys would skip every build individually. One read
       // avoids hundreds of lease/progress round trips when only review remains.
       await assertActiveUpload();
@@ -122,7 +137,7 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
       return;
     }
   }
-  const pending = sections.filter(section => !finished.has(`rebuild-section:${checkpointScope}:${section.sectionId}`));
+  const pending = sections.filter(section => !finished.has(buildKey(section)));
   const byPage = new Map<string, SectionRef[]>();
   for (const section of pending) {
     const siblings = byPage.get(section.pageId) ?? [];
@@ -149,7 +164,7 @@ export async function rebuildAfterEvent(db: DbRpc, writer: SectionWriter, eventI
             if (failed) return;
             uploadExecution.getStore()?.signal?.throwIfAborted();
             await assertActiveUpload();
-            await workflowStep(`rebuild-section:${checkpointScope}:${section.sectionId}`, () =>
+            await workflowStep(buildKey(section), () =>
               rebuildUploadSection(db, writer, section.sectionId, eventId));
             pageCompleted++;
             const done = ++completed;
