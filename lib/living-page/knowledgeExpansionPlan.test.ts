@@ -22,6 +22,13 @@ describe("source-backed knowledge expansion", () => {
     expect(actions[1]).toMatchObject({ passageIds: ["p1"], speechAct: "stated", input: { kind: "definition", validFrom: "2025-04-16", domainPaths: ["Safety/PPE"], entities: [{ type: "equipment", key: "ppe", role: "subject" }] } });
   });
 
+  it("skips a definition that only repeats a claim, or one given twice, but keeps the subject", () => {
+    const copy = { ...plan.concepts[0]!, definition: "acme requires  protective equipment" };
+    expect(expansionActions({ concepts: [copy] }, context).map((action) => action.type)).toEqual(["create_entity"]);
+    const twice = expansionActions({ concepts: [plan.concepts[0]!, { ...plan.concepts[0]!, name: "Safety gear", key: "safety-gear" }] }, context);
+    expect(twice.map((action) => action.type)).toEqual(["create_entity", "add_claim", "create_entity"]);
+  });
+
   it("keeps general definitions independent from the handbook company", () => {
     const actions = expansionActions({ concepts: [{ ...plan.concepts[0]!, applicability: { status: "general", entities: [], conditions: null } }] }, context);
     expect(actions[1]?.input).toMatchObject({ context: { entities: [{ type: "equipment", key: "ppe", role: "subject" }], applicability: { status: "general", entities: [], conditions: null } } });

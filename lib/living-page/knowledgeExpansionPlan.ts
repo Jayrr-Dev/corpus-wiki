@@ -49,11 +49,16 @@ export function validateExpansion(plan: KnowledgeExpansion, context: ExpansionCo
   }
 }
 
+// Same words, ignoring case, spacing and end punctuation
+const sameText = (text: string) => text.toLowerCase().replace(/\s+/g, " ").replace(/[\s.!?;:]+$/, "").trim();
+
 // Definitions are real knowledge units with real source citations, not uncited UI text.
+// A "definition" that only repeats a claim word for word adds a copy, not a meaning: it is skipped.
 export function expansionActions(plan: KnowledgeExpansion, context: ExpansionContext): DraftAction[] {
   validateExpansion(plan, context);
   const known = new Set(context.existingEntities.map(naturalKey));
   const defined = new Set(context.definedEntityKeys);
+  const said = new Set(context.knowledge.units.map((unit) => sameText(unit.content)));
   const actions: DraftAction[] = [];
   for (const concept of plan.concepts) {
     if (!known.has(naturalKey(concept))) {
@@ -70,7 +75,8 @@ export function expansionActions(plan: KnowledgeExpansion, context: ExpansionCon
     // a company's specific version, and company membership is not needed for reuse.
     const alreadyDefined = context.existingDefinitions?.some((definition) => definition.entityKey === naturalKey(concept)
       && definition.context && JSON.stringify(normalizeKnowledgeContext(definition.context).applicability) === JSON.stringify(definitionContext.applicability));
-    if (alreadyDefined) continue;
+    if (alreadyDefined || said.has(sameText(concept.definition))) continue;
+    said.add(sameText(concept.definition));
     actions.push({ ...base, type: "add_claim", speechAct: "stated", passageIds: [...new Set(passages.map((passage) => passage.id))], input: {
       content: concept.definition, kind: "definition", epistemicStatus: "supported", validFrom: sourceDate,
       entities, context: definitionContext, domainPaths: [concept.domainPath],

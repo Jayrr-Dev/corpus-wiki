@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, onTestFinished, vi } from "vitest";
 import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
 import type { AdminSupabase } from "@/lib/supabase/admin";
@@ -7,6 +7,7 @@ import * as articlePlanner from "./articlePlanner";
 import { OutlineRejectedError, type Attempt } from "./outlineBuilder";
 import * as retrieval from "./articleKnowledgeCandidates";
 import * as discovery from "./discoverArticleUpdates";
+import * as scaffold from "./articleScaffold";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
@@ -96,6 +97,48 @@ it.each(["quality", "transport"])("records an editorial rejection but keeps a %s
     expect(audits).toHaveLength(2);
     expect(fetch).toHaveBeenCalledTimes(callsAfterRecovery);
   }
+});
+
+it("records a rejected re-plan of an existing article as a decision, not a failed upload", async () => {
+  const attempt: Attempt = { plan: { title: "Existing article", introduction: ["C1"], sections: [] },
+    centralMessage: null, readingOrderRationale: null, problems: ["A section repeats another."], review: null, accepted: false };
+  const replan = vi.spyOn(scaffold, "articleAdditionActions").mockRejectedValue(new OutlineRejectedError([attempt], { tokensIn: 3, tokensOut: 4 }));
+  onTestFinished(() => replan.mockRestore());
+  const tables: Record<string, unknown> = {
+    units: [{ id: "u1", current_revision_id: "r1", kind: "fact", epistemic_status: "supported" }],
+    revisions: [{ id: "r1", content: "A supported fact.", knowledge_context: null }],
+    unit_entities: [], unit_domains: [], pages: { title: "Existing article" }, sections: [], section_lines: [],
+  };
+  const audits: Record<string, unknown>[] = [];
+  const client = { from: (table: string) => {
+    const query = { select: () => query, eq: () => query, is: () => query, in: () => query, neq: () => query, order: () => query, range: () => query, single: () => query,
+      upsert: async (row: Record<string, unknown>) => { audits.push(row); return { error: null }; },
+      then: (resolve: (value: unknown) => unknown) => Promise.resolve(resolve({ data: tables[table], error: null })) };
+    return query;
+  } } as unknown as AdminSupabase;
+  const steps = new Map<string, unknown>();
+  const db: DbRpc = { async call<T>(name: string, args: RpcArgs = {}) {
+    if (name === "report_upload_progress") return null as T;
+    if (name === "living_page_event_units") return ["u1"] as T;
+    if (name === "article_index") return [{ id: "page" }] as T;
+    if (name === "get_workspace_settings") return {} as T;
+    const key = String(args.p_key);
+    if (name === "start_upload_step") return { done: steps.has(key), output: steps.get(key) } as T;
+    if (name === "finish_upload_step") { if (!args.p_error) steps.set(key, args.p_output); return null as T; }
+    throw new Error(`Unexpected database call ${name}`);
+  } };
+  vi.stubGlobal("fetch", vi.fn(async (_url, init) => {
+    const request = JSON.parse(String(init?.body));
+    const value = request.response_format.json_schema.name === "article_proposals"
+      ? { proposals: [{ action: "update", pageId: "page", title: "", type: null, scope: "", parentPageId: null, entity: null, claims: ["C1"] }] }
+      : { sections: [{ title: "Supported knowledge", claims: ["C1"] }] };
+    return new Response(JSON.stringify({ model: "test", usage: { prompt_tokens: 1, completion_tokens: 1 }, choices: [{ finish_reason: "stop", message: { content: JSON.stringify(value) } }] }));
+  }));
+  const run = () => uploadExecution.run({ eventId: "upload", token: "owner", db }, () => orchestrateEventArticles({ db, client, settings: { apiKey: "test" }, embedder: null }, "upload"));
+  await expect(run()).resolves.toMatchObject({ rejected: 1, updated: 0 });
+  expect(audits).toHaveLength(1);
+  expect(audits[0]).toMatchObject({ verdict: "reject", change_set_id: null, proposal: { claimIds: ["u1"], outlineReview: { attempts: [attempt] } } });
+  expect(String(audits[0]!.reason)).toMatch(/^The article was not changed/);
 });
 
 it.each(["audit", "lost-audit", "commit"])("does not complete an upload proposal after a failed %s", async (failure) => {

@@ -190,34 +190,38 @@ async function carryOut(deps: OrchestratorDeps, eventId: string | null, item: Pl
   const actions: DraftAction[] = [];
   let usage: TokenUsage = { tokensIn: 0, tokensOut: 0 };
   let summary = "";
-  if (step.kind === "create_article" && item.action === "create") {
-    let outline: Awaited<ReturnType<typeof newArticleSections>>;
-    try { outline = await newArticleSections(deps, item); }
-    catch (error) {
-      if (!(error instanceof OutlineRejectedError)) throw error;
-      // This is a completed editorial decision, not a failed write. Preserve
-      // its evidence and every review; only this optional article is declined.
-      // Transport, validation and storage failures must still fail the step.
-      const issues = error.attempts.at(-1)?.review?.blockingIssues ?? error.attempts.at(-1)?.problems ?? [];
-      const rejected = { ...review, verdict: "reject" as const, targetPageId: null, sectionTitle: null,
-        reason: `No article was published because its outline did not pass independent review after ${error.attempts.length} attempts. Claims remain saved.${issues.length ? ` ${issues.join(" ")}` : ""}`,
-        promptVersion: `${review.promptVersion}+${OUTLINE_POLICY_VERSION}` };
-      return { proposal, review: rejected, unitIds, actions: [], usage: addUsage(usage, error.usage), summary: "", kind: "none" as const, pageId: null,
-        outlineReview: { policyVersion: OUTLINE_POLICY_VERSION, attempts: error.attempts } };
+  // An outline that never passes independent review is a completed editorial decision, not a
+  // failed write: nothing is published, the reviews are kept and the claims stay saved. This holds
+  // for a new article and for an existing one re-planned to take the claims. Transport,
+  // validation and storage failures still fail the step.
+  const declined = (error: OutlineRejectedError) => {
+    const issues = error.attempts.at(-1)?.review?.blockingIssues ?? error.attempts.at(-1)?.problems ?? [];
+    const what = step.kind === "create_article" ? "No article was published" : "The article was not changed";
+    const rejected = { ...review, verdict: "reject" as const, targetPageId: null, sectionTitle: null,
+      reason: `${what} because its outline did not pass independent review after ${error.attempts.length} attempts. Claims remain saved.${issues.length ? ` ${issues.join(" ")}` : ""}`,
+      promptVersion: `${review.promptVersion}+${OUTLINE_POLICY_VERSION}` };
+    return { proposal, review: rejected, unitIds, actions: [], usage: addUsage(usage, error.usage), summary: "", kind: "none" as const, pageId: null,
+      outlineReview: { policyVersion: OUTLINE_POLICY_VERSION, attempts: error.attempts } };
+  };
+  try {
+    if (step.kind === "create_article" && item.action === "create") {
+      const { sections, ...planUsage } = await newArticleSections(deps, item);
+      usage = addUsage(usage, planUsage);
+      actions.push({ ...base, type: "create_page", input: { title: item.title, entityId: item.type === "entity" ? item.entity?.id ?? null : null, articleType: item.type, scope: item.scope, parentPageId: item.parentPageId, sections } });
+      summary = `Created the article “${item.title}” after independent review`;
+    } else if (step.kind === "update_article") {
+      const { sections, ...groupUsage } = await updateSections(deps, step.pageId, item.claims);
+      usage = addUsage(usage, groupUsage);
+      actions.push(...await articleAdditionActions(deps.db, deps.client, deps.settings, step.pageId, sections));
+      summary = item.action === "create" ? `Added new knowledge to an existing article instead of creating “${item.title}”` : "Added new knowledge to an existing article";
+    } else if (step.kind === "add_section") {
+      actions.push(...await articleAdditionActions(deps.db, deps.client, deps.settings, step.pageId,
+        [{ title: step.title, query: { unitIds, article: true } }], `Integrate the reviewed facet ${JSON.stringify(step.title)} with related existing topics where coherent.`));
+      summary = `Added “${step.title}” as a section instead of a separate article`;
     }
-    const { sections, ...planUsage } = outline;
-    usage = addUsage(usage, planUsage);
-    actions.push({ ...base, type: "create_page", input: { title: item.title, entityId: item.type === "entity" ? item.entity?.id ?? null : null, articleType: item.type, scope: item.scope, parentPageId: item.parentPageId, sections } });
-    summary = `Created the article “${item.title}” after independent review`;
-  } else if (step.kind === "update_article") {
-    const { sections, ...groupUsage } = await updateSections(deps, step.pageId, item.claims);
-    usage = addUsage(usage, groupUsage);
-    actions.push(...await articleAdditionActions(deps.db, deps.client, deps.settings, step.pageId, sections));
-    summary = item.action === "create" ? `Added new knowledge to an existing article instead of creating “${item.title}”` : "Added new knowledge to an existing article";
-  } else if (step.kind === "add_section") {
-    actions.push(...await articleAdditionActions(deps.db, deps.client, deps.settings, step.pageId,
-      [{ title: step.title, query: { unitIds, article: true } }], `Integrate the reviewed facet ${JSON.stringify(step.title)} with related existing topics where coherent.`));
-    summary = `Added “${step.title}” as a section instead of a separate article`;
+  } catch (error) {
+    if (error instanceof OutlineRejectedError) return declined(error);
+    throw error;
   }
   return { proposal, review, unitIds, actions, usage, summary, kind: step.kind,
     pageId: step.kind === "update_article" || step.kind === "add_section" ? step.pageId : null };
@@ -297,9 +301,14 @@ async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope
   const progressStep = eventId && (scope === eventId || scope === `enrichment:${eventId}`) ? "plan" : null;
   let completed = 0;
   if (progressStep) await reportUploadProgress({ step: progressStep, done: completed, total: planned.length });
-  for (const [index, item] of planned.entries()) {
+  // Where each new article landed, by title, for the articles proposed under it. Parents come
+  // first (readProposals); one the reviewer turned down leaves its children at the top level.
+  const landed = new Map<string, string | null>();
+  for (const [index, planItem] of planned.entries()) {
     uploadExecution.getStore()?.signal?.throwIfAborted();
     const key = keys[index]!;
+    const item: PlannedArticle = planItem.action === "create" && planItem.parentTitle
+      ? { ...planItem, parentPageId: landed.get(planItem.parentTitle.trim().toLowerCase()) ?? null } : planItem;
     let outcome: Outcome;
     try {
       outcome = await workflowStep(key, () => carryOutSafely(deps, eventId, item, key));
@@ -320,6 +329,7 @@ async function orchestrate(deps: OrchestratorDeps, eventId: string | null, scope
       if (!failed) { failed = true; failure = error; }
       continue;
     }
+    if (item.action === "create") landed.set(item.title.trim().toLowerCase(), outcome.pageId);
     if (outcome.verdict === "approve") result.created++;
     else if (outcome.verdict === "update_existing") result.updated++;
     else if (outcome.verdict === "section_of") result.sections++;
