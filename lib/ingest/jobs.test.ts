@@ -2,15 +2,15 @@ import type { DraftChangeSet, ReconciliationInput } from "@/lib/ai/types";
 import { FakeSectionWriter } from "@/lib/living-page";
 import { portablePostgres } from "@/test/db/portablePostgres";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
-import { ALL_JOB_KINDS, INITIAL_JOBS, KNOWLEDGE_JOB_KINDS, runUploadJobs } from "./jobs";
+import { ALL_JOB_KINDS, INITIAL_JOBS, runUploadJobs } from "./jobs";
 import type { DbRpc } from "@/lib/db/rpc";
 import { splitIntoPassages } from "./passages";
 import { reconcileUpload, recordUpload, type PipelineDeps } from "./pipeline";
 
 // =====================================================================
-// UPLOAD JOBS (issue #47, UPLOAD_JOBS=true): each stage is one job in
-// public.upload_jobs, run in order inside the upload's lease. The upload
-// workflow tests also pass with the flag on; these check the jobs themselves.
+// UPLOAD JOBS (issue #47, UPLOAD_JOBS=true): each knowledge stage is one job
+// in public.upload_jobs, run in order inside the upload's lease; the finished
+// upload hands its knowledge to the modules (lib/processing/moduleUpkeep.ts).
 // =====================================================================
 
 let store: Awaited<ReturnType<typeof portablePostgres>>;
@@ -59,53 +59,56 @@ it("runs every stage as one job, in order, and completes the upload", async () =
   expect(rows.every((job) => job.state === "succeeded" && job.attempts === 1)).toBe(true);
 });
 
-it("the knowledge job stops before the articles, and the articles run continues from there", async () => {
+it("hands a finished upload's knowledge to every module, once", async () => {
   const source = await upload(); const pipeline = deps();
-  expect((await reconcileUpload(pipeline, source.eventId, "knowledge")).workflow?.state).toBe("incomplete");
-  const rows = await jobs(source.eventId);
-  for (const job of rows) expect(job.state).toBe((KNOWLEDGE_JOB_KINDS as string[]).includes(job.key) ? "succeeded" : job.key === "plan" ? "ready" : "blocked");
+  expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("complete");
   expect((await reconcileUpload(pipeline, source.eventId, "articles", true)).workflow?.state).toBe("complete");
+  const modules = (await store.pg.query<{ module: string; state: string }>("select module, state from public.module_upkeep where event_id=$1 order by module", [source.eventId])).rows;
+  expect(modules).toEqual(["curator", "definitions", "entities", "glossary", "wiki"].map((module) => ({ module, state: "ready" })));
   expect(pipeline.reconciler.draftChangeSet).toHaveBeenCalledTimes(1);
 });
 
 it("a failed stage stops its dependents; Resume runs only that job and what follows", async () => {
   const source = await upload();
-  const describer = vi.fn().mockRejectedValueOnce(new Error("describer down")).mockResolvedValue(undefined);
-  const pipeline = deps({ entityDescriber: describer });
+  const deduper = vi.fn().mockRejectedValueOnce(new Error("deduper down")).mockResolvedValue(undefined);
+  const pipeline = deps({ deduper });
   const failed = await reconcileUpload(pipeline, source.eventId);
   expect(failed.workflow?.state).toBe("incomplete");
-  expect(failed.error).toContain("describer down");
-  expect(await stateOf(source.eventId, "describe")).toBe("failed");
-  expect(await stateOf(source.eventId, "profiles")).toBe("blocked");
+  expect(failed.error).toContain("deduper down");
+  expect(await stateOf(source.eventId, "duplicates")).toBe("failed");
+  expect(await stateOf(source.eventId, "tidy")).toBe("blocked");
+  // Nothing goes to the modules until the knowledge is saved
+  expect((await store.pg.query("select 1 from public.module_upkeep where event_id=$1", [source.eventId])).rows).toHaveLength(0);
   // An automatic continuation never retries a failed job
   expect((await reconcileUpload(pipeline, source.eventId, "articles", true)).workflow?.state).toBe("incomplete");
-  expect(describer).toHaveBeenCalledTimes(1);
+  expect(deduper).toHaveBeenCalledTimes(1);
   const resumed = await reconcileUpload(pipeline, source.eventId);
   expect(resumed.workflow?.state).toBe("complete");
-  expect(describer).toHaveBeenCalledTimes(2);
+  expect(deduper).toHaveBeenCalledTimes(2);
   expect(pipeline.reconciler.draftChangeSet).toHaveBeenCalledTimes(1);
 });
 
 it("a cancel stops every job that has not started", async () => {
-  const source = await upload(); const pipeline = deps();
-  await reconcileUpload(pipeline, source.eventId, "knowledge");
+  const source = await upload();
+  const pipeline = deps({ deduper: vi.fn().mockRejectedValueOnce(new Error("deduper down")).mockResolvedValue(undefined) });
+  await reconcileUpload(pipeline, source.eventId);
   expect(await store.db.call("cancel_upload_workflow", { p_event_id: source.eventId })).toBe("cancelled");
   const rows = await jobs(source.eventId);
-  expect(rows.filter((job) => job.state === "cancelled").map((job) => job.key)).toContain("plan");
+  expect(rows.filter((job) => job.state === "cancelled").map((job) => job.key)).toContain("tidy");
   expect(rows.some((job) => job.state === "ready" || job.state === "blocked")).toBe(false);
   // A person's Resume clears the cancel and runs the rest
   expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("complete");
 });
 
 it("a job left running by a lost owner is handed out again, with the same key", async () => {
-  const source = await upload(); const pipeline = deps();
-  await reconcileUpload(pipeline, source.eventId, "knowledge");
+  const source = await upload();
+  const pipeline = deps({ deduper: vi.fn().mockRejectedValueOnce(new Error("deduper down")).mockResolvedValue(undefined) });
+  await reconcileUpload(pipeline, source.eventId);
   // An owner that died mid-job: its job stays running under a token nobody holds
-  await store.pg.query("update public.upload_jobs set state='running',token=gen_random_uuid() where event_id=$1 and key='plan'", [source.eventId]);
-  expect((await reconcileUpload(pipeline, source.eventId, "articles", true)).workflow?.state).toBe("complete");
-  const plan = (await jobs(source.eventId)).find((job) => job.key === "plan")!;
-  expect(plan.state).toBe("succeeded");
-  expect(plan.attempts).toBe(1);
+  await store.pg.query("update public.upload_jobs set state='running',token=gen_random_uuid() where event_id=$1 and key='duplicates'", [source.eventId]);
+  expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("complete");
+  const duplicates = (await jobs(source.eventId)).find((job) => job.key === "duplicates")!;
+  expect(duplicates.state).toBe("succeeded");
 });
 
 it("reports complete, not incomplete, when time runs out after the last job", async () => {

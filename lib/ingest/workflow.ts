@@ -1,23 +1,24 @@
 import { withSettledActor } from "@/lib/auth/currentPerson";
 import type { CommitResult } from "@/lib/change-control";
 import { commitAsRole } from "@/lib/change-control";
-import { holdForReviewerBudget, proposePages, rebuildAfterEvent, ReviewerBudgetDeclined } from "@/lib/living-page";
 import { processingCancellation } from "@/lib/processing/cancellation";
 import { processingMetric, withProcessingReport } from "@/lib/processing/metrics";
-import { ALL_JOB_KINDS, KNOWLEDGE_JOB_KINDS, runUploadJobs, uploadJobsEnabled, type JobHandler, type UploadJobKind } from "./jobs";
+import { KNOWLEDGE_JOB_KINDS, runUploadJobs, uploadJobsEnabled, type JobHandler, type UploadJobKind } from "./jobs";
 import type { PipelineDeps } from "./pipeline";
 import type { ProcessUploadResult } from "./types";
 import { uploadExecution, workflowStep } from "./workflowContext";
-import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, failedWorkflowStages, uploadErrorMessage, type UploadJob, type UploadWorkflow } from "./workflowTypes";
+import { KNOWLEDGE_STAGES, failedWorkflowStages, uploadErrorMessage, type UploadJob, type UploadWorkflow } from "./workflowTypes";
 
-// The articles job also walks the knowledge roles: finished ones come back from their
-// checkpoints, unfinished ones run first, so articles never read half-cleaned knowledge.
+// AN UPLOAD SAVES KNOWLEDGE ONLY: the claims are read, saved, linked, merged, their entities
+// tidied, filed into topics and indexed. Then the upload is complete and hands its event to
+// the modules (module_upkeep), which bring definitions, articles, entity cards, the glossary
+// and the page tree up to date on the background worker (lib/processing/moduleUpkeep.ts).
 // How often a run renews its lease, and so how soon a cancel reaches an AI call in flight
 const HEARTBEAT_MS = 5_000;
 // With UPLOAD_JOBS, no new job starts after this long, so the one in flight still fits a 300 s request
 const JOB_BUDGET_MS = 180_000;
 // A failure of these is the upload's own error; a failed stage shows as a warning from its checkpoint
-const FATAL_JOB_KINDS = new Set<UploadJobKind>(["reconcile", "coverage", "verify"]);
+const FATAL_JOB_KINDS = new Set<UploadJobKind>(["reconcile", "coverage"]);
 
 // `continuation`: started automatically after the knowledge job, so it never overrides a cancel.
 export async function runUploadWorkflow(deps: PipelineDeps, eventId: string, reconcile: () => Promise<CommitResult>, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
@@ -62,43 +63,24 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
         await checkLease();
         return claim.changeSetId ? commitAsRole(db, "reconciler", claim.changeSetId) : reconcile();
       });
-      const articleInputs = () => db.call<{ unitId: string; revisionId: string }[]>("upload_article_inputs", { p_event_id: eventId });
-      const run: Record<(typeof KNOWLEDGE_STAGES)[number] | (typeof ARTICLE_STAGES)[number] | (typeof ENRICHMENT_STAGES)[number] | "articles-ready", () => Promise<unknown>> = {
+      const run: Record<(typeof KNOWLEDGE_STAGES)[number], () => Promise<unknown>> = {
         duplicates: async () => deps.deduper?.(eventId),
         tidy: async () => deps.entityTidier?.(eventId),
         place: async () => deps.topicPlacer?.(eventId),
         hierarchy: async () => deps.hierarchyOrganizer?.(eventId),
-        // Definitions are claims. They are saved before the index, so the one
-        // article pass can cite them.
-        expand: async () => deps.knowledgeExpander?.(eventId),
         embeddings: async () => deps.claimEmbedder?.(),
-        plan: async () => {
-          const refreshed = await proposePages(db, eventId, deps.pagePlanner);
-          await deps.articleOrchestrator?.(eventId);
-          return refreshed;
-        },
-        pages: async () => {
-          await rebuildAfterEvent(db, deps.writer, eventId);
-          // New articles cite their claims only once written: file them under their context now
-          if (deps.articleOrchestrator) await deps.hierarchyOrganizer?.(eventId);
-        },
-        "articles-ready": async () => {
-          await workflowStep("articles-input", articleInputs);
-          return { readyAt: new Date().toISOString() };
-        },
-        describe: async () => deps.entityDescriber?.(eventId),
-        profiles: async () => deps.profileWriter?.(eventId),
-        glossary: async () => deps.glossaryGenerator?.(),
-        // A failed upkeep read is unfinished work. Keep its checkpoint resumable
-        // instead of showing a completed stage after only logging the failure.
-        curate: async () => deps.pageMaintainer?.(eventId),
       };
-      // Claims still unfiled after placement stop the articles. Rejecting a proposed root
-      // can leave claims unfiled after the placement stage itself completed.
+      // The knowledge is saved: the modules take it from here, once per upload
+      const complete = async () => {
+        await db.call("enqueue_module_upkeep", { p_event_id: eventId });
+        await release("complete");
+      };
+      // Claims still unfiled after placement leave the upload unfinished. Rejecting a proposed
+      // root can leave claims unfiled after the placement stage itself completed.
       const unplacedError = async () => {
         if (!deps.topicPlacer) return null;
         const coverage = await db.call<{ unplaced: string[] }>("verify_upload_topic_coverage", { p_event_id: eventId });
-        return coverage.unplaced.length ? `${coverage.unplaced.length} knowledge units still need domain assignments. Assign them before resuming articles.` : null;
+        return coverage.unplaced.length ? `${coverage.unplaced.length} knowledge units still need domain assignments. Assign them, then resume.` : null;
       };
       if (uploadJobsEnabled()) {
         const stage = (key: keyof typeof run): JobHandler => async () => { await timedStage(eventId, key, run[key]); };
@@ -106,23 +88,14 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           reconcile: async () => { await reconcileStage(); },
           duplicates: stage("duplicates"), tidy: stage("tidy"), place: stage("place"),
           coverage: async () => { const error = await unplacedError(); if (error) throw new Error(error); },
-          hierarchy: stage("hierarchy"), expand: stage("expand"), embeddings: stage("embeddings"),
-          // A very large build waits for a person to approve its Reviewer calls (lib/living-page/reviewerBudget.ts)
-          // Run again after the answer: a checkpoint hit, then the answer is read (a decline throws)
-          plan: async () => { await timedStage(eventId, "plan", run.plan); return { again: await holdForReviewerBudget(db, eventId) }; },
-          pages: stage("pages"),
-          "articles-ready": async () => {
-            const result = await timedStage(eventId, "articles-ready", run["articles-ready"]);
-            console.info("Upload articles ready", { eventId, ...(result as { readyAt: string }) });
-          },
-          describe: stage("describe"), profiles: stage("profiles"), glossary: stage("glossary"), curate: stage("curate"),
-          verify: async () => { await deps.articleVerifier?.(eventId); },
+          hierarchy: stage("hierarchy"), embeddings: stage("embeddings"),
         };
         const result = await runUploadJobs(db, eventId, token, {
-          kinds: job === "knowledge" ? KNOWLEDGE_JOB_KINDS : ALL_JOB_KINDS, handlers, checkLease, retry: !continuation, budgetMs: JOB_BUDGET_MS,
+          kinds: KNOWLEDGE_JOB_KINDS, handlers, checkLease, retry: !continuation, budgetMs: JOB_BUDGET_MS,
         });
-        if (result.failed && (FATAL_JOB_KINDS.has(result.failed.kind) || result.failed.caught instanceof ReviewerBudgetDeclined)) fatal = result.failed.error;
-        await release(result.state);
+        if (result.failed && FATAL_JOB_KINDS.has(result.failed.kind)) fatal = result.failed.error;
+        if (result.state === "complete") await complete();
+        else await release(result.state);
         return;
       }
       await reconcileStage();
@@ -130,26 +103,14 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
         await release("waiting");
         return;
       }
-      // Completed roles are not repeated on resume.
-      // Articles are written once the knowledge, definitions and index are saved.
-      // Descriptions, profiles, the glossary and the curator run after that and add no claims.
-      const stages = job === "knowledge" ? KNOWLEDGE_STAGES : [...KNOWLEDGE_STAGES, ...ARTICLE_STAGES, "articles-ready" as const, ...ENRICHMENT_STAGES];
+      // Completed roles are not repeated on resume
       let failed = false;
-      for (const key of stages) {
+      for (const key of KNOWLEDGE_STAGES) {
         await checkLease();
-        try {
-          const result = await timedStage(eventId, key, run[key]);
-          // Announce only after the durable checkpoint succeeded, including on resume.
-          if (key === "articles-ready") console.info("Upload articles ready", { eventId, ...(result as { readyAt: string }) });
-        }
+        try { await timedStage(eventId, key, run[key]); }
         catch { failed = true; break; }
         // Filing may propose a new root: the rest waits for that approval, as after the save
         if (key === "place" && await db.call<boolean>("upload_workflow_waiting", { p_event_id: eventId })) {
-          await release("waiting");
-          return;
-        }
-        // A very large build waits for a person to approve its Reviewer calls (lib/living-page/reviewerBudget.ts)
-        if (key === "plan" && await holdForReviewerBudget(db, eventId)) {
           await release("waiting");
           return;
         }
@@ -159,11 +120,8 @@ async function runUploadWorkflowAs(deps: PipelineDeps, eventId: string, reconcil
           if (fatal) { failed = true; break; }
         }
       }
-      // Enrichment and curation can change an article outside the rebuilt subset.
-      // Recheck current content after every stage, including checkpoint resumes.
-      if (!failed && job !== "knowledge") await deps.articleVerifier?.(eventId);
-      // A finished knowledge job leaves the upload incomplete without an error: articles are next
-      await release(failed || job === "knowledge" ? "incomplete" : "complete");
+      if (failed) await release("incomplete");
+      else await complete();
     });
   } catch (error) {
     fatal = error instanceof Error ? error.message : String(error);

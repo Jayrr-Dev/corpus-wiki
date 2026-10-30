@@ -36,7 +36,7 @@ export function canCancelUpload(workflow: UploadWorkflow): boolean {
 export type UploadJob = "knowledge" | "articles";
 
 // Claims are cleaned, filed and defined before one index. Articles wait for that index.
-export const KNOWLEDGE_STAGES = ["duplicates", "tidy", "place", "hierarchy", "expand", "embeddings"] as const;
+export const KNOWLEDGE_STAGES = ["duplicates", "tidy", "place", "hierarchy", "embeddings"] as const;
 export const ARTICLE_STAGES = ["plan", "pages"] as const;
 export const ENRICHMENT_STAGES = ["describe", "profiles", "glossary", "curate"] as const;
 

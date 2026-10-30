@@ -30,3 +30,12 @@ it("after the retry, leaves out only the edit that still cannot be applied", () 
   expect(review.edits).toEqual([{ type: "revise_line", targetId: A, reason: "Clearer", text: "The front desk opens at 7:30 Monday to Friday." }]);
   expect(review.summary).toBe("Tightened two lines.");
 });
+
+it("after the retry, keeps the first of two edits to one paragraph", () => {
+  const twice = pagePatchReviewSchema.parse({ summary: "Edited twice.", findings: [], edits: [
+    { type: "revise_line", targetId: A, reason: "First", patches: [{ old_str: "on weekdays", new_str: "Monday to Friday" }] },
+    { type: "revise_line", targetId: A, reason: "Second", patches: [{ old_str: "7:30", new_str: "7:45" }] },
+  ] });
+  expect(() => materializeReviewPatches(twice, snapshot)).toThrow("conflicting operations");
+  expect(materializeReviewPatches(twice, snapshot, true).edits.map((edit) => edit.reason)).toEqual(["First"]);
+});

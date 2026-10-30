@@ -43,10 +43,14 @@ describe("stage change sets", () => {
     where c.event_id=$1 and change_control.upload_stage(w.key)='articles' order by c.created_at desc, c.id desc`, [eventId]);
 
   it("folds an upload's article stage, cutting change sets per upload over ten times, and Undo of the stage equals undoing each set", async () => {
-    // Today's behaviour first: the fold is switched off while the upload runs
-    await store.pg.exec("alter table public.upload_workflows disable trigger fold_upload_stages");
+    // Today's behaviour first: the fold (at completion, and when the Wiki finishes) is switched off while the upload runs
+    await store.pg.exec(`alter table public.upload_workflows disable trigger fold_upload_stages;
+      alter function change_control.fold_upload_stages(uuid) rename to fold_upload_stages_off;
+      create function change_control.fold_upload_stages(p_event_id uuid) returns integer language sql as 'select 0';`);
     const upload = await uploadFixture(store, "undo", 8, 9);
-    await store.pg.exec("alter table public.upload_workflows enable trigger fold_upload_stages");
+    await store.pg.exec(`drop function change_control.fold_upload_stages(uuid);
+      alter function change_control.fold_upload_stages_off(uuid) rename to fold_upload_stages;
+      alter table public.upload_workflows enable trigger fold_upload_stages;`);
     expect(upload.result).toMatchObject({ error: null, workflow: { state: "complete" } });
     const before = await uploadChangeCounts(store, upload.eventId);
     const members = await stageSets(upload.eventId);

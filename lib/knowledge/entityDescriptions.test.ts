@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import type { DbRpc, RpcArgs } from "@/lib/db/rpc";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { uploadExecution } from "@/lib/ingest/workflowContext";
-import { runUploadWorkflow } from "@/lib/ingest/workflow";
+import { runModuleForEvent } from "@/lib/processing/moduleUpkeep";
 import { describeEventEntities } from "./entityDescriptions";
 
 const { chat } = vi.hoisted(() => ({ chat: vi.fn() }));
@@ -87,10 +87,11 @@ function fixture(count = 50) {
     cancel: () => { cancelled = true; abort.abort(new Error("Cancelled")); },
     resume: () => { cancelled = false; },
     run: (signal: AbortSignal = abort.signal) => uploadExecution.run({ eventId: "event", token: "lease", db, signal }, () => describeEventEntities(deps, "event")),
-    workflow: (profiles: () => Promise<void>) => runUploadWorkflow({
+    // The Entities module after an upload: descriptions, then stakeholder cards (lib/processing/moduleUpkeep.ts)
+    workflow: (profiles: () => Promise<void>) => uploadExecution.run({ eventId: "event", token: "lease", db, signal: abort.signal }, () => runModuleForEvent({
       db, reconciler: { name: "test", draftChangeSet: vi.fn() }, writer: { name: "test", reviseSection: vi.fn() },
       entityDescriber: () => describeEventEntities(deps, "event"), profileWriter: profiles,
-    }, "event", async () => commit, "articles"),
+    }, "entities", "event")),
   };
 }
 

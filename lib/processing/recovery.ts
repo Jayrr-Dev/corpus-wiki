@@ -27,6 +27,7 @@ export async function recoverOneUpload(db: DbRpc, run: (eventId: string) => Prom
 }
 
 async function runRecovery(budgetMs = 240_000): Promise<boolean> {
+  const startedAt = Date.now();
   // The scheduler also drains approval batches on hosts without a resident worker.
   const { runRootApprovalRecovery } = await import("./rootApprovals");
   await runRootApprovalRecovery();
@@ -39,7 +40,15 @@ async function runRecovery(budgetMs = 240_000): Promise<boolean> {
     if (result.error) throw new Error(result.error);
     return result;
   }, budgetMs));
-  return results.some(Boolean);
+  // Then each space's modules bring themselves up to date from finished uploads, in the time left
+  const upkept = await forEachWorkerSpace(() => runSpaceUpkeep(Math.max(0, budgetMs - (Date.now() - startedAt))));
+  return results.some(Boolean) || upkept.some(Boolean);
+}
+
+// The current space's module upkeep with the app's AI settings (lib/processing/moduleUpkeep.ts)
+export async function runSpaceUpkeep(budgetMs: number): Promise<boolean> {
+  const [{ getServerDeps }, { runModuleUpkeep }] = await Promise.all([import("@/lib/server/deps"), import("./moduleUpkeep")]);
+  return runModuleUpkeep(await getServerDeps(), budgetMs);
 }
 
 // Always-on Node deployments recover independently of browser requests. Serverless hosts use the protected

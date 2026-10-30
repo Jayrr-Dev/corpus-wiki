@@ -1,6 +1,7 @@
 import type { DraftAction, DraftChangeSet, ReconciliationInput } from "@/lib/ai/types";
 import { recordUpload, reconcileUpload, type PipelineDeps } from "@/lib/ingest/pipeline";
 import { splitIntoPassages } from "@/lib/ingest/passages";
+import { runModuleUpkeep } from "@/lib/processing/moduleUpkeep";
 import { FakeSectionWriter, type SectionWriter } from "@/lib/living-page";
 import type { portablePostgres } from "./portablePostgres";
 
@@ -33,7 +34,12 @@ export async function uploadFixture(store: Store, name: string, entities: number
   const started = await recordUpload(store.db, { title: `Fixture ${name}`, mimeType: "text/plain", sourceDate: "2026-10-16T00:00:00Z",
     hash: `fixture:${name}`, storagePath: `fixture/${name}.txt`, passages: splitIntoPassages([{ page: null, text: rows.map((row) => row.text).join("\n\n") }]) });
   if (started.kind !== "started") throw new Error("Expected a new fixture source");
-  const run = () => reconcileUpload(deps, started.eventId);
+  // The upload saves the knowledge; the Wiki and the other modules then write from it
+  const run = async () => {
+    const result = await reconcileUpload(deps, started.eventId);
+    await runModuleUpkeep(deps, 600_000);
+    return result;
+  };
   return { eventId: started.eventId, claims: rows.length, result: await run(), run };
 }
 

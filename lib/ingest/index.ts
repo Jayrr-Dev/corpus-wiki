@@ -7,6 +7,7 @@ import { describeAssets, syncAssets } from "@/lib/assets/describe";
 import type { DbRpc } from "@/lib/db/rpc";
 
 import { getServerDeps } from "@/lib/server/deps";
+import { runModuleUpkeep } from "@/lib/processing/moduleUpkeep";
 import { importChatExport } from "./chatImport";
 import { CONVERTERS } from "./convert";
 import { getFeatureFlagsOrDefaults } from "@/lib/flags/server";
@@ -257,7 +258,14 @@ export async function processUploadEvent(eventId: string, job: UploadJob = "arti
       return { status: "failed", changeSetId: null, error };
     }
   }
-  return reconcileUpload(await getServerDeps(), eventId, job, continuation);
+  const deps = await getServerDeps();
+  const result = await reconcileUpload(deps, eventId, job, continuation);
+  // The knowledge is saved: the modules start now rather than on the worker's next pass.
+  // Outside a request (the recovery worker) after() is unavailable; that worker runs them next.
+  if (result.workflow?.state === "complete") {
+    try { after(() => runModuleUpkeep(deps, 240_000).then(() => undefined)); } catch { /* the worker picks them up */ }
+  }
+  return result;
 }
 
 // The extraction note for an external page run again: a stakeholder card's own note, else one that

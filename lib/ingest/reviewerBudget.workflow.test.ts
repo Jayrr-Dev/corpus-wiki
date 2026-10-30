@@ -5,10 +5,11 @@ import { portablePostgres } from "@/test/db/portablePostgres";
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { splitIntoPassages } from "./passages";
 import { reconcileUpload, recordUpload, type PipelineDeps } from "./pipeline";
+import { runModuleUpkeep } from "@/lib/processing/moduleUpkeep";
 
 // =====================================================================
-// REVIEWER BUDGET IN THE UPLOAD WORKFLOW (issue #42): with a budget of one
-// call, every article build is over it. The upload saves its knowledge and
+// REVIEWER BUDGET IN THE WIKI MODULE (issue #42): with a budget of one call,
+// every article build is over it. The upload saves its knowledge; the Wiki
 // plans its pages, then waits on Exceptions before writing any line.
 // =====================================================================
 
@@ -48,31 +49,41 @@ async function question(eventId: string) {
     join public.change_sets c on c.id=a.change_set_id where c.event_id=$1 and x.reason::text='reviewer_budget'`, [eventId])).rows;
 }
 
-it("holds the upload before its pages are written and accepting resumes it", async () => {
+const wikiState = async (eventId: string) => (await store.pg.query<{ state: string; last_error: string | null }>(
+  "select state, last_error from public.module_upkeep where event_id=$1 and module='wiki'", [eventId])).rows[0];
+
+it("saves the knowledge, then the Wiki waits for the budget before writing and accepting resumes it", async () => {
   const source = await upload(); const pipeline = deps();
   const first = await reconcileUpload(pipeline, source.eventId);
-  expect(first.workflow?.state).toBe("waiting");
-  expect(first.workflow?.waiting).toBe(true);
+  expect(first.workflow?.state).toBe("complete");
+  await runModuleUpkeep(pipeline, 60_000);
   expect(await writtenLines()).toBe(0);
   const [held] = await question(source.eventId);
+  expect(held).toBeDefined();
+  // The Wiki item waits for the answer instead of failing or spending
+  expect(await wikiState(source.eventId)).toMatchObject({ state: "ready", last_error: null });
+  await runModuleUpkeep(pipeline, 60_000);
+  expect(await writtenLines()).toBe(0);
   await resolveException(store.db, { exceptionId: held!.id, accept: true, note: null });
-  // The answer wakes the upload; the recovery runner continues it
-  expect((await store.pg.query<{ state: string }>("select state from public.upload_workflows where event_id=$1", [source.eventId])).rows[0]!.state).toBe("pending");
-  const resumed = await reconcileUpload(pipeline, source.eventId, "articles", true);
-  expect(resumed.error).toBeNull();
-  expect(resumed.workflow?.state).toBe("complete");
+  await runModuleUpkeep(pipeline, 60_000);
+  expect(await wikiState(source.eventId)).toMatchObject({ state: "done" });
   expect(await writtenLines()).toBeGreaterThanOrEqual(2);
   expect(await question(source.eventId)).toHaveLength(1);
 });
 
-it("declining stops the upload with the reason and writes no pages", async () => {
+it("declining stops the Wiki with the reason and writes no pages; the knowledge stays saved", async () => {
   const source = await upload(); const pipeline = deps();
-  expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("waiting");
+  expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("complete");
+  await runModuleUpkeep(pipeline, 60_000);
   const [held] = await question(source.eventId);
   await resolveException(store.db, { exceptionId: held!.id, accept: false, note: "Too large for now." });
-  const resumed = await reconcileUpload(pipeline, source.eventId);
-  expect(resumed.workflow?.state).toBe("incomplete");
-  expect(resumed.error).toMatch(/^Writing pages was declined: about \d+ Reviewer calls for \d+ sections is over the budget of 1\.$/);
+  for (let pass = 0; pass < 3; pass++) {
+    await store.pg.query("update public.module_upkeep set available_at = now() where event_id=$1", [source.eventId]);
+    await runModuleUpkeep(pipeline, 60_000);
+  }
+  const wiki = await wikiState(source.eventId);
+  expect(wiki?.state).toBe("failed");
+  expect(wiki?.last_error).toMatch(/^Writing pages was declined: about \d+ Reviewer calls for \d+ sections is over the budget of 1\.$/);
   expect(await writtenLines()).toBe(0);
 });
 
@@ -80,6 +91,7 @@ it("writes pages without asking when the build is under the budget", async () =>
   vi.stubEnv("REVIEWER_CALL_BUDGET", "1000");
   const source = await upload(); const pipeline = deps();
   expect((await reconcileUpload(pipeline, source.eventId)).workflow?.state).toBe("complete");
+  await runModuleUpkeep(pipeline, 60_000);
   expect(await question(source.eventId)).toHaveLength(0);
   expect(await writtenLines()).toBeGreaterThanOrEqual(2);
 });

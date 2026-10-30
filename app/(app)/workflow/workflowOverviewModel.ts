@@ -3,17 +3,18 @@ import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES } from "@/lib/inges
 export type InstructionControl = "skills" | "roles" | "builtin" | "system";
 export type OverviewStep = { id: string; name: string; description: string; detail: string; control: InstructionControl; trigger?: string };
 export type OverviewPhase = { id: string; name: string; trigger: string; steps: OverviewStep[] };
-type UploadStage = (typeof KNOWLEDGE_STAGES)[number] | (typeof ARTICLE_STAGES)[number] | (typeof ENRICHMENT_STAGES)[number];
+// Definitions ("expand") are the Glossary module's, run after the upload (lib/processing/moduleUpkeep.ts)
+type UploadStage = (typeof KNOWLEDGE_STAGES)[number] | (typeof ARTICLE_STAGES)[number] | (typeof ENRICHMENT_STAGES)[number] | "expand";
 
-// The upload order comes from the runner's stage lists. Every runtime stage
-// must have an explanation here, including indexing and conditional passes.
+// The upload order comes from the runner's stage lists; the modules' steps follow it.
+// Every runtime stage must have an explanation here, including indexing and conditional passes.
 const UPLOAD_STEPS: Record<UploadStage, Omit<OverviewStep, "id">> = {
   duplicates: { name: "Review duplicate claims", description: "Merge repeated knowledge while retaining citations.", detail: "The Deduplicator compares claims this upload touched. Confident, near-identical merges can apply automatically; other merges can wait in Exceptions.", control: "builtin" },
   tidy: { name: "Clean up entities", description: "Merge duplicate people, organizations, and other subjects.", detail: "Entity cleanup proposes merges and retirements through Change control. The app supplies this step's instructions.", control: "builtin" },
-  place: { name: "Assign knowledge to domains", description: "Use meaning and connections to choose the right domains.", detail: "The Domain Decider plans groups for the whole upload, compares existing domain knowledge, and reviews assignments one group at a time. Every incoming knowledge unit must be accounted for before articles start. A proposed new root still waits for your approval.", control: "roles" },
+  place: { name: "Assign knowledge to domains", description: "Use meaning and connections to choose the right domains.", detail: "The Domain Decider plans groups for the whole upload, compares existing domain knowledge, and reviews assignments one group at a time. Every incoming knowledge unit must be accounted for before the upload is complete. A proposed new root still waits for your approval.", control: "roles" },
   hierarchy: { name: "Group related topics", description: "Group topics under the people or organizations they belong to.", detail: "The app maintains approved contexts before definitions and articles. This step does not call an AI model.", control: "system" },
-  expand: { name: "Explain key terms", description: "Extract useful terms from source evidence.", detail: "The Definer reads the saved claims and their source passages. It adds definitions before the index, so the article pass can cite them. It cannot invent definitions from background knowledge.", control: "skills" },
-  embeddings: { name: "Index evidence", description: "Make the finished claims and passages searchable by meaning.", detail: "Runs once, after cleanup and definitions. The index covers the claims articles will cite, including merged wording and new definitions.", control: "system" },
+  expand: { name: "Explain key terms", description: "Extract useful terms from source evidence.", detail: "The Definer reads the saved claims and their source passages and adds definitions before the Wiki writes, so articles can cite them. It cannot invent definitions from background knowledge.", control: "skills" },
+  embeddings: { name: "Index evidence", description: "Make the finished claims and passages searchable by meaning.", detail: "Runs last in the upload, after cleanup, so the modules find the saved claims by meaning.", control: "system" },
   plan: { name: "Plan and approve articles", description: "Plan outlines; independently review new articles.", detail: "The Planner proposes articles and updates. The Article reviewer approves, redirects or rejects new article proposals. Planner skill instructions and Article reviewer role instructions are edited separately.", control: "roles" },
   pages: { name: "Write and review sections", description: "Write cited paragraphs, check support, then review pages.", detail: "The Writer uses its assigned skill. Built-in checks assess lines against cited claims and review rebuilt pages. Edits to your own lines can wait for approval. Editorial checking policies are managed by the app.", control: "skills" },
   describe: { name: "Describe entities", description: "Add short descriptions to recognized subjects.", detail: "The Entity analyst uses its effective skill instructions to describe new entities after the articles are written. Descriptions are not new claims.", control: "skills" },
@@ -29,8 +30,9 @@ export const UPLOAD_PHASES: OverviewPhase[] = [
     { id: "reconcile", name: "Extract and connect facts", description: "Identify facts, people, and topics, then connect them to existing knowledge.", detail: "Extractor, Entity analyst, Linker, Organizer and Definer instructions jointly guide one reconciliation request. They are not five sequential processing calls. Change control checks and commits the proposed knowledge.", control: "skills" },
     ...uploadSteps(KNOWLEDGE_STAGES),
   ] },
-  { id: "articles", name: "Create your articles", trigger: "Starts after definitions are saved and indexed.", steps: uploadSteps(ARTICLE_STAGES) },
-  { id: "enrichment", name: "Finish in the background", trigger: "Runs after the articles are written. These steps do not add claims.", steps: uploadSteps(ENRICHMENT_STAGES) },
+  { id: "definitions", name: "Glossary: explain key terms", trigger: "Runs in the background once an upload's knowledge is saved.", steps: uploadSteps(["expand"]) },
+  { id: "articles", name: "Wiki: write your articles", trigger: "Runs in the background after the definitions.", steps: uploadSteps([...ARTICLE_STAGES, "curate"]) },
+  { id: "enrichment", name: "Entities and Glossary: finish up", trigger: "Runs in the background after the Wiki. These steps do not add claims.", steps: uploadSteps(ENRICHMENT_STAGES.filter((stage) => stage !== "curate")) },
 ];
 
 export const ILLUSTRATION_PHASE: OverviewPhase = {

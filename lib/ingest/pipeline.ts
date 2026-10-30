@@ -1,12 +1,14 @@
 import type { DraftChangeSet, ReconciliationClient, ReconciliationInput } from "@/lib/ai/types";
-import { commitAsRole, submitChangeSet } from "@/lib/change-control";
+import { commitAsRole, resolveException, submitChangeSet } from "@/lib/change-control";
 import type { PagePlanner } from "@/lib/living-page/articlePlanner";
 import type { DbRpc } from "@/lib/db/rpc";
 import { type SectionWriter } from "@/lib/living-page";
 import type { GuardOptions } from "./duplicateGuard";
 import type { ProcessUploadResult, StartUploadResult } from "./types";
 import type { PassageDraft } from "./passages";
+import { applyRootApprovalBatches } from "@/lib/processing/rootApprovals";
 import { scopeExternalDraft } from "./scopeExternalDraft";
+import { readUploadOptions } from "./uploadOptions";
 import { runUploadWorkflow } from "./workflow";
 import type { UploadJob } from "./workflowTypes";
 import { uploadExecution, workflowStep } from "./workflowContext";
@@ -62,11 +64,33 @@ export async function recordUpload(db: DbRpc, record: UploadRecord): Promise<Sta
   return { kind: "started", sourceId: result.sourceId, eventId: result.eventId };
 }
 
-// STEP 2: persist each role's progress; unfinished processing is separate from the knowledge commit.
-// "knowledge" stops once the claims are committed and cleaned; "articles" (the default) also writes the pages.
-// `continuation` marks the automatic articles run after the knowledge job: it never overrides a cancel.
+// STEP 2: save the knowledge, persisting each role's progress; the modules take it from there
+// (lib/processing/moduleUpkeep.ts). `continuation` marks an automatic run: it never overrides a cancel.
+// With Auto-approve on the Upload screen, a run that stops for new root domains has them accepted and goes on.
 export async function reconcileUpload(deps: PipelineDeps, eventId: string, job: UploadJob = "articles", continuation = false): Promise<ProcessUploadResult> {
-  return runUploadWorkflow(deps, eventId, () => draftAndCommit(deps, eventId), job, continuation);
+  const run = () => runUploadWorkflow(deps, eventId, () => draftAndCommit(deps, eventId), job, continuation);
+  let result = await run();
+  for (let round = 0; round < AUTO_APPROVE_ROUNDS && result.workflow?.waiting && !result.workflow.cancel_requested; round++) {
+    if (!(await readUploadOptions(deps.db)).autoApprove || !(await approveUploadQuestions(deps.db, eventId))) break;
+    result = await run();
+  }
+  return result;
+}
+
+// A run can wait once per hold: the commit, a new root while filing
+const AUTO_APPROVE_ROUNDS = 4;
+
+// Accepts the new root domains the upload is waiting on, the same way a person's Accept on
+// Exceptions does, and applies them so the run can go straight on. Other questions (the Wiki's
+// Reviewer budget) still wait for a person. False when no root was open.
+async function approveUploadQuestions(db: DbRpc, eventId: string): Promise<boolean> {
+  const open = (await db.call<{ id: string; reason: string }[]>("open_upload_exceptions", { p_event_id: eventId }))
+    .filter((exception) => exception.reason === "root_domain_approval");
+  for (const exception of open) {
+    await resolveException(db, { exceptionId: exception.id, accept: true, note: "Accepted automatically: Auto-approve is on." });
+  }
+  if (open.length) await applyRootApprovalBatches(db, async () => undefined, 1000);
+  return open.length > 0;
 }
 
 // EXTERNAL STEP 2: scoped web evidence adds claims to established reference domains.

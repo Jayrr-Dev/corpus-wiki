@@ -5,7 +5,9 @@ import { StatusDot } from "@/app/(app)/_components/StatusDot";
 import { EVENT_TONE, type Tone } from "@/app/(app)/_lib/tone";
 import { RetryUploadButton } from "@/app/(app)/upload/RetryUploadButton";
 import { Button } from "@/components/ui/button";
-import { ARTICLE_STAGES, ENRICHMENT_STAGES, KNOWLEDGE_STAGES, canCancelUpload, canResumeUpload, failedWorkflowStages, isRunning, uploadErrorMessage, workflowLabel, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
+import { useServerAction } from "@/components/actions/useServerAction";
+import { retryUploadModules } from "@/lib/server-actions/upload";
+import { KNOWLEDGE_STAGES, canCancelUpload, canResumeUpload, failedWorkflowStages, isRunning, uploadErrorMessage, workflowLabel, type UploadWorkflow } from "@/lib/ingest/workflowTypes";
 import { getBrowserSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -87,11 +89,10 @@ const LABELS: Record<string, string> = {
 // What the live counts are counting, per role that reports them
 const PROGRESS_UNITS: Record<string, string> = { extraction: "batches", plan: "proposals reviewed", pages: "sections completed" };
 
-// THE STAGES IN ORDER: the knowledge commit is two steps inside "reconcile", then its cleanup; then the articles
+// THE STAGES IN ORDER: the knowledge commit is two steps inside "reconcile", then its cleanup.
+// An upload saves knowledge only; the modules update after it (ModuleUpdates below).
 const STAGES = [
   { title: "Knowledge", keys: ["reconciliation-input", "extraction", "reconcile", ...KNOWLEDGE_STAGES] },
-  { title: "Articles", keys: [...ARTICLE_STAGES] },
-  { title: "Background updates", keys: [...ENRICHMENT_STAGES] },
 ];
 const RECONCILE_PARTS = ["reconciliation-input", "extraction"];
 
@@ -146,7 +147,7 @@ const STATE_NAMES: Record<StageState, string> = { done: "done", running: "in pro
 // EVERY STAGE with its state, so a person sees where the upload is and what is left
 function StageList({ workflow }: { workflow: UploadWorkflow }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div className="grid gap-3">
       {STAGES.map((group) => (
         <div key={group.title} className="flex flex-col gap-1">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{group.title}</p>
@@ -168,6 +169,70 @@ function StageList({ workflow }: { workflow: UploadWorkflow }) {
   );
 }
 
+// =====================================================================
+// MODULE UPDATES: after an upload saves its knowledge, each module brings
+// itself up to date from it in the background (lib/processing/moduleUpkeep.ts).
+// One line per upload while that runs; failures show with their reason.
+// =====================================================================
+
+type ModuleItem = { module: string; state: "ready" | "running" | "done" | "failed" | "cancelled"; error: string | null };
+const MODULE_LABELS: Record<string, string> = { definitions: "definitions", wiki: "articles", entities: "entity cards", glossary: "glossary", curator: "page tree" };
+const pending = (item: ModuleItem) => item.state === "ready" || item.state === "running";
+
+async function readUploadModules(eventId: string): Promise<ModuleItem[]> {
+  const { data, error } = await getBrowserSupabase().rpc("upload_module_upkeep" as never, { p_event_ids: [eventId] } as never);
+  if (error) throw error;
+  return ((data ?? {}) as Record<string, ModuleItem[]>)[eventId] ?? [];
+}
+
+function useUploadModules(eventId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["table", "module_upkeep", eventId],
+    queryFn: () => readUploadModules(eventId),
+    enabled,
+    refetchInterval: (query) => ((query.state.data ?? []).some(pending) ? IDLE_POLL_MS : false),
+  });
+}
+
+function RetryModulesButton({ eventId }: { eventId: string }) {
+  const queryClient = useQueryClient();
+  const retry = useServerAction(retryUploadModules, { progress: false, refreshTables: [] });
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <Button size="sm" variant="outline" disabled={retry.isPending} onClick={async () => {
+        await retry.run(eventId);
+        await queryClient.invalidateQueries({ queryKey: ["table", "module_upkeep", eventId] });
+      }}>{retry.isPending ? "Retrying…" : "Retry"}</Button>
+      <div className="max-w-48 whitespace-normal break-words"><ErrorNote error={retry.error} /></div>
+    </div>
+  );
+}
+
+function ModuleUpdates({ workflow }: { workflow: UploadWorkflow }) {
+  const query = useUploadModules(workflow.event_id, workflow.state === "complete");
+  const items = query.data ?? [];
+  if (!items.length || items.every((item) => item.state === "done")) return null;
+  const working = items.find((item) => item.state === "running");
+  const waiting = items.filter((item) => item.state === "ready");
+  const failed = items.filter((item) => item.state === "failed");
+  const cancelled = items.some((item) => item.state === "cancelled");
+  const line = working ? `Updating ${MODULE_LABELS[working.module] ?? working.module}…`
+    : waiting.length ? `Waiting to update ${waiting.map((item) => MODULE_LABELS[item.module] ?? item.module).join(", ")}`
+    : cancelled ? "Module updates cancelled" : null;
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        {line ? <p className="text-xs text-muted-foreground">{line}</p> : <span />}
+        <div className="flex items-start gap-2">
+          {items.some(pending) ? <CancelUploadButton eventId={workflow.event_id} /> : null}
+          {failed.length || cancelled ? <RetryModulesButton eventId={workflow.event_id} /> : null}
+        </div>
+      </div>
+      {failed.map((item) => <ErrorNote key={item.module} error={`Updating ${MODULE_LABELS[item.module] ?? item.module}: ${item.error ?? "failed"}`} />)}
+    </div>
+  );
+}
+
 // CANCEL: a route rather than a Server Action, so it is not queued behind the upload it stops
 function CancelUploadButton({ eventId }: { eventId: string }) {
   const queryClient = useQueryClient();
@@ -181,6 +246,7 @@ function CancelUploadButton({ eventId }: { eventId: string }) {
       const body = (await response.json()) as { ok: boolean; error?: string };
       if (!body.ok) setError(body.error ?? "The upload could not be cancelled.");
       await queryClient.invalidateQueries({ queryKey: ["table", "upload_workflows"] });
+      await queryClient.invalidateQueries({ queryKey: ["table", "module_upkeep"] });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : String(caught));
     } finally {
@@ -229,6 +295,7 @@ function CompactStatus({ workflow }: { workflow: UploadWorkflow }) {
       {workflow.error ? <ErrorNote error={workflow.error} /> : failed ? <ErrorNote error={`${LABELS[failed.key] ?? "Document processing"}: ${failed.error}`} /> : null}
       {workflow.waiting && workflow.progress?.step !== "root-approval" ? <TextLink href="/exceptions" className="text-xs">Review pending decisions</TextLink> : null}
       {workflow.waiting && workflow.progress?.step === "root-approval" ? <span className="text-xs text-muted-foreground">{workflow.progress.done} of {workflow.progress.total} changes saved</span> : null}
+      <ModuleUpdates workflow={workflow} />
     </div>
   );
 }
@@ -286,6 +353,7 @@ export function UploadWorkflowStatus({ eventId, allowRetry = true, legacyStatus,
       {failed.length ? <ul className="space-y-1">{failed.map((step) => <li key={step.key}><ErrorNote error={`${LABELS[step.key] ?? "Document processing"}: ${step.error}`} /></li>)}</ul> : null}
       {workflow.waiting && workflow.progress?.step !== "root-approval" ? <TextLink href="/exceptions">Review pending decisions</TextLink> : null}
       {workflow.waiting && workflow.progress?.step === "root-approval" ? <span className="text-xs text-muted-foreground">{workflow.progress.done} of {workflow.progress.total} changes saved</span> : null}
+      <ModuleUpdates workflow={workflow} />
     </div>
   );
 }

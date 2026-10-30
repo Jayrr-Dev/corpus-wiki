@@ -12,12 +12,15 @@ export const pagePatchReviewSchema = pageReviewSchema.extend({
 });
 
 // dropMisquoted: after a corrective retry, a paragraph edit whose quoted text still cannot be
-// found is left out instead of failing the whole review; the other edits and the findings stand.
-// Unknown or protected targets and conflicting edits still fail.
+// found, or a second edit to the same target, is left out instead of failing the whole review;
+// the other edits and the findings stand. Unknown or protected targets still fail.
 export function materializeReviewPatches(proposal: z.infer<typeof pagePatchReviewSchema>, snapshot: PageReviewSnapshot, dropMisquoted = false): z.infer<typeof pageReviewSchema> {
   const seen = new Set<string>();
   const edits = proposal.edits.flatMap((edit): z.infer<typeof pageReviewSchema>["edits"] => {
-    if (seen.has(edit.targetId)) throw new TextPatchError("The review contains conflicting operations on one target.");
+    if (seen.has(edit.targetId)) {
+      if (dropMisquoted) return [];
+      throw new TextPatchError("The review contains conflicting operations on one target.");
+    }
     seen.add(edit.targetId);
     if (edit.type === "rename_section") return [edit];
     const line = snapshot.lines.find((item) => item.line_id === edit.targetId);

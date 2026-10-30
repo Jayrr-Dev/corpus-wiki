@@ -15,6 +15,10 @@ import { after } from "next/server";
 import { articlesPending, knowledgeSaved } from "@/lib/ingest/workflowTypes";
 import { type ActionResult, toActionResult } from "./result";
 import { readLink } from "@/lib/ingest/readLink";
+import { saveUploadOptions, type UploadOptions } from "@/lib/ingest/uploadOptions";
+import { supabaseRpc } from "@/lib/db/rpc";
+import { getAdminSupabase } from "@/lib/supabase/admin";
+import { runSpaceUpkeep } from "@/lib/processing/recovery";
 
 // =====================================================================
 // UPLOAD ACTIONS (called by /upload). Two steps so the screen can watch
@@ -90,5 +94,24 @@ export async function startRerun(sourceId: string): Promise<ActionResult<StartUp
   return toActionResult(async () => {
     await requireUser();
     return startSourceRerun(sourceId);
+  });
+}
+
+// UPLOAD OPTIONS: the Upload screen's switches, saved for the space (lib/ingest/uploadOptions.ts)
+// A person's Retry for one upload's failed or cancelled module work (articles, definitions,
+// entity cards, glossary, page tree). It starts now; the background worker would also pick it up.
+export async function retryUploadModules(eventId: string): Promise<ActionResult<{ retried: number }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    const retried = await supabaseRpc(getAdminSupabase()).call<number>("retry_upload_module_upkeep", { p_event_id: eventId });
+    if (retried) after(() => runSpaceUpkeep(240_000).then(() => undefined, (error) => console.error("module upkeep failed", error)));
+    return { retried };
+  });
+}
+
+export async function setUploadOptions(options: UploadOptions): Promise<ActionResult<{ options: UploadOptions }>> {
+  return toActionResult(async () => {
+    await requireUser();
+    return { options: await saveUploadOptions(supabaseRpc(getAdminSupabase()), options) };
   });
 }

@@ -34,13 +34,10 @@ export type JobHandler = (job: UploadJobRow) => Promise<JobOutcome | void>;
 
 export const uploadJobsEnabled = (env: Record<string, string | undefined> = process.env) => env.UPLOAD_JOBS === "true";
 
-// The order runUploadWorkflow walks today. `coverage` and `verify` were checks between stages.
-const CHAIN: UploadJobKind[] = [
-  "reconcile", "duplicates", "tidy", "place", "coverage", "hierarchy", "expand", "embeddings",
-  "plan", "pages", "articles-ready", "describe", "profiles", "glossary", "curate", "verify",
-];
-export const KNOWLEDGE_JOB_KINDS: UploadJobKind[] = CHAIN.slice(0, CHAIN.indexOf("plan"));
-export const ALL_JOB_KINDS: UploadJobKind[] = [...CHAIN, "page", "glossary-entry"];
+// An upload saves knowledge only; the modules do the rest (lib/processing/moduleUpkeep.ts)
+const CHAIN: UploadJobKind[] = ["reconcile", "duplicates", "tidy", "place", "coverage", "hierarchy", "embeddings"];
+export const KNOWLEDGE_JOB_KINDS: UploadJobKind[] = CHAIN;
+export const ALL_JOB_KINDS: UploadJobKind[] = CHAIN;
 
 // The graph a new upload starts with: each job waits for the one before it
 export const INITIAL_JOBS: JobSpec[] = CHAIN.map((kind, index) => ({
