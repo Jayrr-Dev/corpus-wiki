@@ -31,6 +31,7 @@ import {
 } from "./config";
 import { isNemotron3 } from "./effortSupport";
 import { memoryNotes, openRoleMemory } from "./memory";
+import { answerRoom } from "./modelLimits";
 import { CONCISE_OUTPUT_INSTRUCTIONS } from "./outputStyle";
 import { roleForPurpose } from "./roles";
 import type { RoleInstruction, StageSkills } from "./skills/types";
@@ -503,10 +504,13 @@ async function chatJsonOnce<S extends z.ZodType>(
   effort: ReasoningEffort,
 ): Promise<ChatJsonResult<z.infer<S>>> {
   const model = settings.model || DEFAULT_AI_MODEL;
-  const maxTokens = request.maxTokens ?? ANSWER_TOKEN_BUDGET;
+  // The caller's cap sizes the credit reservation; the model's real room is what it may answer with
+  const expectedTokens = request.maxTokens ?? ANSWER_TOKEN_BUDGET;
+  const promptChars = promptCharacters(request.messages);
+  const maxTokens = answerRoom(model, promptChars + JSON.stringify(request.jsonSchema).length) ?? expectedTokens;
   // THE USAGE GATE: reserves this attempt's credits first; throws UsageLimitError only when enforcing
   const reservation = settings.usageGate
-    ? await settings.usageGate.reserve({ purpose: request.name, model, maxTokens, promptChars: promptCharacters(request.messages) })
+    ? await settings.usageGate.reserve({ purpose: request.name, model, maxTokens: expectedTokens, promptChars })
     : null;
   const startedAt = Date.now();
   let body: CompletionResponse | undefined;

@@ -1,0 +1,2849 @@
+{
+ "fetchedOn": "2026-10-30",
+ "providers": {
+  "nebius": {
+   "beam": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "bge-en-icl": {
+    "contextTokens": 32000,
+    "source": "catalog"
+   },
+   "bge-multilingual-gemma2": {
+    "contextTokens": 8000,
+    "source": "catalog"
+   },
+   "cosmos3-super-reasoner": {
+    "contextTokens": 256000,
+    "source": "catalog"
+   },
+   "deepseek-r1-0528": {
+    "contextTokens": 32000,
+    "source": "catalog"
+   },
+   "deepseek-v3-0324": {
+    "contextTokens": 32000,
+    "source": "catalog"
+   },
+   "deepseek-v4-flash": {
+    "contextTokens": 1024000,
+    "source": "catalog"
+   },
+   "deepseek-v4-flash-0731": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "deepseek-v4-pro": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 1000000,
+    "source": "api"
+   },
+   "deepseek-v4-pro-0813": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 1000000,
+    "source": "api"
+   },
+   "deepseek-v4.1-flash": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "deepseek-v4.1-flash-1017": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "e5-mistral-7b-instruct": {
+    "contextTokens": 32000,
+    "source": "catalog"
+   },
+   "gemma-2-2b-it": {
+    "contextTokens": 8000,
+    "source": "catalog"
+   },
+   "gemma-2-9b-it-fast": {
+    "contextTokens": 8000,
+    "source": "catalog"
+   },
+   "gemma-3-27b-it": {
+    "contextTokens": 110000,
+    "tokensPerMinute": 400000,
+    "source": "api"
+   },
+   "gemma-4-31b-it": {
+    "contextTokens": 256000,
+    "source": "catalog"
+   },
+   "gemma-4-e2b-it": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "gemma-4-e4b-it": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "glm-4.5": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "glm-4.5-air": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "glm-4.7-flash": {
+    "contextTokens": 202000,
+    "source": "catalog"
+   },
+   "glm-4.7-flash-fp8-dynamic": {
+    "contextTokens": 202000,
+    "source": "catalog"
+   },
+   "glm-4.7-flash-nvfp4": {
+    "contextTokens": 202000,
+    "source": "catalog"
+   },
+   "glm-4.7-fp8": {
+    "contextTokens": 200000,
+    "source": "catalog"
+   },
+   "glm-4.7-nvfp4": {
+    "contextTokens": 202000,
+    "source": "catalog"
+   },
+   "glm-5": {
+    "contextTokens": 200000,
+    "source": "catalog"
+   },
+   "glm-5.1": {
+    "contextTokens": 202752,
+    "tokensPerMinute": 500000,
+    "source": "api"
+   },
+   "glm-5.2": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "glm-5.3": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "glm-5.3-flash": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "gpt-oss-120b": {
+    "contextTokens": 131072,
+    "tokensPerMinute": 500000,
+    "source": "api"
+   },
+   "gpt-oss-120b-bf16": {
+    "contextTokens": 131000,
+    "source": "catalog"
+   },
+   "gpt-oss-20b": {
+    "contextTokens": 131000,
+    "source": "catalog"
+   },
+   "gpt-oss-20b-bf16": {
+    "contextTokens": 131000,
+    "source": "catalog"
+   },
+   "hermes-4-405b": {
+    "contextTokens": 131072,
+    "tokensPerMinute": 200000,
+    "source": "api"
+   },
+   "hermes-4-70b": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "intellect-3": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "kimi-k2-instruct": {
+    "contextTokens": 131000,
+    "source": "catalog"
+   },
+   "kimi-k2-thinking": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "kimi-k2.5": {
+    "contextTokens": 256000,
+    "source": "catalog"
+   },
+   "kimi-k2.6": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 300000,
+    "source": "api"
+   },
+   "kimi-k2.7-code": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 300000,
+    "source": "api"
+   },
+   "kimi-k3": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "llama-3_1-nemotron-ultra-253b-v1": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "llama-3.1-8b-instruct": {
+    "contextTokens": 131000,
+    "source": "catalog"
+   },
+   "llama-3.3-70b-instruct": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "llama-guard-3-8b": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "meta-llama-3.1-8b-instruct": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "meta-llama-3.1-8b-instruct-fast": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "minicpm-v-4_5": {
+    "contextTokens": 32000,
+    "tokensPerMinute": 200000,
+    "source": "api"
+   },
+   "minimax-m2.1": {
+    "contextTokens": 196000,
+    "source": "catalog"
+   },
+   "minimax-m2.5": {
+    "contextTokens": 196000,
+    "source": "catalog"
+   },
+   "minimax-m2.5-nvfp4": {
+    "contextTokens": 196000,
+    "source": "catalog"
+   },
+   "minimax-m2.7": {
+    "contextTokens": 196000,
+    "source": "catalog"
+   },
+   "minimax-m2.7-nvfp4": {
+    "contextTokens": 196000,
+    "source": "catalog"
+   },
+   "minimax-m3": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "minimax-m3.1-flash": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "muse-spark-open": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "nemotron-3_5-lightning": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "nemotron-3-nano-30b-a3b": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "nemotron-3-nano-omni": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "nemotron-3-super-120b-a12b": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 1000000,
+    "source": "api"
+   },
+   "nemotron-3-ultra-550b-a55b": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "nemotron-3.5-lightning": {
+    "contextTokens": 1024000,
+    "source": "catalog"
+   },
+   "nemotron-3.5-super-vl": {
+    "contextTokens": 1048576,
+    "tokensPerMinute": 2000000,
+    "source": "api"
+   },
+   "nemotron-nano-v2-12b": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "nvidia-nemotron-3-nano-30b-a3b": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 800000,
+    "source": "api"
+   },
+   "qwen2.5-coder-7b-fast": {
+    "contextTokens": 32000,
+    "source": "catalog"
+   },
+   "qwen2.5-vl-72b-instruct": {
+    "contextTokens": 32000,
+    "source": "catalog"
+   },
+   "qwen3-235b-a22b-instruct-2507": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 400000,
+    "source": "api"
+   },
+   "qwen3-235b-a22b-thinking-2507": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3-30b-a3b": {
+    "contextTokens": 40000,
+    "source": "catalog"
+   },
+   "qwen3-30b-a3b-instruct-2507": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 400000,
+    "source": "api"
+   },
+   "qwen3-30b-a3b-thinking-2507": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3-32b": {
+    "contextTokens": 41000,
+    "source": "catalog"
+   },
+   "qwen3-4b": {
+    "contextTokens": 40000,
+    "source": "catalog"
+   },
+   "qwen3-8b": {
+    "contextTokens": 40000,
+    "source": "catalog"
+   },
+   "qwen3-coder-30b-a3b-instruct": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3-coder-480b-a35b-instruct": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3-embedding-8b": {
+    "contextTokens": 40960,
+    "tokensPerMinute": 600000,
+    "source": "api"
+   },
+   "qwen3-next-80b-a3b-thinking": {
+    "contextTokens": 128000,
+    "source": "catalog"
+   },
+   "qwen3-vl-32b": {
+    "contextTokens": 256000,
+    "source": "catalog"
+   },
+   "qwen3.5-122b-a10b": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-122b-a10b-fp8": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-122b-a10b-nvfp4": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-27b-fp8": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-35b-a3b": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-35b-a3b-fp8": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-35b-a3b-nvfp4": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-397b-a17b": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 400000,
+    "source": "api"
+   },
+   "qwen3.5-397b-a17b-fp8": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-397b-a17b-nvfp4": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-4b": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-9b": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.5-9b-nvfp4": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.6-27b-nvfp4": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.6-35b-a3b": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.6-35b-a3b-fp8": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.6-35b-a3b-nvfp4": {
+    "contextTokens": 262000,
+    "source": "catalog"
+   },
+   "qwen3.8-27b": {
+    "contextTokens": 262144,
+    "tokensPerMinute": 1000000,
+    "source": "api"
+   },
+   "reflection-beam-1.0": {
+    "contextTokens": 1048000,
+    "source": "catalog"
+   }
+  },
+  "openrouter": {
+   "~anthropic/claude-fable-latest": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~anthropic/claude-haiku-latest": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~anthropic/claude-opus-latest": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~anthropic/claude-sonnet-latest": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~deepseek/deepseek-flash-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "~deepseek/deepseek-pro-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 393216,
+    "source": "api"
+   },
+   "~deepseek/deepseek-v4-flash-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "~google/gemini-flash-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "~google/gemini-pro-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "~moonshotai/kimi-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "~openai/gpt-astra-latest": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~openai/gpt-luna-latest": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~openai/gpt-mini-latest": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~openai/gpt-sol-latest": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~openai/gpt-terra-latest": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "~unbiased/pareto-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "~x-ai/grok-latest": {
+    "contextTokens": 500000,
+    "maxOutputTokens": 450000,
+    "source": "api"
+   },
+   "~z-ai/glm-flash-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "~z-ai/glm-latest": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "aion-labs/aion-2.0": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "aion-labs/aion-3.0": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "aion-labs/aion-3.0-mini": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "aion-labs/aion-3.5": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "aion-labs/aion-3.5-mini": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "aion-labs/aion-rp-llama-3.1-8b": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 29491,
+    "source": "api"
+   },
+   "amazon/nova-2-lite-v1": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65535,
+    "source": "api"
+   },
+   "amazon/nova-lite-v1": {
+    "contextTokens": 300000,
+    "maxOutputTokens": 5120,
+    "source": "api"
+   },
+   "amazon/nova-micro-v1": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 5120,
+    "source": "api"
+   },
+   "amazon/nova-premier-v1": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 32000,
+    "source": "api"
+   },
+   "amazon/nova-pro-v1": {
+    "contextTokens": 300000,
+    "maxOutputTokens": 5120,
+    "source": "api"
+   },
+   "anthracite-org/magnum-v4-72b": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "anthropic/claude-fable-5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-fable-5.1": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-fable-5.1:batch": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-haiku-4.5": {
+    "contextTokens": 200000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "anthropic/claude-haiku-5.5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-haiku-5.5:batch": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-4.1": {
+    "contextTokens": 200000,
+    "maxOutputTokens": 32000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-4.5": {
+    "contextTokens": 200000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-4.6": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-4.7": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-4.8": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-5:batch": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-5.5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-opus-5.5:batch": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-sonnet-4.5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "anthropic/claude-sonnet-4.6": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-sonnet-5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-sonnet-5.5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "anthropic/claude-sonnet-5.5:batch": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "bytedance-seed/seed-1.6": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "bytedance-seed/seed-1.6-flash": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "bytedance-seed/seed-2-1-turbo": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "bytedance-seed/seed-2.0-code": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "bytedance-seed/seed-2.0-lite": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "bytedance-seed/seed-2.0-mini": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "bytedance/ui-tars-1.5-7b": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 2048,
+    "source": "api"
+   },
+   "cognitivecomputations/dolphin-mistral-24b-venice-edition": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "cohere/command-a": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "cohere/command-a-plus": {
+    "contextTokens": 192000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "cohere/command-r-08-2024": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 4000,
+    "source": "api"
+   },
+   "cohere/command-r-plus-08-2024": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 4000,
+    "source": "api"
+   },
+   "cohere/command-r7b-12-2024": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 4000,
+    "source": "api"
+   },
+   "cohere/north-mini-code:free": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "deepseek/deepseek-chat": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16000,
+    "source": "api"
+   },
+   "deepseek/deepseek-chat-v3-0324": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 115200,
+    "source": "api"
+   },
+   "deepseek/deepseek-chat-v3.1": {
+    "contextTokens": 163840,
+    "maxOutputTokens": 147456,
+    "source": "api"
+   },
+   "deepseek/deepseek-r1-0528": {
+    "contextTokens": 163840,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "deepseek/deepseek-v3.1-terminus": {
+    "contextTokens": 163840,
+    "maxOutputTokens": 147456,
+    "source": "api"
+   },
+   "deepseek/deepseek-v3.2": {
+    "contextTokens": 163840,
+    "maxOutputTokens": 147456,
+    "source": "api"
+   },
+   "deepseek/deepseek-v3.2-exp": {
+    "contextTokens": 163840,
+    "maxOutputTokens": 147456,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4-flash": {
+    "contextTokens": 1048575,
+    "maxOutputTokens": 943717,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4-flash-0731": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4-flash-vision-exp": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4-pro": {
+    "contextTokens": 1024000,
+    "maxOutputTokens": 384000,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4-pro-0813": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 393216,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4.1-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4.1-flash-1017": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "deepseek/deepseek-v4.1-flash:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 384000,
+    "source": "api"
+   },
+   "dots-studio/dots-3-note-preview:free": {
+    "contextTokens": 512000,
+    "maxOutputTokens": 460800,
+    "source": "api"
+   },
+   "elorian/glimpse": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 256000,
+    "source": "api"
+   },
+   "fireworks/ember-1": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "google/gemini-2.5-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65535,
+    "source": "api"
+   },
+   "google/gemini-2.5-flash-image": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "google/gemini-2.5-flash-lite": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65535,
+    "source": "api"
+   },
+   "google/gemini-2.5-pro": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-2.5-pro-preview": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3-flash-preview": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3-flash-preview:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3-pro-image": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "google/gemini-3-pro-image-preview": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "google/gemini-3.1-flash-image": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "google/gemini-3.1-flash-image-preview": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 58982,
+    "source": "api"
+   },
+   "google/gemini-3.1-flash-lite": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.1-flash-lite-image": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 58982,
+    "source": "api"
+   },
+   "google/gemini-3.1-flash-lite-preview": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.1-flash-lite:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.1-pro-preview": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.1-pro-preview-customtools": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.1-pro-preview:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.5-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.5-flash-lite": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.5-flash-lite:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.5-flash:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.6-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.6-flash:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.7-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.7-flash:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.8-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-3.8-flash:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/gemini-4-argon": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "google/gemini-4-argon:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "google/gemini-nano-banana-2.1": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 58982,
+    "source": "api"
+   },
+   "google/gemma-2-27b-it": {
+    "contextTokens": 8192,
+    "maxOutputTokens": 2048,
+    "source": "api"
+   },
+   "google/gemma-3-12b-it": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "google/gemma-3-27b-it": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "google/gemma-3-4b-it": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "google/gemma-4-26b-a4b-it": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "google/gemma-4-26b-a4b-it:free": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "google/gemma-4-31b-it": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "google/gemma-4-31b-it:free": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "google/lyria-3-clip-preview": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "google/lyria-3-pro-preview": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "gryphe/mythomax-l2-13b": {
+    "contextTokens": 4096,
+    "maxOutputTokens": 3686,
+    "source": "api"
+   },
+   "ibm-granite/granite-4.2-8b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "inception/mercury-2": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 50000,
+    "source": "api"
+   },
+   "inception/mercury-2.5": {
+    "contextTokens": 260000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "inception/mercury-3": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "inclusionai/ling-3.0-flash": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "inclusionai/ling-3.0-flash-vl": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "inclusionai/ling-3.1-flash": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "inference-net/schematron-v2-small": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "inference-net/schematron-v2-turbo": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "liquid/lfm-2.5-2.6b:free": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "liquid/lfm-2.5-24b-a2b": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "mancer/weaver": {
+    "contextTokens": 8000,
+    "maxOutputTokens": 6000,
+    "source": "api"
+   },
+   "meituan/longcat-2.0": {
+    "contextTokens": 1048756,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "meta-llama/llama-3.1-70b-instruct": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "meta-llama/llama-3.1-8b-instruct": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "meta-llama/llama-3.2-1b-instruct": {
+    "contextTokens": 60000,
+    "maxOutputTokens": 54000,
+    "source": "api"
+   },
+   "meta-llama/llama-3.2-3b-instruct": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "meta-llama/llama-3.3-70b-instruct": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "meta-llama/llama-4-maverick": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "meta-llama/llama-4-scout": {
+    "contextTokens": 327680,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "meta-llama/llama-guard-4-12b": {
+    "contextTokens": 163840,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "meta/muse-glimmer-30b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "meta/muse-spark-1.1": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "meta/muse-spark-1.2": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "meta/muse-spark-1.3": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "meta/muse-spark-open": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "meta/muse-wonder": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "microsoft/phi-4": {
+    "contextTokens": 16384,
+    "maxOutputTokens": 14745,
+    "source": "api"
+   },
+   "minimax/minimax-01": {
+    "contextTokens": 1000192,
+    "maxOutputTokens": 900172,
+    "source": "api"
+   },
+   "minimax/minimax-m1": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 40000,
+    "source": "api"
+   },
+   "minimax/minimax-m2": {
+    "contextTokens": 204800,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "minimax/minimax-m2-her": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 2048,
+    "source": "api"
+   },
+   "minimax/minimax-m2.1": {
+    "contextTokens": 204800,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "minimax/minimax-m2.5": {
+    "contextTokens": 204800,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "minimax/minimax-m2.7": {
+    "contextTokens": 204800,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "minimax/minimax-m3": {
+    "contextTokens": 524288,
+    "maxOutputTokens": 512000,
+    "source": "api"
+   },
+   "minimax/minimax-m3.1-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 524288,
+    "source": "api"
+   },
+   "mistralai/codestral-2508": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 204800,
+    "source": "api"
+   },
+   "mistralai/devstral-2512": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 209715,
+    "source": "api"
+   },
+   "mistralai/ministral-14b-2512": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 209715,
+    "source": "api"
+   },
+   "mistralai/ministral-3b-2512": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 104857,
+    "source": "api"
+   },
+   "mistralai/ministral-8b-2512": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 209715,
+    "source": "api"
+   },
+   "mistralai/mistral-large": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 102400,
+    "source": "api"
+   },
+   "mistralai/mistral-large-2407": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 104857,
+    "source": "api"
+   },
+   "mistralai/mistral-large-2512": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 209715,
+    "source": "api"
+   },
+   "mistralai/mistral-large-4-0": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "mistralai/mistral-medium-3": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 104857,
+    "source": "api"
+   },
+   "mistralai/mistral-medium-3-5": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 209715,
+    "source": "api"
+   },
+   "mistralai/mistral-medium-3-5:batch": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 209715,
+    "source": "api"
+   },
+   "mistralai/mistral-medium-3.1": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 104857,
+    "source": "api"
+   },
+   "mistralai/mistral-nemo": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "mistralai/mistral-saba": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 26214,
+    "source": "api"
+   },
+   "mistralai/mistral-small-24b-instruct-2501": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "mistralai/mistral-small-2603": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 209715,
+    "source": "api"
+   },
+   "mistralai/mistral-small-3.1-24b-instruct": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 102400,
+    "source": "api"
+   },
+   "mistralai/mistral-small-3.2-24b-instruct": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "mistralai/mixtral-8x22b-instruct": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 52428,
+    "source": "api"
+   },
+   "mistralai/voxtral-small-24b-2507": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 26214,
+    "source": "api"
+   },
+   "moondream/moondream3-preview": {
+    "contextTokens": 32000,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "moondream/moondream3.1-9b-a2b": {
+    "contextTokens": 32000,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "moonshotai/kimi-k2": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 98304,
+    "source": "api"
+   },
+   "moonshotai/kimi-k2-0905": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 98304,
+    "source": "api"
+   },
+   "moonshotai/kimi-k2-thinking": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 98304,
+    "source": "api"
+   },
+   "moonshotai/kimi-k2.5": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "moonshotai/kimi-k2.6": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "moonshotai/kimi-k2.7-code": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "moonshotai/kimi-k3": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "moonshotai/kimi-k3:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "moonshotai/kimi-k3.1-pro": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "morph/morph-v3-fast": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "morph/morph-v3-large": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "nex-agi/nex-n2.5-mini": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "nex-agi/nex-n2.5-pro": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "nousresearch/hermes-3-llama-3.1-405b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "nousresearch/hermes-3-llama-3.1-70b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "nousresearch/hermes-4-405b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "nvidia/nemotron-3-nano-30b-a3b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "nvidia/nemotron-3-super-120b-a12b": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "nvidia/nemotron-3-ultra-550b-a55b": {
+    "contextTokens": 202800,
+    "maxOutputTokens": 182520,
+    "source": "api"
+   },
+   "nvidia/nemotron-3-ultra-550b-a55b:free": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "nvidia/nemotron-3.5-content-safety": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "nvidia/nemotron-3.5-content-safety:free": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "nvidia/nemotron-3.5-lightning": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "nvidia/nemotron-3.5-lightning:free": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "nvidia/nemotron-3.5-super-vl": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "nvidia/nemotron-3.5-super-vl:free": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "nvidia/switchyard": {
+    "contextTokens": 1000000,
+    "source": "api"
+   },
+   "openai/gpt-3.5-turbo-0613": {
+    "contextTokens": 4095,
+    "maxOutputTokens": 3685,
+    "source": "api"
+   },
+   "openai/gpt-3.5-turbo-16k": {
+    "contextTokens": 16385,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "openai/gpt-4": {
+    "contextTokens": 8191,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "openai/gpt-4.1": {
+    "contextTokens": 1047576,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "openai/gpt-4.1-mini": {
+    "contextTokens": 1047576,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "openai/gpt-4.1-nano": {
+    "contextTokens": 1047576,
+    "maxOutputTokens": 942818,
+    "source": "api"
+   },
+   "openai/gpt-4o": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "openai/gpt-4o-2024-05-13": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "openai/gpt-4o-2024-08-06": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "openai/gpt-4o-2024-11-20": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "openai/gpt-4o-mini": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "openai/gpt-4o-mini-2024-07-18": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "openai/gpt-5": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5-image": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5-image-mini": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5-mini": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5-nano": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5-nano:batch": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5-pro": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.1": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.1-codex": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.1-codex-max": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.1-codex-mini": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.2": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.2-codex": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.2-pro": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.3-codex": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.4": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.4-image-2": {
+    "contextTokens": 272000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.4-mini": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.4-nano": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.4-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.5": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.5-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-luna": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-luna-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-luna-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-luna:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-sol": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-sol-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-sol-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-sol:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-terra": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-terra-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-terra-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-5.6-terra:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-astra": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-astra-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-astra-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-astra:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-luna": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-luna-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-luna-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-luna:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-sol": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-sol-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-sol-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6-sol:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-sol": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-sol-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-sol-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-sol:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-terra": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-terra-pro": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-terra-pro:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-6.1-terra:batch": {
+    "contextTokens": 1050000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-audio": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "openai/gpt-audio-mini": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "openai/gpt-chat-latest": {
+    "contextTokens": 400000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "openai/gpt-oss-120b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "openai/gpt-oss-120b:batch": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "openai/gpt-oss-20b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "openai/gpt-oss-20b:batch": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "openai/gpt-oss-safeguard-20b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "openai/o3": {
+    "contextTokens": 200000,
+    "maxOutputTokens": 100000,
+    "source": "api"
+   },
+   "openai/o3-pro": {
+    "contextTokens": 200000,
+    "maxOutputTokens": 100000,
+    "source": "api"
+   },
+   "openrouter/auto": {
+    "contextTokens": 2000000,
+    "source": "api"
+   },
+   "openrouter/auto-beta": {
+    "contextTokens": 2000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "openrouter/bodybuilder": {
+    "contextTokens": 128000,
+    "source": "api"
+   },
+   "openrouter/free": {
+    "contextTokens": 200000,
+    "source": "api"
+   },
+   "openrouter/fusion": {
+    "contextTokens": 1000000,
+    "source": "api"
+   },
+   "openrouter/pareto-code": {
+    "contextTokens": 2000000,
+    "source": "api"
+   },
+   "particle-ai/particle-1": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "perceptron/perceptron-mk1": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "perceptron/perceptron-mk1.5": {
+    "contextTokens": 36864,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "perplexity/sonar": {
+    "contextTokens": 127072,
+    "maxOutputTokens": 114364,
+    "source": "api"
+   },
+   "perplexity/sonar-deep-research": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 115200,
+    "source": "api"
+   },
+   "perplexity/sonar-pro": {
+    "contextTokens": 200000,
+    "maxOutputTokens": 8000,
+    "source": "api"
+   },
+   "perplexity/sonar-pro-search": {
+    "contextTokens": 200000,
+    "maxOutputTokens": 8000,
+    "source": "api"
+   },
+   "perplexity/sonar-reasoning-pro": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 115200,
+    "source": "api"
+   },
+   "poolside/laguna-s-2.1": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "poolside/laguna-s-2.1:free": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "poolside/laguna-xs-2.1": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "poolside/laguna-xs-2.1:free": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "prism-ml/ternary-bonsai-2-27b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "prism-ml/ternary-bonsai-2-9b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen-2.5-72b-instruct": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen-2.5-7b-instruct": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 29491,
+    "source": "api"
+   },
+   "qwen/qwen-2.5-coder-32b-instruct": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 29491,
+    "source": "api"
+   },
+   "qwen/qwen-plus": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "qwen/qwen2.5-vl-72b-instruct": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 115200,
+    "source": "api"
+   },
+   "qwen/qwen3-14b": {
+    "contextTokens": 40960,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen3-235b-a22b-2507": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen3-235b-a22b-thinking-2507": {
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen3-30b-a3b": {
+    "contextTokens": 40960,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen3-30b-a3b-instruct-2507": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3-32b": {
+    "contextTokens": 40960,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen3-coder": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3-coder-30b-a3b-instruct": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3-coder-flash": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3-coder-next": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3-next-80b-a3b-instruct": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen3-vl-235b-a22b-instruct": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "qwen/qwen3-vl-30b-a3b-instruct": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "qwen/qwen3-vl-30b-a3b-thinking": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3-vl-8b-instruct": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3.5-122b-a10b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3.5-27b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 81920,
+    "source": "api"
+   },
+   "qwen/qwen3.5-35b-a3b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 81920,
+    "source": "api"
+   },
+   "qwen/qwen3.5-397b-a17b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3.5-9b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3.5-flash-02-23": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3.5-plus-02-15": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3.5-plus-20260420": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3.6-27b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 81920,
+    "source": "api"
+   },
+   "qwen/qwen3.6-35b-a3b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3.6-flash": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3.6-plus": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3.7-flash": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "qwen/qwen3.7-max": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "qwen/qwen3.7-plus": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "qwen/qwen3.7-plus:batch": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "qwen/qwen3.8-2.4t-a95b": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "qwen/qwen3.8-27b": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "qwen/qwen3.8-flash": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "qwen/qwen3.8-max-0902": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "qwen/qwen3.8-max-prime": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "qwen/qwen3.8-omni-flash": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "recursive/flint-v1.0:free": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "reflection/beam-1.0-501b-a23b": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "rekaai/reka-edge": {
+    "contextTokens": 16384,
+    "maxOutputTokens": 14745,
+    "source": "api"
+   },
+   "rekaai/reka-flash-3": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 58982,
+    "source": "api"
+   },
+   "relace/relace-apply-3": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "relace/relace-search": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "sakana/fugu-max": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "sakana/fugu-ultra": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "sakana/fugu-ultra-v2": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "sao10k/l3-lunaris-8b": {
+    "contextTokens": 8192,
+    "maxOutputTokens": 7372,
+    "source": "api"
+   },
+   "sao10k/l3.1-euryale-70b": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "scaledown/extract": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 900000,
+    "source": "api"
+   },
+   "scaledown/summarize": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 4000,
+    "source": "api"
+   },
+   "stepfun/step-3.5-flash": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "stepfun/step-3.7-flash": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 230400,
+    "source": "api"
+   },
+   "stepfun/step-5-preview": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "tencent/hunyuan-a13b-instruct": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "tencent/hy-mt2-1.8b": {
+    "contextTokens": 8192,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "tencent/hy-mt2-30b-a3b": {
+    "contextTokens": 8192,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "tencent/hy-mt2-7b": {
+    "contextTokens": 8192,
+    "maxOutputTokens": 4096,
+    "source": "api"
+   },
+   "tencent/hy3": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "tencent/hy3-preview": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "tencent/hy4-preview": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "thedrummer/cydonia-24b-v4.1": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "thedrummer/skyfall-36b-v2": {
+    "contextTokens": 32768,
+    "maxOutputTokens": 29491,
+    "source": "api"
+   },
+   "thedrummer/unslopnemo-12b": {
+    "contextTokens": 1024000,
+    "maxOutputTokens": 819200,
+    "source": "api"
+   },
+   "thinkingmachines/inkling": {
+    "contextTokens": 524288,
+    "maxOutputTokens": 471859,
+    "source": "api"
+   },
+   "thinkingmachines/inkling-small": {
+    "contextTokens": 524288,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "thinkingmachines/inkling-small:free": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "thinkingmachines/inkling:free": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 262144,
+    "source": "api"
+   },
+   "typesafe/jev-router": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "unbiased/pareto-26.10": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "unbiased/pareto-26.9": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "undi95/remm-slerp-l2-13b": {
+    "contextTokens": 6144,
+    "maxOutputTokens": 5529,
+    "source": "api"
+   },
+   "upstage/solar-mini4": {
+    "contextTokens": 524288,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "upstage/solar-pro4": {
+    "contextTokens": 524288,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "writer/palmyra-x5": {
+    "contextTokens": 1040000,
+    "maxOutputTokens": 8192,
+    "source": "api"
+   },
+   "x-ai/grok-4.20": {
+    "contextTokens": 2000000,
+    "maxOutputTokens": 1800000,
+    "source": "api"
+   },
+   "x-ai/grok-4.20-multi-agent": {
+    "contextTokens": 2000000,
+    "maxOutputTokens": 1800000,
+    "source": "api"
+   },
+   "x-ai/grok-4.3": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 900000,
+    "source": "api"
+   },
+   "x-ai/grok-4.3:batch": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 900000,
+    "source": "api"
+   },
+   "x-ai/grok-4.5": {
+    "contextTokens": 500000,
+    "maxOutputTokens": 450000,
+    "source": "api"
+   },
+   "x-ai/grok-4.6": {
+    "contextTokens": 500000,
+    "maxOutputTokens": 450000,
+    "source": "api"
+   },
+   "x-ai/grok-4.7": {
+    "contextTokens": 500000,
+    "maxOutputTokens": 450000,
+    "source": "api"
+   },
+   "x-ai/grok-build-0.1": {
+    "contextTokens": 256000,
+    "maxOutputTokens": 230400,
+    "source": "api"
+   },
+   "xiaomi/mimo-v2.5": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 65536,
+    "source": "api"
+   },
+   "xiaomi/mimo-v2.5-pro": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "xiaomi/mimo-v2.6-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "xiaomi/mimo-v2.6-pro": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "xiaomi/mimo-v2.6-pro-ultraspeed": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "xingchen-agi/xing4.0-29b-a4b:free": {
+    "contextTokens": 262144,
+    "maxOutputTokens": 235929,
+    "source": "api"
+   },
+   "z-ai/glm-4.5": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 98304,
+    "source": "api"
+   },
+   "z-ai/glm-4.5-air": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 98304,
+    "source": "api"
+   },
+   "z-ai/glm-4.5v": {
+    "contextTokens": 65536,
+    "maxOutputTokens": 16384,
+    "source": "api"
+   },
+   "z-ai/glm-4.6": {
+    "contextTokens": 202752,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-4.6v": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 32768,
+    "source": "api"
+   },
+   "z-ai/glm-4.7": {
+    "contextTokens": 204800,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-4.7-flash": {
+    "contextTokens": 131072,
+    "maxOutputTokens": 117964,
+    "source": "api"
+   },
+   "z-ai/glm-5": {
+    "contextTokens": 202752,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5-turbo": {
+    "contextTokens": 202752,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5.1": {
+    "contextTokens": 202752,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5.2": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "z-ai/glm-5.3": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 943718,
+    "source": "api"
+   },
+   "z-ai/glm-5.3-flash": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5.3-flash:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5.3-flashx": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5.3-prime": {
+    "contextTokens": 1000000,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5.3:batch": {
+    "contextTokens": 1048576,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   },
+   "z-ai/glm-5v-turbo": {
+    "contextTokens": 202752,
+    "maxOutputTokens": 131072,
+    "source": "api"
+   }
+  },
+  "anthropic": {
+   "claude-fable-5": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-fable-5-1": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-haiku-4-5-20251001": {
+    "contextTokens": 264000,
+    "maxInputTokens": 200000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "claude-haiku-5-5": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-opus-4-5-20251101": {
+    "contextTokens": 264000,
+    "maxInputTokens": 200000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "claude-opus-4-6": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-opus-4-7": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-opus-4-8": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-opus-5": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-opus-5-5": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-sonnet-4-5-20250929": {
+    "contextTokens": 264000,
+    "maxInputTokens": 200000,
+    "maxOutputTokens": 64000,
+    "source": "api"
+   },
+   "claude-sonnet-4-6": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-sonnet-5": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   },
+   "claude-sonnet-5-5": {
+    "contextTokens": 1128000,
+    "maxInputTokens": 1000000,
+    "maxOutputTokens": 128000,
+    "source": "api"
+   }
+  },
+  "mistral": {
+   "codestral-2508": {
+    "contextTokens": 256000,
+    "source": "api"
+   },
+   "codestral-embed": {
+    "contextTokens": 8192,
+    "source": "api"
+   },
+   "codestral-embed-2505": {
+    "contextTokens": 8192,
+    "source": "api"
+   },
+   "codestral-latest": {
+    "contextTokens": 256000,
+    "source": "api"
+   },
+   "labs-leanstral-1-5": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "labs-leanstral-1-5-1": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "magistral-medium-latest": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "magistral-small-latest": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "ministral-14b-2512": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "ministral-14b-latest": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "ministral-3b-2512": {
+    "contextTokens": 131072,
+    "source": "api"
+   },
+   "ministral-3b-latest": {
+    "contextTokens": 131072,
+    "source": "api"
+   },
+   "ministral-8b-2512": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "ministral-8b-latest": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-code-fim-latest": {
+    "contextTokens": 256000,
+    "source": "api"
+   },
+   "mistral-code-latest": {
+    "contextTokens": 256000,
+    "source": "api"
+   },
+   "mistral-embed": {
+    "contextTokens": 8192,
+    "source": "api"
+   },
+   "mistral-embed-2312": {
+    "contextTokens": 8192,
+    "source": "api"
+   },
+   "mistral-large-4": {
+    "contextTokens": 1048576,
+    "source": "api"
+   },
+   "mistral-large-4-0": {
+    "contextTokens": 1048576,
+    "source": "api"
+   },
+   "mistral-medium": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-medium-2604": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-medium-3": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-medium-3-5": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-medium-3.5": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-medium-latest": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-moderation-2603": {
+    "contextTokens": 131072,
+    "source": "api"
+   },
+   "mistral-ocr-2512": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "mistral-ocr-3": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "mistral-ocr-3-0": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "mistral-ocr-4": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "mistral-ocr-4-1": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "mistral-ocr-latest": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "mistral-small-2603": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-small-latest": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-vibe-cli-fast": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-vibe-cli-latest": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "mistral-vibe-cli-with-tools": {
+    "contextTokens": 262144,
+    "source": "api"
+   },
+   "voxtral-mini-2602": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "voxtral-mini-latest": {
+    "contextTokens": 16384,
+    "source": "api"
+   },
+   "voxtral-mini-realtime-2602": {
+    "contextTokens": 32768,
+    "source": "api"
+   },
+   "voxtral-mini-realtime-latest": {
+    "contextTokens": 32768,
+    "source": "api"
+   },
+   "voxtral-mini-transcribe-3": {
+    "contextTokens": 65536,
+    "source": "api"
+   },
+   "voxtral-mini-transcribe-3-0": {
+    "contextTokens": 65536,
+    "source": "api"
+   },
+   "voxtral-mini-transcribe-realtime-2602": {
+    "contextTokens": 32768,
+    "source": "api"
+   },
+   "voxtral-mini-transcribe-realtime-3": {
+    "contextTokens": 65536,
+    "source": "api"
+   },
+   "voxtral-mini-transcribe-realtime-3-0": {
+    "contextTokens": 65536,
+    "source": "api"
+   },
+   "voxtral-mini-tts-2603": {
+    "contextTokens": 4096,
+    "source": "api"
+   },
+   "voxtral-mini-tts-3": {
+    "contextTokens": 4096,
+    "source": "api"
+   },
+   "voxtral-mini-tts-3-0": {
+    "contextTokens": 4096,
+    "source": "api"
+   },
+   "voxtral-mini-tts-latest": {
+    "contextTokens": 4096,
+    "source": "api"
+   },
+   "voxtral-small-2507": {
+    "contextTokens": 32768,
+    "source": "api"
+   },
+   "voxtral-small-latest": {
+    "contextTokens": 32768,
+    "source": "api"
+   },
+   "voxtral-small-transcribe-3": {
+    "contextTokens": 65536,
+    "source": "api"
+   },
+   "voxtral-small-transcribe-3-0": {
+    "contextTokens": 65536,
+    "source": "api"
+   }
+  }
+ }
+}

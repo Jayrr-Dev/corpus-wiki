@@ -3,7 +3,7 @@ import { workflowStep } from "@/lib/ingest/workflowContext";
 import { parseKnowledgeContext } from "@/lib/knowledge/context";
 import { GLOSSARY_POLICY } from "@/lib/ai/glossary";
 import { z } from "zod";
-import { chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
+import { ANSWER_TOKEN_BUDGET, chatJson, type TokenFactorySettings, type TokenUsage } from "@/lib/ai/chat";
 import type { DraftAction } from "@/lib/ai/types";
 import { commitChangeSet, submitChangeSet } from "@/lib/change-control";
 import type { DbRpc } from "@/lib/db/rpc";
@@ -78,7 +78,7 @@ export async function expandEntityKnowledge(deps: Dependencies, entityId: string
   if (!context.passages.length) throw new Error("This knowledge has no source passages to support definitions.");
   const schema = expansionAnswerSchema(context.knowledge.units.length, context.passages.length, context.domainPaths);
   const result = await chatJson(deps.settings, {
-    name: "knowledge_expansion", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: 8000, retryInvalidOutput: true,
+    name: "knowledge_expansion", schema, jsonSchema: z.toJSONSchema(schema), maxTokens: ANSWER_TOKEN_BUDGET, retryInvalidOutput: true,
     messages: [{ role: "system", content: `${skillInstructions(["define_concepts","identify_entities","organize_topics"],deps.settings.skills)}\n${PROMPT}` }, { role: "user", content: JSON.stringify({ contextEntity: context.knowledge.entity, existingEntities: context.existingEntities, domains: context.domainPaths, claims: context.knowledge.units.map((unit, index) => ({ ref: `C${index + 1}`, text: unit.content, context: unit.context })), passages: context.passages.map((passage, index) => ({ ref: `P${index + 1}`, text: passage.text })) }) }],
   });
   validateExpansion(result.value, context);

@@ -176,13 +176,28 @@ describe("chatJson request options", () => {
     expect(answer).toMatchObject({ value: { ok: true }, tokensIn: 12, tokensOut: 8 });
   });
 
-  it("sends GLM-5.3-Flash its reasoning effort through the chat template, preserving the JSON output cap", async () => {
+  it("sends GLM-5.3-Flash its reasoning effort through the chat template, with the model's real answer room", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(okCompletion('{"ok":true}'));
     vi.stubGlobal("fetch", fetchMock);
     await chatJson({ apiKey: "test", model: "zai-org/GLM-5.3-Flash" }, { ...okRequest, maxTokens: 2000 });
     const sent = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
-    expect(sent).toMatchObject({ model: "zai-org/GLM-5.3-Flash", reasoning_effort: "medium", chat_template_kwargs: { reasoning_effort: "medium" }, max_tokens: 2000 });
+    expect(sent).toMatchObject({ model: "zai-org/GLM-5.3-Flash", reasoning_effort: "medium", chat_template_kwargs: { reasoning_effort: "medium" } });
+    expect(sent.max_tokens).toBeGreaterThan(1_000_000);
     expect(sent.chat_template_kwargs).not.toHaveProperty("enable_thinking");
+  });
+
+  it("reserves credits from the caller's cap, not the model's full room", async () => {
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValue(okCompletion('{"ok":true}')));
+    const reserve = vi.fn().mockResolvedValue({ settle: async () => 1 });
+    await chatJson({ apiKey: "test", model: "zai-org/GLM-5.3-Flash", usageGate: { reserve } }, { ...okRequest, maxTokens: 2000 });
+    expect(reserve).toHaveBeenCalledWith(expect.objectContaining({ maxTokens: 2000 }));
+  });
+
+  it("keeps the caller's cap for a model with no published limit", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(okCompletion('{"ok":true}'));
+    vi.stubGlobal("fetch", fetchMock);
+    await chatJson({ apiKey: "test", model: "made-up/model" }, { ...okRequest, maxTokens: 2000 });
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)).max_tokens).toBe(2000);
   });
 
   it("reports the actual response model and requested cap when output is truncated", async () => {
