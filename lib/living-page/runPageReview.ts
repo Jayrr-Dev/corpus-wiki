@@ -196,13 +196,15 @@ export async function reviewRebuiltSections(db: DbRpc, settings: TokenFactorySet
     // Review the finished text directly; replaying coverage could replace its
     // saved sections again. Bind the completion checkpoint to current content.
     const hash = await db.call<string>("page_review_content_hash", { p_page_id: pageId });
-    await workflowStep(`editorial-complete:v1:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}:${hash}`, async () => {
-      const result = await runPageReview(db, settings, pageId, embedder);
-      if (!result.coverageComplete) throw new Error("The full article review is still incomplete. Saved text and partial checks are preserved; resume with sufficient review capacity.");
-      return result;
-    });
+    const result = await workflowStep(`editorial-complete:v1:${checkpointScope ? `${checkpointScope}:` : ""}${pageId}:${hash}`, () => runPageReview(db, settings, pageId, embedder));
+    // The article is written and each section was checked as it was built; this review is a
+    // second pass. A page it could not settle (a partial review, or text that changed since)
+    // stays flagged by pages_needing_editorial_review for the next update, the Curator or a
+    // person's Review, instead of failing the upload. Errors still fail the step above.
     const remaining = await db.call<string[]>("pages_needing_editorial_review", { p_section_ids: sectionIds });
-    if (remaining.includes(pageId)) throw new Error("The article changed or still has unfinished sections after review. Saved work is preserved; resume to finish its current version.");
+    if (!result.coverageComplete || remaining.includes(pageId)) {
+      console.warn("Article review left unfinished; the page stays flagged for review", { pageId, coverageComplete: result.coverageComplete });
+    }
     await reviewedProgress(index + 1);
   }
 }

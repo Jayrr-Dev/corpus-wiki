@@ -178,7 +178,7 @@ describe("review workflow", () => {
     expect(call.mock.calls.filter(([name]) => name === "complete_page_review")).toHaveLength(2);
     expect(call).toHaveBeenCalledWith("page_review_content_hash", { p_page_id: page });
   });
-  it("does not let partial checks finish the upload's article review", async () => {
+  it("finishes the upload when only a partial review fits, leaving the page flagged for review", async () => {
     const { db, call } = database();
     const original = call.getMockImplementation()!;
     const large = { ...snapshot, lines: [0, 1, 2].map(i => ({ line_id: String(i), author: "ai", unit_revision_ids: [], content: "A long paragraph. ".repeat(5500) })) };
@@ -188,7 +188,7 @@ describe("review workflow", () => {
       if (name === "page_review_snapshot") return large;
       return original(name, args);
     });
-    await expect(reviewRebuiltSections(db, { apiKey: "test" }, [line])).rejects.toThrow("full article review is still incomplete");
+    await expect(reviewRebuiltSections(db, { apiKey: "test" }, [line])).resolves.toBeUndefined();
     const saves = call.mock.calls.filter(([name]) => name === "complete_page_review");
     expect(saves).toHaveLength(2);
     expect(saves.every(([, args]) => (args?.p_review as { coverageComplete: boolean }).coverageComplete === false)).toBe(true);
