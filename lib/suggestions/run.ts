@@ -48,6 +48,7 @@ import {
   type UnitGroup,
   withoutDismissed,
 } from "./group";
+import { leaseHeartbeat } from "./leaseHeartbeat";
 import {
   buildSuggestionMessages,
   type CloseArticle,
@@ -95,7 +96,9 @@ export type SuggestionDeps = {
   writer: () => Promise<SectionWriter>;
 };
 
-class LeaseLost extends Error {}
+class LeaseLost extends Error {
+  constructor() { super("Another run took over this suggestion"); }
+}
 
 // How soon a cancel reaches an apply that is still writing
 const APPLY_HEARTBEAT_MS = 5_000;
@@ -950,22 +953,21 @@ async function applySuggestion(deps: SuggestionDeps, claim: Claim) {
       : `create:${claim.id}`;
   const abort = new AbortController();
   activeApplies.set(claim.id, abort);
-  const beat = setInterval(() => {
-    void renew(deps.db, claim).catch((failure) => {
-      if (!abort.signal.aborted) abort.abort(failure);
-    });
-  }, APPLY_HEARTBEAT_MS);
-  beat.unref?.();
+  const heartbeat = leaseHeartbeat(
+    () => renew(deps.db, claim),
+    (failure) => { if (!abort.signal.aborted) abort.abort(failure); },
+    APPLY_HEARTBEAT_MS,
+  );
   try {
     return await afterPage(key, () =>
       processingCancellation.run(abort.signal, async () => {
         abort.signal.throwIfAborted();
         await renew(deps.db, claim);
-        await applyAcceptedSuggestion(deps, claim, item);
+        await applyAcceptedSuggestion(deps, claim, item, heartbeat.release);
       }),
     );
   } finally {
-    clearInterval(beat);
+    heartbeat.release();
     if (activeApplies.get(claim.id) === abort) activeApplies.delete(claim.id);
   }
 }
@@ -1343,6 +1345,7 @@ async function applyAcceptedSuggestion(
   deps: SuggestionDeps,
   claim: Claim,
   item: Tables<"article_suggestions">,
+  releaseLease: () => void,
 ) {
   const { db, client } = deps;
   const progress = applyProgress(client, claim, item.signals);
@@ -1353,6 +1356,8 @@ async function applyAcceptedSuggestion(
     signals?: Json;
   }) => {
     await progress.settle();
+    // This write clears the lease, and a new article goes on writing after it
+    releaseLease();
     const { data, error: saveError } = await client
       .from("article_suggestions")
       .update({ ...patch, lease_token: null, lease_until: null })

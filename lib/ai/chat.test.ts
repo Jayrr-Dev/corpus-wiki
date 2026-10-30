@@ -262,6 +262,19 @@ describe("Nebius response handling", () => {
     expect(always).toHaveBeenCalledTimes(2);
   });
 
+  it("moves to a backup straight after a stall instead of waiting out a second one", async () => {
+    vi.useFakeTimers();
+    vi.stubEnv("OPENROUTER_API_KEY", "router-key");
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation((url, init) => String(url).startsWith("https://openrouter.ai")
+      ? Promise.resolve(okCompletion('{"ok":true}'))
+      : new Promise<Response>((_, reject) => init?.signal?.addEventListener("abort", () => reject(init.signal!.reason), { once: true })));
+    vi.stubGlobal("fetch", fetchMock);
+    const pending = chatJson({ apiKey: "test", backups: [{ model: "openrouter/inception/mercury-3", costPerM: null, tokensPerSecond: null, intelligence: null }] }, okRequest);
+    await vi.advanceTimersByTimeAsync(60_000);
+    await expect(pending).resolves.toMatchObject({ value: { ok: true } });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it("moves to a backup provider when the picked one keeps failing, but not for a bad request", async () => {
     vi.stubEnv("OPENROUTER_API_KEY", "router-key");
     const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (url) => String(url).startsWith("https://openrouter.ai")

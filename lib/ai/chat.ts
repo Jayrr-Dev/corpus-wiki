@@ -419,7 +419,7 @@ export async function chatJson<S extends z.ZodType>(
     ? { ...request, messages: [{ role: "system" as const, content: notes }, ...request.messages] }
     : request;
   try {
-    return await askAgainAfterStall(() => chatJsonAnswer(settings, call));
+    return await chatJsonAnswer(settings, call);
   } catch (error) {
     if (!isProviderFailure(error) || request.signal?.aborted) throw error;
     // The provider failed, not the request: the same call goes to a backup on another provider
@@ -436,19 +436,11 @@ export async function chatJson<S extends z.ZodType>(
         if (!isProviderFailure(backupError)) throw backupError;
       }
     }
-    throw error;
-  }
-}
-
-// A stream that sent nothing for a minute (usually an overloaded provider) saved nothing,
-// so it is asked once more; a second stall stops the call
-async function askAgainAfterStall<T>(run: () => Promise<T>): Promise<T> {
-  try {
-    return await run();
-  } catch (error) {
+    // A stream that sent nothing for a minute (usually an overloaded provider) saved nothing, so
+    // with no backup left it is asked once more; a second stall stops the call
     if (!(error instanceof AiInactivityError)) throw error;
     processingMetric("provider.stall");
-    return run();
+    return chatJsonAnswer(settings, call);
   }
 }
 
