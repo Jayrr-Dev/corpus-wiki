@@ -13,7 +13,7 @@ import { loadRoleInstructions } from "@/lib/ai/skills/server";
 import { DOMAIN_DECIDER_INSTRUCTIONS } from "@/lib/domains/decider";
 import { skillInstructions } from "@/lib/ai/skills/prompt";
 import { afterReview, uploadAssignmentEvidence, validateUploadGroups, validateUploadPlacements, type UploadTopicContext } from "@/lib/domains/uploadAssignment";
-import { confirmFilingObjections, dropFixedIssues, UPLOAD_FILING_CONTRACT } from "@/lib/domains/filingObjections";
+import { confirmFilingObjections, dropFixedIssues, reviewIsStuck, UPLOAD_FILING_CONTRACT } from "@/lib/domains/filingObjections";
 import { TAB_FILING_RULES } from "@/lib/domains/tabOrganization";
 import { BUDGET_PROFILE_NOTE, estimatePromptTokens, PROMPT_TOKEN_LIMIT, scopeNeighbors, topicPromptBudgetOn } from "@/lib/domains/promptBudget";
 import type { ChatMessage } from "@/lib/ai/chat";
@@ -218,6 +218,11 @@ export function topicPlacerFor(db: DbRpc, settings: TokenFactorySettings) {
               captureBatch(confirmed);
               objectionChecks.push({issues,verdicts:confirmed.value.verdicts});
               issues=confirmed.issues;objectionsCleared=!issues.length;
+            }
+            const unchanged=!!previousProposal&&[...proposal].every(([id,paths])=>previousProposal!.get(id)?.join()===paths.join());
+            if(reviewIsStuck(issues,history,unchanged)) {
+              console.warn("Filing kept after the review stopped making progress",{source:context.sourceTitle,issues});
+              issues=[];objectionsCleared=true;
             }
             if((!review.value.approved&&!objectionsCleared) || issues.length) {
               previousProposal=proposal;

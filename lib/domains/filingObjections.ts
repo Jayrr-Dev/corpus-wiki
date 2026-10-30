@@ -14,6 +14,13 @@ export function dropFixedIssues(issues: string[], history: string[][], destinati
   return issues.filter((issue) => !(raised.has(issue) && /\S\/\S/.test(issue) && ![...destinations].some((path) => issue.includes(path))));
 }
 
+// The same objections three reviews running, against a proposal that has stopped changing: more
+// rounds can't help. Filing is kept, since a domain can be moved later and a stopped upload can't.
+export function reviewIsStuck(issues: string[], history: string[][], unchanged: boolean) {
+  const [earlier, last] = history.slice(-2);
+  return unchanged && !!last && issues.length > 0 && issues.every((issue) => earlier!.includes(issue) && last.includes(issue));
+}
+
 export async function confirmFilingObjections(settings: TokenFactorySettings, issues: string[], evidence: unknown) {
   const result = await chatJson(settings, {
     name: "independent_upload_domain_issue_check", schema, jsonSchema: z.toJSONSchema(schema),

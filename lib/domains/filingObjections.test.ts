@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { chatJson } from '@/lib/ai/chat';
-import { confirmFilingObjections, dropFixedIssues } from './filingObjections';
+import { confirmFilingObjections, dropFixedIssues, reviewIsStuck } from './filingObjections';
 vi.mock('@/lib/ai/chat',()=>({chatJson:vi.fn()}));
 afterEach(()=>vi.mocked(chatJson).mockReset());
 
@@ -23,6 +23,14 @@ it.each([
 ].map(verdicts=>({verdicts})))('never accepts an incomplete or malformed objection check',async({verdicts})=>{
  vi.mocked(chatJson).mockResolvedValue({value:{verdicts},model:'test',tokensIn:1,tokensOut:1});
  await expect(confirmFilingObjections({apiKey:'test'},['First issue','Second issue'],{})).rejects.toThrow('issue');
+});
+
+it("calls a review stuck only after the same objections three times against an unchanged proposal",()=>{
+ expect(reviewIsStuck(["a"],[["a"],["a"]],true)).toBe(true);
+ expect(reviewIsStuck(["a"],[["a"],["a"]],false)).toBe(false);
+ expect(reviewIsStuck(["a"],[["a"]],true)).toBe(false);
+ expect(reviewIsStuck(["a","b"],[["a"],["a"]],true)).toBe(false);
+ expect(reviewIsStuck([],[["a"],["a"]],true)).toBe(false);
 });
 
 const fixed="C1 is about Harbor Food Bank. It must not be placed under Eastside Food Bank/Forklift permits.";
