@@ -1,14 +1,13 @@
-# Writes the burned-in captions: 2-3-word lower-third captions from both voiceover transcripts,
-# in final-cut time (cut.py maps each take). final.py burns the file in with ffmpeg's subtitles filter.
+# Writes the burned-in captions: 2-3-word lower-third captions from the v3 take's transcript,
+# in final-cut time (cut.py maps the take). final.py burns the file in with ffmpeg's subtitles filter.
 # Usage: python -I tools/captions.py  ->  out/captions.ass
 import json, math, os, re, sys
 
 sys.dont_write_bytecode = True  # importing cut.py would otherwise leave tools/__pycache__ behind
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from cut import INSERT_AT, main_to_final, nem_to_final
+from cut import in_cut, to_final
 
-MAIN_JSON = "../vo-v2-transcript.json"
-NEM_JSON = "../vo-nemotron-transcript.json"
+TRANSCRIPT = "../vo-v3-transcript.json"
 OUT = "out/captions.ass"
 
 MAX_WORDS = 3
@@ -38,12 +37,47 @@ SOFT = r"{\blur6}"  # blurs the dark outline into a soft shadow; the white fill 
 def spoken(path):
     """The spoken words of a take as (text, start, end), without audio events or bracketed tags."""
     words = json.load(open(path, encoding="utf-8"))["words"]
-    return [(rename(w["text"].strip()), w["start"], w["end"]) for w in words
-            if w["type"] == "word" and w["text"].strip() and not TAG.match(w["text"].strip())]
+    return fix([(rename(w["text"].strip()), w["start"], w["end"]) for w in words
+                if w["type"] == "word" and w["text"].strip() and not TAG.match(w["text"].strip()) and not in_cut(w["start"])])
 
 
-# "Dave" became "Brent" (a nod to The Phoenix Project). The re-recorded lines are spliced into the
-# same slots of the main take, so the old transcript's timings still hold; only the name changes.
+# What the transcriber misheard or wrote in the wrong case, as (heard, meant) word runs.
+# When meant is shorter, its first word takes the extra heard words' time.
+FIXES = [
+    ("and video nematron", "NVIDIA Nemotron"),
+    ("Obsidian, notion,", "Obsidian, Notion,"),
+    ("Corpus wiki.", "Corpus Wiki."),
+    ("PDFs, word docs,", "PDFs, Word docs,"),
+    ("who's who?", "who's who,"),
+    ("by nebius token factory.", "by Nebius Token Factory."),
+    ("Token factory", "Token Factory"),
+    ("Nemotron super", "Nemotron Super"),
+    ("Nemotron ultra", "Nemotron Ultra"),
+    ("fact checks", "fact-checks"),
+    ("on nebius cloud.", "on Nebius cloud."),
+    ("Still here?", "Still here."),
+]
+
+
+def fix(words):
+    out, i = [], 0
+    while i < len(words):
+        for heard, meant in FIXES:
+            h, m = heard.split(), meant.split()
+            if [w[0] for w in words[i:i + len(h)]] == h:
+                run, extra = words[i:i + len(h)], len(h) - len(m)
+                out.append((m[0], run[0][1], run[extra][2]))
+                out += [(t, w[1], w[2]) for t, w in zip(m[1:], run[extra + 1:])]
+                i += len(h)
+                break
+        else:
+            out.append(words[i])
+            i += 1
+    return out
+
+
+# "Dave" became "Brent" (a nod to The Phoenix Project). The v3 take already says Brent; this only
+# guards against an older transcript.
 def rename(text):
     return re.sub(r"\bDave\b", "Brent", text)
 
@@ -91,12 +125,7 @@ def escape(text):
 
 
 def main():
-    main_words = spoken(MAIN_JSON)
-    # Each side of the splice and the Nemotron take are grouped on their own, so no caption crosses it.
-    caps = (captions([w for w in main_words if w[1] < INSERT_AT], main_to_final)
-            + captions(spoken(NEM_JSON), nem_to_final)
-            + captions([w for w in main_words if w[1] >= INSERT_AT], main_to_final))
-    caps.sort(key=lambda c: c[1])
+    caps = captions(spoken(TRANSCRIPT), to_final)
 
     lines = []
     for i, (text, start, end) in enumerate(caps):

@@ -58,5 +58,41 @@
     "model": "google/veo-3.1-lite",
     "seconds": 8,
     "cost": 0.4
+  },
+  "s11-home-laptop": {
+    "job": "gen-vid-1793295997-frE9kLe3OtnXMQGp3NdO",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "s05-notebook": {
+    "job": "gen-vid-1793295997-1JypcYArjgeZKJ6Te6ac",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "s17-laptop-open": {
+    "job": "gen-vid-1793295998-BQMBAJRcyugloSZofpSq",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "s04-whiteboard": {
+    "job": "gen-vid-1793295997-80qc4kglyMPj3sC3JBUJ",
+    "model": "google/veo-3.1-lite",
+    "seconds": 6,
+    "cost": 0.3
+  },
+  "s24-lean-back": {
+    "job": "gen-vid-1793295997-tlc9LifOdtA05UFp3K7g",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
+  },
+  "s03-local-business": {
+    "job": "gen-vid-1793295998-9uZ0ptpK1cA4ynJnOkY0",
+    "model": "google/veo-3.1-lite",
+    "seconds": 4,
+    "cost": 0.2
   }
 }

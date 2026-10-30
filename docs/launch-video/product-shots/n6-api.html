@@ -1,30 +1,30 @@
 <!doctype html>
 <!-- Nemotron section, 0:26.4–0:33.3: "Token Factory gives us one API for all of them, with structured output, so every change comes back valid."
      The request mirrors lib/ai/chat.ts (response_format json_schema, strict) against TOKEN_FACTORY_BASE_URL in lib/ai/config.ts. -->
-<html class="dark"><head><meta charset="utf-8"><title>N6 API</title>
+<html class="light"><head><meta charset="utf-8"><title>N6 API</title>
 <link rel="stylesheet" href="assets/app.css">
 <script src="engine.js"></script>
 <style>
-  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #1e1e1e; color: #dcdcdc; font-family: var(--font-sans, Inter, sans-serif); }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: #faf9f6; color: #172522; font-family: var(--font-sans, Inter, sans-serif); }
   #cursor { display: none !important; }
   .row { position: absolute; left: 140px; right: 140px; top: 170px; display: grid; grid-template-columns: 1fr 120px 1fr; align-items: center; }
-  .card { border: 1px solid #363636; background: #262626; border-radius: 14px; overflow: hidden; }
-  .card .hd { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #363636; font-size: 16px; color: #a3a3a3; }
-  .card .hd b { color: #dcdcdc; font-weight: 600; }
-  pre { margin: 0; padding: 20px 22px; font-family: var(--font-mono, "JetBrains Mono", monospace); font-size: 19px; line-height: 1.6; color: #cfcfcf; white-space: pre; min-height: 560px; }
-  .k { color: #8fae8d; } .s { color: #e9a477; } .c { color: #6b6b6b; } .n { color: #72b7e5; }
-  .arrow { text-align: center; font-size: 46px; color: #8fae8d; }
+  .card { border: 1px solid #dfddd7; background: #ffffff; box-shadow: 0 1px 2px rgba(23,37,34,.05); border-radius: 14px; overflow: hidden; }
+  .card .hd { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #dfddd7; background: #f3f2ee; font-size: 16px; color: #5c5c5c; }
+  .card .hd b { color: #172522; font-weight: 600; }
+  pre { margin: 0; padding: 20px 22px; font-family: var(--font-mono, "JetBrains Mono", monospace); font-size: 19px; line-height: 1.6; color: #2b3330; white-space: pre; min-height: 560px; }
+  .k { color: #496748; } .s { color: #a5521c; } .c { color: #8a8a8a; } .n { color: #0069a4; }
+  .arrow { text-align: center; font-size: 46px; color: #496748; }
   .ok { position: absolute; left: 50%; top: 820px; transform: translateX(-50%); display: flex; gap: 14px; }
-  .chip { display: flex; align-items: center; gap: 10px; border: 1px solid #577d4a; background: rgba(116,166,98,.12); color: #a5c599; border-radius: 999px; padding: 12px 22px; font-size: 22px; font-weight: 600; }
+  .chip { display: flex; align-items: center; gap: 10px; border: 1px solid #577d4a; background: rgba(116,166,98,.12); color: #3f6a35; border-radius: 999px; padding: 12px 22px; font-size: 22px; font-weight: 600; }
   .title { position: absolute; top: 80px; width: 100%; text-align: center; font-size: 40px; font-weight: 600; }
-  .title span { color: #a3a3a3; font-weight: 400; }
+  .title span { color: #5c5c5c; font-weight: 400; }
 </style></head>
 <body>
 <div class="title" id="ti">One API for every model <span>· structured output</span></div>
 <div class="row">
-  <div class="card" id="req"><div class="hd"><span class="rounded px-1.5 py-0.5 text-xs font-medium bg-emerald-950 text-emerald-100">POST</span><b>api.tokenfactory.nebius.com/v1/chat/completions</b></div><pre id="rq"></pre></div>
+  <div class="card" id="req"><div class="hd"><span class="rounded px-1.5 py-0.5 text-xs font-medium" style="background:var(--color-emerald-100);color:var(--color-emerald-950)">POST</span><b>api.tokenfactory.nebius.com/v1/chat/completions</b></div><pre id="rq"></pre></div>
   <div class="arrow" id="ar">→</div>
-  <div class="card" id="res"><div class="hd"><span class="rounded px-1.5 py-0.5 text-xs font-medium bg-blue-950 text-blue-100">200</span><b>ChangeSet</b></div><pre id="rs"></pre></div>
+  <div class="card" id="res"><div class="hd"><span class="rounded px-1.5 py-0.5 text-xs font-medium" style="background:var(--color-blue-100);color:var(--color-blue-950)">200</span><b>ChangeSet</b></div><pre id="rs"></pre></div>
 </div>
 <div class="ok" id="ok"><div class="chip">✓ Matches the schema</div><div class="chip">✓ Checked by Change control</div></div>
 <script>
