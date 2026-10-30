@@ -79,6 +79,10 @@ describe.skipIf(!hasLocalPostgres())("change control", () => {
       type: "merge_duplicates", targetId: OTHER_UNIT, expectedRevisionId: null, passageIds: [], speechAct: null,
       input: { duplicateUnitIds: [RELEASE_UNIT], ...(autoMerge ? { autoMerge: true } : {}) },
     });
+    // A merge needs both claims' applicability resolved and equal (20261105180000_knowledge_context.sql);
+    // seed.sql runs after that backfill, so the seeded claims get one here
+    await client.query(`update public.revisions r set knowledge_context = '{"entities":[],"applicability":{"status":"general","entities":[],"conditions":null}}'
+      from public.units u where u.current_revision_id = r.id and u.id = any($1::uuid[])`, [[OTHER_UNIT, RELEASE_UNIT]]);
     const commit = async (action: DraftAction) => {
       const submitted = await submitChangeSet(rpc(), { eventId: null, cause: "edit", actor: "ai" }, { summary: "Merge", actions: [action], trace: NO_TRACE });
       return commitChangeSet(rpc(), submitted.changeSetId);
