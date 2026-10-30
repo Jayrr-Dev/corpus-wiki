@@ -27,8 +27,8 @@ folders). #44 (Jev experiment) is deferred until the rest lands. #33, #34 and
 | recompute | #46 sections, topic placement, entity descriptions | recompute: #46 glossary | in progress (branched from PR #58) |
 | measure | Fix `test/db/pgRpc.ts` to send typed arguments and return SETOF rows, so `evals/evals.test.ts` passes | | in review (branch `claude/pgrpc-typed-args`): evals 7/7; 3 older failures in `changeControl.test.ts` and `rebuild.test.ts` fail the same with the old helper |
 | recompute | #49 one change set per pipeline stage | recompute: #46 | waiting |
-| embeddings | #39 propose vector versioning on the issue | | in progress (owner OK to post) |
-| embeddings | #39 contextual claim embeddings | owner approves versioning, reconcile: #45 | waiting |
+| embeddings | #39 propose vector versioning on the issue | | done, owner approved 2026-10-29 (https://github.com/Jayrr-Dev/corpus-wiki/issues/39#issuecomment-6509551937) |
+| embeddings | #39 contextual claim embeddings (text_version replaced in place, subject + scoped prefix, no topic path, re-embed on rename, `scripts/reembed-claims.ts`) | reconcile: #45 (landed) | PR open; owner applies migration, then one live re-embed and eval |
 | jobs | #47 small idempotent jobs (with #46 closes #36) | #45, #46, #49 | waiting |
 | organize | #50 one organize step | #46, #47 | waiting |
 | db | #48 full: squash migrations into a baseline | #45, #46, #47, #50 | waiting |

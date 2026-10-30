@@ -9,6 +9,7 @@ import type { DraftChangeSet, ExistingEntity, ExistingUnit, PublishKnowledgeBatc
 import type { DbRpc } from "@/lib/db/rpc";
 import { PublishedKnowledge, publishableDraft } from "@/lib/ingest/incrementalDraft";
 import { reportUploadProgress, uploadExecution, workflowStep } from "@/lib/ingest/workflowContext";
+import { claimEmbeddingText, draftTextContext } from "@/lib/knowledge/claimEmbeddingText";
 import { reuseEntities, reuseFuzzyDomainPaths } from "@/lib/knowledge/nameDuplicates";
 import { mapConcurrent } from "@/lib/processing/concurrency";
 import { splitOnCutOff } from "@/lib/ai/splitOnCutOff";
@@ -115,8 +116,8 @@ export class SplitReconciliationClient implements ReconciliationClient {
       const summary = part.answer.value.summary.trim();
       if (summary) summaries.push(summary);
 
-      // Vectors and the nearest stored claims of each draft
-      const partVectors = await this.embed(ports, drafted.map((claim) => claim.content));
+      // Vectors and the nearest stored claims of each draft, embedded as stored claims are (with their context)
+      const partVectors = await this.embed(ports, drafted.map((claim) => claimEmbeddingText(claim.content, draftTextContext(claim.entities, claim.applicability))));
       const similar = ports && partVectors
         ? await mapConcurrent(partVectors, SEARCH_CONCURRENCY, (vector) => ports.store.similar(vector, SIMILAR_LIMIT), signal)
         : drafted.map(() => []);

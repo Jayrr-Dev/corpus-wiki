@@ -1,3 +1,4 @@
+import { claimEmbeddingText, draftTextContext } from "@/lib/knowledge/claimEmbeddingText";
 import { contextsCompatibleForMerge } from "@/lib/knowledge/context";
 import type { Embedder } from "@/lib/ai/embeddings";
 import type { JudgeDecision, JudgeRequest } from "@/lib/ai/tokenFactory/duplicateJudge";
@@ -62,16 +63,21 @@ export async function guardDuplicates(deps: GuardDeps, input: ReconciliationInpu
   const vectors: (number[] | null)[] = adds.map(() => null);
   const plain = adds.map(({ action }) => comparable(action.input.content));
   const storedText = new Set(stored.map(({ claim }) => claim.normalized));
+  // Embedded as stored claims are, with their context's names (stored entities, then the ones
+  // this draft creates); the same wording about other entities gets its own vector
+  const entityNames = new Map(input.entities.map((entity) => [`${entity.type}:${entity.key}`, entity.name]));
+  for (const action of draft.actions) if (action.type === "create_entity") entityNames.set(`${action.input.type}:${action.input.key}`, action.input.name);
+  const texts = adds.map(({ action }) => embeddingText(action, entityNames));
   const unique = new Map<string, number>();
   plain.forEach((claim, index) => {
-    if (!storedText.has(claim.normalized) && !unique.has(claim.normalized)) unique.set(claim.normalized, index);
+    if (!storedText.has(claim.normalized) && !unique.has(texts[index]!)) unique.set(texts[index]!, index);
   });
   if (deps.embedder && unique.size) {
     try {
       const indices = [...unique.values()];
-      const embedded = await deps.embedder.embed(indices.map((index) => adds[index]!.action.input.content));
+      const embedded = await deps.embedder.embed(indices.map((index) => texts[index]!));
       indices.forEach((index, offset) => { vectors[index] = embedded[offset] ?? null; });
-      plain.forEach((claim, index) => { vectors[index] = vectors[unique.get(claim.normalized) ?? index] ?? null; });
+      texts.forEach((text, index) => { vectors[index] = vectors[unique.get(text) ?? index] ?? null; });
     }
     catch (error) { warn(`Duplicate guard could not embed new claims: ${message(error)}`); }
   }
@@ -298,3 +304,11 @@ export function compact(actions: DraftAction[], mergedInto: ReadonlyMap<number, 
 
 const withParents = (path: string) => path.split("/").map((_, i, parts) => parts.slice(0, i + 1).join("/"));
 const message = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+// A new claim embedded as stored claims are: its context's names before its wording (lib/knowledge/claimEmbeddingText.ts)
+function embeddingText(action: AddAt["action"], entityNames: ReadonlyMap<string, string>): string {
+  const named = <T extends { type: string; key: string }>(entity: T) => ({ ...entity, name: entityNames.get(`${entity.type}:${entity.key}`) });
+  const context = action.input.context;
+  const entities = (context?.entities ?? action.input.entities).map(named);
+  return claimEmbeddingText(action.input.content, draftTextContext(entities, context && { ...context.applicability, entities: context.applicability.entities.map(named) }));
+}
