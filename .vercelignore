@@ -1,0 +1,4 @@
+# Not part of the running app, and large enough to push the server bundle over Vercel's 250 MB limit.
+# Root folders only: app/(app)/docs and lib/docs are the Docs module.
+/docs/
+/artifacts/
