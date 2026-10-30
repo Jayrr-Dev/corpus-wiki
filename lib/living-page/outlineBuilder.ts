@@ -78,6 +78,20 @@ export function claimInput(knowledge: ArticleKnowledge) {
   })) };
 }
 
+// A claim the model repeats stays in its first place, the introduction before the sections, as
+// articleSections already does. Repeats are not worth a paid repair; a section left empty goes.
+export function withoutRepeatedClaims(plan: ArticlePlan): ArticlePlan {
+  const seen = new Set<string>();
+  const first = (refs: string[]) => refs.filter((raw) => {
+    const ref = raw.trim();
+    if (seen.has(ref)) return false;
+    seen.add(ref);
+    return true;
+  });
+  const introduction = first(plan.introduction);
+  return { ...plan, introduction, sections: plan.sections.map((section) => ({ ...section, claims: first(section.claims) })).filter((section) => section.claims.length) };
+}
+
 export function structuralProblems(plan: ArticlePlan, knowledge: ArticleKnowledge): string[] {
   const problems: string[] = [];
   const locations = new Map<string, string[]>();
@@ -160,7 +174,7 @@ export async function buildOutline(settings: TokenFactorySettings, knowledge: Ar
     }
     // The production sentence-case heuristic lowercases names absent from literal unit text
     // (e.g. "United States" when units say "US"). Preserve the model's proper names here.
-    const plan = draft.plan;
+    const plan = withoutRepeatedClaims(draft.plan);
     const problems = structuralProblems(plan, knowledge);
     if (index === 0 && options.seed && options.editorialNote) problems.push(`Direct editorial audit requires revision: ${options.editorialNote}`);
     if (index === 0 && options.seed && problems.length) markFresh();

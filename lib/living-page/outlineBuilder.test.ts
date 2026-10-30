@@ -229,6 +229,13 @@ describe("outline review and repair", () => {
     expect(reviewInput).not.toHaveProperty("centralMessage");
     expect(reviewInput).not.toHaveProperty("readingOrderRationale");
   });
+  it("drops repeated claims without a paid repair, the introduction keeping its copy", async () => {
+    const repeated = { ...good, introduction: ["C1", "C2"], sections: [{ title: "Origins of school colors", claims: ["C2"] }, { title: "School colors in sports", claims: ["C3", "C1", "C3"] }] };
+    vi.mocked(chatJson).mockResolvedValueOnce(answer(draft(repeated))).mockResolvedValueOnce(answer(review()));
+    const built = await buildOutline({ apiKey: "test" }, knowledge);
+    expect(built.plan).toEqual({ ...good, introduction: ["C1", "C2"], sections: [{ title: "School colors in sports", claims: ["C3"] }] });
+    expect(vi.mocked(chatJson).mock.calls.map(call => call[1].name)).toEqual(["article_outline", "article_outline_review"]);
+  });
   it("skips AI approval for invalid references and repairs against deterministic feedback", async () => {
     const invalid = { ...good, introduction: ["C900"] };
     vi.mocked(chatJson).mockResolvedValueOnce(answer(draft())).mockResolvedValueOnce(answer(review()));
