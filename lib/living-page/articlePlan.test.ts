@@ -28,6 +28,13 @@ describe("content-based article planning", () => {
     ]);
   });
 
+  it("makes no Overview for an introduction without claims, so no section is left unwritable", () => {
+    const noIntro: ArticlePlan = { ...plan, introduction: [], sections: [{ title: "Program", claims: ["C1", "C2"] }, { title: "Incident reporting", claims: ["C3", "C4"] }] };
+    expect(articleSections(noIntro, knowledge).map((section) => [section.title, section.query.unitIds])).toEqual([
+      ["Program", ["u1", "u2"]], ["Incident reporting", ["u3", "u4"]],
+    ]);
+  });
+
   it("rejects invented references instead of attaching unrelated claims", () => {
     expect(() => articleSections({ ...plan, introduction: ["C99"] }, knowledge)).toThrow("unknown claim");
   });

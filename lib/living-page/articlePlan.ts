@@ -30,8 +30,9 @@ export function articleSections(plan: ArticlePlan, knowledge: ArticleKnowledge):
   if (missing.length) throw new Error(`The article outline omitted ${missing.length} claims (${missing.map((unit) => `C${knowledge.units.indexOf(unit) + 1}`).join(", ")}). Nothing was reorganized.`);
   const titles = groups.map((group) => group.title.toLowerCase());
   if (new Set(titles).size !== titles.length || titles.includes("overview")) throw new Error("The article outline repeated a section heading.");
+  // An introduction without claims gets no Overview: an empty section can never be written
   return [
-    { title: "Overview", query: { entity, unitIds: intro, article: true } },
+    ...(intro.length ? [{ title: "Overview", query: { entity, unitIds: intro, article: true } }] : []),
     ...groups.map((group) => ({ title: group.title, query: { entity, unitIds: group.unitIds, article: true } })),
   ];
 }

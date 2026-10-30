@@ -54,7 +54,7 @@ export async function planArticle(settings: TokenFactorySettings, knowledge: Art
 // A small topic needs no separate opening: with one body section, the introduction's claims open that section.
 export function topicSections(plan: Parameters<typeof articleSections>[0], knowledge: ArticleKnowledge) {
   const sections = articleSections(plan, knowledge);
-  if (sections.length !== 2) return sections;
+  if (sections.length !== 2 || sections[0]!.title !== "Overview") return sections;
   const [intro, body] = sections as [typeof sections[number], typeof sections[number]];
   return [{ ...body, query: { ...body.query, unitIds: [...(intro.query.unitIds ?? []), ...(body.query.unitIds ?? [])] } }];
 }
