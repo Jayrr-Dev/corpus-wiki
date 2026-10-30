@@ -41,7 +41,7 @@ export function changeKind(summary: string): ChangeKind {
   if (/^(Archived|Restored) source:/.test(summary)) return "sources";
   if (/^(Approver |Reversed approver decision:|Reinstated approver decision:)/.test(summary)) return "approvals";
   if (/^Rewrote \d+ lines? of /.test(summary)) return "page_rewrite";
-  if (summary.startsWith("Updated article")) return "article";
+  if (summary.startsWith("Updated article") || summary.startsWith("Wrote articles")) return "article";
   if (summary.startsWith("Linked existing claims")) return "links";
   if (summary.startsWith("Cleaning cycle")) return "duplicates";
   return "knowledge";

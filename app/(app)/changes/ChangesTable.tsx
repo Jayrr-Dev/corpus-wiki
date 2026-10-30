@@ -86,7 +86,7 @@ function describeAll(changeSets: ChangeSet[], contexts: Map<string, ChangeContex
           .map((role) => roleLabel({ role, model: changeSet.model_version })).join(", "))
         || label(changeSet.proposed_by, changeSet.author_id, changeSet.model_version)
       : label(changeSet.proposed_by, changeSet.author_id, changeSet.model_version),
-    described: contexts ? describeChange(contexts.get(changeSet.id) ?? EMPTY_CONTEXT(changeSet.id), changeSet.summary) : null,
+    described: contexts ? describeChange(contexts.get(changeSet.id) ?? EMPTY_CONTEXT(changeSet.id), changeSet.summary, changeSet.stage) : null,
   }));
 }
 

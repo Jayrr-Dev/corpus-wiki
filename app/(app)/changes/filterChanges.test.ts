@@ -11,6 +11,7 @@ const changeSet = (overrides: Partial<Tables<"change_sets">>): Tables<"change_se
   model_version: null,
   prompt_version: null,
   proposed_by: "ai",
+  stage: null,
   status: "applied",
   summary: "Alpha moves its database to MySQL",
   tokens_in: null,
@@ -23,6 +24,7 @@ describe("changeKind", () => {
     expect(changeKind('Rewrote 1 line of "Facts"')).toBe("page_rewrite");
     expect(changeKind('Rewrote 5 lines of "Facts"')).toBe("page_rewrite");
     expect(changeKind("Updated article knowledge selections and introduction")).toBe("article");
+    expect(changeKind("Wrote articles: 8 new articles, 72 line changes")).toBe("article");
     expect(changeKind("Linked existing claims (3 links proposed)")).toBe("links");
     expect(changeKind("Cleaning cycle: 2 duplicate groups to merge")).toBe("duplicates");
     expect(changeKind("Archived source: WHMIS")).toBe("sources");

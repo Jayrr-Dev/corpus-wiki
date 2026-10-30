@@ -63,4 +63,13 @@ describe("describeChange", () => {
     expect(describeChange(context({ action_types: ["add_claim"], claim_domain_paths: ["Safety/PPE"] }), "New")).toMatchObject({ type: "claim_new", domain: "PPE", domainPath: "Safety/PPE", section: null });
     expect(describeChange(context({}), "Nothing")).toMatchObject({ type: "other", domain: null, section: null, summary: null });
   });
+
+  it("shows a folded upload stage as one entry with the summary the fold wrote", () => {
+    const described = describeChange(
+      context({ action_types: ["create_page", "write_line", "write_line"], line_action_count: 2, section_titles: ["Facts", "Decisions"] }),
+      "Wrote articles: 1 new article, 2 line changes",
+      "articles",
+    );
+    expect(described).toMatchObject({ type: "upload_stage", section: "2 sections", summary: null });
+  });
 });
