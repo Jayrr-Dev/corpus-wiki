@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { BrandMark, BrandName } from "@/components/brand/BrandMark";
-import { readPublicWiki } from "@/lib/publishing/server";
+import { readPublicGraph, readPublicWiki } from "@/lib/publishing/server";
 import { makeMetricTicket } from "@/lib/publishing/metricTicket";
+import { PublicGraphDialog } from "./PublicGraphDialog";
 import { WikiArticle } from "./WikiArticle";
 import { ReadMetrics } from "./ReadMetrics";
 
-export async function PublicWikiReader({ slug, pageSlug, embed = false, query = "", fromExplore = false }: {
-  slug: string; pageSlug?: string; embed?: boolean; query?: string; fromExplore?: boolean;
+export async function PublicWikiReader({ slug, pageSlug, embed = false, query = "", fromExplore = false, graphOpen = false }: {
+  slug: string; pageSlug?: string; embed?: boolean; query?: string; fromExplore?: boolean; graphOpen?: boolean;
 }) {
   let wiki = await readPublicWiki(slug, pageSlug ?? null, embed);
   if (!wiki || (pageSlug && !wiki.page)) notFound();
@@ -20,7 +21,12 @@ export async function PublicWikiReader({ slug, pageSlug, embed = false, query = 
   }
   const pages = wiki.pages.filter(p => p.title.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
   const base = `${embed ? "/embed" : "/s"}/${slug}`;
-  const ticket = wiki.page ? makeMetricTicket({ slug, page: wiki.page.slug, edition: wiki.edition, surface: embed ? "embed" : "site", channel: embed ? "embed" : fromExplore ? "explore" : "direct" }) : null;
+  const articleHref = wiki.page ? `${base}/wiki/${encodeURIComponent(wiki.page.slug)}` : base;
+  // A graph link that no longer has a graph falls back to the wiki itself
+  const graph = graphOpen && wiki.hasGraph ? await readPublicGraph(slug) : null;
+  if (graphOpen && !graph) redirect(articleHref);
+  // Opening the graph is not a read of the article behind it
+  const ticket = wiki.page && !graphOpen ? makeMetricTicket({ slug, page: wiki.page.slug, edition: wiki.edition, surface: embed ? "embed" : "site", channel: embed ? "embed" : fromExplore ? "explore" : "direct" }) : null;
   return <div className={embed ? "min-h-svh px-4 py-5 sm:px-6" : "mx-auto min-h-svh max-w-7xl px-5 py-6 sm:px-9"}>
     {!embed && <nav aria-label="Public navigation" className="mb-10 flex items-center justify-between text-sm"><Link prefetch={false} href="/explore" className="flex items-center gap-2 font-medium hover:underline"><BrandMark /><BrandName className="text-body font-normal" /> / Public</Link><Link href="/pages" className="text-muted-foreground hover:underline">My workspace</Link></nav>}
     <header className="mb-7 flex flex-wrap items-start justify-between gap-4 border-b pb-5">
@@ -29,6 +35,7 @@ export async function PublicWikiReader({ slug, pageSlug, embed = false, query = 
         <p className="mt-3 text-xs text-muted-foreground">{wiki.publisher && <>Published by {wiki.publisher}. </>}Updated {new Date(wiki.publishedAt).toISOString().slice(0, 10)} · Read only{wiki.visibility === "unlisted" ? " · Unlisted" : ""}</p>
       </div>
       {embed && <a href={`/s/${slug}${wiki.page ? `/wiki/${encodeURIComponent(wiki.page.slug)}` : ""}`} target="_blank" rel="noopener noreferrer" className="text-sm text-link hover:underline">Open full wiki</a>}
+      {!embed && wiki.hasGraph && <Link prefetch={false} href={`${base}/graph${wiki.page ? `?page=${encodeURIComponent(wiki.page.slug)}` : ""}`} className="rounded-md border px-3 py-1.5 text-sm hover:bg-hover">Graph</Link>}
     </header>
     <div className="grid items-start gap-8 md:grid-cols-[13rem_minmax(0,1fr)] lg:gap-12">
       <aside className="min-w-0 md:sticky md:top-6">
@@ -43,5 +50,6 @@ export async function PublicWikiReader({ slug, pageSlug, embed = false, query = 
         {ticket && <ReadMetrics key={ticket} ticket={ticket} />}
       </main>
     </div>
+    {graph && <PublicGraphDialog graph={graph} title={wiki.title} base={base} closeHref={articleHref} publishedAt={wiki.publishedAt} />}
   </div>;
 }

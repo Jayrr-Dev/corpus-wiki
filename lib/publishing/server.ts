@@ -5,7 +5,7 @@ import { getPublicSupabaseEnv } from "@/lib/supabase/env";
 import { getAdminSupabase } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/auth/requireUser";
 import { publicationSlug } from "./validation";
-import type { ExploreResult, PublicationEditor, PublicWiki, WikiMetrics } from "./types";
+import type { ExploreResult, PublicationEditor, PublicGraph, PublicWiki, WikiMetrics } from "./types";
 
 // An anonymous client deliberately carries no workspace cookie or secret key.
 // Only the public, allowlisted read RPCs are reachable through this port.
@@ -20,6 +20,11 @@ function publicReader() {
 export async function readPublicWiki(slug: string, page: string | null = null, embed = false): Promise<PublicWiki | null> {
   if (!publicationSlug.safeParse(slug).success || (page !== null && page.length > 500)) return null;
   return publicReader().call("read_public_wiki", { p_slug: slug, p_page: page, p_embed: embed });
+}
+
+export async function readPublicGraph(slug: string): Promise<PublicGraph | null> {
+  if (!publicationSlug.safeParse(slug).success) return null;
+  return publicReader().call("read_public_graph", { p_slug: slug });
 }
 
 export async function explorePublicWikis(query: string, offset = 0): Promise<ExploreResult> {

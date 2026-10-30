@@ -67,6 +67,8 @@ export interface GraphCanvasProps {
   progressiveZoom?: boolean;
   // While a dot is focused, show only its text (small panels, where neighbor titles pile up)
   hoverLabelOnly?: boolean;
+  // The line under the graph (read-only views drop the workspace actions)
+  hint?: string;
   className?: string;
 }
 
@@ -133,6 +135,7 @@ export function GraphCanvas({
   onSelect,
   progressiveZoom = true,
   hoverLabelOnly = false,
+  hint = "Scroll to zoom · Drag a claim into another domain · Click a dot twice to open · Ctrl-drag to select",
   className,
 }: GraphCanvasProps) {
   const container = useRef<HTMLDivElement>(null);
@@ -701,8 +704,7 @@ export function GraphCanvas({
       )}
       {progressiveZoom && (
         <p className="pointer-events-none absolute bottom-2 left-3 text-xs text-muted-foreground">
-          Scroll to zoom · Drag a claim into another domain · Click a dot twice
-          to open · Ctrl-drag to select
+          {hint}
         </p>
       )}
     </div>

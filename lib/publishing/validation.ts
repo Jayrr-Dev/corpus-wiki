@@ -8,6 +8,7 @@ export const publicationInput = z.object({
   publisher: z.string().trim().max(80),
   embedEnabled: z.boolean(),
   includeSources: z.boolean().default(false),
+  includeGraph: z.boolean().default(false),
   thumbnailChosen: z.boolean().default(false),
   pages: z.array(z.object({ id: z.uuid(), fingerprint: z.string().regex(/^[a-f0-9]{32}$/) })).max(100),
 }).refine(v => v.visibility === "private" || v.pages.length > 0, { message: "Choose at least one page to publish." })

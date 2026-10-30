@@ -29,6 +29,7 @@ export function PublishingPanel({ editor, initialMetrics, thumbnail, onRefresh }
   const [publisher, setPublisher] = useState(pub?.publisher ?? "");
   const [embedEnabled, setEmbedEnabled] = useState(pub?.embedEnabled ?? false);
   const [includeSources, setIncludeSources] = useState(pub?.includeSources ?? false);
+  const [includeGraph, setIncludeGraph] = useState(pub?.includeGraph ?? false);
   const [thumbnailDraft, setThumbnailDraft] = useState<ThumbnailDraft | null>(null);
   const [selected, setSelected] = useState(() => new Set(editor.pages.filter(p => p.selected).map(p => p.id)));
   const [fingerprints, setFingerprints] = useState(() => Object.fromEntries(editor.pages.map(p => [p.id, p.fingerprint])));
@@ -54,7 +55,7 @@ export function PublishingPanel({ editor, initialMetrics, thumbnail, onRefresh }
     setMessage("");
     const pendingThumbnail = makePrivate || visibility === "private" ? null : thumbnailDraft;
     const result = await save.run({ visibility: makePrivate ? "private" : visibility, title: makePrivate ? editor.spaceName : title, description, publisher, embedEnabled,
-      includeSources: !makePrivate && includeSources, thumbnailChosen: !!pendingThumbnail,
+      includeSources: !makePrivate && includeSources, includeGraph: !makePrivate && includeGraph, thumbnailChosen: !!pendingThumbnail,
       pages: makePrivate ? [] : [...selected].map(id => ({ id, fingerprint: fingerprints[id]! })),
     });
     if (result.ok) {
@@ -149,6 +150,13 @@ export function PublishingPanel({ editor, initialMetrics, thumbnail, onRefresh }
         </div>
         {includeSources && <p className="text-xs text-muted-foreground">Readers will see source names. Check they’re safe to share.</p>}
       </div>}
+      {editor.publishGraph && <div className="space-y-2 border-t pt-5">
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-3"><input type="checkbox" checked={includeGraph} disabled={save.isPending} onChange={e => { setIncludeGraph(e.target.checked); setReviewed(false); }} className="size-3.5 accent-foreground" />Include graph</label>
+          <InfoHint>Adds a shareable graph of the published pages and the claims behind them. Unpublished pages, people and sources stay out.</InfoHint>
+        </div>
+        {includeGraph && <p className="text-xs text-muted-foreground">Readers will see claim titles and topic names. Check they’re safe to share.</p>}
+      </div>}
       <div className="flex items-center justify-between gap-3 border-t pt-5">
         <label className="flex items-center gap-3"><input type="checkbox" checked={embedEnabled} disabled={save.isPending} onChange={e => setEmbedEnabled(e.target.checked)} className="size-3.5 accent-foreground" />Allow embeds</label>
         <InfoPopover label="About embeds">Any website can embed the published wiki. Private workspace content stays hidden.</InfoPopover>
@@ -167,6 +175,7 @@ export function PublishingPanel({ editor, initialMetrics, thumbnail, onRefresh }
     {live && <section aria-labelledby="share-heading" className="space-y-4 border-t pt-5">
       <h2 id="share-heading" className="font-medium">Share</h2>
       <div className="flex items-center gap-2"><Input aria-label="Public wiki link" readOnly value={publicUrl} onFocus={e => e.target.select()} /><Button variant="outline" onClick={() => copy(publicUrl)}>Copy</Button><Button asChild variant="ghost"><a href={publicUrl} target="_blank" rel="noopener noreferrer">Open</a></Button></div>
+      {pub.hasGraph && <div className="flex items-center gap-2"><Input aria-label="Public graph link" readOnly value={`${publicUrl}/graph`} onFocus={e => e.target.select()} /><Button variant="outline" onClick={() => copy(`${publicUrl}/graph`)}>Copy</Button><Button asChild variant="ghost"><a href={`${publicUrl}/graph`} target="_blank" rel="noopener noreferrer">Open</a></Button></div>}
       {pub.embedEnabled && <details className="text-panel"><summary className="cursor-pointer py-1 text-muted-foreground hover:text-foreground">Embed code</summary><div className="mt-3 space-y-3">
         <NativeSelect aria-label="Embed starting page" value={embedPage} onChange={e => setEmbedPage(e.target.value)}><option value="">Whole wiki</option>{editor.publishedPages.map(p => <option key={p.slug} value={p.slug}>{p.title}</option>)}</NativeSelect>
         <textarea aria-label="Iframe embed code" readOnly rows={3} value={code} onFocus={e => e.target.select()} className={`${inputClass} font-mono text-xs`} />

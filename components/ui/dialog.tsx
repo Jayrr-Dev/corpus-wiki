@@ -169,16 +169,19 @@ function DialogContent({
   children,
   showCloseButton = true,
   motion = false,
+  fullScreen = false,
   onEscapeKeyDown,
   onInteractOutside,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
   motion?: boolean
+  // Opens filling the screen, for a view that is the whole page
+  fullScreen?: boolean
 }) {
   const window = React.useContext(DialogWindowContext)
   const minimized = window?.minimized ?? false
-  const maximized = window?.maximized ?? false
+  const maximized = fullScreen || (window?.maximized ?? false)
 
   return (
     <DialogPortal>

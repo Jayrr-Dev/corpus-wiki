@@ -33,6 +33,7 @@ export async function publishSpaceWiki(input: PublishInput) {
       p_visibility: v.visibility, p_title: v.title, p_description: v.description, p_publisher: v.publisher, p_embed: v.embedEnabled, p_pages: v.pages,
       // Sent only when asked for: a database without the setting still publishes as before
       ...(v.includeSources ? { p_sources: true } : {}),
+      ...(v.includeGraph ? { p_graph: true } : {}),
     });
     // A person who chose a picture saves it straight after this, so don't spend a pick on it
     if (v.visibility !== "private" && !v.thumbnailChosen) await pickThumbnailIfUndecided();
