@@ -21,9 +21,14 @@ describe("proposeOutline", () => {
     const request = vi.mocked(model).mock.calls[0]![0];
     expect(request.system).toContain("You are the Docs writer");
     expect(request.system).toContain("set_up");
+    expect(request.system).toContain("at least 4 claims per page");
     expect(JSON.parse(request.user).claims).toHaveLength(3);
-    expect(outline.pages.map((page) => page.title)).toEqual(["Creating a cluster", "Deleting a cluster"]);
-    expect(outline.pages[0]!.sections[0]!.unitIds).toEqual(["b"]);
+    // three claims over two pages is too thin: they become one page, each old page a task
+    expect(outline.pages).toHaveLength(1);
+    expect(outline.pages[0]).toMatchObject({ title: "Clusters", introUnitIds: ["a"], sections: [
+      { title: "Creating a cluster", unitIds: ["b"] },
+      { title: "Deleting a cluster", unitIds: ["c"] },
+    ] });
   });
 
   it("builds a plain outline without AI, and when the model proposes nothing usable", async () => {
