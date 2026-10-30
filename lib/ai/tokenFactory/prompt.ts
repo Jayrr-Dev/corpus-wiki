@@ -22,6 +22,7 @@ const SYSTEM_PROMPT = `You maintain a universal knowledge store. You read ONE ne
 
 Answer with JSON only: { "summary": string, "claims": Claim[], "links": Link[] }.
 - summary: one short line saying what the file changes, e.g. "Alpha moves its database to MySQL".
+- Every statement in the file becomes a claim. A similar unit about a different organization, place or person is not the same knowledge: never skip a statement because of it.
 - Each Claim is one atomic piece of knowledge from the file:
   - content: ONE self-contained sentence. Name the subject explicitly (no "it", "we", "the project"). Keep the file's meaning; do not add facts.
   - title: 2 to 6 words naming what THIS claim says, so it reads apart from other claims on the same topic, e.g. "Class A violations: termination" or "Hard hats required on site", never just the topic ("Discipline policy"). For a revise, keep the unit's title unless the claim's point changed.

@@ -17,6 +17,7 @@ import { passageBatches } from "./client";
 import { pickNeighborhood, SIMILAR_LIMIT, type NeighborhoodStore, type UploadClaim } from "./neighborhood";
 import { buildReconciliationMessages, claimRef, passageRef, unitRef } from "./prompt";
 import { buildResolutionMessages, resolutionAnswerSchema, resolutionJsonSchema, resolveGroup, RESOLUTION_PROMPT_VERSION, type ResolutionAnswer, type ResolutionGroup } from "./resolution";
+import { withEveryStatement } from "./statementCoverage";
 import { reconciliationAnswerSchema, reconciliationJsonSchema, type AnswerClaim, type AnswerLink, type ReconciliationAnswer } from "./schema";
 import { answerToActions } from "./toDraft";
 
@@ -240,10 +241,11 @@ export class SplitReconciliationClient implements ReconciliationClient {
       const cached = await cache?.read(key);
       if (cached) return { answer: cached, spent: false };
       try {
-        const answer = await chatJson(this.settings, {
+        const ask = (extra: typeof messages = []) => chatJson(this.settings, {
           name: "reconciliation", retryInvalidOutput: true, subject: input.source.title,
-          schema: reconciliationAnswerSchema, jsonSchema: reconciliationJsonSchema, messages, reasoningEffort: "low", signal,
+          schema: reconciliationAnswerSchema, jsonSchema: reconciliationJsonSchema, messages: [...messages, ...extra], reasoningEffort: "low", signal,
         });
+        const answer = await withEveryStatement(await ask(), passages, (note) => ask([note]));
         await cache?.save(key, answer);
         return { answer, spent: true };
       } catch (error) {

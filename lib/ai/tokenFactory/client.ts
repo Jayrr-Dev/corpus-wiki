@@ -9,6 +9,7 @@ import type { DraftChangeSet, ExistingEntity, PublishKnowledgeBatch, Reconciliat
 import { PublishedKnowledge, publishableDraft } from "@/lib/ingest/incrementalDraft";
 import { buildReconciliationMessages, claimRef, earlierClaimRef, passageRef, type EarlierComposite } from "./prompt";
 import { reconciliationAnswerSchema, reconciliationJsonSchema, type AnswerClaim, type AnswerLink } from "./schema";
+import { withEveryStatement } from "./statementCoverage";
 import { answerToActions } from "./toDraft";
 import { reuseEntities, reuseFuzzyDomainPaths } from "@/lib/knowledge/nameDuplicates";
 import { nameDuplicateJudge, NAME_DUPLICATE_PROMPT_VERSION } from "@/lib/ai/nameDuplicateJudge";
@@ -50,20 +51,24 @@ export class TokenFactoryReconciliationClient implements ReconciliationClient {
     type Answer = ChatJsonResult<ReconciliationAnswer>;
     const context = () => JSON.stringify(earlierComposites(claims, links));
     const request = async (passages: ReconciliationInput["passages"], prior: string, signal?: AbortSignal): Promise<Answer> => {
-      try {
+      const messages = buildReconciliationMessages({ ...input, passages }, this.settings.skills, JSON.parse(prior) as EarlierComposite[]);
+      const ask = async (extra: typeof messages = []) => {
         const answer = await chatJson(this.settings, {
           name: "reconciliation",
           retryInvalidOutput: true,
           subject: input.source.title,
           schema: reconciliationAnswerSchema,
           jsonSchema: reconciliationJsonSchema,
-          messages: buildReconciliationMessages({ ...input, passages }, this.settings.skills, JSON.parse(prior) as EarlierComposite[]),
+          messages: [...messages, ...extra],
           // Extraction is careful reading, not puzzle solving: higher efforts only add minutes of hidden thinking
           reasoningEffort: "low",
           signal,
         });
         countUsage(answer.tokensIn, answer.tokensOut);
         return answer;
+      };
+      try {
+        return await withEveryStatement(await ask(), passages, (note) => ask([note]));
       } catch (error) {
         if (error instanceof CompletionLengthError) countUsage(error.tokensIn, error.tokensOut);
         throw error;
