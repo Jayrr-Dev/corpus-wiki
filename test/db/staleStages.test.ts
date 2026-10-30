@@ -93,6 +93,28 @@ describe("stale marks for sections, filing and entities in PostgreSQL", () => {
     expect(await marks(["entity_description"])).toEqual([`entity_description:${ids["mark-a"]}`]);
   });
 
+  it("picks a section that was already stale when a later event's claim joins it, but not older stale sections", async () => {
+    const waiting = await section("mark-a");
+    const untouched = await section("mark-b");
+    await store.pg.query("update sections set status='stale' where id = any($1)", [[waiting, untouched]]);
+    const added = await addClaim("Mark A paints bridges", "mark-a");
+    const picked = await stale(added.eventId);
+    expect(picked).toContain(waiting);
+    expect(picked).not.toContain(untouched);
+  });
+
+  it("keeps a claim's entity links when a commit revises a claim with no saved context", async () => {
+    const added = await addClaim("Mark B hires welders", "mark-b");
+    await store.pg.query("update revisions set knowledge_context = null where id = $1", [added.after_revision_id]).catch(async () => {
+      await store.pg.exec("alter table revisions disable trigger revision_knowledge_context_immutable");
+      await store.pg.query("update revisions set knowledge_context = null where id = $1", [added.after_revision_id]);
+      await store.pg.exec("alter table revisions enable trigger revision_knowledge_context_immutable");
+    });
+    await submit("revise_claim", { content: "Mark B hires certified welders" }, added.target_id, added.after_revision_id);
+    const links = await store.pg.query("select 1 from unit_entities where unit_id = $1 and entity_id = $2", [added.target_id, ids["mark-b"]]);
+    expect(links.rows).toHaveLength(1);
+  });
+
   it("rebuilds section and filing marks from canonical data", async () => {
     const added = await addClaim("Mark B audits cranes", "mark-b");
     const cited = await section("mark-b", { unitId: added.target_id, revisionId: added.after_revision_id });

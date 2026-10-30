@@ -155,13 +155,66 @@ end $$;
 create trigger mark_new_section after insert on public.sections
 for each row when (new.status = 'stale' and new.retired_at is null)
 execute function change_control.section_status_changed();
+-- Setting 'stale' again refreshes the mark: a section already stale (never built) that a
+-- new claim joins must still be picked by that claim's event
 create trigger mark_stale_section after update of status, retired_at on public.sections
-for each row when (new.status is distinct from old.status or new.retired_at is distinct from old.retired_at)
+for each row when ((new.status = 'stale' and new.retired_at is null)
+  or new.status is distinct from old.status or new.retired_at is distinct from old.retired_at)
 execute function change_control.section_status_changed();
 
--- PAGES: the generated sections to rebuild after an event, from the section marks.
--- Links and set members change a section's claims without a new revision; an event
--- with those still adds the affected-section search (20261119006000).
+-- UNKNOWN CONTEXT KEEPS ITS LINKS. The commit-time projection (20261115100000, now
+-- project_knowledge_context_before_structure) treated a revision with no saved context
+-- as one with no entities and deleted the claim's entity links; the projection outside
+-- a commit leaves them alone. A revise of such a claim (seeded or historical data) then
+-- dropped it from its sections and entity pages. Same function, links kept when unknown.
+create or replace function change_control.project_knowledge_context_before_structure(p_unit uuid)
+returns uuid[]
+language plpgsql
+set search_path = ''
+as $$
+declare
+  c jsonb;
+  old_sections uuid[];
+  section_id uuid;
+  affected uuid[] := '{}';
+begin
+  if coalesce(current_setting('change_control.section_pass', true), '') <> 'deferred' then
+    return change_control.project_knowledge_context_now(p_unit);
+  end if;
+  select r.knowledge_context into c from public.units u join public.revisions r on r.id = u.current_revision_id where u.id = p_unit;
+  -- Old sections: what the commit found at its start, plus the cheap per-claim rules
+  select array_agg(distinct s.id) into old_sections from public.sections s where s.mode = 'generated' and (
+    s.id::text in (select jsonb_array_elements_text(coalesce(current_setting('change_control.old_sections', true), '{}')::jsonb -> p_unit::text))
+    or exists (select 1 from public.section_inputs si where si.section_id = s.id and si.unit_id = p_unit)
+    or exists (select 1 from public.revisions r cross join lateral jsonb_array_elements(coalesce(r.knowledge_context -> 'applicability' -> 'entities', '[]'::jsonb)) e
+      where r.unit_id = p_unit and e ->> 'type' = s.query -> 'entity' ->> 'type' and e ->> 'key' = s.query -> 'entity' ->> 'key')
+  );
+  if c is not null then
+    delete from public.unit_entities where unit_id = p_unit;
+    insert into public.unit_entities (unit_id, entity_id, role)
+    select distinct on (canonical) p_unit, canonical, role from (
+      select public.entity_canonical_id(e.id) canonical, (x ->> 'role')::public.entity_role role,
+        case x ->> 'role' when 'subject' then 0 when 'object' then 1 else 2 end strength
+      from jsonb_array_elements(c -> 'entities') x join public.entities e on e.type = x ->> 'type' and e.key = x ->> 'key'
+    ) links order by canonical, strength
+    on conflict do nothing;
+  end if;
+  foreach section_id in array coalesce(old_sections, '{}') loop
+    perform public.mark_section_stale(section_id);
+    affected := array_append(affected, section_id);
+  end loop;
+  -- New sections are found for every noted claim at the end of the commit
+  perform set_config('change_control.section_units',
+    coalesce(nullif(current_setting('change_control.section_units', true), '') || ',', '') || p_unit::text, true);
+  return affected;
+end $$;
+
+-- PAGES: the generated sections to rebuild after an event, from the section marks set
+-- since the event began (its own changes, and anything changed while it ran). Older
+-- marks are left alone: a section can sit stale on purpose (never built), and an
+-- upload must not take on that backlog. Links and set members change a section's
+-- claims without a new revision; an event with those still adds the affected-section
+-- search (20261119006000).
 create function public.list_stale_sections(p_event_id uuid)
 returns jsonb
 language sql
@@ -175,6 +228,7 @@ as $$
     join public.sections s on s.id::text = m.item_key and s.space_id = m.space_id
     join public.pages p on p.id = s.page_id
     where m.space_id = public.current_space_id() and m.kind = 'section'
+      and m.marked_at >= (select e.created_at from public.shift_events e where e.id = p_event_id)
       and s.mode = 'generated' and s.retired_at is null and p.retired_at is null
   ), linked as (
     select (x ->> 'sectionId')::uuid id, (x ->> 'pageId')::uuid page_id, s.position
