@@ -26,12 +26,6 @@ export const FEATURE_FLAGS = {
     defaultEnabled: false,
     devOnly: true,
   },
-  legal_pages: {
-    label: "Legal pages",
-    description: "Public terms of service and privacy policy pages.",
-    defaultEnabled: false,
-    devOnly: true,
-  },
   audio_ingest: {
     label: "Audio uploads",
     description: "Upload recordings and turn their transcripts into knowledge.",

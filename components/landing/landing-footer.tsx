@@ -10,10 +10,9 @@ const LEGAL = [
   { href: "/contact", label: "Contact" },
 ];
 
-// LANDING FOOTER: the brand and the page links (Pricing only while the billing flag is on). Privacy, Terms and Contact
-// link to real pages only while the legal_pages flag is on (and Contact only
-// when an address is set); otherwise they show disabled, as before the pages existed.
-export function LandingFooter({ legalPages, hasContact, pricing = false, onHome = true }: { legalPages: boolean; hasContact: boolean; pricing?: boolean; onHome?: boolean }) {
+// LANDING FOOTER: the brand and the page links. Pricing shows only while the billing flag
+// is on, and Contact only when a contact address is set.
+export function LandingFooter({ hasContact, pricing = false, onHome = true }: { hasContact: boolean; pricing?: boolean; onHome?: boolean }) {
   // On the landing page the section links are plain anchors; elsewhere they lead back to it
   const base = onHome ? "" : "/";
   return (
@@ -28,16 +27,9 @@ export function LandingFooter({ legalPages, hasContact, pricing = false, onHome 
           <li><a href={`${base}#how`} className={LINK}>How it works</a></li>
           <li><a href={`${base}#faq`} className={LINK}>Questions</a></li>
           {pricing && <li><Link href="/pricing" className={LINK}>Pricing</Link></li>}
-          {LEGAL.map(({ href, label }) =>
-            legalPages && (href !== "/contact" || hasContact) ? (
-              <li key={label}><Link href={href} className={LINK}>{label}</Link></li>
-            ) : (
-              // No page yet: shown disabled rather than linking nowhere
-              <li key={label}>
-                <span aria-disabled className="cursor-not-allowed text-landing-ink/30">{label} (placeholder)</span>
-              </li>
-            ),
-          )}
+          {LEGAL.filter(({ href }) => href !== "/contact" || hasContact).map(({ href, label }) => (
+            <li key={label}><Link href={href} className={LINK}>{label}</Link></li>
+          ))}
         </ul>
       </div>
     </footer>

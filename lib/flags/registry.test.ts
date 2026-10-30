@@ -4,7 +4,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { defaultFeatureFlags, enabledModuleFlags, FEATURE_FLAG_KEYS, FEATURE_FLAGS, FEATURE_ONLY_KEYS, type FeatureFlagKey, isDevOnlyFlagKey, isFeatureFlagKey, MODULE_FLAG_KEYS, resolveFeatureFlags } from "./registry";
 
 const MODULES = ["pages", "graph", "glossary", "stakeholders", "ask", "study", "video", "docs", "upload", "sources", "assets", "knowledge", "changes", "decisions", "exceptions", "domains", "entities", "workflow", "agent_roles", "error_log", "nav_mode_switch"] as const;
-const FEATURES = ["billing", "legal_pages", "audio_ingest", "chat_import", "gmail_import", "tutorial_button"] as const;
+const FEATURES = ["billing", "audio_ingest", "chat_import", "gmail_import", "tutorial_button"] as const;
 // every sidebar module starts on except the knowledge modules
 const defaults = () => ({ ...Object.fromEntries(FEATURES.map((key) => [key, false])), ...Object.fromEntries(MODULES.map((key) => [key, !["study", "video", "docs"].includes(key)])) });
 
@@ -24,8 +24,8 @@ describe("feature flag registry", () => {
     expect(enabledModuleFlags(resolveFeatureFlags({ pages: false, docs: true, billing: true }))).toEqual(MODULES.filter((key) => !["pages", "study", "video"].includes(key)));
   });
 
-  it("keeps Billing, Legal pages and Tutorial button for platform admins", () => {
-    expect(FEATURE_FLAG_KEYS.filter(isDevOnlyFlagKey)).toEqual(["billing", "legal_pages", "tutorial_button"]);
+  it("keeps Billing and Tutorial button for platform admins", () => {
+    expect(FEATURE_FLAG_KEYS.filter(isDevOnlyFlagKey)).toEqual(["billing", "tutorial_button"]);
   });
 
   it("gives every flag a label and a one-line description", () => {

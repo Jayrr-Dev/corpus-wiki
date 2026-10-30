@@ -3,15 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  enabled: false,
   notFound: vi.fn(() => { throw new Error("NEXT_HTTP_ERROR_FALLBACK;404"); }),
 }));
 vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
-vi.mock("next/server", () => ({ connection: async () => {} }));
-vi.mock("@/lib/flags/server", () => ({
-  isFeatureEnabled: async () => mocks.enabled,
-  requireFeature: async () => { if (!mocks.enabled) mocks.notFound(); },
-}));
 
 import { LandingFooter } from "@/components/landing/landing-footer";
 import ContactPage from "@/app/(marketing)/contact/page";
@@ -24,7 +18,6 @@ const PAGES = { privacy: PrivacyPage, terms: TermsPage, contact: ContactPage };
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.enabled = false;
   vi.stubEnv("NEXT_PUBLIC_CONTACT_EMAIL", "hello@corpus.example");
 });
 
@@ -63,51 +56,39 @@ describe("legal text", () => {
 });
 
 describe("legal pages", () => {
-  it.each(Object.keys(PAGES) as (keyof typeof PAGES)[])("/%s is a 404 while legal_pages is off", async (name) => {
-    await expect(PAGES[name]()).rejects.toThrow("404");
-  });
-
-  it.each(Object.keys(PAGES) as (keyof typeof PAGES)[])("/%s renders while legal_pages is on", async (name) => {
-    mocks.enabled = true;
-    const html = renderToStaticMarkup(await PAGES[name]());
+  it.each(Object.keys(PAGES) as (keyof typeof PAGES)[])("/%s renders", (name) => {
+    const html = renderToStaticMarkup(PAGES[name]());
+    expect(html).toContain("<h1");
     expect(html).toContain("mailto:hello@corpus.example");
     expect(html).not.toContain("(placeholder)");
   });
 
-  it("/contact is a 404 without a contact address, even with the flag on", async () => {
-    mocks.enabled = true;
+  it("/contact is a 404 without a contact address", () => {
     vi.stubEnv("NEXT_PUBLIC_CONTACT_EMAIL", "");
-    await expect(ContactPage()).rejects.toThrow("404");
+    expect(() => ContactPage()).toThrow("404");
   });
 
-  it("the privacy policy leaves out its contact section without an address", async () => {
-    mocks.enabled = true;
+  it("the privacy policy leaves out its contact section without an address", () => {
     vi.stubEnv("NEXT_PUBLIC_CONTACT_EMAIL", "");
-    const html = renderToStaticMarkup(await PrivacyPage());
+    const html = renderToStaticMarkup(PrivacyPage());
     expect(html).toContain(PRIVACY.title);
     expect(html).not.toContain("mailto:");
   });
 });
 
 describe("landing footer", () => {
-  const render = (legalPages: boolean, hasContact = true) => renderToStaticMarkup(createElement(LandingFooter, { legalPages, hasContact }));
+  const render = (hasContact = true) => renderToStaticMarkup(createElement(LandingFooter, { hasContact }));
 
-  it("keeps today's disabled entries while legal_pages is off", () => {
-    const html = render(false);
-    for (const label of ["Privacy", "Terms", "Contact"]) expect(html).toContain(`${label} (placeholder)`);
-    expect(html).not.toMatch(/href="\/(privacy|terms|contact)"/);
-    expect(html).toContain('href="#product"');
-  });
-
-  it("links to the pages while legal_pages is on", () => {
-    const html = render(true);
+  it("links to the legal pages", () => {
+    const html = render();
     for (const path of ["/privacy", "/terms", "/contact"]) expect(html).toContain(`href="${path}"`);
+    expect(html).toContain('href="#product"');
     expect(html).not.toContain("(placeholder)");
   });
 
-  it("leaves Contact disabled when no address is set", () => {
-    const html = render(true, false);
+  it("leaves Contact out when no address is set", () => {
+    const html = render(false);
     expect(html).toContain('href="/privacy"');
-    expect(html).toContain("Contact (placeholder)");
+    expect(html).not.toContain("Contact");
   });
 });

@@ -24,9 +24,9 @@ it("is off when the flag has no row", async () => {
 });
 
 it("is on only when the saved value is true", async () => {
-  mocks.call.mockResolvedValue({ billing: true, legal_pages: "true" });
+  mocks.call.mockResolvedValue({ billing: true, audio_ingest: "true" });
   expect(await isFeatureEnabled("billing")).toBe(true);
-  expect(await isFeatureEnabled("legal_pages")).toBe(false);
+  expect(await isFeatureEnabled("audio_ingest")).toBe(false);
 });
 
 it("fails closed when the database cannot be read", async () => {

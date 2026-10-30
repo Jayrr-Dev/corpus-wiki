@@ -26,7 +26,7 @@ it("turns a registered flag on for a signed-in person", async () => {
 it("refuses a dev-only flag to a signed-in person who is not a platform admin", async () => {
   vi.stubEnv("PLATFORM_ADMIN_EMAILS", "owner@example.com");
   mocks.requireUser.mockResolvedValue({ id: "q", email: "member@example.com" });
-  for (const key of ["billing", "legal_pages", "tutorial_button"] as const) {
+  for (const key of ["billing", "tutorial_button"] as const) {
     expect(await failing(() => setFeatureFlag(key, true))).toEqual({ ok: false, error: "Only a platform admin can change this." });
   }
   expect(mocks.call).not.toHaveBeenCalled();

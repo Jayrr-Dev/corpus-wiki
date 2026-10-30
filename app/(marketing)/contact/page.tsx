@@ -1,21 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { connection } from "next/server";
 import { EnvelopeSimple } from "@phosphor-icons/react/dist/ssr";
 import { ContactLink, LegalShell } from "@/components/landing/legal-page";
 import { contactEmail, mailtoHref } from "@/lib/legal/contact";
-import { requireFeature } from "@/lib/flags/server";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-landing-gold focus-visible:ring-offset-2 focus-visible:ring-offset-landing-base";
 
 export const metadata: Metadata = { title: "Contact | Corpus Wiki", description: "How to reach the Corpus Wiki team.", robots: { index: false } };
 
-// CONTACT (/contact): one mail link, no form. A 404 while the legal_pages flag
-// is off, or when NEXT_PUBLIC_CONTACT_EMAIL is not set.
-export default async function ContactPage() {
-  // Per request, so the flag is read live rather than frozen at build time
-  await connection();
-  await requireFeature("legal_pages");
+// CONTACT (/contact): one mail link, no form. A 404 when NEXT_PUBLIC_CONTACT_EMAIL is not set.
+export default function ContactPage() {
   const email = contactEmail();
   if (!email) notFound();
   return (
